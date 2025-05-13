@@ -1,11 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Shield } from "lucide-react";
+import { Shield, Trash2, Settings, X, Bitcoin, Wallet, Clock, DollarSign, Plus } from "lucide-react";
 import sportsBetAPI from "@/lib/sportsBetAPI";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface BetItem {
   id: string;
@@ -14,12 +29,23 @@ interface BetItem {
   selection: string;
   opponent: string;
   odds: number;
+  timestamp?: string;
+  status?: 'pending' | 'won' | 'lost' | 'cashout';
+}
+
+interface CryptoWallet {
+  id: string;
+  name: string;
+  icon: React.ReactNode;
+  address?: string;
+  connected: boolean;
 }
 
 const BettingSlip: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [wagerAmount, setWagerAmount] = useState("50.00");
+  const [selectedCurrency, setSelectedCurrency] = useState<string>("USD");
   const [betItems, setBetItems] = useState<BetItem[]>([
     {
       id: "1",
@@ -27,7 +53,9 @@ const BettingSlip: React.FC = () => {
       eventName: "Boston Celtics",
       selection: "Boston Celtics",
       opponent: "LA Lakers",
-      odds: -145
+      odds: -145,
+      timestamp: new Date().toISOString(),
+      status: 'pending'
     },
     {
       id: "2",
@@ -35,9 +63,46 @@ const BettingSlip: React.FC = () => {
       eventName: "LA Lakers +4.5",
       selection: "LA Lakers +4.5",
       opponent: "Boston Celtics",
-      odds: -110
+      odds: -110,
+      timestamp: new Date().toISOString(),
+      status: 'pending'
     }
   ]);
+  
+  const [cryptoWallets, setCryptoWallets] = useState<CryptoWallet[]>([
+    {
+      id: "metamask",
+      name: "Metamask",
+      icon: <Bitcoin className="h-4 w-4 mr-2" />,
+      connected: false
+    },
+    {
+      id: "coinbase",
+      name: "Coinbase Wallet",
+      icon: <Bitcoin className="h-4 w-4 mr-2" />,
+      connected: false
+    },
+    {
+      id: "trust",
+      name: "Trust Wallet",
+      icon: <Bitcoin className="h-4 w-4 mr-2" />,
+      connected: false
+    },
+    {
+      id: "phantom",
+      name: "Phantom (Solana)",
+      icon: <Bitcoin className="h-4 w-4 mr-2" />,
+      connected: false
+    }
+  ]);
+  
+  // Currency options for betting
+  const currencyOptions = [
+    { value: "USD", label: "USD ($)", icon: <DollarSign className="h-4 w-4" /> },
+    { value: "BTC", label: "Bitcoin (BTC)", icon: <Bitcoin className="h-4 w-4" /> },
+    { value: "ETH", label: "Ethereum (ETH)", icon: <Bitcoin className="h-4 w-4" /> },
+    { value: "SOL", label: "Solana (SOL)", icon: <Bitcoin className="h-4 w-4" /> }
+  ];
   
   const isEmpty = betItems.length === 0;
   

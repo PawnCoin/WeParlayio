@@ -69,7 +69,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
             sports?.map((sport) => (
               <li key={sport.id} className="mb-1">
                 <Link href={`/sports/${sport.key}`}>
-                  <a className={`flex items-center py-2 px-4 rounded-md ${
+                  <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
                     location === `/sports/${sport.key}`
                       ? "bg-primary text-white"
                       : "hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -83,7 +83,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                     }`}>
                       {sport.eventCount}
                     </span>
-                  </a>
+                  </div>
                 </Link>
               </li>
             ))
@@ -98,42 +98,42 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
         <ul>
           <li className="mb-2">
             <Link href="/live-betting">
-              <a className="flex items-center text-neutral-dark dark:text-neutral-light hover:text-primary dark:hover:text-primary">
+              <div className="flex items-center text-neutral-dark dark:text-neutral-light hover:text-primary dark:hover:text-primary cursor-pointer">
                 <BarChart2 className="mr-2 h-4 w-4" />
                 <span>Live Games</span>
-              </a>
+              </div>
             </Link>
           </li>
           <li className="mb-2">
             <Link href="/my-contests">
-              <a className="flex items-center text-neutral-dark dark:text-neutral-light hover:text-primary dark:hover:text-primary">
+              <div className="flex items-center text-neutral-dark dark:text-neutral-light hover:text-primary dark:hover:text-primary cursor-pointer">
                 <Trophy className="mr-2 h-4 w-4" />
                 <span>My Contests</span>
-              </a>
+              </div>
             </Link>
           </li>
           <li className="mb-2">
             <Link href="/leaderboards">
-              <a className="flex items-center text-neutral-dark dark:text-neutral-light hover:text-primary dark:hover:text-primary">
+              <div className="flex items-center text-neutral-dark dark:text-neutral-light hover:text-primary dark:hover:text-primary cursor-pointer">
                 <Medal className="mr-2 h-4 w-4" />
                 <span>Leaderboards</span>
-              </a>
+              </div>
             </Link>
           </li>
           <li className="mb-2">
             <Link href="/bet-history">
-              <a className="flex items-center text-neutral-dark dark:text-neutral-light hover:text-primary dark:hover:text-primary">
+              <div className="flex items-center text-neutral-dark dark:text-neutral-light hover:text-primary dark:hover:text-primary cursor-pointer">
                 <History className="mr-2 h-4 w-4" />
                 <span>Bet History</span>
-              </a>
+              </div>
             </Link>
           </li>
           <li>
             <Link href="/settings">
-              <a className="flex items-center text-neutral-dark dark:text-neutral-light hover:text-primary dark:hover:text-primary">
+              <div className="flex items-center text-neutral-dark dark:text-neutral-light hover:text-primary dark:hover:text-primary cursor-pointer">
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Settings</span>
-              </a>
+              </div>
             </Link>
           </li>
         </ul>

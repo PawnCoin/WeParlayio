@@ -41,7 +41,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             <div className="flex items-center">
               <Link href="/">
                 <div className="text-2xl font-bold text-primary cursor-pointer">
-                  SportsBet<span className="text-accent">Pro</span>
+                  We<span className="text-accent">Parlay</span>.io
                 </div>
               </Link>
             </div>
