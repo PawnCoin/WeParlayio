@@ -6,7 +6,7 @@ echo "Building WeParlay WordPress Plugin..."
 
 # Run webpack build
 echo "Running webpack build..."
-npx webpack --config webpack.wordpress.config.js
+npx webpack --config webpack.wordpress.config.cjs
 
 # Check if build was successful
 if [ $? -eq 0 ]; then

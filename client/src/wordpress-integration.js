@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import FantasyTeamBuilder from './components/fantasy/FantasyTeamBuilder';
+import FantasyTeamBuilder from './components/fantasy/FantasyTeamBuilder.tsx';
 import './index.css'; // Include your styles
 
 // Create a React Query client
