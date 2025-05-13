@@ -1,0 +1,357 @@
+<?php
+/**
+ * Plugin Name: Fan Victor
+ * Plugin URI: http://plugins.svn.wordpress.org/fantasy-sports/ 
+ * Description: Create a fantasy sports website in minutes. Give your members the chance to compete in daily contests by predicting the outcomes of sporting events.  To get started: 1) Click the "Activate" link to the left of this description, 2) Sign up for a Fan Victor API key, and 3) Go to your FanVictor.com members page, and save your API key.
+ * Version: 2.1.52
+ * Author: Mega Website Services
+ * Author URI: http://fanvictor.com
+ * License: GPL2
+ */
+/*  Copyright 2017  Mega Website Services  (email : support@fanvictor.com)
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License, version 2, as
+  published by the Free Software Foundation.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+
+//init
+define('FANVICTOR__PLUGIN_DIR', plugin_dir_path(__FILE__));
+require_once(FANVICTOR__PLUGIN_DIR . 'constants.php');
+require_once(FANVICTOR__PLUGIN_DIR . 'class.init.php');
+register_activation_hook(__FILE__, array('FanvictorInit', 'active'));
+register_deactivation_hook(__FILE__, array('FanvictorInit', 'deactivate'));
+register_uninstall_hook(__FILE__, array('FanvictorInit', 'uninstall'));
+add_action('plugins_loaded', array('FanvictorInit', 'upgrade'));
+require_once(plugin_dir_path(__FILE__) . "/languages/js-pt_PT.php");
+
+//add_action('init', 'session_start');
+
+function fv_init() {
+    load_plugin_textdomain('fantasy-sports', false, dirname(plugin_basename(__FILE__)) . "/languages/");
+}
+
+add_action('plugins_loaded', 'fv_init');
+$fanvictor_allow_change_background = fanvictorCheckAllowChangebackground();
+
+function fanvictor_require_class() {
+    require_once(FANVICTOR__PLUGIN_DIR_MODEL . 'admin/pools.php');
+    require_once(FANVICTOR__PLUGIN_DIR_MODEL . 'admin/fighters.php');
+    require_once(FANVICTOR__PLUGIN_DIR_MODEL . 'admin/teams.php');
+    require_once(FANVICTOR__PLUGIN_DIR_MODEL . 'admin/organizations.php');
+    require_once(FANVICTOR__PLUGIN_DIR_MODEL . 'admin/user.php');
+    require_once(FANVICTOR__PLUGIN_DIR_MODEL . 'admin/statistic.php');
+    require_once(FANVICTOR__PLUGIN_DIR_MODEL . 'payment.php');
+    require_once(FANVICTOR__PLUGIN_DIR_MODEL . 'fanvictor.php');
+    require_once(FANVICTOR__PLUGIN_DIR_MODEL . 'mypaypal.php');
+    require_once(FANVICTOR__PLUGIN_DIR_MODEL . 'admin/sports.php');
+    require_once(FANVICTOR__PLUGIN_DIR_MODEL . 'admin/autocontest.php');
+    require_once(FANVICTOR__PLUGIN_DIR_MODEL . 'admin/playerposition.php');
+    require_once(FANVICTOR__PLUGIN_DIR_MODEL . 'admin/scoringcategory.php');
+    require_once(FANVICTOR__PLUGIN_DIR_MODEL . 'admin/players.php');
+    require_once(FANVICTOR__PLUGIN_DIR_MODEL . 'admin/leagues.php');
+    require_once(FANVICTOR__PLUGIN_DIR_MODEL . 'admin/playernews.php');
+    require_once(FANVICTOR__PLUGIN_DIR_MODEL . 'CouponModel.php');
+}
+
+// add field when sign up
+if ($fanvictor_allow_change_background) {
+    add_action('register_form', 'fanvictor_add_registration_fields');
+    add_action('user_register', 'fanvictor_user_register');
+}
+
+function fanvictorShowTeamsField() {
+    $mSports = new Sports();
+    $aSports = $mSports->getSports();
+    $aSportTeams = array();
+    foreach ($aSports as $aSport) {
+        if ($aSport['is_team'] != 1 || $aSport['is_active'] != 1 || $aSport['siteID'] != 0) {
+            continue;
+        }
+        $aSport = $aSport['child'];
+        foreach ($aSport as $sport) {
+            if ($sport['is_team'] != 1 || $sport['is_active'] != 1 || $sport['siteID'] != 0) {
+                continue;
+            }
+            $aSportTeams[$sport["id"]] = $sport["name"];
+        }
+    }
+
+    if (empty($aSportTeams)) {
+        return;
+    }
+    $fanvictor = new Fanvictor();
+    $listSports = $fanvictor->getTeamsBySports(array_keys($aSportTeams));
+    return array($listSports, $aSportTeams);
+}
+
+function fanvictor_add_registration_fields() {
+    require_once(FANVICTOR__PLUGIN_DIR_MODEL . 'admin/sports.php');
+    require_once(FANVICTOR__PLUGIN_DIR_MODEL . 'fanvictor.php');
+    list($listSports, $aSportTeams) = fanvictorShowTeamsField();
+    if (!empty($listSports)) {
+        echo '<p><label for="team_info">' . __('Teams', 'fantasy-sports') . '</label>';
+        echo '<select  name="team_info" id="team-info" class="input">';
+        foreach ($listSports as $sport_id => $sports) {
+            echo '<optgroup  label="' . $aSportTeams[$sport_id] . '">';
+            foreach ($sports as $item) {
+                echo '<option value="' . $sport_id . '_' . $item['teamID'] . '">' . $item['name'] . '</option>';
+            }
+            echo '</optgroup>';
+        }
+        echo '</select></p>';
+    }
+}
+
+function fanvictor_user_register($user_id) {
+    if (isset($_POST['team_info']) && !empty($_POST['team_info'])) {
+        global $wpdb;
+        $tb_user_teams = $wpdb->prefix . 'user_teams';
+        $user = $wpdb->get_row("SELECT * FROM $tb_user_teams WHERE user_id=$user_id", ARRAY_A);
+        $team_info = $_POST['team_info'];
+        $info = explode('_', $team_info);
+        $org_id = $info[0];
+        $teamID = $info[1];
+        if (!empty($user)) { // update
+            $id = $user['id'];
+            $wpdb->update(
+                    $tb_user_teams, array('team_id' => $teamID, 'org_id' => $org_id), array('id' => $id), array('%d', '%d'), array('%d')
+            );
+        } else { // insert
+            $wpdb->insert(
+                    $tb_user_teams, array('user_id' => $user_id, 'team_id' => $teamID, 'org_id' => $org_id), array('%d', '%d', '%d')
+            );
+        }
+    }
+}
+
+// for user profile
+if ($fanvictor_allow_change_background) {
+    add_action('show_user_profile', 'fanvictor_add_custom_profile_fields');
+    add_action('profile_update', 'fanvictor_save_custom_profile_fields');
+}
+
+function fanvictor_add_custom_profile_fields($user) {
+    fanvictor_require_class();
+    global $wpdb;
+    $tb_user_teams = $wpdb->prefix . 'user_teams';
+    $user_id = $user->data->ID;
+    $team = $wpdb->get_row("SELECT * FROM $tb_user_teams WHERE user_id=$user_id", ARRAY_A);
+
+    $team_id = 0;
+    $id = 0;
+    if (!empty($team)) {
+        $team_id = $team['team_id'];
+    }
+    list($aSports, $aSportsName) = fanvictorShowTeamsField();
+    if (empty($aSports)) {
+        return;
+    }
+    ?>
+
+    <table class="form-table">
+        <tr>
+            <th><label for="teams-info"><?php echo __('Teams', 'fantasy-sports') ?></label></th>
+            <td>
+                <select id="teams-info" name="teams_info">
+                    <?php foreach ($aSports as $sport_id => $aSport): ?>
+                        <optgroup label="<?php echo $aSportsName[$sport_id] ?>">
+                            <?php foreach ($aSport as $sport): ?>
+                                <option <?php echo ($sport['teamID'] == $team_id) ? 'selected' : '' ?> value="<?php echo $sport_id . '_' . $sport['teamID'] ?>"><?php echo $sport['name']; ?></option>
+                            <?php endforeach; ?>
+                        </optgroup>
+                    <?php endforeach; ?>
+                </select>
+            </td>
+        </tr>
+    </table>
+    <?php
+}
+
+function fanvictor_save_custom_profile_fields($user_id) {
+    if (isset($_POST['teams_info']) && !empty($_POST['teams_info'])) {
+        global $wpdb;
+        $team_info = $_POST['teams_info'];
+        $info = explode('_', $team_info);
+        $tb_user_teams = $wpdb->prefix . 'user_teams';
+        $teams = $wpdb->get_row("SELECT * FROM $tb_user_teams WHERE user_id=$user_id", ARRAY_A);
+        $teamID = $info[1];
+        $org_id = $info[0];
+        if (!empty($teams)) { // update
+            $id = $teams['id'];
+            $wpdb->update(
+                    $tb_user_teams, array('team_id' => $teamID, 'org_id' => $org_id), array('id' => $id), array('%d', '%d'), array('%d')
+            );
+        } else {// insert
+            $wpdb->insert(
+                    $tb_user_teams, array('user_id' => $user_id, 'team_id' => $teamID, 'org_id' => $org_id), array('%d', '%d', '%d')
+            );
+        }
+    }
+}
+
+// change background image
+function fanvictorCheckAllowChangebackground() {
+    fanvictor_require_class();
+    $fv = new Fanvictor();
+    $is_allow = $fv->checkAllowChangeBackground();
+    return $is_allow['is_allow'];
+}
+
+add_filter('body_class', 'fv_hardcore_background');
+
+function fv_hardcore_background($classes) {
+    $classes[] = 'fv_background_class';
+    return $classes;
+}
+
+if ($fanvictor_allow_change_background) {
+    add_action('wp_enqueue_scripts', 'fv_change_background_by_user');
+}
+
+function fv_change_background_by_user() {
+    $is_allow = fanvictorCheckAllowChangebackground();
+    if (!$is_allow) {
+        return false;
+    }
+
+    global $wpdb;
+    $tbl_user_teams = $wpdb->prefix . 'user_teams';
+    $user_id = get_current_user_id();
+    $team = $wpdb->get_row("SELECT * FROM $tbl_user_teams WHERE user_id=$user_id", ARRAY_A);
+    if (!empty($team)) {
+        $f_img_path = FANVICTOR__PLUGIN_DIR . 'assets/teams/' . $team['team_id'];
+        $file_info = glob($f_img_path . '.*');
+        if (!empty($file_info) && file_exists($file_info[0])) {
+            $abs_path_img = $file_info[0];
+            $aPath = explode('/', $abs_path_img);
+            $file_name = $aPath[count($aPath) - 1];
+            $url_background = FANVICTOR__PLUGIN_URL . "assets/teams/$file_name";
+            echo "<style>body.fv_background_class{background-image:url('" . $url_background . "') !important;}</style>";
+        }
+    }
+}
+
+//add country field to register form and profile form
+/*add_action('register_form', 'FV_RegisterField');
+add_action( 'user_register', 'FV_SaveRegisterField');
+add_action( 'personal_options_update', 'FV_SaveUserProfileField');
+add_action( 'edit_user_profile_update', 'FV_SaveUserProfileField');
+add_action( 'show_user_profile', 'FV_UserProfileField');
+add_action( 'edit_user_profile', 'FV_UserProfileField');*/
+function FV_RegisterField(){
+    wp_enqueue_style('ui.css', FANVICTOR__PLUGIN_URL_CSS.'ui/ui.css');
+    wp_enqueue_script('ui.js', FANVICTOR__PLUGIN_URL_JS.'ui.js');
+    echo '<script>
+            jQuery(window).load(function(){
+                jQuery( "#date_of_birth" ).datepicker({maxDate: "0", dateFormat: "mm/dd/yy", changeMonth: true});
+            })
+          </script>';
+    
+    $fanvictor = new Fanvictor();
+    $citys = $fanvictor->getCountryList();
+    echo '<p>';
+    echo '<label for="city">Country</label>';
+    echo '<select class="input" name="city" style="padding:5px" >';
+    foreach($citys as $k => $city){
+        echo '<option value='. $k .'>' . $city . '</option>';
+    }
+    echo '</select>';
+    echo '</p>';
+	
+	echo '<p>';
+    echo '<label for="date_of_birth">Date of Birth</label>';
+    echo '<input type="text" name="date_of_birth" id="date_of_birth" />';
+    echo '</p>';
+}
+
+function FV_SaveRegisterField($user_id){
+    global $wpdb;
+    $prefix = $wpdb->prefix;
+    $table = $prefix . "user_extended";
+    $city = $_POST['city'];
+	$date_of_birth = date('Y-m-d', strtotime($_POST['date_of_birth']));
+    $sql = "INSERT INTO $table (user_id,city,date_of_birth)VALUES('". $user_id ."','". $city ."','". $date_of_birth ."')";
+    $wpdb->query($sql);
+}
+
+function FV_SaveUserProfileField( $user_id ){
+    if ( !current_user_can( 'edit_user', $user_id ) ) { 
+        return false; 
+    }
+    global $wpdb;
+    $prefix = $wpdb->prefix;
+    $table = $prefix . "user_extended";
+    $city = $_POST['city'];
+	$date_of_birth = date('Y-m-d', strtotime($_POST['date_of_birth']));
+    $sql = "UPDATE $table SET city = ' " . $city . " ', date_of_birth = ' " . $date_of_birth . " ' WHERE user_id = $user_id";
+    $wpdb->query($sql);
+}
+    
+function FV_UserProfileField( $user ) {
+    wp_enqueue_style('ui.css', FANVICTOR__PLUGIN_URL_CSS.'ui/ui.css');
+    wp_enqueue_script('ui.js', FANVICTOR__PLUGIN_URL_JS.'ui.js');
+    echo '<script>
+            jQuery(window).load(function(){
+                jQuery( "#date_of_birth" ).datepicker({maxDate: "0", dateFormat: "mm/dd/yy", changeMonth: true});
+            })
+          </script>';
+    
+    $fanvictor = new Fanvictor();
+    $citys = $fanvictor->getCountryList();
+    global $wpdb;
+    $prefix = $wpdb->prefix;
+    $table = $prefix . "user_extended";
+    $user_id = $user->ID;
+    $sql = "SELECT * FROM $table WHERE user_id = $user_id ";
+    $user_extended = $wpdb->get_row($sql);
+    $cur_city = !empty($user_extended->city) ? $user_extended->city : "";
+	$date_of_birth = !empty($user_extended->date_of_birth) ? date("m/d/Y", strtotime($user_extended->date_of_birth)) : "";
+    echo '<table class="form-table">';
+    echo '<tbody>';
+    echo '<tr class="user-email-wrap">';
+    echo '<th><label for="city">Country</label></th>';
+    echo '<td>';
+    echo '<select name="city" id="city">';
+    foreach($citys as $k => $city){
+        $f = ($k == trim($cur_city))?"selected":"";
+        echo '<option ' . $f . ' value='. $k .'>' . $city . '</option>';
+    }
+    echo '</select>';
+	echo '</td>';
+    echo '</tr>';
+	
+	echo '<tr class="user-email-wrap">';
+    echo '<th><label for="date_of_birth">Date of Birth</label></th>';
+    echo '<td>';
+    echo '<input type="text" name="date_of_birth" id="date_of_birth" value="'.$date_of_birth.'" />';
+	echo '</td>';
+    echo '</tr>';
+	
+    echo '</tbody>';
+    echo '</table>';
+
+}
+
+//update user info to server
+add_action('wp_login', 'FV_UpdateUserInfo', 10, 2 );
+add_action('profile_update', 'FV_UpdateUserInfo', 10, 2 );
+function FV_UpdateUserInfo($user_login, $user)
+{
+    try{
+        $fanvictor = new Fanvictor();
+        $fanvictor->postUserInfo($user->ID);
+    } catch (Exception $ex) {
+
+    }
+}
+?>
