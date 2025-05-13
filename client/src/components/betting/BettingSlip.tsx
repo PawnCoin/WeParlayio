@@ -141,6 +141,71 @@ const BettingSlip: React.FC = () => {
     setWagerAmount(amount.toFixed(2));
   };
   
+  // Connect a wallet
+  const connectWallet = async (walletId: string) => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please login to connect a wallet",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      // Simulate wallet connection
+      setCryptoWallets(prev => 
+        prev.map(wallet => 
+          wallet.id === walletId 
+            ? { ...wallet, connected: true, address: `0x${Math.random().toString(16).slice(2, 10)}...${Math.random().toString(16).slice(2, 10)}` } 
+            : wallet
+        )
+      );
+      
+      toast({
+        title: "Wallet Connected",
+        description: `Successfully connected to ${walletId.charAt(0).toUpperCase() + walletId.slice(1)}`,
+      });
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
+      toast({
+        title: "Connection Failed",
+        description: "Failed to connect to the wallet. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Disconnect a wallet
+  const disconnectWallet = (walletId: string) => {
+    setCryptoWallets(prev => 
+      prev.map(wallet => 
+        wallet.id === walletId 
+          ? { ...wallet, connected: false, address: undefined } 
+          : wallet
+      )
+    );
+    
+    toast({
+      title: "Wallet Disconnected",
+      description: `Successfully disconnected from ${walletId.charAt(0).toUpperCase() + walletId.slice(1)}`,
+    });
+  };
+
+  // Get currency symbol
+  const getCurrencySymbol = (currency: string) => {
+    switch(currency) {
+      case 'USD': return '$';
+      case 'BTC': return '₿';
+      case 'ETH': return 'Ξ';
+      case 'SOL': return 'SOL';
+      default: return '$';
+    }
+  };
+
+  // Check if any wallet is connected for crypto currencies
+  const isCryptoWalletConnected = selectedCurrency !== 'USD' && !cryptoWallets.some(wallet => wallet.connected);
+
   const handlePlaceBet = async () => {
     if (!isAuthenticated) {
       toast({
@@ -170,7 +235,18 @@ const BettingSlip: React.FC = () => {
       return;
     }
     
-    if (user && amount > user.balance) {
+    // Check if crypto wallet is connected for crypto bets
+    if (selectedCurrency !== 'USD' && isCryptoWalletConnected) {
+      toast({
+        title: "Wallet Required",
+        description: `Please connect a wallet to place a ${selectedCurrency} bet`,
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // For USD bets, check balance
+    if (selectedCurrency === 'USD' && user && amount > user.balance) {
       toast({
         title: "Insufficient Funds",
         description: "You don't have enough balance to place this bet",
@@ -181,10 +257,10 @@ const BettingSlip: React.FC = () => {
     
     try {
       // In a real app, we would submit each bet to the API
-      // Here we'll just simulate success
+      // based on the selected currency
       toast({
         title: "Bet Placed Successfully",
-        description: "Your bet has been placed",
+        description: `Your ${selectedCurrency} bet has been placed`,
       });
       
       // Clear betting slip
@@ -211,16 +287,78 @@ const BettingSlip: React.FC = () => {
             className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary mr-2"
             onClick={() => setBetItems([])}
           >
-            <i className="fas fa-trash-alt"></i>
+            <Trash2 className="h-4 w-4" />
           </Button>
-          <Button 
-            variant="ghost" 
-            size="icon"
-            className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary"
-          >
-            <i className="fas fa-cog"></i>
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary"
+              >
+                <Settings className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>Betting Preferences</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => {}}>
+                <Clock className="mr-2 h-4 w-4" />
+                <span>Bet History</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {}}>
+                <Plus className="mr-2 h-4 w-4" />
+                <span>Create Parlay</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="text-xs text-muted-foreground">Wallets</DropdownMenuLabel>
+              {cryptoWallets.map(wallet => (
+                <DropdownMenuItem 
+                  key={wallet.id}
+                  onClick={() => wallet.connected ? disconnectWallet(wallet.id) : connectWallet(wallet.id)}
+                >
+                  {wallet.icon}
+                  <div className="flex-1">
+                    {wallet.name}
+                    {wallet.connected && (
+                      <div className="text-xs text-muted-foreground truncate max-w-[130px]">
+                        {wallet.address}
+                      </div>
+                    )}
+                  </div>
+                  <div className="ml-2">
+                    {wallet.connected ? 
+                      <div className="h-2 w-2 rounded-full bg-secondary" /> : 
+                      <div className="h-2 w-2 rounded-full bg-gray-300" />
+                    }
+                  </div>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
+      </div>
+      
+      {/* Currency selector */}
+      <div className="mb-4">
+        <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select currency" />
+          </SelectTrigger>
+          <SelectContent>
+            {currencyOptions.map(option => (
+              <SelectItem key={option.value} value={option.value}>
+                <div className="flex items-center">
+                  {option.icon}
+                  <span className="ml-2">{option.label}</span>
+                  {option.value !== 'USD' && !cryptoWallets.some(w => w.connected) && (
+                    <span className="ml-auto text-xs text-amber-500">(Connect wallet)</span>
+                  )}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       
       {/* Tab Navigation */}
@@ -274,7 +412,7 @@ const BettingSlip: React.FC = () => {
                 <label className="block text-sm font-medium mb-2">Wager Amount</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <span className="text-gray-500 dark:text-gray-400">$</span>
+                    <span className="text-gray-500 dark:text-gray-400">{getCurrencySymbol(selectedCurrency)}</span>
                   </div>
                   <Input
                     type="text"
@@ -286,12 +424,31 @@ const BettingSlip: React.FC = () => {
                     <Button 
                       variant="ghost"
                       className="h-full border-l border-gray-200 dark:border-gray-700 px-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 rounded-none rounded-r-md"
-                      onClick={() => user && setWagerAmount(user.balance.toFixed(2))}
+                      onClick={() => user && selectedCurrency === 'USD' && setWagerAmount(user.balance.toFixed(2))}
+                      disabled={selectedCurrency !== 'USD'}
                     >
                       Max
                     </Button>
                   </div>
                 </div>
+                
+                {/* Crypto wallet warning */}
+                {selectedCurrency !== 'USD' && !cryptoWallets.some(w => w.connected) && (
+                  <div className="mt-2 text-xs text-amber-500 flex items-center">
+                    <Wallet className="h-3 w-3 mr-1" />
+                    <span>Connect a wallet in Settings to place {selectedCurrency} bets</span>
+                  </div>
+                )}
+                
+                {/* Connected wallet info */}
+                {selectedCurrency !== 'USD' && cryptoWallets.some(w => w.connected) && (
+                  <div className="mt-2 text-xs text-green-500 flex items-center">
+                    <Wallet className="h-3 w-3 mr-1" />
+                    <span>
+                      Using {cryptoWallets.find(w => w.connected)?.name} wallet
+                    </span>
+                  </div>
+                )}
               </div>
               
               {/* Quick Amounts */}
@@ -301,28 +458,28 @@ const BettingSlip: React.FC = () => {
                   className="flex-1 py-1 text-sm"
                   onClick={() => handleQuickAmount(10)}
                 >
-                  $10
+                  {getCurrencySymbol(selectedCurrency)}10
                 </Button>
                 <Button 
                   variant="outline" 
                   className="flex-1 py-1 text-sm"
                   onClick={() => handleQuickAmount(25)}
                 >
-                  $25
+                  {getCurrencySymbol(selectedCurrency)}25
                 </Button>
                 <Button 
                   variant="outline" 
                   className="flex-1 py-1 text-sm"
                   onClick={() => handleQuickAmount(50)}
                 >
-                  $50
+                  {getCurrencySymbol(selectedCurrency)}50
                 </Button>
                 <Button 
                   variant="outline" 
                   className="flex-1 py-1 text-sm"
                   onClick={() => handleQuickAmount(100)}
                 >
-                  $100
+                  {getCurrencySymbol(selectedCurrency)}100
                 </Button>
               </div>
               
@@ -334,21 +491,49 @@ const BettingSlip: React.FC = () => {
                 </div>
                 <div className="flex justify-between mb-2">
                   <span className="text-sm text-gray-600 dark:text-gray-300">Potential Payout</span>
-                  <span className="font-medium">${potentialPayout.toFixed(2)}</span>
+                  <span className="font-medium">{getCurrencySymbol(selectedCurrency)}{potentialPayout.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="font-medium">Total Profit</span>
-                  <span className="font-medium text-secondary">${profit.toFixed(2)}</span>
+                  <span className="font-medium text-secondary">{getCurrencySymbol(selectedCurrency)}{profit.toFixed(2)}</span>
                 </div>
               </div>
               
               {/* Place Bet Button */}
               <Button 
-                className="w-full bg-primary text-white py-3 rounded-md font-medium hover:bg-primary/90"
+                className={`w-full py-3 rounded-md font-medium flex items-center justify-center ${
+                  selectedCurrency === 'USD' 
+                    ? 'bg-primary text-white hover:bg-primary/90' 
+                    : selectedCurrency === 'BTC' 
+                    ? 'bg-[#F7931A] text-white hover:bg-[#F7931A]/90' 
+                    : selectedCurrency === 'ETH' 
+                    ? 'bg-[#627EEA] text-white hover:bg-[#627EEA]/90'
+                    : selectedCurrency === 'SOL'
+                    ? 'bg-[#00FFA3] text-black hover:bg-[#00FFA3]/90'
+                    : 'bg-primary text-white hover:bg-primary/90'
+                }`}
                 onClick={handlePlaceBet}
+                disabled={selectedCurrency !== 'USD' && isCryptoWalletConnected}
               >
-                Place Bet
+                {selectedCurrency !== 'USD' && (
+                  <Bitcoin className="h-4 w-4 mr-2" />
+                )}
+                Place {selectedCurrency} Bet
               </Button>
+              
+              {/* Wallet Connection Prompt */}
+              {selectedCurrency !== 'USD' && isCryptoWalletConnected && (
+                <div className="mt-2 p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded text-xs text-amber-700 dark:text-amber-400">
+                  <div className="flex items-center">
+                    <Wallet className="h-3 w-3 mr-2 flex-shrink-0" />
+                    <span>
+                      You need to connect a cryptocurrency wallet to place bets with {selectedCurrency}. 
+                      Click the settings icon in the top right and select a wallet to connect.
+                    </span>
+                  </div>
+                </div>
+              )}
+              
             </>
           )}
         </TabsContent>
