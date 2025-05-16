@@ -5,6 +5,7 @@ import BettingSlip from "../betting/BettingSlip";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import CurrencyModeToggle from "@/components/shared/CurrencyModeToggle";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -12,7 +13,7 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Menu } from "lucide-react";
+import { ChevronDown, Menu, Wallet, Coins } from "lucide-react";
 import Logo from "@/components/WeParlay/Logo";
 
 interface MainLayoutProps {
@@ -60,6 +61,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               ))}
             </div>
             
+            {/* Currency Mode Toggle */}
+            <div className="hidden md:block">
+              <CurrencyModeToggle variant="compact" className="bg-black/20 p-2 rounded-md" />
+            </div>
+
             {/* User menu */}
             <div className="flex items-center space-x-4">
               {isAuthenticated ? (
@@ -72,16 +78,22 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
+                      <DropdownMenuItem className="flex items-center">
+                        <Wallet className="mr-2 h-4 w-4" />
                         Deposit Funds
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
+                      <DropdownMenuItem className="flex items-center">
+                        <Coins className="mr-2 h-4 w-4" />
                         Withdraw Funds
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem>
                         Transaction History
                       </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <div className="px-2 py-2">
+                        <CurrencyModeToggle variant="default" />
+                      </div>
                     </DropdownMenuContent>
                   </DropdownMenu>
                   

@@ -15,6 +15,7 @@ import SignUp from "@/pages/SignUp";
 import VideoGaming from "@/pages/VideoGaming";
 import MainLayout from "@/components/layout/MainLayout";
 import OnboardingProvider from "@/components/onboarding/OnboardingProvider";
+import { CurrencyModeProvider } from "./contexts/CurrencyModeContext";
 
 function Router() {
   return (
@@ -38,10 +39,12 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <OnboardingProvider>
-          <Toaster />
-          <MainLayout>
-            <Router />
-          </MainLayout>
+          <CurrencyModeProvider>
+            <Toaster />
+            <MainLayout>
+              <Router />
+            </MainLayout>
+          </CurrencyModeProvider>
         </OnboardingProvider>
       </TooltipProvider>
     </QueryClientProvider>
