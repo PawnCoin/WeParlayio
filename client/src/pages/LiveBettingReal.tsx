@@ -922,7 +922,7 @@ const LiveBettingReal: React.FC = () => {
           <Card className="bg-card text-card-foreground">
             <CardHeader className="py-3 px-4 bg-muted flex flex-row items-center justify-between">
               <CardTitle className="text-base font-bold">
-                <div className="flex items-center text-foreground">
+                <div className="flex items-center text-black dark:text-white">
                   <TrendingUp className="h-4 w-4 mr-2 text-primary" />
                   Bet Slip
                 </div>
@@ -972,21 +972,21 @@ const LiveBettingReal: React.FC = () => {
                         className="border border-muted rounded-md p-3 mb-2 text-sm"
                       >
                         <div className="flex justify-between mb-1">
-                          <div className="font-medium text-foreground">{bet.pick}</div>
+                          <div className="font-medium text-black dark:text-white">{bet.pick}</div>
                           <Button 
                             variant="ghost" 
                             size="sm" 
                             onClick={() => removeFromBetSlip(bet.id)}
-                            className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground"
+                            className="h-5 w-5 p-0 text-muted-foreground hover:text-black"
                           >
                             <Trash2 className="h-3 w-3" />
                           </Button>
                         </div>
-                        <div className="text-xs text-muted-foreground mb-1">
+                        <div className="text-xs text-black dark:text-gray-300 mb-1">
                           {bet.homeTeam} vs {bet.awayTeam}
                         </div>
                         <div className="flex justify-between items-center">
-                          <div className="text-xs text-foreground">
+                          <div className="text-xs text-black dark:text-white">
                             {bet.betType === 'moneyline' ? (
                               <span>Moneyline</span>
                             ) : bet.betType === 'spread' ? (
@@ -1007,7 +1007,7 @@ const LiveBettingReal: React.FC = () => {
               
               <div className="space-y-3">
                 <div>
-                  <label htmlFor="betAmount" className="text-xs font-medium mb-1 block text-foreground">
+                  <label htmlFor="betAmount" className="text-xs font-medium mb-1 block text-black dark:text-white">
                     Bet Amount
                   </label>
                   <div className="flex gap-2 mb-2">

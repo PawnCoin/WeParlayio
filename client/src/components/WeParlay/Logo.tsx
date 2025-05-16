@@ -38,8 +38,8 @@ const Logo: React.FC<LogoProps> = ({
           <div className={`flex flex-col ${textSizeClasses[size]}`}>
             <div className="flex items-center">
               <span className="text-blue-600 font-bold">We</span>
-              <span className="dark:text-white text-black font-bold">parlay</span>
-              <span className="dark:text-white text-black font-bold">.io</span>
+              <span className="text-white font-bold">parlay</span>
+              <span className="text-white font-bold">.io</span>
             </div>
             <span className="text-orange-500 text-sm font-bold">SPORTS BETTING</span>
           </div>
