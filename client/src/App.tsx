@@ -11,6 +11,7 @@ import Tournaments from "@/pages/Tournaments";
 import Results from "@/pages/Results";
 import Social from "@/pages/Social";
 import Settings from "@/pages/Settings";
+import SignUp from "@/pages/SignUp";
 import MainLayout from "@/components/layout/MainLayout";
 
 function Router() {
@@ -23,6 +24,7 @@ function Router() {
       <Route path="/results" component={Results} />
       <Route path="/social" component={Social} />
       <Route path="/settings" component={Settings} />
+      <Route path="/signup" component={SignUp} />
       <Route component={NotFound} />
     </Switch>
   );

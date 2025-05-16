@@ -15,6 +15,9 @@ import { ChevronUp, ChevronDown, BarChart2, Clock, RefreshCcw, AlertTriangle, Tr
 // Import team logo and player image utilities
 import { getTeamLogo, getPlayerImage } from "@/lib/teamLogos";
 
+// Import crypto wallet connect component
+import CryptoWalletConnect from "@/components/auth/CryptoWalletConnect";
+
 // Import the sportsDataUtils for dynamic logos and player images
 import { 
   formatOdds, 
@@ -997,16 +1000,12 @@ const LiveBettingReal: React.FC = () => {
                 </div>
                 
                 <div>
-                  <Button 
-                    variant="outline" 
-                    className="w-full mb-3 text-sm bg-background text-foreground flex items-center justify-center"
-                    onClick={connectWallet}
-                  >
-                    <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M13.6 4h-8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm4.4 2v12c0 1.1-.9 2-2 2s-2-.9-2-2V6c0-1.1.9-2 2-2s2 .9 2 2z" fill="currentColor"/>
-                    </svg>
-                    Connect Crypto Wallet
-                  </Button>
+                  <CryptoWalletConnect onConnect={(address, type) => {
+                    toast({
+                      title: "Wallet Connected",
+                      description: `You can now bet with crypto using your ${type} wallet.`,
+                    });
+                  }} />
                 </div>
                 
                 {betSlip.length > 0 && (
