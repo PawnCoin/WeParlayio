@@ -1452,6 +1452,18 @@ const LiveBettingEnhanced: React.FC = () => {
         </div>
       </div>
     </div>
+    
+    {/* Watch Live Dialog */}
+    {selectedEvent && (
+      <WatchLive
+        eventId={selectedEvent.id}
+        sportKey={selectedEvent.sportKey}
+        homeTeam={selectedEvent.homeTeam}
+        awayTeam={selectedEvent.awayTeam}
+        isOpen={watchLiveDialog}
+        onClose={() => setWatchLiveDialog(false)}
+      />
+    )}
   );
 };
 
