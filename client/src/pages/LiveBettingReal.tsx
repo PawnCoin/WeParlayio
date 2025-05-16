@@ -332,6 +332,11 @@ const LiveBettingReal: React.FC = () => {
                   <SelectItem value="baseball_mlb">MLB</SelectItem>
                   <SelectItem value="icehockey_nhl">NHL</SelectItem>
                   <SelectItem value="soccer_epl">Premier League</SelectItem>
+                  <SelectItem value="boxing_main">Boxing</SelectItem>
+                  <SelectItem value="mma_ufc">UFC</SelectItem>
+                  <SelectItem value="motorsport_nascar">NASCAR</SelectItem>
+                  <SelectItem value="tennis_atp">Tennis (ATP)</SelectItem>
+                  <SelectItem value="tennis_wta">Tennis (WTA)</SelectItem>
                 </>
               )}
             </SelectContent>
