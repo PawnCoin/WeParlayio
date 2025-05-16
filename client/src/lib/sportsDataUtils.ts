@@ -115,6 +115,43 @@ export const formatOdds = (odds: number): string => {
 };
 
 /**
+ * Convert American odds to decimal format
+ */
+export const americanToDecimal = (americanOdds: number): number => {
+  if (americanOdds > 0) {
+    return americanOdds / 100 + 1;
+  } else {
+    return 100 / Math.abs(americanOdds) + 1;
+  }
+};
+
+/**
+ * Convert American odds to fractional format
+ * Returns a string representation of the fractional odds
+ */
+export const americanToFractional = (americanOdds: number): string => {
+  if (americanOdds > 0) {
+    const numerator = americanOdds;
+    const denominator = 100;
+    
+    // Simplify fraction
+    const gcd = (a: number, b: number): number => b ? gcd(b, a % b) : a;
+    const divisor = gcd(numerator, denominator);
+    
+    return `${numerator/divisor}/${denominator/divisor}`;
+  } else {
+    const numerator = 100;
+    const denominator = Math.abs(americanOdds);
+    
+    // Simplify fraction
+    const gcd = (a: number, b: number): number => b ? gcd(b, a % b) : a;
+    const divisor = gcd(numerator, denominator);
+    
+    return `${numerator/divisor}/${denominator/divisor}`;
+  }
+};
+
+/**
  * Calculate payout for a bet based on odds and stake amount
  */
 export const calculatePayout = (odds: number, stake: number): number => {

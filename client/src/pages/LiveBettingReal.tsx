@@ -24,7 +24,9 @@ import {
   calculatePayout,
   formatGameTime,
   formatGameDate,
-  getLeagueInfo
+  getLeagueInfo,
+  americanToDecimal,
+  americanToFractional
 } from "@/lib/sportsDataUtils";
 
 // Bet type for Bet Slip
@@ -48,6 +50,7 @@ const LiveBettingReal: React.FC = () => {
   const [betType, setBetType] = useState<'single' | 'parlay'>('single');
   const [refreshInterval, setRefreshInterval] = useState<number>(30000); // 30 seconds
   const [selectedCurrency, setSelectedCurrency] = useState<string>("USD");
+  const [oddsFormat, setOddsFormat] = useState<'american' | 'decimal' | 'fractional'>('american');
   
   // Fetch available sports
   const { data: sports, isLoading: isLoadingSports } = useQuery({
@@ -267,6 +270,19 @@ const LiveBettingReal: React.FC = () => {
     return date.toLocaleTimeString();
   };
   
+  // Helper function to format odds based on selected format
+  const displayOdds = (americanOdds: number): string => {
+    switch (oddsFormat) {
+      case 'decimal':
+        return americanToDecimal(americanOdds).toFixed(2);
+      case 'fractional':
+        return americanToFractional(americanOdds);
+      case 'american':
+      default:
+        return formatOdds(americanOdds);
+    }
+  };
+  
   // Get the league's display name from the selected sport
   const leagueInfo = getLeagueInfo(selectedSport);
   
@@ -275,6 +291,19 @@ const LiveBettingReal: React.FC = () => {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold text-foreground">Live Betting</h1>
         <div className="flex gap-2">
+          <div className="flex items-center mr-2">
+            <span className="text-sm mr-2 text-foreground font-medium">Odds Format:</span>
+            <Select value={oddsFormat} onValueChange={(value: 'american' | 'decimal' | 'fractional') => setOddsFormat(value)}>
+              <SelectTrigger className="w-[110px] h-9 text-sm bg-background text-foreground">
+                <SelectValue placeholder="Format" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="american">American</SelectItem>
+                <SelectItem value="decimal">Decimal</SelectItem>
+                <SelectItem value="fractional">Fractional</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <Select value={selectedSport} onValueChange={setSelectedSport}>
             <SelectTrigger className="w-[180px] bg-background text-foreground">
               <SelectValue placeholder="Select Sport" />
