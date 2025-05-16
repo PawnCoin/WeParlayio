@@ -23,6 +23,8 @@ import OddsDisplay from "@/components/betting/OddsDisplay";
 import BetPreviewTooltip, { TeamStats } from "@/components/betting/BetPreviewTooltip";
 import BetOutcomeButton from "@/components/betting/BetOutcomeButton";
 import MoneylineButton from "@/components/betting/MoneylineButton";
+import BetButton from "@/components/betting/BetButton";
+import EnhancedButton from "@/components/betting/EnhancedButton";
 
 // Import the sportsDataUtils for dynamic logos and player images
 import { 
