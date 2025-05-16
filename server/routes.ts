@@ -3,6 +3,9 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { OddsApiService } from "./services/oddsApiService";
 
+// Initialize The Odds API service
+const oddsApiService = new OddsApiService();
+
 export async function registerRoutes(app: Express): Promise<Server> {
   const oddsApiService = new OddsApiService();
 
