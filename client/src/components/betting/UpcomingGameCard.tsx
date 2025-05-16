@@ -94,9 +94,14 @@ const UpcomingGameCard: React.FC<UpcomingGameCardProps> = ({ game }) => {
             className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 py-2 px-3 rounded-md text-xs flex justify-between items-center"
             onClick={() => handleAddToBetSlip(`${game.homeTeam.name} ${game.odds.homeSpread.line} (Spread)`, game.odds.homeSpread.odds)}
           >
-            <span>{game.homeTeam.name.split(' ').pop()} {game.odds.homeSpread.line}</span>
+            <span>
+              {game.homeTeam.name ? game.homeTeam.name.split(' ').pop() : 'Home'} 
+              {game.odds?.homeSpread?.line !== undefined ? game.odds.homeSpread.line : ''}
+            </span>
             <span className="font-medium">
-              {game.odds.homeSpread.odds > 0 ? `+${game.odds.homeSpread.odds}` : game.odds.homeSpread.odds}
+              {game.odds?.homeSpread?.odds !== undefined ? 
+                (game.odds.homeSpread.odds > 0 ? `+${game.odds.homeSpread.odds}` : game.odds.homeSpread.odds) 
+                : 'N/A'}
             </span>
           </Button>
           <Button 
@@ -104,9 +109,14 @@ const UpcomingGameCard: React.FC<UpcomingGameCardProps> = ({ game }) => {
             className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 py-2 px-3 rounded-md text-xs flex justify-between items-center"
             onClick={() => handleAddToBetSlip(`${game.awayTeam.name} ${game.odds.awaySpread.line} (Spread)`, game.odds.awaySpread.odds)}
           >
-            <span>{game.awayTeam.name.split(' ').pop()} {game.odds.awaySpread.line}</span>
+            <span>
+              {game.awayTeam.name ? game.awayTeam.name.split(' ').pop() : 'Away'} 
+              {game.odds?.awaySpread?.line !== undefined ? game.odds.awaySpread.line : ''}
+            </span>
             <span className="font-medium">
-              {game.odds.awaySpread.odds > 0 ? `+${game.odds.awaySpread.odds}` : game.odds.awaySpread.odds}
+              {game.odds?.awaySpread?.odds !== undefined ? 
+                (game.odds.awaySpread.odds > 0 ? `+${game.odds.awaySpread.odds}` : game.odds.awaySpread.odds) 
+                : 'N/A'}
             </span>
           </Button>
           <Button 
