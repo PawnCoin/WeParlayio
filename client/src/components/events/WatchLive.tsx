@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getTeamLogo } from "@/lib/teamLogos";
+import { getTeamLogoUrl } from "@/lib/sportsDataUtils";
 import { apiRequest } from "@/lib/queryClient";
 
 type LiveStreamProps = {
@@ -382,17 +382,23 @@ export const WatchLive: React.FC<LiveStreamProps> = ({
             <div className="flex items-center justify-between mt-2">
               <div className="flex items-center space-x-2">
                 <img 
-                  src={getTeamLogo(homeTeam, league)} 
+                  src={getTeamLogoUrl(homeTeam, league)} 
                   alt={homeTeam} 
-                  className="h-8 w-8 object-contain" 
+                  className="h-8 w-8 object-contain"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXVzZXIiPjxwYXRoIGQ9Ik0xOSAyMXYtMmE0IDQgMCAwIDAtNC00SDlhNCA0IDAgMCAwLTQgNHYyIi8+PGNpcmNsZSBjeD0iMTIiIGN5PSI3IiByPSI0Ii8+PC9zdmc+';
+                  }}
                 />
                 <span className="font-semibold text-lg">{stats?.home.score ?? 0}</span>
                 <span className="px-2">-</span>
                 <span className="font-semibold text-lg">{stats?.away.score ?? 0}</span>
                 <img 
-                  src={getTeamLogo(awayTeam, league)} 
+                  src={getTeamLogoUrl(awayTeam, league)} 
                   alt={awayTeam} 
-                  className="h-8 w-8 object-contain" 
+                  className="h-8 w-8 object-contain"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXVzZXIiPjxwYXRoIGQ9Ik0xOSAyMXYtMmE0IDQgMCAwIDAtNC00SDlhNCA0IDAgMCAwLTQgNHYyIi8+PGNpcmNsZSBjeD0iMTIiIGN5PSI3IiByPSI0Ii8+PC9zdmc+';
+                  }}
                 />
               </div>
               <div className="text-sm">
@@ -445,9 +451,12 @@ export const WatchLive: React.FC<LiveStreamProps> = ({
                   {/* Home Team Column */}
                   <div className="flex flex-col items-center">
                     <img 
-                      src={getTeamLogo(homeTeam, league)} 
+                      src={getTeamLogoUrl(homeTeam, league)} 
                       alt={homeTeam} 
-                      className="h-16 w-16 object-contain mb-2" 
+                      className="h-16 w-16 object-contain mb-2"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXVzZXIiPjxwYXRoIGQ9Ik0xOSAyMXYtMmE0IDQgMCAwIDAtNC00SDlhNCA0IDAgMCAwLTQgNHYyIi8+PGNpcmNsZSBjeD0iMTIiIGN5PSI3IiByPSI0Ii8+PC9zdmc+';
+                      }}
                     />
                     <h4 className="font-semibold text-center">{homeTeam}</h4>
                   </div>
