@@ -6,7 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 
 // Icons
 import { Wallet, ArrowRight } from 'lucide-react';
-import { SiMetamask, SiCoinbase, SiPhantom, SiTrustwalleticon, SiBinance } from "react-icons/si";
+import { SiMetabase, SiCoinbase, SiFantom, SiTrustpilot, SiBinance } from "react-icons/si";
 
 interface WalletConnectProps {
   onConnect?: (address: string, type: string) => void;
@@ -20,10 +20,10 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect }) => {
 
   // List of supported wallets
   const wallets = [
-    { id: 'metamask', name: 'MetaMask', icon: <SiMetamask className="h-5 w-5 text-orange-500" />, color: 'bg-orange-500' },
+    { id: 'metamask', name: 'MetaMask', icon: <SiMetabase className="h-5 w-5 text-orange-500" />, color: 'bg-orange-500' },
     { id: 'coinbase', name: 'Coinbase Wallet', icon: <SiCoinbase className="h-5 w-5 text-blue-500" />, color: 'bg-blue-500' },
-    { id: 'phantom', name: 'Phantom', icon: <SiPhantom className="h-5 w-5 text-purple-500" />, color: 'bg-purple-500' },
-    { id: 'trustwallet', name: 'Trust Wallet', icon: <SiTrustwalleticon className="h-5 w-5 text-blue-400" />, color: 'bg-blue-400' },
+    { id: 'phantom', name: 'Phantom', icon: <SiFantom className="h-5 w-5 text-purple-500" />, color: 'bg-purple-500' },
+    { id: 'trustwallet', name: 'Trust Wallet', icon: <SiTrustpilot className="h-5 w-5 text-blue-400" />, color: 'bg-blue-400' },
     { id: 'binance', name: 'Binance Wallet', icon: <SiBinance className="h-5 w-5 text-yellow-500" />, color: 'bg-yellow-500' },
   ];
   

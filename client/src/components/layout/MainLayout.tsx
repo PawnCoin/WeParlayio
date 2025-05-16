@@ -24,7 +24,7 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [location] = useLocation();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, connectWallet } = useAuth();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   
   const navLinks = [
@@ -76,7 +76,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="default" className="bg-green-700 text-white px-4 py-2 rounded-md hover:bg-green-600 flex items-center">
-                        <span>${user?.balance.toFixed(2)}</span>
+                        <span>${user?.balance?.toFixed(2) || "0.00"}</span>
                         <ChevronDown className="ml-1 h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -107,10 +107,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="flex items-center space-x-2">
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150" />
-                          <AvatarFallback>{user?.username.charAt(0).toUpperCase()}</AvatarFallback>
+                          <AvatarImage src={user?.profileImageUrl || "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150"} />
+                          <AvatarFallback>{user?.firstName?.charAt(0) || user?.email?.charAt(0) || "W"}</AvatarFallback>
                         </Avatar>
-                        <span className="hidden md:block">{user?.username}</span>
+                        <span className="hidden md:block">{user?.firstName || user?.email?.split('@')[0]}</span>
                         <ChevronDown className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -132,9 +132,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   </DropdownMenu>
                 </>
               ) : (
-                <Button variant="default" className="bg-green-700 text-white px-4 py-2 rounded-md hover:bg-green-600">
-                  Log In
-                </Button>
+                <WalletConnect 
+                  onConnect={(address, type) => {
+                    console.log(`Connected wallet: ${address} (${type})`);
+                    // Connect the wallet using our authentication hook
+                    connectWallet(address, type);
+                  }}
+                />
               )}
               
               {/* Mobile menu button */}
