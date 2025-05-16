@@ -12,6 +12,7 @@ import Results from "@/pages/Results";
 import Social from "@/pages/Social";
 import Settings from "@/pages/Settings";
 import SignUp from "@/pages/SignUp";
+import VideoGaming from "@/pages/VideoGaming";
 import MainLayout from "@/components/layout/MainLayout";
 import OnboardingProvider from "@/components/onboarding/OnboardingProvider";
 
@@ -24,6 +25,7 @@ function Router() {
       <Route path="/tournaments" component={Tournaments} />
       <Route path="/results" component={Results} />
       <Route path="/social" component={Social} />
+      <Route path="/video-gaming" component={VideoGaming} />
       <Route path="/settings" component={Settings} />
       <Route path="/signup" component={SignUp} />
       <Route component={NotFound} />
