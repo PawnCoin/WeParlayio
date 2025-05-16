@@ -15,12 +15,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get basic sports from storage
       const sports = await storage.getAllSports();
       
-      // Add our new sports if they don't exist already
-      const sportKeys = sports.map(sport => sport.key);
+      // Keys for our new sports
+      const newSportKeys = ['boxing_main', 'mma_ufc', 'motorsport_nascar', 'tennis_atp'];
       
-      // Check if we need to add boxing
-      if (!sportKeys.includes('boxing')) {
-        await storage.createSport({ 
+      // Filter out existing sports with our target keys to avoid duplicates
+      const existingSportKeys = sports.map(sport => sport.key);
+      const sportsToAdd = [];
+      
+      // Boxing
+      if (!existingSportKeys.includes('boxing_main')) {
+        sportsToAdd.push({ 
           name: "Boxing", 
           key: "boxing_main", 
           isActive: true, 
@@ -28,9 +32,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Check if we need to add MMA/UFC
-      if (!sportKeys.includes('mma')) {
-        await storage.createSport({ 
+      // MMA/UFC
+      if (!existingSportKeys.includes('mma_ufc')) {
+        sportsToAdd.push({ 
           name: "MMA", 
           key: "mma_ufc", 
           isActive: true, 
@@ -38,9 +42,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Check if we need to add NASCAR
-      if (!sportKeys.includes('motorsport')) {
-        await storage.createSport({ 
+      // NASCAR
+      if (!existingSportKeys.includes('motorsport_nascar')) {
+        sportsToAdd.push({ 
           name: "NASCAR", 
           key: "motorsport_nascar", 
           isActive: true, 
@@ -48,9 +52,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Check if we need to add Tennis
-      if (!sportKeys.includes('tennis')) {
-        await storage.createSport({ 
+      // Tennis
+      if (!existingSportKeys.includes('tennis_atp')) {
+        sportsToAdd.push({ 
           name: "Tennis", 
           key: "tennis_atp", 
           isActive: true, 
@@ -58,7 +62,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Get updated list of sports
+      // Add any missing sports
+      for (const sport of sportsToAdd) {
+        await storage.createSport(sport);
+      }
+      
+      // Get updated list of sports without duplicates
       const updatedSports = await storage.getAllSports();
       res.json(updatedSports);
     } catch (error: any) {
