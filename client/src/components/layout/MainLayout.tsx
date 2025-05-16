@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown, Menu, Wallet, Coins } from "lucide-react";
 import Logo from "@/components/WeParlay/Logo";
+import WalletConnect from "@/components/auth/WalletConnect";
 
 interface MainLayoutProps {
   children: React.ReactNode;
