@@ -12,10 +12,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronUp, ChevronDown, BarChart2, Clock, RefreshCcw, AlertTriangle, TrendingUp, Trash2, Info, Dot } from "lucide-react";
 
+// Import team logo and player image utilities
+import { getTeamLogo, getPlayerImage } from "@/lib/teamLogos";
+
 // Import the sportsDataUtils for dynamic logos and player images
 import { 
-  getTeamLogoUrl, 
-  getPlayerImageUrl, 
   formatOdds, 
   calculatePayout,
   formatGameTime,

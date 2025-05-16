@@ -9,6 +9,7 @@ import LiveBettingReal from "@/pages/LiveBettingReal";
 import FantasySports from "@/pages/FantasySports";
 import Tournaments from "@/pages/Tournaments";
 import Results from "@/pages/Results";
+import Settings from "@/pages/Settings";
 import MainLayout from "@/components/layout/MainLayout";
 
 function Router() {
@@ -19,6 +20,7 @@ function Router() {
       <Route path="/fantasy" component={FantasySports} />
       <Route path="/tournaments" component={Tournaments} />
       <Route path="/results" component={Results} />
+      <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>
   );
