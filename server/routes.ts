@@ -7,7 +7,6 @@ import { OddsApiService } from "./services/oddsApiService";
 const oddsApiService = new OddsApiService();
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  const oddsApiService = new OddsApiService();
 
   // ===== Sports Routes =====
   app.get("/api/sports", async (req, res) => {
@@ -57,6 +56,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(events);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
+    }
+  });
+  
+  // ===== The Odds API Routes =====
+  
+  // Get sports from The Odds API
+  app.get("/api/odds-sports", async (req, res) => {
+    try {
+      const sports = await oddsApiService.getSports();
+      res.json(sports);
+    } catch (error: any) {
+      console.error("Error fetching sports from The Odds API:", error);
+      res.status(500).json({ message: error.message || "Failed to fetch sports from The Odds API" });
+    }
+  });
+  
+  // Get live events for a specific sport
+  app.get("/api/sports/:sportKey/live", async (req, res) => {
+    try {
+      const { sportKey } = req.params;
+      
+      try {
+        // Try to get scores for the sport to find live events
+        const scores = await oddsApiService.getScores(sportKey);
+        
+        // Filter for only live events (started but not completed)
+        const now = new Date();
+        const liveEvents = scores.filter((event: any) => {
+          const startTime = new Date(event.commence_time);
+          return startTime <= now && !event.completed;
+        });
+        
+        // For each live event, add odds data if available
+        try {
+          const odds = await oddsApiService.getOdds(sportKey);
+          
+          for (const event of liveEvents) {
+            const eventOdds = odds.find((o: any) => o.id === event.id);
+            if (eventOdds) {
+              event.bookmakers = eventOdds.bookmakers;
+            }
+          }
+        } catch (oddsError) {
+          console.warn("Could not fetch odds for live events:", oddsError);
+        }
+        
+        res.json(liveEvents);
+      } catch (error: any) {
+        console.error(`Error fetching live events for ${sportKey}:`, error);
+        res.status(500).json({ message: error.message || "Failed to fetch live events" });
+      }
+    } catch (error: any) {
+      console.error("Error in live events route:", error);
+      res.status(500).json({ message: error.message || "Internal server error" });
+    }
+  });
+  
+  // Get upcoming events for a specific sport
+  app.get("/api/sports/:sportKey/upcoming", async (req, res) => {
+    try {
+      const { sportKey } = req.params;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      
+      try {
+        // Get odds for upcoming events
+        const odds = await oddsApiService.getOdds(sportKey);
+        
+        // Filter for only upcoming events (not started yet) and sort by start time
+        const now = new Date();
+        const upcomingEvents = odds
+          .filter((event: any) => new Date(event.commence_time) > now)
+          .sort((a: any, b: any) => 
+            new Date(a.commence_time).getTime() - new Date(b.commence_time).getTime()
+          )
+          .slice(0, limit);
+        
+        res.json(upcomingEvents);
+      } catch (error: any) {
+        console.error(`Error fetching upcoming events for ${sportKey}:`, error);
+        res.status(500).json({ message: error.message || "Failed to fetch upcoming events" });
+      }
+    } catch (error: any) {
+      console.error("Error in upcoming events route:", error);
+      res.status(500).json({ message: error.message || "Internal server error" });
     }
   });
 
