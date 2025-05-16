@@ -1010,79 +1010,35 @@ const LiveBettingReal: React.FC = () => {
                 }}
               />
               
-              {/* Legacy Betting Interface */}
+              {/* Enhanced Betting Interface */}
               {betSlip.length > 0 && (
                 <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
                   <div className="text-xs text-gray-500 mb-3 flex items-center">
                     <Info className="h-3 w-3 mr-1" />
-                    You can also bet with traditional currency below
+                    Enhanced betting with all currencies
                   </div>
                   
-                  <div className="flex gap-2 mb-4">
-                    <Button 
-                      variant={betType === 'single' ? "default" : "outline"}
-                      className={`flex-1 text-xs ${betType === 'single' ? 'bg-primary text-white' : 'bg-background text-foreground'}`}
-                      onClick={() => setBetType('single')}
-                    >
-                      Singles
-                    </Button>
-                    <Button 
-                      variant={betType === 'parlay' ? "default" : "outline"}
-                      className={`flex-1 text-xs ${betType === 'parlay' ? 'bg-primary text-white' : 'bg-background text-foreground'}`}
-                      onClick={() => setBetType('parlay')}
-                      disabled={betSlip.length < 2}
-                    >
-                      Parlay
-                    </Button>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div>
-                      <label htmlFor="betAmount" className="text-xs font-medium mb-1 block text-black dark:text-white">
-                        Bet Amount
-                      </label>
-                      <div className="flex gap-2 mb-2">
-                        <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
-                          <SelectTrigger className="w-[100px] text-sm bg-background text-black dark:text-white">
-                            <SelectValue placeholder="Currency" />
-                          </SelectTrigger>
-                          <SelectContent className="text-black dark:text-white">
-                            <SelectItem value="USD">USD ($)</SelectItem>
-                            <SelectItem value="BTC">Bitcoin (₿)</SelectItem>
-                            <SelectItem value="ETH">Ethereum (Ξ)</SelectItem>
-                            <SelectItem value="SOL">Solana (◎)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <Input
-                          id="betAmount"
-                          type="number"
-                          min="1"
-                          step="1"
-                          value={betAmount}
-                          onChange={(e) => setBetAmount(e.target.value)}
-                          className="text-sm flex-1 bg-background text-black dark:text-white"
-                        />
-                      </div>
-                    </div>
-                    
-                    {betSlip.length > 0 && (
-                      <div className="flex justify-between py-2 border-t border-muted">
-                        <span className="text-sm font-medium text-black dark:text-white">Potential Payout:</span>
-                        <span className="text-green-600 dark:text-green-400 font-bold">
-                          {selectedCurrency === "USD" ? "$" : selectedCurrency === "BTC" ? "₿" : selectedCurrency === "ETH" ? "Ξ" : "◎"}{calculateTotalPayout().toFixed(selectedCurrency === "USD" ? 2 : 6)}
-                        </span>
-                      </div>
-                    )}
-                    
-                    <Button 
-                      className="w-full bg-primary text-white" 
-                      disabled={betSlip.length === 0 || parseFloat(betAmount) <= 0}
-                      onClick={placeBet}
-                    >
-                      <DollarSign className="h-4 w-4 mr-1" />
-                      Place Regular Bet
-                    </Button>
-                  </div>
+                  <ImprovedBetSlip
+                    betSlip={betSlip}
+                    onRemoveBet={removeFromBetSlip}
+                    onClearBetSlip={clearBetSlip}
+                    onPlaceBet={(amount, type, boostEnabled) => {
+                      // Update state for compatibility with existing code
+                      setBetAmount(amount);
+                      setBetType(type as 'single' | 'parlay');
+                      
+                      // Apply odds boost if enabled
+                      if (boostEnabled) {
+                        toast({
+                          title: "WePlay Token Boost Applied",
+                          description: "5% odds boost applied to your bet for using WePlay Token!",
+                        });
+                      }
+                      
+                      // Call existing place bet function
+                      placeBet();
+                    }}
+                  />
                 </div>
               )}
             </CardContent>
