@@ -942,7 +942,7 @@ const LiveBettingReal: React.FC = () => {
             
             <CardContent className="p-4">
               {betSlip.length === 0 ? (
-                <div className="border border-dashed border-muted rounded-md p-4 mb-4 text-center text-muted-foreground text-sm">
+                <div className="border border-dashed border-muted rounded-md p-4 mb-4 text-center text-black dark:text-gray-300 text-sm">
                   Select odds to add to your bet slip
                 </div>
               ) : (
@@ -1012,10 +1012,10 @@ const LiveBettingReal: React.FC = () => {
                   </label>
                   <div className="flex gap-2 mb-2">
                     <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
-                      <SelectTrigger className="w-[100px] text-sm bg-background text-foreground">
+                      <SelectTrigger className="w-[100px] text-sm bg-background text-black dark:text-white">
                         <SelectValue placeholder="Currency" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="text-black dark:text-white">
                         <SelectItem value="USD">USD ($)</SelectItem>
                         <SelectItem value="BTC">Bitcoin (₿)</SelectItem>
                         <SelectItem value="ETH">Ethereum (Ξ)</SelectItem>
@@ -1029,7 +1029,7 @@ const LiveBettingReal: React.FC = () => {
                       step="1"
                       value={betAmount}
                       onChange={(e) => setBetAmount(e.target.value)}
-                      className="text-sm flex-1 bg-background text-foreground"
+                      className="text-sm flex-1 bg-background text-black dark:text-white"
                     />
                   </div>
                 </div>
@@ -1045,7 +1045,7 @@ const LiveBettingReal: React.FC = () => {
                 
                 {betSlip.length > 0 && (
                   <div className="flex justify-between py-2 border-t border-muted">
-                    <span className="text-sm font-medium text-foreground">Potential Payout:</span>
+                    <span className="text-sm font-medium text-black dark:text-white">Potential Payout:</span>
                     <span className="text-green-600 dark:text-green-400 font-bold">
                       {selectedCurrency === "USD" ? "$" : selectedCurrency === "BTC" ? "₿" : selectedCurrency === "ETH" ? "Ξ" : "◎"}{calculateTotalPayout().toFixed(selectedCurrency === "USD" ? 2 : 6)}
                     </span>
