@@ -36,7 +36,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <div className="flex flex-col h-screen">
       {/* Header */}
-      <header className="bg-white dark:bg-black shadow-md px-4 dark:text-white text-black">
+      <header className="bg-black shadow-md px-4 text-white">
         <div className="container mx-auto">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -51,7 +51,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   <div className={`${
                     location === link.href
                       ? "text-blue-600"
-                      : "text-black dark:text-white hover:text-blue-500"
+                      : "text-white hover:text-blue-500"
                   } font-medium cursor-pointer`}>
                     {link.label}
                   </div>
