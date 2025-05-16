@@ -1,5 +1,4 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import TourGuide from './TourGuide';
 
 interface OnboardingContextType {
   showTour: boolean;
@@ -47,7 +46,6 @@ const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children }) => 
   return (
     <OnboardingContext.Provider value={{ showTour, startTour, endTour }}>
       {children}
-      <TourGuide />
     </OnboardingContext.Provider>
   );
 };

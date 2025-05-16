@@ -17,7 +17,7 @@ import VideoGaming from "@/pages/VideoGaming";
 import Trivia from "@/pages/Trivia";
 import BettingExperience from "@/pages/BettingExperience"; // New enhanced betting page
 import MainLayout from "@/components/layout/MainLayout";
-import OnboardingProvider from "@/components/onboarding/OnboardingProvider";
+import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
 import { CurrencyModeProvider } from "./contexts/CurrencyModeContext";
 import { TeamThemeProvider } from "./contexts/TeamThemeContext";
 
@@ -45,16 +45,15 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <OnboardingProvider>
-          <CurrencyModeProvider>
-            <TeamThemeProvider>
-              <Toaster />
-              <MainLayout>
-                <Router />
-              </MainLayout>
-            </TeamThemeProvider>
-          </CurrencyModeProvider>
-        </OnboardingProvider>
+        <CurrencyModeProvider>
+          <TeamThemeProvider>
+            <Toaster />
+            <MainLayout>
+              <Router />
+            </MainLayout>
+            <SimpleOnboarding />
+          </TeamThemeProvider>
+        </CurrencyModeProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
