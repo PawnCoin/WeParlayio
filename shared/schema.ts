@@ -1,28 +1,54 @@
-import { pgTable, text, serial, integer, boolean, timestamp, json, doublePrecision } from "drizzle-orm/pg-core";
+import { 
+  pgTable, 
+  text, 
+  serial, 
+  integer, 
+  boolean, 
+  timestamp, 
+  json, 
+  doublePrecision,
+  varchar,
+  jsonb,
+  index
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Session storage table (required for Replit Auth)
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)],
+);
+
 // User model
 export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-  email: text("email"),
+  id: varchar("id").primaryKey().notNull(),
+  email: varchar("email").unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
   balance: doublePrecision("balance").default(1000),
-  firstName: text("first_name"),
-  lastName: text("last_name"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
   yahooIntegrationToken: text("yahoo_integration_token"),
   yahooIntegrationRefreshToken: text("yahoo_integration_refresh_token"),
   yahooIntegrationExpiry: timestamp("yahoo_integration_expiry"),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+  id: true,
   email: true,
   firstName: true,
   lastName: true,
+  profileImageUrl: true,
 });
+
+export type UpsertUser = typeof users.$inferInsert;
 
 // Sports model
 export const sports = pgTable("sports", {
