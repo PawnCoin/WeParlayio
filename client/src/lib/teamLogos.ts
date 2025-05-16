@@ -183,14 +183,17 @@ export function getTeamLogo(teamName: string, league: string = 'NBA'): string {
   }
   
   // If not found, use a generic league logo
-  const fallbackLogos = {
-    'NBA': "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-basketball.png",
-    'NFL': "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-football.png",
-    'MLB': "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-baseball.png",
-    'NHL': "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-hockey.png",
-  };
+  if (league === 'NBA') {
+    return "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-basketball.png";
+  } else if (league === 'NFL') {
+    return "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-football.png";
+  } else if (league === 'MLB') {
+    return "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-baseball.png";
+  } else if (league === 'NHL') {
+    return "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-hockey.png";
+  }
   
-  return fallbackLogos[league] || "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-basketball.png";
+  return "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-basketball.png";
 }
 
 // NBA Player Images by Name - sample for popular players
