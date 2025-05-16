@@ -10,7 +10,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronUp, ChevronDown, BarChart2, Clock, RefreshCcw, AlertTriangle, TrendingUp, Trash2, Info, Dot } from "lucide-react";
+import { ChevronUp, ChevronDown, BarChart2, Clock, RefreshCcw, AlertTriangle, TrendingUp, Trash2, Info, Dot, PlayCircle, Video } from "lucide-react";
+
+// Import WatchLive component
+import WatchLive from "@/components/events/WatchLive";
 
 // Import team logos
 // Import the sportsDataUtils for dynamic logos and player images
@@ -43,6 +46,15 @@ const LiveBettingEnhanced: React.FC = () => {
   const [betAmount, setBetAmount] = useState<string>("10");
   const [betType, setBetType] = useState<'single' | 'parlay'>('single');
   const [refreshInterval, setRefreshInterval] = useState<number>(30000); // 30 seconds
+  
+  // Watch Live feature state
+  const [watchLiveDialog, setWatchLiveDialog] = useState<boolean>(false);
+  const [selectedEvent, setSelectedEvent] = useState<{
+    id: number;
+    sportKey: string;
+    homeTeam: string;
+    awayTeam: string;
+  } | null>(null);
   
   // Fetch available sports
   const { data: sports, isLoading: isLoadingSports } = useQuery({
