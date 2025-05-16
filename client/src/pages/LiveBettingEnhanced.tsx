@@ -548,9 +548,28 @@ const LiveBettingEnhanced: React.FC = () => {
                                   <Badge variant="outline" className="mb-1 text-xs bg-muted text-foreground">
                                     {formatGameTime(event)}
                                   </Badge>
-                                  <span className="text-xs text-muted-foreground">
-                                    {getGameStatus(event)}
-                                  </span>
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-xs text-muted-foreground">
+                                      {getGameStatus(event)}
+                                    </span>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="flex items-center text-xs bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200 h-6 px-2 ml-2"
+                                      onClick={() => {
+                                        setSelectedEvent({
+                                          id: event.id,
+                                          sportKey: selectedSport,
+                                          homeTeam: event.home_team,
+                                          awayTeam: event.away_team
+                                        });
+                                        setWatchLiveDialog(true);
+                                      }}
+                                    >
+                                      <Video className="w-3 h-3 mr-1" />
+                                      Watch
+                                    </Button>
+                                  </div>
                                 </div>
                               </TableCell>
                               <TableCell>
