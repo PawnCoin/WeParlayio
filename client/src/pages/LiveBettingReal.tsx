@@ -20,6 +20,7 @@ import { getTeamLogo, getPlayerImage } from "@/lib/teamLogos";
 import BetSlipCrypto from "@/components/betting/BetSlipCrypto";
 import WalletConnect from "@/components/crypto/WalletConnect";
 import { useOnboardingContext } from "@/components/onboarding/OnboardingProvider";
+import ImprovedBetSlip from "@/components/betting/ImprovedBetSlip";
 
 // Import odds display component
 import OddsDisplay from "@/components/betting/OddsDisplay";
