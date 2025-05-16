@@ -146,13 +146,13 @@ td {
 :root {
   /* WeParlay.io color scheme based on logo */
   --background: 0 0% 100%;
-  --foreground: 215 35% 15%;
-  --muted: 210 20% 96%;
-  --muted-foreground: 215 25% 40%;
+  --foreground: 0 0% 0%; /* Black text in light mode */
+  --muted: 210 20% 96%; 
+  --muted-foreground: 0 0% 40%; /* Darker muted text for better contrast */
   --popover: 0 0% 100%;
-  --popover-foreground: 215 35% 15%;
+  --popover-foreground: 0 0% 0%; /* Black text in popovers */
   --card: 0 0% 100%;
-  --card-foreground: 215 35% 15%;
+  --card-foreground: 0 0% 0%; /* Black text in cards */
   --border: 214 32% 90%;
   --input: 214 32% 90%;
   --primary: 240 70% 40%; /* Blue from WeParlay logo */
