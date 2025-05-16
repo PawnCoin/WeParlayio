@@ -13,6 +13,7 @@ import Social from "@/pages/Social";
 import Settings from "@/pages/Settings";
 import SignUp from "@/pages/SignUp";
 import VideoGaming from "@/pages/VideoGaming";
+import Trivia from "@/pages/Trivia";
 import MainLayout from "@/components/layout/MainLayout";
 import OnboardingProvider from "@/components/onboarding/OnboardingProvider";
 import { CurrencyModeProvider } from "./contexts/CurrencyModeContext";
@@ -28,6 +29,7 @@ function Router() {
       <Route path="/results" component={Results} />
       <Route path="/social" component={Social} />
       <Route path="/video-gaming" component={VideoGaming} />
+      <Route path="/trivia" component={Trivia} />
       <Route path="/settings" component={Settings} />
       <Route path="/signup" component={SignUp} />
       <Route component={NotFound} />
