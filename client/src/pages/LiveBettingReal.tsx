@@ -10,7 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronUp, ChevronDown, BarChart2, Clock, RefreshCcw, AlertTriangle, TrendingUp, Trash2, Info, Dot } from "lucide-react";
+import { ChevronUp, ChevronDown, BarChart2, Clock, RefreshCcw, AlertTriangle, TrendingUp, Trash2, Info, Dot, DollarSign } from "lucide-react";
+import BetResultAnimation from "@/components/betting/BetResultAnimation";
 
 // Import team logo and player image utilities
 import { getTeamLogo, getPlayerImage } from "@/lib/teamLogos";
@@ -217,6 +218,17 @@ const LiveBettingReal: React.FC = () => {
     });
   };
   
+  // State for bet result animation
+  const [showBetResult, setShowBetResult] = useState<boolean>(false);
+  const [betResult, setBetResult] = useState<{
+    isWin: boolean;
+    amount: number;
+    odds: number;
+    betType: string;
+    selection: string;
+    event?: string;
+  } | null>(null);
+
   // Place bet function
   const placeBet = () => {
     if (betSlip.length === 0) {
@@ -242,6 +254,27 @@ const LiveBettingReal: React.FC = () => {
       title: "Bet Placed!",
       description: `Your ${betType} bet has been placed successfully.`,
     });
+    
+    // Randomly determine if the bet was a win (for demo purposes)
+    const isWin = Math.random() > 0.4; // 60% chance of winning for demo
+    
+    // Prepare bet result for animation
+    if (betSlip.length > 0) {
+      const firstBet = betSlip[0];
+      setBetResult({
+        isWin,
+        amount: parseFloat(betAmount),
+        odds: firstBet.odds,
+        betType: betType === 'single' ? 'Single' : 'Parlay',
+        selection: firstBet.pick,
+        event: `${firstBet.homeTeam} vs ${firstBet.awayTeam}`
+      });
+      
+      // Show the bet result animation after a short delay
+      setTimeout(() => {
+        setShowBetResult(true);
+      }, 1000);
+    }
     
     // Clear bet slip after successful bet
     setBetSlip([]);
