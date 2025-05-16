@@ -3,11 +3,14 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { additionalSportsData } from "./services/mockSportsData";
 import { OddsApiService } from "./services/oddsApiService";
+import { yahooRouter } from "./routes/yahooRoutes";
 
 // Initialize The Odds API service
 const oddsApiService = new OddsApiService();
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Register Yahoo Fantasy routes
+  app.use('/api/yahoo', yahooRouter);
 
   // ===== Sports Routes =====
   app.get("/api/sports", async (req, res) => {

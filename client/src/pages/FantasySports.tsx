@@ -44,10 +44,11 @@ const FantasySports: React.FC = () => {
     }
     
     try {
-      await yahooFantasyAPI.authenticate(user.id);
+      // The real Yahoo OAuth flow - this will redirect to Yahoo
+      await yahooFantasyAPI.authenticate();
       toast({
-        title: "Yahoo Fantasy Connected",
-        description: "Your Yahoo Fantasy account has been successfully connected",
+        title: "Connecting to Yahoo Fantasy",
+        description: "You'll be redirected to Yahoo to authorize access",
       });
     } catch (error) {
       console.error("Error connecting to Yahoo Fantasy:", error);
@@ -59,13 +60,14 @@ const FantasySports: React.FC = () => {
     }
   };
   
-  const handleImportTeam = async (teamId: string) => {
+  const handleImportTeam = async (teamId: string, teamName?: string) => {
     try {
       if (!user) {
         throw new Error("User not authenticated");
       }
       
-      await yahooFantasyAPI.importYahooTeam(teamId, user.id);
+      // Use the updated importTeam method to import from Yahoo
+      await yahooFantasyAPI.importTeam(teamId, teamName);
       
       toast({
         title: "Team Imported",
