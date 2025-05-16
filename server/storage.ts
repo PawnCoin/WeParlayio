@@ -127,7 +127,6 @@ export class MemStorage implements IStorage {
       { name: "Baseball", key: "baseball", isActive: true, icon: "baseball-ball" },
       { name: "Hockey", key: "hockey", isActive: true, icon: "hockey-puck" },
       { name: "Soccer", key: "soccer", isActive: true, icon: "futbol" },
-      { name: "MMA", key: "mma", isActive: true, icon: "fist-raised" },
       { name: "Golf", key: "golf", isActive: true, icon: "golf-ball" }
     ];
     
