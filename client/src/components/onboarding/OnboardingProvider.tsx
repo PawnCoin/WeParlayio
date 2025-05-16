@@ -1,101 +1,54 @@
-import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
-import useOnboarding from '@/hooks/useOnboarding';
-import Tutorial from './Tutorial';
-import ProgressIndicator from './ProgressIndicator';
-import MascotTip from './MascotTip';
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import TourGuide from './TourGuide';
 
-// Create context
-const OnboardingContext = createContext<ReturnType<typeof useOnboarding> | undefined>(undefined);
+interface OnboardingContextType {
+  showTour: boolean;
+  startTour: () => void;
+  endTour: () => void;
+}
 
-// Provider component
-export const OnboardingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const onboardingState = useOnboarding();
-  const { 
-    isFirstTimeUser, 
-    hasCompletedTutorial, 
-    completeTutorial, 
-    markAsReturningUser, 
-    addXp,
-    addAchievement,
-    currentLevel 
-  } = onboardingState;
-  
-  const [activeTip, setActiveTip] = useState<{
-    message: string;
-    type: 'tip' | 'achievement' | 'reward';
-    xpReward: number;
-  } | null>(null);
-  
-  // Handle tutorial completion
-  const handleTutorialComplete = () => {
-    completeTutorial();
-    markAsReturningUser();
-    addXp(100); // Reward for completing tutorial
-    addAchievement('Tutorial Completed');
-    
-    // Show a reward message after completing the tutorial
-    setActiveTip({
-      message: "You've completed the tutorial and earned 100 XP!",
-      type: 'reward',
-      xpReward: 0 // Already added XP above
-    });
-  };
-  
-  // Show welcome message after mounting (if not first time user)
+const OnboardingContext = createContext<OnboardingContextType>({
+  showTour: false,
+  startTour: () => {},
+  endTour: () => {},
+});
+
+export const useOnboarding = () => useContext(OnboardingContext);
+
+interface OnboardingProviderProps {
+  children: React.ReactNode;
+}
+
+const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children }) => {
+  const [showTour, setShowTour] = useState(false);
+
+  // Check if it's the first visit
   useEffect(() => {
-    if (!isFirstTimeUser && hasCompletedTutorial) {
+    const hasCompletedOnboarding = localStorage.getItem('weparlay_onboarding_completed');
+    if (!hasCompletedOnboarding) {
+      // Wait a moment before showing the tour
       const timer = setTimeout(() => {
-        setActiveTip({
-          message: `Welcome back to WeParlay! You're currently at Level ${currentLevel}.`,
-          type: 'tip',
-          xpReward: 5
-        });
-      }, 3000);
-      
+        setShowTour(true);
+      }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [isFirstTimeUser, hasCompletedTutorial, currentLevel]);
-  
-  // Handle tip dismissal
-  const handleTipDismiss = () => {
-    setActiveTip(null);
+  }, []);
+
+  const startTour = () => {
+    setShowTour(true);
   };
-  
+
+  const endTour = () => {
+    setShowTour(false);
+    localStorage.setItem('weparlay_onboarding_completed', 'true');
+  };
+
   return (
-    <OnboardingContext.Provider value={onboardingState}>
-      {/* Main application */}
+    <OnboardingContext.Provider value={{ showTour, startTour, endTour }}>
       {children}
-      
-      {/* Tutorial overlay */}
-      {isFirstTimeUser && !hasCompletedTutorial && (
-        <Tutorial onComplete={handleTutorialComplete} isFirstTime={isFirstTimeUser} />
-      )}
-      
-      {/* Progress indicator - only show if user has completed tutorial */}
-      {hasCompletedTutorial && <ProgressIndicator />}
-      
-      {/* Mascot tip - conditionally shown */}
-      {activeTip && (
-        <MascotTip
-          message={activeTip.message}
-          type={activeTip.type}
-          xpReward={activeTip.xpReward}
-          duration={7000}
-          onDismiss={handleTipDismiss}
-          position="bottom-right"
-        />
-      )}
+      <TourGuide />
     </OnboardingContext.Provider>
   );
-};
-
-// Hook for using the onboarding context
-export const useOnboardingContext = () => {
-  const context = useContext(OnboardingContext);
-  if (context === undefined) {
-    throw new Error('useOnboardingContext must be used within an OnboardingProvider');
-  }
-  return context;
 };
 
 export default OnboardingProvider;

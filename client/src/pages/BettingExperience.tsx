@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import BettingManager from "@/pages/BettingManager";
 import LiveOddsUpdates from "@/components/betting/LiveOddsUpdates";
 import SavedBetSlips from "@/components/betting/SavedBetSlips";
+import BetRiskCalculator from "@/components/betting/BetRiskCalculator";
 
 // Main betting experience page with enhanced UI
 const BettingExperience: React.FC = () => {
@@ -24,7 +25,7 @@ const BettingExperience: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2">
             <Tabs defaultValue="live" onValueChange={setActiveTab}>
-              <TabsList className="w-full mb-4 grid grid-cols-3 bg-muted">
+              <TabsList className="w-full mb-4 grid grid-cols-4 bg-muted">
                 <TabsTrigger value="live" className="tabs-trigger">
                   <Activity className="h-4 w-4 mr-2" /> Live Betting
                 </TabsTrigger>
@@ -33,6 +34,26 @@ const BettingExperience: React.FC = () => {
                 </TabsTrigger>
                 <TabsTrigger value="favorites" className="tabs-trigger">
                   <Star className="h-4 w-4 mr-2" /> My Favorites
+                </TabsTrigger>
+                <TabsTrigger value="calculator" className="tabs-trigger">
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="16" 
+                    height="16" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    className="h-4 w-4 mr-2"
+                  >
+                    <rect x="4" y="2" width="16" height="20" rx="2" />
+                    <line x1="8" x2="16" y1="6" y2="6" />
+                    <line x1="8" x2="16" y1="10" y2="10" />
+                    <line x1="8" x2="12" y1="14" y2="14" />
+                  </svg>
+                  Bet Calculator
                 </TabsTrigger>
               </TabsList>
               
@@ -85,6 +106,22 @@ const BettingExperience: React.FC = () => {
                     </p>
                     <div className="mt-4">
                       <SavedBetSlips />
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="calculator">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Bet Risk Calculator</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Calculate potential returns and analyze risk levels for your bets.
+                    </p>
+                    <div className="py-2">
+                      <BetRiskCalculator />
                     </div>
                   </CardContent>
                 </Card>
