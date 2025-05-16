@@ -206,11 +206,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check if this is one of our expanded sports (including college and women's leagues)
       const newSportsMapping: Record<string, keyof typeof additionalSportsData> = {
+        // Pro Sports
         'boxing_main': 'boxing_main',
         'mma_ufc': 'mma_ufc',
         'motorsport_nascar': 'motorsport_nascar',
         'tennis_atp': 'tennis_atp',
-        'tennis_wta': 'tennis_wta'
+        'tennis_wta': 'tennis_wta',
+        'basketball_wnba': 'basketball_wnba',
+        'football_ufl': 'football_ufl',
+        // College Sports
+        'football_ncaaf': 'football_ncaaf',
+        'basketball_ncaam': 'basketball_ncaam',
+        'basketball_ncaaw': 'basketball_ncaaw'
       };
       
       if (newSportsMapping[sportKey]) {
@@ -263,11 +270,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check if this is one of our new sports (boxing, MMA, NASCAR, tennis)
       const newSportsMapping: Record<string, keyof typeof additionalSportsData> = {
+        // Pro Sports
         'boxing_main': 'boxing_main',
         'mma_ufc': 'mma_ufc',
         'motorsport_nascar': 'motorsport_nascar',
         'tennis_atp': 'tennis_atp',
-        'tennis_wta': 'tennis_wta'
+        'tennis_wta': 'tennis_wta',
+        'basketball_wnba': 'basketball_wnba',
+        'football_ufl': 'football_ufl',
+        // College Sports
+        'football_ncaaf': 'football_ncaaf',
+        'basketball_ncaam': 'basketball_ncaam',
+        'basketball_ncaaw': 'basketball_ncaaw'
       };
       
       if (newSportsMapping[sportKey]) {
