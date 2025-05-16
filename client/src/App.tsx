@@ -14,6 +14,7 @@ import Settings from "@/pages/Settings";
 import SignUp from "@/pages/SignUp";
 import VideoGaming from "@/pages/VideoGaming";
 import Trivia from "@/pages/Trivia";
+import BettingExperience from "@/pages/BettingExperience"; // New enhanced betting page
 import MainLayout from "@/components/layout/MainLayout";
 import OnboardingProvider from "@/components/onboarding/OnboardingProvider";
 import { CurrencyModeProvider } from "./contexts/CurrencyModeContext";
@@ -23,7 +24,8 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
-      <Route path="/live-betting" component={LiveBettingReal} />
+      <Route path="/live-betting" component={BettingExperience} />
+      <Route path="/live-betting-classic" component={LiveBettingReal} />
       <Route path="/fantasy" component={FantasySports} />
       <Route path="/tournaments" component={Tournaments} />
       <Route path="/results" component={Results} />

@@ -5,9 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Activity, Zap, Star } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
-// Import LiveBetting components
-import LiveBettingContent from "@/components/betting/LiveBettingContent";
-
 // Import enhanced betting components
 import BettingManager from "@/pages/BettingManager";
 import LiveOddsUpdates from "@/components/betting/LiveOddsUpdates";
@@ -40,7 +37,22 @@ const BettingExperience: React.FC = () => {
               </TabsList>
               
               <TabsContent value="live">
-                <LiveBettingContent />
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Live Betting</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Place bets on live games happening right now. Add selections to your bet slip.
+                    </p>
+                    <div className="text-center py-6">
+                      <p className="text-md font-medium">Enhanced betting experience is now available!</p>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Use the bet slip on the right to manage and place your bets.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
               </TabsContent>
               
               <TabsContent value="trending">
