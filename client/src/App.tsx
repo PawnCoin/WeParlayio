@@ -16,6 +16,7 @@ import VideoGaming from "@/pages/VideoGaming";
 import MainLayout from "@/components/layout/MainLayout";
 import OnboardingProvider from "@/components/onboarding/OnboardingProvider";
 import { CurrencyModeProvider } from "./contexts/CurrencyModeContext";
+import { TeamThemeProvider } from "./contexts/TeamThemeContext";
 
 function Router() {
   return (
@@ -40,10 +41,12 @@ function App() {
       <TooltipProvider>
         <OnboardingProvider>
           <CurrencyModeProvider>
-            <Toaster />
-            <MainLayout>
-              <Router />
-            </MainLayout>
+            <TeamThemeProvider>
+              <Toaster />
+              <MainLayout>
+                <Router />
+              </MainLayout>
+            </TeamThemeProvider>
           </CurrencyModeProvider>
         </OnboardingProvider>
       </TooltipProvider>
