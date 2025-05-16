@@ -17,9 +17,11 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
   const [location] = useLocation();
   const { isDarkMode, toggleDarkMode } = useDarkMode();
   
-  const { data: sports, isLoading: isLoadingSports } = useQuery({
+  const { data: sports = [], isLoading: isLoadingSports } = useQuery({
     queryKey: ["/api/sports"],
     queryFn: () => sportsBetAPI.getSports(),
+    refetchOnWindowFocus: false,
+    staleTime: 60000, // 1 minute
   });
 
   return (
