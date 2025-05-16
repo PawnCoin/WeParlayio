@@ -1,5 +1,6 @@
 // TeamLogos.ts
-// This file provides direct mapping of team names to their official logo URLs
+// This file provides direct mapping of team names to their official logo URLs and player images
+// Contains expanded sport categories including NCAA, WTA, WNBA, UFL, etc.
 
 // NBA Teams
 export const nbaTeamLogos: Record<string, string> = {
@@ -153,6 +154,109 @@ export const nhlTeamLogos: Record<string, string> = {
   "Winnipeg Jets": "https://a.espncdn.com/i/teamlogos/nhl/500/wpg.png"
 };
 
+// WNBA Team Logos
+export const wnbaTeamLogos: Record<string, string> = {
+  "Las Vegas Aces": "https://a.espncdn.com/i/teamlogos/wnba/500/lv.png",
+  "New York Liberty": "https://a.espncdn.com/i/teamlogos/wnba/500/ny.png",
+  "Connecticut Sun": "https://a.espncdn.com/i/teamlogos/wnba/500/conn.png",
+  "Minnesota Lynx": "https://a.espncdn.com/i/teamlogos/wnba/500/min.png",
+  "Phoenix Mercury": "https://a.espncdn.com/i/teamlogos/wnba/500/phx.png",
+  "Seattle Storm": "https://a.espncdn.com/i/teamlogos/wnba/500/sea.png",
+  "Chicago Sky": "https://a.espncdn.com/i/teamlogos/wnba/500/chi.png",
+  "Washington Mystics": "https://a.espncdn.com/i/teamlogos/wnba/500/wsh.png",
+  "Atlanta Dream": "https://a.espncdn.com/i/teamlogos/wnba/500/atl.png",
+  "Dallas Wings": "https://a.espncdn.com/i/teamlogos/wnba/500/dal.png",
+  "Indiana Fever": "https://a.espncdn.com/i/teamlogos/wnba/500/ind.png",
+  "Los Angeles Sparks": "https://a.espncdn.com/i/teamlogos/wnba/500/la.png",
+};
+
+// NCAA Basketball (Men's) Team Logos
+export const ncaamTeamLogos: Record<string, string> = {
+  "Gonzaga Bulldogs": "https://a.espncdn.com/i/teamlogos/ncaa/500/2250.png",
+  "Duke Blue Devils": "https://a.espncdn.com/i/teamlogos/ncaa/500/150.png",
+  "Kentucky Wildcats": "https://a.espncdn.com/i/teamlogos/ncaa/500/96.png",
+  "Kansas Jayhawks": "https://a.espncdn.com/i/teamlogos/ncaa/500/2305.png",
+  "North Carolina Tar Heels": "https://a.espncdn.com/i/teamlogos/ncaa/500/153.png",
+  "Baylor Bears": "https://a.espncdn.com/i/teamlogos/ncaa/500/239.png",
+  "UCLA Bruins": "https://a.espncdn.com/i/teamlogos/ncaa/500/26.png",
+  "Villanova Wildcats": "https://a.espncdn.com/i/teamlogos/ncaa/500/222.png",
+  "Purdue Boilermakers": "https://a.espncdn.com/i/teamlogos/ncaa/500/2509.png",
+  "Arizona Wildcats": "https://a.espncdn.com/i/teamlogos/ncaa/500/12.png",
+};
+
+// NCAA Basketball (Women's) Team Logos
+export const ncaawTeamLogos: Record<string, string> = {
+  "South Carolina Gamecocks": "https://a.espncdn.com/i/teamlogos/ncaa/500/2579.png",
+  "UConn Huskies": "https://a.espncdn.com/i/teamlogos/ncaa/500/41.png",
+  "Iowa Hawkeyes": "https://a.espncdn.com/i/teamlogos/ncaa/500/2294.png",
+  "LSU Tigers": "https://a.espncdn.com/i/teamlogos/ncaa/500/99.png",
+  "Stanford Cardinal": "https://a.espncdn.com/i/teamlogos/ncaa/500/24.png",
+  "Texas Longhorns": "https://a.espncdn.com/i/teamlogos/ncaa/500/251.png",
+  "Notre Dame Fighting Irish": "https://a.espncdn.com/i/teamlogos/ncaa/500/87.png",
+  "Ohio State Buckeyes": "https://a.espncdn.com/i/teamlogos/ncaa/500/194.png",
+  "Maryland Terrapins": "https://a.espncdn.com/i/teamlogos/ncaa/500/120.png",
+  "Indiana Hoosiers": "https://a.espncdn.com/i/teamlogos/ncaa/500/84.png",
+};
+
+// NCAA Football Team Logos
+export const ncaafTeamLogos: Record<string, string> = {
+  "Georgia Bulldogs": "https://a.espncdn.com/i/teamlogos/ncaa/500/61.png",
+  "Alabama Crimson Tide": "https://a.espncdn.com/i/teamlogos/ncaa/500/333.png",
+  "Ohio State Buckeyes": "https://a.espncdn.com/i/teamlogos/ncaa/500/194.png",
+  "Michigan Wolverines": "https://a.espncdn.com/i/teamlogos/ncaa/500/130.png",
+  "Texas Longhorns": "https://a.espncdn.com/i/teamlogos/ncaa/500/251.png",
+  "Penn State Nittany Lions": "https://a.espncdn.com/i/teamlogos/ncaa/500/213.png",
+  "Florida State Seminoles": "https://a.espncdn.com/i/teamlogos/ncaa/500/52.png",
+  "Oregon Ducks": "https://a.espncdn.com/i/teamlogos/ncaa/500/2483.png",
+  "LSU Tigers": "https://a.espncdn.com/i/teamlogos/ncaa/500/99.png",
+  "Clemson Tigers": "https://a.espncdn.com/i/teamlogos/ncaa/500/228.png",
+};
+
+// UFL Team Logos
+export const uflTeamLogos: Record<string, string> = {
+  "Birmingham Stallions": "https://a.espncdn.com/i/teamlogos/leagues/500/ufl-birmingham.png",
+  "Michigan Panthers": "https://a.espncdn.com/i/teamlogos/leagues/500/ufl-michigan.png",
+  "St. Louis Battlehawks": "https://a.espncdn.com/i/teamlogos/leagues/500/ufl-st-louis.png",
+  "D.C. Defenders": "https://a.espncdn.com/i/teamlogos/leagues/500/ufl-dc.png",
+  "San Antonio Brahmas": "https://a.espncdn.com/i/teamlogos/leagues/500/ufl-san-antonio.png",
+  "Houston Roughnecks": "https://a.espncdn.com/i/teamlogos/leagues/500/ufl-houston.png",
+  "Memphis Showboats": "https://a.espncdn.com/i/teamlogos/leagues/500/ufl-memphis.png",
+  "Arlington Renegades": "https://a.espncdn.com/i/teamlogos/leagues/500/ufl-arlington.png",
+};
+
+// Boxing & MMA Athlete Images
+export const combatAthleteImages: Record<string, string> = {
+  "Tyson Fury": "https://a.espncdn.com/combiner/i?img=/i/headshots/boxing/players/full/4479037.png",
+  "Anthony Joshua": "https://a.espncdn.com/combiner/i?img=/i/headshots/boxing/players/full/4413562.png",
+  "Canelo Alvarez": "https://a.espncdn.com/combiner/i?img=/i/headshots/boxing/players/full/590.png",
+  "Gennady Golovkin": "https://a.espncdn.com/combiner/i?img=/i/headshots/boxing/players/full/626.png",
+  "Jon Jones": "https://a.espncdn.com/combiner/i?img=/i/headshots/mma/players/full/2335639.png",
+  "Francis Ngannou": "https://a.espncdn.com/combiner/i?img=/i/headshots/mma/players/full/3924208.png",
+  "Israel Adesanya": "https://a.espncdn.com/combiner/i?img=/i/headshots/mma/players/full/4285679.png",
+  "Alex Pereira": "https://a.espncdn.com/combiner/i?img=/i/headshots/mma/players/full/4688858.png",
+};
+
+// NASCAR Driver Images
+export const nascarDriverImages: Record<string, string> = {
+  "Kyle Larson": "https://a.espncdn.com/combiner/i?img=/i/headshots/rpm/players/full/4156.png",
+  "Denny Hamlin": "https://a.espncdn.com/combiner/i?img=/i/headshots/rpm/players/full/227.png",
+  "Chase Elliott": "https://a.espncdn.com/combiner/i?img=/i/headshots/rpm/players/full/3975.png",
+  "Kyle Busch": "https://a.espncdn.com/combiner/i?img=/i/headshots/rpm/players/full/297.png",
+  "Joey Logano": "https://a.espncdn.com/combiner/i?img=/i/headshots/rpm/players/full/866.png",
+};
+
+// Tennis Player Images (ATP & WTA)
+export const tennisPlayerImages: Record<string, string> = {
+  "Novak Djokovic": "https://a.espncdn.com/combiner/i?img=/i/headshots/tennis/players/full/296.png",
+  "Rafael Nadal": "https://a.espncdn.com/combiner/i?img=/i/headshots/tennis/players/full/261.png",
+  "Carlos Alcaraz": "https://a.espncdn.com/combiner/i?img=/i/headshots/tennis/players/full/4688041.png",
+  "Alexander Zverev": "https://a.espncdn.com/combiner/i?img=/i/headshots/tennis/players/full/2223.png",
+  "Iga Swiatek": "https://a.espncdn.com/combiner/i?img=/i/headshots/tennis/players/full/4379008.png",
+  "Aryna Sabalenka": "https://a.espncdn.com/combiner/i?img=/i/headshots/tennis/players/full/3553.png",
+  "Coco Gauff": "https://a.espncdn.com/combiner/i?img=/i/headshots/tennis/players/full/4450110.png",
+  "Naomi Osaka": "https://a.espncdn.com/combiner/i?img=/i/headshots/tennis/players/full/3889.png",
+};
+
 // Function to get team logo based on name and league
 export function getTeamLogo(teamName: string, league: string = 'NBA'): string {
   if (!teamName) return "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-basketball.png";
@@ -171,6 +275,24 @@ export function getTeamLogo(teamName: string, league: string = 'NBA'): string {
     case 'NHL':
       logos = nhlTeamLogos;
       break;
+    case 'WNBA':
+      logos = wnbaTeamLogos;
+      break;
+    case 'NCAAM': 
+    case 'NCAA_MBB':
+      logos = ncaamTeamLogos;
+      break;
+    case 'NCAAW': 
+    case 'NCAA_WBB':
+      logos = ncaawTeamLogos;
+      break;
+    case 'NCAAF':
+    case 'NCAA_FB':
+      logos = ncaafTeamLogos;
+      break;
+    case 'UFL':
+      logos = uflTeamLogos;
+      break;
     case 'NBA':
     default:
       logos = nbaTeamLogos;
@@ -183,14 +305,20 @@ export function getTeamLogo(teamName: string, league: string = 'NBA'): string {
   }
   
   // If not found, use a generic league logo
-  if (league === 'NBA') {
+  if (league === 'NBA' || league === 'WNBA' || league === 'NCAAM' || league === 'NCAAW') {
     return "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-basketball.png";
-  } else if (league === 'NFL') {
+  } else if (league === 'NFL' || league === 'NCAAF' || league === 'UFL') {
     return "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-football.png";
   } else if (league === 'MLB') {
     return "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-baseball.png";
   } else if (league === 'NHL') {
     return "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-hockey.png";
+  } else if (league === 'BOXING' || league === 'MMA' || league === 'UFC') {
+    return "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-boxing.png";
+  } else if (league === 'NASCAR' || league === 'MOTORSPORT') {
+    return "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-nascar.png";
+  } else if (league === 'TENNIS' || league === 'ATP' || league === 'WTA') {
+    return "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-tennis.png";
   }
   
   return "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-basketball.png";
