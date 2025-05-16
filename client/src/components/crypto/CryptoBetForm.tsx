@@ -6,9 +6,10 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { DollarSign, Wallet, AlertCircle, Check, RefreshCw } from 'lucide-react';
+import { DollarSign, Wallet, AlertCircle, Check, RefreshCw, Share } from 'lucide-react';
 import CryptoSelector from './CryptoSelector';
 import WalletConnect from './WalletConnect';
+import ShareBetCard from './ShareBetCard';
 import { useToast } from '@/hooks/use-toast';
 
 interface CryptoBetFormProps {
@@ -34,6 +35,8 @@ const CryptoBetForm: React.FC<CryptoBetFormProps> = ({
   const [walletInfo, setWalletInfo] = useState<{ address: string; type: string } | null>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [useBoost, setUseBoost] = useState<boolean>(false);
+  const [showShareCard, setShowShareCard] = useState<boolean>(false);
+  const [lastBetData, setLastBetData] = useState<any>(null);
   const [exchangeRates, setExchangeRates] = useState<{[key: string]: number}>({
     bitcoin: 67500,
     ethereum: 3300,
@@ -133,15 +136,31 @@ const CryptoBetForm: React.FC<CryptoBetFormProps> = ({
         onPlaceBet(betData);
       }
       
-      toast({
-        title: "Bet Placed Successfully!",
-        description: `You've placed a bet of ${amount} ${selectedCrypto.symbol}`,
-      });
+      // Store the bet data to show in share card
+      setLastBetData(betData);
       
-      // Reset form
+      // Show special toast for WePlay Token bets
+      if (selectedCrypto.id === 'weplaytoken') {
+        toast({
+          title: "WePlay Token Bet Placed!",
+          description: `Your ${amount} WEPT bet was placed successfully! Share and earn rewards`,
+        });
+        
+        // Show the share card automatically for WePlay Token bets
+        setShowShareCard(true);
+      } else {
+        toast({
+          title: "Bet Placed Successfully!",
+          description: `You've placed a bet of ${amount} ${selectedCrypto.symbol}`,
+        });
+        
+        // For other cryptos, also show share card but with delay
+        setTimeout(() => setShowShareCard(true), 1000);
+      }
+      
+      // Reset form fields but keep selected crypto
       setAmount('');
       setCustomAmount('');
-      setUseBoost(false);
     } catch (error) {
       toast({
         title: "Failed to Place Bet",
@@ -319,7 +338,7 @@ const CryptoBetForm: React.FC<CryptoBetFormProps> = ({
         )}
       </CardContent>
       
-      <CardFooter>
+      <CardFooter className="flex-col gap-4">
         <Button 
           className="w-full bg-green-600 hover:bg-green-700"
           disabled={!walletConnected || !selectedCrypto || !amount || isProcessing}
@@ -337,6 +356,21 @@ const CryptoBetForm: React.FC<CryptoBetFormProps> = ({
             </>
           )}
         </Button>
+        
+        {/* Show share card after successful bet placement */}
+        {showShareCard && lastBetData && (
+          <div className="w-full mt-4">
+            <ShareBetCard betData={{...lastBetData, selections: []}} />
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="mt-2 w-full text-xs"
+              onClick={() => setShowShareCard(false)}
+            >
+              Hide Share Options
+            </Button>
+          </div>
+        )}
       </CardFooter>
     </Card>
   );
