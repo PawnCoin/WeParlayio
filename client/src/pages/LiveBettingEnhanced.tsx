@@ -518,9 +518,9 @@ const LiveBettingEnhanced: React.FC = () => {
                               <TableCell>
                                 <div className="flex flex-col gap-1">
                                   <div className="flex items-center">
-                                    {getTeamLogo(event.home_team) ? (
+                                    {getTeamLogoUrl(event.home_team) ? (
                                       <img 
-                                        src={getTeamLogo(event.home_team)} 
+                                        src={getTeamLogoUrl(event.home_team)} 
                                         alt={event.home_team} 
                                         className="w-6 h-6 mr-2"
                                       />
@@ -530,9 +530,9 @@ const LiveBettingEnhanced: React.FC = () => {
                                     <span className="text-foreground">{event.home_team}</span>
                                   </div>
                                   <div className="flex items-center">
-                                    {getTeamLogo(event.away_team) ? (
+                                    {getTeamLogoUrl(event.away_team) ? (
                                       <img 
-                                        src={getTeamLogo(event.away_team)} 
+                                        src={getTeamLogoUrl(event.away_team)} 
                                         alt={event.away_team} 
                                         className="w-6 h-6 mr-2"
                                       />
@@ -685,9 +685,9 @@ const LiveBettingEnhanced: React.FC = () => {
                               <TableCell>
                                 <div className="flex flex-col gap-1">
                                   <div className="flex items-center">
-                                    {getTeamLogo(event.home_team) ? (
+                                    {getTeamLogoUrl(event.home_team) ? (
                                       <img 
-                                        src={getTeamLogo(event.home_team)} 
+                                        src={getTeamLogoUrl(event.home_team)} 
                                         alt={event.home_team} 
                                         className="w-6 h-6 mr-2"
                                       />
@@ -697,9 +697,9 @@ const LiveBettingEnhanced: React.FC = () => {
                                     <span className="text-foreground">{event.home_team}</span>
                                   </div>
                                   <div className="flex items-center">
-                                    {getTeamLogo(event.away_team) ? (
+                                    {getTeamLogoUrl(event.away_team) ? (
                                       <img 
-                                        src={getTeamLogo(event.away_team)} 
+                                        src={getTeamLogoUrl(event.away_team)} 
                                         alt={event.away_team} 
                                         className="w-6 h-6 mr-2"
                                       />
@@ -872,9 +872,9 @@ const LiveBettingEnhanced: React.FC = () => {
                               <TableCell>
                                 <div className="flex flex-col gap-1">
                                   <div className="flex items-center">
-                                    {getTeamLogo(event.home_team) ? (
+                                    {getTeamLogoUrl(event.home_team) ? (
                                       <img 
-                                        src={getTeamLogo(event.home_team)} 
+                                        src={getTeamLogoUrl(event.home_team)} 
                                         alt={event.home_team} 
                                         className="w-6 h-6 mr-2"
                                       />
@@ -884,9 +884,9 @@ const LiveBettingEnhanced: React.FC = () => {
                                     <span className="text-foreground">{event.home_team}</span>
                                   </div>
                                   <div className="flex items-center">
-                                    {getTeamLogo(event.away_team) ? (
+                                    {getTeamLogoUrl(event.away_team) ? (
                                       <img 
-                                        src={getTeamLogo(event.away_team)} 
+                                        src={getTeamLogoUrl(event.away_team)} 
                                         alt={event.away_team} 
                                         className="w-6 h-6 mr-2"
                                       />
@@ -1032,9 +1032,9 @@ const LiveBettingEnhanced: React.FC = () => {
                               <TableCell>
                                 <div className="flex flex-col gap-1">
                                   <div className="flex items-center">
-                                    {getTeamLogo(event.home_team) ? (
+                                    {getTeamLogoUrl(event.home_team) ? (
                                       <img 
-                                        src={getTeamLogo(event.home_team)} 
+                                        src={getTeamLogoUrl(event.home_team)} 
                                         alt={event.home_team} 
                                         className="w-6 h-6 mr-2"
                                       />
@@ -1044,9 +1044,9 @@ const LiveBettingEnhanced: React.FC = () => {
                                     <span className="text-foreground">{event.home_team}</span>
                                   </div>
                                   <div className="flex items-center">
-                                    {getTeamLogo(event.away_team) ? (
+                                    {getTeamLogoUrl(event.away_team) ? (
                                       <img 
-                                        src={getTeamLogo(event.away_team)} 
+                                        src={getTeamLogoUrl(event.away_team)} 
                                         alt={event.away_team} 
                                         className="w-6 h-6 mr-2"
                                       />
