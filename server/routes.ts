@@ -324,8 +324,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all live events (across all sports)
+  app.get("/api/events/live", async (req, res) => {
+    try {
+      // Get live events from storage
+      const liveEvents = await storage.getLiveEvents();
+      
+      // For demo purposes we'll return mock data when no live events are in the DB
+      if (liveEvents.length === 0) {
+        // Create mock live data from all sports
+        const mockLiveEvents = [];
+        for (const sportKey in additionalSportsData) {
+          const sportEvents = additionalSportsData[sportKey] || [];
+          // Convert 1-2 events to "live" status
+          const liveSportEvents = sportEvents.slice(0, 2).map((event: any) => {
+            return {
+              ...event,
+              status: "in_play",
+              time_remaining: Math.floor(Math.random() * 20) + ":" + Math.floor(Math.random() * 60).toString().padStart(2, '0'),
+              period: Math.floor(Math.random() * 4) + 1,
+              scores: {
+                home: Math.floor(Math.random() * 100),
+                away: Math.floor(Math.random() * 100)
+              },
+              sport_key: sportKey
+            };
+          });
+          mockLiveEvents.push(...liveSportEvents);
+        }
+        return res.json(mockLiveEvents);
+      }
+      
+      res.json(liveEvents);
+    } catch (error: any) {
+      console.error("Error fetching live events:", error);
+      res.status(500).json({ message: error.message || "Failed to fetch live events" });
+    }
+  });
+  
+  // Get all upcoming events (across all sports)
+  app.get("/api/events/upcoming", async (req, res) => {
+    try {
+      // Get the limit parameter
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      
+      // Get upcoming events from storage
+      const upcomingEvents = await storage.getUpcomingEvents(limit);
+      
+      // For demo purposes we'll return mock data when no upcoming events are in the DB
+      if (upcomingEvents.length === 0) {
+        // Create mock upcoming data from all sports
+        const mockUpcomingEvents = [];
+        for (const sportKey in additionalSportsData) {
+          const sportEvents = additionalSportsData[sportKey] || [];
+          // Get a few upcoming events
+          const upcomingSportEvents = sportEvents.slice(0, 3).map((event: any) => {
+            // Set commence_time to future dates
+            const futureDate = new Date();
+            futureDate.setHours(futureDate.getHours() + Math.floor(Math.random() * 48) + 1);
+            
+            return {
+              ...event,
+              commence_time: futureDate.toISOString(),
+              sport_key: sportKey
+            };
+          });
+          mockUpcomingEvents.push(...upcomingSportEvents);
+        }
+        
+        // Sort by start time and limit
+        const sortedEvents = mockUpcomingEvents
+          .sort((a: any, b: any) => new Date(a.commence_time).getTime() - new Date(b.commence_time).getTime())
+          .slice(0, limit);
+          
+        return res.json(sortedEvents);
+      }
+      
+      res.json(upcomingEvents);
+    } catch (error: any) {
+      console.error("Error fetching upcoming events:", error);
+      res.status(500).json({ message: error.message || "Failed to fetch upcoming events" });
+    }
+  });
+  
   app.get("/api/events/:id", async (req, res) => {
     try {
+      // Make sure the ID is a number and not "live" or "upcoming"
+      if (req.params.id === "live" || req.params.id === "upcoming") {
+        return res.status(400).json({ message: "Invalid event ID" });
+      }
+      
       const event = await storage.getEvent(parseInt(req.params.id));
       if (!event) {
         return res.status(404).json({ message: "Event not found" });

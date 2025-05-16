@@ -6,6 +6,7 @@ import UpcomingGameCard from "@/components/betting/UpcomingGameCard";
 import BracketView from "@/components/tournaments/BracketView";
 import FantasyTeamBuilder from "@/components/fantasy/FantasyTeamBuilder";
 import PlayerPropsTable from "@/components/betting/PlayerPropsTable";
+import { StatsCarousel } from "@/components/StatsCarousel";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -188,6 +189,15 @@ const Home: React.FC = () => {
             </TabsList>
           </Tabs>
         </div>
+      </div>
+      
+      {/* Animated Sports Stats Carousel */}
+      <div className="mb-8">
+        <h2 className="text-xl font-bold mb-4 flex items-center">
+          <BarChart2 className="h-5 w-5 mr-2 text-primary" />
+          Sports Stats Leaders
+        </h2>
+        <StatsCarousel />
       </div>
       
       {/* Live Events Section */}
