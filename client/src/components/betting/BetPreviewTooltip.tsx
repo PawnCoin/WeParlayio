@@ -106,9 +106,9 @@ const BetPreviewTooltip: React.FC<BetPreviewProps> = ({
       },
       {
         label: 'H2H Advantage', 
-        value: homeTeam.headToHeadWins > (awayTeam.headToHeadWins || 0) 
-          ? `${homeTeam.name} (${homeTeam.headToHeadWins} wins)` 
-          : `${awayTeam.name} (${awayTeam.headToHeadWins} wins)`,
+        value: (homeTeam.headToHeadWins || 0) > (awayTeam.headToHeadWins || 0) 
+          ? `${homeTeam.name} (${homeTeam.headToHeadWins || 0} wins)` 
+          : `${awayTeam.name} (${awayTeam.headToHeadWins || 0} wins)`,
         tooltip: 'Head-to-head advantage between these teams'
       },
       {

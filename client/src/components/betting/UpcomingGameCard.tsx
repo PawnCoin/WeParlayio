@@ -92,7 +92,9 @@ const UpcomingGameCard: React.FC<UpcomingGameCardProps> = ({ game }) => {
           <Button 
             variant="outline" 
             className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 py-2 px-3 rounded-md text-xs flex justify-between items-center"
-            onClick={() => handleAddToBetSlip(`${game.homeTeam.name} ${game.odds.homeSpread.line} (Spread)`, game.odds.homeSpread.odds)}
+            onClick={() => game.homeTeam?.name && game.odds?.homeSpread?.line !== undefined ? 
+              handleAddToBetSlip(`${game.homeTeam.name} ${game.odds.homeSpread.line} (Spread)`, game.odds.homeSpread.odds) : 
+              handleAddToBetSlip(`Home Team (Spread)`, -110)}
           >
             <span>
               {game.homeTeam.name ? game.homeTeam.name.split(' ').pop() : 'Home'} 
@@ -107,7 +109,9 @@ const UpcomingGameCard: React.FC<UpcomingGameCardProps> = ({ game }) => {
           <Button 
             variant="outline" 
             className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 py-2 px-3 rounded-md text-xs flex justify-between items-center"
-            onClick={() => handleAddToBetSlip(`${game.awayTeam.name} ${game.odds.awaySpread.line} (Spread)`, game.odds.awaySpread.odds)}
+            onClick={() => game.awayTeam?.name && game.odds?.awaySpread?.line !== undefined ? 
+              handleAddToBetSlip(`${game.awayTeam.name} ${game.odds.awaySpread.line} (Spread)`, game.odds.awaySpread.odds) : 
+              handleAddToBetSlip(`Away Team (Spread)`, -110)}
           >
             <span>
               {game.awayTeam.name ? game.awayTeam.name.split(' ').pop() : 'Away'} 
@@ -122,11 +126,15 @@ const UpcomingGameCard: React.FC<UpcomingGameCardProps> = ({ game }) => {
           <Button 
             variant="outline" 
             className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 py-2 px-3 rounded-md text-xs flex justify-between items-center"
-            onClick={() => handleAddToBetSlip(`O/U ${game.odds.total.line} (Total)`, game.odds.total.odds)}
+            onClick={() => game.odds?.total?.line !== undefined ? 
+              handleAddToBetSlip(`O/U ${game.odds.total.line} (Total)`, game.odds.total.odds) : 
+              handleAddToBetSlip(`O/U (Total)`, -110)}
           >
-            <span>O/U {game.odds.total.line}</span>
+            <span>O/U {game.odds?.total?.line || 'N/A'}</span>
             <span className="font-medium">
-              {game.odds.total.odds > 0 ? `+${game.odds.total.odds}` : game.odds.total.odds}
+              {game.odds?.total?.odds !== undefined ? 
+                (game.odds.total.odds > 0 ? `+${game.odds.total.odds}` : game.odds.total.odds) 
+                : 'N/A'}
             </span>
           </Button>
         </div>

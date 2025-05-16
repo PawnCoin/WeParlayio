@@ -166,7 +166,9 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
               <Button 
                 variant="outline" 
                 className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 py-2 px-3 rounded-md text-sm flex justify-between items-center"
-                onClick={() => handleAddToBetSlip(`${game.awayTeam.name} (Money Line)`, game.odds.moneyline.away)}
+                onClick={() => game.awayTeam?.name && game.odds?.moneyline?.away !== undefined ? 
+                  handleAddToBetSlip(`${game.awayTeam.name} (Money Line)`, game.odds.moneyline.away) : 
+                  handleAddToBetSlip(`Away Team (Money Line)`, -110)}
               >
                 <span>{game.awayTeam.name ? game.awayTeam.name.split(' ').pop() : 'Away'}</span>
                 <span className="font-medium">
@@ -183,7 +185,9 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
               <Button 
                 variant="outline" 
                 className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 py-2 px-3 rounded-md text-sm flex justify-between items-center"
-                onClick={() => handleAddToBetSlip(`${game.homeTeam.name} ${game.odds.pointSpread.home.line} (Spread)`, game.odds.pointSpread.home.odds)}
+                onClick={() => game.homeTeam?.name && game.odds?.pointSpread?.home?.line !== undefined ? 
+                  handleAddToBetSlip(`${game.homeTeam.name} ${game.odds.pointSpread.home.line} (Spread)`, game.odds.pointSpread.home.odds) : 
+                  handleAddToBetSlip(`Home Team (Spread)`, -110)}
               >
                 <span>
                   {game.homeTeam.name ? game.homeTeam.name.split(' ').pop() : 'Home'} 
@@ -198,7 +202,9 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
               <Button 
                 variant="outline" 
                 className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 py-2 px-3 rounded-md text-sm flex justify-between items-center odds-change-down"
-                onClick={() => handleAddToBetSlip(`${game.awayTeam.name} ${game.odds.pointSpread.away.line} (Spread)`, game.odds.pointSpread.away.odds)}
+                onClick={() => game.awayTeam?.name && game.odds?.pointSpread?.away?.line !== undefined ? 
+                  handleAddToBetSlip(`${game.awayTeam.name} ${game.odds.pointSpread.away.line} (Spread)`, game.odds.pointSpread.away.odds) : 
+                  handleAddToBetSlip(`Away Team (Spread)`, -110)}
               >
                 <span>
                   {game.awayTeam.name ? game.awayTeam.name.split(' ').pop() : 'Away'} 
