@@ -157,7 +157,7 @@ const Tutorial: React.FC<TutorialProps> = ({
         >
           <Button
             onClick={handleMinimize}
-            className="rounded-full w-16 h-16 bg-green-600 text-white shadow-lg hover:bg-green-700"
+            className="rounded-full w-16 h-16 bg-black text-white shadow-lg hover:bg-gray-800"
           >
             <div className="relative">
               <Mascot size="sm" emotion="happy" />
@@ -175,8 +175,8 @@ const Tutorial: React.FC<TutorialProps> = ({
           exit={{ y: 100, opacity: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
-          <Card className="border-green-500 shadow-lg overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-green-600 to-green-500 text-white pb-2">
+          <Card className="border-black shadow-lg overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-black to-gray-800 text-white pb-2">
               <div className="flex justify-between items-center">
                 <CardTitle className="text-lg font-bold flex items-center">
                   <Trophy className="h-5 w-5 mr-2" />
@@ -200,7 +200,7 @@ const Tutorial: React.FC<TutorialProps> = ({
                   <Mascot emotion={currentStepData.emotion} size="md" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-green-700 mb-1">{currentStepData.title}</h3>
+                  <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-1">{currentStepData.title}</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-300">{currentStepData.description}</p>
                 </div>
               </div>
@@ -242,7 +242,7 @@ const Tutorial: React.FC<TutorialProps> = ({
                 variant="default"
                 size="sm"
                 onClick={handleNext}
-                className="bg-green-600 hover:bg-green-700 text-white px-3"
+                className="bg-black hover:bg-gray-800 text-white px-3"
               >
                 {currentStep < tutorialSteps.length - 1 ? (
                   <>
