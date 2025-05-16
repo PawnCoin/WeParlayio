@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } f
 import { useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, X, Lightbulb, User, DollarSign, Trophy, History } from 'lucide-react';
+import { useOnboardingContext } from './OnboardingProvider';
 
 interface TourStep {
   title: string;
@@ -14,7 +15,7 @@ interface TourStep {
 }
 
 const TourGuide: React.FC = () => {
-  const [open, setOpen] = useState(false);
+  const { showTour, endTour, startTour } = useOnboardingContext();
   const [currentStep, setCurrentStep] = useState(0);
   const [location] = useLocation();
   
@@ -55,16 +56,6 @@ const TourGuide: React.FC = () => {
     }
   ];
 
-  // Start tour automatically on first visit
-  useEffect(() => {
-    const hasTakenTour = localStorage.getItem('weparlay_tour_completed');
-    if (!hasTakenTour && location === '/') {
-      setTimeout(() => {
-        setOpen(true);
-      }, 1500);
-    }
-  }, [location]);
-
   const nextStep = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -80,8 +71,7 @@ const TourGuide: React.FC = () => {
   };
 
   const completeTour = () => {
-    setOpen(false);
-    localStorage.setItem('weparlay_tour_completed', 'true');
+    endTour();
     
     // Reset for the next time
     setTimeout(() => {
@@ -90,9 +80,8 @@ const TourGuide: React.FC = () => {
   };
 
   const restartTour = () => {
-    localStorage.removeItem('weparlay_tour_completed');
+    startTour();
     setCurrentStep(0);
-    setOpen(true);
   };
 
   return (
@@ -113,7 +102,7 @@ const TourGuide: React.FC = () => {
       </motion.div>
 
       {/* Tour Dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={showTour} onOpenChange={(open) => open ? startTour() : endTour()}>
         <DialogContent className="sm:max-w-md">
           <DialogTitle className="flex items-center gap-2">
             <AnimatePresence mode="wait">

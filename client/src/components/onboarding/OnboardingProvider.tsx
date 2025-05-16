@@ -14,6 +14,7 @@ const OnboardingContext = createContext<OnboardingContextType>({
 });
 
 export const useOnboarding = () => useContext(OnboardingContext);
+export const useOnboardingContext = () => useContext(OnboardingContext);
 
 interface OnboardingProviderProps {
   children: React.ReactNode;
