@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'wouter';
 // Import logo image directly
-const logoPath = '/weparlaylogo.png';
+import logoImage from '../../assets/weparlaylogo.png';
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
@@ -30,7 +30,7 @@ const Logo: React.FC<LogoProps> = ({
     <Link to="/">
       <div className={`flex items-center gap-2 ${className}`}>
         <img 
-          src={logoPath} 
+          src={logoImage} 
           alt="WeParlay.io" 
           className={`${sizeClasses[size]} object-contain`}
         />
