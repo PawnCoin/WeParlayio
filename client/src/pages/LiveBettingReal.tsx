@@ -20,6 +20,8 @@ import CryptoWalletConnect from "@/components/auth/CryptoWalletConnect";
 
 // Import odds display component
 import OddsDisplay from "@/components/betting/OddsDisplay";
+import BetPreviewTooltip, { TeamStats } from "@/components/betting/BetPreviewTooltip";
+import BetOutcomeButton from "@/components/betting/BetOutcomeButton";
 
 // Import the sportsDataUtils for dynamic logos and player images
 import { 
