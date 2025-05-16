@@ -50,8 +50,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 <Link key={link.href} href={link.href}>
                   <div className={`${
                     location === link.href
-                      ? "text-blue-600"
-                      : "text-white hover:text-blue-500"
+                      ? "text-green-500"
+                      : "text-white hover:text-green-500"
                   } font-medium cursor-pointer`}>
                     {link.label}
                   </div>
