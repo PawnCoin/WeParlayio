@@ -5,22 +5,11 @@ import * as schema from "@shared/schema";
 
 neonConfig.webSocketConstructor = ws;
 
-// Check if DATABASE_URL is available, but don't throw error if not
-// We'll use in-memory storage when database is not available
-let pool: Pool | null = null;
-let db: any = null;
-
-if (process.env.DATABASE_URL) {
-  try {
-    pool = new Pool({ connectionString: process.env.DATABASE_URL });
-    db = drizzle({ client: pool, schema });
-    console.log("Database connection established successfully");
-  } catch (error) {
-    console.error("Failed to connect to database:", error);
-    console.log("Falling back to in-memory storage");
-  }
-} else {
-  console.log("No DATABASE_URL found, using in-memory storage");
+if (!process.env.DATABASE_URL) {
+  throw new Error(
+    "DATABASE_URL must be set. Did you forget to provision a database?",
+  );
 }
 
-export { pool, db };
+export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+export const db = drizzle({ client: pool, schema });
