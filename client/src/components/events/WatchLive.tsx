@@ -473,9 +473,12 @@ export const WatchLive: React.FC<LiveStreamProps> = ({
                   {/* Away Team Column */}
                   <div className="flex flex-col items-center">
                     <img 
-                      src={getTeamLogo(awayTeam, league)} 
+                      src={getTeamLogoUrl(awayTeam, league)} 
                       alt={awayTeam} 
                       className="h-16 w-16 object-contain mb-2" 
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXVzZXIiPjxwYXRoIGQ9Ik0xOSAyMXYtMmE0IDQgMCAwIDAtNC00SDlhNCA0IDAgMCAwLTQgNHYyIi8+PGNpcmNsZSBjeD0iMTIiIGN5PSI3IiByPSI0Ii8+PC9zdmc+';
+                      }}
                     />
                     <h4 className="font-semibold text-center">{awayTeam}</h4>
                   </div>

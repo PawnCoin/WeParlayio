@@ -1451,6 +1451,7 @@ const LiveBettingEnhanced: React.FC = () => {
           </Card>
         </div>
       </div>
+    
     </div>
     
     {/* Watch Live Dialog */}
