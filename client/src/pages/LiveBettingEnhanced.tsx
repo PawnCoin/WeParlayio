@@ -10,13 +10,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronUp, ChevronDown, BarChart2, Clock, RefreshCcw, AlertTriangle, TrendingUp, Trash2, Info, Dot, PlayCircle, Video } from "lucide-react";
+import { ChevronUp, ChevronDown, BarChart2, Clock, RefreshCcw, AlertTriangle, TrendingUp, Trash2, Info, Dot, PlayCircle, Video, Zap, Activity } from "lucide-react";
+
+// Import enhanced betting components
+import BettingManager from "@/pages/BettingManager";
+import { BetSlipProvider, useBetSlip } from "@/contexts/BetSlipContext";
+import LiveOddsUpdates from "@/components/betting/LiveOddsUpdates";
 
 // Import WatchLive component
 import WatchLive from "@/components/events/WatchLive";
 
-// Import team logos
-// Import the sportsDataUtils for dynamic logos and player images
+// Import team logos and utils
 import { 
   getTeamLogoUrl, 
   getPlayerImageUrl, 
@@ -37,15 +41,17 @@ interface BetSelection {
   pick: string;
   odds: number;
   point?: number;
+  sportId: number;
 }
 
-const LiveBettingEnhanced: React.FC = () => {
+// Wrapper component to use the bet slip context
+const LiveBettingContent: React.FC = () => {
   const { toast } = useToast();
   const [selectedSport, setSelectedSport] = useState<string>("basketball_nba");
-  const [betSlip, setBetSlip] = useState<BetSelection[]>([]);
-  const [betAmount, setBetAmount] = useState<string>("10");
-  const [betType, setBetType] = useState<'single' | 'parlay'>('single');
   const [refreshInterval, setRefreshInterval] = useState<number>(30000); // 30 seconds
+  
+  // Get bet slip methods from context
+  const { addToBetSlip } = useBetSlip();
   
   // Watch Live feature state
   const [watchLiveDialog, setWatchLiveDialog] = useState<boolean>(false);
