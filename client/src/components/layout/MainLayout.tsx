@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import Sidebar from "./Sidebar";
 import BettingSlip from "../betting/BettingSlip";
+import BetNotifications from "../notifications/BetNotifications";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -96,6 +97,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                       </div>
                     </DropdownMenuContent>
                   </DropdownMenu>
+                  
+                  {/* Betting Notifications */}
+                  <BetNotifications userId={user?.id} />
                   
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
