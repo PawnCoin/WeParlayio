@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'wouter';
-import logoPath from '@/assets/logo.png';
+// Import logo image directly
+const logoPath = '/weparlaylogo.png';
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
@@ -14,9 +15,9 @@ const Logo: React.FC<LogoProps> = ({
   className = '' 
 }) => {
   const sizeClasses = {
-    sm: 'h-8 w-8',
-    md: 'h-10 w-10',
-    lg: 'h-12 w-12'
+    sm: 'h-9 w-auto',
+    md: 'h-12 w-auto',
+    lg: 'h-16 w-auto'
   };
 
   const textSizeClasses = {
@@ -36,11 +37,11 @@ const Logo: React.FC<LogoProps> = ({
         {showText && (
           <div className={`flex flex-col ${textSizeClasses[size]}`}>
             <div className="flex items-center">
-              <span className="text-primary font-bold">We</span>
+              <span className="text-blue-600 font-bold">We</span>
               <span className="text-white font-bold">parlay</span>
               <span className="text-white font-bold">.io</span>
             </div>
-            <span className="text-accent text-sm font-medium">SPORTS BETTING</span>
+            <span className="text-orange-500 text-sm font-bold">SPORTS BETTING</span>
           </div>
         )}
       </div>

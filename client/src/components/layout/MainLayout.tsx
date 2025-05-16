@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown, Menu } from "lucide-react";
+import Logo from "@/components/WeParlay/Logo";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -35,16 +36,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <div className="flex flex-col h-screen">
       {/* Header */}
-      <header className="bg-white shadow-md px-4 dark:bg-neutral-dark dark:text-neutral-light">
+      <header className="bg-black shadow-md px-4 text-white">
         <div className="container mx-auto">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center">
-              <Link href="/">
-                <div className="text-2xl font-bold text-primary cursor-pointer">
-                  We<span className="text-accent">Parlay</span>.io
-                </div>
-              </Link>
+              <Logo size="md" />
             </div>
             
             {/* Navigation for desktop */}
