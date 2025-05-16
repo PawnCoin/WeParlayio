@@ -10,6 +10,7 @@ import FantasySports from "@/pages/FantasySports";
 import Tournaments from "@/pages/Tournaments";
 import Results from "@/pages/Results";
 import Social from "@/pages/Social";
+import SocialBetting from "@/pages/SocialBetting";
 import Settings from "@/pages/Settings";
 import SignUp from "@/pages/SignUp";
 import VideoGaming from "@/pages/VideoGaming";
@@ -30,6 +31,7 @@ function Router() {
       <Route path="/tournaments" component={Tournaments} />
       <Route path="/results" component={Results} />
       <Route path="/social" component={Social} />
+      <Route path="/social-betting" component={SocialBetting} />
       <Route path="/video-gaming" component={VideoGaming} />
       <Route path="/trivia" component={Trivia} />
       <Route path="/settings" component={Settings} />

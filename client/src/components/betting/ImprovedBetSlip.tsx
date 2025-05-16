@@ -17,6 +17,7 @@ import {
   Bookmark,
   Share2
 } from 'lucide-react';
+import ShareBetSlip from '@/components/social/ShareBetSlip';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
