@@ -124,13 +124,29 @@ const upcomingGames = [
 ];
 
 const Home: React.FC = () => {
-  const [sportFilter, setSportFilter] = useState("All Games");
+  const [sportFilter, setSportFilter] = useState("All Sports");
+  const [selectedTab, setSelectedTab] = useState("game-lines");
   
+  // Get all available sports
   const { data: sports, isLoading: isLoadingSports } = useQuery({
     queryKey: ["/api/sports"],
     queryFn: () => sportsBetAPI.getSports(),
   });
   
+  // Get live events from all sports
+  const { data: liveEvents, isLoading: isLoadingLiveEvents } = useQuery({
+    queryKey: ["/api/events/live"],
+    queryFn: () => sportsBetAPI.getLiveEvents(),
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
+  
+  // Get upcoming events from all sports
+  const { data: upcomingEvents, isLoading: isLoadingUpcomingEvents } = useQuery({
+    queryKey: ["/api/events/upcoming"],
+    queryFn: () => sportsBetAPI.getUpcomingEvents(10), // Get next 10 upcoming events
+  });
+  
+  // Get active tournament
   const { data: activeTournament, isLoading: isLoadingTournament } = useQuery({
     queryKey: ["/api/tournaments/1"],
     queryFn: () => sportsBetAPI.getTournament(1),
@@ -141,17 +157,19 @@ const Home: React.FC = () => {
       {/* Dashboard Header With Tabs */}
       <div className="mb-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <h1 className="text-2xl font-bold">NBA Basketball</h1>
+          <h1 className="text-2xl font-bold">Sports Betting</h1>
           <div className="flex space-x-2">
             <Select value={sportFilter} onValueChange={setSportFilter}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="All Games" />
+                <SelectValue placeholder="All Sports" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="All Games">All Games</SelectItem>
-                <SelectItem value="Live Only">Live Only</SelectItem>
-                <SelectItem value="Upcoming">Upcoming</SelectItem>
-                <SelectItem value="Completed">Completed</SelectItem>
+                <SelectItem value="All Sports">All Sports</SelectItem>
+                {sports && sports.map((sport: any) => (
+                  <SelectItem key={sport.key} value={sport.key}>
+                    {sport.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Button variant="outline" className="flex items-center gap-2">
@@ -161,7 +179,7 @@ const Home: React.FC = () => {
         </div>
         
         <div className="mt-4 border-b border-gray-200 dark:border-gray-700">
-          <Tabs defaultValue="game-lines" className="w-full">
+          <Tabs defaultValue="game-lines" value={selectedTab} onValueChange={setSelectedTab} className="w-full">
             <TabsList className="flex-wrap">
               <TabsTrigger value="game-lines">Game Lines</TabsTrigger>
               <TabsTrigger value="player-props">Player Props</TabsTrigger>
@@ -172,43 +190,131 @@ const Home: React.FC = () => {
         </div>
       </div>
       
-      {/* Featured Game Card */}
-      <GameCard game={featuredGame} />
+      {/* Live Events Section */}
+      <div className="mb-8">
+        <h2 className="text-xl font-bold mb-4 flex items-center">
+          <span className="h-3 w-3 rounded-full bg-green-500 mr-2"></span>
+          Live Events
+        </h2>
+        
+        {isLoadingLiveEvents ? (
+          <div className="space-y-4">
+            <Skeleton className="h-48 w-full" />
+            <Skeleton className="h-48 w-full" />
+          </div>
+        ) : liveEvents && liveEvents.length > 0 ? (
+          <div className="space-y-4">
+            {liveEvents
+              .filter((event: any) => sportFilter === "All Sports" || event.sport_key === sportFilter)
+              .map((event: any) => (
+                <GameCard key={event.id} game={{
+                  id: event.id,
+                  homeTeam: {
+                    id: event.home_team_id,
+                    name: event.home_team,
+                    logo: "",
+                    record: event.home_record || "",
+                    location: "Home"
+                  },
+                  awayTeam: {
+                    id: event.away_team_id,
+                    name: event.away_team,
+                    logo: "",
+                    record: event.away_record || "",
+                    location: "Away"
+                  },
+                  startTime: event.commence_time,
+                  status: "live",
+                  homeScore: event.scores?.home || 0,
+                  awayScore: event.scores?.away || 0,
+                  period: event.period || "In Progress",
+                  timeRemaining: event.time_remaining || "",
+                  sportName: event.sport_title || "Sports",
+                  odds: event.bookmakers?.[0]?.markets || {}
+                }} />
+              ))}
+          </div>
+        ) : (
+          <div className="bg-muted/30 p-8 text-center rounded-lg">
+            <p className="text-muted-foreground">No live events at the moment. Check back later!</p>
+          </div>
+        )}
+      </div>
       
-      <h2 className="text-lg font-bold mt-8 mb-4">Upcoming Games</h2>
-      
-      {/* Upcoming Games */}
-      {upcomingGames.map(game => (
-        <UpcomingGameCard key={game.id} game={game} />
-      ))}
+      {/* Upcoming Events Section */}
+      <div className="mb-8">
+        <h2 className="text-xl font-bold mb-4">Upcoming Events</h2>
+        
+        {isLoadingUpcomingEvents ? (
+          <div className="space-y-4">
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+          </div>
+        ) : upcomingEvents && upcomingEvents.length > 0 ? (
+          <div className="space-y-4">
+            {upcomingEvents
+              .filter((event: any) => sportFilter === "All Sports" || event.sport_key === sportFilter)
+              .map((event: any) => (
+                <UpcomingGameCard key={event.id} game={{
+                  id: event.id,
+                  homeTeam: {
+                    id: event.home_team_id,
+                    name: event.home_team,
+                    logo: ""
+                  },
+                  awayTeam: {
+                    id: event.away_team_id,
+                    name: event.away_team,
+                    logo: ""
+                  },
+                  startTime: event.commence_time,
+                  odds: {
+                    homeSpread: event.bookmakers?.[0]?.markets?.find((m: any) => m.key === "spreads")?.outcomes?.find((o: any) => o.name === event.home_team) || { line: 0, odds: 0 },
+                    awaySpread: event.bookmakers?.[0]?.markets?.find((m: any) => m.key === "spreads")?.outcomes?.find((o: any) => o.name === event.away_team) || { line: 0, odds: 0 },
+                    total: event.bookmakers?.[0]?.markets?.find((m: any) => m.key === "totals")?.outcomes?.[0] || { line: 0, odds: 0 }
+                  }
+                }} />
+              ))}
+          </div>
+        ) : (
+          <div className="bg-muted/30 p-8 text-center rounded-lg">
+            <p className="text-muted-foreground">No upcoming events found.</p>
+          </div>
+        )}
+      </div>
       
       {/* Tournament Bracket Section */}
-      <h2 className="text-lg font-bold mt-8 mb-4">Tournament Bracket</h2>
-      <BracketView tournamentId={1} />
+      <div className="mb-8">
+        <h2 className="text-xl font-bold mb-4">Tournament Bracket</h2>
+        <BracketView tournamentId={1} />
+      </div>
       
       {/* Fantasy Tools Section */}
-      <h2 className="text-lg font-bold mt-8 mb-4">Fantasy Tools</h2>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Fantasy Team Builder */}
-        <FantasyTeamBuilder />
+      <div className="mb-8">
+        <h2 className="text-xl font-bold mb-4">Fantasy Tools</h2>
         
-        {/* Player Props Tool */}
-        <Card>
-          <CardContent className="p-0">
-            <div className="bg-accent/10 p-4">
-              <div className="flex justify-between items-center">
-                <h3 className="font-bold text-accent">Player Props Tool</h3>
-                <span className="text-xs bg-accent text-white px-2 py-1 rounded">Odds Comparison</span>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Fantasy Team Builder */}
+          <FantasyTeamBuilder />
+          
+          {/* Player Props Tool */}
+          <Card>
+            <CardContent className="p-0">
+              <div className="bg-accent/10 p-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="font-bold text-accent">Player Props Tool</h3>
+                  <span className="text-xs bg-accent text-white px-2 py-1 rounded">Odds Comparison</span>
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Compare player props across multiple sportsbooks</p>
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Compare player props across multiple sportsbooks</p>
-            </div>
-            
-            <div className="p-4">
-              <PlayerPropsTable />
-            </div>
-          </CardContent>
-        </Card>
+              
+              <div className="p-4">
+                <PlayerPropsTable />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
