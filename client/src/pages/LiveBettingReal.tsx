@@ -18,6 +18,9 @@ import { getTeamLogo, getPlayerImage } from "@/lib/teamLogos";
 // Import crypto wallet connect component
 import CryptoWalletConnect from "@/components/auth/CryptoWalletConnect";
 
+// Import odds display component
+import OddsDisplay from "@/components/betting/OddsDisplay";
+
 // Import the sportsDataUtils for dynamic logos and player images
 import { 
   formatOdds, 
