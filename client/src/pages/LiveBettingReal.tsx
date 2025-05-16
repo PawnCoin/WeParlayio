@@ -26,6 +26,8 @@ import MoneylineButton from "@/components/betting/MoneylineButton";
 import BetButton from "@/components/betting/BetButton";
 import EnhancedButton from "@/components/betting/EnhancedButton";
 import MoneylinePreviewButton from "@/components/betting/MoneylinePreviewButton";
+import BettingPreviewCard from "@/components/betting/BettingPreviewCard";
+import BetPreviewButton from "@/components/betting/BetPreviewButton";
 
 // Import the sportsDataUtils for dynamic logos and player images
 import { 
