@@ -144,7 +144,7 @@ td {
 }
 
 :root {
-  /* WeParlay.io color scheme */
+  /* WeParlay.io color scheme based on logo */
   --background: 0 0% 100%;
   --foreground: 215 35% 15%;
   --muted: 210 20% 96%;
@@ -155,18 +155,25 @@ td {
   --card-foreground: 215 35% 15%;
   --border: 214 32% 90%;
   --input: 214 32% 90%;
-  --primary: 220 70% 40%; /* Deep Blue */
+  --primary: 240 70% 40%; /* Blue from WeParlay logo */
   --primary-foreground: 0 0% 100%;
-  --secondary: 152 60% 45%; /* Green */
+  --secondary: 142 70% 25%; /* Green from WeParlay shield */
   --secondary-foreground: 0 0% 100%;
-  --accent: 16 92% 58%; /* Orange accents */
+  --accent: 30 100% 50%; /* Orange from WeParlay text */
   --accent-foreground: 0 0% 100%;
   --success: 142 72% 29%; /* Success green */
   --success-foreground: 0 0% 100%;
   --destructive: 0 85% 44%;
   --destructive-foreground: 0 0% 100%;
-  --ring: 220 70% 40%;
+  --ring: 240 70% 40%;
   --radius: 0.5rem;
+  
+  /* Chart colors based on the WeParlay palette */
+  --chart-1: 240 70% 40%; /* Blue */
+  --chart-2: 142 70% 25%; /* Green */
+  --chart-3: 30 100% 50%; /* Orange */
+  --chart-4: 240 70% 60%; /* Lighter Blue */
+  --chart-5: 142 70% 40%; /* Lighter Green */
 }
 
 .dark {
@@ -180,18 +187,25 @@ td {
   --card-foreground: 0 0% 98%;
   --border: 223 30% 20%;
   --input: 223 30% 20%;
-  --primary: 213 90% 50%; /* Brighter Blue for dark mode */
+  --primary: 240 70% 55%; /* Brighter Blue for dark mode */
   --primary-foreground: 0 0% 100%;
-  --secondary: 152 60% 50%; /* Brighter Green for dark mode */
+  --secondary: 142 70% 35%; /* Brighter Green for dark mode */
   --secondary-foreground: 0 0% 100%;
-  --accent: 16 92% 58%; /* Orange accents */
+  --accent: 30 100% 60%; /* Brighter Orange for dark mode */
   --accent-foreground: 0 0% 100%;
   --success: 142 72% 40%; /* Brighter Success green for dark mode */
   --success-foreground: 0 0% 100%;
   --destructive: 0 85% 60%;
   --destructive-foreground: 0 0% 100%;
-  --ring: 213 90% 50%;
+  --ring: 240 70% 55%;
   --radius: 0.5rem;
+  
+  /* Chart colors for dark mode */
+  --chart-1: 240 70% 55%; /* Blue */
+  --chart-2: 142 70% 35%; /* Green */
+  --chart-3: 30 100% 60%; /* Orange */
+  --chart-4: 240 70% 75%; /* Lighter Blue */
+  --chart-5: 142 70% 55%; /* Lighter Green */
 }
 
 @layer base {
