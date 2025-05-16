@@ -50,8 +50,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 <Link key={link.href} href={link.href}>
                   <div className={`${
                     location === link.href
-                      ? "text-primary"
-                      : "text-neutral-dark dark:text-neutral-light hover:text-primary dark:hover:text-primary"
+                      ? "text-blue-500"
+                      : "text-white hover:text-blue-400"
                   } font-medium cursor-pointer`}>
                     {link.label}
                   </div>
@@ -65,7 +65,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 <>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="default" className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 flex items-center">
+                      <Button variant="default" className="bg-green-700 text-white px-4 py-2 rounded-md hover:bg-green-600 flex items-center">
                         <span>${user?.balance.toFixed(2)}</span>
                         <ChevronDown className="ml-1 h-4 w-4" />
                       </Button>
@@ -113,7 +113,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   </DropdownMenu>
                 </>
               ) : (
-                <Button variant="default" className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90">
+                <Button variant="default" className="bg-green-700 text-white px-4 py-2 rounded-md hover:bg-green-600">
                   Log In
                 </Button>
               )}
