@@ -11,7 +11,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Search, Star } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Search, Star, Eye } from 'lucide-react';
 
 // Top 50 cryptocurrencies including your custom token
 const cryptoCurrencies = [
@@ -66,14 +67,16 @@ const cryptoCurrencies = [
   { id: 'kava', name: 'Kava', symbol: 'KAVA', isFavorite: false },
   { id: 'ravencoin', name: 'Ravencoin', symbol: 'RVN', isFavorite: false },
   
-  // Your custom token - added as a favorite by default
+  // Your WePlay Token with exact details from Etherscan
   { 
     id: 'weplaytoken', 
     name: 'WePlay Token', 
     symbol: 'WEPT', 
     isFavorite: true,
     contract: '0x2Fe269292f74F0a98C5786088317B4f86313C211',
-    chain: 'ethereum'
+    chain: 'ethereum',
+    holderAddress: '0x1b523dc90a79cf5ee5d095825e586e33780f7188',
+    explorer: 'https://etherscan.io/token/0x2Fe269292f74F0a98C5786088317B4f86313C211'
   },
 ];
 
@@ -176,6 +179,28 @@ const CryptoSelector: React.FC<CryptoSelectorProps> = ({ onSelect, selectedCrypt
           <p className="text-gray-500 font-medium">Contract Address:</p>
           <p className="font-mono break-all">{selectedCrypto.contract}</p>
           <p className="text-gray-500 mt-1">Chain: {selectedCrypto.chain}</p>
+          
+          {selectedCrypto.id === 'weplaytoken' && (
+            <>
+              <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                <p className="text-gray-500 font-medium">WePlay Token</p>
+                <Badge className="bg-green-600">WEPT</Badge>
+              </div>
+              
+              <p className="mt-1 text-gray-500">Holder Address:</p>
+              <p className="font-mono break-all text-xs">{selectedCrypto.holderAddress}</p>
+              
+              <a 
+                href={selectedCrypto.explorer}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 flex items-center justify-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+              >
+                <Eye className="h-3 w-3 mr-1" />
+                View on Etherscan
+              </a>
+            </>
+          )}
         </div>
       )}
     </div>

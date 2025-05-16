@@ -6,10 +6,11 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { DollarSign, Wallet, AlertCircle, Check, RefreshCw, Share } from 'lucide-react';
+import { DollarSign, Wallet, AlertCircle, Check, RefreshCw, Share, TrendingUp } from 'lucide-react';
 import CryptoSelector from './CryptoSelector';
 import WalletConnect from './WalletConnect';
 import ShareBetCard from './ShareBetCard';
+import TokenPriceChart from './TokenPriceChart';
 import { useToast } from '@/hooks/use-toast';
 
 interface CryptoBetFormProps {
@@ -220,27 +221,46 @@ const CryptoBetForm: React.FC<CryptoBetFormProps> = ({
           />
           
           {selectedCrypto && (
-            <div className="mt-2 flex items-center justify-between text-sm">
-              <div className="flex items-center">
-                <span className="text-gray-500">Current Rate:</span>
-                <Badge variant="outline" className="ml-2">
-                  1 {selectedCrypto.symbol} = ${exchangeRates[selectedCrypto.id]?.toLocaleString() || 'N/A'}
-                </Badge>
+            <>
+              <div className="mt-2 flex items-center justify-between text-sm">
+                <div className="flex items-center">
+                  <span className="text-gray-500">Current Rate:</span>
+                  <Badge variant="outline" className="ml-2">
+                    1 {selectedCrypto.symbol} = ${exchangeRates[selectedCrypto.id]?.toLocaleString() || 'N/A'}
+                  </Badge>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-7 w-7 p-0"
+                  onClick={() => {
+                    toast({
+                      title: "Rates Updated",
+                      description: "Latest cryptocurrency rates loaded",
+                    });
+                  }}
+                >
+                  <RefreshCw className="h-3 w-3" />
+                </Button>
               </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-7 w-7 p-0"
-                onClick={() => {
-                  toast({
-                    title: "Rates Updated",
-                    description: "Latest cryptocurrency rates loaded",
-                  });
-                }}
-              >
-                <RefreshCw className="h-3 w-3" />
-              </Button>
-            </div>
+              
+              {/* Show price chart for WePlay Token */}
+              {selectedCrypto.id === 'weplaytoken' && (
+                <div className="mt-3">
+                  <TokenPriceChart 
+                    tokenId={selectedCrypto.id}
+                    tokenSymbol={selectedCrypto.symbol}
+                    currentPrice={exchangeRates[selectedCrypto.id] || 0.15}
+                    onChange={(newPrice) => {
+                      setExchangeRates(prev => ({
+                        ...prev,
+                        [selectedCrypto.id]: newPrice
+                      }));
+                    }}
+                  />
+                </div>
+              )}
+            </>
           )}
           
           {/* Special boost for WePlay Token */}
