@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import sportsBetAPI from "@/lib/sportsBetAPI";
-import yahooFantasyAPI from "@/lib/yahooFantasyAPI";
+import yahooFantasyAPI, { YahooTeam, YahooPlayer } from "@/lib/yahooFantasyAPI";
 import FantasyTeamBuilder from "@/components/fantasy/FantasyTeamBuilder";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -19,18 +19,31 @@ import { useToast } from "@/hooks/use-toast";
 const FantasySports: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const [activeSport, setActiveSport] = useState("basketball");
+  const [selectedTeamKey, setSelectedTeamKey] = useState<string | null>(null);
   const { toast } = useToast();
   
-  const { data: yahooAuthenticated, isLoading: isCheckingYahoo } = useQuery({
+  // Check if the user is authenticated with Yahoo
+  const { data: yahooAuthenticated, isLoading: isCheckingYahoo, refetch: refetchYahooStatus } = useQuery({
     queryKey: ["yahoo-auth-status"],
     queryFn: () => yahooFantasyAPI.isAuthenticated(),
     enabled: isAuthenticated,
+    staleTime: 60000, // Refetch every minute to keep auth status current
   });
   
-  const { data: yahooTeams, isLoading: isLoadingYahooTeams } = useQuery({
+  // Get user's fantasy teams from Yahoo when authenticated
+  const { data: yahooTeams, isLoading: isLoadingYahooTeams, refetch: refetchYahooTeams } = useQuery({
     queryKey: ["yahoo-teams"],
     queryFn: () => yahooFantasyAPI.getUserTeams(),
     enabled: !!yahooAuthenticated,
+    refetchOnWindowFocus: false,
+  });
+  
+  // Get team roster when a team is selected
+  const { data: teamRoster, isLoading: isLoadingRoster } = useQuery({
+    queryKey: ["yahoo-team-roster", selectedTeamKey],
+    queryFn: () => yahooFantasyAPI.getTeamRoster(selectedTeamKey!),
+    enabled: !!selectedTeamKey && !!yahooAuthenticated,
+    refetchOnWindowFocus: false,
   });
   
   const handleYahooConnect = async () => {
