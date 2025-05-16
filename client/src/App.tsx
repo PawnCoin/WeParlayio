@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
-import LiveBettingEnhanced from "@/pages/LiveBettingEnhanced";
+import LiveBettingReal from "@/pages/LiveBettingReal";
 import FantasySports from "@/pages/FantasySports";
 import Tournaments from "@/pages/Tournaments";
 import Results from "@/pages/Results";
@@ -15,7 +15,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
-      <Route path="/live-betting" component={LiveBettingEnhanced} />
+      <Route path="/live-betting" component={LiveBettingReal} />
       <Route path="/fantasy" component={FantasySports} />
       <Route path="/tournaments" component={Tournaments} />
       <Route path="/results" component={Results} />

@@ -12,7 +12,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronUp, ChevronDown, BarChart2, Clock, RefreshCcw, AlertTriangle, TrendingUp, Trash2, Info, Dot } from "lucide-react";
 
-// Import team logos
 // Import the sportsDataUtils for dynamic logos and player images
 import { 
   getTeamLogoUrl, 
@@ -36,7 +35,8 @@ interface BetSelection {
   point?: number;
 }
 
-const LiveBettingEnhanced: React.FC = () => {
+// Main LiveBetting component
+const LiveBettingReal: React.FC = () => {
   const { toast } = useToast();
   const [selectedSport, setSelectedSport] = useState<string>("basketball_nba");
   const [betSlip, setBetSlip] = useState<BetSelection[]>([]);
@@ -52,7 +52,7 @@ const LiveBettingEnhanced: React.FC = () => {
   
   // Fetch live events for selected sport
   const { 
-    data: liveEvents, 
+    data: liveEventsData, 
     isLoading: isLoadingLiveEvents,
     refetch: refetchLiveEvents,
     dataUpdatedAt: liveDataUpdatedAt
@@ -63,143 +63,19 @@ const LiveBettingEnhanced: React.FC = () => {
   
   // Fetch upcoming events for selected sport
   const { 
-    data: upcomingEvents, 
+    data: upcomingEventsData, 
     isLoading: isLoadingUpcomingEvents 
   } = useQuery({
     queryKey: [`/api/sports/${selectedSport}/upcoming`],
     refetchInterval: 60000, // 1 minute
   });
   
-  // Mock live data for demonstration
-  const mockLiveData = [
-    {
-      id: "live-1",
-      home_team: "Boston Celtics",
-      away_team: "Los Angeles Lakers",
-      scores: [
-        { name: "Boston Celtics", score: 89 },
-        { name: "Los Angeles Lakers", score: 84 }
-      ],
-      time_remaining: "Q3 7:21",
-      status: "in_progress",
-      commence_time: new Date(new Date().getTime() - 4800000).toISOString(), // Started 80 minutes ago
-      bookmakers: [
-        {
-          key: "draftkings",
-          title: "DraftKings",
-          last_update: new Date().toISOString(),
-          markets: [
-            {
-              key: "h2h",
-              outcomes: [
-                { name: "Boston Celtics", price: -155 },
-                { name: "Los Angeles Lakers", price: 135 }
-              ]
-            },
-            {
-              key: "spreads",
-              outcomes: [
-                { name: "Boston Celtics", price: -110, point: -3.5 },
-                { name: "Los Angeles Lakers", price: -110, point: 3.5 }
-              ]
-            },
-            {
-              key: "totals",
-              outcomes: [
-                { name: "Over", price: -110, point: 220.5 },
-                { name: "Under", price: -110, point: 220.5 }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      id: "live-2",
-      home_team: "Golden State Warriors",
-      away_team: "Denver Nuggets",
-      scores: [
-        { name: "Golden State Warriors", score: 101 },
-        { name: "Denver Nuggets", score: 92 }
-      ],
-      time_remaining: "Q4 2:45",
-      status: "in_progress",
-      commence_time: new Date(new Date().getTime() - 6000000).toISOString(), // Started 100 minutes ago
-      bookmakers: [
-        {
-          key: "draftkings",
-          title: "DraftKings",
-          last_update: new Date().toISOString(),
-          markets: [
-            {
-              key: "h2h",
-              outcomes: [
-                { name: "Golden State Warriors", price: -220 },
-                { name: "Denver Nuggets", price: 185 }
-              ]
-            },
-            {
-              key: "spreads",
-              outcomes: [
-                { name: "Golden State Warriors", price: -110, point: -5.5 },
-                { name: "Denver Nuggets", price: -110, point: 5.5 }
-              ]
-            },
-            {
-              key: "totals",
-              outcomes: [
-                { name: "Over", price: -110, point: 235.5 },
-                { name: "Under", price: -110, point: 235.5 }
-              ]
-            }
-          ]
-        }
-      ]
-    }
-  ];
-
-  // Mock upcoming data for demonstration
-  const mockUpcomingData = [
-    {
-      id: "upcoming-1",
-      home_team: "Miami Heat",
-      away_team: "Phoenix Suns",
-      commence_time: new Date(new Date().getTime() + 3600000).toISOString(), // Starts in 1 hour
-      bookmakers: [
-        {
-          key: "draftkings",
-          title: "DraftKings",
-          last_update: new Date().toISOString(),
-          markets: [
-            {
-              key: "h2h",
-              outcomes: [
-                { name: "Miami Heat", price: 165 },
-                { name: "Phoenix Suns", price: -195 }
-              ]
-            },
-            {
-              key: "spreads",
-              outcomes: [
-                { name: "Miami Heat", price: -110, point: 4.5 },
-                { name: "Phoenix Suns", price: -110, point: -4.5 }
-              ]
-            },
-            {
-              key: "totals",
-              outcomes: [
-                { name: "Over", price: -110, point: 218.5 },
-                { name: "Under", price: -110, point: 218.5 }
-              ]
-            }
-          ]
-        }
-      ]
-    }
-  ];
+  // Ensure the data is an array, even if empty
+  const liveEvents = Array.isArray(liveEventsData) ? liveEventsData : [];
+  const upcomingEvents = Array.isArray(upcomingEventsData) ? upcomingEventsData : [];
   
   // Format time remaining in game
-  const formatGameTime = (event: any) => {
+  const formatGameTimeRemaining = (event: any) => {
     if (event.time_remaining) {
       return event.time_remaining;
     }
@@ -210,7 +86,7 @@ const LiveBettingEnhanced: React.FC = () => {
     
     // Format commence time
     const gameTime = new Date(event.commence_time);
-    return gameTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return formatGameTime(gameTime);
   };
   
   // Add bet to slip
@@ -275,16 +151,13 @@ const LiveBettingEnhanced: React.FC = () => {
   };
   
   // Calculate potential payout
-  const calculatePotentialPayout = () => {
+  const calculateTotalPayout = () => {
     const amount = parseFloat(betAmount) || 0;
     
     if (betType === 'single') {
       // Each bet calculated separately
       return betSlip.map(bet => {
-        const odds = bet.odds;
-        return odds > 0 
-          ? amount + (amount * (odds / 100)) 
-          : amount + (amount / (Math.abs(odds) / 100));
+        return calculatePayout(bet.odds, amount);
       }).reduce((sum, payout) => sum + payout, 0);
     } else {
       // Parlay - multiply all odds
@@ -301,11 +174,6 @@ const LiveBettingEnhanced: React.FC = () => {
       
       return amount * combinedOdds;
     }
-  };
-  
-  // Format odds display
-  const formatOdds = (odds: number) => {
-    return odds > 0 ? `+${odds}` : odds.toString();
   };
   
   // Check if bet is in slip
@@ -383,6 +251,9 @@ const LiveBettingEnhanced: React.FC = () => {
     return date.toLocaleTimeString();
   };
   
+  // Get the league's display name from the selected sport
+  const leagueInfo = getLeagueInfo(selectedSport);
+  
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
@@ -396,21 +267,14 @@ const LiveBettingEnhanced: React.FC = () => {
               {isLoadingSports ? (
                 <SelectItem value="loading" disabled>Loading sports...</SelectItem>
               ) : (
-                sports && sports.length > 0 ? 
-                sports.map((sport: any) => (
-                  <SelectItem key={sport.key} value={sport.key}>
-                    {sport.title}
-                  </SelectItem>
-                )) : (
-                  // Fallback options if no sports data is available
-                  <>
-                    <SelectItem value="basketball_nba">NBA</SelectItem>
-                    <SelectItem value="basketball_ncaab">NCAAB</SelectItem>
-                    <SelectItem value="football_nfl">NFL</SelectItem>
-                    <SelectItem value="baseball_mlb">MLB</SelectItem>
-                    <SelectItem value="icehockey_nhl">NHL</SelectItem>
-                  </>
-                )
+                <>
+                  <SelectItem value="basketball_nba">NBA</SelectItem>
+                  <SelectItem value="basketball_ncaab">NCAAB</SelectItem>
+                  <SelectItem value="football_nfl">NFL</SelectItem>
+                  <SelectItem value="baseball_mlb">MLB</SelectItem>
+                  <SelectItem value="icehockey_nhl">NHL</SelectItem>
+                  <SelectItem value="soccer_epl">Premier League</SelectItem>
+                </>
               )}
             </SelectContent>
           </Select>
@@ -443,7 +307,7 @@ const LiveBettingEnhanced: React.FC = () => {
                   <div>
                     <CardTitle className="text-base font-bold flex items-center text-foreground">
                       <Dot className="h-5 w-5 text-green-500 animate-pulse" />
-                      Live Games
+                      Live {leagueInfo.name} Games
                     </CardTitle>
                     <CardDescription className="text-xs text-muted-foreground">
                       Last updated: {getLastUpdatedTime()}
@@ -475,16 +339,16 @@ const LiveBettingEnhanced: React.FC = () => {
                       <Skeleton className="h-12 w-full mb-2" />
                       <Skeleton className="h-12 w-full" />
                     </div>
-                  ) : liveEvents && liveEvents.length > 0 ? (
+                  ) : liveEvents.length > 0 ? (
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Game</TableHead>
-                          <TableHead>Time</TableHead>
-                          <TableHead>Score</TableHead>
-                          <TableHead>Moneyline</TableHead>
-                          <TableHead>Spread</TableHead>
-                          <TableHead>Total</TableHead>
+                          <TableHead className="text-muted-foreground">Game</TableHead>
+                          <TableHead className="text-muted-foreground">Time</TableHead>
+                          <TableHead className="text-muted-foreground">Score</TableHead>
+                          <TableHead className="text-muted-foreground">Moneyline</TableHead>
+                          <TableHead className="text-muted-foreground">Spread</TableHead>
+                          <TableHead className="text-muted-foreground">Total</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -506,27 +370,27 @@ const LiveBettingEnhanced: React.FC = () => {
                               <TableCell>
                                 <div className="flex flex-col gap-1">
                                   <div className="flex items-center">
-                                    {getTeamLogo(event.home_team) ? (
-                                      <img 
-                                        src={getTeamLogo(event.home_team)} 
-                                        alt={event.home_team} 
-                                        className="w-6 h-6 mr-2"
-                                      />
-                                    ) : (
-                                      <div className="w-6 h-6 mr-2 bg-gray-200 rounded-full"></div>
-                                    )}
+                                    <img 
+                                      src={getTeamLogoUrl(event.home_team, leagueInfo.name)} 
+                                      alt={event.home_team} 
+                                      className="w-6 h-6 mr-2"
+                                      onError={(e) => {
+                                        (e.target as HTMLImageElement).onerror = null;
+                                        (e.target as HTMLImageElement).src = 'https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-basketball.png';
+                                      }}
+                                    />
                                     <span className="text-foreground">{event.home_team}</span>
                                   </div>
                                   <div className="flex items-center">
-                                    {getTeamLogo(event.away_team) ? (
-                                      <img 
-                                        src={getTeamLogo(event.away_team)} 
-                                        alt={event.away_team} 
-                                        className="w-6 h-6 mr-2"
-                                      />
-                                    ) : (
-                                      <div className="w-6 h-6 mr-2 bg-gray-200 rounded-full"></div>
-                                    )}
+                                    <img 
+                                      src={getTeamLogoUrl(event.away_team, leagueInfo.name)} 
+                                      alt={event.away_team} 
+                                      className="w-6 h-6 mr-2"
+                                      onError={(e) => {
+                                        (e.target as HTMLImageElement).onerror = null;
+                                        (e.target as HTMLImageElement).src = 'https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-basketball.png';
+                                      }}
+                                    />
                                     <span className="text-foreground">{event.away_team}</span>
                                   </div>
                                 </div>
@@ -534,7 +398,7 @@ const LiveBettingEnhanced: React.FC = () => {
                               <TableCell>
                                 <div className="flex flex-col">
                                   <Badge variant="outline" className="mb-1 text-xs bg-muted text-foreground">
-                                    {formatGameTime(event)}
+                                    {formatGameTimeRemaining(event)}
                                   </Badge>
                                   <span className="text-xs text-muted-foreground">
                                     {getGameStatus(event)}
@@ -642,166 +506,13 @@ const LiveBettingEnhanced: React.FC = () => {
                       </TableBody>
                     </Table>
                   ) : (
-                    // If no actual data, use mock data for demonstration
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="text-muted-foreground">Game</TableHead>
-                          <TableHead className="text-muted-foreground">Time</TableHead>
-                          <TableHead className="text-muted-foreground">Score</TableHead>
-                          <TableHead className="text-muted-foreground">Moneyline</TableHead>
-                          <TableHead className="text-muted-foreground">Spread</TableHead>
-                          <TableHead className="text-muted-foreground">Total</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {mockLiveData.map((event: any) => {
-                          // Get scores if available
-                          const homeScore = event.scores?.find((s: any) => s.name === event.home_team)?.score;
-                          const awayScore = event.scores?.find((s: any) => s.name === event.away_team)?.score;
-                          
-                          // Look for bookmaker (first available one)
-                          const bookmaker = event.bookmakers?.[0];
-                          
-                          // Extract markets
-                          const moneylineMarket = bookmaker?.markets?.find((m: any) => m.key === 'h2h');
-                          const spreadMarket = bookmaker?.markets?.find((m: any) => m.key === 'spreads');
-                          const totalMarket = bookmaker?.markets?.find((m: any) => m.key === 'totals');
-                          
-                          return (
-                            <TableRow key={event.id}>
-                              <TableCell>
-                                <div className="flex flex-col gap-1">
-                                  <div className="flex items-center">
-                                    {getTeamLogo(event.home_team) ? (
-                                      <img 
-                                        src={getTeamLogo(event.home_team)} 
-                                        alt={event.home_team} 
-                                        className="w-6 h-6 mr-2"
-                                      />
-                                    ) : (
-                                      <div className="w-6 h-6 mr-2 bg-gray-200 rounded-full"></div>
-                                    )}
-                                    <span className="text-foreground">{event.home_team}</span>
-                                  </div>
-                                  <div className="flex items-center">
-                                    {getTeamLogo(event.away_team) ? (
-                                      <img 
-                                        src={getTeamLogo(event.away_team)} 
-                                        alt={event.away_team} 
-                                        className="w-6 h-6 mr-2"
-                                      />
-                                    ) : (
-                                      <div className="w-6 h-6 mr-2 bg-gray-200 rounded-full"></div>
-                                    )}
-                                    <span className="text-foreground">{event.away_team}</span>
-                                  </div>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex flex-col">
-                                  <Badge variant="outline" className="mb-1 text-xs bg-muted text-foreground">
-                                    {event.time_remaining}
-                                  </Badge>
-                                  <span className="text-xs text-muted-foreground">
-                                    {getGameStatus(event)}
-                                  </span>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex flex-col">
-                                  <div className="font-bold text-foreground">{homeScore}</div>
-                                  <div className="font-bold text-foreground">{awayScore}</div>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                {moneylineMarket && (
-                                  <div className="flex flex-col gap-1">
-                                    {moneylineMarket.outcomes.map((outcome: any) => {
-                                      const isSelected = isBetInSlip(event.id, 'moneyline', outcome.name);
-                                      return (
-                                        <Button 
-                                          key={`${event.id}-moneyline-${outcome.name}`}
-                                          variant={isSelected ? "default" : "outline"} 
-                                          size="sm" 
-                                          className={`w-full text-xs ${isSelected ? 'bg-primary text-white' : 'bg-background text-foreground'}`}
-                                          onClick={() => addToBetSlip(
-                                            event.id, 
-                                            event.home_team, 
-                                            event.away_team, 
-                                            'moneyline', 
-                                            outcome.name, 
-                                            outcome.price
-                                          )}
-                                        >
-                                          {formatOdds(outcome.price)}
-                                        </Button>
-                                      );
-                                    })}
-                                  </div>
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                {spreadMarket && (
-                                  <div className="flex flex-col gap-1">
-                                    {spreadMarket.outcomes.map((outcome: any) => {
-                                      const isSelected = isBetInSlip(event.id, 'spread', outcome.name);
-                                      return (
-                                        <Button 
-                                          key={`${event.id}-spread-${outcome.name}`}
-                                          variant={isSelected ? "default" : "outline"} 
-                                          size="sm" 
-                                          className={`w-full text-xs ${isSelected ? 'bg-primary text-white' : 'bg-background text-foreground'}`}
-                                          onClick={() => addToBetSlip(
-                                            event.id, 
-                                            event.home_team, 
-                                            event.away_team, 
-                                            'spread', 
-                                            outcome.name, 
-                                            outcome.price,
-                                            outcome.point
-                                          )}
-                                        >
-                                          {outcome.point > 0 ? '+' : ''}{outcome.point} ({formatOdds(outcome.price)})
-                                        </Button>
-                                      );
-                                    })}
-                                  </div>
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                {totalMarket && (
-                                  <div className="flex flex-col gap-1">
-                                    {totalMarket.outcomes.map((outcome: any) => {
-                                      const isSelected = isBetInSlip(event.id, 'total', outcome.name);
-                                      return (
-                                        <Button 
-                                          key={`${event.id}-total-${outcome.name}`}
-                                          variant={isSelected ? "default" : "outline"} 
-                                          size="sm" 
-                                          className={`w-full text-xs ${isSelected ? 'bg-primary text-white' : 'bg-background text-foreground'}`}
-                                          onClick={() => addToBetSlip(
-                                            event.id, 
-                                            event.home_team, 
-                                            event.away_team, 
-                                            'total', 
-                                            outcome.name, 
-                                            outcome.price,
-                                            outcome.point
-                                          )}
-                                        >
-                                          {outcome.name.toUpperCase()} {outcome.point} ({formatOdds(outcome.price)})
-                                        </Button>
-                                      );
-                                    })}
-                                  </div>
-                                )}
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
+                    <div className="p-8 text-center">
+                      <Info className="h-12 w-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
+                      <p className="text-gray-500 dark:text-gray-400 mb-2">No live games at the moment</p>
+                      <p className="text-sm text-gray-400 dark:text-gray-500">
+                        Check back later or view upcoming games
+                      </p>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -812,7 +523,7 @@ const LiveBettingEnhanced: React.FC = () => {
                 <CardHeader className="py-3 px-4 bg-muted">
                   <CardTitle className="text-base font-bold flex items-center text-foreground">
                     <Clock className="h-4 w-4 mr-2 text-primary" />
-                    Upcoming Games
+                    Upcoming {leagueInfo.name} Games
                   </CardTitle>
                   <CardDescription className="text-xs text-muted-foreground">
                     Starting soon - place your bets now
@@ -826,7 +537,7 @@ const LiveBettingEnhanced: React.FC = () => {
                       <Skeleton className="h-12 w-full mb-2" />
                       <Skeleton className="h-12 w-full" />
                     </div>
-                  ) : upcomingEvents && upcomingEvents.length > 0 ? (
+                  ) : upcomingEvents.length > 0 ? (
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -841,11 +552,8 @@ const LiveBettingEnhanced: React.FC = () => {
                         {upcomingEvents.map((event: any) => {
                           // Format start time
                           const startTime = new Date(event.commence_time);
-                          const formattedDate = startTime.toLocaleDateString();
-                          const formattedTime = startTime.toLocaleTimeString([], { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          });
+                          const formattedDate = formatGameDate(startTime);
+                          const formattedTime = formatGameTime(startTime);
                           
                           // Look for bookmaker (first available one)
                           const bookmaker = event.bookmakers?.[0];
@@ -860,27 +568,27 @@ const LiveBettingEnhanced: React.FC = () => {
                               <TableCell>
                                 <div className="flex flex-col gap-1">
                                   <div className="flex items-center">
-                                    {getTeamLogo(event.home_team) ? (
-                                      <img 
-                                        src={getTeamLogo(event.home_team)} 
-                                        alt={event.home_team} 
-                                        className="w-6 h-6 mr-2"
-                                      />
-                                    ) : (
-                                      <div className="w-6 h-6 mr-2 bg-gray-200 rounded-full"></div>
-                                    )}
+                                    <img 
+                                      src={getTeamLogoUrl(event.home_team, leagueInfo.name)} 
+                                      alt={event.home_team} 
+                                      className="w-6 h-6 mr-2"
+                                      onError={(e) => {
+                                        (e.target as HTMLImageElement).onerror = null;
+                                        (e.target as HTMLImageElement).src = 'https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-basketball.png';
+                                      }}
+                                    />
                                     <span className="text-foreground">{event.home_team}</span>
                                   </div>
                                   <div className="flex items-center">
-                                    {getTeamLogo(event.away_team) ? (
-                                      <img 
-                                        src={getTeamLogo(event.away_team)} 
-                                        alt={event.away_team} 
-                                        className="w-6 h-6 mr-2"
-                                      />
-                                    ) : (
-                                      <div className="w-6 h-6 mr-2 bg-gray-200 rounded-full"></div>
-                                    )}
+                                    <img 
+                                      src={getTeamLogoUrl(event.away_team, leagueInfo.name)} 
+                                      alt={event.away_team} 
+                                      className="w-6 h-6 mr-2"
+                                      onError={(e) => {
+                                        (e.target as HTMLImageElement).onerror = null;
+                                        (e.target as HTMLImageElement).src = 'https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-basketball.png';
+                                      }}
+                                    />
                                     <span className="text-foreground">{event.away_team}</span>
                                   </div>
                                 </div>
@@ -968,7 +676,7 @@ const LiveBettingEnhanced: React.FC = () => {
                                             'total', 
                                             outcome.name, 
                                             outcome.price,
-                                            outcome.point
+                                            outcome.point ? outcome.point : 0
                                           )}
                                         >
                                           {outcome.name.toUpperCase()} {outcome.point} ({formatOdds(outcome.price)})
@@ -986,159 +694,13 @@ const LiveBettingEnhanced: React.FC = () => {
                       </TableBody>
                     </Table>
                   ) : (
-                    // If no actual data, use mock data for demonstration
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="text-muted-foreground">Game</TableHead>
-                          <TableHead className="text-muted-foreground">Time</TableHead>
-                          <TableHead className="text-muted-foreground">Moneyline</TableHead>
-                          <TableHead className="text-muted-foreground">Spread</TableHead>
-                          <TableHead className="text-muted-foreground">Total</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {mockUpcomingData.map((event: any) => {
-                          // Format start time
-                          const startTime = new Date(event.commence_time);
-                          const formattedDate = startTime.toLocaleDateString();
-                          const formattedTime = startTime.toLocaleTimeString([], { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          });
-                          
-                          // Look for bookmaker (first available one)
-                          const bookmaker = event.bookmakers?.[0];
-                          
-                          // Extract markets
-                          const moneylineMarket = bookmaker?.markets?.find((m: any) => m.key === 'h2h');
-                          const spreadMarket = bookmaker?.markets?.find((m: any) => m.key === 'spreads');
-                          const totalMarket = bookmaker?.markets?.find((m: any) => m.key === 'totals');
-                          
-                          return (
-                            <TableRow key={event.id}>
-                              <TableCell>
-                                <div className="flex flex-col gap-1">
-                                  <div className="flex items-center">
-                                    {getTeamLogo(event.home_team) ? (
-                                      <img 
-                                        src={getTeamLogo(event.home_team)} 
-                                        alt={event.home_team} 
-                                        className="w-6 h-6 mr-2"
-                                      />
-                                    ) : (
-                                      <div className="w-6 h-6 mr-2 bg-gray-200 rounded-full"></div>
-                                    )}
-                                    <span className="text-foreground">{event.home_team}</span>
-                                  </div>
-                                  <div className="flex items-center">
-                                    {getTeamLogo(event.away_team) ? (
-                                      <img 
-                                        src={getTeamLogo(event.away_team)} 
-                                        alt={event.away_team} 
-                                        className="w-6 h-6 mr-2"
-                                      />
-                                    ) : (
-                                      <div className="w-6 h-6 mr-2 bg-gray-200 rounded-full"></div>
-                                    )}
-                                    <span className="text-foreground">{event.away_team}</span>
-                                  </div>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex flex-col">
-                                  <span className="text-xs font-medium text-foreground">{formattedDate}</span>
-                                  <span className="text-xs text-muted-foreground">{formattedTime}</span>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                {moneylineMarket && (
-                                  <div className="flex flex-col gap-1">
-                                    {moneylineMarket.outcomes.map((outcome: any) => {
-                                      const isSelected = isBetInSlip(event.id, 'moneyline', outcome.name);
-                                      return (
-                                        <Button 
-                                          key={`${event.id}-moneyline-${outcome.name}`}
-                                          variant={isSelected ? "default" : "outline"} 
-                                          size="sm" 
-                                          className={`w-full text-xs ${isSelected ? 'bg-primary text-white' : 'bg-background text-foreground'}`}
-                                          onClick={() => addToBetSlip(
-                                            event.id, 
-                                            event.home_team, 
-                                            event.away_team, 
-                                            'moneyline', 
-                                            outcome.name, 
-                                            outcome.price
-                                          )}
-                                        >
-                                          {formatOdds(outcome.price)}
-                                        </Button>
-                                      );
-                                    })}
-                                  </div>
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                {spreadMarket && (
-                                  <div className="flex flex-col gap-1">
-                                    {spreadMarket.outcomes.map((outcome: any) => {
-                                      const isSelected = isBetInSlip(event.id, 'spread', outcome.name);
-                                      return (
-                                        <Button 
-                                          key={`${event.id}-spread-${outcome.name}`}
-                                          variant={isSelected ? "default" : "outline"} 
-                                          size="sm" 
-                                          className={`w-full text-xs ${isSelected ? 'bg-primary text-white' : 'bg-background text-foreground'}`}
-                                          onClick={() => addToBetSlip(
-                                            event.id, 
-                                            event.home_team, 
-                                            event.away_team, 
-                                            'spread', 
-                                            outcome.name, 
-                                            outcome.price,
-                                            outcome.point
-                                          )}
-                                        >
-                                          {outcome.point > 0 ? '+' : ''}{outcome.point} ({formatOdds(outcome.price)})
-                                        </Button>
-                                      );
-                                    })}
-                                  </div>
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                {totalMarket && (
-                                  <div className="flex flex-col gap-1">
-                                    {totalMarket.outcomes.map((outcome: any) => {
-                                      const isSelected = isBetInSlip(event.id, 'total', outcome.name);
-                                      return (
-                                        <Button 
-                                          key={`${event.id}-total-${outcome.name}`}
-                                          variant={isSelected ? "default" : "outline"} 
-                                          size="sm" 
-                                          className={`w-full text-xs ${isSelected ? 'bg-primary text-white' : 'bg-background text-foreground'}`}
-                                          onClick={() => addToBetSlip(
-                                            event.id, 
-                                            event.home_team, 
-                                            event.away_team, 
-                                            'total', 
-                                            outcome.name, 
-                                            outcome.price,
-                                            outcome.point
-                                          )}
-                                        >
-                                          {outcome.name.toUpperCase()} {outcome.point} ({formatOdds(outcome.price)})
-                                        </Button>
-                                      );
-                                    })}
-                                  </div>
-                                )}
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
+                    <div className="p-8 text-center">
+                      <Info className="h-12 w-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
+                      <p className="text-gray-500 dark:text-gray-400 mb-2">No upcoming games found</p>
+                      <p className="text-sm text-gray-400 dark:text-gray-500">
+                        Check back later or try another sport
+                      </p>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -1153,138 +715,148 @@ const LiveBettingEnhanced: React.FC = () => {
                 Live Game Statistics
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground">
-                Boston Celtics vs Los Angeles Lakers - Q3 7:21
+                {liveEvents.length > 0 ? `${liveEvents[0].home_team} vs ${liveEvents[0].away_team}` : "No live games"}
               </CardDescription>
             </CardHeader>
             
             <CardContent className="p-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Team Stats */}
-                <div>
-                  <h3 className="font-medium mb-3 text-foreground">Team Statistics</h3>
-                  <div className="space-y-3">
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="text-foreground">Field Goal %</span>
-                        <div className="flex gap-4">
-                          <span className="w-12 text-right text-primary">48.2%</span>
-                          <span className="w-12 text-right text-secondary">44.5%</span>
+              {liveEvents.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Team Stats */}
+                  <div>
+                    <h3 className="font-medium mb-3 text-foreground">Team Statistics</h3>
+                    <div className="space-y-3">
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="text-foreground">Field Goal %</span>
+                          <div className="flex gap-4">
+                            <span className="w-12 text-right text-primary">48.2%</span>
+                            <span className="w-12 text-right text-secondary">44.5%</span>
+                          </div>
+                        </div>
+                        <div className="flex h-2 bg-muted rounded-full overflow-hidden">
+                          <div className="bg-primary" style={{ width: "52%" }}></div>
+                          <div className="bg-secondary" style={{ width: "48%" }}></div>
                         </div>
                       </div>
-                      <div className="flex h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="bg-primary" style={{ width: "52%" }}></div>
-                        <div className="bg-secondary" style={{ width: "48%" }}></div>
+                      
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="text-foreground">3-Point %</span>
+                          <div className="flex gap-4">
+                            <span className="w-12 text-right text-primary">38.9%</span>
+                            <span className="w-12 text-right text-secondary">36.2%</span>
+                          </div>
+                        </div>
+                        <div className="flex h-2 bg-muted rounded-full overflow-hidden">
+                          <div className="bg-primary" style={{ width: "53%" }}></div>
+                          <div className="bg-secondary" style={{ width: "47%" }}></div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="text-foreground">Rebounds</span>
+                          <div className="flex gap-4">
+                            <span className="w-12 text-right text-primary">42</span>
+                            <span className="w-12 text-right text-secondary">38</span>
+                          </div>
+                        </div>
+                        <div className="flex h-2 bg-muted rounded-full overflow-hidden">
+                          <div className="bg-primary" style={{ width: "55%" }}></div>
+                          <div className="bg-secondary" style={{ width: "45%" }}></div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="text-foreground">Assists</span>
+                          <div className="flex gap-4">
+                            <span className="w-12 text-right text-primary">24</span>
+                            <span className="w-12 text-right text-secondary">19</span>
+                          </div>
+                        </div>
+                        <div className="flex h-2 bg-muted rounded-full overflow-hidden">
+                          <div className="bg-primary" style={{ width: "57%" }}></div>
+                          <div className="bg-secondary" style={{ width: "43%" }}></div>
+                        </div>
                       </div>
                     </div>
                     
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="text-foreground">3-Point %</span>
-                        <div className="flex gap-4">
-                          <span className="w-12 text-right text-primary">38.9%</span>
-                          <span className="w-12 text-right text-secondary">36.2%</span>
+                    <div className="flex justify-center gap-8 mt-4 text-xs text-center">
+                      <div>
+                        <div className="flex items-center justify-center">
+                          <div className="w-4 h-4 bg-primary rounded-full mr-1"></div>
+                          <span className="text-foreground">{liveEvents[0].home_team}</span>
                         </div>
                       </div>
-                      <div className="flex h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="bg-primary" style={{ width: "53%" }}></div>
-                        <div className="bg-secondary" style={{ width: "47%" }}></div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="text-foreground">Rebounds</span>
-                        <div className="flex gap-4">
-                          <span className="w-12 text-right text-primary">42</span>
-                          <span className="w-12 text-right text-secondary">38</span>
+                      <div>
+                        <div className="flex items-center justify-center">
+                          <div className="w-4 h-4 bg-secondary rounded-full mr-1"></div>
+                          <span className="text-foreground">{liveEvents[0].away_team}</span>
                         </div>
-                      </div>
-                      <div className="flex h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="bg-primary" style={{ width: "55%" }}></div>
-                        <div className="bg-secondary" style={{ width: "45%" }}></div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="text-foreground">Assists</span>
-                        <div className="flex gap-4">
-                          <span className="w-12 text-right text-primary">24</span>
-                          <span className="w-12 text-right text-secondary">19</span>
-                        </div>
-                      </div>
-                      <div className="flex h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="bg-primary" style={{ width: "57%" }}></div>
-                        <div className="bg-secondary" style={{ width: "43%" }}></div>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="flex justify-center gap-8 mt-4 text-xs text-center">
-                    <div>
-                      <div className="flex items-center justify-center">
-                        <div className="w-4 h-4 bg-primary rounded-full mr-1"></div>
-                        <span className="text-foreground">Boston Celtics</span>
+                  {/* Quarter by Quarter */}
+                  <div>
+                    <h3 className="font-medium mb-3 text-foreground">Quarter by Quarter</h3>
+                    <div className="border border-muted rounded-md overflow-hidden">
+                      <div className="grid grid-cols-5 text-xs text-center font-medium bg-muted p-2">
+                        <div className="col-span-1 text-foreground">Team</div>
+                        <div className="text-foreground">Q1</div>
+                        <div className="text-foreground">Q2</div>
+                        <div className="text-foreground">Q3</div>
+                        <div className="text-foreground">Q4</div>
+                      </div>
+                      
+                      <div className="grid grid-cols-5 text-sm text-center p-2 border-b border-muted">
+                        <div className="col-span-1 font-medium text-left text-foreground">{liveEvents[0].home_team.split(' ').pop()}</div>
+                        <div className="text-foreground">28</div>
+                        <div className="text-foreground">32</div>
+                        <div className="text-foreground">29</div>
+                        <div className="text-foreground">-</div>
+                      </div>
+                      
+                      <div className="grid grid-cols-5 text-sm text-center p-2">
+                        <div className="col-span-1 font-medium text-left text-foreground">{liveEvents[0].away_team.split(' ').pop()}</div>
+                        <div className="text-foreground">26</div>
+                        <div className="text-foreground">30</div>
+                        <div className="text-foreground">28</div>
+                        <div className="text-foreground">-</div>
                       </div>
                     </div>
-                    <div>
-                      <div className="flex items-center justify-center">
-                        <div className="w-4 h-4 bg-secondary rounded-full mr-1"></div>
-                        <span className="text-foreground">LA Lakers</span>
+                    
+                    <h3 className="font-medium mb-3 mt-6 text-foreground">Scoring Leaders</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-3 bg-muted rounded-md">
+                        <div className="text-sm font-medium text-foreground">{liveEvents[0].home_team}</div>
+                        <div className="flex justify-between mt-1">
+                          <span className="text-sm text-foreground">J. Tatum</span>
+                          <span className="text-sm font-medium text-primary">28 pts</span>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 bg-muted rounded-md">
+                        <div className="text-sm font-medium text-foreground">{liveEvents[0].away_team}</div>
+                        <div className="flex justify-between mt-1">
+                          <span className="text-sm text-foreground">L. James</span>
+                          <span className="text-sm font-medium text-secondary">26 pts</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-                
-                {/* Quarter by Quarter */}
-                <div>
-                  <h3 className="font-medium mb-3 text-foreground">Quarter by Quarter</h3>
-                  <div className="border border-muted rounded-md overflow-hidden">
-                    <div className="grid grid-cols-5 text-xs text-center font-medium bg-muted p-2">
-                      <div className="col-span-1 text-foreground">Team</div>
-                      <div className="text-foreground">Q1</div>
-                      <div className="text-foreground">Q2</div>
-                      <div className="text-foreground">Q3</div>
-                      <div className="text-foreground">Q4</div>
-                    </div>
-                    
-                    <div className="grid grid-cols-5 text-sm text-center p-2 border-b border-muted">
-                      <div className="col-span-1 font-medium text-left text-foreground">Boston</div>
-                      <div className="text-foreground">28</div>
-                      <div className="text-foreground">32</div>
-                      <div className="text-foreground">29</div>
-                      <div className="text-foreground">-</div>
-                    </div>
-                    
-                    <div className="grid grid-cols-5 text-sm text-center p-2">
-                      <div className="col-span-1 font-medium text-left text-foreground">Lakers</div>
-                      <div className="text-foreground">26</div>
-                      <div className="text-foreground">30</div>
-                      <div className="text-foreground">28</div>
-                      <div className="text-foreground">-</div>
-                    </div>
-                  </div>
-                  
-                  <h3 className="font-medium mb-3 mt-6 text-foreground">Scoring Leaders</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-3 bg-muted rounded-md">
-                      <div className="text-sm font-medium text-foreground">Boston Celtics</div>
-                      <div className="flex justify-between mt-1">
-                        <span className="text-sm text-foreground">J. Tatum</span>
-                        <span className="text-sm font-medium text-primary">28 pts</span>
-                      </div>
-                    </div>
-                    
-                    <div className="p-3 bg-muted rounded-md">
-                      <div className="text-sm font-medium text-foreground">LA Lakers</div>
-                      <div className="flex justify-between mt-1">
-                        <span className="text-sm text-foreground">L. James</span>
-                        <span className="text-sm font-medium text-secondary">26 pts</span>
-                      </div>
-                    </div>
-                  </div>
+              ) : (
+                <div className="text-center p-6">
+                  <Info className="h-12 w-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
+                  <p className="text-gray-500 dark:text-gray-400 mb-2">No live games available</p>
+                  <p className="text-sm text-gray-400 dark:text-gray-500">
+                    Live statistics will appear here when games are in progress
+                  </p>
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -1362,7 +934,7 @@ const LiveBettingEnhanced: React.FC = () => {
                             {bet.betType === 'moneyline' ? (
                               <span>Moneyline</span>
                             ) : bet.betType === 'spread' ? (
-                              <span>Spread {bet.point > 0 ? '+' : ''}{bet.point}</span>
+                              <span>Spread {bet.point && (bet.point > 0 ? '+' : '')}{bet.point}</span>
                             ) : (
                               <span>{bet.pick.toUpperCase()} {bet.point}</span>
                             )}
@@ -1397,7 +969,7 @@ const LiveBettingEnhanced: React.FC = () => {
                   <div className="flex justify-between py-2 border-t border-muted">
                     <span className="text-sm font-medium text-foreground">Potential Payout:</span>
                     <span className="text-green-600 dark:text-green-400 font-bold">
-                      ${calculatePotentialPayout().toFixed(2)}
+                      ${calculateTotalPayout().toFixed(2)}
                     </span>
                   </div>
                 )}
@@ -1443,4 +1015,4 @@ const LiveBettingEnhanced: React.FC = () => {
   );
 };
 
-export default LiveBettingEnhanced;
+export default LiveBettingReal;
