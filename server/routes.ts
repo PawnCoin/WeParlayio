@@ -12,8 +12,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ===== Sports Routes =====
   app.get("/api/sports", async (req, res) => {
     try {
+      // Get basic sports from storage
       const sports = await storage.getAllSports();
-      res.json(sports);
+      
+      // Add our new sports if they don't exist already
+      const sportKeys = sports.map(sport => sport.key);
+      
+      // Check if we need to add boxing
+      if (!sportKeys.includes('boxing')) {
+        await storage.createSport({ 
+          name: "Boxing", 
+          key: "boxing_main", 
+          isActive: true, 
+          icon: "🥊" 
+        });
+      }
+      
+      // Check if we need to add MMA/UFC
+      if (!sportKeys.includes('mma')) {
+        await storage.createSport({ 
+          name: "MMA", 
+          key: "mma_ufc", 
+          isActive: true, 
+          icon: "🥋" 
+        });
+      }
+      
+      // Check if we need to add NASCAR
+      if (!sportKeys.includes('motorsport')) {
+        await storage.createSport({ 
+          name: "NASCAR", 
+          key: "motorsport_nascar", 
+          isActive: true, 
+          icon: "🏎️" 
+        });
+      }
+      
+      // Check if we need to add Tennis
+      if (!sportKeys.includes('tennis')) {
+        await storage.createSport({ 
+          name: "Tennis", 
+          key: "tennis_atp", 
+          isActive: true, 
+          icon: "🎾" 
+        });
+      }
+      
+      // Get updated list of sports
+      const updatedSports = await storage.getAllSports();
+      res.json(updatedSports);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
@@ -78,6 +125,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { sportKey } = req.params;
       
+      // Check if this is one of our new sports (boxing, MMA, NASCAR, tennis)
+      const newSportsMapping: Record<string, keyof typeof additionalSportsData> = {
+        'boxing_main': 'boxing_main',
+        'mma_ufc': 'mma_ufc',
+        'motorsport_nascar': 'motorsport_nascar',
+        'tennis_atp': 'tennis_atp',
+        'tennis_wta': 'tennis_wta'
+      };
+      
+      if (newSportsMapping[sportKey]) {
+        // For our new sports, we'll pretend there are no live events currently
+        // This could be enhanced to simulate live events if needed
+        return res.json([]);
+      }
+      
       try {
         // Try to get scores for the sport to find live events
         const scores = await oddsApiService.getScores(sportKey);
@@ -120,8 +182,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { sportKey } = req.params;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
       
+      // Check if this is one of our new sports (boxing, MMA, NASCAR, tennis)
+      const newSportsMapping: Record<string, keyof typeof additionalSportsData> = {
+        'boxing_main': 'boxing_main',
+        'mma_ufc': 'mma_ufc',
+        'motorsport_nascar': 'motorsport_nascar',
+        'tennis_atp': 'tennis_atp',
+        'tennis_wta': 'tennis_wta'
+      };
+      
+      if (newSportsMapping[sportKey]) {
+        const mockDataKey = newSportsMapping[sportKey];
+        const events = additionalSportsData[mockDataKey] || [];
+        
+        // Filter for only upcoming events and sort by start time
+        const now = new Date();
+        const upcomingEvents = events
+          .filter((event: any) => new Date(event.commence_time) > now)
+          .sort((a: any, b: any) => 
+            new Date(a.commence_time).getTime() - new Date(b.commence_time).getTime()
+          )
+          .slice(0, limit);
+        
+        return res.json(upcomingEvents);
+      }
+      
       try {
-        // Get odds for upcoming events
+        // Get odds for upcoming events from The Odds API for standard sports
         const odds = await oddsApiService.getOdds(sportKey);
         
         // Filter for only upcoming events (not started yet) and sort by start time
