@@ -13,6 +13,7 @@ import Social from "@/pages/Social";
 import Settings from "@/pages/Settings";
 import SignUp from "@/pages/SignUp";
 import MainLayout from "@/components/layout/MainLayout";
+import OnboardingProvider from "@/components/onboarding/OnboardingProvider";
 
 function Router() {
   return (
@@ -34,10 +35,12 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <MainLayout>
-          <Router />
-        </MainLayout>
+        <OnboardingProvider>
+          <Toaster />
+          <MainLayout>
+            <Router />
+          </MainLayout>
+        </OnboardingProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
