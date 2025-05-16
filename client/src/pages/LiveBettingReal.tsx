@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronUp, ChevronDown, BarChart2, Clock, RefreshCcw, AlertTriangle, TrendingUp, Trash2, Info, Dot, DollarSign } from "lucide-react";
 import BetResultAnimation from "@/components/betting/BetResultAnimation";
+import BetConfetti from "@/components/betting/BetConfetti";
 
 // Import team logo and player image utilities
 import { getTeamLogo, getPlayerImage } from "@/lib/teamLogos";
@@ -219,8 +220,9 @@ const LiveBettingReal: React.FC = () => {
     });
   };
   
-  // State for bet result animation
+  // State for bet result animation and confetti
   const [showBetResult, setShowBetResult] = useState<boolean>(false);
+  const [showConfetti, setShowConfetti] = useState<boolean>(false);
   const [betResult, setBetResult] = useState<{
     isWin: boolean;
     amount: number;
@@ -228,6 +230,7 @@ const LiveBettingReal: React.FC = () => {
     betType: string;
     selection: string;
     event?: string;
+    payout?: number;
   } | null>(null);
 
   // Place bet function
@@ -259,6 +262,9 @@ const LiveBettingReal: React.FC = () => {
     // Randomly determine if the bet was a win (for demo purposes)
     const isWin = Math.random() > 0.4; // 60% chance of winning for demo
     
+    // Calculate payout for the winning bet
+    const calculatedPayout = calculateTotalPayout();
+    
     // Prepare bet result for animation
     if (betSlip.length > 0) {
       const firstBet = betSlip[0];
@@ -268,13 +274,19 @@ const LiveBettingReal: React.FC = () => {
         odds: firstBet.odds,
         betType: betType === 'single' ? 'Single' : 'Parlay',
         selection: firstBet.pick,
-        event: `${firstBet.homeTeam} vs ${firstBet.awayTeam}`
+        event: `${firstBet.homeTeam} vs ${firstBet.awayTeam}`,
+        payout: isWin ? calculatedPayout : 0
       });
       
-      // Show the bet result animation after a short delay
-      setTimeout(() => {
-        setShowBetResult(true);
-      }, 1000);
+      // Show confetti celebration for wins
+      if (isWin) {
+        setShowConfetti(true);
+      } else {
+        // For losses, just show the regular result animation
+        setTimeout(() => {
+          setShowBetResult(true);
+        }, 1000);
+      }
     }
     
     // Clear bet slip after successful bet

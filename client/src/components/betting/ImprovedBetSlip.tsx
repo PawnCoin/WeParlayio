@@ -187,23 +187,20 @@ const ImprovedBetSlip: React.FC<ImprovedBetSlipProps> = ({
         <div className="flex items-center gap-2">
           {betSlip.length > 0 && (
             <>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleShareBetSlip}
-                      className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-                    >
-                      <Share2 className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Share bet slip with friends</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <ShareBetSlip
+                betSlip={betSlip}
+                totalOdds={betType === 'single' && betSlip.length > 0
+                  ? betSlip[0].odds
+                  : betSlip.reduce((total, bet) => {
+                    const decimalOdds = bet.odds > 0 
+                      ? (bet.odds / 100) + 1 
+                      : (100 / Math.abs(bet.odds)) + 1;
+                    return total * decimalOdds;
+                  }, 1) * 100}
+                potentialPayout={calculatePotentialPayout()}
+                betAmount={betAmount}
+                betType={betType}
+              />
               
               <Dialog>
                 <DialogTrigger asChild>
