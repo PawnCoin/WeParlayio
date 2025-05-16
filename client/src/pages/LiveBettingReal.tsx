@@ -1082,31 +1082,36 @@ const LiveBettingReal: React.FC = () => {
           </Card>
         </div>
       </div>
+      
+      {/* Bet Result Animation */}
+      {showBetResult && betResult && (
+        <BetResultAnimation
+          isWin={betResult.isWin}
+          amount={betResult.amount}
+          odds={betResult.odds}
+          betType={betResult.betType}
+          selection={betResult.selection}
+          event={betResult.event}
+          onClose={() => setShowBetResult(false)}
+        />
+      )}
+      
+      {/* Bet Confetti Celebration */}
+      {showConfetti && betResult && (
+        <BetConfetti
+          isWin={betResult.isWin}
+          amount={betResult.payout || 0}
+          duration={5000}
+          onComplete={() => {
+            setShowConfetti(false);
+            // Show the regular bet result animation after confetti
+            setTimeout(() => {
+              setShowBetResult(true);
+            }, 500);
+          }}
+        />
+      )}
     </div>
-    
-    {/* Bet Result Animation */}
-    {showBetResult && betResult && (
-      <BetResultAnimation
-        result={betResult}
-        onClose={() => setShowBetResult(false)}
-      />
-    )}
-    
-    {/* Bet Confetti Celebration */}
-    {showConfetti && betResult && (
-      <BetConfetti
-        isWin={betResult.isWin}
-        amount={betResult.payout || 0}
-        duration={5000}
-        onComplete={() => {
-          setShowConfetti(false);
-          // Show the regular bet result animation after confetti
-          setTimeout(() => {
-            setShowBetResult(true);
-          }, 500);
-        }}
-      />
-    )}
   );
 };
 
