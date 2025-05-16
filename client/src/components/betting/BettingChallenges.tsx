@@ -254,7 +254,7 @@ const ChallengeCard = ({
       
       {challenge.status === "accepted" && (
         <CardFooter className="p-4 pt-0">
-          <Badge variant="success" className="w-full flex justify-center py-1">
+          <Badge variant="default" className="w-full flex justify-center py-1 bg-green-600">
             Challenge Accepted
           </Badge>
         </CardFooter>
