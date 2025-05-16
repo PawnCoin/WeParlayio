@@ -634,22 +634,85 @@ const FantasySports: React.FC = () => {
                       <div className="space-y-4">
                         {yahooTeams.map((team) => (
                           <div key={team.team_id} className="border border-gray-200 dark:border-gray-700 rounded-md p-4">
-                            <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center mb-2">
                               <div>
                                 <h4 className="font-medium">{team.name}</h4>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                                  W: {team.team_stats.wins} • L: {team.team_stats.losses} • Rank: {team.team_stats.rank}
+                                  {team.league?.name} • W: {team.team_stats.wins} • L: {team.team_stats.losses} • Rank: {team.team_stats.rank}
                                 </p>
                               </div>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => handleImportTeam(team.team_id)}
-                                className="flex items-center gap-1"
-                              >
-                                Import Team <ArrowRight className="h-4 w-4" />
-                              </Button>
+                              <div className="flex gap-2">
+                                <Button 
+                                  variant={selectedTeamKey === team.team_id ? "default" : "outline"} 
+                                  size="sm"
+                                  onClick={() => setSelectedTeamKey(selectedTeamKey === team.team_id ? null : team.team_id)}
+                                >
+                                  {selectedTeamKey === team.team_id ? "Hide Roster" : "View Roster"}
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleImportTeam(team.team_id, team.name)}
+                                  className="flex items-center gap-1"
+                                >
+                                  Import <ArrowRight className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
+                            
+                            {selectedTeamKey === team.team_id && (
+                              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <h5 className="font-medium text-sm mb-3">Team Roster</h5>
+                                
+                                {isLoadingRoster ? (
+                                  <div className="space-y-2">
+                                    {Array(5).fill(0).map((_, index) => (
+                                      <div key={index} className="flex justify-between items-center">
+                                        <div className="flex items-center">
+                                          <Skeleton className="h-8 w-8 rounded-full mr-2" />
+                                          <div>
+                                            <Skeleton className="h-4 w-24 mb-1" />
+                                            <Skeleton className="h-3 w-16" />
+                                          </div>
+                                        </div>
+                                        <Skeleton className="h-4 w-16" />
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : teamRoster?.length ? (
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                                    {teamRoster.map((player) => (
+                                      <div key={player.player_id} className="flex items-center justify-between border border-gray-100 dark:border-gray-800 rounded p-2">
+                                        <div className="flex items-center">
+                                          <Avatar className="w-8 h-8 mr-2">
+                                            <AvatarImage src={player.photo_url} alt={player.name} />
+                                            <AvatarFallback>{player.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                                          </Avatar>
+                                          <div>
+                                            <div className="font-medium">{player.name}</div>
+                                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                                              {player.position} • {player.team}
+                                              {player.injury_status && player.injury_status !== 'OK' && (
+                                                <span className="ml-1 text-red-500">{player.injury_status}</span>
+                                              )}
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <div className="text-right">
+                                          <Badge variant="outline" className="bg-gray-50 dark:bg-gray-900">
+                                            {player.projected_points || '—'} pts
+                                          </Badge>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-2">
+                                    No players found in this roster
+                                  </p>
+                                )}
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
