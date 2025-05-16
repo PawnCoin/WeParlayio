@@ -1,5 +1,261 @@
 // This file provides mock data for additional sports
 export const additionalSportsData = {
+  // College Sports
+  football_ncaaf: [
+    {
+      id: "ncaaf_1",
+      sport_key: "football_ncaaf",
+      sport_title: "NCAA Football",
+      commence_time: new Date(Date.now() + 86400000 * 5).toISOString(),
+      home_team: "Georgia Bulldogs",
+      away_team: "Alabama Crimson Tide",
+      bookmakers: [
+        {
+          key: "draftkings",
+          title: "DraftKings",
+          last_update: new Date().toISOString(),
+          markets: [
+            {
+              key: "h2h",
+              outcomes: [
+                { name: "Georgia Bulldogs", price: -145 },
+                { name: "Alabama Crimson Tide", price: 125 }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      id: "ncaaf_2",
+      sport_key: "football_ncaaf",
+      sport_title: "NCAA Football",
+      commence_time: new Date(Date.now() + 86400000 * 6).toISOString(),
+      home_team: "Ohio State Buckeyes",
+      away_team: "Michigan Wolverines",
+      bookmakers: [
+        {
+          key: "draftkings",
+          title: "DraftKings",
+          last_update: new Date().toISOString(),
+          markets: [
+            {
+              key: "h2h",
+              outcomes: [
+                { name: "Ohio State Buckeyes", price: -130 },
+                { name: "Michigan Wolverines", price: 110 }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  
+  basketball_ncaam: [
+    {
+      id: "ncaam_1",
+      sport_key: "basketball_ncaam",
+      sport_title: "NCAA Men's Basketball",
+      commence_time: new Date(Date.now() + 86400000 * 2).toISOString(),
+      home_team: "Gonzaga Bulldogs",
+      away_team: "Duke Blue Devils",
+      bookmakers: [
+        {
+          key: "draftkings",
+          title: "DraftKings",
+          last_update: new Date().toISOString(),
+          markets: [
+            {
+              key: "h2h",
+              outcomes: [
+                { name: "Gonzaga Bulldogs", price: -115 },
+                { name: "Duke Blue Devils", price: -105 }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      id: "ncaam_2",
+      sport_key: "basketball_ncaam",
+      sport_title: "NCAA Men's Basketball",
+      commence_time: new Date(Date.now() + 86400000 * 4).toISOString(),
+      home_team: "Kentucky Wildcats",
+      away_team: "Kansas Jayhawks",
+      bookmakers: [
+        {
+          key: "draftkings",
+          title: "DraftKings",
+          last_update: new Date().toISOString(),
+          markets: [
+            {
+              key: "h2h",
+              outcomes: [
+                { name: "Kentucky Wildcats", price: 105 },
+                { name: "Kansas Jayhawks", price: -125 }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  
+  basketball_ncaaw: [
+    {
+      id: "ncaaw_1",
+      sport_key: "basketball_ncaaw",
+      sport_title: "NCAA Women's Basketball",
+      commence_time: new Date(Date.now() + 86400000 * 3).toISOString(),
+      home_team: "South Carolina Gamecocks",
+      away_team: "UConn Huskies",
+      bookmakers: [
+        {
+          key: "draftkings",
+          title: "DraftKings",
+          last_update: new Date().toISOString(),
+          markets: [
+            {
+              key: "h2h",
+              outcomes: [
+                { name: "South Carolina Gamecocks", price: -140 },
+                { name: "UConn Huskies", price: 120 }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      id: "ncaaw_2",
+      sport_key: "basketball_ncaaw",
+      sport_title: "NCAA Women's Basketball",
+      commence_time: new Date(Date.now() + 86400000 * 5).toISOString(),
+      home_team: "Iowa Hawkeyes",
+      away_team: "LSU Tigers",
+      bookmakers: [
+        {
+          key: "draftkings",
+          title: "DraftKings",
+          last_update: new Date().toISOString(),
+          markets: [
+            {
+              key: "h2h",
+              outcomes: [
+                { name: "Iowa Hawkeyes", price: -110 },
+                { name: "LSU Tigers", price: -110 }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  
+  // Professional Leagues
+  basketball_wnba: [
+    {
+      id: "wnba_1",
+      sport_key: "basketball_wnba",
+      sport_title: "WNBA",
+      commence_time: new Date(Date.now() + 86400000 * 2).toISOString(),
+      home_team: "Las Vegas Aces",
+      away_team: "New York Liberty",
+      bookmakers: [
+        {
+          key: "draftkings",
+          title: "DraftKings",
+          last_update: new Date().toISOString(),
+          markets: [
+            {
+              key: "h2h",
+              outcomes: [
+                { name: "Las Vegas Aces", price: -125 },
+                { name: "New York Liberty", price: 105 }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      id: "wnba_2",
+      sport_key: "basketball_wnba",
+      sport_title: "WNBA",
+      commence_time: new Date(Date.now() + 86400000 * 4).toISOString(),
+      home_team: "Minnesota Lynx",
+      away_team: "Phoenix Mercury",
+      bookmakers: [
+        {
+          key: "draftkings",
+          title: "DraftKings",
+          last_update: new Date().toISOString(),
+          markets: [
+            {
+              key: "h2h",
+              outcomes: [
+                { name: "Minnesota Lynx", price: -115 },
+                { name: "Phoenix Mercury", price: -105 }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  
+  football_ufl: [
+    {
+      id: "ufl_1",
+      sport_key: "football_ufl",
+      sport_title: "UFL",
+      commence_time: new Date(Date.now() + 86400000 * 3).toISOString(),
+      home_team: "Birmingham Stallions",
+      away_team: "Michigan Panthers",
+      bookmakers: [
+        {
+          key: "draftkings",
+          title: "DraftKings",
+          last_update: new Date().toISOString(),
+          markets: [
+            {
+              key: "h2h",
+              outcomes: [
+                { name: "Birmingham Stallions", price: -135 },
+                { name: "Michigan Panthers", price: 115 }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      id: "ufl_2",
+      sport_key: "football_ufl",
+      sport_title: "UFL",
+      commence_time: new Date(Date.now() + 86400000 * 4).toISOString(),
+      home_team: "St. Louis Battlehawks",
+      away_team: "D.C. Defenders",
+      bookmakers: [
+        {
+          key: "draftkings",
+          title: "DraftKings",
+          last_update: new Date().toISOString(),
+          markets: [
+            {
+              key: "h2h",
+              outcomes: [
+                { name: "St. Louis Battlehawks", price: -120 },
+                { name: "D.C. Defenders", price: 100 }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
   boxing_main: [
     {
       id: "boxing_1",
