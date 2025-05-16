@@ -64,8 +64,8 @@ const CryptoWalletConnect: React.FC<CryptoWalletConnectProps> = ({ onConnect }) 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
           <Button 
-            variant="outline" 
-            className="w-full bg-background text-foreground flex items-center justify-center"
+            variant="default" 
+            className="w-full bg-primary text-white hover:bg-primary/90 flex items-center justify-center font-medium"
           >
             <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M13.6 4h-8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm4.4 2v12c0 1.1-.9 2-2 2s-2-.9-2-2V6c0-1.1.9-2 2-2s2 .9 2 2z" fill="currentColor"/>

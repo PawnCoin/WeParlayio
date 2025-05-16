@@ -232,20 +232,15 @@ const LiveBettingReal: React.FC = () => {
     setBetAmount("10");
   };
   
-  // Connect Crypto Wallet
-  const connectWallet = () => {
+  // Connect Crypto Wallet - this function is now replaced by CryptoWalletConnect component
+  const handleWalletConnection = (address: string, type: string) => {
     toast({
-      title: "Connecting Wallet",
-      description: "Please approve the connection request in your wallet.",
+      title: "Wallet Connected",
+      description: `Your ${type} wallet is now connected. You can bet with crypto!`,
     });
     
-    // Simulate wallet connection
-    setTimeout(() => {
-      toast({
-        title: "Wallet Connected",
-        description: "Your crypto wallet has been connected successfully.",
-      });
-    }, 1500);
+    setSelectedCurrency(type === "metamask" || type === "coinbase" ? "ETH" : 
+                        type === "phantom" ? "SOL" : "BTC");
   };
   
   // Get status of the live event
