@@ -15,8 +15,10 @@ import { ChevronUp, ChevronDown, BarChart2, Clock, RefreshCcw, AlertTriangle, Tr
 // Import team logo and player image utilities
 import { getTeamLogo, getPlayerImage } from "@/lib/teamLogos";
 
-// Import crypto wallet connect component
-import CryptoWalletConnect from "@/components/auth/CryptoWalletConnect";
+// Import crypto components
+import BetSlipCrypto from "@/components/betting/BetSlipCrypto";
+import WalletConnect from "@/components/crypto/WalletConnect";
+import { useOnboardingContext } from "@/components/onboarding/OnboardingProvider";
 
 // Import odds display component
 import OddsDisplay from "@/components/betting/OddsDisplay";
@@ -917,7 +919,7 @@ const LiveBettingReal: React.FC = () => {
           </Card>
         </div>
         
-        {/* Bet Slip */}
+        {/* Bet Slip with Crypto Support */}
         <div>
           <Card className="bg-card text-card-foreground">
             <CardHeader className="py-3 px-4 bg-muted flex flex-row items-center justify-between">
@@ -941,12 +943,42 @@ const LiveBettingReal: React.FC = () => {
             </CardHeader>
             
             <CardContent className="p-4">
-              {betSlip.length === 0 ? (
-                <div className="border border-dashed border-muted rounded-md p-4 mb-4 text-center text-black dark:text-gray-300 text-sm">
-                  Select odds to add to your bet slip
-                </div>
-              ) : (
-                <>
+              {/* Use our new BetSlipCrypto component */}
+              <BetSlipCrypto 
+                bets={betSlip}
+                odds={betType === 'parlay' ? 
+                    betSlip.reduce((total, bet) => {
+                      const decimalOdds = bet.odds > 0 
+                        ? 1 + (bet.odds / 100) 
+                        : 1 + (100 / Math.abs(bet.odds));
+                      return total * decimalOdds;
+                    }, 1)
+                  : betSlip.length === 1 ? 
+                    (betSlip[0].odds > 0 
+                      ? 1 + (betSlip[0].odds / 100) 
+                      : 1 + (100 / Math.abs(betSlip[0].odds)))
+                  : 0
+                }
+                onClearBets={clearBetSlip}
+                onPlaceBet={(betData) => {
+                  toast({
+                    title: "Crypto Bet Placed!",
+                    description: `Your ${betData.isParlay ? 'parlay' : 'single'} bet of ${betData.amount} ${betData.cryptoSymbol} has been placed successfully.`,
+                  });
+                  
+                  // Clear bet slip after successful bet
+                  setBetSlip([]);
+                }}
+              />
+              
+              {/* Legacy Betting Interface */}
+              {betSlip.length > 0 && (
+                <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div className="text-xs text-gray-500 mb-3 flex items-center">
+                    <Info className="h-3 w-3 mr-1" />
+                    You can also bet with traditional currency below
+                  </div>
+                  
                   <div className="flex gap-2 mb-4">
                     <Button 
                       variant={betType === 'single' ? "default" : "outline"}
@@ -965,101 +997,55 @@ const LiveBettingReal: React.FC = () => {
                     </Button>
                   </div>
                   
-                  <div className="max-h-[300px] overflow-y-auto mb-4">
-                    {betSlip.map((bet) => (
-                      <div 
-                        key={bet.id} 
-                        className="border border-muted rounded-md p-3 mb-2 text-sm"
-                      >
-                        <div className="flex justify-between mb-1">
-                          <div className="font-medium text-black dark:text-white">{bet.pick}</div>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={() => removeFromBetSlip(bet.id)}
-                            className="h-5 w-5 p-0 text-muted-foreground hover:text-black"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                        <div className="text-xs text-black dark:text-gray-300 mb-1">
-                          {bet.homeTeam} vs {bet.awayTeam}
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <div className="text-xs text-black dark:text-white">
-                            {bet.betType === 'moneyline' ? (
-                              <span>Moneyline</span>
-                            ) : bet.betType === 'spread' ? (
-                              <span>Spread {bet.point && (bet.point > 0 ? '+' : '')}{bet.point}</span>
-                            ) : (
-                              <span>{bet.pick.toUpperCase()} {bet.point}</span>
-                            )}
-                          </div>
-                          <Badge variant="outline" className="text-xs bg-background text-foreground">
-                            {formatOdds(bet.odds)}
-                          </Badge>
-                        </div>
+                  <div className="space-y-3">
+                    <div>
+                      <label htmlFor="betAmount" className="text-xs font-medium mb-1 block text-black dark:text-white">
+                        Bet Amount
+                      </label>
+                      <div className="flex gap-2 mb-2">
+                        <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
+                          <SelectTrigger className="w-[100px] text-sm bg-background text-black dark:text-white">
+                            <SelectValue placeholder="Currency" />
+                          </SelectTrigger>
+                          <SelectContent className="text-black dark:text-white">
+                            <SelectItem value="USD">USD ($)</SelectItem>
+                            <SelectItem value="BTC">Bitcoin (₿)</SelectItem>
+                            <SelectItem value="ETH">Ethereum (Ξ)</SelectItem>
+                            <SelectItem value="SOL">Solana (◎)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Input
+                          id="betAmount"
+                          type="number"
+                          min="1"
+                          step="1"
+                          value={betAmount}
+                          onChange={(e) => setBetAmount(e.target.value)}
+                          className="text-sm flex-1 bg-background text-black dark:text-white"
+                        />
                       </div>
-                    ))}
+                    </div>
+                    
+                    {betSlip.length > 0 && (
+                      <div className="flex justify-between py-2 border-t border-muted">
+                        <span className="text-sm font-medium text-black dark:text-white">Potential Payout:</span>
+                        <span className="text-green-600 dark:text-green-400 font-bold">
+                          {selectedCurrency === "USD" ? "$" : selectedCurrency === "BTC" ? "₿" : selectedCurrency === "ETH" ? "Ξ" : "◎"}{calculateTotalPayout().toFixed(selectedCurrency === "USD" ? 2 : 6)}
+                        </span>
+                      </div>
+                    )}
+                    
+                    <Button 
+                      className="w-full bg-primary text-white" 
+                      disabled={betSlip.length === 0 || parseFloat(betAmount) <= 0}
+                      onClick={placeBet}
+                    >
+                      <DollarSign className="h-4 w-4 mr-1" />
+                      Place Regular Bet
+                    </Button>
                   </div>
-                </>
+                </div>
               )}
-              
-              <div className="space-y-3">
-                <div>
-                  <label htmlFor="betAmount" className="text-xs font-medium mb-1 block text-black dark:text-white">
-                    Bet Amount
-                  </label>
-                  <div className="flex gap-2 mb-2">
-                    <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
-                      <SelectTrigger className="w-[100px] text-sm bg-background text-black dark:text-white">
-                        <SelectValue placeholder="Currency" />
-                      </SelectTrigger>
-                      <SelectContent className="text-black dark:text-white">
-                        <SelectItem value="USD">USD ($)</SelectItem>
-                        <SelectItem value="BTC">Bitcoin (₿)</SelectItem>
-                        <SelectItem value="ETH">Ethereum (Ξ)</SelectItem>
-                        <SelectItem value="SOL">Solana (◎)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Input
-                      id="betAmount"
-                      type="number"
-                      min="1"
-                      step="1"
-                      value={betAmount}
-                      onChange={(e) => setBetAmount(e.target.value)}
-                      className="text-sm flex-1 bg-background text-black dark:text-white"
-                    />
-                  </div>
-                </div>
-                
-                <div>
-                  <CryptoWalletConnect onConnect={(address, type) => {
-                    toast({
-                      title: "Wallet Connected",
-                      description: `You can now bet with crypto using your ${type} wallet.`,
-                    });
-                  }} />
-                </div>
-                
-                {betSlip.length > 0 && (
-                  <div className="flex justify-between py-2 border-t border-muted">
-                    <span className="text-sm font-medium text-black dark:text-white">Potential Payout:</span>
-                    <span className="text-green-600 dark:text-green-400 font-bold">
-                      {selectedCurrency === "USD" ? "$" : selectedCurrency === "BTC" ? "₿" : selectedCurrency === "ETH" ? "Ξ" : "◎"}{calculateTotalPayout().toFixed(selectedCurrency === "USD" ? 2 : 6)}
-                    </span>
-                  </div>
-                )}
-                
-                <Button 
-                  className="w-full bg-primary text-white" 
-                  disabled={betSlip.length === 0 || parseFloat(betAmount) <= 0}
-                  onClick={placeBet}
-                >
-                  Place Bet
-                </Button>
-              </div>
             </CardContent>
           </Card>
           
