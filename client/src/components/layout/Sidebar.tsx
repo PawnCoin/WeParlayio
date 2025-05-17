@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
   X, BarChart2, Trophy, Medal, History, Settings, 
-  Clock, ChevronRight, CircleDot, Flame
+  Clock, ChevronRight, CircleDot, Flame, Zap
 } from "lucide-react";
 import { 
   FaBasketballBall, FaFootballBall, FaHockeyPuck, 
@@ -132,6 +132,18 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
               }`}>
                 <Clock className="h-5 w-5 mr-3" />
                 <span>Live Betting</span>
+              </div>
+            </Link>
+          </li>
+          <li>
+            <Link href="/enhanced-features">
+              <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
+                location === '/enhanced-features' 
+                  ? "bg-primary text-white" 
+                  : "hover:bg-gray-100 dark:hover:bg-gray-800"
+              }`}>
+                <Zap className="h-5 w-5 mr-3" />
+                <span>Enhanced Features</span>
               </div>
             </Link>
           </li>

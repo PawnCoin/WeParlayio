@@ -12,11 +12,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
 import yahooFantasyAPI from "@/lib/yahooFantasyAPI";
 import { 
-  BookOpen, Users, Award, BarChart, Helmet, Shield, 
+  BookOpen, Users, Award, BarChart, Shield, 
   Loader2, CheckCircle2, ArrowRight, Star, RefreshCw, 
-  UserPlus, Calendar, GitMerge, ClipboardList 
+  UserPlus, Calendar, GitMerge, ClipboardList, Plus, Trophy 
 } from "lucide-react";
-import { SiYahoofantasysports } from "react-icons/si";
+import { FaYahoo } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface FootballPlayer {
@@ -358,7 +358,7 @@ const YahooFootballFantasyIntegration: React.FC = () => {
         ) : !yahooAuthenticated ? (
           <div className="flex flex-col items-center justify-center p-6 mb-2">
             <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center mb-4">
-              <Helmet className="h-8 w-8 text-purple-500" />
+              <FaYahoo className="h-8 w-8 text-purple-500" />
             </div>
             <h3 className="text-lg font-medium mb-2">Connect Your Yahoo Account</h3>
             <p className="text-gray-500 dark:text-gray-400 text-center mb-4">

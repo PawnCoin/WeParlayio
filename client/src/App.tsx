@@ -33,6 +33,7 @@ function Router() {
       <Route path="/live-betting" component={BettingExperience} />
       <Route path="/live-betting-classic" component={LiveBettingReal} />
       <Route path="/betting-dashboard" component={BettingDashboard} />
+      <Route path="/enhanced-features" component={EnhancedFeatures} />
       <Route path="/fantasy" component={FantasySports} />
       <Route path="/tournaments" component={Tournaments} />
       <Route path="/results" component={Results} />

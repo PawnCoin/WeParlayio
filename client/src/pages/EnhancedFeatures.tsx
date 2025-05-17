@@ -7,7 +7,7 @@ import VoiceActivatedBetting from "@/components/betting/VoiceActivatedBetting";
 import FantasyPlatformSync from "@/components/fantasy/FantasyPlatformSync";
 import YahooFootballFantasyIntegration from "@/components/fantasy/YahooFootballFantasyIntegration";
 import FacebookIntegration from "@/components/social/FacebookIntegration";
-import { Mic, Repeat, Football, Share2 } from "lucide-react";
+import { Mic, Repeat, Share2, Gamepad2 } from "lucide-react";
 
 const EnhancedFeatures: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -34,7 +34,7 @@ const EnhancedFeatures: React.FC = () => {
               Fantasy Sync
             </TabsTrigger>
             <TabsTrigger value="yahoo" className="flex items-center justify-center">
-              <Football className="h-4 w-4 mr-2" />
+              <Gamepad2 className="h-4 w-4 mr-2" />
               Yahoo Fantasy
             </TabsTrigger>
             <TabsTrigger value="facebook" className="flex items-center justify-center">

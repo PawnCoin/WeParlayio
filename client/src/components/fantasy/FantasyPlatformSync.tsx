@@ -11,7 +11,8 @@ import {
   Repeat, Shield, Check, AlertTriangle, Download, 
   RefreshCw, LogOut, Inbox, ArrowRight 
 } from "lucide-react";
-import { SiYahoofantasysports, SiEspn, SiFanatics, SiDraftkings, SiFanduel } from "react-icons/si";
+import { FaYahoo, FaFootballBall, FaGamepad } from "react-icons/fa";
+import { SiEa } from "react-icons/si";
 
 interface FantasyPlatform {
   id: string;
@@ -28,35 +29,35 @@ const FantasyPlatformSync: React.FC = () => {
     { 
       id: 'yahoo', 
       name: 'Yahoo Fantasy', 
-      icon: <SiYahoofantasysports className="h-6 w-6 text-purple-600" />, 
+      icon: <FaYahoo className="h-6 w-6 text-purple-600" />, 
       connected: false,
       teamsCount: 0
     },
     { 
       id: 'espn', 
       name: 'ESPN Fantasy', 
-      icon: <SiEspn className="h-6 w-6 text-red-600" />, 
+      icon: <FaFootballBall className="h-6 w-6 text-red-600" />, 
       connected: false,
       teamsCount: 0
     },
     { 
       id: 'draftkings', 
       name: 'DraftKings', 
-      icon: <SiDraftkings className="h-6 w-6 text-green-600" />, 
+      icon: <FaGamepad className="h-6 w-6 text-green-600" />, 
       connected: false,
       teamsCount: 0
     },
     { 
       id: 'fanduel', 
       name: 'FanDuel', 
-      icon: <SiFanduel className="h-6 w-6 text-blue-600" />, 
+      icon: <SiEa className="h-6 w-6 text-blue-600" />, 
       connected: false,
       teamsCount: 0
     },
     { 
       id: 'nfl', 
       name: 'NFL Fantasy', 
-      icon: <SiFanatics className="h-6 w-6 text-gray-800 dark:text-gray-200" />, 
+      icon: <FaFootballBall className="h-6 w-6 text-gray-800 dark:text-gray-200" />, 
       connected: false,
       teamsCount: 0
     }
