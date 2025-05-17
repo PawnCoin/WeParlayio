@@ -173,11 +173,29 @@ export function initWordPressSync() {
         if (config) {
           applyDesignConfig(config);
         }
+      } else if (event.data && event.data.action === 'requestResize') {
+        // WordPress is requesting our current size
+        sendSizeToParent();
       }
     } catch (error) {
       console.error('Error processing WordPress design message', error);
     }
   });
+  
+  // Helper function to send current size to parent
+  function sendSizeToParent() {
+    if (window.self !== window.top) {
+      try {
+        window.parent.postMessage({
+          action: 'resize',
+          height: document.documentElement.scrollHeight || document.body.scrollHeight,
+          width: document.documentElement.scrollWidth || document.body.scrollWidth
+        }, '*');
+      } catch (error) {
+        console.error('Error sending size to parent', error);
+      }
+    }
+  }
   
   // Notify the parent window (WordPress) that we're ready to receive design updates
   try {

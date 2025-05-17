@@ -1,126 +1,95 @@
 /**
- * App Integration JavaScript for WeParlay Theme
+ * WeParlay App Integration
+ * 
+ * This script handles the secure communication between WordPress and the WeParlay app
+ * in the iframe while respecting cross-origin security restrictions.
  */
+
 (function($) {
-    'use strict';
-    
+    // Initialize when document is ready
     $(document).ready(function() {
-        var iframe = document.getElementById('weparlay-app-iframe');
+        // Find the app iframe
+        const appFrame = document.getElementById('weparlay-app-iframe');
+        if (!appFrame) return;
         
-        if (iframe) {
-            // Send theme colors to the app iframe
-            function sendThemeColors() {
-                var colors = {
-                    primary: getComputedStyle(document.documentElement).getPropertyValue('--weparlay-primary').trim(),
-                    secondary: getComputedStyle(document.documentElement).getPropertyValue('--weparlay-secondary').trim(),
-                    background: getComputedStyle(document.documentElement).getPropertyValue('--weparlay-background').trim(),
-                    text: getComputedStyle(document.documentElement).getPropertyValue('--weparlay-text').trim()
-                };
+        // Set initial iframe height
+        appFrame.style.width = '100%';
+        appFrame.style.height = '800px';
+        appFrame.style.border = 'none';
+        
+        // Listen for messages from the iframe
+        window.addEventListener('message', function(event) {
+            try {
+                // Process messages from the app
+                const message = event.data;
                 
-                var fonts = {
-                    family: getComputedStyle(document.documentElement).getPropertyValue('--weparlay-font-family').trim()
-                };
-                
-                var buttons = {
-                    style: 'rounded',
-                    radius: getComputedStyle(document.documentElement).getPropertyValue('--weparlay-button-radius').trim()
-                };
-                
-                var logo = {
-                    url: $('.site-logo').attr('src') || ''
-                };
-                
-                var config = {
-                    colors: colors,
-                    fonts: fonts,
-                    buttons: buttons,
-                    logo: logo,
-                    layout: 'full-width',
-                    widgets: {
-                        order: ['betting-slip', 'odds-comparison', 'live-events', 'trending-bets', 'user-profile'],
-                        visible: ['betting-slip', 'odds-comparison', 'live-events', 'trending-bets', 'user-profile']
-                    }
-                };
-                
-                iframe.contentWindow.postMessage({
-                    action: 'applyWordPressConfig',
-                    config: config
-                }, '*');
-            }
-            
-            // Send theme colors when iframe loads
-            iframe.addEventListener('load', function() {
-                // Wait a moment for the iframe to fully initialize
-                setTimeout(sendThemeColors, 1000);
-                
-                // Handle iframe height adjustments
-                adjustIframeHeight();
-            });
-            
-            // Handle messages from the iframe
-            window.addEventListener('message', function(event) {
-                // Check if the message is from our app
-                if (!event.data || !event.data.action) {
-                    return;
+                // Handle resize message
+                if (message && message.action === 'resize') {
+                    // Add padding to avoid scrollbars
+                    const height = (message.height || 800) + 50;
+                    appFrame.style.height = height + 'px';
+                    console.log('Resized iframe to', height, 'px');
                 }
                 
-                var data = event.data;
-                
-                // Handle resize requests
-                if (data.action === 'resize') {
-                    iframe.style.height = data.height + 'px';
-                }
-                
-                // Handle navigation requests
-                if (data.action === 'navigate') {
-                    window.location.href = data.url;
-                }
-                
-                // Handle login/authentication requests
-                if (data.action === 'auth') {
-                    // If your WordPress site has user authentication,
-                    // you could implement integration here
-                    var isLoggedIn = !!document.body.classList.contains('logged-in');
+                // Handle ready message
+                if (message && message.action === 'ready') {
+                    console.log('WeParlay app is ready');
                     
-                    if (isLoggedIn) {
-                        // Send user data back to the app
-                        var userData = {
-                            action: 'authResponse',
-                            loggedIn: true,
-                            userId: document.body.dataset.userId || '',
-                            username: document.body.dataset.username || '',
-                            email: document.body.dataset.userEmail || ''
-                        };
-                        
-                        iframe.contentWindow.postMessage(userData, '*');
-                    } else {
-                        // Send not logged in response
-                        iframe.contentWindow.postMessage({
-                            action: 'authResponse',
-                            loggedIn: false
-                        }, '*');
-                    }
+                    // Send configuration
+                    sendAppConfiguration();
                 }
-            });
-            
-            // Adjust iframe height to content
-            function adjustIframeHeight() {
-                try {
-                    var height = Math.max(
-                        800,
-                        iframe.contentWindow.document.body.scrollHeight,
-                        iframe.contentWindow.document.documentElement.scrollHeight
-                    );
-                    
-                    iframe.style.height = height + 'px';
-                } catch(e) {
-                    console.log('Could not adjust iframe height: ', e);
-                }
+            } catch (error) {
+                console.error('Error handling message from WeParlay app:', error);
             }
+        });
+        
+        // Function to send configuration to the app
+        function sendAppConfiguration() {
+            // Get configuration from app data attributes
+            const config = {
+                colors: {
+                    primary: appFrame.getAttribute('data-primary-color') || '#3498db',
+                    secondary: appFrame.getAttribute('data-secondary-color') || '#2c3e50',
+                    background: appFrame.getAttribute('data-bg-color') || '#ffffff',
+                    text: appFrame.getAttribute('data-text-color') || '#333333'
+                },
+                fonts: {
+                    family: appFrame.getAttribute('data-font-family') || 'Arial, sans-serif'
+                },
+                buttons: {
+                    style: appFrame.getAttribute('data-button-style') || 'rounded'
+                },
+                logo: {
+                    url: appFrame.getAttribute('data-logo-url') || ''
+                },
+                layout: appFrame.getAttribute('data-layout') || 'full-width',
+                widgets: {
+                    order: (appFrame.getAttribute('data-widget-order') || '').split(',').filter(Boolean),
+                    visible: (appFrame.getAttribute('data-widget-visible') || '').split(',').filter(Boolean)
+                }
+            };
             
-            // Set interval to periodically check if height needs adjustment
-            setInterval(adjustIframeHeight, 2000);
+            // Log the configuration for debugging
+            console.log('Sending config to app:', config);
+            
+            // Send configuration to the app using postMessage
+            // Use '*' for origin to work in all environments including development
+            // In production, you'd want to specify the exact origin
+            appFrame.contentWindow.postMessage({
+                action: 'config',
+                config: config
+            }, '*');
         }
+        
+        // Set a fallback resize check to handle scrolling
+        setInterval(function() {
+            if (appFrame.contentWindow) {
+                try {
+                    appFrame.contentWindow.postMessage({ action: 'requestResize' }, '*');
+                } catch (error) {
+                    // Ignore cross-origin errors if they occur
+                }
+            }
+        }, 2000);
     });
-    
 })(jQuery);
