@@ -183,9 +183,26 @@ export function initWordPressSync() {
   try {
     // Only send the message if we're in an iframe
     if (window.self !== window.top) {
+      // Set up regular height updates to avoid security errors
+      setInterval(() => {
+        window.parent.postMessage(
+          { 
+            action: 'resize', 
+            height: document.documentElement.scrollHeight || document.body.scrollHeight,
+            width: document.documentElement.scrollWidth || document.body.scrollWidth
+          }, 
+          '*' // Using * to work in all environments
+        );
+      }, 500);
+      
+      // Send initial ready message
       window.parent.postMessage(
-        { action: 'ready', height: document.body.scrollHeight }, 
-        '*' // In production, this should be the WordPress domain
+        { 
+          action: 'ready', 
+          height: document.documentElement.scrollHeight || document.body.scrollHeight,
+          width: document.documentElement.scrollWidth || document.body.scrollWidth
+        }, 
+        '*'
       );
     }
   } catch (error) {
