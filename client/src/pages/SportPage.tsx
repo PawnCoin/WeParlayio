@@ -330,44 +330,146 @@ const SportPage = () => {
                         <div className="space-y-2">
                           <div className="text-xs text-gray-500">Spread</div>
                           <div className="grid grid-cols-2 gap-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="w-full"
-                              onClick={() => handleAddBet(event, 'spread', getTeamName(event.homeTeamId), -110, -5.5)}
+                            <BetPreviewTooltip
+                              betType="Spread"
+                              homeTeam={{
+                                name: getTeamName(event.homeTeamId),
+                                record: "42-18",
+                                currentForm: "W,W,L,W,W",
+                                recentPerformance: 8
+                              }}
+                              awayTeam={{
+                                name: getTeamName(event.awayTeamId),
+                                record: "36-24",
+                                currentForm: "L,W,W,L,W",
+                                recentPerformance: 6
+                              }}
+                              odds={-110}
+                              point={-5.5}
+                              matchTime="Live Now"
+                              recentTrend="down"
+                              publicBettingPercentage={42}
+                              injuryUpdates={[
+                                `${getTeamName(event.homeTeamId)}: Anthony Davis (Questionable)`,
+                                `${getTeamName(event.awayTeamId)}: Jaylen Brown (Day-to-Day)`
+                              ]}
                             >
-                              {getTeamName(event.homeTeamId).slice(0, 3)} -5.5
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="w-full"
-                              onClick={() => handleAddBet(event, 'spread', getTeamName(event.awayTeamId), -110, +5.5)}
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="w-full"
+                                onClick={() => handleAddBet(event, 'spread', getTeamName(event.homeTeamId), -110, -5.5)}
+                              >
+                                {getTeamName(event.homeTeamId).slice(0, 3)} -5.5
+                              </Button>
+                            </BetPreviewTooltip>
+                            
+                            <BetPreviewTooltip
+                              betType="Spread"
+                              homeTeam={{
+                                name: getTeamName(event.homeTeamId),
+                                record: "42-18",
+                                currentForm: "W,W,L,W,W",
+                                recentPerformance: 8
+                              }}
+                              awayTeam={{
+                                name: getTeamName(event.awayTeamId),
+                                record: "36-24",
+                                currentForm: "L,W,W,L,W",
+                                recentPerformance: 6
+                              }}
+                              odds={-110}
+                              point={5.5}
+                              matchTime="Live Now"
+                              recentTrend="up"
+                              publicBettingPercentage={58}
+                              injuryUpdates={[
+                                `${getTeamName(event.homeTeamId)}: Anthony Davis (Questionable)`,
+                                `${getTeamName(event.awayTeamId)}: Jaylen Brown (Day-to-Day)`
+                              ]}
                             >
-                              {getTeamName(event.awayTeamId).slice(0, 3)} +5.5
-                            </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="w-full"
+                                onClick={() => handleAddBet(event, 'spread', getTeamName(event.awayTeamId), -110, +5.5)}
+                              >
+                                {getTeamName(event.awayTeamId).slice(0, 3)} +5.5
+                              </Button>
+                            </BetPreviewTooltip>
                           </div>
                         </div>
                         
                         <div className="space-y-2">
                           <div className="text-xs text-gray-500">Total</div>
                           <div className="grid grid-cols-2 gap-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="w-full"
-                              onClick={() => handleAddBet(event, 'total', 'Over', -110, 220.5)}
+                            <BetPreviewTooltip
+                              betType="Total"
+                              homeTeam={{
+                                name: getTeamName(event.homeTeamId),
+                                record: "42-18",
+                                currentForm: "W,W,L,W,W",
+                                recentPerformance: 8
+                              }}
+                              awayTeam={{
+                                name: getTeamName(event.awayTeamId),
+                                record: "36-24",
+                                currentForm: "L,W,W,L,W",
+                                recentPerformance: 6
+                              }}
+                              odds={-110}
+                              point={220.5}
+                              matchTime="Live Now"
+                              recentTrend="up"
+                              publicBettingPercentage={75}
+                              injuryUpdates={[
+                                `${getTeamName(event.homeTeamId)}: Anthony Davis (Questionable)`,
+                                `${getTeamName(event.awayTeamId)}: Jaylen Brown (Day-to-Day)`
+                              ]}
                             >
-                              O 220.5 (-110)
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="w-full"
-                              onClick={() => handleAddBet(event, 'total', 'Under', -110, 220.5)}
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="w-full"
+                                onClick={() => handleAddBet(event, 'total', 'Over', -110, 220.5)}
+                              >
+                                O 220.5 (-110)
+                              </Button>
+                            </BetPreviewTooltip>
+                            
+                            <BetPreviewTooltip
+                              betType="Total"
+                              homeTeam={{
+                                name: getTeamName(event.homeTeamId),
+                                record: "42-18",
+                                currentForm: "W,W,L,W,W",
+                                recentPerformance: 8
+                              }}
+                              awayTeam={{
+                                name: getTeamName(event.awayTeamId),
+                                record: "36-24",
+                                currentForm: "L,W,W,L,W",
+                                recentPerformance: 6
+                              }}
+                              odds={-110}
+                              point={220.5}
+                              matchTime="Live Now"
+                              recentTrend="down"
+                              publicBettingPercentage={25}
+                              injuryUpdates={[
+                                `${getTeamName(event.homeTeamId)}: Anthony Davis (Questionable)`,
+                                `${getTeamName(event.awayTeamId)}: Jaylen Brown (Day-to-Day)`
+                              ]}
                             >
-                              U 220.5 (-110)
-                            </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="w-full"
+                                onClick={() => handleAddBet(event, 'total', 'Under', -110, 220.5)}
+                              >
+                                U 220.5 (-110)
+                              </Button>
+                            </BetPreviewTooltip>
                           </div>
                         </div>
                       </div>
