@@ -23,6 +23,7 @@ import EnhancedFeatures from "@/pages/EnhancedFeatures"; // Advanced features pa
 import VipFeatures from "@/pages/VipFeatures"; // VIP exclusive section
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
+import MobileVoiceBetting from "@/components/mobile/MobileVoiceBetting";
 import { CurrencyModeProvider } from "./contexts/CurrencyModeContext";
 import { TeamThemeProvider } from "./contexts/TeamThemeContext";
 import { BetSlipProvider } from "./contexts/BetSlipContext";

@@ -270,7 +270,7 @@ const VipFeatures: React.FC = () => {
       id: 'scenario-builder',
       name: 'Scenario Builder',
       description: 'Create complex if-then scenario bets across multiple events',
-      icon: <Lightning className="h-5 w-5" />,
+      icon: <Bolt className="h-5 w-5" />,
       isAvailable: false,
       requiredTier: 'platinum'
     }
@@ -711,7 +711,7 @@ const VipFeatures: React.FC = () => {
                 
                 <div className="mt-8 p-4 border border-amber-200 dark:border-amber-900 rounded-lg bg-amber-50 dark:bg-amber-950/10">
                   <h3 className="text-lg font-medium mb-2 flex items-center">
-                    <Lightning className="h-5 w-5 mr-2 text-amber-500" />
+                    <Bolt className="h-5 w-5 mr-2 text-amber-500" />
                     Custom Request Bet
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">

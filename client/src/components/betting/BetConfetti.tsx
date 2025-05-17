@@ -1,65 +1,61 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import confetti from 'canvas-confetti';
 
 interface BetConfettiProps {
   duration?: number;
   particleCount?: number;
+  spread?: number;
+  colors?: string[];
 }
 
 const BetConfetti: React.FC<BetConfettiProps> = ({
-  duration = 5000,
-  particleCount = 100
+  duration = 3000,
+  particleCount = 100,
+  spread = 70,
+  colors = ['#1e88e5', '#43a047', '#ffeb3b', '#e53935', '#5e35b1']
 }) => {
   const [isActive, setIsActive] = useState(true);
-
+  
   useEffect(() => {
     if (!isActive) return;
-
-    // Shoot confetti from the left
-    const leftConfetti = () => {
+    
+    // Create the confetti effect
+    const end = Date.now() + duration;
+    
+    const frame = () => {
       confetti({
-        particleCount: particleCount / 2,
+        particleCount: particleCount / 10,
         angle: 60,
-        spread: 55,
-        origin: { x: 0, y: 0.6 },
-        colors: ['#1E40AF', '#059669', '#D97706'] // Team Colors: Blue, Green, Orange
+        spread,
+        origin: { x: 0, y: 0.8 },
+        colors,
+        disableForReducedMotion: true
       });
-    };
-
-    // Shoot confetti from the right
-    const rightConfetti = () => {
+      
       confetti({
-        particleCount: particleCount / 2,
+        particleCount: particleCount / 10,
         angle: 120,
-        spread: 55,
-        origin: { x: 1, y: 0.6 },
-        colors: ['#1E40AF', '#059669', '#D97706'] // Team Colors: Blue, Green, Orange
+        spread,
+        origin: { x: 1, y: 0.8 },
+        colors,
+        disableForReducedMotion: true
       });
+      
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
     };
-
-    // Initial burst of confetti
-    leftConfetti();
-    rightConfetti();
-
-    // Generate confetti repeatedly during the animation duration
-    const interval = setInterval(() => {
-      leftConfetti();
-      rightConfetti();
-    }, 750);
-
-    // Clean up after duration
-    const timeout = setTimeout(() => {
-      clearInterval(interval);
-      setIsActive(false);
-    }, duration);
-
+    
+    frame();
+    
+    // Cleanup function to stop the animation if component unmounts
     return () => {
-      clearInterval(interval);
-      clearTimeout(timeout);
+      setIsActive(false);
     };
-  }, [isActive, particleCount, duration]);
-
-  return null; // This component doesn't render anything visible
+  }, [isActive, particleCount, spread, duration, colors]);
+  
+  // This component doesn't render anything visible
+  return null;
 };
 
 export default BetConfetti;

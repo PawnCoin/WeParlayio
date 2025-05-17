@@ -1,295 +1,314 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, BellOff } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Badge } from '@/components/ui/badge';
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Bell, BellOff, Check, AlertTriangle, Trophy, X } from "lucide-react";
 
-export interface Notification {
+interface BetNotification {
   id: string;
-  type: 'bet_placed' | 'bet_won' | 'bet_lost' | 'game_started' | 'game_ended' | 'score_update';
+  type: 'status_update' | 'win' | 'loss' | 'starting_soon' | 'opportunity';
   title: string;
   message: string;
   timestamp: Date;
   read: boolean;
-  data?: {
-    betId?: number;
-    gameId?: number;
-    teamNames?: string[];
-    score?: string;
-  };
+  actionUrl?: string;
 }
 
-interface BetNotificationsProps {
-  userId?: number;
-}
-
-const BetNotifications: React.FC<BetNotificationsProps> = ({ userId }) => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+const BetNotifications: React.FC = () => {
   const { toast } = useToast();
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [permissionState, setPermissionState] = useState<NotificationPermission | null>(null);
+  const [notifications, setNotifications] = useState<BetNotification[]>([]);
+  const [showNotificationCenter, setShowNotificationCenter] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  // Load notifications from local storage on component mount
-  useEffect(() => {
-    const storedNotifications = localStorage.getItem('weparlay_notifications');
-    if (storedNotifications) {
-      try {
-        const parsedNotifications = JSON.parse(storedNotifications);
-        // Convert string dates back to Date objects
-        const notificationsWithDates = parsedNotifications.map((notification: any) => ({
-          ...notification,
-          timestamp: new Date(notification.timestamp)
-        }));
-        setNotifications(notificationsWithDates);
-        updateUnreadCount(notificationsWithDates);
-      } catch (error) {
-        console.error('Failed to parse stored notifications:', error);
-      }
+  // Sample notifications for demo
+  const sampleNotifications: BetNotification[] = [
+    {
+      id: '1',
+      type: 'starting_soon',
+      title: 'Lakers vs Warriors starting soon',
+      message: 'Your bet on Lakers to win starts in 15 minutes',
+      timestamp: new Date(Date.now() - 15 * 60000),
+      read: false
+    },
+    {
+      id: '2',
+      type: 'win',
+      title: 'You won your bet!',
+      message: 'Your $50 bet on Chiefs to win has paid out $135',
+      timestamp: new Date(Date.now() - 2 * 3600000),
+      read: false
+    },
+    {
+      id: '3',
+      type: 'opportunity',
+      title: 'Odds boosted on your favorite team',
+      message: 'Lakers odds just improved from -110 to +120',
+      timestamp: new Date(Date.now() - 5 * 3600000),
+      read: true,
+      actionUrl: '/sports/basketball'
     }
+  ];
+
+  // Check for browser notification permissions on load
+  useEffect(() => {
+    if (!('Notification' in window)) {
+      console.log('This browser does not support desktop notifications');
+      return;
+    }
+    
+    setPermissionState(Notification.permission);
+    
+    // Load sample notifications
+    setNotifications(sampleNotifications);
+    updateUnreadCount(sampleNotifications);
   }, []);
 
-  // Save notifications to local storage whenever they change
-  useEffect(() => {
-    localStorage.setItem('weparlay_notifications', JSON.stringify(notifications));
-    updateUnreadCount(notifications);
-  }, [notifications]);
-
-  // This would normally connect to a WebSocket for real-time updates
-  useEffect(() => {
-    if (!userId || !notificationsEnabled) return;
-
-    // Simulate receiving a notification every 30 seconds for demo purposes
-    const simulateNotificationInterval = setInterval(() => {
-      // Only add a simulated notification 20% of the time to avoid overwhelming the user
-      if (Math.random() < 0.2) {
-        addDemoNotification();
-      }
-    }, 30000);
-
-    return () => clearInterval(simulateNotificationInterval);
-  }, [userId, notificationsEnabled]);
-
-  // Update unread count
-  const updateUnreadCount = (notifs: Notification[]) => {
-    setUnreadCount(notifs.filter(n => !n.read).length);
+  // Update unread count when notifications change
+  const updateUnreadCount = (notifs: BetNotification[]) => {
+    const count = notifs.filter(n => !n.read).length;
+    setUnreadCount(count);
   };
 
-  // Add a demo notification for testing purposes
-  const addDemoNotification = () => {
-    const notificationTypes = [
-      {
-        type: 'bet_placed',
-        title: 'Bet Placed',
-        message: 'Your bet on Lakers vs. Warriors has been confirmed.',
-        data: { betId: 123, teamNames: ['Lakers', 'Warriors'] }
-      },
-      {
-        type: 'score_update',
-        title: 'Score Update',
-        message: 'Lakers 95 - Warriors 92 (Q4 2:14)',
-        data: { gameId: 456, teamNames: ['Lakers', 'Warriors'], score: '95-92' }
-      },
-      {
-        type: 'bet_won',
-        title: 'Bet Won!',
-        message: 'You won your bet on Lakers vs. Warriors! +$120.00',
-        data: { betId: 123, teamNames: ['Lakers', 'Warriors'] }
-      },
-      {
-        type: 'game_started',
-        title: 'Game Started',
-        message: 'Celtics vs. Bucks has begun. Good luck!',
-        data: { gameId: 789, teamNames: ['Celtics', 'Bucks'] }
-      }
-    ];
-
-    const randomType = notificationTypes[Math.floor(Math.random() * notificationTypes.length)];
-    const newNotification: Notification = {
-      id: Date.now().toString(),
-      type: randomType.type as any,
-      title: randomType.title,
-      message: randomType.message,
-      timestamp: new Date(),
-      read: false,
-      data: randomType.data
-    };
-
-    // Add to state
-    setNotifications(prev => [newNotification, ...prev]);
-
-    // Show a toast for the new notification
-    if (notificationsEnabled) {
+  // Request permission to send notifications
+  const requestPermission = async () => {
+    if (!('Notification' in window)) {
       toast({
-        title: newNotification.title,
-        description: newNotification.message,
-        duration: 5000,
+        title: "Browser Incompatible",
+        description: "Your browser doesn't support notifications.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const permission = await Notification.requestPermission();
+      setPermissionState(permission);
+      
+      if (permission === 'granted') {
+        setNotificationsEnabled(true);
+        
+        // Send a test notification
+        const notification = new Notification('Notifications Enabled', {
+          body: 'You will now receive updates about your bets in real-time',
+          icon: '/favicon.ico'
+        });
+        
+        toast({
+          title: "Notifications Enabled",
+          description: "You will now receive updates about your bets in real-time",
+        });
+      } else {
+        toast({
+          title: "Notification Permission Denied",
+          description: "You won't receive bet notifications. You can change this in your browser settings.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error requesting notification permission:', error);
+      toast({
+        title: "Error Enabling Notifications",
+        description: "There was a problem enabling notifications. Please try again.",
+        variant: "destructive"
       });
     }
   };
 
-  // Mark all notifications as read
-  const markAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notification => ({ ...notification, read: true }))
-    );
-  };
-
-  // Mark a single notification as read
-  const markAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === id 
-          ? { ...notification, read: true } 
-          : notification
-      )
-    );
-  };
-
-  // Clear all notifications
-  const clearAllNotifications = () => {
-    setNotifications([]);
-  };
-
   // Toggle notifications on/off
   const toggleNotifications = () => {
-    setNotificationsEnabled(!notificationsEnabled);
-    toast({
-      title: notificationsEnabled 
-        ? 'Notifications disabled' 
-        : 'Notifications enabled',
-      description: notificationsEnabled 
-        ? 'You will no longer receive betting notifications' 
-        : 'You will now receive real-time betting updates',
-      duration: 3000,
-    });
-  };
-
-  // Get icon and color for notification type
-  const getNotificationStyle = (type: Notification['type']) => {
-    switch (type) {
-      case 'bet_won':
-        return { color: 'text-green-500', bgColor: 'bg-green-50 dark:bg-green-900/20' };
-      case 'bet_lost':
-        return { color: 'text-red-500', bgColor: 'bg-red-50 dark:bg-red-900/20' };
-      case 'score_update':
-        return { color: 'text-blue-500', bgColor: 'bg-blue-50 dark:bg-blue-900/20' };
-      case 'game_started':
-      case 'game_ended':
-        return { color: 'text-purple-500', bgColor: 'bg-purple-50 dark:bg-purple-900/20' };
-      default:
-        return { color: 'text-gray-500', bgColor: 'bg-gray-50 dark:bg-gray-800' };
+    if (notificationsEnabled) {
+      setNotificationsEnabled(false);
+      toast({
+        title: "Notifications Disabled",
+        description: "You won't receive bet notifications anymore",
+      });
+    } else {
+      if (permissionState === 'granted') {
+        setNotificationsEnabled(true);
+        toast({
+          title: "Notifications Enabled",
+          description: "You will now receive updates about your bets in real-time",
+        });
+      } else {
+        requestPermission();
+      }
     }
   };
 
-  // Format the timestamp relative to now (e.g., "2m ago")
-  const formatTimestamp = (date: Date) => {
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffSeconds = Math.floor(diffMs / 1000);
+  // Send a sample notification (demo purposes)
+  const sendSampleNotification = () => {
+    if (!notificationsEnabled || permissionState !== 'granted') {
+      toast({
+        title: "Notifications Disabled",
+        description: "Please enable notifications first",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const notification = new Notification('Lakers score update!', {
+      body: 'Lakers just took the lead 87-85 in the 3rd quarter',
+      icon: '/favicon.ico'
+    });
+
+    // Add to our internal notifications as well
+    const newNotification: BetNotification = {
+      id: Date.now().toString(),
+      type: 'status_update',
+      title: 'Lakers score update!',
+      message: 'Lakers just took the lead 87-85 in the 3rd quarter',
+      timestamp: new Date(),
+      read: false
+    };
+
+    const updatedNotifications = [newNotification, ...notifications];
+    setNotifications(updatedNotifications);
+    updateUnreadCount(updatedNotifications);
+
+    toast({
+      title: "Sample Notification Sent",
+      description: "Check your system notifications",
+    });
+  };
+
+  // Mark a notification as read
+  const markAsRead = (id: string) => {
+    const updatedNotifications = notifications.map(notification => 
+      notification.id === id ? { ...notification, read: true } : notification
+    );
     
-    if (diffSeconds < 60) return 'Just now';
-    if (diffSeconds < 3600) return `${Math.floor(diffSeconds / 60)}m ago`;
-    if (diffSeconds < 86400) return `${Math.floor(diffSeconds / 3600)}h ago`;
-    return `${Math.floor(diffSeconds / 86400)}d ago`;
+    setNotifications(updatedNotifications);
+    updateUnreadCount(updatedNotifications);
+  };
+
+  // Get icon based on notification type
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'win':
+        return <Trophy className="h-5 w-5 text-green-500" />;
+      case 'loss':
+        return <X className="h-5 w-5 text-red-500" />;
+      case 'starting_soon':
+        return <Bell className="h-5 w-5 text-blue-500" />;
+      case 'opportunity':
+        return <AlertTriangle className="h-5 w-5 text-amber-500" />;
+      default:
+        return <Check className="h-5 w-5 text-green-500" />;
+    }
   };
 
   return (
-    <div>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="ghost" size="icon" className="relative">
-            {notificationsEnabled ? <Bell className="h-5 w-5" /> : <BellOff className="h-5 w-5" />}
-            {unreadCount > 0 && (
-              <Badge 
-                className="absolute -top-1 -right-1 px-1.5 py-0.5 min-w-[18px] h-[18px] flex items-center justify-center" 
-                variant="destructive"
-              >
-                {unreadCount}
-              </Badge>
-            )}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-80 p-0 max-h-96 overflow-hidden flex flex-col">
-          <div className="p-3 border-b flex justify-between items-center">
+    <div className="relative">
+      {/* Bell icon with notification count */}
+      <button 
+        className="relative p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        onClick={() => setShowNotificationCenter(!showNotificationCenter)}
+        aria-label="Notifications"
+      >
+        {notificationsEnabled ? 
+          <Bell className="h-6 w-6" /> : 
+          <BellOff className="h-6 w-6" />
+        }
+        
+        {unreadCount > 0 && (
+          <span className="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
+            {unreadCount}
+          </span>
+        )}
+      </button>
+      
+      {/* Notification center dropdown */}
+      {showNotificationCenter && (
+        <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto bg-white dark:bg-gray-900 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+          <div className="p-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
             <h3 className="font-medium">Notifications</h3>
-            <div className="flex gap-2">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={toggleNotifications}
-                title={notificationsEnabled ? "Disable notifications" : "Enable notifications"}
-              >
-                {notificationsEnabled ? <BellOff className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
-              </Button>
-              {notifications.length > 0 && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={markAllAsRead}
-                  disabled={unreadCount === 0}
-                  className="text-xs"
-                >
-                  Mark all read
-                </Button>
-              )}
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {notificationsEnabled ? 'On' : 'Off'}
+              </span>
+              <Switch 
+                checked={notificationsEnabled}
+                onCheckedChange={toggleNotifications}
+                aria-label="Toggle notifications"
+              />
             </div>
           </div>
           
-          <div className="overflow-y-auto flex-1 max-h-96">
-            {notifications.length > 0 ? (
-              <div className="divide-y">
-                {notifications.map((notification) => {
-                  const style = getNotificationStyle(notification.type);
-                  return (
-                    <div 
-                      key={notification.id} 
-                      className={`p-3 ${!notification.read ? 'bg-gray-50 dark:bg-gray-800/50' : ''} hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer`}
-                      onClick={() => markAsRead(notification.id)}
-                    >
-                      <div className="flex justify-between items-start mb-1">
-                        <h4 className={`font-medium ${style.color}`}>{notification.title}</h4>
-                        <span className="text-xs text-gray-500 whitespace-nowrap">
-                          {formatTimestamp(notification.timestamp)}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">
+          {permissionState !== 'granted' && !notificationsEnabled && (
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border-b border-blue-100 dark:border-blue-800">
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                Enable notifications to get real-time updates on your bets
+              </p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-2 w-full"
+                onClick={requestPermission}
+              >
+                Enable Notifications
+              </Button>
+            </div>
+          )}
+          
+          {notifications.length === 0 ? (
+            <div className="p-6 text-center">
+              <p className="text-gray-500 dark:text-gray-400">No notifications yet</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
+              {notifications.map(notification => (
+                <div 
+                  key={notification.id}
+                  className={`p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 ${
+                    !notification.read ? 'bg-blue-50 dark:bg-blue-900/10' : ''
+                  }`}
+                  onClick={() => markAsRead(notification.id)}
+                >
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-shrink-0 mt-0.5">
+                      {getNotificationIcon(notification.type)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {notification.title}
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         {notification.message}
                       </p>
-                      {!notification.read && (
-                        <Badge variant="outline" className="text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">
-                          New
-                        </Badge>
-                      )}
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                        {new Date(notification.timestamp).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
                     </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="p-6 text-center text-gray-500">
-                <p>No notifications</p>
-              </div>
-            )}
-          </div>
+                    {!notification.read && (
+                      <div className="flex-shrink-0">
+                        <span className="w-2 h-2 bg-blue-500 rounded-full inline-block"></span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
           
-          {notifications.length > 0 && (
-            <div className="p-2 border-t">
+          {notifications.length > 0 && notificationsEnabled && (
+            <div className="p-2 border-t border-gray-200 dark:border-gray-700">
               <Button 
                 variant="ghost" 
                 size="sm" 
                 className="w-full text-xs"
-                onClick={clearAllNotifications}
+                onClick={sendSampleNotification}
               >
-                Clear all
+                Send Test Notification
               </Button>
             </div>
           )}
-        </PopoverContent>
-      </Popover>
+        </div>
+      )}
     </div>
   );
 };
