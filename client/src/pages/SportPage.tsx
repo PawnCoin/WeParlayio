@@ -1,188 +1,396 @@
-import React, { useState, useEffect } from 'react';
-import { useRoute } from 'wouter';
+import { useEffect, useState } from 'react';
+import { useParams } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
-import sportsBetAPI from '@/lib/sportsBetAPI';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import sportsBetAPI, { Sport, Event, Odds } from '@/lib/sportsBetAPI';
 import {
-  Calendar, Clock, TrendingUp, CircleDot, Activity,
-  ChevronRight, ArrowUpRight, ArrowDownRight, Flame
-} from 'lucide-react';
-import GameCard from '@/components/betting/GameCard';
-import { Separator } from '@/components/ui/separator';
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Clock, Calendar, TrendingUp, BarChart2 } from 'lucide-react';
+import { useBetSlip } from '@/contexts/BetSlipContext';
+import { formatGameTime, formatGameDate } from '@/lib/sportsDataUtils';
 
-// Get sport icon function - used for displaying icon in the header
-const getSportIcon = (sportKey: string) => {
-  // Importing dynamically to avoid circular dependencies
-  const icons: Record<string, React.ReactNode> = {
-    'basketball': <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M4.93 4.93 19.07 19.07"/><path d="M4.93 19.07 19.07 4.93"/><path d="M12 2a10 10 0 0 0 0 20"/><path d="M12 2v20"/></svg>,
-    'football': <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2v20"/><path d="M12 12 2.1 7.1"/><path d="m12 12 9.9 4.9"/></svg>,
-    'baseball': <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5.13 11.24a1 1 0 0 0 .4 1.36l5.39 3.13c.4.24.87.24 1.27 0l5.39-3.13a1 1 0 0 0 .4-1.36l-2.7-4.68a1 1 0 0 0-1.31-.38l-2.28 1.12a1 1 0 0 1-.9 0L8.5 6.18a1 1 0 0 0-1.3.38Z"/><path d="M12 22v-8"/><path d="M5 5a17 17 0 0 1 14 0"/></svg>,
-    'hockey': <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 4 7 15l4 5h8l-4-5 4-11h-4Z"/><path d="M9 15 5 4l-2 1"/></svg>
-  };
-  
-  const key = sportKey.split('_')[0];
-  return icons[key] || <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>;
-};
-
-// Formatted time for display
-const formatTime = (timestamp: string) => {
-  const date = new Date(timestamp);
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-};
-
-const formatDate = (timestamp: string) => {
-  const date = new Date(timestamp);
-  return date.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
-};
-
-const SportPage: React.FC = () => {
-  const [, params] = useRoute<{ sportKey: string }>('/sports/:sportKey');
-  const sportKey = params?.sportKey || '';
+const SportPage = () => {
+  const { sportKey } = useParams();
+  const { addToBetSlip } = useBetSlip();
   const [activeTab, setActiveTab] = useState('live');
 
-  // Fetch sport details
+  // Get sports data
   const { data: sports } = useQuery({
     queryKey: ['/api/sports'],
-    queryFn: () => sportsBetAPI.getSports(),
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Find the current sport based on the key
-  const currentSport = sports?.find((sport: any) => sport.key === sportKey);
+  // Get current sport
+  const currentSport = sports && Array.isArray(sports) ? 
+    sports.find((sport: Sport) => sport.key === sportKey) : undefined;
 
-  // Fetch live events for this sport
-  const { data: liveEvents, isLoading: isLoadingLive } = useQuery({
+  // Get live events for this sport
+  const { data: liveEvents, isLoading: isLoadingLiveEvents } = useQuery({
     queryKey: ['/api/events/live', sportKey],
-    queryFn: () => sportsBetAPI.getLiveEventsBySport(sportKey),
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: 30000, // Refetch every 30 seconds
   });
 
-  // Fetch upcoming events for this sport
-  const { data: upcomingEvents, isLoading: isLoadingUpcoming } = useQuery({
+  // Get upcoming events for this sport
+  const { data: upcomingEvents, isLoading: isLoadingUpcomingEvents } = useQuery({
     queryKey: ['/api/events/upcoming', sportKey],
-    queryFn: () => sportsBetAPI.getUpcomingEventsBySport(sportKey),
+    staleTime: 1000 * 60 * 15, // 15 minutes
   });
 
-  // Tab content data
-  const tabContent = {
-    live: {
-      title: 'Live Events',
-      data: liveEvents || [],
-      isLoading: isLoadingLive,
-      emptyMessage: 'No live events currently available for this sport.',
-    },
-    upcoming: {
-      title: 'Upcoming Events',
-      data: upcomingEvents || [],
-      isLoading: isLoadingUpcoming,
-      emptyMessage: 'No upcoming events available for this sport.',
-    },
-    results: {
-      title: 'Recent Results',
-      data: [], // This would come from a specific API endpoint in production
-      isLoading: false,
-      emptyMessage: 'No recent results available for this sport.',
-    },
+  // Get odds for this sport
+  const { data: odds, isLoading: isLoadingOdds } = useQuery({
+    queryKey: ['/api/odds', sportKey],
+    enabled: !!sportKey,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  // Filter events to match the current sport
+  const filteredLiveEvents = liveEvents?.filter((event: Event) => {
+    // If we're looking at a specific sport, filter by it
+    if (currentSport) {
+      return event.sportId === currentSport.id;
+    }
+    return true;
+  });
+
+  const filteredUpcomingEvents = upcomingEvents?.filter((event: Event) => {
+    // If we're looking at a specific sport, filter by it
+    if (currentSport) {
+      return event.sportId === currentSport.id;
+    }
+    return true;
+  });
+
+  // Helper function to get odds for an event
+  const getOddsForEvent = (eventId: number) => {
+    if (!odds) return null;
+    return odds.find((odd: Odds) => odd.id === eventId.toString());
   };
 
-  // Render loading skeleton
-  const renderSkeleton = () => (
-    <div className="space-y-4">
-      {[1, 2, 3].map((i) => (
-        <Card key={i} className="w-full">
-          <CardContent className="p-4">
-            <div className="flex justify-between items-center mb-3">
-              <Skeleton className="h-5 w-[120px]" />
-              <Skeleton className="h-5 w-[80px]" />
-            </div>
-            <div className="flex justify-between">
-              <div className="flex items-center space-x-3">
-                <Skeleton className="h-10 w-10 rounded-full" />
-                <Skeleton className="h-4 w-[150px]" />
-              </div>
-              <Skeleton className="h-8 w-[80px]" />
-            </div>
-            <Separator className="my-3" />
-            <div className="flex justify-between">
-              <div className="flex items-center space-x-3">
-                <Skeleton className="h-10 w-10 rounded-full" />
-                <Skeleton className="h-4 w-[150px]" />
-              </div>
-              <Skeleton className="h-8 w-[80px]" />
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
+  // Helper function to add bet to slip
+  const handleAddBet = (
+    event: Event,
+    type: string,
+    selection: string,
+    odds: number,
+    point?: number
+  ) => {
+    // Get team names
+    const homeTeam = event.homeTeamId ? `Team ${event.homeTeamId}` : 'Home';
+    const awayTeam = event.awayTeamId ? `Team ${event.awayTeamId}` : 'Away';
+
+    addToBetSlip({
+      pick: selection,
+      homeTeam,
+      awayTeam,
+      odds,
+      betType: type,
+      point,
+      sportId: event.sportId
+    });
+  };
 
   return (
-    <div className="p-6">
-      {/* Sport Header */}
-      <div className="flex items-center mb-6">
-        <div className="bg-primary rounded-full p-2 mr-3 text-white">
-          {getSportIcon(sportKey)}
-        </div>
+    <div className="container px-4 py-6 max-w-[1200px] mx-auto">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold">{currentSport?.name || sportKey.charAt(0).toUpperCase() + sportKey.slice(1)}</h1>
-          <div className="flex items-center text-muted-foreground gap-2 mt-1">
-            <Badge variant="outline" className="flex items-center gap-1">
-              <Activity className="h-3 w-3" />
-              <span>{currentSport?.eventCount || 0} Events</span>
-            </Badge>
-            {activeTab === 'live' && liveEvents?.length > 0 && (
-              <Badge variant="outline" className="bg-red-50 text-red-600 border-red-200 flex items-center gap-1">
-                <CircleDot className="h-3 w-3 text-red-500 animate-pulse" />
-                <span>{liveEvents.length} Live</span>
-              </Badge>
-            )}
-          </div>
+          <h1 className="text-2xl font-bold">{currentSport?.name || sportKey}</h1>
+          <p className="text-gray-500 dark:text-gray-400">
+            Live and upcoming events
+          </p>
         </div>
       </div>
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mb-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="live" className="flex items-center gap-1">
-            <CircleDot className="h-4 w-4 text-red-500" /> Live
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-3 mb-6">
+          <TabsTrigger value="live" className="text-sm">
+            Live Events
           </TabsTrigger>
-          <TabsTrigger value="upcoming" className="flex items-center gap-1">
-            <Calendar className="h-4 w-4" /> Upcoming
+          <TabsTrigger value="upcoming" className="text-sm">
+            Upcoming Events
           </TabsTrigger>
-          <TabsTrigger value="results" className="flex items-center gap-1">
-            <Clock className="h-4 w-4" /> Results
+          <TabsTrigger value="results" className="text-sm">
+            Results
           </TabsTrigger>
         </TabsList>
-      </Tabs>
 
-      {/* Content Container */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl flex items-center">
-            {activeTab === 'live' && <Flame className="mr-2 h-5 w-5 text-red-500" />}
-            {activeTab === 'upcoming' && <Calendar className="mr-2 h-5 w-5" />}
-            {activeTab === 'results' && <Clock className="mr-2 h-5 w-5" />}
-            {tabContent[activeTab as keyof typeof tabContent].title}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {tabContent[activeTab as keyof typeof tabContent].isLoading ? (
-            renderSkeleton()
-          ) : tabContent[activeTab as keyof typeof tabContent].data.length > 0 ? (
-            <div className="space-y-4">
-              {tabContent[activeTab as keyof typeof tabContent].data.map((event: any) => (
-                <GameCard key={event.id} event={event} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-10 text-muted-foreground">
-              <p>{tabContent[activeTab as keyof typeof tabContent].emptyMessage}</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        {/* Live Events Tab */}
+        <TabsContent value="live">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center text-lg">
+                <span className="h-3 w-3 rounded-full bg-green-500 mr-2 animate-pulse"></span>
+                Live {currentSport?.name || ''} Games
+              </CardTitle>
+              <CardDescription>
+                Real-time scores and betting opportunities
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoadingLiveEvents ? (
+                <div className="space-y-4">
+                  <Skeleton className="h-32 w-full" />
+                  <Skeleton className="h-32 w-full" />
+                </div>
+              ) : filteredLiveEvents?.length > 0 ? (
+                <div className="space-y-6">
+                  {filteredLiveEvents.map((event: Event) => (
+                    <div key={event.id} className="border rounded-lg p-4">
+                      <div className="flex justify-between items-center mb-4">
+                        <div>
+                          <div className="flex items-center">
+                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 mr-2">LIVE</Badge>
+                            <span className="text-xs text-gray-500">{event.period || 'In Progress'} • {event.timeRemaining || '00:00'}</span>
+                          </div>
+                          <h3 className="font-medium mt-1">
+                            Team {event.homeTeamId} vs Team {event.awayTeamId}
+                          </h3>
+                        </div>
+                        <div className="text-xl font-bold">
+                          {event.homeScore} - {event.awayScore}
+                        </div>
+                      </div>
+                      
+                      <Separator className="my-3" />
+                      
+                      <div className="grid grid-cols-3 gap-3 mt-4">
+                        <div className="space-y-2">
+                          <div className="text-xs text-gray-500">Money Line</div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="w-full"
+                              onClick={() => handleAddBet(event, 'moneyline', `Team ${event.homeTeamId}`, -110)}
+                            >
+                              Home -110
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="w-full"
+                              onClick={() => handleAddBet(event, 'moneyline', `Team ${event.awayTeamId}`, +120)}
+                            >
+                              Away +120
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="text-xs text-gray-500">Spread</div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="w-full"
+                              onClick={() => handleAddBet(event, 'spread', `Team ${event.homeTeamId}`, -110, -5.5)}
+                            >
+                              -5.5 (-110)
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="w-full"
+                              onClick={() => handleAddBet(event, 'spread', `Team ${event.awayTeamId}`, -110, +5.5)}
+                            >
+                              +5.5 (-110)
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="text-xs text-gray-500">Total</div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="w-full"
+                              onClick={() => handleAddBet(event, 'total', 'Over', -110, 220.5)}
+                            >
+                              O 220.5 (-110)
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="w-full"
+                              onClick={() => handleAddBet(event, 'total', 'Under', -110, 220.5)}
+                            >
+                              U 220.5 (-110)
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-muted/30 p-6 text-center rounded-lg">
+                  <p className="text-muted-foreground">No live {currentSport?.name || sportKey} events at the moment. Check back later!</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Upcoming Events Tab */}
+        <TabsContent value="upcoming">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center text-lg">
+                <Calendar className="h-4 w-4 mr-2" />
+                Upcoming {currentSport?.name || ''} Games
+              </CardTitle>
+              <CardDescription>
+                Upcoming matches and betting odds
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoadingUpcomingEvents ? (
+                <div className="space-y-4">
+                  <Skeleton className="h-28 w-full" />
+                  <Skeleton className="h-28 w-full" />
+                  <Skeleton className="h-28 w-full" />
+                </div>
+              ) : filteredUpcomingEvents?.length > 0 ? (
+                <div className="space-y-4">
+                  {filteredUpcomingEvents.map((event: Event) => (
+                    <div key={event.id} className="border rounded-lg p-4">
+                      <div className="flex justify-between items-center mb-3">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-3 w-3 text-gray-500" />
+                            <span className="text-xs text-gray-500">
+                              {new Date(event.startTime).toLocaleDateString('en-US', {
+                                weekday: 'short',
+                                month: 'short', 
+                                day: 'numeric',
+                                hour: 'numeric',
+                                minute: '2-digit'
+                              })}
+                            </span>
+                          </div>
+                          <h3 className="font-medium mt-1">
+                            Team {event.homeTeamId} vs Team {event.awayTeamId}
+                          </h3>
+                        </div>
+                      </div>
+                      
+                      <Separator className="my-2" />
+                      
+                      <div className="grid grid-cols-3 gap-3 mt-3">
+                        <div className="space-y-2">
+                          <div className="text-xs text-gray-500">Money Line</div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="w-full"
+                              onClick={() => handleAddBet(event, 'moneyline', `Team ${event.homeTeamId}`, -130)}
+                            >
+                              Home -130
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="w-full"
+                              onClick={() => handleAddBet(event, 'moneyline', `Team ${event.awayTeamId}`, +110)}
+                            >
+                              Away +110
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="text-xs text-gray-500">Spread</div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="w-full"
+                              onClick={() => handleAddBet(event, 'spread', `Team ${event.homeTeamId}`, -110, -6.5)}
+                            >
+                              -6.5 (-110)
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="w-full"
+                              onClick={() => handleAddBet(event, 'spread', `Team ${event.awayTeamId}`, -110, +6.5)}
+                            >
+                              +6.5 (-110)
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="text-xs text-gray-500">Total</div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="w-full"
+                              onClick={() => handleAddBet(event, 'total', 'Over', -110, 219.5)}
+                            >
+                              O 219.5 (-110)
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="w-full"
+                              onClick={() => handleAddBet(event, 'total', 'Under', -110, 219.5)}
+                            >
+                              U 219.5 (-110)
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-muted/30 p-6 text-center rounded-lg">
+                  <p className="text-muted-foreground">No upcoming {currentSport?.name || sportKey} events scheduled at the moment.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Results Tab */}
+        <TabsContent value="results">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center text-lg">
+                <BarChart2 className="h-4 w-4 mr-2" />
+                {currentSport?.name || ''} Results
+              </CardTitle>
+              <CardDescription>
+                Recent game results and statistics
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-muted/30 p-6 text-center rounded-lg">
+                <p className="text-muted-foreground">
+                  Results feature coming soon. Check back for updates!
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

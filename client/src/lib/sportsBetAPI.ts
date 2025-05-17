@@ -178,14 +178,14 @@ export default {
     const allEvents = await this.getLiveEvents();
     
     // If we have a specific sport key, filter by it
-    if (sportKey) {
+    if (sportKey && allEvents) {
       return allEvents.filter((event: Event) => {
         const sport = getSportIdByKey(sportKey);
         return sport ? event.sportId === sport : false;
       });
     }
     
-    return allEvents;
+    return allEvents || [];
   },
   
   // Filter upcoming events by sport key
@@ -193,14 +193,14 @@ export default {
     const allEvents = await this.getUpcomingEvents();
     
     // If we have a specific sport key, filter by it
-    if (sportKey) {
+    if (sportKey && allEvents) {
       return allEvents.filter((event: Event) => {
         const sport = getSportIdByKey(sportKey);
         return sport ? event.sportId === sport : false;
       });
     }
     
-    return allEvents;
+    return allEvents || [];
   },
   
   // Odds

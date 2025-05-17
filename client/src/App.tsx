@@ -21,6 +21,7 @@ import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
 import { CurrencyModeProvider } from "./contexts/CurrencyModeContext";
 import { TeamThemeProvider } from "./contexts/TeamThemeContext";
+import { BetSlipProvider } from "./contexts/BetSlipContext";
 
 function Router() {
   return (
@@ -49,11 +50,13 @@ function App() {
       <TooltipProvider>
         <CurrencyModeProvider>
           <TeamThemeProvider>
-            <Toaster />
-            <MainLayout>
-              <Router />
-            </MainLayout>
-            <SimpleOnboarding />
+            <BetSlipProvider>
+              <Toaster />
+              <MainLayout>
+                <Router />
+              </MainLayout>
+              <SimpleOnboarding />
+            </BetSlipProvider>
           </TeamThemeProvider>
         </CurrencyModeProvider>
       </TooltipProvider>

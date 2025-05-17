@@ -149,7 +149,16 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                       : "hover:bg-gray-100 dark:hover:bg-gray-800"
                   }`}>
                     <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center mr-2">
-                      {sport.icon ? (
+                      {/* Check if it has an emoji icon and use it */}
+                      {sport.icon && (sport.icon.startsWith('🏀') || 
+                                    sport.icon.startsWith('🏈') || 
+                                    sport.icon.startsWith('⚾') || 
+                                    sport.icon.startsWith('🏒') || 
+                                    sport.icon.startsWith('⚽') ||
+                                    sport.icon.startsWith('🥊') ||
+                                    sport.icon.startsWith('🥋') ||
+                                    sport.icon.startsWith('🏎️') ||
+                                    sport.icon.startsWith('🎾')) ? (
                         <span className="text-xl">{sport.icon}</span>
                       ) : (
                         getSportIcon(sport.key)
