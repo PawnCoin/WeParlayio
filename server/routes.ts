@@ -465,6 +465,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: error.message });
     }
   });
+  
+  // Get detailed odds comparison for a specific event
+  app.get("/api/odds/:sportKey/:eventId", async (req, res) => {
+    try {
+      const { sportKey, eventId } = req.params;
+      const region = (req.query.region as string) || "us";
+      const markets = (req.query.markets as string) || "h2h,spreads,totals";
+      const bookmakers = (req.query.bookmakers as string) || "";
+      
+      // Get odds for all events in this sport
+      const allOdds = await oddsApiService.getOdds(sportKey, region, markets);
+      
+      // Find the specific event
+      const eventOdds = allOdds.find((event: any) => event.id === eventId);
+      
+      if (!eventOdds) {
+        return res.status(404).json({ message: "Event odds not found" });
+      }
+      
+      // Filter by requested bookmakers if specified
+      if (bookmakers) {
+        const bookmakerList = bookmakers.split(',');
+        eventOdds.bookmakers = eventOdds.bookmakers.filter(
+          (b: any) => bookmakerList.includes(b.key)
+        );
+      }
+      
+      // Get compliance info - check if user is in a legal betting state
+      const userState = req.headers['x-user-state'] as string;
+      let compliance = {
+        isLegalState: true,
+        stateRestrictions: null,
+        regulatoryMessage: "Betting is permitted in your location."
+      };
+      
+      // List of states where betting is legal
+      const legalStates = [
+        'Nevada', 'New Jersey', 'Pennsylvania', 'Michigan', 'Illinois', 
+        'Colorado', 'Indiana', 'Iowa', 'New Hampshire', 'Rhode Island', 
+        'Tennessee', 'Virginia', 'West Virginia', 'Arizona', 'Wyoming',
+        'Connecticut', 'Louisiana', 'Maryland', 'New York', 'Oregon'
+      ];
+      
+      // States with restrictions
+      const restrictedStates = [
+        'Washington', 'Montana', 'Mississippi', 'Arkansas', 'Delaware', 
+        'South Dakota', 'North Dakota'
+      ];
+      
+      if (userState) {
+        if (!legalStates.includes(userState)) {
+          compliance.isLegalState = false;
+          
+          if (restrictedStates.includes(userState)) {
+            compliance.stateRestrictions = "limited";
+            compliance.regulatoryMessage = 
+              `${userState} has specific restrictions for online betting. Some features may be limited.`;
+          } else {
+            compliance.stateRestrictions = "prohibited";
+            compliance.regulatoryMessage = 
+              `Online sports betting is not currently legal in ${userState}. You can only use WeParlay Cash for betting.`;
+          }
+        }
+      }
+      
+      // Add historical odds data (normally would come from a database)
+      // For this implementation we're using mock historical data
+      const now = new Date();
+      const historicalOdds = [
+        {
+          timestamp: new Date(now.getTime() - 60 * 60 * 1000).toISOString(), // 1 hour ago
+          bookmakers: eventOdds.bookmakers.map((b: any) => ({
+            key: b.key,
+            markets: b.markets.map((m: any) => ({
+              key: m.key,
+              outcomes: m.outcomes.map((o: any) => ({
+                name: o.name,
+                price: o.price * (0.95 + Math.random() * 0.1), // Slight variation
+                point: o.point
+              }))
+            }))
+          }))
+        },
+        {
+          timestamp: new Date(now.getTime() - 30 * 60 * 1000).toISOString(), // 30 mins ago
+          bookmakers: eventOdds.bookmakers.map((b: any) => ({
+            key: b.key,
+            markets: b.markets.map((m: any) => ({
+              key: m.key,
+              outcomes: m.outcomes.map((o: any) => ({
+                name: o.name,
+                price: o.price * (0.97 + Math.random() * 0.06), // Slight variation
+                point: o.point
+              }))
+            }))
+          }))
+        }
+      ];
+      
+      // Return enhanced odds data for comparison
+      res.json({
+        event: eventOdds,
+        historicalOdds,
+        compliance,
+        lastUpdated: new Date().toISOString()
+      });
+    } catch (error: any) {
+      console.error("Error fetching odds comparison:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
 
   // ===== Bets Routes =====
   app.get("/api/users/:userId/bets", async (req, res) => {
