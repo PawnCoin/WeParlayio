@@ -82,6 +82,23 @@ const SportPage = () => {
     return odds.find((odd: Odds) => odd.id === eventId.toString());
   };
 
+  // Get team name helper function
+  const getTeamName = (teamId: number): string => {
+    switch (teamId) {
+      case 1: return "Lakers";
+      case 2: return "Celtics";
+      case 3: return "Warriors";
+      case 4: return "Bucks";
+      case 5: return "Heat";
+      case 6: return "Bulls";
+      case 7: return "Nets";
+      case 8: return "Clippers";
+      case 9: return "Suns";
+      case 10: return "76ers";
+      default: return `Team ${teamId}`;
+    }
+  };
+
   // Helper function to add bet to slip
   const handleAddBet = (
     event: Event,
@@ -91,8 +108,8 @@ const SportPage = () => {
     point?: number
   ) => {
     // Get team names
-    const homeTeam = event.homeTeamId ? `Team ${event.homeTeamId}` : 'Home';
-    const awayTeam = event.awayTeamId ? `Team ${event.awayTeamId}` : 'Away';
+    const homeTeam = event.homeTeamId ? getTeamName(event.homeTeamId) : 'Home Team';
+    const awayTeam = event.awayTeamId ? getTeamName(event.awayTeamId) : 'Away Team';
 
     addToBetSlip({
       pick: selection,
@@ -158,7 +175,7 @@ const SportPage = () => {
                             <span className="text-xs text-gray-500">{event.period || 'In Progress'} • {event.timeRemaining || '00:00'}</span>
                           </div>
                           <h3 className="font-medium mt-1">
-                            Team {event.homeTeamId} vs Team {event.awayTeamId}
+                            {getTeamName(event.homeTeamId)} vs {getTeamName(event.awayTeamId)}
                           </h3>
                         </div>
                         <div className="text-xl font-bold">
@@ -176,17 +193,17 @@ const SportPage = () => {
                               variant="outline" 
                               size="sm" 
                               className="w-full"
-                              onClick={() => handleAddBet(event, 'moneyline', `Team ${event.homeTeamId}`, -110)}
+                              onClick={() => handleAddBet(event, 'moneyline', getTeamName(event.homeTeamId), -110)}
                             >
-                              Home -110
+                              {getTeamName(event.homeTeamId).slice(0, 3)} -110
                             </Button>
                             <Button 
                               variant="outline" 
                               size="sm" 
                               className="w-full"
-                              onClick={() => handleAddBet(event, 'moneyline', `Team ${event.awayTeamId}`, +120)}
+                              onClick={() => handleAddBet(event, 'moneyline', getTeamName(event.awayTeamId), +120)}
                             >
-                              Away +120
+                              {getTeamName(event.awayTeamId).slice(0, 3)} +120
                             </Button>
                           </div>
                         </div>
@@ -198,17 +215,17 @@ const SportPage = () => {
                               variant="outline" 
                               size="sm" 
                               className="w-full"
-                              onClick={() => handleAddBet(event, 'spread', `Team ${event.homeTeamId}`, -110, -5.5)}
+                              onClick={() => handleAddBet(event, 'spread', getTeamName(event.homeTeamId), -110, -5.5)}
                             >
-                              -5.5 (-110)
+                              {getTeamName(event.homeTeamId).slice(0, 3)} -5.5
                             </Button>
                             <Button 
                               variant="outline" 
                               size="sm" 
                               className="w-full"
-                              onClick={() => handleAddBet(event, 'spread', `Team ${event.awayTeamId}`, -110, +5.5)}
+                              onClick={() => handleAddBet(event, 'spread', getTeamName(event.awayTeamId), -110, +5.5)}
                             >
-                              +5.5 (-110)
+                              {getTeamName(event.awayTeamId).slice(0, 3)} +5.5
                             </Button>
                           </div>
                         </div>
@@ -285,7 +302,7 @@ const SportPage = () => {
                             </span>
                           </div>
                           <h3 className="font-medium mt-1">
-                            Team {event.homeTeamId} vs Team {event.awayTeamId}
+                            {getTeamName(event.homeTeamId)} vs {getTeamName(event.awayTeamId)}
                           </h3>
                         </div>
                       </div>
@@ -300,17 +317,17 @@ const SportPage = () => {
                               variant="outline" 
                               size="sm" 
                               className="w-full"
-                              onClick={() => handleAddBet(event, 'moneyline', `Team ${event.homeTeamId}`, -130)}
+                              onClick={() => handleAddBet(event, 'moneyline', getTeamName(event.homeTeamId), -130)}
                             >
-                              Home -130
+                              {getTeamName(event.homeTeamId).slice(0, 3)} -130
                             </Button>
                             <Button 
                               variant="outline" 
                               size="sm" 
                               className="w-full"
-                              onClick={() => handleAddBet(event, 'moneyline', `Team ${event.awayTeamId}`, +110)}
+                              onClick={() => handleAddBet(event, 'moneyline', getTeamName(event.awayTeamId), +110)}
                             >
-                              Away +110
+                              {getTeamName(event.awayTeamId).slice(0, 3)} +110
                             </Button>
                           </div>
                         </div>
@@ -322,17 +339,17 @@ const SportPage = () => {
                               variant="outline" 
                               size="sm" 
                               className="w-full"
-                              onClick={() => handleAddBet(event, 'spread', `Team ${event.homeTeamId}`, -110, -6.5)}
+                              onClick={() => handleAddBet(event, 'spread', getTeamName(event.homeTeamId), -110, -6.5)}
                             >
-                              -6.5 (-110)
+                              {getTeamName(event.homeTeamId).slice(0, 3)} -6.5
                             </Button>
                             <Button 
                               variant="outline" 
                               size="sm" 
                               className="w-full"
-                              onClick={() => handleAddBet(event, 'spread', `Team ${event.awayTeamId}`, -110, +6.5)}
+                              onClick={() => handleAddBet(event, 'spread', getTeamName(event.awayTeamId), -110, +6.5)}
                             >
-                              +6.5 (-110)
+                              {getTeamName(event.awayTeamId).slice(0, 3)} +6.5
                             </Button>
                           </div>
                         </div>
@@ -346,7 +363,7 @@ const SportPage = () => {
                               className="w-full"
                               onClick={() => handleAddBet(event, 'total', 'Over', -110, 219.5)}
                             >
-                              O 219.5 (-110)
+                              O 219.5
                             </Button>
                             <Button 
                               variant="outline" 
@@ -354,7 +371,7 @@ const SportPage = () => {
                               className="w-full"
                               onClick={() => handleAddBet(event, 'total', 'Under', -110, 219.5)}
                             >
-                              U 219.5 (-110)
+                              U 219.5
                             </Button>
                           </div>
                         </div>
