@@ -233,6 +233,40 @@ export default {
     return response.json();
   },
   
+  // Get detailed odds with all available markets including player props and team props
+  getDetailedOdds: async (sportKey: string, eventId?: string): Promise<any> => {
+    let url = `/api/odds/detailed/${sportKey}?markets=h2h,spreads,totals,team_totals,player_props,alternate_spreads,alternate_totals`;
+    if (eventId) {
+      url += `&eventId=${eventId}`;
+    }
+    const response = await apiRequest("GET", url);
+    return response.json();
+  },
+  
+  // Get popular player props for a specific event
+  getPlayerProps: async (eventId: string): Promise<any> => {
+    const response = await apiRequest("GET", `/api/odds/player-props/${eventId}`);
+    return response.json();
+  },
+  
+  // Get team props for a specific event
+  getTeamProps: async (eventId: string): Promise<any> => {
+    const response = await apiRequest("GET", `/api/odds/team-props/${eventId}`);
+    return response.json();
+  },
+  
+  // Get popular parlay combinations
+  getPopularParlays: async (sportKey: string): Promise<any> => {
+    const response = await apiRequest("GET", `/api/odds/parlays/${sportKey}`);
+    return response.json();
+  },
+  
+  // Get odds comparison across different bookmakers
+  getOddsComparison: async (eventId: string, market: string = "h2h"): Promise<any> => {
+    const response = await apiRequest("GET", `/api/odds/comparison/${eventId}?market=${market}`);
+    return response.json();
+  },
+  
   // Bets
   getUserBets: async (userId: number): Promise<Bet[]> => {
     const response = await apiRequest("GET", `/api/users/${userId}/bets`);

@@ -19,6 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import BetPreviewTooltip from "@/components/betting/BetPreviewTooltip";
+import EnhancedBetTooltip from "@/components/betting/EnhancedBetTooltip";
 import { Separator } from "@/components/ui/separator";
 import { Clock, Calendar, TrendingUp, BarChart2 } from 'lucide-react';
 import { useBetSlip } from '@/contexts/BetSlipContext';
@@ -259,7 +260,9 @@ const SportPage = () => {
                         <div className="space-y-2">
                           <div className="text-xs text-gray-500">Money Line</div>
                           <div className="grid grid-cols-2 gap-2">
-                            <BetPreviewTooltip
+                            <EnhancedBetTooltip
+                              eventId={event.id.toString()}
+                              sportKey={currentSport?.key || sportKey}
                               betType="Money Line"
                               homeTeam={{
                                 name: getTeamName(event.homeTeamId),
@@ -275,12 +278,7 @@ const SportPage = () => {
                               }}
                               odds={-110}
                               matchTime="Live Now"
-                              recentTrend="up"
-                              publicBettingPercentage={65}
-                              injuryUpdates={[
-                                `${getTeamName(event.homeTeamId)}: Anthony Davis (Questionable)`,
-                                `${getTeamName(event.awayTeamId)}: Jaylen Brown (Day-to-Day)`
-                              ]}
+                              selection={getTeamName(event.homeTeamId)}
                             >
                               <Button 
                                 variant="outline" 
@@ -290,9 +288,11 @@ const SportPage = () => {
                               >
                                 {getTeamName(event.homeTeamId).slice(0, 3)} -110
                               </Button>
-                            </BetPreviewTooltip>
+                            </EnhancedBetTooltip>
                             
-                            <BetPreviewTooltip
+                            <EnhancedBetTooltip
+                              eventId={event.id.toString()}
+                              sportKey={currentSport?.key || sportKey}
                               betType="Money Line"
                               homeTeam={{
                                 name: getTeamName(event.homeTeamId),
@@ -308,12 +308,7 @@ const SportPage = () => {
                               }}
                               odds={120}
                               matchTime="Live Now"
-                              recentTrend="up"
-                              publicBettingPercentage={35}
-                              injuryUpdates={[
-                                `${getTeamName(event.homeTeamId)}: Anthony Davis (Questionable)`,
-                                `${getTeamName(event.awayTeamId)}: Jaylen Brown (Day-to-Day)`
-                              ]}
+                              selection={getTeamName(event.awayTeamId)}
                             >
                               <Button 
                                 variant="outline" 
@@ -323,14 +318,16 @@ const SportPage = () => {
                               >
                                 {getTeamName(event.awayTeamId).slice(0, 3)} +120
                               </Button>
-                            </BetPreviewTooltip>
+                            </EnhancedBetTooltip>
                           </div>
                         </div>
                         
                         <div className="space-y-2">
                           <div className="text-xs text-gray-500">Spread</div>
                           <div className="grid grid-cols-2 gap-2">
-                            <BetPreviewTooltip
+                            <EnhancedBetTooltip
+                              eventId={event.id.toString()}
+                              sportKey={currentSport?.key || sportKey}
                               betType="Spread"
                               homeTeam={{
                                 name: getTeamName(event.homeTeamId),
@@ -347,12 +344,7 @@ const SportPage = () => {
                               odds={-110}
                               point={-5.5}
                               matchTime="Live Now"
-                              recentTrend="down"
-                              publicBettingPercentage={42}
-                              injuryUpdates={[
-                                `${getTeamName(event.homeTeamId)}: Anthony Davis (Questionable)`,
-                                `${getTeamName(event.awayTeamId)}: Jaylen Brown (Day-to-Day)`
-                              ]}
+                              selection={getTeamName(event.homeTeamId)}
                             >
                               <Button 
                                 variant="outline" 
@@ -362,9 +354,11 @@ const SportPage = () => {
                               >
                                 {getTeamName(event.homeTeamId).slice(0, 3)} -5.5
                               </Button>
-                            </BetPreviewTooltip>
+                            </EnhancedBetTooltip>
                             
-                            <BetPreviewTooltip
+                            <EnhancedBetTooltip
+                              eventId={event.id.toString()}
+                              sportKey={currentSport?.key || sportKey}
                               betType="Spread"
                               homeTeam={{
                                 name: getTeamName(event.homeTeamId),
@@ -381,12 +375,7 @@ const SportPage = () => {
                               odds={-110}
                               point={5.5}
                               matchTime="Live Now"
-                              recentTrend="up"
-                              publicBettingPercentage={58}
-                              injuryUpdates={[
-                                `${getTeamName(event.homeTeamId)}: Anthony Davis (Questionable)`,
-                                `${getTeamName(event.awayTeamId)}: Jaylen Brown (Day-to-Day)`
-                              ]}
+                              selection={getTeamName(event.awayTeamId)}
                             >
                               <Button 
                                 variant="outline" 
@@ -396,14 +385,16 @@ const SportPage = () => {
                               >
                                 {getTeamName(event.awayTeamId).slice(0, 3)} +5.5
                               </Button>
-                            </BetPreviewTooltip>
+                            </EnhancedBetTooltip>
                           </div>
                         </div>
                         
                         <div className="space-y-2">
                           <div className="text-xs text-gray-500">Total</div>
                           <div className="grid grid-cols-2 gap-2">
-                            <BetPreviewTooltip
+                            <EnhancedBetTooltip
+                              eventId={event.id.toString()}
+                              sportKey={currentSport?.key || sportKey}
                               betType="Total"
                               homeTeam={{
                                 name: getTeamName(event.homeTeamId),
@@ -420,12 +411,7 @@ const SportPage = () => {
                               odds={-110}
                               point={220.5}
                               matchTime="Live Now"
-                              recentTrend="up"
-                              publicBettingPercentage={75}
-                              injuryUpdates={[
-                                `${getTeamName(event.homeTeamId)}: Anthony Davis (Questionable)`,
-                                `${getTeamName(event.awayTeamId)}: Jaylen Brown (Day-to-Day)`
-                              ]}
+                              selection="Over"
                             >
                               <Button 
                                 variant="outline" 
@@ -435,9 +421,11 @@ const SportPage = () => {
                               >
                                 O 220.5 (-110)
                               </Button>
-                            </BetPreviewTooltip>
+                            </EnhancedBetTooltip>
                             
-                            <BetPreviewTooltip
+                            <EnhancedBetTooltip
+                              eventId={event.id.toString()}
+                              sportKey={currentSport?.key || sportKey}
                               betType="Total"
                               homeTeam={{
                                 name: getTeamName(event.homeTeamId),
@@ -454,12 +442,7 @@ const SportPage = () => {
                               odds={-110}
                               point={220.5}
                               matchTime="Live Now"
-                              recentTrend="down"
-                              publicBettingPercentage={25}
-                              injuryUpdates={[
-                                `${getTeamName(event.homeTeamId)}: Anthony Davis (Questionable)`,
-                                `${getTeamName(event.awayTeamId)}: Jaylen Brown (Day-to-Day)`
-                              ]}
+                              selection="Under"
                             >
                               <Button 
                                 variant="outline" 
@@ -469,7 +452,7 @@ const SportPage = () => {
                               >
                                 U 220.5 (-110)
                               </Button>
-                            </BetPreviewTooltip>
+                            </EnhancedBetTooltip>
                           </div>
                         </div>
                       </div>
