@@ -43,6 +43,13 @@ export const users = pgTable("users", {
   yahooIntegrationToken: text("yahoo_integration_token"),
   yahooIntegrationRefreshToken: text("yahoo_integration_refresh_token"),
   yahooIntegrationExpiry: timestamp("yahoo_integration_expiry"),
+  // New fields for fee structures and premium services
+  weplayTokenBalance: doublePrecision("weplay_token_balance").default(0),
+  vipUntil: timestamp("vip_until"),
+  analyticsPackageUntil: timestamp("analytics_package_until"),
+  prioritySupportUntil: timestamp("priority_support_until"),
+  freeWithdrawalsThisMonth: integer("free_withdrawals_this_month").default(0),
+  lastWithdrawalMonth: integer("last_withdrawal_month"),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -92,6 +99,33 @@ export const insertTransactionSchema = createInsertSchema(transactions).pick({
   amount: true,
   status: true,
   details: true,
+});
+
+// Transaction Types
+export enum TransactionType {
+  DEPOSIT = 'deposit',
+  WITHDRAWAL = 'withdrawal',
+  BET = 'bet',
+  WINNING = 'winning',
+  REFUND = 'refund',
+  FEE = 'fee',
+  PLATFORM_REVENUE = 'platform_revenue',
+  SUBSCRIPTION = 'subscription'
+}
+
+// Platform Revenue Tracking
+export const platformRevenue = pgTable("platform_revenue", {
+  id: serial("id").primaryKey(),
+  amount: doublePrecision("amount").notNull(),
+  feeType: text("fee_type").notNull(), // betting, withdrawal, deposit, subscription
+  createdAt: timestamp("created_at").defaultNow(),
+  depositedToOwner: boolean("deposited_to_owner").default(false),
+  depositedAt: timestamp("deposited_at"),
+});
+
+export const insertPlatformRevenueSchema = createInsertSchema(platformRevenue).pick({
+  amount: true,
+  feeType: true,
 });
 
 // Platform settings

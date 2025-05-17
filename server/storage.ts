@@ -16,19 +16,25 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  upsertUser(userData: UpsertUser): Promise<User>;
+  upsertUser(userData: InsertUser): Promise<User>;
   updateUserBalance(userId: string, amount: number): Promise<User>;
   updateYahooIntegration(userId: string, token: string, refreshToken: string, expiry: Date): Promise<User>;
   getAllUsers(): Promise<User[]>;
   updateUserStatus(userId: string, status: string): Promise<User>;
   incrementUserWins(userId: string): Promise<User>;
+  getUserWithdrawalsForMonth(userId: string, month: number): Promise<number>;
+  updateUserWeplayTokenBalance(userId: string, amount: number): Promise<User>;
+  updateUserSubscription(userId: string, subscriptionType: 'vip' | 'analytics' | 'support', expiryDate: Date): Promise<User>;
   
   // Financial operations
   getFinancialSummary(): Promise<any>;
   getTransactions(limit: number, offset: number): Promise<Transaction[]>; 
+  createTransaction(transaction: InsertTransaction): Promise<Transaction>;
   updateBankAccount(bankAccount: InsertBankAccount): Promise<BankAccount>;
   updatePlatformSettings(settings: any): Promise<any>;
   updatePrivacySettings(settings: any): Promise<any>;
+  getOwnerBankAccount(): Promise<BankAccount | undefined>;
+  updatePlatformRevenue(amount: number, feeType: string): Promise<any>;
   
   // Sports operations
   getAllSports(): Promise<Sport[]>;
