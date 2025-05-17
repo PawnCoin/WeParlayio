@@ -104,6 +104,25 @@ export interface Player {
   yahooPlayerId?: string;
 }
 
+// Helper function to map sport keys to IDs
+export function getSportIdByKey(sportKey: string): number | null {
+  const sportMap: Record<string, number> = {
+    'basketball': 1,
+    'football': 2,
+    'baseball': 3,
+    'hockey': 4,
+    'soccer': 5,
+    'mma': 6,
+    'boxing': 7,
+    'tennis': 8,
+    'motorsport': 9
+  };
+  
+  // Extract the base sport from the key (e.g., 'basketball_nba' -> 'basketball')
+  const baseSport = sportKey.split('_')[0];
+  return sportMap[baseSport] || null;
+}
+
 export default {
   // Sports
   getSports: async (): Promise<Sport[]> => {
@@ -152,6 +171,36 @@ export default {
   getLiveEvents: async (): Promise<Event[]> => {
     const response = await apiRequest("GET", "/api/events/live");
     return response.json();
+  },
+  
+  // Filter live events by sport key
+  getLiveEventsBySport: async (sportKey: string): Promise<Event[]> => {
+    const allEvents = await this.getLiveEvents();
+    
+    // If we have a specific sport key, filter by it
+    if (sportKey) {
+      return allEvents.filter((event: Event) => {
+        const sport = getSportIdByKey(sportKey);
+        return sport ? event.sportId === sport : false;
+      });
+    }
+    
+    return allEvents;
+  },
+  
+  // Filter upcoming events by sport key
+  getUpcomingEventsBySport: async (sportKey: string): Promise<Event[]> => {
+    const allEvents = await this.getUpcomingEvents();
+    
+    // If we have a specific sport key, filter by it
+    if (sportKey) {
+      return allEvents.filter((event: Event) => {
+        const sport = getSportIdByKey(sportKey);
+        return sport ? event.sportId === sport : false;
+      });
+    }
+    
+    return allEvents;
   },
   
   // Odds
