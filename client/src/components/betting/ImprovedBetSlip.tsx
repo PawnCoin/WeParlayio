@@ -175,16 +175,16 @@ const ImprovedBetSlip: React.FC<ImprovedBetSlipProps> = ({
   };
 
   return (
-    <Card className="bg-card text-card-foreground">
-      <CardHeader className="py-3 px-4 bg-muted flex flex-row items-center justify-between">
-        <CardTitle className="text-base font-bold">
+    <Card className="bg-card text-card-foreground betting-slip-container">
+      <CardHeader className="py-2 px-3 bg-muted flex flex-row items-center justify-between">
+        <CardTitle className="text-sm font-bold">
           <div className="flex items-center text-foreground">
-            <TrendingUp className="h-4 w-4 mr-2 text-primary" />
-            Enhanced Bet Slip {betSlip.length > 0 && `(${betSlip.length})`}
+            <TrendingUp className="h-3 w-3 mr-1 text-primary" />
+            Bet Slip {betSlip.length > 0 && `(${betSlip.length})`}
           </div>
         </CardTitle>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           {betSlip.length > 0 && (
             <>
               <ShareBetSlip
@@ -207,9 +207,9 @@ const ImprovedBetSlip: React.FC<ImprovedBetSlipProps> = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                    className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
                   >
-                    <Bookmark className="h-4 w-4" />
+                    <Bookmark className="h-3 w-3" />
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md">
@@ -242,34 +242,33 @@ const ImprovedBetSlip: React.FC<ImprovedBetSlipProps> = ({
                 variant="ghost" 
                 size="sm" 
                 onClick={onClearBetSlip}
-                className="h-8 text-xs bg-background text-foreground"
+                className="h-6 text-xs bg-background text-foreground p-1"
               >
-                <Trash2 className="h-3 w-3 mr-1" />
-                Clear
+                <Trash2 className="h-3 w-3" />
               </Button>
             </>
           )}
         </div>
       </CardHeader>
       
-      <CardContent className="p-4">
+      <CardContent className="p-2">
         {betSlip.length === 0 ? (
-          <div className="border border-dashed border-muted rounded-md p-4 mb-4 text-center text-muted-foreground text-sm">
+          <div className="border border-dashed border-muted rounded-md p-2 mb-2 text-center text-muted-foreground text-xs">
             Select odds to add to your bet slip
           </div>
         ) : (
           <>
-            <div className="flex gap-2 mb-4">
+            <div className="flex gap-1 mb-2">
               <Button 
                 variant={betType === 'single' ? "default" : "outline"}
-                className={`flex-1 text-xs ${betType === 'single' ? 'bg-primary text-white' : 'bg-background text-foreground'}`}
+                className={`flex-1 text-xs p-1 h-7 ${betType === 'single' ? 'bg-primary text-white' : 'bg-background text-foreground'}`}
                 onClick={() => setBetType('single')}
               >
                 Singles
               </Button>
               <Button 
                 variant={betType === 'parlay' ? "default" : "outline"}
-                className={`flex-1 text-xs ${betType === 'parlay' ? 'bg-primary text-white' : 'bg-background text-foreground'}`}
+                className={`flex-1 text-xs p-1 h-7 ${betType === 'parlay' ? 'bg-primary text-white' : 'bg-background text-foreground'}`}
                 onClick={() => setBetType('parlay')}
                 disabled={betSlip.length < 2}
               >
@@ -277,19 +276,19 @@ const ImprovedBetSlip: React.FC<ImprovedBetSlipProps> = ({
               </Button>
             </div>
             
-            <div className="max-h-[240px] overflow-y-auto mb-4">
+            <div className="max-h-[150px] overflow-y-auto mb-2">
               {betSlip.map((bet) => (
                 <div 
                   key={bet.id} 
-                  className="border border-muted rounded-md p-3 mb-2 text-sm"
+                  className="border border-muted rounded-md p-2 mb-1 text-xs"
                 >
                   <div className="flex justify-between items-start mb-1">
-                    <div className="font-medium text-foreground">{bet.pick}</div>
+                    <div className="font-medium text-foreground text-xs">{bet.pick}</div>
                     <Button 
                       variant="ghost" 
                       size="sm" 
                       onClick={() => onRemoveBet(bet.id)}
-                      className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                      className="h-4 w-4 p-0 text-muted-foreground hover:text-foreground"
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
@@ -317,7 +316,7 @@ const ImprovedBetSlip: React.FC<ImprovedBetSlipProps> = ({
           </>
         )}
         
-        <div className="space-y-3">
+        <div className="space-y-2">
           <div>
             <label htmlFor="betAmount" className="text-xs font-medium mb-1 block text-foreground">
               Bet Amount ($)
@@ -329,11 +328,11 @@ const ImprovedBetSlip: React.FC<ImprovedBetSlipProps> = ({
               step="1"
               value={betAmount}
               onChange={(e) => setBetAmount(e.target.value)}
-              className="text-sm bg-background text-foreground"
+              className="text-xs bg-background text-foreground h-7"
             />
           </div>
           
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1">
             <Switch 
               id="boost-mode" 
               checked={boostEnabled}
@@ -341,7 +340,7 @@ const ImprovedBetSlip: React.FC<ImprovedBetSlipProps> = ({
             />
             <Label htmlFor="boost-mode" className="text-xs flex items-center">
               <Award className="h-3 w-3 mr-1 text-yellow-500" />
-              Apply 5% Odds Boost
+              5% Odds Boost
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -356,56 +355,56 @@ const ImprovedBetSlip: React.FC<ImprovedBetSlipProps> = ({
           </div>
           
           {betSlip.length > 0 && (
-            <div className="flex justify-between py-2 border-t border-muted">
-              <span className="text-sm font-medium text-foreground">Potential Payout:</span>
-              <span className="text-green-600 dark:text-green-400 font-bold">
+            <div className="flex justify-between py-1 border-t border-muted">
+              <span className="text-xs font-medium text-foreground">Potential Payout:</span>
+              <span className="text-green-600 dark:text-green-400 font-bold text-xs">
                 ${calculatePotentialPayout().toFixed(2)}
               </span>
             </div>
           )}
           
           <Button 
-            className="w-full bg-primary text-white" 
+            className="w-full bg-primary text-white text-xs py-1 h-7" 
             disabled={betSlip.length === 0 || parseFloat(betAmount) <= 0}
             onClick={handlePlaceBet}
           >
-            <DollarSign className="h-4 w-4 mr-1" />
+            <DollarSign className="h-3 w-3 mr-1" />
             Place {betType === 'parlay' ? 'Parlay' : 'Bet'}
           </Button>
         </div>
         
-        <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md text-xs">
+        <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-md text-xs hidden md:block">
           <div className="flex items-start">
-            <Info className="h-4 w-4 mr-2 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+            <Info className="h-3 w-3 mr-1 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
             <div className="text-blue-800 dark:text-blue-300">
-              <p className="font-semibold mb-1">Betting Tip</p>
-              <p>{getBettingTip()}</p>
+              <p className="font-semibold mb-0.5 text-xs">Tip</p>
+              <p className="text-xs">{getBettingTip()}</p>
             </div>
           </div>
         </div>
 
         {savedBetSlips.length > 0 && (
-          <div className="mt-4">
+          <div className="mt-2 hidden md:block">
             <Tabs defaultValue="saved">
               <TabsList className="w-full">
-                <TabsTrigger value="saved" className="w-full">Saved Bets ({savedBetSlips.length})</TabsTrigger>
+                <TabsTrigger value="saved" className="w-full text-xs">Saved ({savedBetSlips.length})</TabsTrigger>
               </TabsList>
-              <TabsContent value="saved" className="p-2">
-                <div className="max-h-[200px] overflow-y-auto">
+              <TabsContent value="saved" className="p-1">
+                <div className="max-h-[120px] overflow-y-auto">
                   {savedBetSlips.map((slip) => (
                     <div 
                       key={slip.id} 
-                      className="border border-muted rounded-md p-3 mb-2 text-sm cursor-pointer hover:border-primary"
+                      className="border border-muted rounded-md p-2 mb-1 text-xs cursor-pointer hover:border-primary"
                     >
-                      <div className="font-medium">{slip.name}</div>
-                      <div className="text-xs text-muted-foreground mt-1">
+                      <div className="font-medium text-xs">{slip.name}</div>
+                      <div className="text-xs text-muted-foreground mt-0.5">
                         {slip.bets.length} selection{slip.bets.length !== 1 ? 's' : ''}
                       </div>
-                      <div className="flex justify-end mt-2">
+                      <div className="flex justify-end mt-1">
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="text-xs h-7"
+                          className="text-xs h-6 py-0 px-2"
                           onClick={() => {
                             // Load this saved bet slip
                             toast({

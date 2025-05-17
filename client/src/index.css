@@ -217,3 +217,71 @@ td {
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
+
+/* Mobile-friendly bet slip styles */
+.betting-slip-container {
+  position: sticky;
+  bottom: 0;
+  z-index: 50;
+  max-height: 300px;
+  overflow-y: auto;
+  border-top-left-radius: 0.75rem;
+  border-top-right-radius: 0.75rem;
+  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* When in mobile view, make the bet slip more compact */
+@media (max-width: 768px) {
+  .betting-slip-container {
+    max-height: 250px;
+    border-radius: 0.75rem 0.75rem 0 0;
+    margin-left: -1rem;
+    margin-right: -1rem;
+    width: calc(100% + 2rem);
+  }
+  
+  /* Add a collapsible toggle for mobile */
+  .betting-slip-container .card-header {
+    cursor: pointer;
+  }
+  
+  /* Adjust layout for mobile */
+  .betting-layout {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Make sure the betting content is not blocked by the slip */
+  .betting-content {
+    padding-bottom: 60px;
+  }
+}
+
+/* Desktop layout */
+@media (min-width: 769px) {
+  .betting-slip-container {
+    position: relative;
+    max-height: none;
+  }
+  
+  /* For desktop we use a more traditional layout */
+  .betting-layout {
+    display: grid;
+    grid-template-columns: 200px 1fr 300px;
+    gap: 1rem;
+  }
+  
+  .sports-sidebar {
+    position: sticky;
+    top: 100px;
+    height: calc(100vh - 150px);
+    overflow-y: auto;
+  }
+  
+  .betting-sidebar {
+    position: sticky;
+    top: 100px;
+    height: calc(100vh - 150px);
+    overflow-y: auto;
+  }
+}
