@@ -18,6 +18,7 @@ import Trivia from "@/pages/Trivia";
 import BettingExperience from "@/pages/BettingExperience"; // New enhanced betting page
 import SportPage from "@/pages/SportPage"; // New sport page
 import BettingDashboard from "@/pages/BettingDashboard"; // Professional sports betting dashboard
+import Login from "@/pages/Login"; // Login page with social login options
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
 import { CurrencyModeProvider } from "./contexts/CurrencyModeContext";
@@ -40,6 +41,7 @@ function Router() {
       <Route path="/trivia" component={Trivia} />
       <Route path="/settings" component={Settings} />
       <Route path="/signup" component={SignUp} />
+      <Route path="/login" component={Login} />
       <Route path="/sports/:sportKey" component={SportPage} />
       <Route component={NotFound} />
     </Switch>
