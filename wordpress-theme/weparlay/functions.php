@@ -9,7 +9,26 @@
 
 if (!defined('WEPARLAY_VERSION')) {
     // Replace the version number of the theme on each release.
-    define('WEPARLAY_VERSION', '1.0.0');
+    define('WEPARLAY_VERSION', '1.0.1');
+}
+
+// Debug Mode - Log theme activation
+if (!function_exists('weparlay_debug_log')) {
+    function weparlay_debug_log($message) {
+        if (WP_DEBUG === true) {
+            if (is_array($message) || is_object($message)) {
+                error_log(print_r($message, true));
+            } else {
+                error_log($message);
+            }
+        }
+    }
+}
+
+// Log theme activation
+add_action('after_switch_theme', 'weparlay_theme_activated');
+function weparlay_theme_activated() {
+    weparlay_debug_log('WeParlay Theme Activated!');
 }
 
 /**
