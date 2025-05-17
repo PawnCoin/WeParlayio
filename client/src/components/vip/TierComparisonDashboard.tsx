@@ -32,45 +32,49 @@ const TierComparisonDashboard: React.FC = () => {
       id: 'bronze',
       name: 'Bronze',
       price: '$9.99',
+      period: 'per month',
       color: 'bg-amber-700',
       textColor: 'text-amber-700',
       borderColor: 'border-amber-700',
       hoverColor: 'hover:bg-amber-700/10',
       icon: <Award className="h-5 w-5" />,
-      description: 'Get started with enhanced betting features'
+      description: 'Get started with enhanced betting features, basic odds boost, and limited voice betting commands. Includes social sharing features for Twitter and Facebook.'
     },
     {
       id: 'silver',
       name: 'Silver',
       price: '$19.99',
+      period: 'per month',
       color: 'bg-slate-400',
       textColor: 'text-slate-400',
       borderColor: 'border-slate-400',
       hoverColor: 'hover:bg-slate-400/10',
       icon: <Award className="h-5 w-5" />,
-      description: 'Unlock premium features and platform integrations'
+      description: 'Unlock premium features with enhanced odds boost, unlimited voice betting, and platform integrations including Yahoo Fantasy and Facebook integration.'
     },
     {
       id: 'gold',
       name: 'Gold',
       price: '$49.99',
+      period: 'per month',
       color: 'bg-yellow-500',
       textColor: 'text-yellow-500',
       borderColor: 'border-yellow-500',
       hoverColor: 'hover:bg-yellow-500/10',
       icon: <Award className="h-5 w-5" />,
-      description: 'Full access to all premium features and VIP support'
+      description: 'Full access to all premium features, VIP support, maximum odds boost, unlimited premium suggestions, and advanced social media platform integrations.'
     },
     {
       id: 'platinum',
       name: 'Platinum',
       price: '$99.99',
+      period: 'per month',
       color: 'bg-green-600',
       textColor: 'text-green-600',
       borderColor: 'border-green-600',
       hoverColor: 'hover:bg-green-600/10',
       icon: <Award className="h-5 w-5" />,
-      description: 'For serious bettors with exclusive features and opportunities'
+      description: 'For serious bettors with exclusive features, dedicated agent support, maximum odds boost (7.5%), auto-betting via Yahoo Fantasy, and API access to all social platforms.'
     }
   ];
 
@@ -233,8 +237,11 @@ const TierComparisonDashboard: React.FC = () => {
                 <div className={`text-xl font-bold ${selectedTier === tier.id ? 'text-white' : tier.textColor}`}>
                   {tier.name}
                 </div>
-                <div className={`text-sm ${selectedTier === tier.id ? 'text-white' : 'text-gray-500'}`}>
-                  {tier.price}/month
+                <div className={`text-2xl font-bold mt-1 ${selectedTier === tier.id ? 'text-white' : tier.textColor}`}>
+                  {tier.price}
+                </div>
+                <div className={`text-xs ${selectedTier === tier.id ? 'text-white/80' : 'text-gray-500'}`}>
+                  {tier.period}
                 </div>
                 
                 {selectedTier === tier.id && (
