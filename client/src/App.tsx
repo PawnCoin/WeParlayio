@@ -1,3 +1,4 @@
+import React from "react";
 import { Switch, Route } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
@@ -33,10 +34,15 @@ import { TeamThemeProvider } from "./contexts/TeamThemeContext";
 import { BetSlipProvider } from "./contexts/BetSlipContext";
 
 function Router() {
+  // Admin pages
+  const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
+  const AdminBypass = React.lazy(() => import('./pages/AdminBypass'));
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/live-betting" component={BettingExperience} />
+      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin-bypass" component={AdminBypass} />
       <Route path="/live-betting-classic" component={LiveBettingReal} />
       <Route path="/betting-dashboard" component={BettingDashboard} />
       <Route path="/enhanced-features" component={EnhancedFeatures} />

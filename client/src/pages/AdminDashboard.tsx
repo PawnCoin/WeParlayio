@@ -1,648 +1,736 @@
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import React, { useState, useEffect } from 'react';
+import { useLocation, Link } from 'wouter';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { 
+  Tabs, 
+  TabsContent, 
+  TabsList, 
+  TabsTrigger 
+} from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import { 
-  Table, 
-  TableBody, 
-  TableCaption, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
+  RevenueBarChart, 
+  UserActivityChart, 
+  SportsPieChart,
+  WinRateChart,
+  DailyEarningsChart,
+  TransactionVolumeChart,
+  InteractiveDashboardControls,
+  ReportGenerationButton
+} from "@/components/admin/DataVisualization";
+import UserRoleManager from "@/components/admin/UserRoleManager";
 import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { AlertCircle, Search, Download, MoreHorizontal, Check, Ban, DollarSign, User, UserCheck, Lock, Eye, EyeOff, Filter } from "lucide-react";
+  Users, 
+  DollarSign, 
+  Settings, 
+  Calendar, 
+  TrendingUp, 
+  Shield, 
+  Library,
+  UserPlus,
+  LogOut,
+  PieChart,
+  MoveLeft
+} from "lucide-react";
 
+// Admin Dashboard component
 export default function AdminDashboard() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [dateRange, setDateRange] = useState("30d");
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [, navigate] = useLocation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  // Mock data for demonstration - in a real app, this would come from your backend
-  const { data: users, isLoading } = useQuery({
+  // Check if admin access is enabled
+  useEffect(() => {
+    const adminAccess = localStorage.getItem('weparlay-admin-access');
+    const adminExpiry = localStorage.getItem('weparlay-admin-expiry');
+    
+    if (!adminAccess || !adminExpiry || Date.now() > parseInt(adminExpiry)) {
+      localStorage.removeItem('weparlay-admin-access');
+      localStorage.removeItem('weparlay-admin-expiry');
+      navigate('/admin-bypass');
+    }
+  }, [navigate]);
+
+  // Fetch users for the User Management tab
+  const { data: users = [], isLoading: isLoadingUsers } = useQuery({
     queryKey: ['/api/admin/users'],
-    enabled: false, // Disabled since we're using mock data for now
+    enabled: activeTab === 'users',
+    refetchOnWindowFocus: false,
+    retry: false,
+    queryFn: async () => {
+      try {
+        const response = await apiRequest('GET', '/api/admin/users');
+        return await response.json();
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        toast({
+          title: "Error fetching users",
+          description: "Could not load user data. Please try again.",
+          variant: "destructive",
+        });
+        return [];
+      }
+    }
   });
 
-  // Sample financial data
-  const { data: financialData, isLoading: isLoadingFinancial } = useQuery({
+  // Fetch financial summary for the Overview tab
+  const { data: financialSummary = {}, isLoading: isLoadingFinancial } = useQuery({
     queryKey: ['/api/admin/financial-summary'],
-    enabled: false, // Disabled since we're using mock data for now
+    enabled: activeTab === 'overview',
+    refetchOnWindowFocus: false,
+    retry: false,
+    queryFn: async () => {
+      try {
+        const response = await apiRequest('GET', '/api/admin/financial-summary');
+        return await response.json();
+      } catch (error) {
+        console.error('Error fetching financial summary:', error);
+        toast({
+          title: "Error fetching financial data",
+          description: "Could not load financial summary. Please try again.",
+          variant: "destructive",
+        });
+        return {};
+      }
+    }
   });
 
-  // Mock users data
-  const mockUsers = [
-    {
-      id: '1',
-      username: 'john_doe',
-      email: 'john@example.com',
-      joined: '2023-01-15',
-      status: 'active',
-      balance: 1245.50,
-      bets: 45,
-      wins: 23,
-      profileImage: '',
-      lastLogin: '2023-05-16T14:30:00Z',
-      verificationLevel: 'verified'
+  // Mutation for updating user roles
+  const updateUserRoleMutation = useMutation({
+    mutationFn: async ({ userId, role }: { userId: string, role: string }) => {
+      const response = await apiRequest(
+        'PATCH', 
+        `/api/admin/users/${userId}/status`, 
+        { status: role }
+      );
+      return response.json();
     },
-    {
-      id: '2',
-      username: 'jane_smith',
-      email: 'jane@example.com',
-      joined: '2023-02-22',
-      status: 'active',
-      balance: 875.25,
-      bets: 32,
-      wins: 15,
-      profileImage: '',
-      lastLogin: '2023-05-15T09:45:00Z',
-      verificationLevel: 'verified'
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      toast({
+        title: "User role updated",
+        description: "The user's role has been successfully updated.",
+      });
     },
-    {
-      id: '3',
-      username: 'bob_wilson',
-      email: 'bob@example.com',
-      joined: '2023-03-10',
-      status: 'suspended',
-      balance: 50.00,
-      bets: 8,
-      wins: 2,
-      profileImage: '',
-      lastLogin: '2023-04-20T16:20:00Z',
-      verificationLevel: 'unverified'
-    },
-    {
-      id: '4',
-      username: 'alice_johnson',
-      email: 'alice@example.com',
-      joined: '2023-03-18',
-      status: 'active',
-      balance: 2150.75,
-      bets: 67,
-      wins: 41,
-      profileImage: '',
-      lastLogin: '2023-05-16T11:15:00Z',
-      verificationLevel: 'verified'
-    },
-    {
-      id: '5',
-      username: 'charlie_brown',
-      email: 'charlie@example.com',
-      joined: '2023-04-05',
-      status: 'inactive',
-      balance: 125.30,
-      bets: 12,
-      wins: 5,
-      profileImage: '',
-      lastLogin: '2023-04-28T13:40:00Z',
-      verificationLevel: 'unverified'
-    },
-  ];
-
-  // Mock financial data
-  const mockFinancialData = {
-    totalRevenue: 125750.45,
-    netProfit: 75250.30,
-    pendingPayouts: 12500.75,
-    recentTransactions: [
-      { id: 'tx1', userId: '1', username: 'john_doe', type: 'deposit', amount: 500.00, status: 'completed', date: '2023-05-16T10:30:00Z' },
-      { id: 'tx2', userId: '4', username: 'alice_johnson', type: 'withdrawal', amount: 1200.00, status: 'pending', date: '2023-05-16T09:45:00Z' },
-      { id: 'tx3', userId: '2', username: 'jane_smith', type: 'deposit', amount: 250.00, status: 'completed', date: '2023-05-15T16:20:00Z' },
-      { id: 'tx4', userId: '5', username: 'charlie_brown', type: 'deposit', amount: 100.00, status: 'completed', date: '2023-05-15T14:10:00Z' },
-      { id: 'tx5', userId: '3', username: 'bob_wilson', type: 'withdrawal', amount: 75.00, status: 'failed', date: '2023-05-14T11:30:00Z' },
-    ],
-    paymentMethods: [
-      { method: 'Credit Card', count: 145, volume: 45750.25 },
-      { method: 'PayPal', count: 87, volume: 31250.50 },
-      { method: 'Crypto', count: 63, volume: 48750.70 },
-    ]
-  };
-
-  // Filter users based on search term and status filter
-  const filteredUsers = mockUsers.filter(user => {
-    const matchesSearch = searchTerm === '' || 
-      user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesFilter = filterStatus === null || user.status === filterStatus;
-    
-    return matchesSearch && matchesFilter;
+    onError: (error) => {
+      console.error('Error updating user role:', error);
+      toast({
+        title: "Error updating user role",
+        description: "Failed to update the user's role. Please try again.",
+        variant: "destructive",
+      });
+    }
   });
 
-  // Format balance as currency
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
+  // Mutation for generating reports
+  const generateReportMutation = useMutation({
+    mutationFn: async (period: 'day' | 'week' | 'month' | 'year') => {
+      const response = await apiRequest(
+        'GET', 
+        `/api/admin/reports/${period}`
+      );
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // In a real implementation, this would trigger a download
+      console.log('Report data:', data);
+      toast({
+        title: "Report generated",
+        description: "Your report has been generated successfully.",
+      });
+      setIsGeneratingReport(false);
+    },
+    onError: (error) => {
+      console.error('Error generating report:', error);
+      toast({
+        title: "Error generating report",
+        description: "Failed to generate the report. Please try again.",
+        variant: "destructive",
+      });
+      setIsGeneratingReport(false);
+    }
+  });
+
+  // Handle updating user role
+  const handleUpdateUserRole = (userId: string, newRole: string) => {
+    updateUserRoleMutation.mutate({ userId, role: newRole });
   };
 
-  // Format date
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+  // Handle generating a report
+  const handleGenerateReport = (period: 'day' | 'week' | 'month' | 'year') => {
+    setIsGeneratingReport(true);
+    generateReportMutation.mutate(period);
+  };
+
+  // Handle date range change
+  const handleDateRangeChange = (range: string) => {
+    setDateRange(range);
+    // Here you would fetch data for the new date range
+    // This is simplified for the example
+  };
+
+  // Handle refresh
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['/api/admin/financial-summary'] });
+    toast({
+      title: "Data refreshed",
+      description: "The dashboard data has been refreshed.",
     });
   };
 
+  // Handle logging out from admin
+  const handleAdminLogout = () => {
+    localStorage.removeItem('weparlay-admin-access');
+    localStorage.removeItem('weparlay-admin-expiry');
+    navigate('/');
+  };
+
+  // Sample chart data for demonstration
+  // In a real implementation, this would come from the API
+  const revenueData = [
+    { month: 'Jan', totalBets: 45000, revenue: 12500, payouts: 32500 },
+    { month: 'Feb', totalBets: 52000, revenue: 15000, payouts: 37000 },
+    { month: 'Mar', totalBets: 49000, revenue: 13800, payouts: 35200 },
+    { month: 'Apr', totalBets: 63000, revenue: 18000, payouts: 45000 },
+    { month: 'May', totalBets: 59000, revenue: 16500, payouts: 42500 },
+    { month: 'Jun', totalBets: 75000, revenue: 21000, payouts: 54000 },
+  ];
+
+  const userActivityData = [
+    { date: '01/01', activeUsers: 2400, betsPlaced: 240 },
+    { date: '02/01', activeUsers: 1398, betsPlaced: 139 },
+    { date: '03/01', activeUsers: 9800, betsPlaced: 980 },
+    { date: '04/01', activeUsers: 3908, betsPlaced: 390 },
+    { date: '05/01', activeUsers: 4800, betsPlaced: 480 },
+    { date: '06/01', activeUsers: 3800, betsPlaced: 380 },
+  ];
+
+  const sportsData = [
+    { name: 'NBA', value: 4000 },
+    { name: 'NFL', value: 3000 },
+    { name: 'NHL', value: 2000 },
+    { name: 'MLB', value: 2780 },
+    { name: 'UFC', value: 1890 },
+    { name: 'Soccer', value: 2390 },
+  ];
+
+  const winRateData = [
+    { category: '0-10%', winRate: 25 },
+    { category: '11-20%', winRate: 30 },
+    { category: '21-30%', winRate: 20 },
+    { category: '31-40%', winRate: 15 },
+    { category: '41-50%', winRate: 7 },
+    { category: '51%+', winRate: 3 },
+  ];
+
+  const dailyEarningsData = [
+    { date: '01/01', grossRevenue: 3400, netRevenue: 2400 },
+    { date: '02/01', grossRevenue: 2210, netRevenue: 1398 },
+    { date: '03/01', grossRevenue: 5000, netRevenue: 3800 },
+    { date: '04/01', grossRevenue: 4780, netRevenue: 3908 },
+    { date: '05/01', grossRevenue: 5890, netRevenue: 4800 },
+    { date: '06/01', grossRevenue: 4390, netRevenue: 3800 },
+  ];
+
+  const transactionVolumeData = [
+    { date: '01/01', deposits: 5000, withdrawals: 3000, bets: 7000 },
+    { date: '02/01', deposits: 4500, withdrawals: 2500, bets: 6800 },
+    { date: '03/01', deposits: 6000, withdrawals: 4000, bets: 8500 },
+    { date: '04/01', deposits: 5500, withdrawals: 3200, bets: 7600 },
+    { date: '05/01', deposits: 7000, withdrawals: 4600, bets: 9800 },
+    { date: '06/01', deposits: 6300, withdrawals: 3900, bets: 8900 },
+  ];
+
+  // Sample user data for demonstration
+  const sampleUsers = users.length > 0 ? users : [
+    { id: '1', username: 'admin_user', email: 'admin@weparlay.io', role: 'admin', status: 'active', lastLogin: '2025-05-17T12:30:45' },
+    { id: '2', username: 'moderator1', email: 'mod1@weparlay.io', role: 'moderator', status: 'active', lastLogin: '2025-05-16T10:15:22' },
+    { id: '3', username: 'staff_support', email: 'support@weparlay.io', role: 'staff', status: 'active', lastLogin: '2025-05-17T09:45:11' },
+    { id: '4', username: 'user123', email: 'user123@example.com', role: 'user', status: 'active', lastLogin: '2025-05-15T18:22:03' },
+    { id: '5', username: 'newuser456', email: 'newuser@example.com', role: 'user', status: 'inactive', lastLogin: '2025-05-10T14:05:37' },
+  ];
+
   return (
-    <div className="container mx-auto py-6">
-      <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
-      <p className="text-muted-foreground mb-6">Manage users, view financial data, and control platform settings</p>
-      
-      <Tabs defaultValue="users" className="w-full">
-        <TabsList className="mb-4">
-          <TabsTrigger value="users">Users</TabsTrigger>
-          <TabsTrigger value="financial">Financial</TabsTrigger>
-          <TabsTrigger value="settings">Platform Settings</TabsTrigger>
+    <div className="container py-6">
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-2">
+          <Link href="/">
+            <Button variant="ghost" size="sm">
+              <MoveLeft className="h-4 w-4 mr-2" />
+              Back to Site
+            </Button>
+          </Link>
+          <h1 className="text-3xl font-bold">WeParlay Admin Dashboard</h1>
+        </div>
+        <Button 
+          variant="destructive" 
+          size="sm"
+          onClick={handleAdminLogout}
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          Exit Admin
+        </Button>
+      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid grid-cols-5 mb-6">
+          <TabsTrigger value="overview" className="flex items-center gap-1">
+            <PieChart className="h-4 w-4" />
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="users" className="flex items-center gap-1">
+            <Users className="h-4 w-4" />
+            User Management
+          </TabsTrigger>
+          <TabsTrigger value="finance" className="flex items-center gap-1">
+            <DollarSign className="h-4 w-4" />
+            Financial
+          </TabsTrigger>
+          <TabsTrigger value="content" className="flex items-center gap-1">
+            <Library className="h-4 w-4" />
+            Content
+          </TabsTrigger>
+          <TabsTrigger value="settings" className="flex items-center gap-1">
+            <Settings className="h-4 w-4" />
+            Settings
+          </TabsTrigger>
         </TabsList>
-        
-        {/* Users Tab */}
-        <TabsContent value="users">
-          <div className="flex justify-between items-center mb-4">
-            <div className="relative w-full max-w-md">
-              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Search users by name or email"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8"
+
+        {/* Overview Tab */}
+        <TabsContent value="overview" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">Dashboard Overview</h2>
+            <div className="flex items-center gap-4">
+              <InteractiveDashboardControls 
+                onDateRangeChange={handleDateRangeChange}
+                onRefresh={handleRefresh}
+              />
+              <ReportGenerationButton 
+                onGenerateReport={handleGenerateReport}
+                isLoading={isGeneratingReport}
               />
             </div>
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="ml-2">
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filter
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuLabel>User Status</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => setFilterStatus(null)}>
-                  All
-                  {filterStatus === null && <Check className="ml-auto h-4 w-4" />}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFilterStatus('active')}>
-                  Active
-                  {filterStatus === 'active' && <Check className="ml-auto h-4 w-4" />}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFilterStatus('suspended')}>
-                  Suspended
-                  {filterStatus === 'suspended' && <Check className="ml-auto h-4 w-4" />}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFilterStatus('inactive')}>
-                  Inactive
-                  {filterStatus === 'inactive' && <Check className="ml-auto h-4 w-4" />}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            
-            <Button variant="outline" className="ml-2">
-              <Download className="h-4 w-4 mr-2" />
-              Export
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">${financialSummary.totalRevenue || '152,900'}</div>
+                <p className="text-xs text-muted-foreground">
+                  +20.1% from last month
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Active Users</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{financialSummary.activeUsers || '8,492'}</div>
+                <p className="text-xs text-muted-foreground">
+                  +12.3% from last month
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Total Bets</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{financialSummary.totalBets || '24,389'}</div>
+                <p className="text-xs text-muted-foreground">
+                  +18.7% from last month
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <RevenueBarChart data={revenueData} />
+            <UserActivityChart data={userActivityData} />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <SportsPieChart data={sportsData} />
+            <WinRateChart data={winRateData} />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <DailyEarningsChart data={dailyEarningsData} />
+            <TransactionVolumeChart data={transactionVolumeData} />
+          </div>
+        </TabsContent>
+
+        {/* User Management Tab */}
+        <TabsContent value="users">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold">User Management</h2>
+            <Button>
+              <UserPlus className="h-4 w-4 mr-2" />
+              Add New User
             </Button>
           </div>
-          
-          <Card>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>User</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Balance</TableHead>
-                    <TableHead>Joined</TableHead>
-                    <TableHead>Bets/Wins</TableHead>
-                    <TableHead>Last Login</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredUsers.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <Avatar>
-                            <AvatarImage src={user.profileImage} />
-                            <AvatarFallback>{user.username.substring(0, 2).toUpperCase()}</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="font-medium">{user.username}</div>
-                            <div className="text-sm text-muted-foreground">{user.email}</div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={
-                          user.status === 'active' ? 'default' : 
-                          user.status === 'suspended' ? 'destructive' : 
-                          'secondary'
-                        }>
-                          {user.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{formatCurrency(user.balance)}</TableCell>
-                      <TableCell>{user.joined}</TableCell>
-                      <TableCell>{user.bets}/{user.wins}</TableCell>
-                      <TableCell>{formatDate(user.lastLogin)}</TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem>
-                              <User className="h-4 w-4 mr-2" />
-                              View Profile
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <DollarSign className="h-4 w-4 mr-2" />
-                              Payment History
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem>
-                              {user.status === 'active' ? (
-                                <>
-                                  <Ban className="h-4 w-4 mr-2" />
-                                  Suspend User
-                                </>
-                              ) : (
-                                <>
-                                  <UserCheck className="h-4 w-4 mr-2" />
-                                  Activate User
-                                </>
-                              )}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Lock className="h-4 w-4 mr-2" />
-                              Reset Password
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-          
-          {/* Privacy Settings Section */}
-          <div className="mt-8">
-            <h2 className="text-lg font-medium mb-4">User Privacy Settings</h2>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Privacy Control Center</CardTitle>
-                <CardDescription>Manage what information users can see about each other</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-medium">Public Profiles</h3>
-                      <p className="text-sm text-muted-foreground">Allow users to see other users' profiles</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" className="flex items-center gap-1">
-                        <EyeOff className="h-4 w-4" />
-                        Private
-                      </Button>
-                      <Button variant="default" size="sm" className="flex items-center gap-1">
-                        <Eye className="h-4 w-4" />
-                        Limited View
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-medium">Betting History</h3>
-                      <p className="text-sm text-muted-foreground">Allow users to see other users' betting history</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button variant="default" size="sm" className="flex items-center gap-1">
-                        <EyeOff className="h-4 w-4" />
-                        Private
-                      </Button>
-                      <Button variant="outline" size="sm" className="flex items-center gap-1">
-                        <Eye className="h-4 w-4" />
-                        Public
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-medium">Win Statistics</h3>
-                      <p className="text-sm text-muted-foreground">Allow users to see other users' win statistics</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" className="flex items-center gap-1">
-                        <EyeOff className="h-4 w-4" />
-                        Private
-                      </Button>
-                      <Button variant="default" size="sm" className="flex items-center gap-1">
-                        <Eye className="h-4 w-4" />
-                        Public
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-medium">League Rankings</h3>
-                      <p className="text-sm text-muted-foreground">Show users' positions in competitive leagues</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" className="flex items-center gap-1">
-                        <EyeOff className="h-4 w-4" />
-                        Private
-                      </Button>
-                      <Button variant="default" size="sm" className="flex items-center gap-1">
-                        <Eye className="h-4 w-4" />
-                        Public
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="mt-6">
-                  <Button>Save Privacy Settings</Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+
+          <UserRoleManager 
+            users={sampleUsers} 
+            onUpdateUserRole={handleUpdateUserRole}
+            onSearchUsers={() => {}}
+          />
         </TabsContent>
-        
+
         {/* Financial Tab */}
-        <TabsContent value="financial">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(mockFinancialData.totalRevenue)}</div>
-              </CardContent>
-            </Card>
+        <TabsContent value="finance">
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold">Financial Management</h2>
             
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Net Profit</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(mockFinancialData.netProfit)}</div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Pending Payouts</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(mockFinancialData.pendingPayouts)}</div>
-              </CardContent>
-            </Card>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Transactions</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>User</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Date</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {mockFinancialData.recentTransactions.map((tx) => (
-                      <TableRow key={tx.id}>
-                        <TableCell>{tx.username}</TableCell>
-                        <TableCell>
-                          <Badge variant={tx.type === 'deposit' ? 'default' : 'secondary'}>
-                            {tx.type}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{formatCurrency(tx.amount)}</TableCell>
-                        <TableCell>
-                          <Badge variant={
-                            tx.status === 'completed' ? 'default' : 
-                            tx.status === 'pending' ? 'outline' : 
-                            'destructive'
-                          }>
-                            {tx.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{formatDate(tx.date)}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Payment Methods</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Method</TableHead>
-                      <TableHead>Transactions</TableHead>
-                      <TableHead>Volume</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {mockFinancialData.paymentMethods.map((method, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{method.method}</TableCell>
-                        <TableCell>{method.count}</TableCell>
-                        <TableCell>{formatCurrency(method.volume)}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </div>
-          
-          {/* Payment Settings Section */}
-          <div className="mt-8">
-            <h2 className="text-lg font-medium mb-4">Payment Settings</h2>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Bank Account Information</CardTitle>
-                <CardDescription>Configure where your business revenues are sent</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="font-medium mb-2">Primary Bank Account</h3>
-                    <div className="bg-muted p-4 rounded-md">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Account Name</p>
-                          <p className="font-medium">WeParlay Business Account</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Bank Name</p>
-                          <p className="font-medium">First National Bank</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Account Number</p>
-                          <p className="font-medium">•••• •••• •••• 4587</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Routing Number</p>
-                          <p className="font-medium">•••• •••• 7</p>
-                        </div>
-                      </div>
-                      <div className="mt-2">
-                        <Badge>Default Account</Badge>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Bank Account Information</CardTitle>
+                  <CardDescription>Update your bank account for payouts</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="account-name">Account Holder Name</Label>
+                      <Input id="account-name" placeholder="Enter account holder name" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="account-number">Account Number</Label>
+                      <Input id="account-number" placeholder="Enter account number" type="password" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="routing-number">Routing Number</Label>
+                      <Input id="routing-number" placeholder="Enter routing number" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="bank-name">Bank Name</Label>
+                      <Input id="bank-name" placeholder="Enter bank name" />
+                    </div>
+                    <Button className="w-full">Update Bank Account</Button>
+                  </form>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Platform Fees</CardTitle>
+                  <CardDescription>Configure your platform fee structure</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="bet-fee">Bet Fee Percentage</Label>
+                      <div className="flex items-center">
+                        <Input id="bet-fee" placeholder="5" type="number" min="0" max="100" />
+                        <span className="ml-2">%</span>
                       </div>
                     </div>
-                  </div>
-                  
-                  <div>
-                    <h3 className="font-medium mb-2">Automatic Transfers</h3>
-                    <div className="flex items-center gap-4">
-                      <Button variant="outline" size="sm">Daily</Button>
-                      <Button variant="default" size="sm">Weekly</Button>
-                      <Button variant="outline" size="sm">Monthly</Button>
+                    <div className="space-y-2">
+                      <Label htmlFor="withdrawal-fee">Withdrawal Fee</Label>
+                      <div className="flex items-center">
+                        <DollarSign className="h-4 w-4" />
+                        <Input id="withdrawal-fee" placeholder="2.50" type="number" min="0" step="0.01" />
+                      </div>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      Funds are automatically transferred to your bank account every Sunday.
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <h3 className="font-medium mb-2">Minimum Transfer Amount</h3>
-                    <div className="flex items-center">
-                      <Input 
-                        type="number" 
-                        defaultValue="1000" 
-                        className="max-w-xs"
-                      />
-                      <Button className="ml-2">Update</Button>
+                    <div className="space-y-2">
+                      <Label htmlFor="minimum-bet">Minimum Bet Amount</Label>
+                      <div className="flex items-center">
+                        <DollarSign className="h-4 w-4" />
+                        <Input id="minimum-bet" placeholder="5.00" type="number" min="0" step="0.01" />
+                      </div>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      Automatic transfers will only occur when your balance exceeds this amount.
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="mt-6 flex gap-4">
-                  <Button>Add Bank Account</Button>
-                  <Button variant="outline">View Transfer History</Button>
+                    <div className="space-y-2">
+                      <Label htmlFor="maximum-bet">Maximum Bet Amount</Label>
+                      <div className="flex items-center">
+                        <DollarSign className="h-4 w-4" />
+                        <Input id="maximum-bet" placeholder="10000.00" type="number" min="0" step="0.01" />
+                      </div>
+                    </div>
+                    <Button className="w-full">Update Fee Structure</Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Transaction History</CardTitle>
+                <CardDescription>View and filter recent platform transactions</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-md border">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead>
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">User</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                      <tr>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm">May 17, 2025</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm">user123</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm">Deposit</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-green-600 dark:text-green-400">+$500.00</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm"><span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">Completed</span></td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm">May 16, 2025</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm">johndoe</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm">Withdrawal</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-red-600 dark:text-red-400">-$250.00</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm"><span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">Completed</span></td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm">May 16, 2025</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm">bettingpro</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm">Withdrawal</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-red-600 dark:text-red-400">-$1,000.00</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm"><span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100">Pending</span></td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm">May 15, 2025</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm">alice2025</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm">Deposit</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-green-600 dark:text-green-400">+$350.00</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm"><span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">Completed</span></td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm">May 14, 2025</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm">sportsfan42</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm">Payout</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-red-600 dark:text-red-400">-$750.00</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm"><span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">Completed</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </CardContent>
             </Card>
           </div>
         </TabsContent>
-        
-        {/* Platform Settings Tab */}
+
+        {/* Content Management Tab */}
+        <TabsContent value="content">
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold">Content Management</h2>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Sports and Leagues Management</CardTitle>
+                <CardDescription>Enable or disable sports and leagues available on the platform</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {/* Sample sports toggle controls */}
+                  <div className="flex items-center justify-between border-b pb-2">
+                    <div className="font-medium">NBA (Basketball)</div>
+                    <Button variant="outline">Enabled</Button>
+                  </div>
+                  <div className="flex items-center justify-between border-b pb-2">
+                    <div className="font-medium">NFL (Football)</div>
+                    <Button variant="outline">Enabled</Button>
+                  </div>
+                  <div className="flex items-center justify-between border-b pb-2">
+                    <div className="font-medium">MLB (Baseball)</div>
+                    <Button variant="outline">Enabled</Button>
+                  </div>
+                  <div className="flex items-center justify-between border-b pb-2">
+                    <div className="font-medium">NHL (Hockey)</div>
+                    <Button variant="outline">Enabled</Button>
+                  </div>
+                  <div className="flex items-center justify-between border-b pb-2">
+                    <div className="font-medium">UFC (Mixed Martial Arts)</div>
+                    <Button variant="outline">Enabled</Button>
+                  </div>
+                  <div className="flex items-center justify-between pb-2">
+                    <div className="font-medium">Tennis</div>
+                    <Button variant="outline">Enabled</Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Betting Markets</CardTitle>
+                <CardDescription>Customize available betting markets for each sport</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="font-medium mb-2">NBA Markets</div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" id="nba-spread" className="rounded" checked readOnly />
+                      <label htmlFor="nba-spread">Point Spread</label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" id="nba-moneyline" className="rounded" checked readOnly />
+                      <label htmlFor="nba-moneyline">Moneyline</label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" id="nba-total" className="rounded" checked readOnly />
+                      <label htmlFor="nba-total">Total Points</label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" id="nba-quarters" className="rounded" checked readOnly />
+                      <label htmlFor="nba-quarters">Quarter Lines</label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" id="nba-player-props" className="rounded" checked readOnly />
+                      <label htmlFor="nba-player-props">Player Props</label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" id="nba-futures" className="rounded" checked readOnly />
+                      <label htmlFor="nba-futures">Futures</label>
+                    </div>
+                  </div>
+                  
+                  <div className="font-medium mb-2 mt-4">NFL Markets</div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" id="nfl-spread" className="rounded" checked readOnly />
+                      <label htmlFor="nfl-spread">Point Spread</label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" id="nfl-moneyline" className="rounded" checked readOnly />
+                      <label htmlFor="nfl-moneyline">Moneyline</label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" id="nfl-total" className="rounded" checked readOnly />
+                      <label htmlFor="nfl-total">Total Points</label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" id="nfl-quarters" className="rounded" checked readOnly />
+                      <label htmlFor="nfl-quarters">Quarter Lines</label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" id="nfl-player-props" className="rounded" checked readOnly />
+                      <label htmlFor="nfl-player-props">Player Props</label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" id="nfl-futures" className="rounded" checked readOnly />
+                      <label htmlFor="nfl-futures">Futures</label>
+                    </div>
+                  </div>
+                  
+                  <Button className="mt-4">Save Market Settings</Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Settings Tab */}
         <TabsContent value="settings">
-          <Card>
-            <CardHeader>
-              <CardTitle>Platform Settings</CardTitle>
-              <CardDescription>Manage global settings for the WeParlay platform</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <div>
-                  <h3 className="font-medium mb-2">User Registration</h3>
-                  <div className="flex items-center gap-4">
-                    <Button variant="default" size="sm">Open</Button>
-                    <Button variant="outline" size="sm">Invite Only</Button>
-                    <Button variant="outline" size="sm">Closed</Button>
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold">Platform Settings</h2>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>General Settings</CardTitle>
+                <CardDescription>Configure basic platform settings</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="platform-name">Platform Name</Label>
+                    <Input id="platform-name" placeholder="WeParlay.io" />
                   </div>
-                </div>
-                
-                <div>
-                  <h3 className="font-medium mb-2">Required Verification Level</h3>
-                  <div className="flex items-center gap-4">
-                    <Button variant="outline" size="sm">None</Button>
-                    <Button variant="default" size="sm">Email</Button>
-                    <Button variant="outline" size="sm">ID Verification</Button>
+                  <div className="space-y-2">
+                    <Label htmlFor="contact-email">Support Email</Label>
+                    <Input id="contact-email" placeholder="support@weparlay.io" type="email" />
                   </div>
-                </div>
-                
-                <div>
-                  <h3 className="font-medium mb-2">Platform Commission</h3>
-                  <div className="flex items-center">
-                    <Input 
-                      type="number" 
-                      defaultValue="5" 
-                      className="max-w-xs"
-                    />
-                    <span className="ml-2">%</span>
-                    <Button className="ml-2">Update</Button>
+                  <div className="space-y-2">
+                    <Label htmlFor="timezone">Default Timezone</Label>
+                    <select id="timezone" className="w-full p-2 rounded-md border border-gray-300 dark:border-gray-700">
+                      <option>Eastern Time (ET)</option>
+                      <option>Central Time (CT)</option>
+                      <option>Mountain Time (MT)</option>
+                      <option>Pacific Time (PT)</option>
+                      <option>Greenwich Mean Time (GMT)</option>
+                    </select>
                   </div>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Percentage fee taken from each betting transaction.
-                  </p>
-                </div>
-                
-                <div>
-                  <h3 className="font-medium mb-2">Minimum Betting Amount</h3>
-                  <div className="flex items-center">
-                    <Input 
-                      type="number" 
-                      defaultValue="5" 
-                      className="max-w-xs"
-                    />
-                    <Button className="ml-2">Update</Button>
+                  <Button>Save General Settings</Button>
+                </form>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Privacy Settings</CardTitle>
+                <CardDescription>Configure user privacy and data sharing settings</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="public-profiles">Public User Profiles</Label>
+                    <input type="checkbox" id="public-profiles" className="toggle" checked />
                   </div>
-                </div>
-                
-                <div>
-                  <h3 className="font-medium mb-2">Maximum Withdrawal Limits</h3>
-                  <div className="flex items-center">
-                    <Input 
-                      type="number" 
-                      defaultValue="10000" 
-                      className="max-w-xs"
-                    />
-                    <Button className="ml-2">Update</Button>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="show-earnings">Show User Earnings</Label>
+                    <input type="checkbox" id="show-earnings" className="toggle" checked />
                   </div>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Maximum amount a user can withdraw per day.
-                  </p>
-                </div>
-              </div>
-              
-              <div className="mt-6">
-                <Button>Save All Settings</Button>
-              </div>
-            </CardContent>
-          </Card>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="show-bet-history">Public Bet History</Label>
+                    <input type="checkbox" id="show-bet-history" className="toggle" />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="social-sharing">Social Media Sharing</Label>
+                    <input type="checkbox" id="social-sharing" className="toggle" checked />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="anonymous-mode">Anonymous Mode Option</Label>
+                    <input type="checkbox" id="anonymous-mode" className="toggle" checked />
+                  </div>
+                  <Button>Save Privacy Settings</Button>
+                </form>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Security Settings</CardTitle>
+                <CardDescription>Configure platform security settings</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="two-factor">Require Two-Factor Authentication</Label>
+                    <input type="checkbox" id="two-factor" className="toggle" checked />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="session-timeout">Session Timeout (minutes)</Label>
+                    <Input id="session-timeout" className="w-24" type="number" min="5" value="60" />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password-expiry">Password Expiry (days)</Label>
+                    <Input id="password-expiry" className="w-24" type="number" min="0" value="90" />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="login-attempts">Max Failed Login Attempts</Label>
+                    <Input id="login-attempts" className="w-24" type="number" min="1" value="5" />
+                  </div>
+                  <Button>Save Security Settings</Button>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
