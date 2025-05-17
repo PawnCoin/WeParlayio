@@ -115,14 +115,17 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
-                        Profile
+                      <DropdownMenuItem asChild>
+                        <Link href="/profile">Profile</Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        My Bets
+                      <DropdownMenuItem asChild>
+                        <Link href="/my-bets">My Bets</Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        Settings
+                      <DropdownMenuItem asChild>
+                        <Link href="/settings">Settings</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/security">Security & Wallet Management</Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={logout}>

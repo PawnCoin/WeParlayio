@@ -12,6 +12,7 @@ import Results from "@/pages/Results";
 import Social from "@/pages/Social";
 import SocialBetting from "@/pages/SocialBetting";
 import Settings from "@/pages/Settings";
+import SecuritySettings from "@/pages/SecuritySettings"; // Advanced security & wallet management
 import SignUp from "@/pages/SignUp";
 import VideoGaming from "@/pages/VideoGaming";
 import Trivia from "@/pages/Trivia";
@@ -45,6 +46,7 @@ function Router() {
       <Route path="/video-gaming" component={VideoGaming} />
       <Route path="/trivia" component={Trivia} />
       <Route path="/settings" component={Settings} />
+      <Route path="/security" component={SecuritySettings} />
       <Route path="/signup" component={SignUp} />
       <Route path="/login" component={Login} />
       <Route path="/sports/:sportKey" component={SportPage} />
