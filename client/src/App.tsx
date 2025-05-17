@@ -24,6 +24,7 @@ import Login from "@/pages/Login"; // Login page with social login options
 import EnhancedFeatures from "@/pages/EnhancedFeatures"; // Advanced features page
 import VipFeatures from "@/pages/VipFeatures"; // VIP exclusive section
 import ThemeSettingsPage from "@/pages/ThemeSettingsPage"; // Theme settings page
+import AdminDashboard from "@/pages/AdminDashboard"; // Admin dashboard for platform owner
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
 import MobileVoiceBetting from "@/components/mobile/MobileVoiceBetting";
@@ -53,6 +54,7 @@ function Router() {
       <Route path="/signup" component={SignUp} />
       <Route path="/login" component={Login} />
       <Route path="/theme-manager" component={ThemeSettingsPage} />
+      <Route path="/admin" component={AdminDashboard} />
       <Route path="/sports/:sportKey" component={SportPage} />
       <Route component={NotFound} />
     </Switch>

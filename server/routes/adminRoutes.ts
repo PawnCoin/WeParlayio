@@ -1,0 +1,199 @@
+import { Router, Request, Response } from 'express';
+import { isAuthenticated } from '../replitAuth';
+import { storage } from '../storage';
+
+export const adminRouter = Router();
+
+// Middleware to check if user is admin
+const isAdmin = async (req: Request, res: Response, next: any) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+  
+  const userId = req.user?.claims?.sub;
+  if (!userId) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+  
+  try {
+    const user = await storage.getUser(userId);
+    
+    // Check if user has admin role
+    if (user && user.role === 'admin') {
+      return next();
+    } else {
+      return res.status(403).json({ message: 'Forbidden - Admin access required' });
+    }
+  } catch (error) {
+    console.error('Error checking admin status:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+// Get all users (admin only)
+adminRouter.get('/users', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+  try {
+    const users = await storage.getAllUsers();
+    
+    // Filter out sensitive information
+    const filteredUsers = users.map(user => ({
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      profileImageUrl: user.profileImageUrl,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      balance: user.balance || 0,
+      status: user.status || 'active',
+      betsCount: user.betsCount || 0,
+      winsCount: user.winsCount || 0,
+    }));
+    
+    res.json(filteredUsers);
+  } catch (error) {
+    console.error('Error getting users:', error);
+    res.status(500).json({ message: 'Failed to retrieve users' });
+  }
+});
+
+// Get user by ID (admin only)
+adminRouter.get('/users/:id', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+  try {
+    const user = await storage.getUser(req.params.id);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    res.json(user);
+  } catch (error) {
+    console.error('Error getting user:', error);
+    res.status(500).json({ message: 'Failed to retrieve user' });
+  }
+});
+
+// Update user status (admin only)
+adminRouter.patch('/users/:id/status', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+  try {
+    const { status } = req.body;
+    
+    if (!['active', 'suspended', 'inactive'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status value' });
+    }
+    
+    const user = await storage.updateUserStatus(req.params.id, status);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    res.json(user);
+  } catch (error) {
+    console.error('Error updating user status:', error);
+    res.status(500).json({ message: 'Failed to update user status' });
+  }
+});
+
+// Financial summary (admin only)
+adminRouter.get('/financial-summary', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+  try {
+    const summary = await storage.getFinancialSummary();
+    res.json(summary);
+  } catch (error) {
+    console.error('Error getting financial summary:', error);
+    res.status(500).json({ message: 'Failed to retrieve financial summary' });
+  }
+});
+
+// Recent transactions (admin only)
+adminRouter.get('/transactions', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+  try {
+    const { limit = 20, offset = 0 } = req.query;
+    
+    const transactions = await storage.getTransactions(
+      Number(limit), 
+      Number(offset)
+    );
+    
+    res.json(transactions);
+  } catch (error) {
+    console.error('Error getting transactions:', error);
+    res.status(500).json({ message: 'Failed to retrieve transactions' });
+  }
+});
+
+// Update bank account information (admin only)
+adminRouter.post('/bank-account', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+  try {
+    const { accountName, bankName, accountNumber, routingNumber } = req.body;
+    
+    // Validate input
+    if (!accountName || !bankName || !accountNumber || !routingNumber) {
+      return res.status(400).json({ message: 'All bank account fields are required' });
+    }
+    
+    const bankAccount = await storage.updateBankAccount({
+      accountName,
+      bankName,
+      accountNumber,
+      routingNumber,
+      isDefault: true
+    });
+    
+    res.json(bankAccount);
+  } catch (error) {
+    console.error('Error updating bank account:', error);
+    res.status(500).json({ message: 'Failed to update bank account information' });
+  }
+});
+
+// Update platform settings (admin only)
+adminRouter.post('/platform-settings', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+  try {
+    const { registrationStatus, verificationLevel, commission, minBet, maxWithdrawal } = req.body;
+    
+    // Validate input
+    if (!registrationStatus || !verificationLevel || !commission || !minBet || !maxWithdrawal) {
+      return res.status(400).json({ message: 'All platform settings fields are required' });
+    }
+    
+    const settings = await storage.updatePlatformSettings({
+      registrationStatus,
+      verificationLevel,
+      commission,
+      minBet,
+      maxWithdrawal
+    });
+    
+    res.json(settings);
+  } catch (error) {
+    console.error('Error updating platform settings:', error);
+    res.status(500).json({ message: 'Failed to update platform settings' });
+  }
+});
+
+// Update user privacy settings (admin only)
+adminRouter.post('/privacy-settings', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+  try {
+    const { publicProfiles, bettingHistory, winStatistics, leagueRankings } = req.body;
+    
+    // Validate input
+    if (publicProfiles === undefined || bettingHistory === undefined || 
+        winStatistics === undefined || leagueRankings === undefined) {
+      return res.status(400).json({ message: 'All privacy settings fields are required' });
+    }
+    
+    const settings = await storage.updatePrivacySettings({
+      publicProfiles,
+      bettingHistory,
+      winStatistics,
+      leagueRankings
+    });
+    
+    res.json(settings);
+  } catch (error) {
+    console.error('Error updating privacy settings:', error);
+    res.status(500).json({ message: 'Failed to update privacy settings' });
+  }
+});

@@ -32,7 +32,12 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
+  role: varchar("role").default("user"),
+  status: varchar("status").default("active"),
   balance: doublePrecision("balance").default(1000),
+  betsCount: integer("bets_count").default(0),
+  winsCount: integer("wins_count").default(0),
+  lastLogin: timestamp("last_login"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
   yahooIntegrationToken: text("yahoo_integration_token"),
@@ -46,9 +51,58 @@ export const insertUserSchema = createInsertSchema(users).pick({
   firstName: true,
   lastName: true,
   profileImageUrl: true,
+  role: true,
+  status: true
 });
 
 export type UpsertUser = typeof users.$inferInsert;
+
+// Bank accounts for owner's deposits
+export const bankAccounts = pgTable("bank_accounts", {
+  id: serial("id").primaryKey(),
+  accountName: text("account_name").notNull(),
+  bankName: text("bank_name").notNull(),
+  accountNumber: text("account_number").notNull(),
+  routingNumber: text("routing_number").notNull(),
+  isDefault: boolean("is_default").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertBankAccountSchema = createInsertSchema(bankAccounts).pick({
+  accountName: true,
+  bankName: true,
+  accountNumber: true,
+  routingNumber: true,
+  isDefault: true,
+});
+
+// Transactions model for deposits/withdrawals
+export const transactions = pgTable("transactions", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  type: text("type").notNull(), // 'deposit', 'withdrawal', 'bet', 'win'
+  amount: doublePrecision("amount").notNull(),
+  status: text("status").default("pending"), // 'pending', 'completed', 'failed'
+  transactionDate: timestamp("transaction_date").defaultNow(),
+  details: jsonb("details"),
+});
+
+export const insertTransactionSchema = createInsertSchema(transactions).pick({
+  userId: true,
+  type: true,
+  amount: true,
+  status: true,
+  details: true,
+});
+
+// Platform settings
+export const platformSettings = pgTable("platform_settings", {
+  id: serial("id").primaryKey(),
+  key: text("key").notNull().unique(),
+  value: jsonb("value").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
 
 // Sports model
 export const sports = pgTable("sports", {
@@ -109,7 +163,7 @@ export const insertEventSchema = createInsertSchema(events).pick({
 // Bets model
 export const bets = pgTable("bets", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
+  userId: varchar("user_id").notNull(),
   eventId: integer("event_id").notNull(),
   betType: text("bet_type").notNull(),
   pick: text("pick").notNull(),
@@ -153,7 +207,7 @@ export const insertTournamentSchema = createInsertSchema(tournaments).pick({
 // Fantasy Teams model
 export const fantasyTeams = pgTable("fantasy_teams", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
+  userId: varchar("user_id").notNull(),
   name: text("name").notNull(),
   sportId: integer("sport_id").notNull(),
   salary: doublePrecision("salary").default(0),
@@ -204,6 +258,12 @@ export const insertFantasyTeamPlayerSchema = createInsertSchema(fantasyTeamPlaye
 // Type definitions
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
+
+export type BankAccount = typeof bankAccounts.$inferSelect;
+export type InsertBankAccount = z.infer<typeof insertBankAccountSchema>;
+
+export type Transaction = typeof transactions.$inferSelect;
+export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
 
 export type Sport = typeof sports.$inferSelect;
 export type InsertSport = z.infer<typeof insertSportSchema>;
