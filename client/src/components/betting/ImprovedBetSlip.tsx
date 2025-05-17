@@ -280,7 +280,7 @@ const ImprovedBetSlip: React.FC<ImprovedBetSlipProps> = ({
               {betSlip.map((bet) => (
                 <div 
                   key={bet.id} 
-                  className="border border-muted dark:border-slate-700 rounded-md p-2 mb-1 text-xs dark:bg-slate-900"
+                  className="border border-muted dark:border-slate-700 rounded-md p-2 mb-1 text-xs dark:bg-slate-900 bg-white"
                 >
                   <div className="flex justify-between items-start mb-1">
                     <div className="font-medium text-foreground dark:text-white text-xs">{bet.pick}</div>
@@ -293,11 +293,11 @@ const ImprovedBetSlip: React.FC<ImprovedBetSlipProps> = ({
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
-                  <div className="text-xs text-muted-foreground dark:text-gray-400 mb-1">
+                  <div className="text-xs font-medium dark:text-white text-gray-700 mb-1">
                     {bet.homeTeam} vs {bet.awayTeam}
                   </div>
                   <div className="flex justify-between items-center">
-                    <div className="text-xs text-foreground dark:text-gray-300">
+                    <div className="text-xs font-semibold dark:text-white text-black">
                       {bet.betType === 'moneyline' ? (
                         <span>Moneyline</span>
                       ) : bet.betType === 'spread' ? (
@@ -365,11 +365,11 @@ const ImprovedBetSlip: React.FC<ImprovedBetSlipProps> = ({
           )}
           
           <Button 
-            className="w-full bg-primary hover:bg-primary-dark text-white text-xs py-1 h-7" 
+            className="w-full bg-primary hover:bg-primary-dark text-white text-xs py-2 h-9 font-semibold" 
             disabled={betSlip.length === 0 || parseFloat(betAmount) <= 0}
             onClick={handlePlaceBet}
           >
-            <DollarSign className="h-3 w-3 mr-1" />
+            <DollarSign className="h-4 w-4 mr-1" />
             Place {betType === 'parlay' ? 'Parlay' : 'Bet'}
           </Button>
         </div>
