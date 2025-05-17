@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import BetConfetti from "@/components/betting/BetConfetti";
+import TierComparisonDashboard from "@/components/vip/TierComparisonDashboard";
 import { 
   Crown, Star, Gift, Clock, Zap, Users, DollarSign, Check, 
   ArrowRight, ChevronRight, Trophy, BadgePercent, 
