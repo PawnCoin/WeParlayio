@@ -744,6 +744,20 @@ const VipFeatures: React.FC = () => {
             </Card>
           </TabsContent>
           
+          <TabsContent value="membership-tiers">
+            <Card>
+              <CardHeader>
+                <CardTitle>VIP Membership Tiers</CardTitle>
+                <CardDescription>
+                  Compare membership options and unlock premium features
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <TierComparisonDashboard />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
           <TabsContent value="vip-settings">
             <Card>
               <CardHeader>
