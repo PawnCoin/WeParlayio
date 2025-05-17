@@ -280,7 +280,7 @@ const ImprovedBetSlip: React.FC<ImprovedBetSlipProps> = ({
               {betSlip.map((bet) => (
                 <div 
                   key={bet.id} 
-                  className="border border-muted dark:border-slate-700 rounded-md p-2 mb-1 text-xs dark:bg-slate-900 bg-white"
+                  className="border border-muted dark:border-slate-700 rounded-md p-2 mb-1 text-xs dark:bg-slate-900 bg-slate-50"
                 >
                   <div className="flex justify-between items-start mb-1">
                     <div className="font-medium text-foreground dark:text-white text-xs">{bet.pick}</div>
@@ -306,7 +306,7 @@ const ImprovedBetSlip: React.FC<ImprovedBetSlipProps> = ({
                         <span>{bet.pick.includes("O/U") ? "Total" : bet.pick} {bet.point}</span>
                       )}
                     </div>
-                    <Badge variant="outline" className="text-xs bg-background dark:bg-slate-800 text-foreground dark:text-white">
+                    <Badge variant="outline" className="text-xs dark:bg-slate-800 bg-slate-100 text-foreground dark:text-white">
                       {formatOdds(bet.odds)}
                     </Badge>
                   </div>
