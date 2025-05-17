@@ -7,6 +7,8 @@ import BracketView from "@/components/tournaments/BracketView";
 import FantasyTeamBuilder from "@/components/fantasy/FantasyTeamBuilder";
 import PlayerPropsTable from "@/components/betting/PlayerPropsTable";
 import { StatsCarousel } from "@/components/StatsCarousel";
+import WelcomeDashboard from "@/components/dashboard/WelcomeDashboard";
+import OnboardingExperience from "@/components/onboarding/OnboardingExperience";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -155,6 +157,14 @@ const Home: React.FC = () => {
   
   return (
     <div data-bind="dashboard">
+      {/* Interactive Onboarding Experience */}
+      <OnboardingExperience />
+      
+      {/* Personalized Welcome Dashboard */}
+      <div className="mb-8">
+        <WelcomeDashboard />
+      </div>
+      
       {/* Dashboard Header With Tabs */}
       <div className="mb-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
