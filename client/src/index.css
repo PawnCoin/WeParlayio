@@ -230,6 +230,11 @@ td {
   box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
+.dark .betting-slip-container {
+  background-color: #1e293b !important; /* Dark background for dark mode */
+  color: white !important;
+}
+
 /* When in mobile view, make the bet slip more compact */
 @media (max-width: 768px) {
   .betting-slip-container {

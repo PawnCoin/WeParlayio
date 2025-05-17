@@ -175,8 +175,8 @@ const ImprovedBetSlip: React.FC<ImprovedBetSlipProps> = ({
   };
 
   return (
-    <Card className="dark:bg-gray-800 bg-card text-card-foreground dark:text-white betting-slip-container">
-      <CardHeader className="py-2 px-3 dark:bg-gray-900 bg-muted flex flex-row items-center justify-between">
+    <Card className="dark:bg-gray-900 bg-card text-card-foreground dark:text-white betting-slip-container">
+      <CardHeader className="py-2 px-3 dark:bg-gray-800 bg-muted flex flex-row items-center justify-between">
         <CardTitle className="text-sm font-bold">
           <div className="flex items-center text-foreground dark:text-white">
             <TrendingUp className="h-3 w-3 mr-1 text-primary" />
