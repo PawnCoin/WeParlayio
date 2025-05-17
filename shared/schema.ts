@@ -266,6 +266,19 @@ export type InsertBankAccount = z.infer<typeof insertBankAccountSchema>;
 export type Transaction = typeof transactions.$inferSelect;
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
 
+// Admin dashboard settings
+export const adminSettings = pgTable("admin_settings", {
+  id: serial("id").primaryKey(),
+  platformFee: doublePrecision("platform_fee").default(0.05),
+  maxWithdrawalLimit: doublePrecision("max_withdrawal_limit").default(10000),
+  minWithdrawalAmount: doublePrecision("min_withdrawal_amount").default(20),
+  maintenanceMode: boolean("maintenance_mode").default(false),
+  registrationEnabled: boolean("registration_enabled").default(true),
+  apiKeysValid: boolean("api_keys_valid").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export type Sport = typeof sports.$inferSelect;
 export type InsertSport = z.infer<typeof insertSportSchema>;
 
