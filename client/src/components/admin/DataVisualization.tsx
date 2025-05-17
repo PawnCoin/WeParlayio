@@ -206,9 +206,9 @@ export const TransactionVolumeChart = ({ data }: { data: any[] }) => {
   );
 };
 
-// Import necessary components
-import { Button } from "@/components/ui/button";
-import { Calendar, RefreshCw, Download, Filter } from "lucide-react";
+// Additional icon imports
+import { Filter } from "lucide-react";
+import React from "react"; // For useState
 
 // Interactive Dashboard Controls
 export const InteractiveDashboardControls = ({ 
