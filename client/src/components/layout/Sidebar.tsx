@@ -299,6 +299,18 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
           </div>
         </Link>
         
+        <Link href="/theme-manager">
+          <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer mb-2 ${
+            location === '/theme-manager' 
+              ? "bg-primary text-white" 
+              : "hover:bg-gray-100 dark:hover:bg-gray-800"
+          }`}>
+            <Settings className="h-5 w-5 mr-3" />
+            <span>Theme Settings</span>
+            <ChevronRight className="h-4 w-4 ml-auto" />
+          </div>
+        </Link>
+        
         <div className="flex items-center justify-between mt-3">
           <p className="text-sm">Dark Mode</p>
           <Switch 
