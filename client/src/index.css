@@ -231,7 +231,7 @@ td {
 }
 
 .dark .betting-slip-container {
-  background-color: #1e293b !important; /* Dark background for dark mode */
+  background-color: #0f172a !important; /* Darker slate background for dark mode */
   color: white !important;
 }
 
@@ -240,14 +240,14 @@ td {
 }
 
 .dark .betting-slip-container .card-content {
-  background-color: #1e293b !important; 
+  background-color: #0f172a !important; 
 }
 
 .dark .betting-slip-container input[type="number"],
 .dark .betting-slip-container input[type="text"] {
-  background-color: #334155 !important;
+  background-color: #1e293b !important;
   color: white !important;
-  border-color: #475569 !important;
+  border-color: #334155 !important;
 }
 
 /* When in mobile view, make the bet slip more compact */

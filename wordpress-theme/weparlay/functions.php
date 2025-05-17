@@ -12,6 +12,11 @@ if (!defined('WEPARLAY_VERSION')) {
     define('WEPARLAY_VERSION', '1.0.1');
 }
 
+/**
+ * Load optimization functions
+ */
+require get_template_directory() . '/functions-optimize.php';
+
 // Debug Mode - Log theme activation
 if (!function_exists('weparlay_debug_log')) {
     function weparlay_debug_log($message) {
