@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   BarChart, 
   Bar, 
@@ -206,9 +206,8 @@ export const TransactionVolumeChart = ({ data }: { data: any[] }) => {
   );
 };
 
-// Additional icon imports
+// Additional icon import
 import { Filter } from "lucide-react";
-import React from "react"; // For useState
 
 // Interactive Dashboard Controls
 export const InteractiveDashboardControls = ({ 
