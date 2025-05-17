@@ -79,7 +79,7 @@ const LegalComplianceWrapper: React.FC<LegalComplianceWrapperProps> = ({
         {children}
         
         {showAlert && (
-          <Alert variant="warning" className="bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800 mt-4">
+          <Alert variant="destructive" className="bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800 mt-4">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Geographic Restriction</AlertTitle>
             <AlertDescription>
