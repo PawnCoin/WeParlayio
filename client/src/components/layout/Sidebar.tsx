@@ -7,7 +7,79 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { X, BarChart2, Trophy, Medal, History, Settings } from "lucide-react";
+import { 
+  X, BarChart2, Trophy, Medal, History, Settings, 
+  Clock, Dumbbell, Shirt, Award, Activity,
+  ChevronRight, CircleDot, Flame
+} from "lucide-react";
+
+// Function to get sport icons based on sport key
+const getSportIcon = (sportKey: string) => {
+  switch (sportKey) {
+    case 'basketball':
+    case 'basketball_nba':
+    case 'basketball_ncaab':
+    case 'basketball_ncaaw':
+    case 'basketball_wnba':
+      return (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M4.93 4.93 19.07 19.07"/>
+          <path d="M4.93 19.07 19.07 4.93"/>
+        </svg>
+      );
+    case 'football':
+    case 'football_nfl':
+    case 'football_ncaaf':
+    case 'football_ufl':
+      return (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 2v20"/>
+          <path d="M12 12 2.1 7.1"/>
+          <path d="m12 12 9.9 4.9"/>
+        </svg>
+      );
+    case 'baseball':
+    case 'baseball_mlb':
+      return (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10z"/>
+          <path d="M5.95 5.95a.999.999 0 1 1-1.414-1.414 1 1 0 0 1 1.414 1.414z"/>
+          <path d="M18.05 5.95a.999.999 0 1 0 1.414-1.414 1 1 0 0 0-1.414 1.414z"/>
+          <path d="M12 22V12"/>
+          <path d="M18 18H6"/>
+        </svg>
+      );
+    case 'icehockey':
+    case 'icehockey_nhl':
+      return (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M15 4 7 15l4 5h8l-4-5 4-11h-4Z"/>
+          <path d="M9 15 5 4l-2 1"/>
+        </svg>
+      );
+    case 'tennis_atp':
+    case 'tennis_wta':
+      return <Activity className="h-5 w-5" />;
+    case 'mma_ufc':
+      return <Dumbbell className="h-5 w-5" />;
+    case 'boxing_main':
+      return <Award className="h-5 w-5" />;
+    case 'motorsport_nascar':
+      return (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 11s-1 1-1 3c0 3 2 6 9 6 4 0 7-1 9-4"/>
+          <path d="M17 11V3h4l-6-3-6 3h4v8z"/>
+          <path d="M9 11H5a4 4 0 0 0 0 8h2"/>
+          <circle cx="9" cy="17" r="2"/>
+          <circle cx="17" cy="17" r="2"/>
+        </svg>
+      );
+    default:
+      return <Shirt className="h-5 w-5" />;
+  }
+};
 
 interface SidebarProps {
   onClose?: () => void;
@@ -76,14 +148,20 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                       ? "bg-primary text-white"
                       : "hover:bg-gray-100 dark:hover:bg-gray-800"
                   }`}>
-                    <i className={`fas fa-${sport.icon} w-6`}></i>
+                    <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center mr-2">
+                      {sport.icon ? (
+                        <span className="text-xl">{sport.icon}</span>
+                      ) : (
+                        getSportIcon(sport.key)
+                      )}
+                    </span>
                     <span>{sport.name}</span>
                     <span className={`ml-auto text-xs px-2 py-1 rounded ${
                       location === `/sports/${sport.key}`
                         ? "bg-white bg-opacity-20 text-white"
                         : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
                     }`}>
-                      {sport.eventCount}
+                      {sport.eventCount || 0}
                     </span>
                   </div>
                 </Link>
