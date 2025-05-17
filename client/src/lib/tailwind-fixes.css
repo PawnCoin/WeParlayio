@@ -2,7 +2,24 @@
 
 /* Fix for bg-white */
 .bg-white {
-  --tw-bg-opacity: 0 !important;
+  background-color: white !important;
 }
 
 /* Additional Tailwind fixes can be added below */
+.text-card-foreground {
+  color: black !important;
+}
+
+/* Dark mode overrides */
+.dark .text-card-foreground {
+  color: white !important;
+}
+
+/* Force text to be visible in light mode */
+.text-foreground {
+  color: black !important;
+}
+
+.dark .text-foreground {
+  color: white !important;
+}

@@ -1,9 +1,7 @@
+@import url('./lib/tailwind-fixes.css');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Import custom fixes */
-@import url('./lib/tailwind-fixes.css');
 
 /* WeParlay custom color scheme */
 :root {

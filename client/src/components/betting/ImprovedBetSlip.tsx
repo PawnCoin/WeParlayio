@@ -178,7 +178,7 @@ const ImprovedBetSlip: React.FC<ImprovedBetSlipProps> = ({
     <Card className="dark:bg-slate-900 bg-card text-card-foreground dark:text-white betting-slip-container">
       <CardHeader className="py-2 px-3 dark:bg-slate-800 bg-muted flex flex-row items-center justify-between">
         <CardTitle className="text-sm font-bold">
-          <div className="flex items-center text-foreground dark:text-white">
+          <div className="flex items-center text-black dark:text-white">
             <TrendingUp className="h-3 w-3 mr-1 text-primary" />
             Bet Slip {betSlip.length > 0 && `(${betSlip.length})`}
           </div>
@@ -283,7 +283,7 @@ const ImprovedBetSlip: React.FC<ImprovedBetSlipProps> = ({
                   className="border border-muted dark:border-slate-700 rounded-md p-2 mb-1 text-xs dark:bg-slate-900 bg-slate-50"
                 >
                   <div className="flex justify-between items-start mb-1">
-                    <div className="font-medium text-foreground dark:text-white text-xs">{bet.pick}</div>
+                    <div className="font-medium text-black dark:text-white text-xs">{bet.pick}</div>
                     <Button 
                       variant="ghost" 
                       size="sm" 
