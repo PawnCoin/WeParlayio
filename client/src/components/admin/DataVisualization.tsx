@@ -14,7 +14,9 @@ import {
   Legend, 
   ResponsiveContainer 
 } from 'recharts';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Download, RefreshCw, TrendingUp, TrendingDown, DollarSign, Users, Calendar } from "lucide-react";
 
 // Revenue Overview Bar Chart
 export const RevenueBarChart = ({ data }: { data: any[] }) => {

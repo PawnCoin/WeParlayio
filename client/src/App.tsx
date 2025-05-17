@@ -33,8 +33,7 @@ import { CurrencyModeProvider } from "./contexts/CurrencyModeContext";
 import { TeamThemeProvider } from "./contexts/TeamThemeContext";
 import { BetSlipProvider } from "./contexts/BetSlipContext";
 
-import AdminDashboard from "@/pages/AdminDashboard";
-import AdminBypass from "@/pages/AdminBypass";
+// Admin components are already imported above
 
 // Admin route guard component
 const AdminRoute = ({ component: Component, ...rest }: any) => {
