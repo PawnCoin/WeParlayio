@@ -1,51 +1,27 @@
 import React from 'react';
-import { Link } from 'wouter';
-// Use public path for logo
-const logoPath = '/weparlaylogo.png';
+import weparlayLogo from '@assets/weparlaylogo5.png';
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
-  showText?: boolean;
   className?: string;
 }
 
-const Logo: React.FC<LogoProps> = ({ 
-  size = 'md', 
-  showText = true,
-  className = '' 
-}) => {
+const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
+  // Size mappings
   const sizeClasses = {
-    sm: 'h-9 w-auto',
-    md: 'h-12 w-auto',
-    lg: 'h-16 w-auto'
+    sm: 'h-8',
+    md: 'h-10',
+    lg: 'h-12'
   };
 
-  const textSizeClasses = {
-    sm: 'text-lg',
-    md: 'text-xl',
-    lg: 'text-2xl'
-  };
-  
   return (
-    <Link to="/">
-      <div className={`flex items-center gap-2 ${className}`}>
-        <img 
-          src={logoPath} 
-          alt="WeParlay.io" 
-          className={`${sizeClasses[size]} object-contain`}
-        />
-        {showText && (
-          <div className={`flex flex-col ${textSizeClasses[size]}`}>
-            <div className="flex items-center">
-              <span className="text-blue-600 font-bold">We</span>
-              <span className="text-white font-bold">parlay</span>
-              <span className="text-white font-bold">.io</span>
-            </div>
-            <span className="text-orange-500 text-sm font-bold">SPORTS BETTING</span>
-          </div>
-        )}
-      </div>
-    </Link>
+    <div className={`flex items-center ${className}`}>
+      <img 
+        src={weparlayLogo} 
+        alt="WeParlay.io Logo" 
+        className={`${sizeClasses[size]} object-contain`} 
+      />
+    </div>
   );
 };
 
