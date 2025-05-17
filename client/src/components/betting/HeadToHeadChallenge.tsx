@@ -16,6 +16,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import SocialShareOptions from '@/components/betting/SocialShareOptions';
 import { 
   DollarSign,
   Mail,
@@ -179,19 +180,17 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
             <p className="text-sm mt-2 break-all">{challengeLink}</p>
           </div>
           
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium">Share via:</h4>
-            <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" className="h-8">
-                <Mail className="h-4 w-4 mr-1" /> Email
-              </Button>
-              <Button variant="outline" size="sm" className="h-8">
-                <Share className="h-4 w-4 mr-1" /> Social Media
-              </Button>
-              <Button variant="outline" size="sm" className="h-8">
-                <Send className="h-4 w-4 mr-1" /> Message
-              </Button>
-            </div>
+          <div>
+            <SocialShareOptions 
+              challengeUrl={challengeLink} 
+              challengeTitle={form.getValues().challengeType === 'sports' ? 'Sports Bet' : 'Custom Bet'}
+              onShare={(platform) => {
+                toast({
+                  title: `Shared via ${platform}`,
+                  description: "Your challenge link has been shared",
+                });
+              }}
+            />
           </div>
           
           <div className="border-t pt-4">
