@@ -55,8 +55,6 @@ export const insertUserSchema = createInsertSchema(users).pick({
   status: true
 });
 
-export type UpsertUser = typeof users.$inferInsert;
-
 // Bank accounts for owner's deposits
 export const bankAccounts = pgTable("bank_accounts", {
   id: serial("id").primaryKey(),
@@ -258,7 +256,20 @@ export const insertFantasyTeamPlayerSchema = createInsertSchema(fantasyTeamPlaye
 // Type definitions
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
-export type UpsertUser = typeof users.$inferInsert;
+// Admin dashboard types
+export type AdminUser = {
+  id: string;
+  email: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  role: string | null;
+  status: string | null;
+  balance: number | null;
+  betsCount: number | null;
+  winsCount: number | null;
+  lastLogin: Date | null;
+  createdAt: Date | null;
+};
 
 export type BankAccount = typeof bankAccounts.$inferSelect;
 export type InsertBankAccount = z.infer<typeof insertBankAccountSchema>;

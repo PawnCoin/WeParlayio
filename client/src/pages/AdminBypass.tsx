@@ -29,12 +29,28 @@ export default function AdminBypass() {
     }
   };
 
-  // Auto-fill for development convenience
+  // Auto-fill and auto-login for development convenience
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      setAdminKey(ADMIN_BYPASS_KEY);
+    // Check if already has admin access
+    const hasAdminAccess = localStorage.getItem('weparlay-admin-access') === 'true';
+    const adminExpiry = localStorage.getItem('weparlay-admin-expiry');
+    
+    if (hasAdminAccess && adminExpiry && parseInt(adminExpiry) > Date.now()) {
+      // Has valid admin session, redirect to admin dashboard
+      navigate('/admin');
+      return;
     }
-  }, []);
+    
+    // Just auto-fill the key
+    setAdminKey(ADMIN_BYPASS_KEY);
+    
+    // Optional: Auto-login after 1 second for development
+    const timer = setTimeout(() => {
+      handleAdminAccess();
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, [navigate]);
 
   return (
     <div className="container flex items-center justify-center min-h-screen py-12">

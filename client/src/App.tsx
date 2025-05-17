@@ -1,5 +1,5 @@
 import React from "react";
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
@@ -33,15 +33,47 @@ import { CurrencyModeProvider } from "./contexts/CurrencyModeContext";
 import { TeamThemeProvider } from "./contexts/TeamThemeContext";
 import { BetSlipProvider } from "./contexts/BetSlipContext";
 
+import AdminDashboard from "@/pages/AdminDashboard";
+import AdminBypass from "@/pages/AdminBypass";
+
+// Admin route guard component
+const AdminRoute = ({ component: Component, ...rest }: any) => {
+  const [isAuthorized, setIsAuthorized] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [, navigate] = useLocation();
+
+  React.useEffect(() => {
+    // Check if user has admin access
+    const hasAdminAccess = localStorage.getItem('weparlay-admin-access') === 'true';
+    const adminExpiry = localStorage.getItem('weparlay-admin-expiry');
+    
+    if (hasAdminAccess && adminExpiry && parseInt(adminExpiry) > Date.now()) {
+      setIsAuthorized(true);
+    } else {
+      // Redirect to admin bypass page
+      navigate('/admin-bypass');
+    }
+    
+    setIsLoading(false);
+  }, [navigate]);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  return isAuthorized ? <Component {...rest} /> : null;
+};
+
 function Router() {
-  // Admin pages
-  const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
-  const AdminBypass = React.lazy(() => import('./pages/AdminBypass'));
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/live-betting" component={BettingExperience} />
-      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin" component={(props) => <AdminRoute component={AdminDashboard} {...props} />} />
       <Route path="/admin-bypass" component={AdminBypass} />
       <Route path="/live-betting-classic" component={LiveBettingReal} />
       <Route path="/betting-dashboard" component={BettingDashboard} />
@@ -60,7 +92,6 @@ function Router() {
       <Route path="/signup" component={SignUp} />
       <Route path="/login" component={Login} />
       <Route path="/theme-manager" component={ThemeSettingsPage} />
-      <Route path="/admin" component={AdminDashboard} />
       <Route path="/sports/:sportKey" component={SportPage} />
       <Route component={NotFound} />
     </Switch>
