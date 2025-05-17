@@ -281,7 +281,7 @@ const ImprovedBetSlip: React.FC<ImprovedBetSlipProps> = ({
               {betSlip.map((bet) => (
                 <div 
                   key={bet.id} 
-                  className="border border-muted dark:border-slate-700 rounded-md p-2 mb-1 text-xs dark:bg-slate-900 bg-slate-50 bet-selection"
+                  className="bet-selection-container border border-muted dark:border-slate-700 rounded-md p-2 mb-1 text-xs bet-selection"
                 >
                   <div className="flex justify-between items-start mb-1">
                     <div className="font-medium text-xs pick-text">{bet.pick}</div>
