@@ -178,43 +178,45 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
             ))
           ) : (
             // Loaded sports
-            sports?.map((sport: any) => (
-              <li key={sport.id} className="mb-1">
-                <Link href={`/sports/${sport.key}`}>
-                  <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
-                    location === `/sports/${sport.key}`
-                      ? "bg-primary text-white"
-                      : "hover:bg-gray-100 dark:hover:bg-gray-800"
-                  }`}>
-                    <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center mr-2">
-                      {getSportIcon(sport.key)}
-                    </span>
-                    <span>
-                      {sport.key === 'basketball' ? 'NBA' :
-                       sport.key === 'football' ? 'NFL' :
-                       sport.key === 'baseball' ? 'MLB' :
-                       sport.key === 'hockey' ? 'NHL' :
-                       sport.key === 'soccer' ? 'MLS' :
-                       sport.key === 'mma' ? 'UFC' :
-                       sport.key === 'motorsport' ? 'NASCAR' :
-                       sport.name}
-                    </span>
-                    <span className={`ml-auto text-xs px-2 py-1 rounded ${
+            sports && Array.isArray(sports) ? (
+              sports.map((sport) => (
+                <li key={sport.id} className="mb-1">
+                  <Link href={`/sports/${sport.key}`}>
+                    <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
                       location === `/sports/${sport.key}`
-                        ? "bg-white bg-opacity-20 text-white"
-                        : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                        ? "bg-primary text-white"
+                        : "hover:bg-gray-100 dark:hover:bg-gray-800"
                     }`}>
-                      {sport.eventCount || 0}
-                    </span>
-                  </div>
-                </Link>
-              </li>
-            ))
+                      <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center mr-2">
+                        {getSportIcon(sport.key)}
+                      </span>
+                      <span>
+                        {sport.key === 'basketball' ? 'NBA' :
+                         sport.key === 'football' ? 'NFL' :
+                         sport.key === 'baseball' ? 'MLB' :
+                         sport.key === 'hockey' ? 'NHL' :
+                         sport.key === 'soccer' ? 'MLS' :
+                         sport.key === 'mma' ? 'UFC' :
+                         sport.key === 'motorsport' ? 'NASCAR' :
+                         sport.name}
+                      </span>
+                      <span className={`ml-auto text-xs px-2 py-1 rounded ${
+                        location === `/sports/${sport.key}`
+                          ? "bg-white bg-opacity-20 text-white"
+                          : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                      }`}>
+                        {sport.eventCount || 0}
+                      </span>
+                    </div>
+                  </Link>
+                </li>
+              ))
+            ) : null
           )}
         </ul>
       </nav>
       
-      <hr className="my-6 border-gray-200 dark:border-gray-700" />
+      <hr className="border-gray-200 dark:border-gray-700" />
       
       {/* Bottom Section with Settings Link & Dark Mode Toggle */}
       <div className="p-4 border-t border-gray-200 dark:border-gray-700">

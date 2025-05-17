@@ -4,135 +4,110 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Info, TrendingUp, BarChart3, Clock, Percent } from "lucide-react";
-import OddsDisplay from './OddsDisplay';
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import { TrendingUp, Clock, Percent, Info, Users, ChevronUp, ChevronDown } from 'lucide-react';
 
-interface BetStatistic {
-  label: string;
-  value: string | number;
-  trend?: 'up' | 'down' | 'neutral';
-  tooltip?: string;
-}
-
-export interface TeamStats {
-  name: string;
-  recentForm: string[]; // Array of W, L, D for recent games
-  winPercentage: number;
-  averagePoints?: number;
-  homeAdvantage?: number; // For home team only, percentage advantage
-  headToHeadWins?: number;
-}
-
-interface BetPreviewProps {
+interface BetPreviewTooltipProps {
   children: React.ReactNode;
-  odds: number;
-  oddsFormat?: 'american' | 'decimal' | 'fractional';
   betType: string;
-  homeTeam: TeamStats;
-  awayTeam: TeamStats;
+  homeTeam: {
+    name: string;
+    record?: string;
+    logo?: string;
+    winProbability?: number;
+    currentForm?: string; // e.g. "W,W,L,W,L"
+    recentPerformance?: number; // 1-10 to show on progress
+  };
+  awayTeam: {
+    name: string;
+    record?: string;
+    logo?: string;
+    winProbability?: number;
+    currentForm?: string; // e.g. "W,W,L,W,L"
+    recentPerformance?: number; // 1-10 to show on progress
+  };
+  odds: number;
   matchTime: string;
-  popularityPercentage?: number; // How popular this bet is among users
-  expertPick?: 'home' | 'away' | 'draw';
-  recentTrend?: 'up' | 'down' | 'neutral';
+  recentTrend?: 'up' | 'down' | null;
+  publicBettingPercentage?: number;
+  injuryUpdates?: string[];
+  point?: number;
   className?: string;
 }
 
-const BetPreviewTooltip: React.FC<BetPreviewProps> = ({
+// Helper function to convert American odds to probability
+const oddsToImpliedProbability = (americanOdds: number): number => {
+  if (americanOdds > 0) {
+    return 100 / (americanOdds + 100) * 100;
+  } else {
+    return -americanOdds / (-americanOdds + 100) * 100;
+  }
+};
+
+// Helper to format American odds for display
+const formatOdds = (odds: number): string => {
+  return odds > 0 ? `+${odds}` : odds.toString();
+};
+
+// Helper to render current form (W/L/D) with colors
+const renderCurrentForm = (form: string) => {
+  if (!form) return null;
+  
+  return (
+    <div className="flex space-x-1 mt-1">
+      {form.split(',').map((result, index) => {
+        let bgColor = 'bg-gray-200';
+        let textColor = 'text-gray-700';
+        
+        if (result === 'W') {
+          bgColor = 'bg-green-100';
+          textColor = 'text-green-700';
+        } else if (result === 'L') {
+          bgColor = 'bg-red-100';
+          textColor = 'text-red-700';
+        } else if (result === 'D') {
+          bgColor = 'bg-blue-100';
+          textColor = 'text-blue-700';
+        }
+        
+        return (
+          <span 
+            key={index} 
+            className={`text-xs font-semibold px-1.5 py-0.5 rounded ${bgColor} ${textColor}`}
+          >
+            {result}
+          </span>
+        );
+      })}
+    </div>
+  );
+};
+
+export const BetPreviewTooltip: React.FC<BetPreviewTooltipProps> = ({
   children,
-  odds,
-  oddsFormat = 'american',
   betType,
   homeTeam,
   awayTeam,
+  odds,
   matchTime,
-  popularityPercentage,
-  expertPick,
   recentTrend,
-  className
+  publicBettingPercentage,
+  injuryUpdates,
+  point,
+  className = '',
 }) => {
-  // Format team recent form (W, L, D)
-  const formatRecentForm = (form: string[]) => {
-    return form.map((result, index) => {
-      const bgColor = 
-        result === 'W' ? 'bg-green-500' : 
-        result === 'L' ? 'bg-red-500' : 'bg-gray-500';
-      
-      return (
-        <span 
-          key={index} 
-          className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-xs font-bold ${bgColor} mx-0.5`}
-        >
-          {result}
-        </span>
-      );
-    });
-  };
-
-  // Calculate implied probability from odds
-  const calculateImpliedProbability = (americanOdds: number): number => {
-    if (americanOdds > 0) {
-      return 100 / (americanOdds + 100) * 100;
-    } else {
-      return Math.abs(americanOdds) / (Math.abs(americanOdds) + 100) * 100;
-    }
-  };
-
-  const impliedProbability = calculateImpliedProbability(odds);
-
-  // Generate various statistics to show in the tooltip
-  const generateStatistics = (): BetStatistic[] => {
-    return [
-      {
-        label: 'Win %', 
-        value: homeTeam.winPercentage > awayTeam.winPercentage 
-          ? `${homeTeam.name} (${homeTeam.winPercentage}%)` 
-          : `${awayTeam.name} (${awayTeam.winPercentage}%)`,
-        trend: homeTeam.winPercentage > awayTeam.winPercentage ? 'up' : 'down',
-        tooltip: 'Overall win percentage this season'
-      },
-      {
-        label: 'H2H Advantage', 
-        value: (homeTeam?.headToHeadWins || 0) > (awayTeam?.headToHeadWins || 0) 
-          ? `${homeTeam.name} (${homeTeam?.headToHeadWins || 0} wins)` 
-          : `${awayTeam.name} (${awayTeam?.headToHeadWins || 0} wins)`,
-        tooltip: 'Head-to-head advantage between these teams'
-      },
-      {
-        label: 'Implied Prob.', 
-        value: `${impliedProbability.toFixed(1)}%`,
-        tooltip: 'Implied probability based on current odds'
-      },
-      {
-        label: 'Popular Pick', 
-        value: popularityPercentage ? `${popularityPercentage}% of bettors` : 'N/A',
-        trend: popularityPercentage && popularityPercentage > 60 ? 'up' : 'neutral',
-        tooltip: 'Percentage of WeParlay users betting on this outcome'
-      }
-    ];
-  };
-
-  const statistics = generateStatistics();
-
-  const getExpertPickLabel = () => {
-    if (!expertPick) return null;
-    return expertPick === 'home' ? homeTeam.name : 
-           expertPick === 'away' ? awayTeam.name : 'Draw';
-  };
-
+  // Calculate implied probabilities
+  const impliedProbability = oddsToImpliedProbability(odds);
+  
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
@@ -142,15 +117,15 @@ const BetPreviewTooltip: React.FC<BetPreviewProps> = ({
       </HoverCardTrigger>
       <HoverCardContent className="w-80 p-0">
         <Card className="border-0 shadow-none">
-          <CardHeader className="pb-2 pt-4 px-4 bg-gradient-to-r from-green-700 to-green-600 text-white rounded-t-lg">
+          <CardHeader className="pb-2 pt-4 px-4 bg-gradient-to-r from-primary to-primary-dark text-white rounded-t-lg">
             <div className="flex justify-between items-center">
               <CardTitle className="text-sm font-medium">
-                {betType} - <OddsDisplay americanOdds={odds} format={oddsFormat} className="font-bold" />
+                {betType} {point ? `(${point > 0 ? '+' : ''}${point})` : ''} - <span className="font-bold">{formatOdds(odds)}</span>
               </CardTitle>
               {recentTrend && (
                 <Badge variant={recentTrend === 'up' ? 'default' : 'secondary'} className="flex items-center gap-1">
-                  {recentTrend === 'up' && <TrendingUp className="h-3 w-3" />}
-                  {recentTrend === 'up' ? 'Trending' : 'Stable'}
+                  {recentTrend === 'up' ? <TrendingUp className="h-3 w-3" /> : <TrendingUp className="h-3 w-3 rotate-180" />}
+                  {recentTrend === 'up' ? 'Trending' : 'Declining'}
                 </Badge>
               )}
             </div>
@@ -163,52 +138,123 @@ const BetPreviewTooltip: React.FC<BetPreviewProps> = ({
               <div>
                 <h4 className="text-xs text-gray-500 mb-1">HOME</h4>
                 <p className="font-medium text-sm mb-1">{homeTeam.name}</p>
-                <div className="flex">{formatRecentForm(homeTeam.recentForm)}</div>
+                {homeTeam.record && (
+                  <p className="text-xs text-gray-500">{homeTeam.record}</p>
+                )}
+                {homeTeam.currentForm && renderCurrentForm(homeTeam.currentForm)}
+                {homeTeam.recentPerformance && (
+                  <div className="mt-2">
+                    <div className="flex justify-between items-center text-xs mb-1">
+                      <span className="text-gray-500">Recent Form</span>
+                      <span className="font-medium">{homeTeam.recentPerformance}/10</span>
+                    </div>
+                    <Progress 
+                      value={homeTeam.recentPerformance * 10}
+                      className="h-1.5"
+                    />
+                  </div>
+                )}
               </div>
               <div>
                 <h4 className="text-xs text-gray-500 mb-1">AWAY</h4>
                 <p className="font-medium text-sm mb-1">{awayTeam.name}</p>
-                <div className="flex">{formatRecentForm(awayTeam.recentForm)}</div>
+                {awayTeam.record && (
+                  <p className="text-xs text-gray-500">{awayTeam.record}</p>
+                )}
+                {awayTeam.currentForm && renderCurrentForm(awayTeam.currentForm)}
+                {awayTeam.recentPerformance && (
+                  <div className="mt-2">
+                    <div className="flex justify-between items-center text-xs mb-1">
+                      <span className="text-gray-500">Recent Form</span>
+                      <span className="font-medium">{awayTeam.recentPerformance}/10</span>
+                    </div>
+                    <Progress 
+                      value={awayTeam.recentPerformance * 10}
+                      className="h-1.5"
+                    />
+                  </div>
+                )}
               </div>
             </div>
-
-            {expertPick && (
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-2 rounded-md mb-3 flex items-center text-sm">
-                <BarChart3 className="h-4 w-4 text-blue-500 mr-2" />
-                <span className="text-blue-800 dark:text-blue-300 text-xs">
-                  Expert Pick: <span className="font-bold">{getExpertPickLabel()}</span>
-                </span>
-              </div>
-            )}
-
+            
+            <Separator className="my-3" />
+            
             <div className="space-y-2">
-              {statistics.map((stat, index) => (
-                <div key={index} className="flex justify-between items-center text-xs">
+              {publicBettingPercentage !== undefined && (
+                <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-1">
-                    {stat.label}
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Info className="h-3 w-3 text-gray-400 cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent className="text-xs">
-                          {stat.tooltip}
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                    <Users className="h-3.5 w-3.5 text-gray-500" />
+                    <span className="text-gray-700">Public Betting</span>
                   </div>
-                  <div className="flex items-center gap-1 font-medium">
-                    {stat.trend === 'up' && <TrendingUp className="h-3 w-3 text-green-500" />}
-                    {stat.trend === 'down' && <TrendingUp className="h-3 w-3 text-red-500 transform rotate-180" />}
-                    {stat.value}
-                  </div>
+                  <span className="font-medium">{publicBettingPercentage}%</span>
                 </div>
-              ))}
+              )}
+              
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-1">
+                  <Percent className="h-3.5 w-3.5 text-gray-500" />
+                  <span className="text-gray-700">Implied Probability</span>
+                </div>
+                <span className="font-medium">{impliedProbability.toFixed(1)}%</span>
+              </div>
             </div>
+            
+            {injuryUpdates && injuryUpdates.length > 0 && (
+              <>
+                <Separator className="my-3" />
+                <div className="space-y-1">
+                  <h4 className="text-xs font-medium text-gray-700 flex items-center gap-1">
+                    <Info className="h-3 w-3" /> Key Injury Updates
+                  </h4>
+                  <ul className="text-xs text-gray-600 space-y-1">
+                    {injuryUpdates.map((update, index) => (
+                      <li key={index} className="flex">
+                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-red-500 mt-1.5 mr-1.5"></span>
+                        {update}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       </HoverCardContent>
     </HoverCard>
+  );
+};
+
+// Helper function to format odds in different systems
+export const OddsDisplay = ({ 
+  americanOdds, 
+  format = 'american',
+  className = '' 
+}: { 
+  americanOdds: number, 
+  format?: 'american' | 'decimal' | 'fractional',
+  className?: string 
+}) => {
+  const getOddsDisplay = () => {
+    if (format === 'american') {
+      return americanOdds > 0 ? `+${americanOdds}` : americanOdds;
+    } else if (format === 'decimal') {
+      if (americanOdds > 0) {
+        return (americanOdds / 100 + 1).toFixed(2);
+      } else {
+        return (100 / Math.abs(americanOdds) + 1).toFixed(2);
+      }
+    } else if (format === 'fractional') {
+      if (americanOdds > 0) {
+        return `${americanOdds}/100`;
+      } else {
+        return `100/${Math.abs(americanOdds)}`;
+      }
+    }
+    return americanOdds;
+  };
+
+  return (
+    <span className={className}>{getOddsDisplay()}</span>
   );
 };
 

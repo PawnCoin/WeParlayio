@@ -18,6 +18,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import BetPreviewTooltip from "@/components/betting/BetPreviewTooltip";
 import { Separator } from "@/components/ui/separator";
 import { Clock, Calendar, TrendingUp, BarChart2 } from 'lucide-react';
 import { useBetSlip } from '@/contexts/BetSlipContext';
@@ -258,22 +259,71 @@ const SportPage = () => {
                         <div className="space-y-2">
                           <div className="text-xs text-gray-500">Money Line</div>
                           <div className="grid grid-cols-2 gap-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="w-full"
-                              onClick={() => handleAddBet(event, 'moneyline', getTeamName(event.homeTeamId), -110)}
+                            <BetPreviewTooltip
+                              betType="Money Line"
+                              homeTeam={{
+                                name: getTeamName(event.homeTeamId),
+                                record: "42-18",
+                                currentForm: "W,W,L,W,W",
+                                recentPerformance: 8
+                              }}
+                              awayTeam={{
+                                name: getTeamName(event.awayTeamId),
+                                record: "36-24",
+                                currentForm: "L,W,W,L,W",
+                                recentPerformance: 6
+                              }}
+                              odds={-110}
+                              matchTime="Live Now"
+                              recentTrend="up"
+                              publicBettingPercentage={65}
+                              injuryUpdates={[
+                                `${getTeamName(event.homeTeamId)}: Anthony Davis (Questionable)`,
+                                `${getTeamName(event.awayTeamId)}: Jaylen Brown (Day-to-Day)`
+                              ]}
                             >
-                              {getTeamName(event.homeTeamId).slice(0, 3)} -110
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="w-full"
-                              onClick={() => handleAddBet(event, 'moneyline', getTeamName(event.awayTeamId), +120)}
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="w-full"
+                                onClick={() => handleAddBet(event, 'moneyline', getTeamName(event.homeTeamId), -110)}
+                              >
+                                {getTeamName(event.homeTeamId).slice(0, 3)} -110
+                              </Button>
+                            </BetPreviewTooltip>
+                            
+                            <BetPreviewTooltip
+                              betType="Money Line"
+                              homeTeam={{
+                                name: getTeamName(event.homeTeamId),
+                                record: "42-18",
+                                currentForm: "W,W,L,W,W",
+                                recentPerformance: 8
+                              }}
+                              awayTeam={{
+                                name: getTeamName(event.awayTeamId),
+                                record: "36-24",
+                                currentForm: "L,W,W,L,W",
+                                recentPerformance: 6
+                              }}
+                              odds={120}
+                              matchTime="Live Now"
+                              recentTrend="up"
+                              publicBettingPercentage={35}
+                              injuryUpdates={[
+                                `${getTeamName(event.homeTeamId)}: Anthony Davis (Questionable)`,
+                                `${getTeamName(event.awayTeamId)}: Jaylen Brown (Day-to-Day)`
+                              ]}
                             >
-                              {getTeamName(event.awayTeamId).slice(0, 3)} +120
-                            </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="w-full"
+                                onClick={() => handleAddBet(event, 'moneyline', getTeamName(event.awayTeamId), +120)}
+                              >
+                                {getTeamName(event.awayTeamId).slice(0, 3)} +120
+                              </Button>
+                            </BetPreviewTooltip>
                           </div>
                         </div>
                         
