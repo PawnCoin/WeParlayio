@@ -20,6 +20,7 @@ import SportPage from "@/pages/SportPage"; // New sport page
 import BettingDashboard from "@/pages/BettingDashboard"; // Professional sports betting dashboard
 import Login from "@/pages/Login"; // Login page with social login options
 import EnhancedFeatures from "@/pages/EnhancedFeatures"; // Advanced features page
+import VipFeatures from "@/pages/VipFeatures"; // VIP exclusive section
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
 import { CurrencyModeProvider } from "./contexts/CurrencyModeContext";
@@ -34,6 +35,7 @@ function Router() {
       <Route path="/live-betting-classic" component={LiveBettingReal} />
       <Route path="/betting-dashboard" component={BettingDashboard} />
       <Route path="/enhanced-features" component={EnhancedFeatures} />
+      <Route path="/vip" component={VipFeatures} />
       <Route path="/fantasy" component={FantasySports} />
       <Route path="/tournaments" component={Tournaments} />
       <Route path="/results" component={Results} />
