@@ -23,6 +23,7 @@ import {
   InteractiveDashboardControls,
   ReportGenerationButton
 } from "@/components/admin/DataVisualization";
+import ComprehensiveFinancialSummary from "@/components/admin/ComprehensiveFinancialSummary";
 import UserRoleManager from "@/components/admin/UserRoleManager";
 import { 
   Users, 
@@ -320,53 +321,20 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">${financialSummary.totalRevenue || '152,900'}</div>
-                <p className="text-xs text-muted-foreground">
-                  +20.1% from last month
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Active Users</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{financialSummary.activeUsers || '8,492'}</div>
-                <p className="text-xs text-muted-foreground">
-                  +12.3% from last month
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Total Bets</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{financialSummary.totalBets || '24,389'}</div>
-                <p className="text-xs text-muted-foreground">
-                  +18.7% from last month
-                </p>
-              </CardContent>
-            </Card>
-          </div>
+          {/* New Comprehensive Financial Summary Dashboard */}
+          <ComprehensiveFinancialSummary financialSummary={financialSummary} />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
             <RevenueBarChart data={revenueData} />
             <UserActivityChart data={userActivityData} />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <SportsPieChart data={sportsData} />
             <WinRateChart data={winRateData} />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <DailyEarningsChart data={dailyEarningsData} />
             <TransactionVolumeChart data={transactionVolumeData} />
           </div>
