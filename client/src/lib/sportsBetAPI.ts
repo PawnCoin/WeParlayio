@@ -108,14 +108,28 @@ export interface Player {
 export function getSportIdByKey(sportKey: string): number | null {
   const sportMap: Record<string, number> = {
     'basketball': 1,
+    'nba': 1,
+    'basketball_nba': 1,
     'football': 2,
+    'nfl': 2,
+    'football_nfl': 2,
     'baseball': 3,
+    'mlb': 3,
+    'baseball_mlb': 3,
     'hockey': 4,
+    'nhl': 4,
+    'hockey_nhl': 4,
     'soccer': 5,
+    'mls': 5,
+    'soccer_mls': 5,
     'mma': 6,
+    'ufc': 6,
+    'mma_ufc': 6,
     'boxing': 7,
     'tennis': 8,
-    'motorsport': 9
+    'motorsport': 9,
+    'nascar': 9,
+    'motorsport_nascar': 9
   };
   
   // Extract the base sport from the key (e.g., 'basketball_nba' -> 'basketball')

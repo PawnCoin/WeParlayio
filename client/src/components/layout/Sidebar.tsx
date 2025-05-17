@@ -151,7 +151,16 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                     <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center mr-2">
                       <span className="text-xl">{getSportIcon(sport.key)}</span>
                     </span>
-                    <span>{sport.name}</span>
+                    <span>
+                      {sport.key === 'basketball' ? 'NBA' :
+                       sport.key === 'football' ? 'NFL' :
+                       sport.key === 'baseball' ? 'MLB' :
+                       sport.key === 'hockey' ? 'NHL' :
+                       sport.key === 'soccer' ? 'MLS' :
+                       sport.key === 'mma' ? 'UFC' :
+                       sport.key === 'motorsport' ? 'NASCAR' :
+                       sport.name}
+                    </span>
                     <span className={`ml-auto text-xs px-2 py-1 rounded ${
                       location === `/sports/${sport.key}`
                         ? "bg-white bg-opacity-20 text-white"

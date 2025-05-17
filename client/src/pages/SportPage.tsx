@@ -82,21 +82,90 @@ const SportPage = () => {
     return odds.find((odd: Odds) => odd.id === eventId.toString());
   };
 
-  // Get team name helper function
+  // Get team name helper function based on sport
   const getTeamName = (teamId: number): string => {
-    switch (teamId) {
-      case 1: return "Lakers";
-      case 2: return "Celtics";
-      case 3: return "Warriors";
-      case 4: return "Bucks";
-      case 5: return "Heat";
-      case 6: return "Bulls";
-      case 7: return "Nets";
-      case 8: return "Clippers";
-      case 9: return "Suns";
-      case 10: return "76ers";
-      default: return `Team ${teamId}`;
+    // Basketball (NBA) team names
+    if (sportKey === 'basketball') {
+      switch (teamId) {
+        case 1: return "Lakers";
+        case 2: return "Celtics";
+        case 3: return "Warriors";
+        case 4: return "Bucks";
+        case 5: return "Heat";
+        case 6: return "Bulls";
+        case 7: return "Nets";
+        case 8: return "Clippers";
+        case 9: return "Suns";
+        case 10: return "76ers";
+        default: return `Team ${teamId}`;
+      }
     }
+    // Football (NFL) team names
+    else if (sportKey === 'football') {
+      switch (teamId) {
+        case 1: return "Chiefs";
+        case 2: return "Eagles";
+        case 3: return "49ers";
+        case 4: return "Cowboys";
+        case 5: return "Bills";
+        case 6: return "Ravens";
+        case 7: return "Bengals";
+        case 8: return "Packers";
+        case 9: return "Lions";
+        case 10: return "Steelers";
+        default: return `Team ${teamId}`;
+      }
+    }
+    // Baseball (MLB) team names
+    else if (sportKey === 'baseball') {
+      switch (teamId) {
+        case 1: return "Yankees";
+        case 2: return "Red Sox";
+        case 3: return "Dodgers";
+        case 4: return "Cubs";
+        case 5: return "Braves";
+        case 6: return "Astros";
+        case 7: return "Phillies";
+        case 8: return "Giants";
+        case 9: return "Padres";
+        case 10: return "Blue Jays";
+        default: return `Team ${teamId}`;
+      }
+    }
+    // Hockey (NHL) team names
+    else if (sportKey === 'hockey') {
+      switch (teamId) {
+        case 1: return "Maple Leafs";
+        case 2: return "Bruins";
+        case 3: return "Rangers";
+        case 4: return "Oilers";
+        case 5: return "Avalanche";
+        case 6: return "Golden Knights";
+        case 7: return "Capitals";
+        case 8: return "Lightning";
+        case 9: return "Panthers";
+        case 10: return "Stars";
+        default: return `Team ${teamId}`;
+      }
+    }
+    // Soccer (MLS) team names
+    else if (sportKey === 'soccer') {
+      switch (teamId) {
+        case 1: return "Inter Miami";
+        case 2: return "LAFC";
+        case 3: return "LA Galaxy";
+        case 4: return "Atlanta United";
+        case 5: return "Sounders";
+        case 6: return "NYCFC";
+        case 7: return "Columbus";
+        case 8: return "Toronto FC";
+        case 9: return "Austin FC";
+        case 10: return "Orlando City";
+        default: return `Team ${teamId}`;
+      }
+    }
+    // Default fallback
+    return `Team ${teamId}`;
   };
 
   // Helper function to add bet to slip

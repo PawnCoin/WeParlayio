@@ -2,20 +2,32 @@
 const sportIcons = {
   // Mainstream sports
   basketball: "🏀",
+  basketball_nba: "🏀",
+  nba: "🏀",
   football: "🏈",
+  football_nfl: "🏈", 
+  nfl: "🏈",
   baseball: "⚾",
+  baseball_mlb: "⚾",
+  mlb: "⚾",
   hockey: "🏒",
+  hockey_nhl: "🏒",
+  nhl: "🏒",
   soccer: "⚽",
+  soccer_mls: "⚽",
+  mls: "⚽",
   
   // Boxing and combat sports
   boxing: "🥊",
   boxing_main: "🥊",
   mma: "🥋",
   mma_ufc: "🥋",
+  ufc: "🥋",
   
   // Motorsports
   motorsport: "🏎️",
   motorsport_nascar: "🏎️",
+  nascar: "🏎️",
   f1: "🏎️",
   
   // Tennis
