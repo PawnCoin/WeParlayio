@@ -258,6 +258,7 @@ export const insertFantasyTeamPlayerSchema = createInsertSchema(fantasyTeamPlaye
 // Type definitions
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type UpsertUser = typeof users.$inferInsert;
 
 export type BankAccount = typeof bankAccounts.$inferSelect;
 export type InsertBankAccount = z.infer<typeof insertBankAccountSchema>;

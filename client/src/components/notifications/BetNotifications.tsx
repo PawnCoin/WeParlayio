@@ -14,7 +14,11 @@ interface BetNotification {
   actionUrl?: string;
 }
 
-const BetNotifications: React.FC = () => {
+interface BetNotificationsProps {
+  userId?: string;
+}
+
+const BetNotifications: React.FC<BetNotificationsProps> = ({ userId }) => {
   const { toast } = useToast();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [permissionState, setPermissionState] = useState<NotificationPermission | null>(null);

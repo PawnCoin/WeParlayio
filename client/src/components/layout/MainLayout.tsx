@@ -130,6 +130,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                       <DropdownMenuItem asChild>
                         <Link href="/admin-bypass">
                           <div className="flex items-center text-blue-500 font-semibold">
+                            <Shield className="mr-2 h-4 w-4" />
                             Admin Dashboard
                           </div>
                         </Link>
