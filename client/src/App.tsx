@@ -23,7 +23,7 @@ import BettingDashboard from "@/pages/BettingDashboard"; // Professional sports 
 import Login from "@/pages/Login"; // Login page with social login options
 import EnhancedFeatures from "@/pages/EnhancedFeatures"; // Advanced features page
 import VipFeatures from "@/pages/VipFeatures"; // VIP exclusive section
-import ThemeColorManager from "@/pages/ThemeColorManager"; // Theme color management system
+import ThemeSettingsPage from "@/pages/ThemeSettingsPage"; // Theme settings page
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
 import MobileVoiceBetting from "@/components/mobile/MobileVoiceBetting";
@@ -52,7 +52,7 @@ function Router() {
       <Route path="/head-to-head" component={HeadToHeadBetting} />
       <Route path="/signup" component={SignUp} />
       <Route path="/login" component={Login} />
-      <Route path="/theme-manager" component={ThemeColorManager} />
+      <Route path="/theme-manager" component={ThemeSettingsPage} />
       <Route path="/sports/:sportKey" component={SportPage} />
       <Route component={NotFound} />
     </Switch>
