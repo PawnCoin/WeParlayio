@@ -17,8 +17,18 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   upsertUser(userData: UpsertUser): Promise<User>;
-  updateUserBalance(userId: number, amount: number): Promise<User>;
-  updateYahooIntegration(userId: number, token: string, refreshToken: string, expiry: Date): Promise<User>;
+  updateUserBalance(userId: string, amount: number): Promise<User>;
+  updateYahooIntegration(userId: string, token: string, refreshToken: string, expiry: Date): Promise<User>;
+  getAllUsers(): Promise<User[]>;
+  updateUserStatus(userId: string, status: string): Promise<User>;
+  incrementUserWins(userId: string): Promise<User>;
+  
+  // Financial operations
+  getFinancialSummary(): Promise<any>;
+  getTransactions(limit: number, offset: number): Promise<Transaction[]>; 
+  updateBankAccount(bankAccount: InsertBankAccount): Promise<BankAccount>;
+  updatePlatformSettings(settings: any): Promise<any>;
+  updatePrivacySettings(settings: any): Promise<any>;
   
   // Sports operations
   getAllSports(): Promise<Sport[]>;
@@ -75,7 +85,7 @@ export interface IStorage {
 }
 
 export class MemStorage implements IStorage {
-  private users: Map<number, User>;
+  private users: Map<string, User>;
   private sports: Map<number, Sport>;
   private teams: Map<number, Team>;
   private events: Map<number, Event>;
@@ -84,6 +94,10 @@ export class MemStorage implements IStorage {
   private fantasyTeams: Map<number, FantasyTeam>;
   private players: Map<number, Player>;
   private fantasyTeamPlayers: Map<number, FantasyTeamPlayer>;
+  private bankAccounts: Map<number, BankAccount>;
+  private transactions: Map<number, Transaction>;
+  private platformSettings: Map<string, any>;
+  private privacySettings: Map<string, boolean>;
   
   private nextUserId: number;
   private nextSportId: number;
