@@ -65,6 +65,8 @@ function App() {
                 <Router />
               </MainLayout>
               <SimpleOnboarding />
+              {/* Mobile voice betting floating button (visible on all pages) */}
+              <MobileVoiceBetting />
             </BetSlipProvider>
           </TeamThemeProvider>
         </CurrencyModeProvider>
