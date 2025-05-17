@@ -19,6 +19,7 @@ import BettingExperience from "@/pages/BettingExperience"; // New enhanced betti
 import SportPage from "@/pages/SportPage"; // New sport page
 import BettingDashboard from "@/pages/BettingDashboard"; // Professional sports betting dashboard
 import Login from "@/pages/Login"; // Login page with social login options
+import EnhancedFeatures from "@/pages/EnhancedFeatures"; // Advanced features page
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
 import { CurrencyModeProvider } from "./contexts/CurrencyModeContext";
