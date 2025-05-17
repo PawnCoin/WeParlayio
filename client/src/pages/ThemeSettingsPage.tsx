@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -152,9 +153,9 @@ export default function ThemeSettingsPage() {
               <Button 
                 variant="outline" 
                 className="mr-2"
-                onClick={() => window.location.href = '/theme-manager'}
+                onClick={() => window.history.back()}
               >
-                Open Color Manager
+                Back to Settings
               </Button>
               <Button>Save Preferences</Button>
             </div>
