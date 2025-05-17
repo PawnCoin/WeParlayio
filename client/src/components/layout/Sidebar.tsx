@@ -112,6 +112,18 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
             </Link>
           </li>
           <li>
+            <Link href="/betting-dashboard">
+              <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
+                location === '/betting-dashboard' 
+                  ? "bg-primary text-white" 
+                  : "hover:bg-gray-100 dark:hover:bg-gray-800"
+              }`}>
+                <BarChart2 className="h-5 w-5 mr-3" />
+                <span>Betting Dashboard</span>
+              </div>
+            </Link>
+          </li>
+          <li>
             <Link href="/live-betting">
               <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
                 location === '/live-betting' 

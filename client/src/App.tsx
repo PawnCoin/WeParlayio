@@ -17,6 +17,7 @@ import VideoGaming from "@/pages/VideoGaming";
 import Trivia from "@/pages/Trivia";
 import BettingExperience from "@/pages/BettingExperience"; // New enhanced betting page
 import SportPage from "@/pages/SportPage"; // New sport page
+import BettingDashboard from "@/pages/BettingDashboard"; // Professional sports betting dashboard
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
 import { CurrencyModeProvider } from "./contexts/CurrencyModeContext";
@@ -29,6 +30,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/live-betting" component={BettingExperience} />
       <Route path="/live-betting-classic" component={LiveBettingReal} />
+      <Route path="/betting-dashboard" component={BettingDashboard} />
       <Route path="/fantasy" component={FantasySports} />
       <Route path="/tournaments" component={Tournaments} />
       <Route path="/results" component={Results} />
