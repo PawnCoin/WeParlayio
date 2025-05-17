@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeParlay - The Future of Sports Betting</title>
+    <meta name="description" content="WeParlay is the ultimate sports betting platform with cryptocurrency integration, social betting features, live odds, and Yahoo Fantasy Sports integration.">
+    
+    <!-- Open Graph tags for better social sharing -->
+    <meta property="og:title" content="WeParlay - The Future of Sports Betting">
+    <meta property="og:description" content="Experience next-generation sports betting with real-time odds, crypto integration, and social betting features.">
+    <meta property="og:image" content="https://weparlay.io/social-preview.jpg">
+    <meta property="og:url" content="https://weparlay.io">
+    
+    <!-- Tailwind-inspired styles -->
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2c3e50;
+            --accent: #e67e22;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --dark: #1a202c;
+            --light: #f7fafc;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: var(--light);
+        }
+        
+        .dark-mode {
+            background-color: var(--dark);
+            color: #f7fafc;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .logo img {
+            height: 40px;
+            margin-right: 0.5rem;
+        }
+        
+        .nav {
+            display: flex;
+            gap: 1.5rem;
+        }
+        
+        .nav a {
+            color: white;
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+        
+        .nav a:hover {
+            opacity: 0.8;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border: 1px solid var(--primary);
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+        }
+        
+        .btn-secondary {
+            background-color: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .btn-cta {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1.1rem;
+            border-radius: 0.5rem;
+        }
+        
+        .btn-cta:hover {
+            background-color: #d35400;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .hero {
+            background: linear-gradient(135deg, var(--primary) 0%, #3a6186 100%);
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 800;
+        }
+        
+        .hero p {
+            font-size: 1.25rem;
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            opacity: 0.9;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        
+        .hero-image {
+            max-width: 80%;
+            margin: 0 auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .hero-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .section {
+            padding: 4rem 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .section-title h2 {
+            font-size: 2.5rem;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+        }
+        
+        .section-title p {
+            font-size: 1.25rem;
+            max-width: 700px;
+            margin: 0 auto;
+            color: #718096;
+        }
+        
+        .dark-mode .section-title h2 {
+            color: #f7fafc;
+        }
+        
+        .dark-mode .section-title p {
+            color: #cbd5e0;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .feature-card {
+            background-color: white;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .dark-mode .feature-card {
+            background-color: #2d3748;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(52, 152, 219, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .feature-icon i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+        
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--secondary);
+        }
+        
+        .dark-mode .feature-card h3 {
+            color: #f7fafc;
+        }
+        
+        .feature-card p {
+            color: #718096;
+        }
+        
+        .dark-mode .feature-card p {
+            color: #cbd5e0;
+        }
+        
+        .cta-section {
+            background-color: var(--secondary);
+            color: white;
+            text-align: center;
+            padding: 4rem 0;
+        }
+        
+        .cta-section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .cta-section p {
+            font-size: 1.25rem;
+            max-width: 700px;
+            margin: 0 auto 2rem;
+            opacity: 0.9;
+        }
+        
+        .testimonials {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .testimonial-card {
+            background-color: white;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .dark-mode .testimonial-card {
+            background-color: #2d3748;
+        }
+        
+        .testimonial-text {
+            font-style: italic;
+            margin-bottom: 1.5rem;
+            color: #4a5568;
+        }
+        
+        .dark-mode .testimonial-text {
+            color: #e2e8f0;
+        }
+        
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+        }
+        
+        .testimonial-author-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-right: 1rem;
+        }
+        
+        .testimonial-author-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .testimonial-author-info h4 {
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+            color: var(--secondary);
+        }
+        
+        .dark-mode .testimonial-author-info h4 {
+            color: #f7fafc;
+        }
+        
+        .testimonial-author-info p {
+            font-size: 0.9rem;
+            color: #718096;
+        }
+        
+        .dark-mode .testimonial-author-info p {
+            color: #cbd5e0;
+        }
+        
+        .faq-section {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .faq-item {
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1.5rem 0;
+        }
+        
+        .dark-mode .faq-item {
+            border-bottom-color: #4a5568;
+        }
+        
+        .faq-question {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .dark-mode .faq-question {
+            color: #f7fafc;
+        }
+        
+        .faq-answer {
+            color: #718096;
+        }
+        
+        .dark-mode .faq-answer {
+            color: #cbd5e0;
+        }
+        
+        .footer {
+            background-color: var(--secondary);
+            color: white;
+            padding: 4rem 0 2rem;
+        }
+        
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .footer-column h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            color: white;
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+        
+        .footer-links a {
+            color: #cbd5e0;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .footer-bottom p {
+            color: #cbd5e0;
+            font-size: 0.9rem;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .social-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: background-color 0.3s;
+        }
+        
+        .social-link:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero p {
+                font-size: 1.1rem;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+            
+            .section-title h2 {
+                font-size: 2rem;
+            }
+            
+            .feature-card {
+                padding: 1.5rem;
+            }
+            
+            .nav {
+                display: none;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            .mobile-menu-btn {
+                display: none;
+            }
+        }
+        
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container header-content">
+            <div class="logo">
+                <img src="attached_assets/weparlaylogo4.png" alt="WeParlay Logo">
+                <span>WeParlay</span>
+            </div>
+            <button class="theme-toggle" aria-label="Toggle dark mode">
+                🌓
+            </button>
+            <nav class="nav">
+                <a href="#features">Features</a>
+                <a href="#testimonials">Testimonials</a>
+                <a href="#faq">FAQ</a>
+                <a href="#contact">Contact</a>
+                <a href="/login" class="btn btn-secondary">Log In</a>
+                <a href="/signup" class="btn btn-primary">Sign Up</a>
+            </nav>
+            <button class="mobile-menu-btn">
+                ☰
+            </button>
+        </div>
+    </header>
+    
+    <section class="hero">
+        <div class="container">
+            <h1>The Future of Sports Betting is Here</h1>
+            <p>Experience next-generation betting with real-time odds, cryptocurrency integration, and social betting features. Connect with friends, track your favorites, and win big with WeParlay.</p>
+            <div class="hero-buttons">
+                <a href="/signup" class="btn btn-cta">Get Started</a>
+                <a href="#features" class="btn btn-secondary">Learn More</a>
+            </div>
+            <div class="hero-image">
+                <img src="https://via.placeholder.com/1200x600/3498db/ffffff?text=WeParlay+Platform+Interface" alt="WeParlay Platform Interface">
+            </div>
+        </div>
+    </section>
+    
+    <section class="section" id="features">
+        <div class="container">
+            <div class="section-title">
+                <h2>Revolutionary Features</h2>
+                <p>WeParlay combines cutting-edge technology with an intuitive user experience to create the ultimate sports betting platform.</p>
+            </div>
+            
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i>📊</i>
+                    </div>
+                    <h3>Live Betting</h3>
+                    <p>Experience the thrill of real-time betting with continuously updated odds and instant score updates as games progress.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i>💰</i>
+                    </div>
+                    <h3>Crypto Integration</h3>
+                    <p>Bet with your favorite cryptocurrencies including Bitcoin, Ethereum, and 48 more options. Secure, private, and fast transactions.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i>🏆</i>
+                    </div>
+                    <h3>Yahoo Fantasy Integration</h3>
+                    <p>Connect your Yahoo Fantasy Sports account for enhanced features and betting options based on your fantasy teams.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i>👥</i>
+                    </div>
+                    <h3>Social Betting</h3>
+                    <p>Create betting groups, challenge friends to head-to-head bets, and share your winning predictions across your social network.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i>🎮</i>
+                    </div>
+                    <h3>Video Game Betting</h3>
+                    <p>Bet on your favorite esports tournaments across multiple games with specialized betting markets and real-time odds.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i>🔄</i>
+                    </div>
+                    <h3>Dual Theme Support</h3>
+                    <p>Customize your experience with light and dark mode support and personalized color schemes for your interface.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="cta-section">
+        <div class="container">
+            <h2>Ready to Start Betting?</h2>
+            <p>Join thousands of users who are already experiencing the future of sports betting with WeParlay.</p>
+            <a href="/signup" class="btn btn-cta">Create Free Account</a>
+        </div>
+    </section>
+    
+    <section class="section" id="testimonials">
+        <div class="container">
+            <div class="section-title">
+                <h2>What Our Users Say</h2>
+                <p>Don't just take our word for it. Here's what WeParlay users are saying about their experience.</p>
+            </div>
+            
+            <div class="testimonials">
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"The live betting feature is unmatched. I love being able to place bets during games as the action unfolds. The interface is smooth and the odds update instantly."</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-author-image">
+                            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Michael S.">
+                        </div>
+                        <div class="testimonial-author-info">
+                            <h4>Michael S.</h4>
+                            <p>Active bettor since 2024</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"Being able to bet with crypto makes the whole process so much faster. Withdrawals are instant and the fees are much lower than traditional betting sites."</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-author-image">
+                            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Jessica L.">
+                        </div>
+                        <div class="testimonial-author-info">
+                            <h4>Jessica L.</h4>
+                            <p>Crypto enthusiast</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"The social betting features are incredible. I've created a betting group with my friends and we compete against each other every weekend during the football season."</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-author-image">
+                            <img src="https://randomuser.me/api/portraits/men/67.jpg" alt="David T.">
+                        </div>
+                        <div class="testimonial-author-info">
+                            <h4>David T.</h4>
+                            <p>Fantasy sports player</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="section" id="faq">
+        <div class="container">
+            <div class="section-title">
+                <h2>Frequently Asked Questions</h2>
+                <p>Got questions? We've got answers. If you can't find what you're looking for, feel free to contact our support team.</p>
+            </div>
+            
+            <div class="faq-section">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        How do I get started with WeParlay?
+                        <span>+</span>
+                    </div>
+                    <div class="faq-answer">
+                        Getting started is easy! Simply create a free account, verify your email, and make your first deposit using cryptocurrency or traditional payment methods. Once your account is funded, you can start placing bets immediately.
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        What cryptocurrencies are supported?
+                        <span>+</span>
+                    </div>
+                    <div class="faq-answer">
+                        WeParlay supports the top 50 cryptocurrencies by market cap, including Bitcoin, Ethereum, Solana, Cardano, and many more. We also offer exclusive features for our native WePlay Token.
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        How does the Yahoo Fantasy integration work?
+                        <span>+</span>
+                    </div>
+                    <div class="faq-answer">
+                        You can connect your Yahoo Fantasy account through our secure API integration. This allows you to track your fantasy team's performance, create bets based on your players, and receive specialized insights and betting opportunities.
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        What sports can I bet on?
+                        <span>+</span>
+                    </div>
+                    <div class="faq-answer">
+                        WeParlay offers betting markets for all major sports leagues including NBA, NFL, NHL, MLB, UFC, NASCAR, tennis, soccer, and many more. We also feature video game betting for popular esports titles.
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        Is WeParlay secure?
+                        <span>+</span>
+                    </div>
+                    <div class="faq-answer">
+                        Absolutely! We use end-to-end encryption for all transactions, implement two-factor authentication, and maintain strict privacy controls. Your data and funds are completely secure with WeParlay.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <footer class="footer" id="contact">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-column">
+                    <h3>WeParlay</h3>
+                    <ul class="footer-links">
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#testimonials">Testimonials</a></li>
+                        <li><a href="#faq">FAQ</a></li>
+                        <li><a href="/about">About Us</a></li>
+                        <li><a href="/blog">Blog</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Sports</h3>
+                    <ul class="footer-links">
+                        <li><a href="/sports/nba">NBA</a></li>
+                        <li><a href="/sports/nfl">NFL</a></li>
+                        <li><a href="/sports/nhl">NHL</a></li>
+                        <li><a href="/sports/mlb">MLB</a></li>
+                        <li><a href="/sports/ufc">UFC</a></li>
+                        <li><a href="/sports/all">View All</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Support</h3>
+                    <ul class="footer-links">
+                        <li><a href="/help">Help Center</a></li>
+                        <li><a href="/contact">Contact Us</a></li>
+                        <li><a href="/faq">FAQ</a></li>
+                        <li><a href="/community">Community</a></li>
+                        <li><a href="/feedback">Feedback</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Legal</h3>
+                    <ul class="footer-links">
+                        <li><a href="/terms">Terms of Service</a></li>
+                        <li><a href="/privacy">Privacy Policy</a></li>
+                        <li><a href="/responsible-gaming">Responsible Gaming</a></li>
+                        <li><a href="/compliance">Compliance</a></li>
+                        <li><a href="/licenses">Licenses</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <div class="social-links">
+                    <a href="#" class="social-link" aria-label="Twitter">X</a>
+                    <a href="#" class="social-link" aria-label="Facebook">f</a>
+                    <a href="#" class="social-link" aria-label="Instagram">📷</a>
+                    <a href="#" class="social-link" aria-label="Discord">D</a>
+                    <a href="#" class="social-link" aria-label="YouTube">▶</a>
+                </div>
+                <p>&copy; 2025 WeParlay. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // Basic interactivity for demo purposes
+        document.addEventListener('DOMContentLoaded', function() {
+            // Dark/Light mode toggle
+            const themeToggle = document.querySelector('.theme-toggle');
+            themeToggle.addEventListener('click', function() {
+                document.body.classList.toggle('dark-mode');
+                themeToggle.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌓';
+            });
+            
+            // FAQ accordion
+            const faqQuestions = document.querySelectorAll('.faq-question');
+            faqQuestions.forEach(question => {
+                question.addEventListener('click', function() {
+                    const answer = this.nextElementSibling;
+                    const isVisible = answer.style.display === 'block';
+                    
+                    // Close all other answers
+                    document.querySelectorAll('.faq-answer').forEach(a => {
+                        a.style.display = 'none';
+                    });
+                    
+                    document.querySelectorAll('.faq-question span').forEach(s => {
+                        s.textContent = '+';
+                    });
+                    
+                    if (!isVisible) {
+                        answer.style.display = 'block';
+                        this.querySelector('span').textContent = '-';
+                    }
+                });
+            });
+            
+            // Hide all FAQ answers initially
+            document.querySelectorAll('.faq-answer').forEach(answer => {
+                answer.style.display = 'none';
+            });
+            
+            // Mobile menu toggle
+            const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+            const nav = document.querySelector('.nav');
+            
+            mobileMenuBtn.addEventListener('click', function() {
+                nav.style.display = nav.style.display === 'flex' ? 'none' : 'flex';
+            });
+        });
+    </script>
+</body>
+</html>
