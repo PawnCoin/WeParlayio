@@ -938,7 +938,7 @@ const FantasyTeamBuilder: React.FC<FantasyTeamBuilderProps> = ({
                   {!isAuthenticated && (
                     <p className="text-xs text-amber-500 mt-2">
                       <AlertTriangle className="h-3 w-3 inline-block mr-1" />
-                      You need to log in to connect your Yahoo Fantasy account
+                      You need to <Link href="/login"><span className="text-primary hover:underline cursor-pointer">log in</span></Link> to connect your Yahoo Fantasy account
                     </p>
                   )}
                 </div>

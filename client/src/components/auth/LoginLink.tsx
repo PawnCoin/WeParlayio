@@ -16,9 +16,9 @@ const LoginLink: React.FC<LoginLinkProps> = ({
   
   return (
     <Link href={`/login?redirect=${encodedRedirect}`}>
-      <a className={`text-primary hover:text-primary-dark hover:underline cursor-pointer ${className}`}>
+      <span className={`text-primary hover:text-primary-dark hover:underline cursor-pointer ${className}`}>
         {children || 'Login'}
-      </a>
+      </span>
     </Link>
   );
 };

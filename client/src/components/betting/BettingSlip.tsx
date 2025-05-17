@@ -438,7 +438,11 @@ const BettingSlip: React.FC = () => {
                 {selectedCurrency !== 'USD' && !cryptoWallets.some(w => w.connected) && (
                   <div className="mt-2 text-xs text-amber-500 flex items-center">
                     <Wallet className="h-3 w-3 mr-1" />
-                    <span>Connect a wallet in Settings to place {selectedCurrency} bets</span>
+                    <span>
+                      <Link href="/login">
+                        <span className="text-primary hover:underline cursor-pointer">Log in</span>
+                      </Link> and connect a wallet to place {selectedCurrency} bets
+                    </span>
                   </div>
                 )}
                 
