@@ -235,6 +235,21 @@ td {
   color: white !important;
 }
 
+.dark .betting-slip-container * {
+  background-color: transparent;
+}
+
+.dark .betting-slip-container .card-content {
+  background-color: #1e293b !important; 
+}
+
+.dark .betting-slip-container input[type="number"],
+.dark .betting-slip-container input[type="text"] {
+  background-color: #334155 !important;
+  color: white !important;
+  border-color: #475569 !important;
+}
+
 /* When in mobile view, make the bet slip more compact */
 @media (max-width: 768px) {
   .betting-slip-container {
