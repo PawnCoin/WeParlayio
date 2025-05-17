@@ -5,221 +5,164 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
-  TextInput,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
-  Alert
+  StatusBar,
+  SafeAreaView
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useMutation } from '@tanstack/react-query';
-import { login, registerUser } from '../services/apiService';
 import SocialLoginButtons from '../components/auth/SocialLoginButtons';
 import WalletConnectButton from '../components/auth/WalletConnectButton';
 
 const AuthScreen = () => {
   const navigation = useNavigation();
   const { colors } = useTheme();
-  const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('');
-  
-  // Login mutation
-  const loginMutation = useMutation({
-    mutationFn: login,
-    onSuccess: () => {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Main' }],
-      });
-    },
-    onError: (error: any) => {
-      Alert.alert(
-        'Login Failed',
-        error.message || 'Please check your credentials and try again.'
-      );
-    },
-  });
-  
-  // Register mutation
-  const registerMutation = useMutation({
-    mutationFn: registerUser,
-    onSuccess: () => {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Main' }],
-      });
-    },
-    onError: (error: any) => {
-      Alert.alert(
-        'Registration Failed',
-        error.message || 'Please check your information and try again.'
-      );
-    },
-  });
-  
-  // Login or register handler
-  const handleSubmit = () => {
-    if (isLogin) {
-      if (!email || !password) {
-        Alert.alert('Missing Information', 'Please enter both email and password.');
-        return;
-      }
-      
-      loginMutation.mutate({ email, password });
-    } else {
-      if (!username || !email || !password) {
-        Alert.alert('Missing Information', 'Please fill in all required fields.');
-        return;
-      }
-      
-      registerMutation.mutate({ username, email, password });
-    }
-  };
-  
-  // Logo
-  const weparlayLogo = require('../assets/weparlaylogo.png');
-  
-  // Loading state
-  const isLoading = loginMutation.isPending || registerMutation.isPending;
+  const [loginMethod, setLoginMethod] = useState<'social' | 'wallet'>('social');
   
   return (
-    <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
-    >
-      <ScrollView
-        contentContainerStyle={styles.scrollContainer}
-        keyboardShouldPersistTaps="handled"
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar
+        backgroundColor={colors.background}
+        barStyle={colors.isDark ? 'light-content' : 'dark-content'}
+      />
+      
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardAvoid}
       >
-        <View style={styles.logoContainer}>
-          <Image source={weparlayLogo} style={styles.logo} />
-          <Text style={[styles.tagline, { color: colors.text }]}>
-            The Social Sports Betting Platform
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* App Logo */}
+          <View style={styles.logoContainer}>
+            <Image
+              source={require('../assets/images/weparlay-logo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+          </View>
+          
+          {/* Welcome Text */}
+          <Text style={[styles.welcomeText, { color: colors.text }]}>
+            Welcome to WeParlay
           </Text>
-        </View>
-        
-        <View style={[styles.formContainer, { backgroundColor: colors.cardBackground }]}>
+          <Text style={[styles.subtitleText, { color: colors.textMuted }]}>
+            The ultimate sports betting experience
+          </Text>
+          
+          {/* Login Method Tabs */}
           <View style={styles.tabContainer}>
             <TouchableOpacity
               style={[
-                styles.tab,
-                isLogin && { borderBottomColor: colors.primary, borderBottomWidth: 2 }
+                styles.tabButton,
+                loginMethod === 'social' && [
+                  styles.activeTab,
+                  { borderColor: colors.primary }
+                ]
               ]}
-              onPress={() => setIsLogin(true)}
+              onPress={() => setLoginMethod('social')}
             >
+              <Icon
+                name="account-group"
+                size={24}
+                color={loginMethod === 'social' ? colors.primary : colors.textMuted}
+                style={styles.tabIcon}
+              />
               <Text
                 style={[
                   styles.tabText,
-                  { color: isLogin ? colors.primary : colors.text }
+                  {
+                    color:
+                      loginMethod === 'social' ? colors.primary : colors.textMuted
+                  }
                 ]}
               >
-                Login
+                Social Login
               </Text>
             </TouchableOpacity>
+            
             <TouchableOpacity
               style={[
-                styles.tab,
-                !isLogin && { borderBottomColor: colors.primary, borderBottomWidth: 2 }
+                styles.tabButton,
+                loginMethod === 'wallet' && [
+                  styles.activeTab,
+                  { borderColor: colors.accent }
+                ]
               ]}
-              onPress={() => setIsLogin(false)}
+              onPress={() => setLoginMethod('wallet')}
             >
+              <Icon
+                name="wallet"
+                size={24}
+                color={loginMethod === 'wallet' ? colors.accent : colors.textMuted}
+                style={styles.tabIcon}
+              />
               <Text
                 style={[
                   styles.tabText,
-                  { color: !isLogin ? colors.primary : colors.text }
+                  {
+                    color:
+                      loginMethod === 'wallet' ? colors.accent : colors.textMuted
+                  }
                 ]}
               >
-                Sign Up
+                Crypto Wallet
               </Text>
             </TouchableOpacity>
           </View>
           
-          <View style={styles.inputContainer}>
-            {!isLogin && (
-              <View style={styles.inputWrapper}>
-                <Icon name="account" size={20} color={colors.text} style={styles.inputIcon} />
-                <TextInput
-                  style={[styles.input, { color: colors.text }]}
-                  placeholder="Username"
-                  placeholderTextColor={`${colors.text}80`}
-                  value={username}
-                  onChangeText={setUsername}
-                  autoCapitalize="none"
-                />
+          {/* Login Methods Content */}
+          <View style={styles.methodContent}>
+            {loginMethod === 'social' ? (
+              <View style={styles.socialContent}>
+                <Text style={[styles.methodTitle, { color: colors.text }]}>
+                  Login with your social accounts
+                </Text>
+                <SocialLoginButtons />
+              </View>
+            ) : (
+              <View style={styles.walletContent}>
+                <Text style={[styles.methodTitle, { color: colors.text }]}>
+                  Connect your crypto wallet
+                </Text>
+                <Text style={[styles.walletInfo, { color: colors.textMuted }]}>
+                  Use your cryptocurrency wallet to securely authenticate and place bets with digital currencies.
+                </Text>
+                <WalletConnectButton />
               </View>
             )}
-            
-            <View style={styles.inputWrapper}>
-              <Icon name="email" size={20} color={colors.text} style={styles.inputIcon} />
-              <TextInput
-                style={[styles.input, { color: colors.text }]}
-                placeholder="Email"
-                placeholderTextColor={`${colors.text}80`}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-            </View>
-            
-            <View style={styles.inputWrapper}>
-              <Icon name="lock" size={20} color={colors.text} style={styles.inputIcon} />
-              <TextInput
-                style={[styles.input, { color: colors.text }]}
-                placeholder="Password"
-                placeholderTextColor={`${colors.text}80`}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-              />
-            </View>
-            
-            {isLogin && (
-              <TouchableOpacity style={styles.forgotPasswordButton}>
-                <Text style={[styles.forgotPasswordText, { color: colors.primary }]}>
-                  Forgot Password?
-                </Text>
-              </TouchableOpacity>
-            )}
           </View>
           
-          <TouchableOpacity
-            style={[styles.submitButton, { backgroundColor: colors.primary }]}
-            onPress={handleSubmit}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
-            ) : (
-              <Text style={styles.submitButtonText}>
-                {isLogin ? 'Login' : 'Create Account'}
+          {/* Terms & Privacy */}
+          <View style={styles.termsContainer}>
+            <Text style={[styles.termsText, { color: colors.textMuted }]}>
+              By continuing, you agree to WeParlay's{' '}
+              <Text style={[styles.termsLink, { color: colors.primary }]}>
+                Terms of Service
+              </Text>{' '}
+              and{' '}
+              <Text style={[styles.termsLink, { color: colors.primary }]}>
+                Privacy Policy
               </Text>
-            )}
-          </TouchableOpacity>
-          
-          <View style={styles.dividerContainer}>
-            <View style={[styles.divider, { backgroundColor: colors.border }]} />
-            <Text style={[styles.dividerText, { color: colors.text }]}>OR</Text>
-            <View style={[styles.divider, { backgroundColor: colors.border }]} />
-          </View>
-          
-          <SocialLoginButtons />
-          
-          <View style={styles.walletContainer}>
-            <Text style={[styles.walletTitle, { color: colors.text }]}>
-              Connect with Crypto Wallet
             </Text>
-            <WalletConnectButton />
           </View>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+          
+          {/* Skip for Now */}
+          <TouchableOpacity
+            style={styles.skipButton}
+            onPress={() => navigation.navigate('Home' as never)}
+          >
+            <Text style={[styles.skipText, { color: colors.primary }]}>
+              Skip for now
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
@@ -227,103 +170,91 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  scrollContainer: {
+  keyboardAvoid: {
+    flex: 1,
+  },
+  scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 24,
+    paddingHorizontal: 24,
+    paddingVertical: 20,
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginTop: 20,
+    marginBottom: 24,
   },
   logo: {
     width: 200,
-    height: 70,
-    resizeMode: 'contain',
+    height: 80,
   },
-  tagline: {
+  welcomeText: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  subtitleText: {
     fontSize: 16,
-    marginTop: 8,
-  },
-  formContainer: {
-    borderRadius: 12,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    textAlign: 'center',
+    marginBottom: 32,
   },
   tabContainer: {
     flexDirection: 'row',
     marginBottom: 24,
   },
-  tab: {
+  tabButton: {
     flex: 1,
-    paddingVertical: 12,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  activeTab: {
+    borderBottomWidth: 2,
+  },
+  tabIcon: {
+    marginRight: 8,
   },
   tabText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '500',
   },
-  inputContainer: {
-    marginBottom: 24,
+  methodContent: {
+    marginBottom: 32,
   },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-    marginBottom: 16,
-  },
-  inputIcon: {
-    marginRight: 12,
-  },
-  input: {
-    flex: 1,
-    height: 40,
-    paddingVertical: 8,
-  },
-  forgotPasswordButton: {
-    alignSelf: 'flex-end',
-    marginTop: 8,
-  },
-  forgotPasswordText: {
-    fontSize: 14,
-  },
-  submitButton: {
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  submitButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  dividerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 24,
-  },
-  divider: {
-    flex: 1,
-    height: 1,
-  },
-  dividerText: {
-    paddingHorizontal: 16,
-    fontSize: 14,
-  },
-  walletContainer: {
-    marginTop: 16,
-  },
-  walletTitle: {
-    fontSize: 16,
+  socialContent: {},
+  walletContent: {},
+  methodTitle: {
+    fontSize: 18,
     fontWeight: '600',
     marginBottom: 16,
+  },
+  walletInfo: {
+    fontSize: 14,
+    marginBottom: 16,
+    lineHeight: 20,
+  },
+  termsContainer: {
+    marginTop: 'auto',
+    marginBottom: 16,
+  },
+  termsText: {
+    fontSize: 14,
     textAlign: 'center',
+    lineHeight: 20,
+  },
+  termsLink: {
+    fontWeight: '500',
+  },
+  skipButton: {
+    alignItems: 'center',
+    padding: 16,
+  },
+  skipText: {
+    fontSize: 16,
+    fontWeight: '500',
   },
 });
 
