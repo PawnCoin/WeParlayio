@@ -242,14 +242,37 @@ class WeParlay_App_Integration {
     position: relative;
     width: 100%;
     overflow: hidden;
-    margin: 20px 0;
+    margin: 0;
+    padding: 0;
 }
 
 .weparlay-app-iframe {
     border: none;
-    width: 100%;
+    width: 100vw;
+    height: 100vh;
+    max-width: 100%;
     min-height: 800px;
     background: transparent;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+}
+
+/* Remove extra space in WordPress content area */
+.content-area, 
+.entry-content,
+.site-content,
+#content,
+#primary,
+#main,
+article.page,
+.page-content {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
 }
 
 .weparlay-app-loader {
@@ -295,15 +318,30 @@ class WeParlay_App_Integration {
     --weparlay-text: var(--wp--preset--color--text, #23282d);
 }
 
-/* Full-width template styles */
+/* Full-width template styles - takes up entire browser window */
 .weparlay-fullwidth-template .weparlay-app-container {
-    max-width: 100%;
+    max-width: 100vw;
+    width: 100vw;
     margin: 0;
     padding: 0;
 }
 
 .weparlay-fullwidth-template .weparlay-app-iframe {
-    min-height: calc(100vh - 150px);
+    height: 100vh;
+    min-height: 100vh;
+}
+
+/* Remove all WordPress margins and paddings when in full app mode */
+.weparlay-fullwidth-template .site-content,
+.weparlay-fullwidth-template .content-area,
+.weparlay-fullwidth-template #primary,
+.weparlay-fullwidth-template #main,
+.weparlay-fullwidth-template .entry-content,
+.weparlay-fullwidth-template article {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
 }
 CSS;
     }
