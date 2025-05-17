@@ -25,6 +25,7 @@ import {
 } from "@/components/admin/DataVisualization";
 import ComprehensiveFinancialSummary from "@/components/admin/ComprehensiveFinancialSummary";
 import UserRoleManager from "@/components/admin/UserRoleManager";
+import FeeSummary from "@/components/admin/FeeSummary";
 import { 
   Users, 
   DollarSign, 
@@ -359,10 +360,19 @@ export default function AdminDashboard() {
 
         {/* Financial Tab */}
         <TabsContent value="finance">
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold">Financial Management</h2>
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Financial Management</h2>
+              <Button onClick={handleRefresh} variant="outline" size="sm">
+                <TrendingUp className="h-4 w-4 mr-2" />
+                Refresh Data
+              </Button>
+            </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Fee Revenue Dashboard */}
+            <FeeSummary />
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
               <Card>
                 <CardHeader>
                   <CardTitle>Bank Account Information</CardTitle>
