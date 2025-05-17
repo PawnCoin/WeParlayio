@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Menu, Wallet, Coins } from "lucide-react";
+import { ChevronDown, Menu, Wallet, Coins, Shield } from "lucide-react";
 import Logo from "@/components/WeParlay/Logo";
 import WalletConnect from "@/components/auth/WalletConnect";
 
@@ -126,6 +126,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link href="/security">Security & Wallet Management</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin-bypass">
+                          <div className="flex items-center text-blue-500 font-semibold">
+                            Admin Dashboard
+                          </div>
+                        </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={logout}>
