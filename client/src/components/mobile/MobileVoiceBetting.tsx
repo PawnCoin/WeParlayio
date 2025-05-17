@@ -157,7 +157,7 @@ const MobileVoiceBetting: React.FC<MobileVoiceBettingProps> = ({ onBetPlaced }) 
     }
     
     // Extract bet amount
-    const amountMatch = lowercaseCommand.match(/\\$?([0-9]+)/);
+    const amountMatch = lowercaseCommand.match(/\$?([0-9]+)/);
     const betAmount = amountMatch ? parseInt(amountMatch[1]) : 20; // Default to $20 if not specified
     
     // Detect bet type
