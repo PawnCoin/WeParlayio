@@ -1,0 +1,57 @@
+/* Direct overrides for bet slip styling */
+
+/* Light mode text colors - using stronger direct selectors */
+.pick-text {
+  color: #000000 !important;
+}
+
+.team-text {
+  color: #333333 !important;
+}
+
+.bet-type-text {
+  color: #000000 !important;
+  font-weight: 600 !important;
+}
+
+.odds-badge {
+  background-color: #f1f5f9 !important;
+  color: #000000 !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* Dark mode overrides */
+.dark .pick-text,
+.dark .team-text,
+.dark .bet-type-text {
+  color: #ffffff !important;
+}
+
+.dark .odds-badge {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+  border-color: #334155 !important;
+}
+
+/* Bet selection background colors */
+.bet-selection {
+  background-color: #ffffff !important;
+}
+
+.dark .bet-selection {
+  background-color: #0f172a !important;
+}
+
+/* Place bet button */
+.place-bet-button {
+  background-color: #3b82f6 !important;
+  color: white !important;
+  font-weight: 600 !important;
+  padding: 0.5rem !important;
+  height: auto !important;
+  min-height: 2.5rem !important;
+}
+
+.place-bet-button:hover {
+  background-color: #2563eb !important;
+}

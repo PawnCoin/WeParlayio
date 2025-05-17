@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Card, 
   CardHeader, 
   CardContent, 
   CardTitle 
 } from "@/components/ui/card";
+import './betslip-styles.css';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -280,10 +281,10 @@ const ImprovedBetSlip: React.FC<ImprovedBetSlipProps> = ({
               {betSlip.map((bet) => (
                 <div 
                   key={bet.id} 
-                  className="border border-muted dark:border-slate-700 rounded-md p-2 mb-1 text-xs dark:bg-slate-900 bg-slate-50"
+                  className="border border-muted dark:border-slate-700 rounded-md p-2 mb-1 text-xs dark:bg-slate-900 bg-slate-50 bet-selection"
                 >
                   <div className="flex justify-between items-start mb-1">
-                    <div className="font-medium text-black dark:text-white text-xs">{bet.pick}</div>
+                    <div className="font-medium text-xs pick-text">{bet.pick}</div>
                     <Button 
                       variant="ghost" 
                       size="sm" 
@@ -293,11 +294,11 @@ const ImprovedBetSlip: React.FC<ImprovedBetSlipProps> = ({
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
-                  <div className="text-xs font-medium dark:text-white text-gray-700 mb-1">
+                  <div className="text-xs font-medium mb-1 team-text">
                     {bet.homeTeam} vs {bet.awayTeam}
                   </div>
                   <div className="flex justify-between items-center">
-                    <div className="text-xs font-semibold dark:text-white text-black">
+                    <div className="text-xs font-semibold bet-type-text">
                       {bet.betType === 'moneyline' ? (
                         <span>Moneyline</span>
                       ) : bet.betType === 'spread' ? (
@@ -306,7 +307,7 @@ const ImprovedBetSlip: React.FC<ImprovedBetSlipProps> = ({
                         <span>{bet.pick.includes("O/U") ? "Total" : bet.pick} {bet.point}</span>
                       )}
                     </div>
-                    <Badge variant="outline" className="text-xs dark:bg-slate-800 bg-slate-100 text-foreground dark:text-white">
+                    <Badge variant="outline" className="text-xs odds-badge">
                       {formatOdds(bet.odds)}
                     </Badge>
                   </div>
@@ -365,7 +366,7 @@ const ImprovedBetSlip: React.FC<ImprovedBetSlipProps> = ({
           )}
           
           <Button 
-            className="w-full bg-primary hover:bg-primary-dark text-white text-xs py-2 h-9 font-semibold" 
+            className="w-full text-white text-xs py-2 h-9 font-semibold place-bet-button" 
             disabled={betSlip.length === 0 || parseFloat(betAmount) <= 0}
             onClick={handlePlaceBet}
           >
