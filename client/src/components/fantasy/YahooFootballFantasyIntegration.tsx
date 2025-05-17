@@ -314,7 +314,7 @@ const YahooFootballFantasyIntegration: React.FC = () => {
       <Card className="shadow-md">
         <CardHeader>
           <div className="flex justify-center mb-2">
-            <SiYahoofantasysports className="h-12 w-12 text-purple-600" />
+            <FaYahoo className="h-12 w-12 text-purple-600" />
           </div>
           <CardTitle className="text-center">Yahoo Football Fantasy</CardTitle>
           <CardDescription className="text-center">
@@ -342,7 +342,7 @@ const YahooFootballFantasyIntegration: React.FC = () => {
     <Card className="shadow-md">
       <CardHeader>
         <div className="flex justify-center mb-2">
-          <SiYahoofantasysports className="h-12 w-12 text-purple-600" />
+          <FaYahoo className="h-12 w-12 text-purple-600" />
         </div>
         <CardTitle className="text-center">Yahoo Football Fantasy</CardTitle>
         <CardDescription className="text-center">
