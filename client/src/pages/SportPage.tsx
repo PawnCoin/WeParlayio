@@ -58,25 +58,27 @@ const SportPage = () => {
   });
 
   // Filter events to match the current sport
-  const filteredLiveEvents = liveEvents?.filter((event: Event) => {
-    // If we're looking at a specific sport, filter by it
-    if (currentSport) {
-      return event.sportId === currentSport.id;
-    }
-    return true;
-  });
+  const filteredLiveEvents = liveEvents && Array.isArray(liveEvents) ? 
+    liveEvents.filter((event: Event) => {
+      // If we're looking at a specific sport, filter by it
+      if (currentSport) {
+        return event.sportId === currentSport.id;
+      }
+      return true;
+    }) : [];
 
-  const filteredUpcomingEvents = upcomingEvents?.filter((event: Event) => {
-    // If we're looking at a specific sport, filter by it
-    if (currentSport) {
-      return event.sportId === currentSport.id;
-    }
-    return true;
-  });
+  const filteredUpcomingEvents = upcomingEvents && Array.isArray(upcomingEvents) ?
+    upcomingEvents.filter((event: Event) => {
+      // If we're looking at a specific sport, filter by it
+      if (currentSport) {
+        return event.sportId === currentSport.id;
+      }
+      return true;
+    }) : [];
 
   // Helper function to get odds for an event
   const getOddsForEvent = (eventId: number) => {
-    if (!odds) return null;
+    if (!odds || !Array.isArray(odds)) return null;
     return odds.find((odd: Odds) => odd.id === eventId.toString());
   };
 
@@ -145,7 +147,7 @@ const SportPage = () => {
                   <Skeleton className="h-32 w-full" />
                   <Skeleton className="h-32 w-full" />
                 </div>
-              ) : filteredLiveEvents?.length > 0 ? (
+              ) : filteredLiveEvents && filteredLiveEvents.length > 0 ? (
                 <div className="space-y-6">
                   {filteredLiveEvents.map((event: Event) => (
                     <div key={event.id} className="border rounded-lg p-4">
@@ -264,7 +266,7 @@ const SportPage = () => {
                   <Skeleton className="h-28 w-full" />
                   <Skeleton className="h-28 w-full" />
                 </div>
-              ) : filteredUpcomingEvents?.length > 0 ? (
+              ) : filteredUpcomingEvents && filteredUpcomingEvents.length > 0 ? (
                 <div className="space-y-4">
                   {filteredUpcomingEvents.map((event: Event) => (
                     <div key={event.id} className="border rounded-lg p-4">

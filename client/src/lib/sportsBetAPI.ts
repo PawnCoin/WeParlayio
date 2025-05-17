@@ -175,32 +175,42 @@ export default {
   
   // Filter live events by sport key
   getLiveEventsBySport: async (sportKey: string): Promise<Event[]> => {
-    const allEvents = await this.getLiveEvents();
-    
-    // If we have a specific sport key, filter by it
-    if (sportKey && allEvents) {
-      return allEvents.filter((event: Event) => {
-        const sport = getSportIdByKey(sportKey);
-        return sport ? event.sportId === sport : false;
-      });
+    try {
+      const allEvents = await this.getLiveEvents();
+      
+      // If we have a specific sport key, filter by it
+      if (sportKey && allEvents) {
+        const sportId = getSportIdByKey(sportKey);
+        if (sportId) {
+          return allEvents.filter((event: Event) => event.sportId === sportId);
+        }
+      }
+      
+      return allEvents || [];
+    } catch (error) {
+      console.error('Error fetching live events by sport', error);
+      return [];
     }
-    
-    return allEvents || [];
   },
   
   // Filter upcoming events by sport key
   getUpcomingEventsBySport: async (sportKey: string): Promise<Event[]> => {
-    const allEvents = await this.getUpcomingEvents();
-    
-    // If we have a specific sport key, filter by it
-    if (sportKey && allEvents) {
-      return allEvents.filter((event: Event) => {
-        const sport = getSportIdByKey(sportKey);
-        return sport ? event.sportId === sport : false;
-      });
+    try {
+      const allEvents = await this.getUpcomingEvents();
+      
+      // If we have a specific sport key, filter by it
+      if (sportKey && allEvents) {
+        const sportId = getSportIdByKey(sportKey);
+        if (sportId) {
+          return allEvents.filter((event: Event) => event.sportId === sportId);
+        }
+      }
+      
+      return allEvents || [];
+    } catch (error) {
+      console.error('Error fetching upcoming events by sport', error);
+      return [];
     }
-    
-    return allEvents || [];
   },
   
   // Odds
