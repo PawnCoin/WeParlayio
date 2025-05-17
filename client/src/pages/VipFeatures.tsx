@@ -16,6 +16,7 @@ import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import BetConfetti from "@/components/betting/BetConfetti";
 import TierComparisonDashboard from "@/components/vip/TierComparisonDashboard";
+import ValueCalculator from "@/components/vip/ValueCalculator";
 import { 
   Crown, Star, Gift, Clock, Zap, Users, DollarSign, Check, 
   ArrowRight, ChevronRight, Trophy, BadgePercent, 
@@ -754,6 +755,14 @@ const VipFeatures: React.FC = () => {
               </CardHeader>
               <CardContent className="pt-6">
                 <TierComparisonDashboard />
+                
+                <div className="mt-10">
+                  <h3 className="text-xl font-bold mb-4">Calculate Your VIP Value</h3>
+                  <p className="text-muted-foreground mb-6">
+                    See how much value you'll get from your membership based on your betting habits.
+                  </p>
+                  <ValueCalculator />
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
