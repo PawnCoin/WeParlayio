@@ -69,18 +69,16 @@ const Tournaments: React.FC = () => {
         </div>
         
         <div className="mt-4 border-b border-gray-200 dark:border-gray-700">
-          <Tabs defaultValue="featured" className="w-full">
-            <TabsList className="flex-wrap">
-              <TabsTrigger value="featured">Featured</TabsTrigger>
-              <TabsTrigger value="my-brackets">My Brackets</TabsTrigger>
-              <TabsTrigger value="public-pools">Public Pools</TabsTrigger>
-              <TabsTrigger value="create">Create New</TabsTrigger>
-            </TabsList>
-          </Tabs>
         </div>
       </div>
       
-      <Tabs defaultValue="featured">
+      <Tabs defaultValue="featured" className="w-full">
+        <TabsList className="flex-wrap mb-6">
+          <TabsTrigger value="featured">Featured</TabsTrigger>
+          <TabsTrigger value="my-brackets">My Brackets</TabsTrigger>
+          <TabsTrigger value="public-pools">Public Pools</TabsTrigger>
+          <TabsTrigger value="create">Create New</TabsTrigger>
+        </TabsList>
         <TabsContent value="featured">
           <div className="bg-white dark:bg-neutral-dark rounded-lg shadow-md p-4 mb-6">
             <div className="flex flex-col md:flex-row gap-4 mb-4">
@@ -328,12 +326,104 @@ const Tournaments: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button variant="outline">View Bracket</Button>
-                    <Button variant="outline">Edit Picks</Button>
+                    <Button variant="outline" onClick={() => toast({
+                      title: "Viewing Bracket",
+                      description: "Loading your NBA Playoffs 2023 bracket..."
+                    })}>View Bracket</Button>
+                    <Button variant="outline" onClick={() => toast({
+                      title: "Edit Mode Activated",
+                      description: "You can now edit your bracket picks"
+                    })}>Edit Picks</Button>
                   </div>
                 </div>
                 
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-3">
+                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Your Champion Pick</div>
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center">
+                        <Avatar className="h-6 w-6 mr-2">
+                          <AvatarFallback>BC</AvatarFallback>
+                        </Avatar>
+                        <span className="font-medium">Boston Celtics</span>
+                      </div>
+                      <span className="text-green-600 dark:text-green-400 text-sm font-medium">Active</span>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-3">
+                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Overall Accuracy</div>
+                    <div className="flex items-center">
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mr-2">
+                        <div className="bg-primary h-2.5 rounded-full" style={{ width: '78%' }}></div>
+                      </div>
+                      <span className="text-sm font-medium">78%</span>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-3">
+                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Pool Standing</div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">Ranked #3</span>
+                      <span className="text-primary font-medium">980 pts</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div>
+                    <h3 className="font-medium text-lg">NCAA Tournament 2023</h3>
+                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      <Calendar className="h-4 w-4 mr-1" /> Created Mar 12, 2023
+                      <span className="mx-2">•</span>
+                      <Badge variant="outline" className="ml-1">Completed</Badge>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" onClick={() => toast({
+                      title: "Viewing Bracket",
+                      description: "Loading your NCAA Tournament 2023 bracket..."
+                    })}>View Bracket</Button>
+                  </div>
+                </div>
+                
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-3">
+                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Your Champion Pick</div>
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center">
+                        <Avatar className="h-6 w-6 mr-2">
+                          <AvatarFallback>UConn</AvatarFallback>
+                        </Avatar>
+                        <span className="font-medium">UConn Huskies</span>
+                      </div>
+                      <span className="text-green-600 dark:text-green-400 text-sm font-medium">✓ Correct</span>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-3">
+                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Overall Accuracy</div>
+                    <div className="flex items-center">
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mr-2">
+                        <div className="bg-primary h-2.5 rounded-full" style={{ width: '63%' }}></div>
+                      </div>
+                      <span className="text-sm font-medium">63%</span>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-3">
+                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Pool Standing</div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">Ranked #12</span>
+                      <span className="text-primary font-medium">670 pts</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>p-4">
                   <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
                     <div className="text-sm text-gray-500 dark:text-gray-400">Bracket Score</div>
                     <div className="text-2xl font-bold">780 <span className="text-sm font-normal text-gray-500 dark:text-gray-400">/ 1000</span></div>
