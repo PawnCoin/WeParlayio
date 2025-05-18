@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import sportsBetAPI from "@/lib/sportsBetAPI";
 import BracketView from "@/components/tournaments/BracketView";
@@ -12,9 +12,12 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
+import { motion } from "framer-motion";
 import { 
   Trophy, Share2, Calendar, Users, ChevronDown, 
-  Plus, Pen, Filter, Save, Alert 
+  Plus, Pen, Filter, Save, AlertCircle, Award,
+  Facebook, Twitter, Mail, Link, Smartphone, 
+  Star, Bookmark, TrendingUp, Flame, Zap
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -22,42 +25,89 @@ const Tournaments: React.FC = () => {
   const { toast } = useToast();
   const [activeTournament, setActiveTournament] = useState("nba-playoffs-2023");
   const [activeTab, setActiveTab] = useState("featured");
+  const [isMobile, setIsMobile] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [tournamentToShare, setTournamentToShare] = useState({ id: 1, name: "NBA Playoffs 2023" });
+  
+  // Check if device is mobile
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    // Initial check
+    checkIfMobile();
+    
+    // Add event listener for window resize
+    window.addEventListener('resize', checkIfMobile);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', checkIfMobile);
+  }, []);
   
   const { data: tournaments, isLoading } = useQuery({
     queryKey: ["/api/tournaments"],
     queryFn: () => sportsBetAPI.getTournaments(),
   });
   
+  // Get tournament by ID - using for bracket views
+  const { data: tournamentData, isLoading: isLoadingTournament } = useQuery({
+    queryKey: ["/api/tournaments/1"],
+    queryFn: () => sportsBetAPI.getTournament(1),
+  });
+  
+  // Personalized tournament recommendations
+  const recommendedTournaments = [
+    {
+      id: 101,
+      name: "NBA Finals Bracket Challenge",
+      entryFee: 10,
+      prizeMoney: 1000,
+      participants: 1245,
+      endDate: "May 22, 2023",
+      tags: ["NBA", "Basketball", "Pro"],
+      popularity: "hot" as const
+    },
+    {
+      id: 102,
+      name: "UFC Tournament Picks",
+      entryFee: "Free" as const,
+      prizeMoney: 500,
+      participants: 876,
+      endDate: "Jun 15, 2023",
+      tags: ["UFC", "MMA", "Free Entry"],
+      popularity: "trending" as const
+    },
+    {
+      id: 103,
+      name: "MLB Playoff Predictions",
+      entryFee: 5,
+      prizeMoney: 750,
+      participants: 625,
+      endDate: "Oct 10, 2023",
+      tags: ["MLB", "Baseball", "Season"],
+      popularity: "popular" as const
+    }
+  ];
+  
   const handleCreatePool = () => {
     toast({
       title: "Tournament Pool Created",
       description: "Your bracket pool has been created successfully.",
+      duration: 3000,
     });
   };
   
-  const handleShareBracket = () => {
-    // In a real app, this would generate a shareable link or display a share dialog
-    navigator.clipboard.writeText("https://weparlay.io/tournaments/bracket/nba-playoffs-2023")
-      .then(() => {
-        toast({
-          title: "Link Copied",
-          description: "Bracket link has been copied to clipboard.",
-        });
-      })
-      .catch(err => {
-        console.error("Failed to copy link:", err);
-        toast({
-          title: "Failed to Copy",
-          description: "Could not copy link to clipboard.",
-          variant: "destructive"
-        });
-      });
+  const handleShareBracket = (tournamentId = 1, tournamentName = "NBA Playoffs 2023") => {
+    setTournamentToShare({ id: tournamentId, name: tournamentName });
+    setShowShareModal(true);
   };
 
   const handleSaveBracket = () => {
     toast({
       title: "Bracket Saved",
       description: "Your bracket has been saved successfully.",
+      duration: 3000,
     });
   };
   
@@ -65,7 +115,26 @@ const Tournaments: React.FC = () => {
     toast({
       title: "Pool Joined",
       description: `You've successfully joined the ${poolName} pool.`,
+      duration: 3000,
     });
+    
+    // Show animated confirmation for joining pool
+    const confettiConfig = {
+      spread: 360,
+      ticks: 100,
+      gravity: 0.5,
+      decay: 0.94,
+      startVelocity: 30,
+      particleCount: 150,
+      scalar: 1
+    };
+    
+    try {
+      // This would use the canvas-confetti library that's already imported
+      // canvas-confetti(confettiConfig);
+    } catch (e) {
+      console.error("Confetti animation error:", e);
+    }
   };
   
   return (
