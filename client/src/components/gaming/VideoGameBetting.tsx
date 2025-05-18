@@ -48,6 +48,7 @@ const popularGames = [
   { id: "apex", name: "Apex Legends" },
   { id: "overwatch", name: "Overwatch" },
   { id: "pubg", name: "PUBG" },
+  { id: "undisputed", name: "Undisputed" },
   { id: "custom", name: "Custom Game" }
 ];
 
