@@ -12,12 +12,16 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trophy, Share2, Calendar, Users, ChevronDown } from "lucide-react";
+import { 
+  Trophy, Share2, Calendar, Users, ChevronDown, 
+  Plus, Pen, Filter, Save, Alert 
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const Tournaments: React.FC = () => {
   const { toast } = useToast();
   const [activeTournament, setActiveTournament] = useState("nba-playoffs-2023");
+  const [activeTab, setActiveTab] = useState("featured");
   
   const { data: tournaments, isLoading } = useQuery({
     queryKey: ["/api/tournaments"],
@@ -33,7 +37,7 @@ const Tournaments: React.FC = () => {
   
   const handleShareBracket = () => {
     // In a real app, this would generate a shareable link or display a share dialog
-    navigator.clipboard.writeText("https://sportsbetpro.com/tournaments/bracket/nba-playoffs-2023")
+    navigator.clipboard.writeText("https://weparlay.io/tournaments/bracket/nba-playoffs-2023")
       .then(() => {
         toast({
           title: "Link Copied",
@@ -48,6 +52,20 @@ const Tournaments: React.FC = () => {
           variant: "destructive"
         });
       });
+  };
+
+  const handleSaveBracket = () => {
+    toast({
+      title: "Bracket Saved",
+      description: "Your bracket has been saved successfully.",
+    });
+  };
+  
+  const handleJoinPool = (poolName: string) => {
+    toast({
+      title: "Pool Joined",
+      description: `You've successfully joined the ${poolName} pool.`,
+    });
   };
   
   return (
@@ -72,13 +90,15 @@ const Tournaments: React.FC = () => {
         </div>
       </div>
       
-      <Tabs defaultValue="featured" className="w-full">
+      <Tabs defaultValue="featured" value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="flex-wrap mb-6">
           <TabsTrigger value="featured">Featured</TabsTrigger>
           <TabsTrigger value="my-brackets">My Brackets</TabsTrigger>
           <TabsTrigger value="public-pools">Public Pools</TabsTrigger>
           <TabsTrigger value="create">Create New</TabsTrigger>
         </TabsList>
+        
+        {/* Featured Tab */}
         <TabsContent value="featured">
           <div className="bg-white dark:bg-neutral-dark rounded-lg shadow-md p-4 mb-6">
             <div className="flex flex-col md:flex-row gap-4 mb-4">
@@ -272,7 +292,7 @@ const Tournaments: React.FC = () => {
                         <Users className="h-4 w-4 mr-1" /> 1,245 participants
                       </div>
                     </div>
-                    <Button>Join Pool</Button>
+                    <Button onClick={() => handleJoinPool("NBA Championship Challenge")}>Join Pool</Button>
                   </div>
                   <div className="mt-4 flex items-center">
                     <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium mr-3">
@@ -294,7 +314,7 @@ const Tournaments: React.FC = () => {
                         <Users className="h-4 w-4 mr-1" /> 3,782 participants
                       </div>
                     </div>
-                    <Button>Join Pool</Button>
+                    <Button onClick={() => handleJoinPool("Free Bracket Challenge")}>Join Pool</Button>
                   </div>
                   <div className="mt-4 flex items-center">
                     <div className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300 px-3 py-1 rounded-full text-sm font-medium mr-3">
@@ -310,6 +330,7 @@ const Tournaments: React.FC = () => {
           </Card>
         </TabsContent>
         
+        {/* My Brackets Tab */}
         <TabsContent value="my-brackets">
           <div className="bg-white dark:bg-neutral-dark rounded-lg shadow-md p-6">
             <h2 className="text-xl font-bold mb-4">My Bracket Entries</h2>
@@ -423,272 +444,267 @@ const Tournaments: React.FC = () => {
                 </div>
               </div>
             </div>
-          </div>p-4">
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Bracket Score</div>
-                    <div className="text-2xl font-bold">780 <span className="text-sm font-normal text-gray-500 dark:text-gray-400">/ 1000</span></div>
-                    <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Rank: 156 of 1,245</div>
-                  </div>
-                  
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Correct Picks</div>
-                    <div className="text-2xl font-bold">11 <span className="text-sm font-normal text-gray-500 dark:text-gray-400">/ 15</span></div>
-                    <div className="mt-1 text-xs text-green-600 dark:text-green-400">+3 from last round</div>
-                  </div>
-                  
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Championship Pick</div>
-                    <div className="text-xl font-bold">Boston Celtics</div>
-                    <div className="mt-1 text-xs text-green-600 dark:text-green-400">Still in contention</div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div>
-                    <h3 className="font-medium text-lg">NCAA Tournament 2023</h3>
-                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      <Calendar className="h-4 w-4 mr-1" /> Created Mar 12, 2023
-                      <span className="mx-2">•</span>
-                      <Badge variant="outline">Completed</Badge>
-                    </div>
-                  </div>
-                  <div>
-                    <Button variant="outline">View Bracket</Button>
-                  </div>
-                </div>
-                
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Bracket Score</div>
-                    <div className="text-2xl font-bold">640 <span className="text-sm font-normal text-gray-500 dark:text-gray-400">/ 1000</span></div>
-                    <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Final Rank: 742 of 5,123</div>
-                  </div>
-                  
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Correct Picks</div>
-                    <div className="text-2xl font-bold">42 <span className="text-sm font-normal text-gray-500 dark:text-gray-400">/ 63</span></div>
-                    <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Better than 65% of brackets</div>
-                  </div>
-                  
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Championship Pick</div>
-                    <div className="text-xl font-bold">UConn</div>
-                    <div className="mt-1 text-xs text-green-600 dark:text-green-400">Correct - 100 bonus points</div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </TabsContent>
         
+        {/* Public Pools Tab */}
         <TabsContent value="public-pools">
           <div className="bg-white dark:bg-neutral-dark rounded-lg shadow-md p-6">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
               <h2 className="text-xl font-bold">Public Bracket Pools</h2>
               <div className="flex items-center gap-2">
+                <div className="relative">
+                  <Input
+                    placeholder="Search pools..."
+                    className="pr-8 w-full md:w-64"
+                  />
+                  <div className="absolute top-0 right-0 h-full flex items-center pr-3 pointer-events-none">
+                    <Filter className="h-4 w-4 text-gray-400" />
+                  </div>
+                </div>
                 <Select defaultValue="all">
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Filter by sport" />
+                  <SelectTrigger className="w-[130px]">
+                    <SelectValue placeholder="Filter by" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Sports</SelectItem>
-                    <SelectItem value="basketball">Basketball</SelectItem>
-                    <SelectItem value="football">Football</SelectItem>
-                    <SelectItem value="baseball">Baseball</SelectItem>
+                    <SelectItem value="all">All Pools</SelectItem>
+                    <SelectItem value="free">Free Entry</SelectItem>
+                    <SelectItem value="paid">Paid Entry</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="upcoming">Upcoming</SelectItem>
                   </SelectContent>
                 </Select>
-                <Input className="w-60" placeholder="Search pools..." />
               </div>
             </div>
             
             <div className="space-y-4">
-              {[1, 2, 3, 4].map((id) => (
-                <div key={id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                      <div className="flex items-center">
-                        <Trophy className="h-5 w-5 text-primary mr-2" />
-                        <h3 className="font-medium text-lg">
-                          {id === 1 ? "NBA Finals Challenge" : 
-                           id === 2 ? "March Madness Pool" : 
-                           id === 3 ? "NFL Playoff Bracket" : 
-                           "MLB Postseason Challenge"}
-                        </h3>
-                        {id === 1 && (
-                          <Badge className="ml-2 bg-yellow-500 text-white">Featured</Badge>
-                        )}
-                      </div>
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500 dark:text-gray-400 mt-2">
-                        <span className="flex items-center">
-                          <Users className="h-4 w-4 mr-1" />
-                          {id === 1 ? "2,453" : 
-                           id === 2 ? "5,128" : 
-                           id === 3 ? "1,872" : 
-                           "945"} participants
-                        </span>
-                        <span className="flex items-center">
-                          <Calendar className="h-4 w-4 mr-1" />
-                          Closes: {id === 1 ? "Jun 1, 2023" : 
-                                   id === 2 ? "Mar 16, 2023" : 
-                                   id === 3 ? "Jan 14, 2023" : 
-                                   "Oct 3, 2023"}
-                        </span>
-                        <span>
-                          Entry Fee: {id === 1 ? "$25" : 
-                                     id === 2 ? "$10" : 
-                                     id === 3 ? "$15" : 
-                                     "Free"}
-                        </span>
-                      </div>
+              <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-primary/70 transition-colors">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div>
+                    <div className="flex items-center">
+                      <h3 className="font-medium text-lg">NBA Championship Challenge</h3>
+                      <Badge className="ml-2 bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300">Featured</Badge>
                     </div>
-                    <Button>Join Pool</Button>
+                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      <Calendar className="h-4 w-4 mr-1" /> Ends May 22, 2023
+                      <span className="mx-2">•</span>
+                      <Users className="h-4 w-4 mr-1" /> 1,245 participants
+                    </div>
                   </div>
-                  
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
-                      {id === 1 ? "$10,000" : 
-                       id === 2 ? "$5,000" : 
-                       id === 3 ? "$2,500" : 
-                       "$500"} Prize Pool
-                    </div>
-                    <div className="bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full text-sm font-medium">
-                      {id === 1 ? "NBA" : 
-                       id === 2 ? "NCAA" : 
-                       id === 3 ? "NFL" : 
-                       "MLB"}
-                    </div>
-                    {id === 4 && (
-                      <div className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300 px-3 py-1 rounded-full text-sm font-medium">
-                        Free Entry
-                      </div>
-                    )}
+                  <Button onClick={() => handleJoinPool("NBA Championship Challenge")}>Join Pool</Button>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
+                    $1,000 Prize Pool
+                  </div>
+                  <div className="bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full text-sm font-medium">
+                    $10 Entry Fee
+                  </div>
+                  <div className="bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full text-sm font-medium">
+                    NBA
+                  </div>
+                  <div className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300 px-3 py-1 rounded-full text-sm font-medium">
+                    60% Filled
                   </div>
                 </div>
-              ))}
+              </div>
+              
+              <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-primary/70 transition-colors">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div>
+                    <div className="flex items-center">
+                      <h3 className="font-medium text-lg">Free Bracket Challenge</h3>
+                      <Badge className="ml-2 bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300">Popular</Badge>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      <Calendar className="h-4 w-4 mr-1" /> Ends May 22, 2023
+                      <span className="mx-2">•</span>
+                      <Users className="h-4 w-4 mr-1" /> 3,782 participants
+                    </div>
+                  </div>
+                  <Button onClick={() => handleJoinPool("Free Bracket Challenge")}>Join Pool</Button>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <div className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300 px-3 py-1 rounded-full text-sm font-medium">
+                    Free Entry
+                  </div>
+                  <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
+                    Prizes for Top 3
+                  </div>
+                  <div className="bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full text-sm font-medium">
+                    NBA
+                  </div>
+                  <div className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300 px-3 py-1 rounded-full text-sm font-medium">
+                    90% Filled
+                  </div>
+                </div>
+              </div>
+              
+              <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-primary/70 transition-colors">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div>
+                    <h3 className="font-medium text-lg">WePlay Final Four</h3>
+                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      <Calendar className="h-4 w-4 mr-1" /> Starts June 2, 2023
+                      <span className="mx-2">•</span>
+                      <Users className="h-4 w-4 mr-1" /> 876 participants
+                    </div>
+                  </div>
+                  <Button onClick={() => handleJoinPool("WePlay Final Four")}>Join Pool</Button>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
+                    $500 Prize Pool
+                  </div>
+                  <div className="bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full text-sm font-medium">
+                    $5 Entry Fee
+                  </div>
+                  <div className="bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full text-sm font-medium">
+                    NCAA
+                  </div>
+                  <div className="bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300 px-3 py-1 rounded-full text-sm font-medium">
+                    30% Filled
+                  </div>
+                </div>
+              </div>
+              
+              <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-primary/70 transition-colors">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div>
+                    <h3 className="font-medium text-lg">FIBA World Cup Prediction</h3>
+                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      <Calendar className="h-4 w-4 mr-1" /> Starts Aug 25, 2023
+                      <span className="mx-2">•</span>
+                      <Users className="h-4 w-4 mr-1" /> 523 participants
+                    </div>
+                  </div>
+                  <Button onClick={() => handleJoinPool("FIBA World Cup Prediction")}>Join Pool</Button>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
+                    $250 Prize Pool
+                  </div>
+                  <div className="bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full text-sm font-medium">
+                    $2 Entry Fee
+                  </div>
+                  <div className="bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full text-sm font-medium">
+                    FIBA
+                  </div>
+                  <div className="bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300 px-3 py-1 rounded-full text-sm font-medium">
+                    15% Filled
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-6 flex justify-center">
+              <Button variant="outline" className="flex items-center gap-2">
+                <ChevronDown className="h-4 w-4" /> Load More
+              </Button>
             </div>
           </div>
         </TabsContent>
         
+        {/* Create New Tab */}
         <TabsContent value="create">
-          <Card>
-            <CardHeader>
-              <CardTitle>Create New Bracket Pool</CardTitle>
-              <CardDescription>
-                Set up your own tournament bracket challenge
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Pool Name</label>
-                  <Input placeholder="Enter pool name" />
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Tournament</label>
+          <div className="bg-white dark:bg-neutral-dark rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-bold mb-4">Create New Bracket</h2>
+            
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Tournament</label>
                   <Select defaultValue="nba-playoffs">
                     <SelectTrigger>
-                      <SelectValue placeholder="Select tournament" />
+                      <SelectValue placeholder="Select Tournament" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="nba-playoffs">NBA Playoffs 2023</SelectItem>
                       <SelectItem value="ncaa-tournament">NCAA Tournament 2023</SelectItem>
-                      <SelectItem value="nfl-playoffs">NFL Playoffs 2023-24</SelectItem>
-                      <SelectItem value="mlb-postseason">MLB Postseason 2023</SelectItem>
+                      <SelectItem value="fiba-world-cup">FIBA World Cup 2023</SelectItem>
+                      <SelectItem value="nhl-playoffs">NHL Playoffs 2023</SelectItem>
+                      <SelectItem value="mlb-world-series">MLB World Series 2023</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-1">Bracket Name</label>
+                  <Input placeholder="My Champion Bracket" />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-1">Pool Type</label>
+                  <Select defaultValue="public">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Pool Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="public">Public</SelectItem>
+                      <SelectItem value="private">Private</SelectItem>
+                      <SelectItem value="friends">Friends Only</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-1">Entry Fee</label>
+                  <Select defaultValue="free">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Entry Fee" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="free">Free</SelectItem>
+                      <SelectItem value="paid-2">$2</SelectItem>
+                      <SelectItem value="paid-5">$5</SelectItem>
+                      <SelectItem value="paid-10">$10</SelectItem>
+                      <SelectItem value="paid-20">$20</SelectItem>
+                      <SelectItem value="paid-50">$50</SelectItem>
+                      <SelectItem value="paid-100">$100</SelectItem>
+                      <SelectItem value="custom">Custom Amount</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Pool Description</label>
-                <Input placeholder="Enter description of your bracket pool" />
+              <div>
+                <label className="block text-sm font-medium mb-1">Description</label>
+                <textarea 
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none h-24"
+                  placeholder="Tell others what this bracket pool is about..."
+                ></textarea>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Entry Fee</label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <span className="text-gray-500 dark:text-gray-400">$</span>
-                    </div>
-                    <Input type="number" min="0" defaultValue="10" className="pl-7" />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Max Entries</label>
-                  <Input type="number" min="1" defaultValue="100" />
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Deadline</label>
-                  <Input type="date" />
-                </div>
+              <div>
+                <label className="flex items-center space-x-2">
+                  <Checkbox id="scoring-standard" />
+                  <span className="text-sm font-medium">Use standard scoring (1-2-4-8-16-32)</span>
+                </label>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-6">
+                  Points double each round: 1 point for Round 1 games, 2 for Round 2, etc.
+                </p>
               </div>
               
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Scoring System</label>
-                <Select defaultValue="standard">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select scoring system" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="standard">Standard (Round Multiplier)</SelectItem>
-                    <SelectItem value="upset-bonus">Upset Bonus</SelectItem>
-                    <SelectItem value="seed-difference">Seed Difference</SelectItem>
-                    <SelectItem value="custom">Custom</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div>
+                <label className="flex items-center space-x-2">
+                  <Checkbox id="allow-late-entries" />
+                  <span className="text-sm font-medium">Allow entries after tournament begins</span>
+                </label>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-6">
+                  Participants can join after games have started but cannot pick results for completed games.
+                </p>
               </div>
               
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Privacy Options</label>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Checkbox id="public" />
-                    <label htmlFor="public" className="text-sm">Public pool (anyone can join)</label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Checkbox id="invite" defaultChecked />
-                    <label htmlFor="invite" className="text-sm">Invite only (requires access code)</label>
-                  </div>
-                </div>
+              <div className="flex flex-col sm:flex-row gap-3 justify-end mt-8">
+                <Button variant="outline" onClick={() => setActiveTab("featured")}>
+                  Cancel
+                </Button>
+                <Button className="gap-2" onClick={handleCreatePool}>
+                  <Plus className="h-4 w-4" /> Create Bracket Pool
+                </Button>
               </div>
-              
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Prize Distribution</label>
-                <div className="space-y-2">
-                  <div className="grid grid-cols-4 gap-2 items-center">
-                    <label className="text-sm">1st Place:</label>
-                    <div className="col-span-3 flex items-center gap-2">
-                      <Input type="number" min="0" defaultValue="70" className="w-20" />
-                      <span className="text-sm text-gray-500 dark:text-gray-400">%</span>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-4 gap-2 items-center">
-                    <label className="text-sm">2nd Place:</label>
-                    <div className="col-span-3 flex items-center gap-2">
-                      <Input type="number" min="0" defaultValue="20" className="w-20" />
-                      <span className="text-sm text-gray-500 dark:text-gray-400">%</span>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-4 gap-2 items-center">
-                    <label className="text-sm">3rd Place:</label>
-                    <div className="col-span-3 flex items-center gap-2">
-                      <Input type="number" min="0" defaultValue="10" className="w-20" />
-                      <span className="text-sm text-gray-500 dark:text-gray-400">%</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="flex justify-end">
-              <Button onClick={handleCreatePool}>Create Bracket Pool</Button>
-            </CardFooter>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
