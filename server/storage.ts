@@ -1,5 +1,5 @@
 import {
-  users, User, InsertUser,
+  users, User, InsertUser, UpsertUser,
   sports, Sport, InsertSport,
   teams, Team, InsertTeam,
   events, Event, InsertEvent,
@@ -7,7 +7,10 @@ import {
   tournaments, Tournament, InsertTournament,
   fantasyTeams, FantasyTeam, InsertFantasyTeam,
   players, Player, InsertPlayer,
-  fantasyTeamPlayers, FantasyTeamPlayer, InsertFantasyTeamPlayer
+  fantasyTeamPlayers, FantasyTeamPlayer, InsertFantasyTeamPlayer,
+  bankAccounts, BankAccount, InsertBankAccount,
+  transactions, Transaction, InsertTransaction,
+  TransactionType
 } from "@shared/schema";
 
 // Interface for storage operations
@@ -125,6 +128,10 @@ export class MemStorage implements IStorage {
     this.fantasyTeams = new Map();
     this.players = new Map();
     this.fantasyTeamPlayers = new Map();
+    this.bankAccounts = new Map();
+    this.transactions = new Map();
+    this.platformSettings = new Map();
+    this.privacySettings = new Map();
     
     this.nextUserId = 1;
     this.nextSportId = 1;
