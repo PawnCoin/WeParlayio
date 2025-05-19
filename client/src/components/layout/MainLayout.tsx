@@ -42,12 +42,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <div className="flex flex-col h-screen">
       {/* Header */}
-      <header className="bg-black shadow-md px-4 text-white">
+      <header className="bg-black shadow-md px-2 text-white">
         <div className="container mx-auto">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <div className="flex items-center">
-              <Logo size="md" />
+            <div className="flex items-center -ml-2">
+              <Logo size="lg" />
             </div>
             
             {/* Navigation for desktop */}
