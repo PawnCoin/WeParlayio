@@ -79,7 +79,6 @@ export function BiometricSetup() {
       toast({
         title: "Biometric authentication disabled",
         description: "Your biometric data has been removed from this device.",
-        variant: "success",
       });
     } catch (error) {
       toast({

@@ -80,7 +80,6 @@ export function BiometricLogin({ userId, onSuccess }: BiometricLoginProps) {
           toast({
             title: "Authentication successful",
             description: "Welcome back to WeParlay!",
-            variant: "success",
           });
           
           // Invalidate user query to refresh user data

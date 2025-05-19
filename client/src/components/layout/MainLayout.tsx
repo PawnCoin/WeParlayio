@@ -125,7 +125,20 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                         <Link href="/settings">Settings</Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link href="/security">Security & Wallet Management</Link>
+                        <Link href="/security-settings">
+                          <div className="flex items-center">
+                            <Shield className="mr-2 h-4 w-4" />
+                            Security & Wallet Management
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/security">
+                          <div className="flex items-center">
+                            <Shield className="mr-2 h-4 w-4" />
+                            Security Info
+                          </div>
+                        </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link href="/admin-bypass">
