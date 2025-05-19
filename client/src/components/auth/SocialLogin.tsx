@@ -110,7 +110,7 @@ export const SocialLogin: React.FC<SocialLoginProps> = ({
       
       <CardFooter className="flex flex-col">
         <p className="text-xs text-center text-gray-500 mt-2">
-          By continuing, you agree to WeParlay's Terms of Service and Privacy Policy.
+          By continuing, you agree to WeParlay's Terms of Service and <a href="/privacy-policy" className="text-primary hover:underline">Privacy Policy</a>.
         </p>
       </CardFooter>
     </Card>
