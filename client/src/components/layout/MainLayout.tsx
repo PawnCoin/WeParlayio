@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import Sidebar from "./Sidebar";
+import Footer from "./Footer";
 import BettingSlip from "../betting/BettingSlip";
 import BetNotifications from "../notifications/BetNotifications";
 import { useAuth } from "@/hooks/useAuth";
