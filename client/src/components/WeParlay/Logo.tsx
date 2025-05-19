@@ -9,9 +9,9 @@ interface LogoProps {
 const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
   // Size mappings - increased sizes to make logo and text more visible
   const sizeClasses = {
-    sm: 'h-12',
-    md: 'h-16',
-    lg: 'h-20'
+    sm: 'h-14',
+    md: 'h-20',
+    lg: 'h-28'
   };
 
   return (
