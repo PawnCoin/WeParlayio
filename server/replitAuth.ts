@@ -7,6 +7,8 @@ import type { Express, RequestHandler } from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
+import { generateInviteCode } from "./utils/inviteCodeGenerator";
+import { SubscriptionTier } from "../shared/tierSystem";
 
 if (!process.env.REPLIT_DOMAINS) {
   throw new Error("Environment variable REPLIT_DOMAINS not provided");
@@ -56,25 +58,61 @@ function updateUserSession(
 
 async function upsertUser(
   claims: any,
+  referredBy?: string
 ) {
   const isNewUser = !(await storage.getUser(claims["sub"]));
   
+  // If this is a new user, generate a unique invite code for them
+  let inviteCode: string | undefined;
+  if (isNewUser) {
+    inviteCode = generateInviteCode();
+    
+    // Ensure generated invite code is unique by checking if it exists
+    let codeExists = true;
+    while (codeExists) {
+      const users = await storage.getAllUsers();
+      codeExists = users.some(u => u.inviteCode === inviteCode);
+      if (codeExists) {
+        inviteCode = generateInviteCode();
+      }
+    }
+  }
+  
+  // Create or update the user with Wood tier and generated invite code if new
   const user = await storage.upsertUser({
     id: claims["sub"],
     email: claims["email"],
     firstName: claims["first_name"],
     lastName: claims["last_name"],
     profileImageUrl: claims["profile_image_url"],
+    subscriptionTier: isNewUser ? SubscriptionTier.WOOD : undefined, // Set Wood tier for new users
+    inviteCode: isNewUser ? inviteCode : undefined,
+    referredBy: isNewUser && referredBy ? referredBy : undefined
   });
   
-  // If this is a new user, notify site owner
+  // If this is a new user, notify site owner and handle referral bonuses
   if (isNewUser) {
     try {
       // Import the user hooks conditionally to avoid circular dependencies
       const { afterUserRegistration } = await import('./hooks/userHooks');
       await afterUserRegistration(user);
+      
+      // Handle referral bonus if user was referred
+      if (referredBy) {
+        const referrer = await storage.getUserByInviteCode(referredBy);
+        if (referrer) {
+          // Award bonus WeParlay Cash to referrer and update their invite count
+          await storage.updateUserBalance(referrer.id, 200); // Referrer gets 200 bonus
+          await storage.incrementUserInviteCount(referrer.id);
+          
+          // Award bonus to the new user as well
+          await storage.updateUserBalance(user.id, 100); // New user gets 100 bonus
+          
+          console.log(`Processed referral bonus: ${referrer.id} referred ${user.id}`);
+        }
+      }
     } catch (error) {
-      console.error('Failed to send new user notification:', error);
+      console.error('Failed to process new user registration hooks:', error);
     }
   }
   

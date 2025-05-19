@@ -35,7 +35,8 @@ export const users = pgTable("users", {
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role").default("user"),
   status: varchar("status").default("active"),
-  balance: doublePrecision("balance").default(1000),
+  balance: doublePrecision("balance").default(1000), // Default WeParlay Cash amount for new users
+  subscriptionTier: varchar("subscription_tier").default("wood"), // Default to free Wood tier
   betsCount: integer("bets_count").default(0),
   winsCount: integer("wins_count").default(0),
   lastLogin: timestamp("last_login"),
@@ -51,6 +52,10 @@ export const users = pgTable("users", {
   prioritySupportUntil: timestamp("priority_support_until"),
   freeWithdrawalsThisMonth: integer("free_withdrawals_this_month").default(0),
   lastWithdrawalMonth: integer("last_withdrawal_month"),
+  // Referral program fields
+  inviteCode: varchar("invite_code").unique(),
+  referredBy: varchar("referred_by"),
+  inviteCount: integer("invite_count").default(0),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -60,7 +65,10 @@ export const insertUserSchema = createInsertSchema(users).pick({
   lastName: true,
   profileImageUrl: true,
   role: true,
-  status: true
+  status: true,
+  subscriptionTier: true,
+  inviteCode: true,
+  referredBy: true
 });
 
 // Bank accounts for owner's deposits
