@@ -4,6 +4,7 @@ import { setupVite, serveStatic, log } from "./vite";
 
 // Export app for production use
 export const app = express();
+app.set('trust proxy', 1); // Trust first proxy - important for secure cookies with custom domain
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 

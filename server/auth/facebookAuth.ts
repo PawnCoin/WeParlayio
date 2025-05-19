@@ -15,6 +15,7 @@ if (process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET) {
     clientID: process.env.FACEBOOK_APP_ID,
     clientSecret: process.env.FACEBOOK_APP_SECRET,
     callbackURL: '/api/auth/facebook/callback',
+    proxy: true,
     profileFields: ['id', 'displayName', 'photos', 'email', 'first_name', 'last_name']
   }, 
   async (accessToken, refreshToken, profile, done) => {
