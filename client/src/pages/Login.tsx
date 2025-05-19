@@ -1,24 +1,51 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import SocialLogin from '@/components/auth/SocialLogin';
+import { BiometricLogin } from '@/components/auth/BiometricLogin';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { isBiometricsAvailable, hasBiometricCredential } from "@/services/biometricAuth";
 
 const Login: React.FC = () => {
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const [hasBiometrics, setHasBiometrics] = useState<boolean>(false);
+  const [userId, setUserId] = useState<string | null>(null);
   
   // Get redirect path from URL params if available
   const urlParams = new URLSearchParams(window.location.search);
   const redirectPath = urlParams.get('redirect') || '/';
   
-  const handleLoginSuccess = () => {
+  // Check if biometric authentication is available
+  useEffect(() => {
+    async function checkBiometrics() {
+      const available = await isBiometricsAvailable();
+      
+      // Check for a recent user ID in localStorage
+      const lastUserId = localStorage.getItem('weparlay-last-user');
+      
+      if (available && lastUserId) {
+        setUserId(lastUserId);
+        const hasCredential = hasBiometricCredential(lastUserId);
+        setHasBiometrics(hasCredential);
+      }
+    }
+    
+    checkBiometrics();
+  }, []);
+  
+  const handleLoginSuccess = (userIdToSave?: string) => {
     // In real implementation, this would handle post-login logic
     toast({
       title: "Successfully logged in",
       description: "Welcome back to WeParlay!",
     });
+    
+    // If a user ID is provided, save it for future biometric login
+    if (userIdToSave) {
+      localStorage.setItem('weparlay-last-user', userIdToSave);
+    }
     
     setTimeout(() => {
       navigate(redirectPath);
@@ -30,6 +57,16 @@ const Login: React.FC = () => {
       <div className="flex flex-col items-center justify-center min-h-[70vh]">
         <div className="w-full max-w-md">
           <h1 className="text-3xl font-bold text-center mb-8">Welcome to WeParlay</h1>
+          
+          {/* Show biometric login option if available */}
+          {hasBiometrics && userId && (
+            <div className="mb-6">
+              <BiometricLogin 
+                userId={userId}
+                onSuccess={handleLoginSuccess}
+              />
+            </div>
+          )}
           
           <Tabs defaultValue="social" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
