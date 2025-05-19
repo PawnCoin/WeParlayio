@@ -10,7 +10,11 @@ import {
   fantasyTeamPlayers, FantasyTeamPlayer, InsertFantasyTeamPlayer,
   bankAccounts, BankAccount, InsertBankAccount,
   transactions, Transaction, InsertTransaction,
-  TransactionType
+  TransactionType,
+  supportTickets, SupportTicket, InsertSupportTicket, 
+  supportTicketMessages, SupportTicketMessage, InsertSupportTicketMessage, 
+  supportTicketLogs, SupportTicketLog,
+  knownIssues, KnownIssue, InsertKnownIssue
 } from "@shared/schema";
 
 // Interface for storage operations
@@ -91,6 +95,23 @@ export interface IStorage {
   getFantasyTeamPlayers(fantasyTeamId: number): Promise<FantasyTeamPlayer[]>;
   addPlayerToFantasyTeam(fantasyTeamPlayer: InsertFantasyTeamPlayer): Promise<FantasyTeamPlayer>;
   removePlayerFromFantasyTeam(fantasyTeamId: number, playerId: number): Promise<void>;
+  
+  // Support ticket operations
+  createSupportTicket(ticket: InsertSupportTicket): Promise<SupportTicket>;
+  getSupportTicket(id: number): Promise<SupportTicket | undefined>;
+  getSupportTicketByNumber(ticketNumber: string): Promise<SupportTicket | undefined>;
+  getUserSupportTickets(userId: string): Promise<SupportTicket[]>;
+  updateSupportTicketStatus(ticketId: number, status: string): Promise<SupportTicket>;
+  addTicketMessage(message: InsertSupportTicketMessage): Promise<SupportTicketMessage>;
+  getTicketMessages(ticketId: number): Promise<SupportTicketMessage[]>;
+  logTicketAction(ticketId: number, action: string, details?: any): Promise<SupportTicketLog>;
+  
+  // Known issues operations
+  createKnownIssue(issue: InsertKnownIssue): Promise<KnownIssue>;
+  getKnownIssues(): Promise<KnownIssue[]>;
+  getActiveKnownIssues(): Promise<KnownIssue[]>;
+  updateKnownIssue(id: number, updates: Partial<KnownIssue>): Promise<KnownIssue>;
+  matchIssueToKnownIssues(description: string): Promise<KnownIssue[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -107,6 +128,10 @@ export class MemStorage implements IStorage {
   private transactions: Map<number, Transaction>;
   private platformSettings: Map<string, any>;
   private privacySettings: Map<string, boolean>;
+  private supportTickets: Map<number, SupportTicket>;
+  private supportTicketMessages: Map<number, SupportTicketMessage>;
+  private supportTicketLogs: Map<number, SupportTicketLog>;
+  private knownIssues: Map<number, KnownIssue>;
   
   // Required method implementations for IStorage
   async updateUserStatus(userId: string, status: string): Promise<User> {

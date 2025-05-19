@@ -9,7 +9,8 @@ import {
   doublePrecision,
   varchar,
   jsonb,
-  index
+  index,
+  uuid
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -348,3 +349,87 @@ export type InsertPlayer = z.infer<typeof insertPlayerSchema>;
 
 export type FantasyTeamPlayer = typeof fantasyTeamPlayers.$inferSelect;
 export type InsertFantasyTeamPlayer = z.infer<typeof insertFantasyTeamPlayerSchema>;
+
+// Support ticket system for automated issue resolution
+export const supportTickets = pgTable("support_tickets", {
+  id: serial("id").primaryKey(),
+  ticketNumber: text("ticket_number").notNull().unique(),
+  userId: varchar("user_id").references(() => users.id),
+  subject: text("subject").notNull(),
+  description: text("description").notNull(),
+  category: text("category").notNull(), // 'technical', 'financial', 'account', 'other'
+  priority: text("priority").default("medium"), // 'low', 'medium', 'high', 'critical'
+  status: text("status").default("open"), // 'open', 'in_progress', 'resolved', 'closed', 'escalated'
+  aiAssigned: boolean("ai_assigned").default(true),
+  aiResolution: text("ai_resolution"),
+  resolutionSteps: json("resolution_steps").$type<string[]>(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  resolvedAt: timestamp("resolved_at"),
+});
+
+export const supportTicketMessages = pgTable("support_ticket_messages", {
+  id: serial("id").primaryKey(),
+  ticketId: integer("ticket_id").references(() => supportTickets.id),
+  senderId: varchar("sender_id"), // Can be user_id or 'system' or 'ai'
+  message: text("message").notNull(),
+  attachmentUrl: text("attachment_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const supportTicketLogs = pgTable("support_ticket_logs", {
+  id: serial("id").primaryKey(),
+  ticketId: integer("ticket_id").references(() => supportTickets.id),
+  action: text("action").notNull(), // 'created', 'updated', 'status_changed', 'assigned', 'resolved', etc.
+  details: json("details"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const knownIssues = pgTable("known_issues", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  category: text("category").notNull(),
+  symptoms: json("symptoms").$type<string[]>(),
+  solution: text("solution").notNull(),
+  autoFixScript: text("auto_fix_script"), // Optional script that can be executed to fix the issue
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  resolvedAt: timestamp("resolved_at"),
+  active: boolean("active").default(true),
+});
+
+export const insertSupportTicketSchema = createInsertSchema(supportTickets).pick({
+  userId: true,
+  subject: true,
+  description: true,
+  category: true,
+  priority: true,
+});
+
+export const insertSupportTicketMessageSchema = createInsertSchema(supportTicketMessages).pick({
+  ticketId: true,
+  senderId: true,
+  message: true,
+  attachmentUrl: true,
+});
+
+export const insertKnownIssueSchema = createInsertSchema(knownIssues).pick({
+  title: true,
+  description: true,
+  category: true,
+  symptoms: true,
+  solution: true,
+  autoFixScript: true,
+});
+
+export type SupportTicket = typeof supportTickets.$inferSelect;
+export type InsertSupportTicket = z.infer<typeof insertSupportTicketSchema>;
+
+export type SupportTicketMessage = typeof supportTicketMessages.$inferSelect;
+export type InsertSupportTicketMessage = z.infer<typeof insertSupportTicketMessageSchema>;
+
+export type SupportTicketLog = typeof supportTicketLogs.$inferSelect;
+
+export type KnownIssue = typeof knownIssues.$inferSelect;
+export type InsertKnownIssue = z.infer<typeof insertKnownIssueSchema>;
