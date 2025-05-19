@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import authRouter from "./auth";
 import { additionalSportsData } from "./services/mockSportsData";
 import { OddsApiService } from "./services/oddsApiService";
 import { yahooRouter } from "./routes/yahooRoutes";
@@ -10,6 +11,9 @@ import { feeRouter } from "./routes/feeRoutes";
 const oddsApiService = new OddsApiService();
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Register Authentication routes
+  app.use('/api/auth', authRouter);
+  
   // Register Yahoo Fantasy routes
   app.use('/api/yahoo', yahooRouter);
   
