@@ -12,7 +12,7 @@ const router = Router();
 // Only initialize if we have credentials
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientID: '688349509376-0eg30u9volnb9nikglodg1acsbink6me.apps.googleusercontent.com', // New Google Client ID
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: '/api/auth/google/callback',
     proxy: true,
