@@ -28,6 +28,7 @@ import ThemeSettingsPage from "@/pages/ThemeSettingsPage"; // Theme settings pag
 import AdminDashboard from "@/pages/AdminDashboard"; // Admin dashboard for platform owner
 import PrivacyPolicy from "@/pages/PrivacyPolicy"; // Privacy policy page for social login requirements
 import TermsOfService from "@/pages/TermsOfService"; // Terms of service page for social login requirements
+import SecurityInfo from "@/pages/SecurityInfo"; // Security information page showing our protection measures
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
 import MobileVoiceBetting from "@/components/mobile/MobileVoiceBetting";
@@ -97,6 +98,7 @@ function Router() {
       <Route path="/sports/:sportKey" component={SportPage} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms-of-service" component={TermsOfService} />
+      <Route path="/security" component={SecurityInfo} />
       <Route component={NotFound} />
     </Switch>
   );
