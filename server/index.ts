@@ -2,7 +2,8 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
-const app = express();
+// Export app for production use
+export const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -42,6 +43,15 @@ app.use((req, res, next) => {
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
+    
+    // Notify admin of server errors
+    try {
+      import('./hooks/userHooks').then(({ onSystemError }) => {
+        onSystemError(err);
+      }).catch(e => console.error('Failed to notify admin about error:', e));
+    } catch (notifyError) {
+      console.error('Failed to load error notification module:', notifyError);
+    }
 
     res.status(status).json({ message });
     throw err;
