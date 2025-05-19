@@ -42,16 +42,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <div className="flex flex-col h-screen">
       {/* Header */}
-      <header className="bg-black shadow-md px-2 text-white">
+      <header className="bg-black shadow-md px-4 text-white">
         <div className="container mx-auto">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <div className="flex items-center -ml-4">
-              <Logo size="lg" />
+            <div className="flex items-center">
+              <Logo size="md" />
             </div>
             
             {/* Navigation for desktop */}
-            <div className="hidden md:flex space-x-10 ml-8">
+            <div className="hidden md:flex space-x-8">
               {navLinks.map((link) => (
                 <Link key={link.href} href={link.href}>
                   <div className={`${
