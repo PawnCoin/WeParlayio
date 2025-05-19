@@ -29,6 +29,7 @@ import AdminDashboard from "@/pages/AdminDashboard"; // Admin dashboard for plat
 import PrivacyPolicy from "@/pages/PrivacyPolicy"; // Privacy policy page for social login requirements
 import TermsOfService from "@/pages/TermsOfService"; // Terms of service page for social login requirements
 import SecurityInfo from "@/pages/SecurityInfo"; // Security information page showing our protection measures
+import Support from "@/pages/Support"; // Automated support system
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
 import MobileVoiceBetting from "@/components/mobile/MobileVoiceBetting";

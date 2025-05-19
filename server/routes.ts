@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import aiSupportRoutes from "./routes/aiSupport";
 import authRouter from "./auth";
 import { additionalSportsData } from "./services/mockSportsData";
 import { OddsApiService } from "./services/oddsApiService";
@@ -19,6 +20,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register fee routes for revenue generation
   app.use('/api/fees', feeRouter);
+  
+  // Register AI Support routes
+  app.use('/api/support', aiSupportRoutes);
 
   // ===== Sports Routes =====
   app.get("/api/sports", async (req, res) => {
