@@ -124,7 +124,7 @@ const Login: React.FC = () => {
             Don't have an account? No problem! Sign in using any of the methods above to create one.
           </p>
           <p className="text-center text-xs text-gray-500 mt-3">
-            By logging in, you agree to our <a href="/privacy-policy" className="text-primary hover:underline">Privacy Policy</a> and Terms of Service.
+            By logging in, you agree to our <a href="/privacy-policy" className="text-primary hover:underline">Privacy Policy</a> and <a href="/terms-of-service" className="text-primary hover:underline">Terms of Service</a>.
           </p>
         </div>
       </div>
