@@ -1,0 +1,13 @@
+# Replit deployment configuration for WeParlay
+run = "npm run start"
+entrypoint = "server/production.ts"
+deploymentTarget = "cloudrun"
+language = "nodejs"
+build = "npm run build"
+
+[env]
+NODE_ENV = "production"
+PORT = "3000"
+
+[nix]
+channel = "stable-23_05"

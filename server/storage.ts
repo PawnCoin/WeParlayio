@@ -217,8 +217,9 @@ export class MemStorage implements IStorage {
   }
   
   // User operations
-  async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+  async getUser(id: string | number): Promise<User | undefined> {
+    const userId = id.toString();
+    return this.users.get(userId);
   }
   
   async getUserByUsername(username: string): Promise<User | undefined> {
@@ -259,19 +260,21 @@ export class MemStorage implements IStorage {
     return user;
   }
   
-  async updateUserBalance(userId: number, amount: number): Promise<User> {
-    const user = await this.getUser(userId);
+  async updateUserBalance(userId: string | number, amount: number): Promise<User> {
+    const userIdStr = userId.toString();
+    const user = await this.getUser(userIdStr);
     if (!user) {
       throw new Error("User not found");
     }
     
     user.balance = amount;
-    this.users.set(userId, user);
+    this.users.set(userIdStr, user);
     return user;
   }
   
-  async updateYahooIntegration(userId: number, token: string, refreshToken: string, expiry: Date): Promise<User> {
-    const user = await this.getUser(userId);
+  async updateYahooIntegration(userId: string | number, token: string, refreshToken: string, expiry: Date): Promise<User> {
+    const userIdStr = userId.toString();
+    const user = await this.getUser(userIdStr);
     if (!user) {
       throw new Error("User not found");
     }
@@ -280,7 +283,7 @@ export class MemStorage implements IStorage {
     user.yahooIntegrationRefreshToken = refreshToken;
     user.yahooIntegrationExpiry = expiry;
     
-    this.users.set(userId, user);
+    this.users.set(userIdStr, user);
     return user;
   }
   
