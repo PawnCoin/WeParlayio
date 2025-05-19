@@ -14,10 +14,10 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Logo and about */}
           <div className="col-span-1">
-            <div className="mb-4 flex justify-center">
-              <img src={weparlayLogo} alt="WeParlay.io" className="h-16" />
+            <div className="mb-4 flex justify-center md:justify-start">
+              <img src={weparlayLogo} alt="WeParlay.io" className="h-20" />
             </div>
-            <p className="text-gray-400 text-sm">
+            <p className="text-gray-400 text-sm text-center md:text-left">
               WeParlay is your premier platform for sports betting with enhanced security, 
               social features, and comprehensive user protection.
             </p>
@@ -25,8 +25,8 @@ const Footer: React.FC = () => {
 
           {/* Quick links */}
           <div className="col-span-1">
-            <h3 className="text-lg font-bold mb-4">Quick Links</h3>
-            <ul className="space-y-2">
+            <h3 className="text-lg font-bold mb-4 text-center md:text-left">Quick Links</h3>
+            <ul className="space-y-2 text-center md:text-left">
               <li><Link href="/"><span className="text-gray-400 hover:text-green-500 transition-colors text-sm">Home</span></Link></li>
               <li><Link href="/live-betting"><span className="text-gray-400 hover:text-green-500 transition-colors text-sm">Live Betting</span></Link></li>
               <li><Link href="/tournaments"><span className="text-gray-400 hover:text-green-500 transition-colors text-sm">Tournaments</span></Link></li>
@@ -37,8 +37,8 @@ const Footer: React.FC = () => {
 
           {/* Legal links */}
           <div className="col-span-1">
-            <h3 className="text-lg font-bold mb-4">Legal</h3>
-            <ul className="space-y-2">
+            <h3 className="text-lg font-bold mb-4 text-center md:text-left">Legal</h3>
+            <ul className="space-y-2 text-center md:text-left">
               <li><Link href="/terms-of-service"><span className="text-gray-400 hover:text-green-500 transition-colors text-sm">Terms of Service</span></Link></li>
               <li><Link href="/privacy-policy"><span className="text-gray-400 hover:text-green-500 transition-colors text-sm">Privacy Policy</span></Link></li>
               <li><Link href="/security-info"><span className="text-gray-400 hover:text-green-500 transition-colors text-sm">Security Information</span></Link></li>
@@ -49,8 +49,8 @@ const Footer: React.FC = () => {
 
           {/* Contact info */}
           <div className="col-span-1">
-            <h3 className="text-lg font-bold mb-4">Contact Us</h3>
-            <ul className="space-y-2">
+            <h3 className="text-lg font-bold mb-4 text-center md:text-left">Contact Us</h3>
+            <ul className="space-y-2 text-center md:text-left">
               <li className="text-gray-400 text-sm">Email: support@weparlay.io</li>
               <li className="text-gray-400 text-sm">Support Hours: 24/7</li>
             </ul>
@@ -58,20 +58,20 @@ const Footer: React.FC = () => {
         </div>
 
         {/* Payment methods */}
-        <div className="mt-8 mb-6">
-          <h3 className="text-lg font-bold mb-4">Payment Methods</h3>
-          <div className="flex flex-wrap gap-6 justify-center">
-            <SiVisa className="text-3xl text-blue-500" />
-            <SiMastercard className="text-3xl text-orange-500" />
-            <SiAmericanexpress className="text-3xl text-blue-400" />
-            <SiDiscover className="text-3xl text-orange-600" />
-            <FaPaypal className="text-3xl text-blue-600" />
-            <FaBitcoin className="text-3xl text-yellow-500" />
-            <FaCreditCard className="text-3xl text-gray-200" />
-            <FaApplePay className="text-3xl text-white" />
-            <FaGooglePay className="text-3xl text-white" />
-            <SiVenmo className="text-3xl text-blue-300" />
-            <SiCashapp className="text-3xl text-green-500" />
+        <div className="mt-8 mb-6 text-center">
+          <h3 className="text-lg font-bold mb-6">Payment Methods</h3>
+          <div className="flex flex-wrap gap-8 justify-center">
+            <SiVisa className="text-4xl text-blue-500" />
+            <SiMastercard className="text-4xl text-orange-500" />
+            <SiAmericanexpress className="text-4xl text-blue-400" />
+            <SiDiscover className="text-4xl text-orange-600" />
+            <FaPaypal className="text-4xl text-blue-600" />
+            <FaBitcoin className="text-4xl text-yellow-500" />
+            <FaCreditCard className="text-4xl text-gray-200" />
+            <FaApplePay className="text-4xl text-white" />
+            <FaGooglePay className="text-4xl text-white" />
+            <SiVenmo className="text-4xl text-blue-300" />
+            <SiCashapp className="text-4xl text-green-500" />
           </div>
         </div>
 
