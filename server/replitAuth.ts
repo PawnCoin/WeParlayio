@@ -57,13 +57,28 @@ function updateUserSession(
 async function upsertUser(
   claims: any,
 ) {
-  await storage.upsertUser({
+  const isNewUser = !(await storage.getUser(claims["sub"]));
+  
+  const user = await storage.upsertUser({
     id: claims["sub"],
     email: claims["email"],
     firstName: claims["first_name"],
     lastName: claims["last_name"],
     profileImageUrl: claims["profile_image_url"],
   });
+  
+  // If this is a new user, notify site owner
+  if (isNewUser) {
+    try {
+      // Import the user hooks conditionally to avoid circular dependencies
+      const { afterUserRegistration } = await import('./hooks/userHooks');
+      await afterUserRegistration(user);
+    } catch (error) {
+      console.error('Failed to send new user notification:', error);
+    }
+  }
+  
+  return user;
 }
 
 export async function setupAuth(app: Express) {

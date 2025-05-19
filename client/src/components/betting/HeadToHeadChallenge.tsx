@@ -454,7 +454,7 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
                     <FormControl>
                       <Input 
                         placeholder={
-                          watchContactMethod === 'email' ? 'friend@example.com' : 
+                          watchContactMethod === 'email' ? 'support@weparlay.io' : 
                           watchContactMethod === 'phone' ? '+1 (555) 123-4567' : 'username'
                         } 
                         {...field} 
