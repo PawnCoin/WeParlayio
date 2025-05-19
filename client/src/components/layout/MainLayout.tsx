@@ -30,10 +30,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   
   const navLinks = [
     { href: "/", label: "Home" },
-    { href: "/live-betting", label: "Live Betting" },
+    { href: "/live-betting", label: "Live" },
     { href: "/fantasy", label: "Fantasy" },
     { href: "/tournaments", label: "Tournaments" },
-    { href: "/video-gaming", label: "Video Gaming" },
+    { href: "/video-gaming", label: "Gaming" },
     { href: "/trivia", label: "Trivia" },
     { href: "/results", label: "Results" },
     { href: "/social", label: "Social" }
