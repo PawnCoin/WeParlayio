@@ -90,7 +90,8 @@ function Router() {
       <Route path="/video-gaming" component={VideoGaming} />
       <Route path="/trivia" component={Trivia} />
       <Route path="/settings" component={Settings} />
-      <Route path="/security" component={SecuritySettings} />
+      <Route path="/security-settings" component={SecuritySettings} />
+      <Route path="/security" component={SecurityInfo} />
       <Route path="/head-to-head" component={HeadToHeadBetting} />
       <Route path="/signup" component={SignUp} />
       <Route path="/login" component={Login} />
@@ -98,7 +99,6 @@ function Router() {
       <Route path="/sports/:sportKey" component={SportPage} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms-of-service" component={TermsOfService} />
-      <Route path="/security" component={SecurityInfo} />
       <Route component={NotFound} />
     </Switch>
   );

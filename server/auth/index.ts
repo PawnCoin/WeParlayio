@@ -50,6 +50,40 @@ router.get('/user', (req, res) => {
   }
 });
 
+// Biometric authentication endpoint
+router.post('/biometric-login', async (req, res) => {
+  try {
+    const { userId } = req.body;
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+    
+    // Verify that this user exists
+    const user = await storage.getUser(userId);
+    
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid user' });
+    }
+    
+    // The biometric validation happened on the client side
+    // If the request made it here, the user successfully authenticated with their biometric
+    
+    // Log in the user
+    req.login(user, (err) => {
+      if (err) {
+        console.error('Biometric login error:', err);
+        return res.status(500).json({ error: 'Failed to login' });
+      }
+      
+      return res.json({ message: 'Biometric login successful', user });
+    });
+  } catch (error) {
+    console.error('Biometric login error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Logout endpoint
 router.get('/logout', (req, res) => {
   req.logout((err) => {

@@ -49,7 +49,7 @@ export function BiometricSetup() {
         toast({
           title: "Biometric authentication enabled",
           description: `You can now sign in using ${getBiometricName(biometricType)}.`,
-          variant: "success",
+          // Use a valid toast variant
         });
       } else {
         toast({
