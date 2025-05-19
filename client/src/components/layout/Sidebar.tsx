@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { 
   X, BarChart2, Trophy, Medal, History, Settings, 
   Clock, ChevronRight, CircleDot, Flame, Zap, Crown,
-  DollarSign
+  DollarSign, HelpCircle, HeadphonesIcon
 } from "lucide-react";
 import { 
   FaBasketballBall, FaFootballBall, FaHockeyPuck, 
@@ -209,6 +209,18 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
               }`}>
                 <History className="h-5 w-5 mr-3" />
                 <span>Results</span>
+              </div>
+            </Link>
+          </li>
+          <li>
+            <Link href="/support">
+              <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
+                location === '/support' 
+                  ? "bg-primary text-white" 
+                  : "hover:bg-gray-100 dark:hover:bg-gray-800"
+              }`}>
+                <HeadphonesIcon className="h-5 w-5 mr-3" />
+                <span>Support</span>
               </div>
             </Link>
           </li>

@@ -100,6 +100,7 @@ function Router() {
       <Route path="/sports/:sportKey" component={SportPage} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms-of-service" component={TermsOfService} />
+      <Route path="/support" component={Support} />
       <Route component={NotFound} />
     </Switch>
   );
