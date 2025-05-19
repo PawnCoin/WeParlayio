@@ -108,6 +108,125 @@ export class MemStorage implements IStorage {
   private platformSettings: Map<string, any>;
   private privacySettings: Map<string, boolean>;
   
+  // Required method implementations for IStorage
+  async updateUserStatus(userId: string, status: string): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error(`User not found: ${userId}`);
+    
+    const updatedUser = { ...user, status };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+  
+  async incrementUserWins(userId: string): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error(`User not found: ${userId}`);
+    
+    const winsCount = (user.winsCount || 0) + 1;
+    const updatedUser = { ...user, winsCount };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+  
+  async getUserWithdrawalsForMonth(userId: string, month: number): Promise<number> {
+    return 0; // Placeholder implementation
+  }
+  
+  async updateUserWeplayTokenBalance(userId: string, amount: number): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error(`User not found: ${userId}`);
+    
+    const weplayTokenBalance = (user.weplayTokenBalance || 0) + amount;
+    const updatedUser = { ...user, weplayTokenBalance };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+  
+  async updateUserSubscription(userId: string, subscriptionType: 'vip' | 'analytics' | 'support', expiryDate: Date): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error(`User not found: ${userId}`);
+    
+    let updatedUser: User;
+    if (subscriptionType === 'vip') {
+      updatedUser = { ...user, vipExpiryDate: expiryDate };
+    } else if (subscriptionType === 'analytics') {
+      updatedUser = { ...user, analyticsExpiryDate: expiryDate };
+    } else {
+      updatedUser = { ...user, supportExpiryDate: expiryDate };
+    }
+    
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+  
+  async getFinancialSummary(): Promise<any> {
+    return {
+      totalDeposits: 0,
+      totalWithdrawals: 0,
+      totalBets: 0,
+      totalWinnings: 0,
+      revenue: 0,
+      userCount: this.users.size,
+      activeUserCount: Array.from(this.users.values()).filter(u => u.status === 'active').length
+    };
+  }
+  
+  async getTransactions(limit: number, offset: number): Promise<Transaction[]> {
+    return Array.from(this.transactions.values())
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(offset, offset + limit);
+  }
+  
+  async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
+    const id = this.transactions.size + 1;
+    const newTransaction: Transaction = { 
+      ...transaction, 
+      id, 
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.transactions.set(id, newTransaction);
+    return newTransaction;
+  }
+  
+  async updateBankAccount(bankAccount: InsertBankAccount): Promise<BankAccount> {
+    const existingAccount = await this.getOwnerBankAccount();
+    const id = existingAccount ? existingAccount.id : 1;
+    
+    const newBankAccount: BankAccount = { 
+      ...bankAccount, 
+      id, 
+      createdAt: existingAccount ? existingAccount.createdAt : new Date(),
+      updatedAt: new Date()
+    };
+    
+    this.bankAccounts.set(id, newBankAccount);
+    return newBankAccount;
+  }
+  
+  async updatePlatformSettings(settings: any): Promise<any> {
+    for (const [key, value] of Object.entries(settings)) {
+      this.platformSettings.set(key, value);
+    }
+    return Object.fromEntries(this.platformSettings);
+  }
+  
+  async updatePrivacySettings(settings: any): Promise<any> {
+    for (const [key, value] of Object.entries(settings)) {
+      this.privacySettings.set(key, Boolean(value));
+    }
+    return Object.fromEntries(this.privacySettings);
+  }
+  
+  async getOwnerBankAccount(): Promise<BankAccount | undefined> {
+    return this.bankAccounts.get(1);
+  }
+  
+  async updatePlatformRevenue(amount: number, feeType: string): Promise<any> {
+    // Placeholder implementation
+    return { amount, feeType };
+  }
+  
   private nextUserId: number;
   private nextSportId: number;
   private nextTeamId: number;
@@ -231,7 +350,7 @@ export class MemStorage implements IStorage {
   
   async getUserByUsername(username: string): Promise<User | undefined> {
     return Array.from(this.users.values()).find(
-      (user) => user.username === username
+      (user) => user.email === username
     );
   }
   

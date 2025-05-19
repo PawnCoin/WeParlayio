@@ -290,6 +290,7 @@ export const insertFantasyTeamPlayerSchema = createInsertSchema(fantasyTeamPlaye
 // Type definitions
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type UpsertUser = InsertUser;
 // Admin dashboard types
 export type AdminUser = {
   id: string;
