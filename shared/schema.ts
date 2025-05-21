@@ -485,3 +485,71 @@ export type SupportTicketLog = typeof supportTicketLogs.$inferSelect;
 
 export type KnownIssue = typeof knownIssues.$inferSelect;
 export type InsertKnownIssue = z.infer<typeof insertKnownIssueSchema>;
+
+// Head-to-head betting challenges
+export const bettingChallenges = pgTable("betting_challenges", {
+  id: serial("id").primaryKey(),
+  challengeUuid: uuid("challenge_uuid").defaultRandom().notNull().unique(),
+  createdBy: varchar("created_by").notNull().references(() => users.id),
+  acceptedBy: varchar("accepted_by").references(() => users.id),
+  eventId: integer("event_id").references(() => events.id),
+  eventName: text("event_name").notNull(),
+  amount: doublePrecision("amount").notNull(),
+  odds: doublePrecision("odds"),
+  currency: text("currency").default("USD"),
+  isVirtual: boolean("is_virtual").default(true), // Using WeParlay Cash (true) or real money (false)
+  pick: text("pick").notNull(), // What the challenger is betting on
+  oppositePick: text("opposite_pick"), // What the challenger is offering to the opponent
+  status: text("status").default("pending"), // pending, accepted, declined, canceled, active, settled
+  expiresAt: timestamp("expires_at"), // When the challenge expires if not accepted
+  notificationSent: boolean("notification_sent").default(false), 
+  notificationEmail: text("notification_email"), // Optional email to notify
+  notificationPhone: text("notification_phone"), // Optional phone to notify
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  acceptedAt: timestamp("accepted_at"),
+  settledAt: timestamp("settled_at"),
+  winnerId: varchar("winner_id").references(() => users.id),
+  isDraw: boolean("is_draw").default(false),
+  customMessage: text("custom_message"),
+});
+
+export const insertBettingChallengeSchema = createInsertSchema(bettingChallenges)
+  .omit({ 
+    id: true, 
+    challengeUuid: true, 
+    createdAt: true, 
+    updatedAt: true, 
+    acceptedAt: true, 
+    settledAt: true, 
+    winnerId: true, 
+    isDraw: true, 
+    notificationSent: true 
+  });
+
+// User notifications
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  type: text("type").notNull(), // challenge, bet, result, system, social
+  message: text("message").notNull(),
+  link: text("link"),
+  read: boolean("read").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  readAt: timestamp("read_at"),
+});
+
+export const insertNotificationSchema = createInsertSchema(notifications)
+  .omit({ 
+    id: true, 
+    createdAt: true, 
+    updatedAt: true, 
+    readAt: true 
+  });
+
+export type BettingChallenge = typeof bettingChallenges.$inferSelect;
+export type InsertBettingChallenge = z.infer<typeof insertBettingChallengeSchema>;
+
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;

@@ -14,7 +14,9 @@ import {
   supportTickets, SupportTicket, InsertSupportTicket, 
   supportTicketMessages, SupportTicketMessage, InsertSupportTicketMessage, 
   supportTicketLogs, SupportTicketLog,
-  knownIssues, KnownIssue, InsertKnownIssue
+  knownIssues, KnownIssue, InsertKnownIssue,
+  bettingChallenges, BettingChallenge, InsertBettingChallenge,
+  notifications, Notification, InsertNotification
 } from "@shared/schema";
 
 // Interface for storage operations
@@ -43,6 +45,20 @@ export interface IStorage {
   updatePrivacySettings(settings: any): Promise<any>;
   getOwnerBankAccount(): Promise<BankAccount | undefined>;
   updatePlatformRevenue(amount: number, feeType: string): Promise<any>;
+  
+  // Betting challenge operations
+  createBettingChallenge(challenge: InsertBettingChallenge): Promise<BettingChallenge>;
+  getBettingChallenge(id: number): Promise<BettingChallenge | undefined>;
+  getBettingChallengeByUuid(uuid: string): Promise<BettingChallenge | undefined>;
+  getUserChallenges(userId: string, status?: string): Promise<BettingChallenge[]>;
+  acceptBettingChallenge(uuid: string, userId: string): Promise<BettingChallenge>;
+  updateBettingChallengeStatus(uuid: string, status: string): Promise<BettingChallenge>;
+  settleBettingChallenge(uuid: string, winnerId?: string, isDraw?: boolean): Promise<BettingChallenge>;
+  
+  // Notification operations
+  createNotification(notification: InsertNotification): Promise<Notification>;
+  getUserNotifications(userId: string, unreadOnly?: boolean): Promise<Notification[]>;
+  markNotificationAsRead(id: number, userId: string): Promise<Notification>;
   
   // Sports operations
   getAllSports(): Promise<Sport[]>;
