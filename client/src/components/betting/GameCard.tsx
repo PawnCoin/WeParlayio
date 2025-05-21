@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Plus } from "lucide-react";
+import { useBetSlip } from "@/contexts/BetSlipContext";
 
 interface GameCardProps {
   game: {
@@ -59,11 +60,25 @@ interface GameCardProps {
 
 const GameCard: React.FC<GameCardProps> = ({ game }) => {
   const { toast } = useToast();
+  const { addToBetSlip } = useBetSlip();
+  const [hoveredOdds, setHoveredOdds] = useState<string | null>(null);
   
   const isLive = game.status === "live";
   const progress = isLive ? Math.floor(Math.random() * 100) : 0; // This should be calculated based on game time
   
-  const handleAddToBetSlip = (selection: string, odds: number) => {
+  const handleAddToBetSlip = (selection: string, odds: number, betType: string = 'moneyline', point?: number) => {
+    // Add to bet slip context
+    addToBetSlip({
+      pick: selection,
+      homeTeam: game.homeTeam.name,
+      awayTeam: game.awayTeam.name,
+      odds: odds,
+      betType: betType,
+      point: point,
+      sportId: game.id
+    });
+    
+    // Show toast notification
     toast({
       title: "Added to Bet Slip",
       description: `${selection} at ${odds > 0 ? '+' : ''}${odds}`
