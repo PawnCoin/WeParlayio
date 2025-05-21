@@ -15,7 +15,8 @@ import {
   DialogContent,
   DialogDescription,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
+  DialogFooter
 } from "@/components/ui/dialog";
 import { 
   DropdownMenu,
@@ -424,7 +425,17 @@ const BettingSlip: React.FC = () => {
                   {option.icon}
                   <span className="ml-2">{option.label}</span>
                   {option.value !== 'USD' && !cryptoWallets.some(w => w.connected) && (
-                    <span className="ml-auto text-xs text-amber-500">(Connect wallet)</span>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="ml-auto text-xs text-amber-500 p-0"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowWalletModal(true);
+                      }}
+                    >
+                      Connect wallet
+                    </Button>
                   )}
                 </div>
               </SelectItem>
