@@ -30,6 +30,7 @@ export const sessions = pgTable(
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
   email: varchar("email").unique(),
+  username: varchar("username").unique(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
@@ -38,16 +39,28 @@ export const users = pgTable("users", {
   balance: doublePrecision("balance").default(1000), // Default WeParlay Cash amount for new users
   subscriptionTier: varchar("subscription_tier").default("wood"), // Default to free Wood tier
   betsCount: integer("bets_count").default(0),
+  wins: integer("wins").default(0),
   winsCount: integer("wins_count").default(0),
   lastLogin: timestamp("last_login"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+  yahooToken: text("yahoo_token"),
+  yahooRefreshToken: text("yahoo_refresh_token"),
+  yahooTokenExpiry: timestamp("yahoo_token_expiry"),
   yahooIntegrationToken: text("yahoo_integration_token"),
   yahooIntegrationRefreshToken: text("yahoo_integration_refresh_token"),
   yahooIntegrationExpiry: timestamp("yahoo_integration_expiry"),
   // New fields for fee structures and premium services
   weplayTokenBalance: doublePrecision("weplay_token_balance").default(0),
   vipUntil: timestamp("vip_until"),
+  vipExpiryDate: timestamp("vip_expiry_date"),
+  analyticsExpiryDate: timestamp("analytics_expiry_date"),
+  supportExpiryDate: timestamp("support_expiry_date"),
+  // Wallet and authentication fields
+  stripeCustomerId: varchar("stripe_customer_id"),
+  stripeSubscriptionId: varchar("stripe_subscription_id"),
+  referralCode: varchar("referral_code"),
+  inviteCount: integer("invite_count").default(0),
   analyticsPackageUntil: timestamp("analytics_package_until"),
   prioritySupportUntil: timestamp("priority_support_until"),
   freeWithdrawalsThisMonth: integer("free_withdrawals_this_month").default(0),
@@ -97,8 +110,12 @@ export const transactions = pgTable("transactions", {
   userId: varchar("user_id").notNull(),
   type: text("type").notNull(), // 'deposit', 'withdrawal', 'bet', 'win'
   amount: doublePrecision("amount").notNull(),
+  currency: text("currency").default("USD"),
+  description: text("description"),
   status: text("status").default("pending"), // 'pending', 'completed', 'failed'
   transactionDate: timestamp("transaction_date").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
   details: jsonb("details"),
 });
 
