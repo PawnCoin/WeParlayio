@@ -4,6 +4,7 @@ import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button";
 import { ChevronRight, Plus } from "lucide-react";
 import { useBetSlip } from "@/contexts/BetSlipContext";
+import AdvancedBettingOptions from "./AdvancedBettingOptions";
 
 interface GameCardProps {
   game: {
@@ -62,6 +63,7 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
   const { toast } = useToast();
   const { addToBetSlip } = useBetSlip();
   const [hoveredOdds, setHoveredOdds] = useState<string | null>(null);
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   
   const isLive = game.status === "live";
   const progress = isLive ? Math.floor(Math.random() * 100) : 0; // This should be calculated based on game time
@@ -392,10 +394,31 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
       </CardContent>
       
       {/* View More Link */}
-      <CardFooter className="border-t border-gray-200 dark:border-gray-700 p-3 text-center">
-        <Button variant="link" className="text-primary hover:text-primary/80 text-sm font-medium w-full">
-          View All Betting Markets (45+) <ChevronRight className="ml-1 h-4 w-4" />
-        </Button>
+      <CardFooter className="border-t border-gray-200 dark:border-gray-700 p-3">
+        <div className="w-full">
+          <Button 
+            variant="link" 
+            className="text-primary hover:text-primary/80 text-sm font-medium w-full mb-4"
+            onClick={() => setShowAdvancedOptions(prev => !prev)}
+          >
+            {!showAdvancedOptions ? (
+              <>View All Betting Markets (45+) <ChevronRight className="ml-1 h-4 w-4" /></>
+            ) : (
+              <>Hide Advanced Betting Options <ChevronRight className="ml-1 h-4 w-4 transform rotate-90" /></>
+            )}
+          </Button>
+          
+          {showAdvancedOptions && (
+            <div className="pt-2">
+              <AdvancedBettingOptions 
+                eventId={game.id.toString()} 
+                sportKey={game.sportName.toLowerCase().replace(' ', '_')}
+                homeTeam={game.homeTeam.name}
+                awayTeam={game.awayTeam.name}
+              />
+            </div>
+          )}
+        </div>
       </CardFooter>
     </Card>
   );

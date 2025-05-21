@@ -5,6 +5,7 @@ import aiSupportRoutes from "./routes/aiSupport";
 import authRouter from "./auth";
 import { additionalSportsData } from "./services/mockSportsData";
 import { OddsApiService } from "./services/oddsApiService";
+import { AdvancedOddsService } from "./services/advancedOddsService";
 import { yahooRouter } from "./routes/yahooRoutes";
 import { feeRouter } from "./routes/feeRoutes";
 
