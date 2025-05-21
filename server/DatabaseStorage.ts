@@ -974,6 +974,96 @@ export class DatabaseStorage implements IStorage {
     return challenge;
   }
   
+  async settleBettingChallenge(uuid: string, winnerId?: string, isDraw: boolean = false): Promise<BettingChallenge> {
+    // Get the current challenge
+    const challenge = await this.getBettingChallengeByUuid(uuid);
+    if (!challenge) {
+      throw new Error(`Challenge with UUID ${uuid} not found`);
+    }
+    
+    // Verify challenge can be settled
+    if (challenge.status !== 'accepted') {
+      throw new Error(`Challenge with UUID ${uuid} cannot be settled (status: ${challenge.status})`);
+    }
+    
+    if (!challenge.acceptedBy) {
+      throw new Error(`Challenge with UUID ${uuid} has not been accepted yet`);
+    }
+    
+    let newStatus = 'settled';
+    let winnerUserId = winnerId;
+    
+    // Handle draw case
+    if (isDraw) {
+      newStatus = 'draw';
+      winnerUserId = undefined;
+      
+      // Refund both users
+      if (challenge.createdBy) {
+        await this.updateUserBalance(challenge.createdBy, challenge.amount);
+        
+        // Create refund transaction record
+        await this.createTransaction({
+          userId: challenge.createdBy,
+          type: TransactionType.REFUND,
+          amount: challenge.amount,
+          currency: challenge.isVirtual ? 'WeParlayCache' : 'USD',
+          description: `Refund for draw on bet ${challenge.challengeUuid} (${challenge.eventName})`,
+          status: 'completed'
+        });
+      }
+      
+      if (challenge.acceptedBy) {
+        await this.updateUserBalance(challenge.acceptedBy, challenge.amount);
+        
+        // Create refund transaction record
+        await this.createTransaction({
+          userId: challenge.acceptedBy,
+          type: TransactionType.REFUND,
+          amount: challenge.amount,
+          currency: challenge.isVirtual ? 'WeParlayCache' : 'USD',
+          description: `Refund for draw on bet ${challenge.challengeUuid} (${challenge.eventName})`,
+          status: 'completed'
+        });
+      }
+    } 
+    // Handle winner case
+    else if (winnerUserId) {
+      // Calculate payout amount (original bet x2)
+      const payoutAmount = challenge.amount * 2;
+      
+      // Add winnings to winner's balance
+      await this.updateUserBalance(winnerUserId, payoutAmount);
+      
+      // Create winning transaction record
+      await this.createTransaction({
+        userId: winnerUserId,
+        type: TransactionType.WINNING,
+        amount: payoutAmount,
+        currency: challenge.isVirtual ? 'WeParlayCache' : 'USD',
+        description: `Winnings from bet ${challenge.challengeUuid} (${challenge.eventName})`,
+        status: 'completed'
+      });
+      
+      // Increment winner's win count
+      await this.incrementUserWins(winnerUserId);
+    }
+    
+    // Update challenge status and winner
+    const [updatedChallenge] = await db
+      .update(bettingChallenges)
+      .set({
+        status: newStatus,
+        winnerId: winnerUserId,
+        settledAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(bettingChallenges.challengeUuid, uuid))
+      .returning();
+    
+    return updatedChallenge;
+  }
+  
   // ==================== Notification Operations ====================
   
   async createNotification(notification: InsertNotification): Promise<Notification> {

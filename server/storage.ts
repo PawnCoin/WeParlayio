@@ -43,6 +43,7 @@ export interface IStorage {
   getUserChallenges(userId: string, status?: string): Promise<BettingChallenge[]>;
   acceptBettingChallenge(uuid: string, acceptedBy: string): Promise<BettingChallenge>;
   updateBettingChallengeStatus(uuid: string, status: string): Promise<BettingChallenge>;
+  settleBettingChallenge(uuid: string, winnerId?: string, isDraw?: boolean): Promise<BettingChallenge>;
   
   // Notification operations
   createNotification(notification: InsertNotification): Promise<Notification>;
