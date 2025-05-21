@@ -3,9 +3,7 @@ import { storage } from '../storage';
 import { 
   bettingChallenges, 
   notifications,
-  users,
   InsertNotification,
-  BettingChallenge
 } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 
@@ -203,53 +201,7 @@ export class NotificationService {
       return false;
     }
   }
-          'challenge',
-          message,
-          challengeLink
-        );
-        
-        // Also send push notification
-        await this.sendPushNotification(
-          toUserId,
-          'New Betting Challenge',
-          message,
-          { challengeId: challenge.id, link: challengeLink }
-        );
-      }
-      
-      // If email is provided, send email notification
-      if (toEmail) {
-        const emailSubject = 'New WeParlay Betting Challenge';
-        const emailContent = `
-          <h2>You've been challenged to a head-to-head bet!</h2>
-          <p>${senderName} has invited you to a head-to-head bet on WeParlay.</p>
-          <p><strong>Event:</strong> ${challenge.eventName}</p>
-          <p><strong>Amount:</strong> ${challenge.isVirtual ? 'WeParlay Cash' : '$'}${challenge.amount}</p>
-          <p><strong>Their Pick:</strong> ${challenge.pick}</p>
-          ${challenge.customMessage ? `<p><strong>Message:</strong> "${challenge.customMessage}"</p>` : ''}
-          <p>Click the link below to view and accept this challenge:</p>
-          <p><a href="https://weparlay.io/challenges/${challenge.challengeUuid}">View Challenge</a></p>
-          <p>Good luck!</p>
-          <p>The WeParlay Team</p>
-        `;
-        
-        await this.sendEmail(toEmail, emailSubject, emailContent);
-      }
-      
-      // If phone is provided, send SMS notification
-      if (toPhone) {
-        const smsMessage = `${senderName} has challenged you to a bet on WeParlay! Event: ${challenge.eventName}, Amount: ${challenge.isVirtual ? 'WeParlay Cash' : '$'}${challenge.amount}. View at https://weparlay.io/challenges/${challenge.challengeUuid}`;
-        
-        await this.sendSMS(toPhone, smsMessage);
-      }
-      
-      return true;
-    } catch (error) {
-      console.error('Error sending betting challenge notification:', error);
-      return false;
-    }
-  }
-
+  
   /**
    * Notify a user that their challenge has been accepted
    * @param challengeId ID of the challenge
@@ -285,7 +237,7 @@ export class NotificationService {
       
       // Send in-app notification to the challenge creator
       const challengeLink = `/challenges/${challenge.challengeUuid}`;
-      const message = `${accepterName} has accepted your head-to-head bet on ${challenge.eventName} for ${challenge.isVirtual ? 'WeParlay Cash' : '$'}${challenge.amount}`;
+      const message = `${accepterName} has accepted your bet on ${challenge.eventName} for ${challenge.isVirtual ? 'WeParlay Cash' : '$'}${challenge.amount}`;
       
       await this.sendInAppNotification(
         challenge.createdBy,
@@ -327,7 +279,7 @@ export class NotificationService {
       return false;
     }
   }
-
+  
   /**
    * Notify users about the result of a settled bet
    * @param challengeId ID of the challenge
@@ -369,7 +321,7 @@ export class NotificationService {
       
       // Handle draw case
       if (isDraw) {
-        const drawMessage = `Your head-to-head bet on ${challenge.eventName} ended in a draw. Your ${challenge.isVirtual ? 'WeParlay Cash' : 'money'} has been refunded.`;
+        const drawMessage = `Your bet on ${challenge.eventName} ended in a draw. Your ${challenge.isVirtual ? 'WeParlay Cash' : 'funds'} have been refunded.`;
         
         // Notify both users
         await this.sendInAppNotification(
@@ -436,7 +388,7 @@ export class NotificationService {
         const loserName = loser.username || loser.email || 'Your opponent';
         
         // Notify winner
-        const winMessage = `Congratulations! You won your head-to-head bet on ${challenge.eventName} against ${loserName}. ${challenge.isVirtual ? 'WeParlay Cash' : 'Money'} has been added to your account.`;
+        const winMessage = `Congratulations! You won your bet on ${challenge.eventName} against ${loserName}. ${challenge.isVirtual ? 'WeParlay Cash' : 'Funds'} have been added to your account.`;
         
         await this.sendInAppNotification(
           winnerId,
@@ -457,14 +409,13 @@ export class NotificationService {
           await this.sendEmail(
             winner.email,
             emailSubject,
-            `<h2>Congratulations on your win!</h2><p>${winMessage}</p><p><a href="https://weparlay.io/challenges/${challenge.challengeUuid}">View Details</a></p>`
+            `<h2>You won your bet!</h2><p>${winMessage}</p><p><a href="https://weparlay.io/challenges/${challenge.challengeUuid}">View Details</a></p>`
           );
         }
         
         // Notify loser
-        const loseMessage = `You lost your head-to-head bet on ${challenge.eventName} against ${winnerName}.`;
-        
         const loserId = winnerId === challenge.createdBy ? challenge.acceptedBy : challenge.createdBy;
+        const loseMessage = `You lost your bet on ${challenge.eventName} against ${winnerName}.`;
         
         await this.sendInAppNotification(
           loserId,
@@ -475,24 +426,22 @@ export class NotificationService {
         
         await this.sendPushNotification(
           loserId,
-          'Betting Result: You Lost',
+          'Betting Result: Better Luck Next Time',
           loseMessage,
           { challengeId: challenge.id, link: challengeLink }
         );
         
         if (loser.email) {
-          const emailSubject = 'Betting Result: Better Luck Next Time';
+          const emailSubject = 'Your WeParlay Bet Result';
           await this.sendEmail(
             loser.email,
             emailSubject,
-            `<h2>Betting Result</h2><p>${loseMessage}</p><p><a href="https://weparlay.io/challenges/${challenge.challengeUuid}">View Details</a></p><p>Don't worry - there are plenty more opportunities to bet on WeParlay!</p>`
+            `<h2>Your bet has been settled</h2><p>${loseMessage}</p><p><a href="https://weparlay.io/challenges/${challenge.challengeUuid}">View Details</a></p>`
           );
         }
-        
-        return true;
       }
       
-      return false;
+      return true;
     } catch (error) {
       console.error('Error sending bet result notification:', error);
       return false;
