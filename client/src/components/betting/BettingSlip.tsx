@@ -9,6 +9,14 @@ import { useCurrencyMode } from "@/contexts/CurrencyModeContext";
 import CurrencyDisplay from "@/components/betting/CurrencyDisplay";
 import { Shield, Trash2, Settings, X, Bitcoin, Wallet, Clock, DollarSign, Plus, Coins } from "lucide-react";
 import sportsBetAPI from "@/lib/sportsBetAPI";
+import CryptoWalletConnect from "@/components/auth/CryptoWalletConnect";
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -98,6 +106,9 @@ const BettingSlip: React.FC = () => {
       connected: false
     }
   ]);
+  
+  // State for wallet connection modal
+  const [showWalletModal, setShowWalletModal] = useState(false);
   
   // Currency options for betting
   const currencyOptions = [
@@ -296,6 +307,8 @@ const BettingSlip: React.FC = () => {
     
     // Check if crypto wallet is connected for crypto bets
     if (selectedCurrency !== 'USD' && isCryptoWalletConnected) {
+      // Show wallet connect modal for cryptocurrency payments
+      setShowWalletModal(true);
       toast({
         title: "Wallet Required",
         description: `Please connect a wallet to place a ${selectedCurrency} bet`,
