@@ -150,6 +150,20 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
           </li>
           
           <li>
+            <Link href="/wallet-management">
+              <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
+                location === '/wallet-management' 
+                  ? "bg-primary text-white" 
+                  : "bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/40 dark:hover:to-indigo-900/40"
+              }`}>
+                <Wallet className="h-5 w-5 mr-3 text-blue-600" />
+                <span className="text-blue-700 dark:text-blue-300 font-medium">Wallet Management</span>
+                <span className="ml-2 text-[10px] font-bold py-0.5 px-1.5 bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200 rounded-full">NEW</span>
+              </div>
+            </Link>
+          </li>
+          
+          <li>
             <Link href="/head-to-head">
               <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
                 location === '/head-to-head' 

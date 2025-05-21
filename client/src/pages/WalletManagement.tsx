@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Bitcoin, Wallet, Coins, ArrowUpRight, ArrowDownLeft, CreditCard, History, RefreshCw } from "lucide-react";
+import { Bitcoin, Wallet, Coins, ArrowUpRight, ArrowDownLeft, CreditCard, History, RefreshCw, Plus } from "lucide-react";
 
 // Connected wallet interface
 interface ConnectedWallet {

@@ -30,6 +30,7 @@ import PrivacyPolicy from "@/pages/PrivacyPolicy"; // Privacy policy page for so
 import TermsOfService from "@/pages/TermsOfService"; // Terms of service page for social login requirements
 import SecurityInfo from "@/pages/SecurityInfo"; // Security information page showing our protection measures
 import Support from "@/pages/Support"; // Automated support system
+import WalletManagement from "@/pages/WalletManagement"; // Cryptocurrency wallet management
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
 import MobileVoiceBetting from "@/components/mobile/MobileVoiceBetting";
@@ -101,6 +102,7 @@ function Router() {
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms-of-service" component={TermsOfService} />
       <Route path="/support" component={Support} />
+      <Route path="/wallet-management" component={WalletManagement} />
       <Route component={NotFound} />
     </Switch>
   );
