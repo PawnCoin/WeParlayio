@@ -87,6 +87,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
 // Bank accounts for owner's deposits
 export const bankAccounts = pgTable("bank_accounts", {
   id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
   accountName: text("account_name").notNull(),
   bankName: text("bank_name").notNull(),
   accountNumber: text("account_number").notNull(),
@@ -97,6 +98,7 @@ export const bankAccounts = pgTable("bank_accounts", {
 });
 
 export const insertBankAccountSchema = createInsertSchema(bankAccounts).pick({
+  userId: true,
   accountName: true,
   bankName: true,
   accountNumber: true,
@@ -170,6 +172,8 @@ export const sports = pgTable("sports", {
   isActive: boolean("is_active").default(true),
   icon: text("icon"),
   eventCount: integer("event_count").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const insertSportSchema = createInsertSchema(sports).pick({
@@ -186,6 +190,8 @@ export const teams = pgTable("teams", {
   abbreviation: text("abbreviation"),
   logo: text("logo"),
   sportId: integer("sport_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const insertTeamSchema = createInsertSchema(teams).pick({
@@ -208,6 +214,8 @@ export const events = pgTable("events", {
   period: text("period"),
   timeRemaining: text("time_remaining"),
   odds: json("odds"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const insertEventSchema = createInsertSchema(events).pick({
