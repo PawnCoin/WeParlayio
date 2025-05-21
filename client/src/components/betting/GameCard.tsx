@@ -166,30 +166,70 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
           <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
             <h4 className="text-sm text-gray-500 dark:text-gray-400 mb-3">Money Line</h4>
             <div className="grid grid-cols-2 gap-3">
-              <Button 
-                variant="outline" 
-                className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 py-2 px-3 rounded-md text-sm flex justify-between items-center odds-change-up"
-                onClick={() => game.homeTeam?.name && game.odds?.moneyline?.home !== undefined ? 
-                  handleAddToBetSlip(`${game.homeTeam.name} (Money Line)`, game.odds.moneyline.home) : 
-                  handleAddToBetSlip(`Home Team (Money Line)`, -110)}
+              <div 
+                className="relative" 
+                onMouseEnter={() => setHoveredOdds('homeMoneyline')}
+                onMouseLeave={() => setHoveredOdds(null)}
               >
-                <span>{game.homeTeam.name ? game.homeTeam.name.split(' ').pop() : 'Home'}</span>
-                <span className={`font-medium ${game.odds?.moneyline?.home < 0 ? "text-secondary" : ""}`}>
-                  {game.odds?.moneyline?.home > 0 ? `+${game.odds.moneyline.home}` : game.odds?.moneyline?.home || 'N/A'}
-                </span>
-              </Button>
-              <Button 
-                variant="outline" 
-                className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 py-2 px-3 rounded-md text-sm flex justify-between items-center"
-                onClick={() => game.awayTeam?.name && game.odds?.moneyline?.away !== undefined ? 
-                  handleAddToBetSlip(`${game.awayTeam.name} (Money Line)`, game.odds.moneyline.away) : 
-                  handleAddToBetSlip(`Away Team (Money Line)`, -110)}
+                <Button 
+                  variant="outline" 
+                  className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 py-2 px-3 rounded-md text-sm flex justify-between items-center odds-change-up w-full"
+                  onClick={() => game.homeTeam?.name && game.odds?.moneyline?.home !== undefined ? 
+                    handleAddToBetSlip(`${game.homeTeam.name} (Money Line)`, game.odds.moneyline.home, 'moneyline') : 
+                    handleAddToBetSlip(`Home Team (Money Line)`, -110, 'moneyline')}
+                >
+                  <span>{game.homeTeam.name ? game.homeTeam.name.split(' ').pop() : 'Home'}</span>
+                  <span className={`font-medium ${game.odds?.moneyline?.home < 0 ? "text-secondary" : ""}`}>
+                    {game.odds?.moneyline?.home > 0 ? `+${game.odds.moneyline.home}` : game.odds?.moneyline?.home || 'N/A'}
+                  </span>
+                </Button>
+                {hoveredOdds === 'homeMoneyline' && (
+                  <Button 
+                    size="sm" 
+                    className="absolute -top-3 -right-3 bg-primary hover:bg-primary/90 text-white rounded-full h-7 w-7 p-0 flex items-center justify-center shadow-md z-10"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      game.homeTeam?.name && game.odds?.moneyline?.home !== undefined ? 
+                        handleAddToBetSlip(`${game.homeTeam.name} (Money Line)`, game.odds.moneyline.home, 'moneyline') : 
+                        handleAddToBetSlip(`Home Team (Money Line)`, -110, 'moneyline');
+                    }}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              <div 
+                className="relative" 
+                onMouseEnter={() => setHoveredOdds('awayMoneyline')}
+                onMouseLeave={() => setHoveredOdds(null)}
               >
-                <span>{game.awayTeam.name ? game.awayTeam.name.split(' ').pop() : 'Away'}</span>
-                <span className="font-medium">
-                  {game.odds?.moneyline?.away > 0 ? `+${game.odds.moneyline.away}` : game.odds?.moneyline?.away || 'N/A'}
-                </span>
-              </Button>
+                <Button 
+                  variant="outline" 
+                  className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 py-2 px-3 rounded-md text-sm flex justify-between items-center w-full"
+                  onClick={() => game.awayTeam?.name && game.odds?.moneyline?.away !== undefined ? 
+                    handleAddToBetSlip(`${game.awayTeam.name} (Money Line)`, game.odds.moneyline.away, 'moneyline') : 
+                    handleAddToBetSlip(`Away Team (Money Line)`, -110, 'moneyline')}
+                >
+                  <span>{game.awayTeam.name ? game.awayTeam.name.split(' ').pop() : 'Away'}</span>
+                  <span className="font-medium">
+                    {game.odds?.moneyline?.away > 0 ? `+${game.odds.moneyline.away}` : game.odds?.moneyline?.away || 'N/A'}
+                  </span>
+                </Button>
+                {hoveredOdds === 'awayMoneyline' && (
+                  <Button 
+                    size="sm" 
+                    className="absolute -top-3 -right-3 bg-primary hover:bg-primary/90 text-white rounded-full h-7 w-7 p-0 flex items-center justify-center shadow-md z-10"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      game.awayTeam?.name && game.odds?.moneyline?.away !== undefined ? 
+                        handleAddToBetSlip(`${game.awayTeam.name} (Money Line)`, game.odds.moneyline.away, 'moneyline') : 
+                        handleAddToBetSlip(`Away Team (Money Line)`, -110, 'moneyline');
+                    }}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
           
@@ -197,40 +237,80 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
           <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
             <h4 className="text-sm text-gray-500 dark:text-gray-400 mb-3">Point Spread</h4>
             <div className="grid grid-cols-2 gap-3">
-              <Button 
-                variant="outline" 
-                className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 py-2 px-3 rounded-md text-sm flex justify-between items-center"
-                onClick={() => game.homeTeam?.name && game.odds?.pointSpread?.home?.line !== undefined ? 
-                  handleAddToBetSlip(`${game.homeTeam.name} ${game.odds.pointSpread.home.line} (Spread)`, game.odds.pointSpread.home.odds) : 
-                  handleAddToBetSlip(`Home Team (Spread)`, -110)}
+              <div 
+                className="relative" 
+                onMouseEnter={() => setHoveredOdds('homeSpread')}
+                onMouseLeave={() => setHoveredOdds(null)}
               >
-                <span>
-                  {game.homeTeam.name ? game.homeTeam.name.split(' ').pop() : 'Home'} 
-                  {game.odds?.pointSpread?.home?.line !== undefined ? game.odds.pointSpread.home.line : ''}
-                </span>
-                <span className="font-medium">
-                  {game.odds?.pointSpread?.home?.odds !== undefined ? 
-                    (game.odds.pointSpread.home.odds > 0 ? `+${game.odds.pointSpread.home.odds}` : game.odds.pointSpread.home.odds) 
-                    : 'N/A'}
-                </span>
-              </Button>
-              <Button 
-                variant="outline" 
-                className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 py-2 px-3 rounded-md text-sm flex justify-between items-center odds-change-down"
-                onClick={() => game.awayTeam?.name && game.odds?.pointSpread?.away?.line !== undefined ? 
-                  handleAddToBetSlip(`${game.awayTeam.name} ${game.odds.pointSpread.away.line} (Spread)`, game.odds.pointSpread.away.odds) : 
-                  handleAddToBetSlip(`Away Team (Spread)`, -110)}
+                <Button 
+                  variant="outline" 
+                  className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 py-2 px-3 rounded-md text-sm flex justify-between items-center w-full"
+                  onClick={() => game.homeTeam?.name && game.odds?.pointSpread?.home?.line !== undefined ? 
+                    handleAddToBetSlip(`${game.homeTeam.name} ${game.odds.pointSpread.home.line} (Spread)`, game.odds.pointSpread.home.odds, 'spread', game.odds.pointSpread.home.line) : 
+                    handleAddToBetSlip(`Home Team (Spread)`, -110, 'spread')}
+                >
+                  <span>
+                    {game.homeTeam.name ? game.homeTeam.name.split(' ').pop() : 'Home'} 
+                    {game.odds?.pointSpread?.home?.line !== undefined ? game.odds.pointSpread.home.line : ''}
+                  </span>
+                  <span className="font-medium">
+                    {game.odds?.pointSpread?.home?.odds !== undefined ? 
+                      (game.odds.pointSpread.home.odds > 0 ? `+${game.odds.pointSpread.home.odds}` : game.odds.pointSpread.home.odds) 
+                      : 'N/A'}
+                  </span>
+                </Button>
+                {hoveredOdds === 'homeSpread' && (
+                  <Button 
+                    size="sm" 
+                    className="absolute -top-3 -right-3 bg-primary hover:bg-primary/90 text-white rounded-full h-7 w-7 p-0 flex items-center justify-center shadow-md z-10"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      game.homeTeam?.name && game.odds?.pointSpread?.home?.line !== undefined ? 
+                        handleAddToBetSlip(`${game.homeTeam.name} ${game.odds.pointSpread.home.line} (Spread)`, game.odds.pointSpread.home.odds, 'spread', game.odds.pointSpread.home.line) : 
+                        handleAddToBetSlip(`Home Team (Spread)`, -110, 'spread');
+                    }}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              <div 
+                className="relative" 
+                onMouseEnter={() => setHoveredOdds('awaySpread')}
+                onMouseLeave={() => setHoveredOdds(null)}
               >
-                <span>
-                  {game.awayTeam.name ? game.awayTeam.name.split(' ').pop() : 'Away'} 
-                  {game.odds?.pointSpread?.away?.line !== undefined ? game.odds.pointSpread.away.line : ''}
-                </span>
-                <span className={`font-medium ${game.odds?.pointSpread?.away?.odds < 0 ? "text-danger" : ""}`}>
-                  {game.odds?.pointSpread?.away?.odds !== undefined ? 
-                    (game.odds.pointSpread.away.odds > 0 ? `+${game.odds.pointSpread.away.odds}` : game.odds.pointSpread.away.odds) 
-                    : 'N/A'}
-                </span>
-              </Button>
+                <Button 
+                  variant="outline" 
+                  className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 py-2 px-3 rounded-md text-sm flex justify-between items-center odds-change-down w-full"
+                  onClick={() => game.awayTeam?.name && game.odds?.pointSpread?.away?.line !== undefined ? 
+                    handleAddToBetSlip(`${game.awayTeam.name} ${game.odds.pointSpread.away.line} (Spread)`, game.odds.pointSpread.away.odds, 'spread', game.odds.pointSpread.away.line) : 
+                    handleAddToBetSlip(`Away Team (Spread)`, -110, 'spread')}
+                >
+                  <span>
+                    {game.awayTeam.name ? game.awayTeam.name.split(' ').pop() : 'Away'} 
+                    {game.odds?.pointSpread?.away?.line !== undefined ? game.odds.pointSpread.away.line : ''}
+                  </span>
+                  <span className={`font-medium ${game.odds?.pointSpread?.away?.odds < 0 ? "text-danger" : ""}`}>
+                    {game.odds?.pointSpread?.away?.odds !== undefined ? 
+                      (game.odds.pointSpread.away.odds > 0 ? `+${game.odds.pointSpread.away.odds}` : game.odds.pointSpread.away.odds) 
+                      : 'N/A'}
+                  </span>
+                </Button>
+                {hoveredOdds === 'awaySpread' && (
+                  <Button 
+                    size="sm" 
+                    className="absolute -top-3 -right-3 bg-primary hover:bg-primary/90 text-white rounded-full h-7 w-7 p-0 flex items-center justify-center shadow-md z-10"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      game.awayTeam?.name && game.odds?.pointSpread?.away?.line !== undefined ? 
+                        handleAddToBetSlip(`${game.awayTeam.name} ${game.odds.pointSpread.away.line} (Spread)`, game.odds.pointSpread.away.odds, 'spread', game.odds.pointSpread.away.line) : 
+                        handleAddToBetSlip(`Away Team (Spread)`, -110, 'spread');
+                    }}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
           
@@ -238,34 +318,74 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
           <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
             <h4 className="text-sm text-gray-500 dark:text-gray-400 mb-3">Total Points</h4>
             <div className="grid grid-cols-2 gap-3">
-              <Button 
-                variant="outline" 
-                className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 py-2 px-3 rounded-md text-sm flex justify-between items-center"
-                onClick={() => game.odds?.total?.over?.line !== undefined ? 
-                  handleAddToBetSlip(`Over ${game.odds.total.over.line} (Total)`, game.odds.total.over.odds) : 
-                  handleAddToBetSlip(`Over (Total)`, -110)}
+              <div 
+                className="relative" 
+                onMouseEnter={() => setHoveredOdds('overTotal')}
+                onMouseLeave={() => setHoveredOdds(null)}
               >
-                <span>Over {game.odds?.total?.over?.line || 'N/A'}</span>
-                <span className="font-medium">
-                  {game.odds?.total?.over?.odds !== undefined ? 
-                    (game.odds.total.over.odds > 0 ? `+${game.odds.total.over.odds}` : game.odds.total.over.odds) 
-                    : 'N/A'}
-                </span>
-              </Button>
-              <Button 
-                variant="outline" 
-                className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 py-2 px-3 rounded-md text-sm flex justify-between items-center"
-                onClick={() => game.odds?.total?.under?.line !== undefined ? 
-                  handleAddToBetSlip(`Under ${game.odds.total.under.line} (Total)`, game.odds.total.under.odds) : 
-                  handleAddToBetSlip(`Under (Total)`, -110)}
+                <Button 
+                  variant="outline" 
+                  className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 py-2 px-3 rounded-md text-sm flex justify-between items-center w-full"
+                  onClick={() => game.odds?.total?.over?.line !== undefined ? 
+                    handleAddToBetSlip(`Over ${game.odds.total.over.line} (Total)`, game.odds.total.over.odds, 'total', game.odds.total.over.line) : 
+                    handleAddToBetSlip(`Over (Total)`, -110, 'total')}
+                >
+                  <span>Over {game.odds?.total?.over?.line || 'N/A'}</span>
+                  <span className="font-medium">
+                    {game.odds?.total?.over?.odds !== undefined ? 
+                      (game.odds.total.over.odds > 0 ? `+${game.odds.total.over.odds}` : game.odds.total.over.odds) 
+                      : 'N/A'}
+                  </span>
+                </Button>
+                {hoveredOdds === 'overTotal' && (
+                  <Button 
+                    size="sm" 
+                    className="absolute -top-3 -right-3 bg-primary hover:bg-primary/90 text-white rounded-full h-7 w-7 p-0 flex items-center justify-center shadow-md z-10"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      game.odds?.total?.over?.line !== undefined ? 
+                        handleAddToBetSlip(`Over ${game.odds.total.over.line} (Total)`, game.odds.total.over.odds, 'total', game.odds.total.over.line) : 
+                        handleAddToBetSlip(`Over (Total)`, -110, 'total');
+                    }}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              <div 
+                className="relative" 
+                onMouseEnter={() => setHoveredOdds('underTotal')}
+                onMouseLeave={() => setHoveredOdds(null)}
               >
-                <span>Under {game.odds?.total?.under?.line || 'N/A'}</span>
-                <span className="font-medium">
-                  {game.odds?.total?.under?.odds !== undefined ? 
-                    (game.odds.total.under.odds > 0 ? `+${game.odds.total.under.odds}` : game.odds.total.under.odds) 
-                    : 'N/A'}
-                </span>
-              </Button>
+                <Button 
+                  variant="outline" 
+                  className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 py-2 px-3 rounded-md text-sm flex justify-between items-center w-full"
+                  onClick={() => game.odds?.total?.under?.line !== undefined ? 
+                    handleAddToBetSlip(`Under ${game.odds.total.under.line} (Total)`, game.odds.total.under.odds, 'total', game.odds.total.under.line) : 
+                    handleAddToBetSlip(`Under (Total)`, -110, 'total')}
+                >
+                  <span>Under {game.odds?.total?.under?.line || 'N/A'}</span>
+                  <span className="font-medium">
+                    {game.odds?.total?.under?.odds !== undefined ? 
+                      (game.odds.total.under.odds > 0 ? `+${game.odds.total.under.odds}` : game.odds.total.under.odds) 
+                      : 'N/A'}
+                  </span>
+                </Button>
+                {hoveredOdds === 'underTotal' && (
+                  <Button 
+                    size="sm" 
+                    className="absolute -top-3 -right-3 bg-primary hover:bg-primary/90 text-white rounded-full h-7 w-7 p-0 flex items-center justify-center shadow-md z-10"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      game.odds?.total?.under?.line !== undefined ? 
+                        handleAddToBetSlip(`Under ${game.odds.total.under.line} (Total)`, game.odds.total.under.odds, 'total', game.odds.total.under.line) : 
+                        handleAddToBetSlip(`Under (Total)`, -110, 'total');
+                    }}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </div>
