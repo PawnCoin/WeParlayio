@@ -23,6 +23,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register AI Support routes
   app.use('/api/support', aiSupportRoutes);
+  
+  // User preferences endpoint
+  app.post('/api/user/preferences', async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = req.user.id;
+      const { oddsFormat, useVirtualCurrency, withdrawalSpeed, mobileOptimizedView } = req.body;
+      
+      // Only update fields that were provided
+      const updateData: any = {};
+      if (oddsFormat) updateData.oddsFormat = oddsFormat;
+      if (useVirtualCurrency !== undefined) updateData.useVirtualCurrency = useVirtualCurrency;
+      if (withdrawalSpeed) updateData.withdrawalSpeed = withdrawalSpeed;
+      if (mobileOptimizedView !== undefined) updateData.mobileOptimizedView = mobileOptimizedView;
+      
+      const updatedUser = await storage.updateUserPreferences(userId, updateData);
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error updating user preferences:", error);
+      res.status(500).json({ message: "Failed to update preferences" });
+    }
+  });
 
   // ===== Sports Routes =====
   app.get("/api/sports", async (req, res) => {

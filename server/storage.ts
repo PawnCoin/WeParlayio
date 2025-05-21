@@ -32,6 +32,7 @@ export interface IStorage {
   getUserWithdrawalsForMonth(userId: string, month: number): Promise<number>;
   updateUserWeplayTokenBalance(userId: string, amount: number): Promise<User>;
   updateUserSubscription(userId: string, subscriptionType: 'vip' | 'analytics' | 'support', expiryDate: Date): Promise<User>;
+  updateUserPreferences(userId: string, preferences: Partial<{ oddsFormat: string, useVirtualCurrency: boolean, withdrawalSpeed: string, mobileOptimizedView: boolean }>): Promise<User>;
   
   // Financial operations
   getFinancialSummary(): Promise<any>;
@@ -179,6 +180,20 @@ export class MemStorage implements IStorage {
     } else {
       updatedUser = { ...user, supportExpiryDate: expiryDate };
     }
+    
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+  
+  async updateUserPreferences(userId: string, preferences: Partial<{ oddsFormat: string, useVirtualCurrency: boolean, withdrawalSpeed: string, mobileOptimizedView: boolean }>): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error(`User not found: ${userId}`);
+    
+    const updatedUser = { 
+      ...user,
+      ...preferences,
+      updatedAt: new Date()
+    };
     
     this.users.set(userId, updatedUser);
     return updatedUser;
