@@ -91,7 +91,7 @@ const TeamLogo: React.FC<TeamLogoProps> = ({
     
     try {
       // Get the logo URL using our utility function
-      const url = getTeamLogoUrl(teamName, league);
+      const url = getTeamLogo(teamName, league);
       setLogoUrl(url);
       setHasError(false);
     } catch (error) {
