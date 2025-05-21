@@ -239,6 +239,8 @@ export const bets = pgTable("bets", {
   status: text("status").default("pending"),
   placedAt: timestamp("placed_at").defaultNow(),
   settledAt: timestamp("settled_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const insertBetSchema = createInsertSchema(bets).pick({
@@ -260,6 +262,8 @@ export const tournaments = pgTable("tournaments", {
   endDate: timestamp("end_date"),
   status: text("status").default("upcoming"),
   bracketData: json("bracket_data"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const insertTournamentSchema = createInsertSchema(tournaments).pick({
@@ -298,6 +302,8 @@ export const players = pgTable("players", {
   salary: doublePrecision("salary"),
   projectedPoints: doublePrecision("projected_points"),
   yahooPlayerId: text("yahoo_player_id"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const insertPlayerSchema = createInsertSchema(players).pick({
@@ -314,6 +320,8 @@ export const fantasyTeamPlayers = pgTable("fantasy_team_players", {
   id: serial("id").primaryKey(),
   fantasyTeamId: integer("fantasy_team_id").notNull(),
   playerId: integer("player_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const insertFantasyTeamPlayerSchema = createInsertSchema(fantasyTeamPlayers).pick({
