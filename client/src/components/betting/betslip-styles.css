@@ -109,3 +109,87 @@ html.dark .betting-slip-footer {
   cursor: not-allowed !important;
   transform: none !important;
 }
+
+/* ==================== ENHANCED MOBILE RESPONSIVE STYLES ==================== */
+@media (max-width: 768px) {
+  /* Make bet selections more touch-friendly on mobile */
+  .bet-selections-container {
+    max-height: 130px !important;
+  }
+  
+  .bet-selection {
+    padding: 8px !important;
+    margin-bottom: 6px !important;
+    border-radius: 8px !important;
+    touch-action: manipulation;
+  }
+  
+  /* Enhance tap targets for mobile */
+  .bet-selection button {
+    min-height: 24px !important;
+    min-width: 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  
+  /* Improve visibility of odds on mobile */
+  .odds-badge {
+    font-size: 0.8rem !important;
+    padding: 2px 6px !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+  }
+  
+  /* Parlay breakdown optimizations for mobile */
+  .bet-selection-container .parlay-breakdown {
+    font-size: 0.7rem !important;
+    padding: 0.5rem !important;
+  }
+  
+  /* Ensure Place Bet button has good visibility */
+  .place-bet-button {
+    min-height: 44px !important; /* Larger touch target for mobile */
+    margin-top: 4px !important;
+    font-size: 0.9rem !important;
+    font-weight: 700 !important;
+  }
+  
+  /* Better input field for mobile */
+  input[type="number"] {
+    font-size: 16px !important; /* Prevents iOS zoom on focus */
+    height: 40px !important;
+    padding: 8px 12px !important;
+  }
+  
+  /* Improve 5% odds boost switch on mobile */
+  .odds-boost-switch {
+    margin-top: 8px !important;
+  }
+}
+
+/* Hidden sticky mobile footer for bet slip (optional toggle) */
+.mobile-bet-slip-toggle {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .mobile-bet-slip-toggle {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #fff;
+    border-top: 1px solid #e5e7eb;
+    padding: 8px 16px;
+    z-index: 50;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  html.dark .mobile-bet-slip-toggle {
+    background-color: #0f172a;
+    border-color: #334155;
+  }
+}

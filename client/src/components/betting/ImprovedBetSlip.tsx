@@ -79,28 +79,70 @@ const ImprovedBetSlip: React.FC<ImprovedBetSlipProps> = ({
     return odds > 0 ? `+${odds}` : odds.toString();
   };
 
-  // Calculate potential payout
-  const calculatePotentialPayout = () => {
+  // Calculate bet details
+  const calculateBetDetails = () => {
     if (betSlip.length === 0 || !betAmount || parseFloat(betAmount) <= 0) {
-      return 0;
+      return {
+        individualPayouts: [],
+        totalDecimalOdds: 1,
+        totalAmericanOdds: 0,
+        potentialPayout: 0
+      };
     }
 
     const amount = parseFloat(betAmount);
     const boostMultiplier = boostEnabled ? 1.05 : 1;
-
+    
+    // Calculate individual bet payouts and convert odds
+    const individualPayouts = betSlip.map(bet => {
+      const decimalOdds = bet.odds > 0 ? (bet.odds / 100) + 1 : (100 / Math.abs(bet.odds)) + 1;
+      return {
+        id: bet.id,
+        teamName: bet.pick,
+        americanOdds: bet.odds,
+        decimalOdds: decimalOdds,
+        individualPayout: amount * decimalOdds
+      };
+    });
+    
     if (betType === 'single') {
       // For single bets, just use the first bet
       const odds = betSlip[0].odds;
-      return amount * (odds > 0 ? (odds / 100) + 1 : (100 / Math.abs(odds)) + 1) * boostMultiplier;
+      const decimalOdds = odds > 0 ? (odds / 100) + 1 : (100 / Math.abs(odds)) + 1;
+      return {
+        individualPayouts,
+        totalDecimalOdds: decimalOdds,
+        totalAmericanOdds: odds,
+        potentialPayout: amount * decimalOdds * boostMultiplier
+      };
     } else {
       // For parlays, multiply all odds
-      let totalOdds = 1;
+      let totalDecimalOdds = 1;
       betSlip.forEach(bet => {
         const decimalOdds = bet.odds > 0 ? (bet.odds / 100) + 1 : (100 / Math.abs(bet.odds)) + 1;
-        totalOdds *= decimalOdds;
+        totalDecimalOdds *= decimalOdds;
       });
-      return amount * totalOdds * boostMultiplier;
+      
+      // Convert total decimal odds back to American odds
+      let totalAmericanOdds = 0;
+      if (totalDecimalOdds > 2) {
+        totalAmericanOdds = Math.round((totalDecimalOdds - 1) * 100);
+      } else {
+        totalAmericanOdds = Math.round(-100 / (totalDecimalOdds - 1));
+      }
+      
+      return {
+        individualPayouts,
+        totalDecimalOdds,
+        totalAmericanOdds,
+        potentialPayout: amount * totalDecimalOdds * boostMultiplier
+      };
     }
+  };
+  
+  // Calculate potential payout
+  const calculatePotentialPayout = () => {
+    return calculateBetDetails().potentialPayout;
   };
 
   // Save current bet slip
@@ -277,24 +319,24 @@ const ImprovedBetSlip: React.FC<ImprovedBetSlipProps> = ({
               </Button>
             </div>
             
-            <div className="max-h-[150px] overflow-y-auto mb-2">
+            <div className="max-h-[150px] overflow-y-auto mb-2 bet-selections-container">
               {betSlip.map((bet) => (
                 <div 
                   key={bet.id} 
                   className="bet-selection-container border border-muted dark:border-slate-700 rounded-md p-2 mb-1 text-xs bet-selection"
                 >
                   <div className="flex justify-between items-start mb-1">
-                    <div className="font-medium text-xs pick-text">{bet.pick}</div>
+                    <div className="font-medium text-xs pick-text line-clamp-1">{bet.pick}</div>
                     <Button 
                       variant="ghost" 
                       size="sm" 
                       onClick={() => onRemoveBet(bet.id)}
-                      className="h-4 w-4 p-0 text-muted-foreground hover:text-foreground dark:text-gray-400 dark:hover:text-white"
+                      className="h-6 w-6 p-0 ml-1 flex-shrink-0 text-muted-foreground hover:text-foreground dark:text-gray-400 dark:hover:text-white"
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
-                  <div className="text-xs font-medium mb-1 team-text">
+                  <div className="text-xs font-medium mb-1 team-text line-clamp-1">
                     {bet.homeTeam} vs {bet.awayTeam}
                   </div>
                   <div className="flex justify-between items-center">
@@ -307,7 +349,7 @@ const ImprovedBetSlip: React.FC<ImprovedBetSlipProps> = ({
                         <span>{bet.pick.includes("O/U") ? "Total" : bet.pick} {bet.point}</span>
                       )}
                     </div>
-                    <Badge variant="outline" className="text-xs odds-badge">
+                    <Badge variant="outline" className="text-xs odds-badge whitespace-nowrap ml-1">
                       {formatOdds(bet.odds)}
                     </Badge>
                   </div>
@@ -357,11 +399,46 @@ const ImprovedBetSlip: React.FC<ImprovedBetSlipProps> = ({
           </div>
           
           {betSlip.length > 0 && (
-            <div className="flex justify-between py-1 border-t border-muted dark:border-gray-700">
-              <span className="text-xs font-medium text-foreground dark:text-white">Potential Payout:</span>
-              <span className="text-green-600 dark:text-green-400 font-bold text-xs">
-                ${calculatePotentialPayout().toFixed(2)}
-              </span>
+            <div className="py-1 border-t border-muted dark:border-gray-700">
+              {/* For parlay bets, show odds breakdown */}
+              {betType === 'parlay' && betSlip.length > 1 && (
+                <div className="mb-2 text-xs bg-blue-50 dark:bg-slate-800 rounded-md p-2">
+                  <h4 className="font-semibold text-blue-800 dark:text-blue-300 mb-1">Parlay Breakdown</h4>
+                  <div className="space-y-1">
+                    {calculateBetDetails().individualPayouts.map((bet, index) => (
+                      <div key={bet.id} className="flex justify-between">
+                        <span className="text-muted-foreground dark:text-gray-400">{bet.teamName}</span>
+                        <span className="font-medium">{formatOdds(bet.americanOdds)}</span>
+                      </div>
+                    ))}
+                    <div className="flex justify-between pt-1 border-t border-dashed border-blue-200 dark:border-slate-700">
+                      <span className="font-semibold text-black dark:text-white">Combined Odds:</span>
+                      <span className="font-semibold text-blue-700 dark:text-blue-300">
+                        {formatOdds(calculateBetDetails().totalAmericanOdds)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Potential payout calculation */}
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-medium text-foreground dark:text-white">Potential Payout:</span>
+                <span className="text-green-600 dark:text-green-400 font-bold text-xs">
+                  ${calculatePotentialPayout().toFixed(2)}
+                </span>
+              </div>
+              
+              {/* If boost is enabled, show the bonus amount */}
+              {boostEnabled && (
+                <div className="flex justify-between items-center text-xs text-yellow-600 dark:text-yellow-400 mt-1">
+                  <span className="flex items-center">
+                    <Award className="h-3 w-3 mr-1" />
+                    5% Boost Bonus:
+                  </span>
+                  <span>+${(calculatePotentialPayout() - (calculatePotentialPayout() / 1.05)).toFixed(2)}</span>
+                </div>
+              )}
             </div>
           )}
           

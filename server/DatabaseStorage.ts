@@ -212,6 +212,55 @@ export class DatabaseStorage implements IStorage {
     
     return updatedUser;
   }
+  
+  async updateUserPreferences(
+    userId: string, 
+    preferences: Partial<{ 
+      oddsFormat: string, 
+      useVirtualCurrency: boolean, 
+      withdrawalSpeed: string, 
+      mobileOptimizedView: boolean 
+    }>
+  ): Promise<User> {
+    try {
+      // Create an update object with only the fields that were provided
+      const updateData: Partial<User> = {
+        updatedAt: new Date()
+      };
+      
+      if (preferences.oddsFormat !== undefined) {
+        updateData.oddsFormat = preferences.oddsFormat;
+      }
+      
+      if (preferences.useVirtualCurrency !== undefined) {
+        updateData.useVirtualCurrency = preferences.useVirtualCurrency;
+      }
+      
+      if (preferences.withdrawalSpeed !== undefined) {
+        updateData.withdrawalSpeed = preferences.withdrawalSpeed;
+      }
+      
+      if (preferences.mobileOptimizedView !== undefined) {
+        updateData.mobileOptimizedView = preferences.mobileOptimizedView;
+      }
+      
+      // Perform the update
+      const [updatedUser] = await db
+        .update(users)
+        .set(updateData)
+        .where(eq(users.id, userId))
+        .returning();
+      
+      if (!updatedUser) {
+        throw new Error(`Failed to update preferences for user: ${userId}`);
+      }
+      
+      return updatedUser;
+    } catch (error) {
+      console.error(`Error updating user preferences: ${error}`);
+      throw new Error(`Failed to update user preferences: ${error}`);
+    }
+  }
 
   // ==================== Financial Operations ====================
 
