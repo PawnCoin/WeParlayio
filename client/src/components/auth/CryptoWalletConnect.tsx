@@ -232,11 +232,11 @@ const CryptoWalletConnect: React.FC<CryptoWalletConnectProps> = ({ onConnect }) 
           
           <div className="grid grid-cols-2 gap-4 py-4">
             {WALLET_TYPES.map((wallet) => {
-              const walletInstalled = isWalletInstalled(wallet.id);
+              const isWalletAvailable = installedWallets[wallet.id];
               return (
                 <Card 
                   key={wallet.id} 
-                  className={`cursor-pointer transition-all ${selectedWallet === wallet.id && isConnecting ? 'border-primary' : 'hover:border-primary'} ${!walletInstalled ? 'opacity-50' : ''}`}
+                  className={`cursor-pointer transition-all ${selectedWallet === wallet.id && isConnecting ? 'border-primary' : 'hover:border-primary'} ${!isWalletAvailable ? 'opacity-50' : ''}`}
                   onClick={() => !isConnecting && connectToWallet(wallet.id)}
                 >
                   <CardContent className="p-4 flex flex-col items-center justify-center">
@@ -250,7 +250,7 @@ const CryptoWalletConnect: React.FC<CryptoWalletConnectProps> = ({ onConnect }) 
                       }}
                     />
                     <p className="text-sm font-medium text-foreground">{wallet.name}</p>
-                    {!walletInstalled && (
+                    {!isWalletAvailable && (
                       <p className="text-xs text-destructive mt-1">Not installed</p>
                     )}
                     {selectedWallet === wallet.id && isConnecting && (
