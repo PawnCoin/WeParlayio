@@ -68,6 +68,11 @@ export const users = pgTable("users", {
   inviteCode: varchar("invite_code").unique(),
   referredBy: varchar("referred_by"),
   inviteCount: integer("invite_count").default(0),
+  // User preferences
+  oddsFormat: varchar("odds_format").default("american"), // american, decimal, fractional
+  useVirtualCurrency: boolean("use_virtual_currency").default(true), // Toggle between real money and WeParlay Cash
+  withdrawalSpeed: varchar("withdrawal_speed").default("standard"), // standard, fast, instant
+  mobileOptimizedView: boolean("mobile_optimized_view").default(true), // Toggle for mobile optimized views
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
