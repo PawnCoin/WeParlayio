@@ -14,10 +14,12 @@ import {
   supportTickets, SupportTicket, InsertSupportTicket, 
   supportTicketMessages, SupportTicketMessage, InsertSupportTicketMessage, 
   supportTicketLogs, SupportTicketLog,
-  knownIssues, KnownIssue, InsertKnownIssue
+  knownIssues, KnownIssue, InsertKnownIssue,
+  bettingChallenges, BettingChallenge, InsertBettingChallenge,
+  notifications, Notification, InsertNotification
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, gt, lt, desc, sql } from "drizzle-orm";
+import { eq, and, gt, lt, desc, sql, or } from "drizzle-orm";
 import { IStorage } from "./storage";
 
 /**

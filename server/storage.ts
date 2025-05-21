@@ -36,6 +36,19 @@ export interface IStorage {
   updateUserSubscription(userId: string, subscriptionType: 'vip' | 'analytics' | 'support', expiryDate: Date): Promise<User>;
   updateUserPreferences(userId: string, preferences: Partial<{ oddsFormat: string, useVirtualCurrency: boolean, withdrawalSpeed: string, mobileOptimizedView: boolean }>): Promise<User>;
   
+  // Betting challenge operations
+  createBettingChallenge(challenge: InsertBettingChallenge): Promise<BettingChallenge>;
+  getBettingChallenge(id: number): Promise<BettingChallenge | undefined>;
+  getBettingChallengeByUuid(uuid: string): Promise<BettingChallenge | undefined>;
+  getUserChallenges(userId: string, status?: string): Promise<BettingChallenge[]>;
+  acceptBettingChallenge(uuid: string, acceptedBy: string): Promise<BettingChallenge>;
+  updateBettingChallengeStatus(uuid: string, status: string): Promise<BettingChallenge>;
+  
+  // Notification operations
+  createNotification(notification: InsertNotification): Promise<Notification>;
+  getUserNotifications(userId: string, unreadOnly?: boolean): Promise<Notification[]>;
+  markNotificationAsRead(id: number, userId: string): Promise<Notification>;
+  
   // Financial operations
   getFinancialSummary(): Promise<any>;
   getTransactions(limit: number, offset: number): Promise<Transaction[]>; 
