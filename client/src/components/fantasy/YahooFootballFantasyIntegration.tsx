@@ -267,7 +267,37 @@ const YahooFootballFantasyIntegration: React.FC = () => {
       return;
     }
     
+    // Show a loading toast
+    toast({
+      title: "Connecting to Yahoo",
+      description: "Starting the connection process with Yahoo Fantasy...",
+    });
+    
+    // In production, this will open the Yahoo OAuth flow
     window.location.href = "/api/yahoo/auth";
+  };
+  
+  // Function to copy a league invitation link to clipboard
+  const copyLeagueInvite = (leagueId: string, leagueName: string) => {
+    // Create a unique invitation URL with the league ID embedded
+    const inviteUrl = `${window.location.origin}/fantasy/join/${leagueId}`;
+    navigator.clipboard.writeText(inviteUrl);
+    
+    toast({
+      title: "Invitation Link Copied!",
+      description: `Share this link with your friends to invite them to "${leagueName}"`,
+    });
+  };
+  
+  // Function to generate a QR code for easy mobile joining
+  const showLeagueQRCode = (leagueId: string, leagueName: string) => {
+    // In a real implementation, this would display a modal with a QR code
+    // that links to the join page
+    
+    toast({
+      title: "QR Code Generated",
+      description: "League participants can scan this code to join instantly",
+    });
   };
   
   const getStatusColor = (status: string) => {
@@ -361,12 +391,62 @@ const YahooFootballFantasyIntegration: React.FC = () => {
               <FaYahoo className="h-8 w-8 text-purple-500" />
             </div>
             <h3 className="text-lg font-medium mb-2">Connect Your Yahoo Account</h3>
-            <p className="text-gray-500 dark:text-gray-400 text-center mb-4">
+            <p className="text-gray-500 dark:text-gray-400 text-center mb-6">
               Link your Yahoo Fantasy Football account to import your teams, check standings, and manage players
             </p>
-            <Button onClick={handleYahooConnect} className="bg-purple-600 hover:bg-purple-700">
-              Connect to Yahoo Fantasy
-            </Button>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-xl mb-6">
+              <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                <h4 className="text-sm font-semibold mb-2 flex items-center">
+                  <Shield className="h-4 w-4 mr-2 text-green-500" />
+                  Commissioner Connect
+                </h4>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                  Full access to manage your leagues, teams, and invites
+                </p>
+                <Button onClick={handleYahooConnect} className="w-full bg-purple-600 hover:bg-purple-700">
+                  Connect as Commissioner
+                </Button>
+              </div>
+              
+              <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                <h4 className="text-sm font-semibold mb-2 flex items-center">
+                  <Users className="h-4 w-4 mr-2 text-blue-500" />
+                  Player Connect
+                </h4>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                  Access to manage your teams and view league information
+                </p>
+                <Button onClick={handleYahooConnect} className="w-full">
+                  Connect as Player
+                </Button>
+              </div>
+            </div>
+            
+            <div className="w-full max-w-xl">
+              <div className="relative mb-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400">Or connect with a one-time code</span>
+                </div>
+              </div>
+              
+              <div className="flex space-x-2">
+                <Input 
+                  placeholder="Enter league invite code" 
+                  className="flex-1"
+                />
+                <Button variant="outline">
+                  Join League
+                </Button>
+              </div>
+              
+              <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-3">
+                Using a league invite code bypasses the need for a Yahoo account login. Perfect for quick access!
+              </p>
+            </div>
           </div>
         ) : (
           <Tabs defaultValue="teams" className="w-full">

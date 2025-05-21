@@ -48,7 +48,7 @@ export const nbaTeamLogos: Record<string, string> = {
   "San Antonio Spurs": "https://a.espncdn.com/i/teamlogos/nba/500/sa.png"
 };
 
-// NFL Teams
+// NFL Team Logos
 export const nflTeamLogos: Record<string, string> = {
   "Arizona Cardinals": "https://a.espncdn.com/i/teamlogos/nfl/500/ari.png",
   "Atlanta Falcons": "https://a.espncdn.com/i/teamlogos/nfl/500/atl.png",
@@ -84,7 +84,7 @@ export const nflTeamLogos: Record<string, string> = {
   "Washington Commanders": "https://a.espncdn.com/i/teamlogos/nfl/500/wsh.png"
 };
 
-// MLB Teams
+// MLB Team Logos
 export const mlbTeamLogos: Record<string, string> = {
   "Arizona Diamondbacks": "https://a.espncdn.com/i/teamlogos/mlb/500/ari.png",
   "Atlanta Braves": "https://a.espncdn.com/i/teamlogos/mlb/500/atl.png",
@@ -118,7 +118,7 @@ export const mlbTeamLogos: Record<string, string> = {
   "Washington Nationals": "https://a.espncdn.com/i/teamlogos/mlb/500/wsh.png"
 };
 
-// NHL Teams
+// NHL Team Logos
 export const nhlTeamLogos: Record<string, string> = {
   "Anaheim Ducks": "https://a.espncdn.com/i/teamlogos/nhl/500/ana.png",
   "Arizona Coyotes": "https://a.espncdn.com/i/teamlogos/nhl/500/ari.png",
@@ -135,7 +135,7 @@ export const nhlTeamLogos: Record<string, string> = {
   "Florida Panthers": "https://a.espncdn.com/i/teamlogos/nhl/500/fla.png",
   "Los Angeles Kings": "https://a.espncdn.com/i/teamlogos/nhl/500/la.png",
   "Minnesota Wild": "https://a.espncdn.com/i/teamlogos/nhl/500/min.png",
-  "Montreal Canadiens": "https://a.espncdn.com/i/teamlogos/nhl/500/mon.png",
+  "Montreal Canadiens": "https://a.espncdn.com/i/teamlogos/nhl/500/mtl.png",
   "Nashville Predators": "https://a.espncdn.com/i/teamlogos/nhl/500/nsh.png",
   "New Jersey Devils": "https://a.espncdn.com/i/teamlogos/nhl/500/nj.png",
   "New York Islanders": "https://a.espncdn.com/i/teamlogos/nhl/500/nyi.png",
@@ -170,18 +170,52 @@ export const wnbaTeamLogos: Record<string, string> = {
   "Los Angeles Sparks": "https://a.espncdn.com/i/teamlogos/wnba/500/la.png",
 };
 
-// NCAA Basketball (Men's) Team Logos
-export const ncaamTeamLogos: Record<string, string> = {
-  "Gonzaga Bulldogs": "https://a.espncdn.com/i/teamlogos/ncaa/500/2250.png",
+// NCAA Football Team Logos
+export const ncaafTeamLogos: Record<string, string> = {
+  "Georgia Bulldogs": "https://a.espncdn.com/i/teamlogos/ncaa/500/61.png",
+  "Alabama Crimson Tide": "https://a.espncdn.com/i/teamlogos/ncaa/500/333.png",
+  "Ohio State Buckeyes": "https://a.espncdn.com/i/teamlogos/ncaa/500/194.png",
+  "Michigan Wolverines": "https://a.espncdn.com/i/teamlogos/ncaa/500/130.png",
+  "Texas Longhorns": "https://a.espncdn.com/i/teamlogos/ncaa/500/251.png",
+  "Penn State Nittany Lions": "https://a.espncdn.com/i/teamlogos/ncaa/500/213.png",
+  "Florida State Seminoles": "https://a.espncdn.com/i/teamlogos/ncaa/500/52.png",
+  "Oregon Ducks": "https://a.espncdn.com/i/teamlogos/ncaa/500/2483.png",
+  "LSU Tigers": "https://a.espncdn.com/i/teamlogos/ncaa/500/99.png",
+  "Clemson Tigers": "https://a.espncdn.com/i/teamlogos/ncaa/500/228.png",
+  "Notre Dame Fighting Irish": "https://a.espncdn.com/i/teamlogos/ncaa/500/87.png",
+  "Oklahoma Sooners": "https://a.espncdn.com/i/teamlogos/ncaa/500/201.png",
+  "Tennessee Volunteers": "https://a.espncdn.com/i/teamlogos/ncaa/500/2633.png",
+  "Utah Utes": "https://a.espncdn.com/i/teamlogos/ncaa/500/254.png",
+  "USC Trojans": "https://a.espncdn.com/i/teamlogos/ncaa/500/30.png",
+  "Washington Huskies": "https://a.espncdn.com/i/teamlogos/ncaa/500/264.png",
+  "Iowa Hawkeyes": "https://a.espncdn.com/i/teamlogos/ncaa/500/2294.png",
+  "Wisconsin Badgers": "https://a.espncdn.com/i/teamlogos/ncaa/500/275.png",
+  "Ole Miss Rebels": "https://a.espncdn.com/i/teamlogos/ncaa/500/145.png",
+  "Missouri Tigers": "https://a.espncdn.com/i/teamlogos/ncaa/500/142.png",
+};
+
+// NCAA Basketball Team Logos
+export const ncaabTeamLogos: Record<string, string> = {
+  "UConn Huskies": "https://a.espncdn.com/i/teamlogos/ncaa/500/41.png",
+  "Purdue Boilermakers": "https://a.espncdn.com/i/teamlogos/ncaa/500/2509.png",
+  "North Carolina Tar Heels": "https://a.espncdn.com/i/teamlogos/ncaa/500/153.png",
+  "Houston Cougars": "https://a.espncdn.com/i/teamlogos/ncaa/500/248.png",
+  "Kansas Jayhawks": "https://a.espncdn.com/i/teamlogos/ncaa/500/2305.png",
+  "Arizona Wildcats": "https://a.espncdn.com/i/teamlogos/ncaa/500/12.png",
+  "Tennessee Volunteers": "https://a.espncdn.com/i/teamlogos/ncaa/500/2633.png",
   "Duke Blue Devils": "https://a.espncdn.com/i/teamlogos/ncaa/500/150.png",
   "Kentucky Wildcats": "https://a.espncdn.com/i/teamlogos/ncaa/500/96.png",
-  "Kansas Jayhawks": "https://a.espncdn.com/i/teamlogos/ncaa/500/2305.png",
-  "North Carolina Tar Heels": "https://a.espncdn.com/i/teamlogos/ncaa/500/153.png",
+  "Gonzaga Bulldogs": "https://a.espncdn.com/i/teamlogos/ncaa/500/2250.png",
   "Baylor Bears": "https://a.espncdn.com/i/teamlogos/ncaa/500/239.png",
-  "UCLA Bruins": "https://a.espncdn.com/i/teamlogos/ncaa/500/26.png",
+  "Creighton Bluejays": "https://a.espncdn.com/i/teamlogos/ncaa/500/156.png",
+  "Marquette Golden Eagles": "https://a.espncdn.com/i/teamlogos/ncaa/500/269.png",
+  "Auburn Tigers": "https://a.espncdn.com/i/teamlogos/ncaa/500/2.png",
+  "Iowa State Cyclones": "https://a.espncdn.com/i/teamlogos/ncaa/500/66.png",
+  "Michigan State Spartans": "https://a.espncdn.com/i/teamlogos/ncaa/500/127.png",
   "Villanova Wildcats": "https://a.espncdn.com/i/teamlogos/ncaa/500/222.png",
-  "Purdue Boilermakers": "https://a.espncdn.com/i/teamlogos/ncaa/500/2509.png",
-  "Arizona Wildcats": "https://a.espncdn.com/i/teamlogos/ncaa/500/12.png",
+  "Texas A&M Aggies": "https://a.espncdn.com/i/teamlogos/ncaa/500/245.png",
+  "Wisconsin Badgers": "https://a.espncdn.com/i/teamlogos/ncaa/500/275.png",
+  "Alabama Crimson Tide": "https://a.espncdn.com/i/teamlogos/ncaa/500/333.png",
 };
 
 // NCAA Basketball (Women's) Team Logos
@@ -198,159 +232,83 @@ export const ncaawTeamLogos: Record<string, string> = {
   "Indiana Hoosiers": "https://a.espncdn.com/i/teamlogos/ncaa/500/84.png",
 };
 
-// NCAA Football Team Logos
-export const ncaafTeamLogos: Record<string, string> = {
-  "Georgia Bulldogs": "https://a.espncdn.com/i/teamlogos/ncaa/500/61.png",
-  "Alabama Crimson Tide": "https://a.espncdn.com/i/teamlogos/ncaa/500/333.png",
-  "Ohio State Buckeyes": "https://a.espncdn.com/i/teamlogos/ncaa/500/194.png",
-  "Michigan Wolverines": "https://a.espncdn.com/i/teamlogos/ncaa/500/130.png",
-  "Texas Longhorns": "https://a.espncdn.com/i/teamlogos/ncaa/500/251.png",
-  "Penn State Nittany Lions": "https://a.espncdn.com/i/teamlogos/ncaa/500/213.png",
-  "Florida State Seminoles": "https://a.espncdn.com/i/teamlogos/ncaa/500/52.png",
-  "Oregon Ducks": "https://a.espncdn.com/i/teamlogos/ncaa/500/2483.png",
-  "LSU Tigers": "https://a.espncdn.com/i/teamlogos/ncaa/500/99.png",
-  "Clemson Tigers": "https://a.espncdn.com/i/teamlogos/ncaa/500/228.png",
+// UFC Fighter Logos
+export const ufcFighterLogos: Record<string, string> = {
+  "Jon Jones": "https://dmxg5wxfqgb4u.cloudfront.net/styles/athlete_bio_full_body/s3/2023-03/JONES_JON_L_BELT_03042023.png",
+  "Alex Pereira": "https://dmxg5wxfqgb4u.cloudfront.net/styles/athlete_bio_full_body/s3/2023-11/PEREIRA_ALEX_L_11_11_2023.png",
+  "Islam Makhachev": "https://dmxg5wxfqgb4u.cloudfront.net/styles/athlete_bio_full_body/s3/2023-10/MAKHACHEV_ISLAM_L_10212023.png",
+  "Leon Edwards": "https://dmxg5wxfqgb4u.cloudfront.net/styles/athlete_bio_full_body/s3/2023-03/EDWARDS_LEON_L_BELT_03182023.png",
+  "Sean O'Malley": "https://dmxg5wxfqgb4u.cloudfront.net/styles/athlete_bio_full_body/s3/2023-08/OMALLEY_SEAN_L_08192023.png",
+  "Alexandre Pantoja": "https://dmxg5wxfqgb4u.cloudfront.net/styles/athlete_bio_full_body/s3/2023-07/PANTOJA_ALEXANDRE_L_07082023.png",
+  "Ilia Topuria": "https://dmxg5wxfqgb4u.cloudfront.net/styles/athlete_bio_full_body/s3/2024-02/TOPURIA_ILIA_L_BELT_02172024.png",
+  "Dricus Du Plessis": "https://dmxg5wxfqgb4u.cloudfront.net/styles/athlete_bio_full_body/s3/2024-01/DU%20PLESSIS_DRICUS_L_01202024.png",
+  "Zhang Weili": "https://dmxg5wxfqgb4u.cloudfront.net/styles/athlete_bio_full_body/s3/2023-08/ZHANG_WEILI_L_BELT_08192023.png",
+  "Valentina Shevchenko": "https://dmxg5wxfqgb4u.cloudfront.net/styles/athlete_bio_full_body/s3/2023-09/SHEVCHENKO_VALENTINA_L_09162023.png",
+  "Alexa Grasso": "https://dmxg5wxfqgb4u.cloudfront.net/styles/athlete_bio_full_body/s3/2023-09/GRASSO_ALEXA_L_09162023.png",
+  "Julianna Peña": "https://dmxg5wxfqgb4u.cloudfront.net/styles/athlete_bio_full_body/s3/2022-12/PENA_JULIANNA_L_12102022.png",
+  "Amanda Nunes": "https://dmxg5wxfqgb4u.cloudfront.net/styles/athlete_bio_full_body/s3/2023-06/NUNES_AMANDA_L_BELT_06102023.png",
+  "Raquel Pennington": "https://dmxg5wxfqgb4u.cloudfront.net/styles/athlete_bio_full_body/s3/2024-01/PENNINGTON_RAQUEL_L_01202024.png",
+  "Conor McGregor": "https://dmxg5wxfqgb4u.cloudfront.net/styles/athlete_bio_full_body/s3/2021-07/MCGREGOR_CONOR_L_07102021.png",
+  "Israel Adesanya": "https://dmxg5wxfqgb4u.cloudfront.net/styles/athlete_bio_full_body/s3/2023-09/ADESANYA_ISRAEL_L_09092023.png",
 };
 
-// UFL Team Logos
-export const uflTeamLogos: Record<string, string> = {
-  "Birmingham Stallions": "https://a.espncdn.com/i/teamlogos/leagues/500/ufl-birmingham.png",
-  "Michigan Panthers": "https://a.espncdn.com/i/teamlogos/leagues/500/ufl-michigan.png",
-  "St. Louis Battlehawks": "https://a.espncdn.com/i/teamlogos/leagues/500/ufl-st-louis.png",
-  "D.C. Defenders": "https://a.espncdn.com/i/teamlogos/leagues/500/ufl-dc.png",
-  "San Antonio Brahmas": "https://a.espncdn.com/i/teamlogos/leagues/500/ufl-san-antonio.png",
-  "Houston Roughnecks": "https://a.espncdn.com/i/teamlogos/leagues/500/ufl-houston.png",
-  "Memphis Showboats": "https://a.espncdn.com/i/teamlogos/leagues/500/ufl-memphis.png",
-  "Arlington Renegades": "https://a.espncdn.com/i/teamlogos/leagues/500/ufl-arlington.png",
+// Boxing Fighter Logos
+export const boxingFighterLogos: Record<string, string> = {
+  "Tyson Fury": "https://www.boxing247.com/wp-content/uploads/2020/05/Tyson-Fury.jpg",
+  "Oleksandr Usyk": "https://img.bleacherreport.net/img/images/photos/003/910/646/hi-res-6d27a80feef4ca5bac36ed72a1a34e1e_crop_north.jpg?1644681350&w=3072&h=2048",
+  "Canelo Alvarez": "https://www.ringtv.com/wp-content/uploads/2023/03/DAZN_Canelo-1536x1024.jpg",
+  "Terence Crawford": "https://i.insider.com/64bd401fb594faa6e60e52e9?width=1000&format=jpeg&auto=webp",
+  "Naoya Inoue": "https://cdn.vox-cdn.com/thumbor/aT1VdBq12GiqnLbS05iKUdLTb5c=/0x0:5184x3456/1200x800/filters:focal(2273x1079:3101x1907)/cdn.vox-cdn.com/uploads/chorus_image/image/71762273/1450865427.0.jpg",
+  "Gervonta Davis": "https://www.sportbible.com/cdn-cgi/image/width=648,quality=70,format=jpeg,fit=contain,dpr=1/https%3A%2F%2Fs3.eu-west-2.amazonaws.com%2Fsportbible-images%2F94f22301-7e80-4a47-bc4a-6fae9a6f6c71.jpg",
+  "Errol Spence Jr": "https://www.nj.com/resizer/u2k3RJDWEXYQgCnaDYFPFpnWJRM=/1280x0/smart/cloudfront-us-east-1.images.arcpublishing.com/advancelocal/UJOZBPMX4ZE25OG5O5IHIHNRMM.JPG",
+  "Devin Haney": "https://www.rollingstone.com/wp-content/uploads/2023/05/devin-haney-wbc-wba-ibf-wbo-lightweight-world-title.jpg",
+  "Dmitry Bivol": "https://www.ringtv.com/wp-content/uploads/2022/01/Dmitry-Bivol1.jpg",
+  "Artur Beterbiev": "https://cdn.vox-cdn.com/thumbor/g_h3z6lnfBgm65HBwJPKAULYQd0=/0x0:3000x2208/1200x800/filters:focal(1260x864:1740x1344)/cdn.vox-cdn.com/uploads/chorus_image/image/71052097/1241351894.0.jpg",
+  "Shakur Stevenson": "https://www.ringtv.com/wp-content/uploads/2023/02/Shakur-Stevenson3.jpg",
 };
 
-// Boxing & MMA Athlete Images
-export const combatAthleteImages: Record<string, string> = {
-  "Tyson Fury": "https://a.espncdn.com/combiner/i?img=/i/headshots/boxing/players/full/4479037.png",
-  "Anthony Joshua": "https://a.espncdn.com/combiner/i?img=/i/headshots/boxing/players/full/4413562.png",
-  "Canelo Alvarez": "https://a.espncdn.com/combiner/i?img=/i/headshots/boxing/players/full/590.png",
-  "Gennady Golovkin": "https://a.espncdn.com/combiner/i?img=/i/headshots/boxing/players/full/626.png",
-  "Jon Jones": "https://a.espncdn.com/combiner/i?img=/i/headshots/mma/players/full/2335639.png",
-  "Francis Ngannou": "https://a.espncdn.com/combiner/i?img=/i/headshots/mma/players/full/3924208.png",
-  "Israel Adesanya": "https://a.espncdn.com/combiner/i?img=/i/headshots/mma/players/full/4285679.png",
-  "Alex Pereira": "https://a.espncdn.com/combiner/i?img=/i/headshots/mma/players/full/4688858.png",
+// NASCAR Driver Logos
+export const nascarDriverLogos: Record<string, string> = {
+  "Kyle Larson": "https://www.nascar.com/wp-content/uploads/sites/7/2021/02/11/2021-kyle-larson-main-image-512x512.png",
+  "Christopher Bell": "https://www.nascar.com/wp-content/uploads/sites/7/2021/12/16/2022-christopher-bell-main-image-512x512.png",
+  "William Byron": "https://www.nascar.com/wp-content/uploads/sites/7/2021/12/16/2022-william-byron-main-image-512x512.png",
+  "Denny Hamlin": "https://www.nascar.com/wp-content/uploads/sites/7/2021/12/16/2022-denny-hamlin-main-image-512x512.png",
+  "Tyler Reddick": "https://www.nascar.com/wp-content/uploads/sites/7/2021/12/16/2022-tyler-reddick-main-image-512x512.png",
+  "Chase Elliott": "https://www.nascar.com/wp-content/uploads/sites/7/2021/12/16/2022-chase-elliott-main-image-512x512.png",
+  "Brad Keselowski": "https://www.nascar.com/wp-content/uploads/sites/7/2022/01/06/2022-brad-keselowski-main-image-512x512.png",
+  "Martin Truex Jr.": "https://www.nascar.com/wp-content/uploads/sites/7/2021/12/16/2022-martin-truex-jr-main-image-512x512.png",
+  "Bubba Wallace": "https://www.nascar.com/wp-content/uploads/sites/7/2021/12/16/2022-bubba-wallace-main-image-512x512.png",
+  "Kevin Harvick": "https://www.nascar.com/wp-content/uploads/sites/7/2021/12/16/2022-kevin-harvick-main-image-512x512.png",
+  "Ryan Blaney": "https://www.nascar.com/wp-content/uploads/sites/7/2021/12/16/2022-ryan-blaney-main-image-512x512.png",
+  "Kyle Busch": "https://www.nascar.com/wp-content/uploads/sites/7/2021/12/16/2022-kyle-busch-main-image-512x512.png",
 };
 
-// NASCAR Driver Images
-export const nascarDriverImages: Record<string, string> = {
-  "Kyle Larson": "https://a.espncdn.com/combiner/i?img=/i/headshots/rpm/players/full/4156.png",
-  "Denny Hamlin": "https://a.espncdn.com/combiner/i?img=/i/headshots/rpm/players/full/227.png",
-  "Chase Elliott": "https://a.espncdn.com/combiner/i?img=/i/headshots/rpm/players/full/3975.png",
-  "Kyle Busch": "https://a.espncdn.com/combiner/i?img=/i/headshots/rpm/players/full/297.png",
-  "Joey Logano": "https://a.espncdn.com/combiner/i?img=/i/headshots/rpm/players/full/866.png",
+// Tennis Player Logos
+export const tennisPlayerLogos: Record<string, string> = {
+  "Novak Djokovic": "https://photoresources.wtatennis.com/photo-resources/2019/08/15/dbb59626-9254-4426-915e-57397b6d6635/Novak_Djokovic_-_2019_US_Open_-DSC_8886.jpg?width=700&height=394",
+  "Rafael Nadal": "https://photoresources.wtatennis.com/photo-resources/2023/01/14/9a68ed73-b452-428d-9a15-729c55b521dd/Rafael_Nadal_-_2023_Australian_Open_-AO-Day_7-1070.jpg?width=700&height=394",
+  "Carlos Alcaraz": "https://photoresources.wtatennis.com/photo-resources/2023/08/19/7c4b8c07-1499-4f67-be56-1a4e3f05e7ed/Carlos_Alcaraz_-_2023_Western_Southern_Open_-_Day_8-039.jpg?width=700&height=394",
+  "Daniil Medvedev": "https://photoresources.wtatennis.com/photo-resources/2023/07/08/e04eeef0-27dd-4b51-8c1e-da9fc8c3e14b/Daniil_Medvedev_-_2023_Wimbledon_-_Day_12-1063.jpg?width=700&height=394",
+  "Jannik Sinner": "https://photoresources.wtatennis.com/photo-resources/2023/11/19/22d0eff0-fe20-457c-a31c-b03fcf0ccbde/Jannik_Sinner_-_2023_Nitto_ATP_Finals_-_Day_8-227.jpg?width=700&height=394",
+  "Iga Swiatek": "https://photoresources.wtatennis.com/photo-resources/2022/09/10/8d0c48a5-13ca-48ac-9126-53483c7c2eed/Iga_Swiatek_-_2022_US_Open_-CRC_4467.jpg?width=700&height=394",
+  "Aryna Sabalenka": "https://photoresources.wtatennis.com/photo-resources/2023/09/25/6e2d2b40-2cf4-407c-9c37-89fcd08a17bd/Aryna_Sabalenka_-_2023_Wuhan_Open_-_Day_3-0023.jpg?width=700&height=394",
+  "Elena Rybakina": "https://photoresources.wtatennis.com/photo-resources/2023/01/26/1fed08e5-b35b-4c99-97e9-34a51fcd79d5/Elena_Rybakina_-_2023_Australian_Open_-_Day_11-1134.jpg?width=700&height=394",
+  "Coco Gauff": "https://photoresources.wtatennis.com/photo-resources/2023/09/09/65f68a91-57cf-4fa3-8bcf-f7ff70de23f2/Coco_Gauff_-_2023_US_Open_-_Day_13-1118.jpg?width=700&height=394",
+  "Jessica Pegula": "https://photoresources.wtatennis.com/photo-resources/2023/08/21/37d7f7f7-5ec1-4607-96c0-8ca3865a8ff4/Jessica_Pegula_-_2023_Western_Southern_Open_-_Day_10-1059.jpg?width=700&height=394",
+  "Ons Jabeur": "https://photoresources.wtatennis.com/photo-resources/2022/07/07/75bdacc2-97eb-4c47-aa5d-14a633e5cccc/Ons_Jabeur_-_2022_Wimbledon_-_Day_11-1042.jpg?width=700&height=394",
 };
 
-// Tennis Player Images (ATP & WTA)
-export const tennisPlayerImages: Record<string, string> = {
-  "Novak Djokovic": "https://a.espncdn.com/combiner/i?img=/i/headshots/tennis/players/full/296.png",
-  "Rafael Nadal": "https://a.espncdn.com/combiner/i?img=/i/headshots/tennis/players/full/261.png",
-  "Carlos Alcaraz": "https://a.espncdn.com/combiner/i?img=/i/headshots/tennis/players/full/4688041.png",
-  "Alexander Zverev": "https://a.espncdn.com/combiner/i?img=/i/headshots/tennis/players/full/2223.png",
-  "Iga Swiatek": "https://a.espncdn.com/combiner/i?img=/i/headshots/tennis/players/full/4379008.png",
-  "Aryna Sabalenka": "https://a.espncdn.com/combiner/i?img=/i/headshots/tennis/players/full/3553.png",
-  "Coco Gauff": "https://a.espncdn.com/combiner/i?img=/i/headshots/tennis/players/full/4450110.png",
-  "Naomi Osaka": "https://a.espncdn.com/combiner/i?img=/i/headshots/tennis/players/full/3889.png",
+// Sport logo mappings (for general sport icons)
+export const sportLogos: Record<string, string> = {
+  "basketball": "https://a.espncdn.com/redesign/assets/img/icons/ESPN-icon-basketball.png",
+  "football": "https://a.espncdn.com/redesign/assets/img/icons/ESPN-icon-football.png",
+  "baseball": "https://a.espncdn.com/redesign/assets/img/icons/ESPN-icon-baseball.png",
+  "hockey": "https://a.espncdn.com/redesign/assets/img/icons/ESPN-icon-hockey.png",
+  "soccer": "https://a.espncdn.com/redesign/assets/img/icons/ESPN-icon-soccer.png",
+  "tennis": "https://a.espncdn.com/redesign/assets/img/icons/ESPN-icon-tennis.png",
+  "golf": "https://a.espncdn.com/redesign/assets/img/icons/ESPN-icon-golf.png",
+  "boxing": "https://a.espncdn.com/redesign/assets/img/icons/ESPN-icon-boxing.png",
+  "mma": "https://a.espncdn.com/redesign/assets/img/icons/ESPN-icon-mma.png",
+  "nascar": "https://a.espncdn.com/redesign/assets/img/icons/ESPN-icon-nascar.png",
+  "esports": "https://a.espncdn.com/redesign/assets/img/icons/ESPN-icon-esports.png"
 };
-
-// Function to get team logo based on name and league
-export function getTeamLogo(teamName: string, league: string = 'NBA'): string {
-  if (!teamName) return "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-basketball.png";
-  
-  league = league.toUpperCase();
-  
-  // Select the appropriate league logos
-  let logos: Record<string, string>;
-  switch (league) {
-    case 'NFL':
-      logos = nflTeamLogos;
-      break;
-    case 'MLB':
-      logos = mlbTeamLogos;
-      break;
-    case 'NHL':
-      logos = nhlTeamLogos;
-      break;
-    case 'WNBA':
-      logos = wnbaTeamLogos;
-      break;
-    case 'NCAAM': 
-    case 'NCAA_MBB':
-      logos = ncaamTeamLogos;
-      break;
-    case 'NCAAW': 
-    case 'NCAA_WBB':
-      logos = ncaawTeamLogos;
-      break;
-    case 'NCAAF':
-    case 'NCAA_FB':
-      logos = ncaafTeamLogos;
-      break;
-    case 'UFL':
-      logos = uflTeamLogos;
-      break;
-    case 'NBA':
-    default:
-      logos = nbaTeamLogos;
-      break;
-  }
-  
-  // Try to find the logo for the team
-  if (logos[teamName]) {
-    return logos[teamName];
-  }
-  
-  // If not found, use a generic league logo
-  if (league === 'NBA' || league === 'WNBA' || league === 'NCAAM' || league === 'NCAAW') {
-    return "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-basketball.png";
-  } else if (league === 'NFL' || league === 'NCAAF' || league === 'UFL') {
-    return "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-football.png";
-  } else if (league === 'MLB') {
-    return "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-baseball.png";
-  } else if (league === 'NHL') {
-    return "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-hockey.png";
-  } else if (league === 'BOXING' || league === 'MMA' || league === 'UFC') {
-    return "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-boxing.png";
-  } else if (league === 'NASCAR' || league === 'MOTORSPORT') {
-    return "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-nascar.png";
-  } else if (league === 'TENNIS' || league === 'ATP' || league === 'WTA') {
-    return "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-tennis.png";
-  }
-  
-  return "https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-basketball.png";
-}
-
-// NBA Player Images by Name - sample for popular players
-export const nbaPlayerImages: Record<string, string> = {
-  "LeBron James": "https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/1966.png",
-  "Stephen Curry": "https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/3975.png",
-  "Kevin Durant": "https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/3202.png",
-  "Giannis Antetokounmpo": "https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/3032977.png",
-  "Nikola Jokic": "https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/3112335.png",
-  "Luka Doncic": "https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/3945274.png",
-  "Ja Morant": "https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/4279888.png",
-  "Trae Young": "https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/4277905.png",
-  "Joel Embiid": "https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/3059318.png",
-  "Jayson Tatum": "https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/4065648.png",
-  "Jimmy Butler": "https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/6430.png",
-  "Donovan Mitchell": "https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/3908809.png",
-  "Damian Lillard": "https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/6606.png",
-  "Kyrie Irving": "https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/6442.png",
-  "Zion Williamson": "https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/4395628.png",
-  "Anthony Davis": "https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/6583.png",
-  "Kawhi Leonard": "https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/6450.png",
-  "Devin Booker": "https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/3136193.png",
-  "James Harden": "https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/3992.png",
-  "Paul George": "https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/4251.png"
-};
-
-// Function to get player image URL
-export function getPlayerImage(playerName: string): string {
-  if (!playerName) return "https://a.espncdn.com/combiner/i?img=/i/headshots/nophoto.png";
-  
-  return nbaPlayerImages[playerName] || "https://a.espncdn.com/combiner/i?img=/i/headshots/nophoto.png";
-}
