@@ -1,46 +1,56 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  connectWallet, 
-  disconnectWallet, 
-  WalletType, 
-  ConnectionStatus,
-  isMetaMaskAvailable,
-  isPhantomAvailable,
-  isCoinbaseWalletAvailable,
-  isTrustWalletAvailable
-} from "@/services/walletService";
+import { Wallet, Coins } from "lucide-react";
 
-// Supported wallet types with availability check
+// Add global window type declaration for TypeScript
+declare global {
+  interface Window {
+    ethereum?: {
+      isMetaMask?: boolean;
+      isCoinbaseWallet?: boolean;
+      isTrust?: boolean;
+      request: (args: any) => Promise<any>;
+    };
+    solana?: {
+      isPhantom?: boolean;
+      connect: () => Promise<{ publicKey: { toString: () => string } }>;
+      disconnect: () => Promise<void>;
+    };
+  }
+}
+
+// Wallet types
+enum WalletType {
+  METAMASK = 'metamask',
+  PHANTOM = 'phantom',
+  COINBASE = 'coinbase',
+  TRUST = 'trust'
+}
+
+// Supported wallets
 const WALLET_TYPES = [
   { 
     id: WalletType.METAMASK, 
     name: "MetaMask", 
-    icon: "https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg",
-    isAvailable: isMetaMaskAvailable
+    icon: "https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg"
   },
   { 
     id: WalletType.PHANTOM, 
     name: "Phantom", 
-    icon: "https://www.phantom.app/img/logo.png",
-    isAvailable: isPhantomAvailable
+    icon: "https://www.phantom.app/img/logo.png"
   },
   { 
     id: WalletType.COINBASE, 
     name: "Coinbase Wallet", 
-    icon: "https://www.coinbase.com/assets/press/Coinbase_Wallet_Logo-4e6245acde71d691de3d44ed012a0a2f833a428bcea972b5cf1ef2954the84f58.png",
-    isAvailable: isCoinbaseWalletAvailable
+    icon: "https://www.coinbase.com/assets/press/Coinbase_Wallet_Logo-4e6245acde71d691de3d44ed012a0a2f833a428bcea972b5cf1ef2954the84f58.png"
   },
   { 
     id: WalletType.TRUST, 
     name: "Trust Wallet", 
-    icon: "https://trustwallet.com/assets/images/media/assets/TWT.png",
-    isAvailable: isTrustWalletAvailable
+    icon: "https://trustwallet.com/assets/images/media/assets/TWT.png"
   }
 ];
 
@@ -56,77 +66,114 @@ const CryptoWalletConnect: React.FC<CryptoWalletConnectProps> = ({ onConnect }) 
   const [walletAddress, setWalletAddress] = useState("");
   const [walletBalance, setWalletBalance] = useState<string | null>(null);
   const [walletNetwork, setWalletNetwork] = useState<string | null>(null);
-  const [availableWallets, setAvailableWallets] = useState<(typeof WALLET_TYPES[0] & { isInstalled?: boolean })[]>(WALLET_TYPES);
+  const [installedWallets, setInstalledWallets] = useState<Record<string, boolean>>({});
   
-  // Interface for wallet with installation status
-  interface WalletWithStatus extends typeof WALLET_TYPES[0] {
-    isInstalled: boolean;
-  }
-  
-  // Check wallet availability
+  // Check installed wallets on component mount
   useEffect(() => {
-    const checkWalletAvailability = () => {
-      const updatedWallets = WALLET_TYPES.map(wallet => {
-        return {
-          ...wallet,
-          isInstalled: wallet.isAvailable()
-        } as WalletWithStatus;
-      });
-      setAvailableWallets(updatedWallets);
-    };
-    
-    checkWalletAvailability();
+    checkInstalledWallets();
   }, []);
   
-  // Real wallet connection
+  // Check which wallets are installed
+  const checkInstalledWallets = () => {
+    const walletStatus = {
+      [WalletType.METAMASK]: !!window.ethereum?.isMetaMask,
+      [WalletType.PHANTOM]: !!window.solana?.isPhantom,
+      [WalletType.COINBASE]: !!window.ethereum?.isCoinbaseWallet,
+      [WalletType.TRUST]: !!window.ethereum?.isTrust
+    };
+    
+    setInstalledWallets(walletStatus);
+  };
+  
+  // Connect to Ethereum wallet (MetaMask, Coinbase, Trust)
+  const connectEthereumWallet = async (walletType: WalletType) => {
+    if (!window.ethereum) {
+      throw new Error(`${walletType} is not installed`);
+    }
+    
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    if (!accounts || accounts.length === 0) {
+      throw new Error('No accounts found');
+    }
+    
+    const address = accounts[0];
+    const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+    
+    // Get network name
+    let network = 'Unknown Network';
+    switch (chainId) {
+      case '0x1': network = 'Ethereum Mainnet'; break;
+      case '0x89': network = 'Polygon'; break;
+      case '0x38': network = 'Binance Smart Chain'; break;
+      default: network = `Chain ID: ${parseInt(chainId, 16)}`;
+    }
+    
+    // Get balance
+    const balance = await window.ethereum.request({
+      method: 'eth_getBalance',
+      params: [address, 'latest']
+    });
+    
+    const balanceInEth = (parseInt(balance, 16) / 1e18).toFixed(4);
+    
+    return {
+      address,
+      network,
+      balance: balanceInEth
+    };
+  };
+  
+  // Connect to Phantom (Solana)
+  const connectPhantomWallet = async () => {
+    if (!window.solana || !window.solana.isPhantom) {
+      throw new Error('Phantom wallet is not installed');
+    }
+    
+    const resp = await window.solana.connect();
+    const address = resp.publicKey.toString();
+    
+    return {
+      address,
+      network: 'Solana',
+      balance: '0.00' // Would require RPC calls to get actual balance
+    };
+  };
+  
+  // Connect wallet based on type
   const connectToWallet = async (walletType: string) => {
     setSelectedWallet(walletType);
     setIsConnecting(true);
     
     try {
-      // Check if the wallet is installed first
-      const walletInfo = WALLET_TYPES.find(w => w.id === walletType);
-      if (walletInfo && !walletInfo.isAvailable()) {
-        toast({
-          title: "Wallet Not Found",
-          description: `${walletInfo.name} is not installed. Please install it first.`,
-          variant: "destructive"
-        });
-        setIsConnecting(false);
-        return;
-      }
+      let walletInfo;
       
-      const result = await connectWallet(walletType as WalletType);
-      
-      if (result.status === ConnectionStatus.CONNECTED && result.address) {
-        setWalletAddress(result.address);
-        setWalletBalance(result.balance || null);
-        setWalletNetwork(result.network || null);
-        
-        toast({
-          title: "Wallet Connected",
-          description: `Successfully connected to ${walletType} on ${result.network || 'network'}`,
-        });
-        
-        if (onConnect) {
-          onConnect(result.address, walletType);
-        }
-        
-        setIsDialogOpen(false);
+      // Choose wallet connection method based on type
+      if (walletType === WalletType.PHANTOM) {
+        walletInfo = await connectPhantomWallet();
       } else {
-        // Handle connection error
-        toast({
-          title: "Connection Failed",
-          description: result.error || "Failed to connect to wallet. Please try again.",
-          variant: "destructive"
-        });
+        walletInfo = await connectEthereumWallet(walletType as WalletType);
       }
+      
+      setWalletAddress(walletInfo.address);
+      setWalletBalance(walletInfo.balance);
+      setWalletNetwork(walletInfo.network);
+      
+      toast({
+        title: "Wallet Connected",
+        description: `Successfully connected to ${walletType} on ${walletInfo.network}`,
+      });
+      
+      if (onConnect) {
+        onConnect(walletInfo.address, walletType);
+      }
+      
+      setIsDialogOpen(false);
     } catch (err) {
       console.error("Wallet connection error:", err);
-      const errorMessage = err instanceof Error ? err.message : "Failed to connect to wallet. Please try again.";
+      const error = err as Error;
       toast({
         title: "Connection Failed",
-        description: errorMessage,
+        description: error.message || "Failed to connect to wallet. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -134,6 +181,35 @@ const CryptoWalletConnect: React.FC<CryptoWalletConnectProps> = ({ onConnect }) 
     }
   };
   
+  // Function to disconnect wallet
+  const handleDisconnectWallet = async () => {
+    try {
+      // For Phantom wallets, handle special disconnect
+      if (selectedWallet === WalletType.PHANTOM && window.solana?.isPhantom) {
+        await window.solana.disconnect();
+      }
+      
+      // Reset states
+      setWalletAddress("");
+      setWalletBalance(null);
+      setWalletNetwork(null);
+      setSelectedWallet(null);
+      
+      toast({
+        title: "Wallet Disconnected",
+        description: "Your wallet has been disconnected.",
+      });
+    } catch (err) {
+      console.error("Failed to disconnect wallet:", err);
+      const error = err as Error;
+      toast({
+        title: "Disconnection Failed",
+        description: error.message || "Failed to disconnect your wallet",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -142,9 +218,7 @@ const CryptoWalletConnect: React.FC<CryptoWalletConnectProps> = ({ onConnect }) 
             variant="default" 
             className="w-full bg-primary text-white hover:bg-primary/90 flex items-center justify-center font-medium"
           >
-            <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M13.6 4h-8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm4.4 2v12c0 1.1-.9 2-2 2s-2-.9-2-2V6c0-1.1.9-2 2-2s2 .9 2 2z" fill="currentColor"/>
-            </svg>
+            <Wallet className="h-4 w-4 mr-2" />
             Connect Crypto Wallet
           </Button>
         </DialogTrigger>
@@ -157,34 +231,37 @@ const CryptoWalletConnect: React.FC<CryptoWalletConnectProps> = ({ onConnect }) 
           </DialogHeader>
           
           <div className="grid grid-cols-2 gap-4 py-4">
-            {availableWallets.map(wallet => (
-              <Card 
-                key={wallet.id} 
-                className={`cursor-pointer transition-all ${selectedWallet === wallet.id && isConnecting ? 'border-primary' : 'hover:border-primary'}`}
-                onClick={() => !isConnecting && connectToWallet(wallet.id)}
-              >
-                <CardContent className="p-4 flex flex-col items-center justify-center">
-                  <img 
-                    src={wallet.icon} 
-                    alt={wallet.name} 
-                    className="w-12 h-12 mb-2" 
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).onerror = null;
-                      (e.target as HTMLImageElement).src = 'https://placehold.co/200/png';
-                    }}
-                  />
-                  <p className="text-sm font-medium text-foreground">{wallet.name}</p>
-                  {!wallet.isInstalled && (
-                    <p className="text-xs text-destructive mt-1">Not installed</p>
-                  )}
-                  {selectedWallet === wallet.id && isConnecting && (
-                    <div className="mt-2 flex items-center justify-center w-full">
-                      <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
+            {WALLET_TYPES.map((wallet) => {
+              const walletInstalled = isWalletInstalled(wallet.id);
+              return (
+                <Card 
+                  key={wallet.id} 
+                  className={`cursor-pointer transition-all ${selectedWallet === wallet.id && isConnecting ? 'border-primary' : 'hover:border-primary'} ${!walletInstalled ? 'opacity-50' : ''}`}
+                  onClick={() => !isConnecting && connectToWallet(wallet.id)}
+                >
+                  <CardContent className="p-4 flex flex-col items-center justify-center">
+                    <img 
+                      src={wallet.icon} 
+                      alt={wallet.name} 
+                      className="w-12 h-12 mb-2" 
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).onerror = null;
+                        (e.target as HTMLImageElement).src = 'https://placehold.co/200/png';
+                      }}
+                    />
+                    <p className="text-sm font-medium text-foreground">{wallet.name}</p>
+                    {!walletInstalled && (
+                      <p className="text-xs text-destructive mt-1">Not installed</p>
+                    )}
+                    {selectedWallet === wallet.id && isConnecting && (
+                      <div className="mt-2 flex items-center justify-center w-full">
+                        <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
           
           <DialogFooter className="flex flex-col sm:flex-row sm:justify-between">
@@ -233,7 +310,8 @@ const CryptoWalletConnect: React.FC<CryptoWalletConnectProps> = ({ onConnect }) 
                     </p>
                   )}
                   {walletBalance && (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground flex items-center">
+                      <Coins className="h-3 w-3 mr-1" />
                       Balance: {walletBalance}
                     </p>
                   )}
@@ -242,28 +320,7 @@ const CryptoWalletConnect: React.FC<CryptoWalletConnectProps> = ({ onConnect }) 
               <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={async () => {
-                  try {
-                    if (selectedWallet) {
-                      await disconnectWallet(selectedWallet as WalletType);
-                    }
-                    setWalletAddress("");
-                    setWalletBalance(null);
-                    setWalletNetwork(null);
-                    setSelectedWallet(null);
-                    toast({
-                      title: "Wallet Disconnected",
-                      description: "Your wallet has been disconnected.",
-                    });
-                  } catch (err) {
-                    console.error("Failed to disconnect wallet:", err);
-                    toast({
-                      title: "Disconnection Failed",
-                      description: "Failed to disconnect your wallet. Please try again.",
-                      variant: "destructive"
-                    });
-                  }
-                }}
+                onClick={handleDisconnectWallet}
                 className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground"
               >
                 Disconnect
