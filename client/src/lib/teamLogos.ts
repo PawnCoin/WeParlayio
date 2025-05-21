@@ -298,6 +298,39 @@ export const tennisPlayerLogos: Record<string, string> = {
   "Ons Jabeur": "https://photoresources.wtatennis.com/photo-resources/2022/07/07/75bdacc2-97eb-4c47-aa5d-14a633e5cccc/Ons_Jabeur_-_2022_Wimbledon_-_Day_11-1042.jpg?width=700&height=394",
 };
 
+// Get team logo for a sport
+export function getTeamLogo(teamName: string, league: string = 'NBA'): string {
+  // Check league-specific logo collections
+  if (league === 'NBA' && nbaTeamLogos[teamName]) {
+    return nbaTeamLogos[teamName];
+  } else if (league === 'NFL' && nflTeamLogos[teamName]) {
+    return nflTeamLogos[teamName];
+  } else if (league === 'MLB' && mlbTeamLogos[teamName]) {
+    return mlbTeamLogos[teamName];
+  } else if (league === 'NHL' && nhlTeamLogos[teamName]) {
+    return nhlTeamLogos[teamName];
+  } else if (league === 'WNBA' && wnbaTeamLogos[teamName]) {
+    return wnbaTeamLogos[teamName];
+  } else if (league === 'NCAAF' && ncaafTeamLogos[teamName]) {
+    return ncaafTeamLogos[teamName];
+  } else if (league === 'NCAAB' && ncaabTeamLogos[teamName]) {
+    return ncaabTeamLogos[teamName];
+  } else if (league === 'NCAAW' && ncaawTeamLogos[teamName]) {
+    return ncaawTeamLogos[teamName];
+  } else if (league === 'UFC' && ufcFighterLogos[teamName]) {
+    return ufcFighterLogos[teamName];
+  } else if (league === 'BOXING' && boxingFighterLogos[teamName]) {
+    return boxingFighterLogos[teamName];
+  } else if (league === 'NASCAR' && nascarDriverLogos[teamName]) {
+    return nascarDriverLogos[teamName];
+  } else if ((league === 'TENNIS' || league === 'ATP' || league === 'WTA') && tennisPlayerLogos[teamName]) {
+    return tennisPlayerLogos[teamName];
+  }
+  
+  // Return default sport logo if no team logo is found
+  return sportLogos[league.toLowerCase()] || sportLogos.basketball;
+}
+
 // Sport logo mappings (for general sport icons)
 export const sportLogos: Record<string, string> = {
   "basketball": "https://a.espncdn.com/redesign/assets/img/icons/ESPN-icon-basketball.png",
