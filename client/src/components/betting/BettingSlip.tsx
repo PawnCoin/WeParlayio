@@ -319,7 +319,7 @@ const BettingSlip: React.FC = () => {
     }
     
     // For USD bets, check balance
-    if (selectedCurrency === 'USD' && user && amount > user.balance) {
+    if (selectedCurrency === 'USD' && user && user.balance !== undefined && amount > user.balance) {
       toast({
         title: "Insufficient Funds",
         description: "You don't have enough balance to place this bet",
@@ -507,8 +507,8 @@ const BettingSlip: React.FC = () => {
                     <Button 
                       variant="ghost"
                       className="h-full border-l border-gray-200 dark:border-gray-700 px-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 rounded-none rounded-r-md"
-                      onClick={() => user && selectedCurrency === 'USD' && setWagerAmount(user.balance.toFixed(2))}
-                      disabled={selectedCurrency !== 'USD'}
+                      onClick={() => user && user.balance !== undefined && selectedCurrency === 'USD' && setWagerAmount(user.balance.toFixed(2))}
+                      disabled={selectedCurrency !== 'USD' || !user || user.balance === undefined}
                     >
                       Max
                     </Button>

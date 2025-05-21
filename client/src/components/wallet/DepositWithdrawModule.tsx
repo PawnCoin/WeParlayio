@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ArrowUpRight, ArrowDownLeft, Wallet, CreditCard, QrCode } from "lucide-react";
 import CryptoWalletConnect from "@/components/auth/CryptoWalletConnect";
-import QRCode from "qrcode.react";
+import { QRCodeSVG } from "qrcode.react";
 
 // Wallet interface
 interface ConnectedWallet {
@@ -151,7 +151,7 @@ const DepositWithdrawModule: React.FC = () => {
           
           <div className="py-4 flex flex-col items-center">
             <div className="p-2 bg-white mb-4">
-              <QRCode value={depositAddress} size={200} />
+              <QRCodeSVG value={depositAddress} size={200} />
             </div>
             
             <div className="w-full">
