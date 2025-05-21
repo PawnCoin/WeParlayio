@@ -8,8 +8,9 @@ import { OddsApiService } from "./services/oddsApiService";
 import { yahooRouter } from "./routes/yahooRoutes";
 import { feeRouter } from "./routes/feeRoutes";
 
-// Initialize The Odds API service
+// Initialize The Odds API services
 const oddsApiService = new OddsApiService();
+const advancedOddsService = new AdvancedOddsService();
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Register Authentication routes
@@ -358,6 +359,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error in upcoming events route:", error);
       res.status(500).json({ message: error.message || "Internal server error" });
+    }
+  });
+
+  // Enhanced API endpoints for comprehensive betting data
+  
+  // Get player props for a specific event
+  app.get("/api/events/:eventId/player-props", async (req, res) => {
+    try {
+      const { eventId } = req.params;
+      const sportKey = req.query.sport as string;
+      
+      if (!sportKey) {
+        return res.status(400).json({ message: "Sport key is required" });
+      }
+      
+      const playerProps = await advancedOddsService.getPlayerProps(sportKey, eventId);
+      res.json(playerProps);
+    } catch (error: any) {
+      console.error("Error fetching player props:", error);
+      res.status(500).json({ message: error.message || "Failed to fetch player props" });
+    }
+  });
+  
+  // Get team props for a specific event
+  app.get("/api/events/:eventId/team-props", async (req, res) => {
+    try {
+      const { eventId } = req.params;
+      const sportKey = req.query.sport as string;
+      
+      if (!sportKey) {
+        return res.status(400).json({ message: "Sport key is required" });
+      }
+      
+      const teamProps = await advancedOddsService.getTeamProps(sportKey, eventId);
+      res.json(teamProps);
+    } catch (error: any) {
+      console.error("Error fetching team props:", error);
+      res.status(500).json({ message: error.message || "Failed to fetch team props" });
+    }
+  });
+  
+  // Get all betting markets for a specific event (game lines, player props, and team props)
+  app.get("/api/events/:eventId/all-markets", async (req, res) => {
+    try {
+      const { eventId } = req.params;
+      const sportKey = req.query.sport as string;
+      
+      if (!sportKey) {
+        return res.status(400).json({ message: "Sport key is required" });
+      }
+      
+      const allMarkets = await advancedOddsService.getAllMarkets(sportKey, eventId);
+      res.json(allMarkets);
+    } catch (error: any) {
+      console.error("Error fetching all betting markets:", error);
+      res.status(500).json({ message: error.message || "Failed to fetch betting markets" });
+    }
+  });
+  
+  // Enhanced live events endpoint with real-time data
+  app.get("/api/events/:sportKey/live-enhanced", async (req, res) => {
+    try {
+      const { sportKey } = req.params;
+      
+      const liveEvents = await advancedOddsService.getLiveEvents(sportKey);
+      res.json(liveEvents);
+    } catch (error: any) {
+      console.error("Error fetching enhanced live events:", error);
+      res.status(500).json({ message: error.message || "Failed to fetch enhanced live events" });
     }
   });
 
