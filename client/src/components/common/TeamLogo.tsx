@@ -1,88 +1,117 @@
 import React, { useState, useEffect } from 'react';
-import { getTeamLogoUrl } from '@/lib/sportsDataUtils';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { sportLogos, getTeamLogo } from '@/lib/teamLogos';
+import { Check, AlertTriangle } from 'lucide-react';
 
 interface TeamLogoProps {
   teamName: string;
   league?: string;
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  showFallback?: boolean;
   fallbackText?: string;
   className?: string;
-  withShadow?: boolean;
-  withBorder?: boolean;
+  verifiedOnly?: boolean;
 }
 
 /**
- * TeamLogo component that displays team logos consistently across the application
- * Handles error states and fallbacks automatically
+ * TeamLogo Component
+ * 
+ * A standardized component for displaying team logos across the entire application.
+ * Handles fallbacks gracefully and provides consistent styling.
+ * 
+ * @param {string} teamName - The name of the team
+ * @param {string} league - The league/sport code (NBA, NFL, MLB, NHL, etc.)
+ * @param {string} size - Size of the avatar (xs, sm, md, lg, xl)
+ * @param {boolean} showFallback - Whether to show a fallback when image fails to load
+ * @param {string} fallbackText - Custom text to show in fallback (defaults to team initials)
+ * @param {string} className - Additional CSS classes
+ * @param {boolean} verifiedOnly - Only show logos that are verified (not fallbacks)
  */
 const TeamLogo: React.FC<TeamLogoProps> = ({
   teamName,
   league = 'NBA',
   size = 'md',
+  showFallback = true,
   fallbackText,
   className = '',
-  withShadow = false,
-  withBorder = false,
+  verifiedOnly = false
 }) => {
   const [logoUrl, setLogoUrl] = useState<string>('');
-  const [hasError, setHasError] = useState(false);
+  const [hasError, setHasError] = useState<boolean>(false);
+  const [isVerified, setIsVerified] = useState<boolean>(false);
   
-  // Calculate size in pixels based on size prop
-  const sizeMap = {
+  // Determine size class for avatar
+  const sizeClass = {
     'xs': 'h-6 w-6',
     'sm': 'h-8 w-8',
     'md': 'h-10 w-10',
     'lg': 'h-12 w-12',
-    'xl': 'h-16 w-16',
-  };
+    'xl': 'h-16 w-16'
+  }[size];
   
-  const sizeClass = sizeMap[size] || sizeMap.md;
-  
-  // Get initials from team name for fallback
-  const getInitials = (name: string): string => {
-    if (!name) return '';
+  // Get the initials of the team name for fallback
+  const getInitials = (): string => {
+    if (fallbackText) return fallbackText;
     
-    const words = name.split(' ');
-    if (words.length === 1) {
-      return name.substring(0, 2).toUpperCase();
+    if (!teamName) return '?';
+    
+    // For names like "Los Angeles Lakers", get "LAL"
+    if (teamName.includes(' ')) {
+      const words = teamName.split(' ');
+      
+      // Handle special case for teams with "of" in the name
+      if (words.length > 2 && words[1].toLowerCase() === 'of') {
+        return (words[0][0] + words[2][0]).toUpperCase();
+      }
+      
+      // For most team names, take first letter of each word (up to 3)
+      return words.slice(0, 3).map(word => word[0]).join('').toUpperCase();
     }
     
-    // Get initials from first and last word if there are multiple words
-    return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+    // For single word names, take first 2-3 letters
+    return teamName.substring(0, Math.min(3, teamName.length)).toUpperCase();
   };
   
-  // Default fallback is the team initials
-  const initials = fallbackText || getInitials(teamName);
-  
-  // Get the sport type from the league
+  // Get the sport type for fallback
   const getSportType = (): string => {
     const sportMap: Record<string, string> = {
       'NBA': 'basketball',
-      'NFL': 'football',
-      'MLB': 'baseball',
-      'NHL': 'hockey',
-      'MLS': 'soccer',
-      'NCAAF': 'football',
+      'WNBA': 'basketball',
       'NCAAB': 'basketball',
-      'BOXING': 'boxing',
+      'NCAAW': 'basketball',
+      'NFL': 'football',
+      'NCAAF': 'football',
+      'UFL': 'football',
+      'CFL': 'football',
+      'MLB': 'baseball',
+      'MiLB': 'baseball',
+      'NHL': 'hockey',
+      'AHL': 'hockey',
+      'MLS': 'soccer',
+      'EPL': 'soccer',
+      'LALIGA': 'soccer',
+      'BUNDESLIGA': 'soccer',
+      'LIGUE1': 'soccer',
+      'SERIEA': 'soccer',
       'UFC': 'mma',
-      'NASCAR': 'nascar',
-      'TENNIS': 'tennis',
+      'BOXING': 'boxing',
       'ATP': 'tennis',
       'WTA': 'tennis',
+      'TENNIS': 'tennis',
+      'NASCAR': 'motorsports',
+      'F1': 'motorsports',
+      'INDYCAR': 'motorsports'
     };
     
-    return sportMap[league] || 'basketball';
+    return sportMap[league] || 'general';
   };
   
-  // Get appropriate sport icon for fallback
-  const getSportIcon = (): string => {
+  // Get fallback sport logo
+  const getFallbackLogo = (): string => {
     const sportType = getSportType();
-    return sportLogos[sportType] || sportLogos.basketball;
+    return sportLogos[sportType] || sportLogos.general;
   };
-
+  
   useEffect(() => {
     if (!teamName) {
       setHasError(true);
@@ -94,9 +123,14 @@ const TeamLogo: React.FC<TeamLogoProps> = ({
       const url = getTeamLogo(teamName, league);
       setLogoUrl(url);
       setHasError(false);
+      
+      // Check if this is a verified logo or a fallback
+      const isDefaultLogo = Object.values(sportLogos).includes(url);
+      setIsVerified(!isDefaultLogo);
     } catch (error) {
       console.error(`Error loading logo for ${teamName}:`, error);
       setHasError(true);
+      setIsVerified(false);
     }
   }, [teamName, league]);
   
@@ -104,37 +138,46 @@ const TeamLogo: React.FC<TeamLogoProps> = ({
   const avatarClasses = [
     sizeClass,
     className,
-    withShadow ? 'shadow-md' : '',
-    withBorder ? 'border border-gray-200 dark:border-gray-700' : '',
-  ].join(' ');
+    hasError || (verifiedOnly && !isVerified) ? 'border border-gray-200 dark:border-gray-800' : '',
+  ].filter(Boolean).join(' ');
   
-  // Determine background color based on league for the fallback
-  const getLeagueColor = (): string => {
-    const colorMap: Record<string, string> = {
-      'NBA': 'bg-blue-100 dark:bg-blue-900/40',
-      'NFL': 'bg-green-100 dark:bg-green-900/40',
-      'MLB': 'bg-red-100 dark:bg-red-900/40',
-      'NHL': 'bg-indigo-100 dark:bg-indigo-900/40',
-      'BOXING': 'bg-yellow-100 dark:bg-yellow-900/40',
-      'UFC': 'bg-red-100 dark:bg-red-900/40',
-      'NASCAR': 'bg-orange-100 dark:bg-orange-900/40',
-      'TENNIS': 'bg-green-100 dark:bg-green-900/40',
-    };
-    
-    return colorMap[league] || 'bg-gray-100 dark:bg-gray-800';
-  };
+  // If we only want verified logos and this isn't one, show nothing
+  if (verifiedOnly && !isVerified) {
+    return null;
+  }
   
   return (
-    <Avatar className={avatarClasses}>
-      <AvatarImage 
-        src={hasError ? getSportIcon() : logoUrl} 
-        alt={`${teamName} logo`}
-        onError={() => setHasError(true)}
-      />
-      <AvatarFallback className={getLeagueColor()}>
-        {initials}
-      </AvatarFallback>
-    </Avatar>
+    <div className="relative inline-block">
+      <Avatar className={avatarClasses}>
+        {(!hasError && logoUrl) && (
+          <AvatarImage 
+            src={logoUrl} 
+            alt={`${teamName} logo`}
+            onError={() => setHasError(true)}
+          />
+        )}
+        {(hasError || !logoUrl) && showFallback && (
+          <AvatarFallback 
+            className="text-xs font-bold bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+            delayMs={0}
+          >
+            {getInitials()}
+          </AvatarFallback>
+        )}
+      </Avatar>
+      
+      {isVerified && (
+        <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full h-3 w-3 flex items-center justify-center border border-white dark:border-gray-900">
+          <Check className="h-2 w-2 text-white" />
+        </div>
+      )}
+      
+      {!isVerified && !hasError && logoUrl && (
+        <div className="absolute -bottom-1 -right-1 bg-amber-500 rounded-full h-3 w-3 flex items-center justify-center border border-white dark:border-gray-900">
+          <AlertTriangle className="h-2 w-2 text-white" />
+        </div>
+      )}
+    </div>
   );
 };
 
