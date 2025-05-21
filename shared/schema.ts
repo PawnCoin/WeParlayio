@@ -416,6 +416,7 @@ export const supportTicketMessages = pgTable("support_ticket_messages", {
   message: text("message").notNull(),
   attachmentUrl: text("attachment_url"),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const supportTicketLogs = pgTable("support_ticket_logs", {
@@ -424,6 +425,7 @@ export const supportTicketLogs = pgTable("support_ticket_logs", {
   action: text("action").notNull(), // 'created', 'updated', 'status_changed', 'assigned', 'resolved', etc.
   details: json("details"),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const knownIssues = pgTable("known_issues", {

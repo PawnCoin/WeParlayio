@@ -287,6 +287,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateBankAccount(bankAccount: InsertBankAccount): Promise<BankAccount> {
+    // Make sure bankAccount has userId
+    if (!bankAccount.userId) {
+      throw new Error("Bank account must have a userId");
+    }
+    
     const [existingBankAccount] = await db
       .select()
       .from(bankAccounts)
@@ -308,7 +313,11 @@ export class DatabaseStorage implements IStorage {
       // Create new bank account
       const [newBankAccount] = await db
         .insert(bankAccounts)
-        .values(bankAccount)
+        .values({
+          ...bankAccount,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
         .returning();
       
       return newBankAccount;
