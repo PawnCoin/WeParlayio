@@ -12,6 +12,8 @@ import {
   Clock, ChevronRight, CircleDot, Flame, Zap, Crown,
   DollarSign, HelpCircle, HeadphonesIcon, Wallet, CreditCard
 } from "lucide-react";
+
+
 import { 
   FaBasketballBall, FaFootballBall, FaHockeyPuck, 
   FaBaseballBall, FaFutbol 
@@ -159,6 +161,20 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                 <Wallet className="h-5 w-5 mr-3 text-blue-600" />
                 <span className="text-blue-700 dark:text-blue-300 font-medium">Wallet Management</span>
                 <span className="ml-2 text-[10px] font-bold py-0.5 px-1.5 bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200 rounded-full">NEW</span>
+              </div>
+            </Link>
+          </li>
+          
+          <li>
+            <Link href="/crypto-information">
+              <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
+                location === '/crypto-information' 
+                  ? "bg-primary text-white" 
+                  : "bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 hover:from-purple-100 hover:to-indigo-100 dark:hover:from-purple-900/40 dark:hover:to-indigo-900/40"
+              }`}>
+                <CreditCard className="h-5 w-5 mr-3 text-purple-600" />
+                <span className="text-purple-700 dark:text-purple-300 font-medium">Crypto Guide</span>
+                <span className="ml-2 text-[10px] font-bold py-0.5 px-1.5 bg-purple-200 dark:bg-purple-800 text-purple-800 dark:text-purple-200 rounded-full">NEW</span>
               </div>
             </Link>
           </li>

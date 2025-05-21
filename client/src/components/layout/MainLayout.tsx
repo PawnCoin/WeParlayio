@@ -119,6 +119,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   {/* Betting Notifications */}
                   <BetNotifications userId={user?.id} />
                   
+                  {/* Wallet Notifications */}
+                  <WalletNotifications />
+                  
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="flex items-center space-x-2">
