@@ -60,7 +60,6 @@ export const users = pgTable("users", {
   stripeCustomerId: varchar("stripe_customer_id"),
   stripeSubscriptionId: varchar("stripe_subscription_id"),
   referralCode: varchar("referral_code"),
-  inviteCount: integer("invite_count").default(0),
   analyticsPackageUntil: timestamp("analytics_package_until"),
   prioritySupportUntil: timestamp("priority_support_until"),
   freeWithdrawalsThisMonth: integer("free_withdrawals_this_month").default(0),
