@@ -4,6 +4,8 @@ import {
   bettingChallenges, 
   notifications,
   users,
+  InsertNotification,
+  BettingChallenge
 } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 
@@ -96,13 +98,15 @@ export class NotificationService {
     link?: string
   ): Promise<boolean> {
     try {
-      await storage.createNotification({
+      const notification: InsertNotification = {
         userId,
         type,
         message,
         link,
         read: false
-      });
+      };
+      
+      await storage.createNotification(notification);
       
       return true;
     } catch (error) {
@@ -148,13 +152,57 @@ export class NotificationService {
       
       const senderName = fromUser.username || fromUser.email || 'A WeParlay user';
       
-      // If toUserId is provided, send in-app notification
+      // Prepare notification messages
+      const challengeAmount = challenge.isVirtual 
+        ? `${challenge.amount} WeParlay Cash` 
+        : `$${challenge.amount}`;
+      
+      const emailSubject = `New Betting Challenge from ${senderName} on WeParlay`;
+      const emailContent = `
+        <h2>You've been challenged to a bet!</h2>
+        <p><strong>${senderName}</strong> has challenged you to a bet on ${challenge.eventName}.</p>
+        <p>Amount: ${challengeAmount}</p>
+        <p>Their pick: ${challenge.pick}</p>
+        <p>Your side: ${challenge.oppositePick || 'The opposite side'}</p>
+        ${challenge.customMessage ? `<p>Message: "${challenge.customMessage}"</p>` : ''}
+        <p><a href="https://weparlay.io/challenges/${challenge.challengeUuid}">Click here to view and respond to this challenge</a></p>
+      `;
+      
+      const smsContent = `WeParlay: ${senderName} challenged you to a ${challengeAmount} bet on ${challenge.eventName}. View: https://weparlay.io/challenges/${challenge.challengeUuid}`;
+      
+      // Send to specific user if userId is provided
       if (toUserId) {
-        const challengeLink = `/challenges/${challenge.challengeUuid}`;
-        const message = `${senderName} has invited you to a head-to-head bet on ${challenge.eventName} for ${challenge.isVirtual ? 'WeParlay Cash' : '$'}${challenge.amount}`;
-        
+        // Create in-app notification
         await this.sendInAppNotification(
           toUserId,
+          'challenge',
+          `${senderName} challenged you to a ${challengeAmount} bet on ${challenge.eventName}`,
+          `/challenges/${challenge.challengeUuid}`
+        );
+        
+        // Get user details for potential email/phone
+        const toUser = await storage.getUser(toUserId);
+        if (toUser?.email) {
+          await this.sendEmail(toUser.email, emailSubject, emailContent);
+        }
+      }
+      
+      // Send to email if provided
+      if (toEmail) {
+        await this.sendEmail(toEmail, emailSubject, emailContent);
+      }
+      
+      // Send to phone if provided
+      if (toPhone) {
+        await this.sendSMS(toPhone, smsContent);
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error sending betting challenge notification:', error);
+      return false;
+    }
+  }
           'challenge',
           message,
           challengeLink

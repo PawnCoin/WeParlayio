@@ -888,6 +888,139 @@ export class DatabaseStorage implements IStorage {
     return newLog;
   }
 
+  // ==================== Betting Challenge Operations ====================
+  
+  async createBettingChallenge(challenge: InsertBettingChallenge): Promise<BettingChallenge> {
+    const [newChallenge] = await db
+      .insert(bettingChallenges)
+      .values({
+        ...challenge,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      .returning();
+    
+    return newChallenge;
+  }
+  
+  async getBettingChallenge(id: number): Promise<BettingChallenge | undefined> {
+    const [challenge] = await db
+      .select()
+      .from(bettingChallenges)
+      .where(eq(bettingChallenges.id, id));
+    
+    return challenge;
+  }
+  
+  async getBettingChallengeByUuid(uuid: string): Promise<BettingChallenge | undefined> {
+    const [challenge] = await db
+      .select()
+      .from(bettingChallenges)
+      .where(eq(bettingChallenges.challengeUuid, uuid));
+    
+    return challenge;
+  }
+  
+  async getUserChallenges(userId: string, status?: string): Promise<BettingChallenge[]> {
+    let query = db
+      .select()
+      .from(bettingChallenges)
+      .where(
+        or(
+          eq(bettingChallenges.createdBy, userId),
+          eq(bettingChallenges.acceptedBy, userId)
+        )
+      );
+    
+    if (status) {
+      query = query.where(eq(bettingChallenges.status, status));
+    }
+    
+    return await query.orderBy(desc(bettingChallenges.createdAt));
+  }
+  
+  async acceptBettingChallenge(uuid: string, acceptedBy: string): Promise<BettingChallenge> {
+    const [challenge] = await db
+      .update(bettingChallenges)
+      .set({
+        acceptedBy,
+        status: 'accepted',
+        acceptedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(bettingChallenges.challengeUuid, uuid))
+      .returning();
+    
+    return challenge;
+  }
+  
+  async updateBettingChallengeStatus(uuid: string, status: string): Promise<BettingChallenge> {
+    const updateData: any = {
+      status,
+      updatedAt: new Date()
+    };
+    
+    // If the challenge is being settled, add settled timestamp
+    if (status === 'settled') {
+      updateData.settledAt = new Date();
+    }
+    
+    const [challenge] = await db
+      .update(bettingChallenges)
+      .set(updateData)
+      .where(eq(bettingChallenges.challengeUuid, uuid))
+      .returning();
+    
+    return challenge;
+  }
+  
+  // ==================== Notification Operations ====================
+  
+  async createNotification(notification: InsertNotification): Promise<Notification> {
+    const [newNotification] = await db
+      .insert(notifications)
+      .values({
+        ...notification,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      .returning();
+    
+    return newNotification;
+  }
+  
+  async getUserNotifications(userId: string, unreadOnly: boolean = false): Promise<Notification[]> {
+    let query = db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.userId, userId));
+    
+    if (unreadOnly) {
+      query = query.where(eq(notifications.read, false));
+    }
+    
+    return await query.orderBy(desc(notifications.createdAt));
+  }
+  
+  async markNotificationAsRead(id: number, userId: string): Promise<Notification> {
+    const [notification] = await db
+      .update(notifications)
+      .set({
+        read: true,
+        readAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(
+        and(
+          eq(notifications.id, id),
+          eq(notifications.userId, userId)
+        )
+      )
+      .returning();
+    
+    return notification;
+  }
+
   // ==================== Known Issues Operations ====================
 
   async createKnownIssue(issue: InsertKnownIssue): Promise<KnownIssue> {
