@@ -125,6 +125,8 @@ export const insertTransactionSchema = createInsertSchema(transactions).pick({
   userId: true,
   type: true,
   amount: true,
+  currency: true,
+  description: true,
   status: true,
   details: true,
 });
@@ -448,6 +450,9 @@ export const insertSupportTicketSchema = createInsertSchema(supportTickets).pick
   description: true,
   category: true,
   priority: true,
+  aiAssigned: true,
+  resolutionSteps: true,
+  aiResolution: true,
 });
 
 export const insertSupportTicketMessageSchema = createInsertSchema(supportTicketMessages).pick({

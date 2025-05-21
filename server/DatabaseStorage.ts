@@ -278,9 +278,19 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
+    // Ensure proper transaction data with all required fields
+    const transactionData = {
+      ...transaction,
+      currency: transaction.currency || 'USD',
+      description: transaction.description || '',
+      transactionDate: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
     const [newTransaction] = await db
       .insert(transactions)
-      .values(transaction)
+      .values(transactionData)
       .returning();
     
     return newTransaction;
@@ -729,9 +739,22 @@ export class DatabaseStorage implements IStorage {
   // ==================== Support Ticket Operations ====================
 
   async createSupportTicket(ticket: InsertSupportTicket): Promise<SupportTicket> {
+    // Generate a unique ticket number
+    const ticketNumber = `WP-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
+    
+    // Create complete ticket data with all required fields
+    const ticketData = {
+      ...ticket,
+      ticketNumber,
+      aiAssigned: ticket.aiAssigned ?? true,
+      status: 'open',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
     const [newTicket] = await db
       .insert(supportTickets)
-      .values(ticket)
+      .values(ticketData)
       .returning();
     
     return newTicket;
@@ -817,9 +840,17 @@ export class DatabaseStorage implements IStorage {
   // ==================== Known Issues Operations ====================
 
   async createKnownIssue(issue: InsertKnownIssue): Promise<KnownIssue> {
+    // Create complete issue data with all required fields
+    const issueData = {
+      ...issue,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      active: true
+    };
+    
     const [newIssue] = await db
       .insert(knownIssues)
-      .values(issue)
+      .values(issueData)
       .returning();
     
     return newIssue;
