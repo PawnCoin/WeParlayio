@@ -65,9 +65,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               ))}
             </div>
             
-            {/* Currency Mode Toggle */}
-            <div className="hidden md:block">
+            {/* Currency Mode Toggle & Wallet Access */}
+            <div className="hidden md:flex items-center space-x-2">
               <CurrencyModeToggle variant="compact" className="bg-black/20 p-2 rounded-md" />
+              
+              <Link href="/wallet-management">
+                <Button variant="ghost" size="sm" className="text-white hover:text-green-500 flex items-center">
+                  <Wallet className="h-4 w-4 mr-1" />
+                  <span>Wallet</span>
+                </Button>
+              </Link>
             </div>
 
             {/* User menu */}
@@ -82,13 +89,21 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem className="flex items-center">
-                        <Wallet className="mr-2 h-4 w-4" />
-                        Deposit Funds
+                      <DropdownMenuItem asChild className="flex items-center">
+                        <Link href="/wallet-management">
+                          <div className="flex items-center w-full">
+                            <Wallet className="mr-2 h-4 w-4" />
+                            Manage Wallets
+                          </div>
+                        </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="flex items-center">
-                        <Coins className="mr-2 h-4 w-4" />
-                        Withdraw Funds
+                      <DropdownMenuItem asChild className="flex items-center">
+                        <Link href="/wallet-management?tab=deposit-withdraw">
+                          <div className="flex items-center w-full">
+                            <Coins className="mr-2 h-4 w-4" />
+                            Deposit/Withdraw
+                          </div>
+                        </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem>
