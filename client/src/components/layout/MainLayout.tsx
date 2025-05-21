@@ -18,6 +18,7 @@ import {
 import { ChevronDown, Menu, Wallet, Coins, Shield } from "lucide-react";
 import Logo from "@/components/WeParlay/Logo";
 import WalletConnect from "@/components/auth/WalletConnect";
+import WalletNotifications from "@/components/wallet/WalletNotifications";
 
 interface MainLayoutProps {
   children: React.ReactNode;
