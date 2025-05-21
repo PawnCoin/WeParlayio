@@ -1,4 +1,3 @@
-import { ethers } from 'ethers';
 import { Connection, PublicKey } from '@solana/web3.js';
 import { InjectedConnector } from '@web3-react/injected-connector';
 
@@ -101,25 +100,47 @@ export const connectEthereumWallet = async (walletType: WalletType): Promise<Wal
     // Get the chain ID
     const chainId = await window.ethereum.request({ method: 'eth_chainId' });
     
-    // Set up provider
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    // Get the actual network name based on chain ID
+    let network;
+    switch (chainId) {
+      case '0x1':
+        network = 'Ethereum Mainnet';
+        break;
+      case '0x89':
+        network = 'Polygon Mainnet';
+        break;
+      case '0x38':
+        network = 'BSC Mainnet';
+        break;
+      case '0xa86a':
+        network = 'Avalanche Mainnet';
+        break;
+      case '0xfa':
+        network = 'Fantom Mainnet';
+        break;
+      default:
+        network = `Chain ID: ${parseInt(chainId, 16)}`;
+    }
     
-    // Get account balance
-    const balance = await provider.getBalance(address);
-    const formattedBalance = ethers.utils.formatEther(balance);
+    // Get the balance directly via RPC
+    const balance = await window.ethereum.request({
+      method: 'eth_getBalance',
+      params: [address, 'latest']
+    });
     
-    // Get network information
-    const network = await provider.getNetwork();
+    // Convert balance from wei to ETH (or native token)
+    const balanceInEth = parseInt(balance, 16) / 10**18;
     
     return {
       status: ConnectionStatus.CONNECTED,
       address,
-      network: network.name,
-      balance: formattedBalance,
+      network,
+      balance: balanceInEth.toFixed(4),
       chainId: parseInt(chainId, 16)
     };
-  } catch (error) {
-    console.error('Error connecting to Ethereum wallet:', error);
+  } catch (err) {
+    console.error('Error connecting to Ethereum wallet:', err);
+    const error = err as Error;
     return {
       status: ConnectionStatus.ERROR,
       error: error.message || 'Failed to connect to wallet. Please try again.'
@@ -147,18 +168,21 @@ export const connectPhantomWallet = async (): Promise<WalletConnectionResult> =>
     // Set up Solana connection (using mainnet-beta)
     const connection = new Connection('https://api.mainnet-beta.solana.com');
     
-    // Get account balance
+    // Get the real account balance
     const balance = await connection.getBalance(new PublicKey(publicKey));
-    const formattedBalance = (balance / 1000000000).toString(); // Convert lamports to SOL
+    
+    // Convert from lamports to SOL
+    const solBalance = balance / 1000000000;
     
     return {
       status: ConnectionStatus.CONNECTED,
       address: publicKey,
-      network: 'mainnet-beta',
-      balance: formattedBalance
+      network: 'Solana Mainnet',
+      balance: solBalance.toFixed(4)
     };
-  } catch (error) {
-    console.error('Error connecting to Phantom wallet:', error);
+  } catch (err) {
+    console.error('Error connecting to Phantom wallet:', err);
+    const error = err as Error;
     return {
       status: ConnectionStatus.ERROR,
       error: error.message || 'Failed to connect to Phantom wallet. Please try again.'

@@ -56,17 +56,22 @@ const CryptoWalletConnect: React.FC<CryptoWalletConnectProps> = ({ onConnect }) 
   const [walletAddress, setWalletAddress] = useState("");
   const [walletBalance, setWalletBalance] = useState<string | null>(null);
   const [walletNetwork, setWalletNetwork] = useState<string | null>(null);
-  const [availableWallets, setAvailableWallets] = useState(WALLET_TYPES);
+  const [availableWallets, setAvailableWallets] = useState<(typeof WALLET_TYPES[0] & { isInstalled?: boolean })[]>(WALLET_TYPES);
+  
+  // Interface for wallet with installation status
+  interface WalletWithStatus extends typeof WALLET_TYPES[0] {
+    isInstalled: boolean;
+  }
   
   // Check wallet availability
   useEffect(() => {
-    const checkWalletAvailability = async () => {
-      const updatedWallets = await Promise.all(
-        WALLET_TYPES.map(async (wallet) => ({
+    const checkWalletAvailability = () => {
+      const updatedWallets = WALLET_TYPES.map(wallet => {
+        return {
           ...wallet,
-          available: wallet.isAvailable()
-        }))
-      );
+          isInstalled: wallet.isAvailable()
+        } as WalletWithStatus;
+      });
       setAvailableWallets(updatedWallets);
     };
     
@@ -79,6 +84,18 @@ const CryptoWalletConnect: React.FC<CryptoWalletConnectProps> = ({ onConnect }) 
     setIsConnecting(true);
     
     try {
+      // Check if the wallet is installed first
+      const walletInfo = WALLET_TYPES.find(w => w.id === walletType);
+      if (walletInfo && !walletInfo.isAvailable()) {
+        toast({
+          title: "Wallet Not Found",
+          description: `${walletInfo.name} is not installed. Please install it first.`,
+          variant: "destructive"
+        });
+        setIsConnecting(false);
+        return;
+      }
+      
       const result = await connectWallet(walletType as WalletType);
       
       if (result.status === ConnectionStatus.CONNECTED && result.address) {
@@ -104,11 +121,12 @@ const CryptoWalletConnect: React.FC<CryptoWalletConnectProps> = ({ onConnect }) 
           variant: "destructive"
         });
       }
-    } catch (error) {
-      console.error("Wallet connection error:", error);
+    } catch (err) {
+      console.error("Wallet connection error:", err);
+      const errorMessage = err instanceof Error ? err.message : "Failed to connect to wallet. Please try again.";
       toast({
         title: "Connection Failed",
-        description: error.message || "Failed to connect to wallet. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -139,11 +157,11 @@ const CryptoWalletConnect: React.FC<CryptoWalletConnectProps> = ({ onConnect }) 
           </DialogHeader>
           
           <div className="grid grid-cols-2 gap-4 py-4">
-            {WALLET_TYPES.map(wallet => (
+            {availableWallets.map(wallet => (
               <Card 
                 key={wallet.id} 
                 className={`cursor-pointer transition-all ${selectedWallet === wallet.id && isConnecting ? 'border-primary' : 'hover:border-primary'}`}
-                onClick={() => !isConnecting && connectWallet(wallet.id)}
+                onClick={() => !isConnecting && connectToWallet(wallet.id)}
               >
                 <CardContent className="p-4 flex flex-col items-center justify-center">
                   <img 
@@ -156,6 +174,9 @@ const CryptoWalletConnect: React.FC<CryptoWalletConnectProps> = ({ onConnect }) 
                     }}
                   />
                   <p className="text-sm font-medium text-foreground">{wallet.name}</p>
+                  {!wallet.isInstalled && (
+                    <p className="text-xs text-destructive mt-1">Not installed</p>
+                  )}
                   {selectedWallet === wallet.id && isConnecting && (
                     <div className="mt-2 flex items-center justify-center w-full">
                       <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
@@ -206,18 +227,42 @@ const CryptoWalletConnect: React.FC<CryptoWalletConnectProps> = ({ onConnect }) 
                   <p className="text-xs text-muted-foreground truncate max-w-[180px]">
                     {walletAddress.substring(0, 8)}...{walletAddress.substring(walletAddress.length - 6)}
                   </p>
+                  {walletNetwork && (
+                    <p className="text-xs text-muted-foreground">
+                      Network: {walletNetwork}
+                    </p>
+                  )}
+                  {walletBalance && (
+                    <p className="text-xs text-muted-foreground">
+                      Balance: {walletBalance}
+                    </p>
+                  )}
                 </div>
               </div>
               <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={() => {
-                  setWalletAddress("");
-                  setSelectedWallet(null);
-                  toast({
-                    title: "Wallet Disconnected",
-                    description: "Your wallet has been disconnected.",
-                  });
+                onClick={async () => {
+                  try {
+                    if (selectedWallet) {
+                      await disconnectWallet(selectedWallet as WalletType);
+                    }
+                    setWalletAddress("");
+                    setWalletBalance(null);
+                    setWalletNetwork(null);
+                    setSelectedWallet(null);
+                    toast({
+                      title: "Wallet Disconnected",
+                      description: "Your wallet has been disconnected.",
+                    });
+                  } catch (err) {
+                    console.error("Failed to disconnect wallet:", err);
+                    toast({
+                      title: "Disconnection Failed",
+                      description: "Failed to disconnect your wallet. Please try again.",
+                      variant: "destructive"
+                    });
+                  }
                 }}
                 className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground"
               >
