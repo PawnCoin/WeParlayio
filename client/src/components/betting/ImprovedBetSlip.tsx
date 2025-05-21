@@ -375,7 +375,7 @@ const ImprovedBetSlip: React.FC<ImprovedBetSlipProps> = ({
             />
           </div>
           
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-1 odds-boost-switch">
             <Switch 
               id="boost-mode" 
               checked={boostEnabled}
