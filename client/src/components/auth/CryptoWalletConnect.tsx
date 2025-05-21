@@ -1,17 +1,47 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { 
+  connectWallet, 
+  disconnectWallet, 
+  WalletType, 
+  ConnectionStatus,
+  isMetaMaskAvailable,
+  isPhantomAvailable,
+  isCoinbaseWalletAvailable,
+  isTrustWalletAvailable
+} from "@/services/walletService";
 
-// Supported wallet types
+// Supported wallet types with availability check
 const WALLET_TYPES = [
-  { id: "metamask", name: "MetaMask", icon: "https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" },
-  { id: "phantom", name: "Phantom", icon: "https://www.phantom.app/img/logo.png" },
-  { id: "coinbase", name: "Coinbase Wallet", icon: "https://www.coinbase.com/assets/press/Coinbase_Wallet_Logo-4e6245acde71d691de3d44ed012a0a2f833a428bcea972b5cf1ef2954the84f58.png" },
-  { id: "trustwallet", name: "Trust Wallet", icon: "https://trustwallet.com/assets/images/media/assets/TWT.png" }
+  { 
+    id: WalletType.METAMASK, 
+    name: "MetaMask", 
+    icon: "https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg",
+    isAvailable: isMetaMaskAvailable
+  },
+  { 
+    id: WalletType.PHANTOM, 
+    name: "Phantom", 
+    icon: "https://www.phantom.app/img/logo.png",
+    isAvailable: isPhantomAvailable
+  },
+  { 
+    id: WalletType.COINBASE, 
+    name: "Coinbase Wallet", 
+    icon: "https://www.coinbase.com/assets/press/Coinbase_Wallet_Logo-4e6245acde71d691de3d44ed012a0a2f833a428bcea972b5cf1ef2954the84f58.png",
+    isAvailable: isCoinbaseWalletAvailable
+  },
+  { 
+    id: WalletType.TRUST, 
+    name: "Trust Wallet", 
+    icon: "https://trustwallet.com/assets/images/media/assets/TWT.png",
+    isAvailable: isTrustWalletAvailable
+  }
 ];
 
 interface CryptoWalletConnectProps {
@@ -24,34 +54,61 @@ const CryptoWalletConnect: React.FC<CryptoWalletConnectProps> = ({ onConnect }) 
   const [isConnecting, setIsConnecting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [walletAddress, setWalletAddress] = useState("");
+  const [walletBalance, setWalletBalance] = useState<string | null>(null);
+  const [walletNetwork, setWalletNetwork] = useState<string | null>(null);
+  const [availableWallets, setAvailableWallets] = useState(WALLET_TYPES);
   
-  // Simulated wallet connection
-  const connectWallet = async (walletType: string) => {
+  // Check wallet availability
+  useEffect(() => {
+    const checkWalletAvailability = async () => {
+      const updatedWallets = await Promise.all(
+        WALLET_TYPES.map(async (wallet) => ({
+          ...wallet,
+          available: wallet.isAvailable()
+        }))
+      );
+      setAvailableWallets(updatedWallets);
+    };
+    
+    checkWalletAvailability();
+  }, []);
+  
+  // Real wallet connection
+  const connectToWallet = async (walletType: string) => {
     setSelectedWallet(walletType);
     setIsConnecting(true);
     
     try {
-      // Simulate connection delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const result = await connectWallet(walletType as WalletType);
       
-      // Generate a mock wallet address
-      const mockAddress = `0x${Array.from({length: 40}, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
-      setWalletAddress(mockAddress);
-      
-      toast({
-        title: "Wallet Connected",
-        description: `Successfully connected to ${walletType}`,
-      });
-      
-      if (onConnect) {
-        onConnect(mockAddress, walletType);
+      if (result.status === ConnectionStatus.CONNECTED && result.address) {
+        setWalletAddress(result.address);
+        setWalletBalance(result.balance || null);
+        setWalletNetwork(result.network || null);
+        
+        toast({
+          title: "Wallet Connected",
+          description: `Successfully connected to ${walletType} on ${result.network || 'network'}`,
+        });
+        
+        if (onConnect) {
+          onConnect(result.address, walletType);
+        }
+        
+        setIsDialogOpen(false);
+      } else {
+        // Handle connection error
+        toast({
+          title: "Connection Failed",
+          description: result.error || "Failed to connect to wallet. Please try again.",
+          variant: "destructive"
+        });
       }
-      
-      setIsDialogOpen(false);
     } catch (error) {
+      console.error("Wallet connection error:", error);
       toast({
         title: "Connection Failed",
-        description: "Failed to connect to wallet. Please try again.",
+        description: error.message || "Failed to connect to wallet. Please try again.",
         variant: "destructive"
       });
     } finally {
