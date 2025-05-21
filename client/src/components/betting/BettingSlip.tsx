@@ -144,7 +144,7 @@ const BettingSlip: React.FC = () => {
     setWagerAmount(amount.toFixed(2));
   };
   
-  // Connect a wallet
+  // Connect a wallet using real blockchain connections
   const connectWallet = async (walletId: string) => {
     if (!isAuthenticated) {
       toast({
@@ -156,11 +156,46 @@ const BettingSlip: React.FC = () => {
     }
     
     try {
-      // Simulate wallet connection
+      // Determine which wallet provider to use
+      let walletAddress: string;
+      let walletProvider: string;
+      
+      if (walletId === 'metamask' || walletId === 'coinbase' || walletId === 'trust') {
+        // Request Ethereum wallet access
+        if (!window.ethereum) {
+          throw new Error(`${walletId.charAt(0).toUpperCase() + walletId.slice(1)} is not installed`);
+        }
+        
+        // Request accounts
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        
+        if (!accounts || accounts.length === 0) {
+          throw new Error('No accounts found in wallet');
+        }
+        
+        walletAddress = accounts[0];
+        walletProvider = walletId;
+      } 
+      else if (walletId === 'phantom') {
+        // Request Phantom wallet access
+        if (!window.solana || !window.solana.isPhantom) {
+          throw new Error('Phantom wallet is not installed');
+        }
+        
+        // Connect to Phantom
+        const { publicKey } = await window.solana.connect();
+        walletAddress = publicKey.toString();
+        walletProvider = 'phantom';
+      }
+      else {
+        throw new Error(`Unsupported wallet: ${walletId}`);
+      }
+      
+      // Update state with real wallet connection
       setCryptoWallets(prev => 
         prev.map(wallet => 
           wallet.id === walletId 
-            ? { ...wallet, connected: true, address: `0x${Math.random().toString(16).slice(2, 10)}...${Math.random().toString(16).slice(2, 10)}` } 
+            ? { ...wallet, connected: true, address: walletAddress } 
             : wallet
         )
       );
@@ -171,28 +206,49 @@ const BettingSlip: React.FC = () => {
       });
     } catch (error) {
       console.error("Error connecting wallet:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to connect to the wallet. Please try again.";
       toast({
         title: "Connection Failed",
-        description: "Failed to connect to the wallet. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     }
   };
 
-  // Disconnect a wallet
-  const disconnectWallet = (walletId: string) => {
-    setCryptoWallets(prev => 
-      prev.map(wallet => 
-        wallet.id === walletId 
-          ? { ...wallet, connected: false, address: undefined } 
-          : wallet
-      )
-    );
-    
-    toast({
-      title: "Wallet Disconnected",
-      description: `Successfully disconnected from ${walletId.charAt(0).toUpperCase() + walletId.slice(1)}`,
-    });
+  // Disconnect a wallet with proper blockchain disconnection
+  const disconnectWallet = async (walletId: string) => {
+    try {
+      // Handle Phantom wallet special disconnect case
+      if (walletId === 'phantom' && window.solana?.isPhantom) {
+        await window.solana.disconnect();
+      }
+      
+      // For Ethereum wallets, we don't need to explicitly disconnect
+      // as they handle their own connection state
+      
+      // Update local state
+      setCryptoWallets(prev => 
+        prev.map(wallet => 
+          wallet.id === walletId 
+            ? { ...wallet, connected: false, address: undefined } 
+            : wallet
+        )
+      );
+      
+      toast({
+        title: "Wallet Disconnected",
+        description: `Successfully disconnected from ${walletId.charAt(0).toUpperCase() + walletId.slice(1)}`,
+      });
+    } catch (error) {
+      console.error("Error disconnecting wallet:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to disconnect wallet";
+      
+      toast({
+        title: "Disconnection Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
+    }
   };
 
   // Get currency symbol
