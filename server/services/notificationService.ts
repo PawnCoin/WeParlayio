@@ -1,12 +1,16 @@
 import { db } from '../db';
-import { User } from '@shared/schema';
-import axios from 'axios';
+import { storage } from '../storage';
+import { 
+  bettingChallenges, 
+  notifications,
+  users,
+} from '@shared/schema';
+import { eq } from 'drizzle-orm';
 
 /**
  * Service for handling notifications for betting challenges, invites, and other alerts
  */
 export class NotificationService {
-  
   /**
    * Send an email notification
    * @param to Email address to send to
@@ -16,11 +20,10 @@ export class NotificationService {
    */
   async sendEmail(to: string, subject: string, content: string): Promise<boolean> {
     try {
-      // In production, you would integrate with a service like SendGrid, Mailgun, etc.
-      console.log(`[EMAIL NOTIFICATION] To: ${to}, Subject: ${subject}`);
-      
-      // For development/testing, we log the email instead of sending it
-      console.log(`Email Content: ${content}`);
+      // In a real implementation, this would connect to an email service
+      // For example, using SendGrid, Mailchimp, or AWS SES
+      console.log(`Sending email to ${to} with subject "${subject}"`);
+      console.log(`Email content: ${content}`);
       
       return true;
     } catch (error) {
@@ -28,7 +31,7 @@ export class NotificationService {
       return false;
     }
   }
-  
+
   /**
    * Send an SMS notification
    * @param phoneNumber Phone number to send to
@@ -37,9 +40,10 @@ export class NotificationService {
    */
   async sendSMS(phoneNumber: string, message: string): Promise<boolean> {
     try {
-      // In production, you would integrate with a service like Twilio, Nexmo, etc.
-      console.log(`[SMS NOTIFICATION] To: ${phoneNumber}`);
-      console.log(`SMS Content: ${message}`);
+      // In a real implementation, this would connect to an SMS service
+      // For example, using Twilio, Nexmo, or AWS SNS
+      console.log(`Sending SMS to ${phoneNumber}`);
+      console.log(`SMS content: ${message}`);
       
       return true;
     } catch (error) {
@@ -47,7 +51,7 @@ export class NotificationService {
       return false;
     }
   }
-  
+
   /**
    * Send a push notification to a user's device
    * @param userId User ID to send to
@@ -56,12 +60,19 @@ export class NotificationService {
    * @param data Additional data payload
    * @returns Promise resolving to success status
    */
-  async sendPushNotification(userId: string, title: string, body: string, data: any = {}): Promise<boolean> {
+  async sendPushNotification(
+    userId: string, 
+    title: string, 
+    body: string, 
+    data: any = {}
+  ): Promise<boolean> {
     try {
-      // In production, you would integrate with Firebase Cloud Messaging, OneSignal, etc.
-      console.log(`[PUSH NOTIFICATION] To User: ${userId}`);
-      console.log(`Title: ${title}, Body: ${body}`);
-      console.log('Data:', data);
+      // In a real implementation, this would connect to a push notification service
+      // For example, using Firebase Cloud Messaging, OneSignal, or AWS SNS
+      console.log(`Sending push notification to user ${userId}`);
+      console.log(`Push notification title: ${title}`);
+      console.log(`Push notification body: ${body}`);
+      console.log(`Push notification data:`, data);
       
       return true;
     } catch (error) {
@@ -69,7 +80,7 @@ export class NotificationService {
       return false;
     }
   }
-  
+
   /**
    * Send an in-app notification that will be displayed when the user logs in
    * @param userId User ID to send to
@@ -79,33 +90,27 @@ export class NotificationService {
    * @returns Promise resolving to success status
    */
   async sendInAppNotification(
-    userId: string, 
-    type: 'challenge' | 'bet' | 'result' | 'system' | 'social', 
+    userId: string,
+    type: string,
     message: string,
     link?: string
   ): Promise<boolean> {
     try {
-      // Store the notification in the database
-      const notification = {
+      await storage.createNotification({
         userId,
         type,
         message,
         link,
-        createdAt: new Date(),
         read: false
-      };
-      
-      // In a real implementation, you would store this in the database
-      console.log(`[IN-APP NOTIFICATION] Stored for User: ${userId}`);
-      console.log(`Type: ${type}, Message: ${message}`);
+      });
       
       return true;
     } catch (error) {
-      console.error('Error sending in-app notification:', error);
+      console.error('Error creating in-app notification:', error);
       return false;
     }
   }
-  
+
   /**
    * Send a betting challenge invitation
    * @param challengeId ID of the challenge
@@ -123,91 +128,80 @@ export class NotificationService {
     toPhone?: string
   ): Promise<boolean> {
     try {
-      // Get the challenger's info
-      const [challenger] = await db.select().from('users').where({ id: fromUserId });
-      
-      if (!challenger) {
-        throw new Error('Challenger not found');
-      }
-      
-      // Get challenge details
-      const [challenge] = await db.select().from('betting_challenges').where({ id: challengeId });
-      
+      // Get the challenge details
+      const challenge = await storage.getBettingChallenge(parseInt(challengeId));
       if (!challenge) {
-        throw new Error('Challenge not found');
+        throw new Error(`Challenge with ID ${challengeId} not found`);
       }
       
-      const challengeLink = `${process.env.APP_URL || 'https://weparlay.io'}/challenges/${challengeId}`;
+      // Update challenge to mark notification as sent
+      await db
+        .update(bettingChallenges)
+        .set({ notificationSent: true })
+        .where(eq(bettingChallenges.id, parseInt(challengeId)));
       
-      // Prepare notification content
-      const challengerName = challenger.username || challenger.email || 'Someone';
-      const subject = `${challengerName} has challenged you to a bet on WeParlay!`;
-      const eventName = challenge.eventName || 'an event';
-      const betAmount = challenge.amount ? `$${challenge.amount}` : 'a friendly bet';
+      // Get sender user details
+      const fromUser = await storage.getUser(fromUserId);
+      if (!fromUser) {
+        throw new Error(`User with ID ${fromUserId} not found`);
+      }
       
-      const emailContent = `
-        <h2>You've Been Challenged!</h2>
-        <p>${challengerName} has challenged you to ${betAmount} on ${eventName}.</p>
-        <p>Click the link below to view the challenge and accept or decline:</p>
-        <p><a href="${challengeLink}">${challengeLink}</a></p>
-        <p>If you don't have a WeParlay account yet, you can create one when you open the link.</p>
-        <p>Good luck!</p>
-        <p>The WeParlay Team</p>
-      `;
+      const senderName = fromUser.username || fromUser.email || 'A WeParlay user';
       
-      const smsContent = `🏆 ${challengerName} has challenged you to ${betAmount} on ${eventName}. View and respond: ${challengeLink}`;
-      
-      const pushTitle = `New Betting Challenge!`;
-      const pushBody = `${challengerName} has challenged you to ${betAmount} on ${eventName}.`;
-      
-      let notificationSent = false;
-      
-      // Send notification via all provided channels
+      // If toUserId is provided, send in-app notification
       if (toUserId) {
-        // Send in-app notification
+        const challengeLink = `/challenges/${challenge.challengeUuid}`;
+        const message = `${senderName} has invited you to a head-to-head bet on ${challenge.eventName} for ${challenge.isVirtual ? 'WeParlay Cash' : '$'}${challenge.amount}`;
+        
         await this.sendInAppNotification(
           toUserId,
           'challenge',
-          `${challengerName} has challenged you to ${betAmount} on ${eventName}.`,
-          `/challenges/${challengeId}`
+          message,
+          challengeLink
         );
         
-        // Send push notification
-        await this.sendPushNotification(toUserId, pushTitle, pushBody, { 
-          challengeId, 
-          type: 'challenge',
-          link: `/challenges/${challengeId}`
-        });
-        
-        notificationSent = true;
+        // Also send push notification
+        await this.sendPushNotification(
+          toUserId,
+          'New Betting Challenge',
+          message,
+          { challengeId: challenge.id, link: challengeLink }
+        );
       }
       
+      // If email is provided, send email notification
       if (toEmail) {
-        // Send email notification
-        await this.sendEmail(toEmail, subject, emailContent);
-        notificationSent = true;
+        const emailSubject = 'New WeParlay Betting Challenge';
+        const emailContent = `
+          <h2>You've been challenged to a head-to-head bet!</h2>
+          <p>${senderName} has invited you to a head-to-head bet on WeParlay.</p>
+          <p><strong>Event:</strong> ${challenge.eventName}</p>
+          <p><strong>Amount:</strong> ${challenge.isVirtual ? 'WeParlay Cash' : '$'}${challenge.amount}</p>
+          <p><strong>Their Pick:</strong> ${challenge.pick}</p>
+          ${challenge.customMessage ? `<p><strong>Message:</strong> "${challenge.customMessage}"</p>` : ''}
+          <p>Click the link below to view and accept this challenge:</p>
+          <p><a href="https://weparlay.io/challenges/${challenge.challengeUuid}">View Challenge</a></p>
+          <p>Good luck!</p>
+          <p>The WeParlay Team</p>
+        `;
+        
+        await this.sendEmail(toEmail, emailSubject, emailContent);
       }
       
+      // If phone is provided, send SMS notification
       if (toPhone) {
-        // Send SMS notification
-        await this.sendSMS(toPhone, smsContent);
-        notificationSent = true;
+        const smsMessage = `${senderName} has challenged you to a bet on WeParlay! Event: ${challenge.eventName}, Amount: ${challenge.isVirtual ? 'WeParlay Cash' : '$'}${challenge.amount}. View at https://weparlay.io/challenges/${challenge.challengeUuid}`;
+        
+        await this.sendSMS(toPhone, smsMessage);
       }
       
-      // Update the challenge status to indicate notification was sent
-      if (notificationSent) {
-        await db.update('betting_challenges')
-          .set({ notificationSent: true, updatedAt: new Date() })
-          .where({ id: challengeId });
-      }
-      
-      return notificationSent;
+      return true;
     } catch (error) {
       console.error('Error sending betting challenge notification:', error);
       return false;
     }
   }
-  
+
   /**
    * Notify a user that their challenge has been accepted
    * @param challengeId ID of the challenge
@@ -215,71 +209,69 @@ export class NotificationService {
    */
   async sendChallengeAcceptedNotification(challengeId: string): Promise<boolean> {
     try {
-      // Get challenge details including challenger ID
-      const [challenge] = await db.select().from('betting_challenges').where({ id: challengeId });
-      
+      // Get the challenge details
+      const challenge = await storage.getBettingChallenge(parseInt(challengeId));
       if (!challenge) {
-        throw new Error('Challenge not found');
+        throw new Error(`Challenge with ID ${challengeId} not found`);
       }
       
-      // Get user details for both parties
-      const [challenger] = await db.select().from('users').where({ id: challenge.createdBy });
-      const [accepter] = await db.select().from('users').where({ id: challenge.acceptedBy });
+      // If createdBy is missing, we can't notify the creator
+      if (!challenge.createdBy) {
+        throw new Error(`Challenge creator ID is missing`);
+      }
+      
+      // If acceptedBy is missing, the challenge hasn't been accepted
+      if (!challenge.acceptedBy) {
+        throw new Error(`Challenge acceptedBy is missing`);
+      }
+      
+      // Get users
+      const challenger = await storage.getUser(challenge.createdBy);
+      const accepter = await storage.getUser(challenge.acceptedBy);
       
       if (!challenger || !accepter) {
-        throw new Error('User details not found');
+        throw new Error(`User not found`);
       }
       
-      const challengeLink = `${process.env.APP_URL || 'https://weparlay.io'}/challenges/${challengeId}`;
+      const accepterName = accepter.username || accepter.email || 'Another user';
       
-      // Prepare notification content
-      const accepterName = accepter.username || accepter.email || 'Someone';
-      const eventName = challenge.eventName || 'an event';
+      // Send in-app notification to the challenge creator
+      const challengeLink = `/challenges/${challenge.challengeUuid}`;
+      const message = `${accepterName} has accepted your head-to-head bet on ${challenge.eventName} for ${challenge.isVirtual ? 'WeParlay Cash' : '$'}${challenge.amount}`;
       
-      // Notify the original challenger
       await this.sendInAppNotification(
-        challenger.id,
-        'challenge',
-        `${accepterName} has accepted your challenge on ${eventName}!`,
-        `/challenges/${challengeId}`
+        challenge.createdBy,
+        'challenge_accepted',
+        message,
+        challengeLink
       );
       
+      // Also send push notification
       await this.sendPushNotification(
-        challenger.id,
-        'Challenge Accepted!',
-        `${accepterName} has accepted your challenge on ${eventName}!`,
-        { 
-          challengeId, 
-          type: 'challenge_accepted',
-          link: `/challenges/${challengeId}`
-        }
+        challenge.createdBy,
+        'Betting Challenge Accepted',
+        message,
+        { challengeId: challenge.id, link: challengeLink }
       );
       
-      // If challenger has email, send email too
+      // Send email notification if the user has an email
       if (challenger.email) {
+        const emailSubject = 'Your WeParlay Betting Challenge was Accepted';
         const emailContent = `
-          <h2>Your Challenge Has Been Accepted!</h2>
-          <p>${accepterName} has accepted your betting challenge on ${eventName}.</p>
-          <p>View the active bet: <a href="${challengeLink}">${challengeLink}</a></p>
+          <h2>Your betting challenge has been accepted!</h2>
+          <p>${accepterName} has accepted your head-to-head bet on WeParlay.</p>
+          <p><strong>Event:</strong> ${challenge.eventName}</p>
+          <p><strong>Amount:</strong> ${challenge.isVirtual ? 'WeParlay Cash' : '$'}${challenge.amount}</p>
+          <p><strong>Your Pick:</strong> ${challenge.pick}</p>
+          <p><strong>Their Pick:</strong> ${challenge.oppositePick || 'The opposite outcome'}</p>
+          <p>Click the link below to view the challenge details:</p>
+          <p><a href="https://weparlay.io/challenges/${challenge.challengeUuid}">View Challenge</a></p>
           <p>Good luck!</p>
           <p>The WeParlay Team</p>
         `;
         
-        await this.sendEmail(
-          challenger.email,
-          `${accepterName} accepted your betting challenge!`,
-          emailContent
-        );
+        await this.sendEmail(challenger.email, emailSubject, emailContent);
       }
-      
-      // Update challenge status
-      await db.update('betting_challenges')
-        .set({ 
-          status: 'active',
-          acceptedAt: new Date(),
-          updatedAt: new Date()
-        })
-        .where({ id: challengeId });
       
       return true;
     } catch (error) {
@@ -287,7 +279,7 @@ export class NotificationService {
       return false;
     }
   }
-  
+
   /**
    * Notify users about the result of a settled bet
    * @param challengeId ID of the challenge
@@ -301,130 +293,158 @@ export class NotificationService {
     isDraw: boolean = false
   ): Promise<boolean> {
     try {
-      // Get challenge details
-      const [challenge] = await db.select().from('betting_challenges').where({ id: challengeId });
-      
+      // Get the challenge details
+      const challenge = await storage.getBettingChallenge(parseInt(challengeId));
       if (!challenge) {
-        throw new Error('Challenge not found');
+        throw new Error(`Challenge with ID ${challengeId} not found`);
       }
       
-      // Get user details
-      const [challenger] = await db.select().from('users').where({ id: challenge.createdBy });
-      const [accepter] = await db.select().from('users').where({ id: challenge.acceptedBy });
+      // If createdBy is missing, we can't notify the creator
+      if (!challenge.createdBy) {
+        throw new Error(`Challenge creator ID is missing`);
+      }
+      
+      // If acceptedBy is missing, the challenge hasn't been accepted
+      if (!challenge.acceptedBy) {
+        throw new Error(`Challenge acceptedBy is missing`);
+      }
+      
+      // Get users
+      const challenger = await storage.getUser(challenge.createdBy);
+      const accepter = await storage.getUser(challenge.acceptedBy);
       
       if (!challenger || !accepter) {
-        throw new Error('User details not found');
+        throw new Error(`User not found`);
       }
       
-      const eventName = challenge.eventName || 'the event';
-      const betAmount = challenge.amount ? `$${challenge.amount}` : 'the bet';
-      const challengeLink = `${process.env.APP_URL || 'https://weparlay.io'}/challenges/${challengeId}`;
+      const challengeLink = `/challenges/${challenge.challengeUuid}`;
       
-      let winnerName = 'No one';
-      let pushTitle = 'Bet Result';
-      let pushBody = '';
-      let emailSubject = '';
-      let emailContent = '';
-      
+      // Handle draw case
       if (isDraw) {
-        // It's a draw
-        pushTitle = 'Bet Ended in a Draw';
-        pushBody = `Your bet on ${eventName} ended in a draw. The bet amount has been returned.`;
-        emailSubject = `Your bet on ${eventName} ended in a draw`;
-        emailContent = `
-          <h2>Bet Result: Draw</h2>
-          <p>Your bet on ${eventName} has ended in a draw.</p>
-          <p>The bet amount of ${betAmount} has been returned to your account.</p>
-          <p>View the details: <a href="${challengeLink}">${challengeLink}</a></p>
-          <p>Thanks for using WeParlay!</p>
-        `;
-      } else if (winnerId) {
-        // Someone won
-        const isWinner = (userId: string) => userId === winnerId;
-        const winner = isWinner(challenger.id) ? challenger : accepter;
-        const loser = isWinner(challenger.id) ? accepter : challenger;
+        const drawMessage = `Your head-to-head bet on ${challenge.eventName} ended in a draw. Your ${challenge.isVirtual ? 'WeParlay Cash' : 'money'} has been refunded.`;
         
-        winnerName = winner.username || winner.email || 'Your opponent';
-        
-        // Notify winner
+        // Notify both users
         await this.sendInAppNotification(
-          winner.id,
-          'result',
-          `You won your bet on ${eventName}! ${betAmount} has been added to your account.`,
-          `/challenges/${challengeId}`
+          challenge.createdBy,
+          'bet_result',
+          drawMessage,
+          challengeLink
+        );
+        
+        await this.sendInAppNotification(
+          challenge.acceptedBy,
+          'bet_result',
+          drawMessage,
+          challengeLink
+        );
+        
+        // Push notifications
+        await this.sendPushNotification(
+          challenge.createdBy,
+          'Betting Result: Draw',
+          drawMessage,
+          { challengeId: challenge.id, link: challengeLink }
         );
         
         await this.sendPushNotification(
-          winner.id,
-          'You Won!',
-          `Congratulations! You won your bet on ${eventName}! ${betAmount} has been added to your account.`,
-          { 
-            challengeId, 
-            type: 'bet_won',
-            link: `/challenges/${challengeId}`
-          }
+          challenge.acceptedBy,
+          'Betting Result: Draw',
+          drawMessage,
+          { challengeId: challenge.id, link: challengeLink }
+        );
+        
+        // Email notifications
+        if (challenger.email) {
+          const emailSubject = 'Your WeParlay Bet Ended in a Draw';
+          await this.sendEmail(
+            challenger.email,
+            emailSubject,
+            `<h2>Your bet ended in a draw</h2><p>${drawMessage}</p><p><a href="https://weparlay.io/challenges/${challenge.challengeUuid}">View Details</a></p>`
+          );
+        }
+        
+        if (accepter.email) {
+          const emailSubject = 'Your WeParlay Bet Ended in a Draw';
+          await this.sendEmail(
+            accepter.email,
+            emailSubject,
+            `<h2>Your bet ended in a draw</h2><p>${drawMessage}</p><p><a href="https://weparlay.io/challenges/${challenge.challengeUuid}">View Details</a></p>`
+          );
+        }
+        
+        return true;
+      }
+      
+      // Handle win/loss case
+      if (winnerId) {
+        const winner = winnerId === challenge.createdBy ? challenger : accepter;
+        const loser = winnerId === challenge.createdBy ? accepter : challenger;
+        
+        if (!winner || !loser) {
+          throw new Error(`Winner or loser user not found`);
+        }
+        
+        const winnerName = winner.username || winner.email || 'You';
+        const loserName = loser.username || loser.email || 'Your opponent';
+        
+        // Notify winner
+        const winMessage = `Congratulations! You won your head-to-head bet on ${challenge.eventName} against ${loserName}. ${challenge.isVirtual ? 'WeParlay Cash' : 'Money'} has been added to your account.`;
+        
+        await this.sendInAppNotification(
+          winnerId,
+          'bet_result',
+          winMessage,
+          challengeLink
+        );
+        
+        await this.sendPushNotification(
+          winnerId,
+          'Betting Result: You Won!',
+          winMessage,
+          { challengeId: challenge.id, link: challengeLink }
         );
         
         if (winner.email) {
+          const emailSubject = 'You Won Your WeParlay Bet!';
           await this.sendEmail(
             winner.email,
-            `You won your bet on ${eventName}!`,
-            `
-              <h2>Congratulations! You Won!</h2>
-              <p>You've won your bet on ${eventName}!</p>
-              <p>Your winnings of ${betAmount} have been added to your account.</p>
-              <p>View the details: <a href="${challengeLink}">${challengeLink}</a></p>
-              <p>Thanks for using WeParlay!</p>
-            `
+            emailSubject,
+            `<h2>Congratulations on your win!</h2><p>${winMessage}</p><p><a href="https://weparlay.io/challenges/${challenge.challengeUuid}">View Details</a></p>`
           );
         }
         
         // Notify loser
+        const loseMessage = `You lost your head-to-head bet on ${challenge.eventName} against ${winnerName}.`;
+        
+        const loserId = winnerId === challenge.createdBy ? challenge.acceptedBy : challenge.createdBy;
+        
         await this.sendInAppNotification(
-          loser.id,
-          'result',
-          `You lost your bet on ${eventName} to ${winnerName}.`,
-          `/challenges/${challengeId}`
+          loserId,
+          'bet_result',
+          loseMessage,
+          challengeLink
         );
         
         await this.sendPushNotification(
-          loser.id,
-          'Bet Result',
-          `Unfortunately, you lost your bet on ${eventName} to ${winnerName}.`,
-          { 
-            challengeId, 
-            type: 'bet_lost',
-            link: `/challenges/${challengeId}`
-          }
+          loserId,
+          'Betting Result: You Lost',
+          loseMessage,
+          { challengeId: challenge.id, link: challengeLink }
         );
         
         if (loser.email) {
+          const emailSubject = 'Betting Result: Better Luck Next Time';
           await this.sendEmail(
             loser.email,
-            `Result of your bet on ${eventName}`,
-            `
-              <h2>Bet Result</h2>
-              <p>Unfortunately, you lost your bet on ${eventName} to ${winnerName}.</p>
-              <p>Better luck next time!</p>
-              <p>View the details: <a href="${challengeLink}">${challengeLink}</a></p>
-              <p>Thanks for using WeParlay!</p>
-            `
+            emailSubject,
+            `<h2>Betting Result</h2><p>${loseMessage}</p><p><a href="https://weparlay.io/challenges/${challenge.challengeUuid}">View Details</a></p><p>Don't worry - there are plenty more opportunities to bet on WeParlay!</p>`
           );
         }
+        
+        return true;
       }
       
-      // Update challenge status
-      await db.update('betting_challenges')
-        .set({ 
-          status: 'settled',
-          settledAt: new Date(),
-          updatedAt: new Date(),
-          winnerId: winnerId || null,
-          isDraw: isDraw
-        })
-        .where({ id: challengeId });
-      
-      return true;
+      return false;
     } catch (error) {
       console.error('Error sending bet result notification:', error);
       return false;
@@ -432,5 +452,4 @@ export class NotificationService {
   }
 }
 
-// Export singleton instance
 export const notificationService = new NotificationService();

@@ -26,6 +26,295 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register AI Support routes
   app.use('/api/support', aiSupportRoutes);
   
+  // Head-to-head betting challenge routes
+  app.post('/api/challenges', async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = req.user.claims.sub;
+      const { 
+        eventId, 
+        eventName, 
+        amount, 
+        pick, 
+        oppositePick, 
+        isVirtual = true,
+        notificationEmail, 
+        notificationPhone, 
+        customMessage 
+      } = req.body;
+      
+      // Validate required fields
+      if (!eventName || !amount || !pick) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      // Check if user has enough balance
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Verify sufficient balance 
+      const balanceField = isVirtual ? 'balance' : 'realMoneyBalance';
+      if (user[balanceField] < amount) {
+        return res.status(400).json({ 
+          message: `Insufficient ${isVirtual ? 'WeParlay Cash' : 'funds'}. You need ${amount} but have ${user[balanceField]}.` 
+        });
+      }
+      
+      // Create the challenge
+      const challenge = await storage.createBettingChallenge({
+        createdBy: userId,
+        eventId,
+        eventName,
+        amount,
+        pick,
+        oppositePick,
+        isVirtual,
+        notificationEmail,
+        notificationPhone,
+        customMessage,
+        status: 'pending',
+        expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000) // 48 hours from now
+      });
+      
+      // If recipient email/phone was provided, send notification
+      if (notificationEmail || notificationPhone) {
+        // Import the notification service dynamically
+        const { notificationService } = await import('./services/notificationService');
+        
+        await notificationService.sendBettingChallenge(
+          challenge.id.toString(),
+          userId,
+          undefined,
+          notificationEmail,
+          notificationPhone
+        );
+      }
+      
+      res.status(201).json({ 
+        message: "Challenge created successfully", 
+        challenge,
+        challengeUrl: `${req.protocol}://${req.get('host')}/challenges/${challenge.challengeUuid}`
+      });
+    } catch (error) {
+      console.error("Error creating betting challenge:", error);
+      res.status(500).json({ message: "Failed to create betting challenge" });
+    }
+  });
+  
+  // Get user's betting challenges
+  app.get('/api/challenges', async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = req.user.claims.sub;
+      const status = req.query.status; // Filter by status if provided
+      
+      // Get challenges created by the user and challenges sent to the user
+      const challenges = await storage.getUserChallenges(userId, status);
+      
+      res.json(challenges);
+    } catch (error) {
+      console.error("Error fetching betting challenges:", error);
+      res.status(500).json({ message: "Failed to fetch betting challenges" });
+    }
+  });
+  
+  // Get a specific challenge by UUID
+  app.get('/api/challenges/:uuid', async (req, res) => {
+    try {
+      const { uuid } = req.params;
+      
+      const challenge = await storage.getBettingChallengeByUuid(uuid);
+      
+      if (!challenge) {
+        return res.status(404).json({ message: "Challenge not found" });
+      }
+      
+      res.json(challenge);
+    } catch (error) {
+      console.error("Error fetching betting challenge:", error);
+      res.status(500).json({ message: "Failed to fetch betting challenge" });
+    }
+  });
+  
+  // Accept a betting challenge
+  app.post('/api/challenges/:uuid/accept', async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = req.user.claims.sub;
+      const { uuid } = req.params;
+      
+      // Get the challenge
+      const challenge = await storage.getBettingChallengeByUuid(uuid);
+      
+      if (!challenge) {
+        return res.status(404).json({ message: "Challenge not found" });
+      }
+      
+      // Check if challenge is already accepted or expired
+      if (challenge.status !== 'pending') {
+        return res.status(400).json({ message: `Challenge cannot be accepted. Current status: ${challenge.status}` });
+      }
+      
+      // Check if the user is trying to accept their own challenge
+      if (challenge.createdBy === userId) {
+        return res.status(400).json({ message: "You cannot accept your own challenge" });
+      }
+      
+      // Check if the user has enough balance
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Verify sufficient balance
+      const balanceField = challenge.isVirtual ? 'balance' : 'realMoneyBalance';
+      if (user[balanceField] < challenge.amount) {
+        return res.status(400).json({ 
+          message: `Insufficient ${challenge.isVirtual ? 'WeParlay Cash' : 'funds'}. You need ${challenge.amount} but have ${user[balanceField]}.` 
+        });
+      }
+      
+      // Accept the challenge
+      const updatedChallenge = await storage.acceptBettingChallenge(uuid, userId);
+      
+      // Send notification to the challenge creator
+      const { notificationService } = await import('./services/notificationService');
+      await notificationService.sendChallengeAcceptedNotification(challenge.id.toString());
+      
+      res.json({ 
+        message: "Challenge accepted successfully", 
+        challenge: updatedChallenge 
+      });
+    } catch (error) {
+      console.error("Error accepting betting challenge:", error);
+      res.status(500).json({ message: "Failed to accept betting challenge" });
+    }
+  });
+  
+  // Decline a betting challenge
+  app.post('/api/challenges/:uuid/decline', async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = req.user.claims.sub;
+      const { uuid } = req.params;
+      
+      // Get the challenge
+      const challenge = await storage.getBettingChallengeByUuid(uuid);
+      
+      if (!challenge) {
+        return res.status(404).json({ message: "Challenge not found" });
+      }
+      
+      // Check if challenge is already accepted, declined, or expired
+      if (challenge.status !== 'pending') {
+        return res.status(400).json({ message: `Challenge cannot be declined. Current status: ${challenge.status}` });
+      }
+      
+      // Update challenge status to declined
+      const updatedChallenge = await storage.updateBettingChallengeStatus(uuid, 'declined');
+      
+      res.json({ 
+        message: "Challenge declined successfully", 
+        challenge: updatedChallenge 
+      });
+    } catch (error) {
+      console.error("Error declining betting challenge:", error);
+      res.status(500).json({ message: "Failed to decline betting challenge" });
+    }
+  });
+  
+  // Cancel a betting challenge (only the creator can cancel)
+  app.post('/api/challenges/:uuid/cancel', async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = req.user.claims.sub;
+      const { uuid } = req.params;
+      
+      // Get the challenge
+      const challenge = await storage.getBettingChallengeByUuid(uuid);
+      
+      if (!challenge) {
+        return res.status(404).json({ message: "Challenge not found" });
+      }
+      
+      // Check if user is the creator
+      if (challenge.createdBy !== userId) {
+        return res.status(403).json({ message: "Only the challenge creator can cancel it" });
+      }
+      
+      // Check if challenge is already accepted, declined, or expired
+      if (challenge.status !== 'pending') {
+        return res.status(400).json({ message: `Challenge cannot be canceled. Current status: ${challenge.status}` });
+      }
+      
+      // Update challenge status to canceled
+      const updatedChallenge = await storage.updateBettingChallengeStatus(uuid, 'canceled');
+      
+      res.json({ 
+        message: "Challenge canceled successfully", 
+        challenge: updatedChallenge 
+      });
+    } catch (error) {
+      console.error("Error canceling betting challenge:", error);
+      res.status(500).json({ message: "Failed to cancel betting challenge" });
+    }
+  });
+  
+  // Get user notifications
+  app.get('/api/notifications', async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = req.user.claims.sub;
+      const { unreadOnly } = req.query;
+      
+      const notifications = await storage.getUserNotifications(userId, unreadOnly === 'true');
+      
+      res.json(notifications);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      res.status(500).json({ message: "Failed to fetch notifications" });
+    }
+  });
+  
+  // Mark notification as read
+  app.put('/api/notifications/:id/read', async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      
+      const notification = await storage.markNotificationAsRead(parseInt(id), userId);
+      
+      res.json({ message: "Notification marked as read", notification });
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      res.status(500).json({ message: "Failed to mark notification as read" });
+    }
+  });
+  
   // User preferences endpoint
   app.post('/api/user/preferences', async (req: any, res) => {
     try {

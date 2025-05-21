@@ -809,7 +809,158 @@ export class MemStorage implements IStorage {
       }
     }
   }
+  // Betting challenge operations
+  async createBettingChallenge(challenge: InsertBettingChallenge): Promise<BettingChallenge> {
+    const [newChallenge] = await db
+      .insert(bettingChallenges)
+      .values(challenge)
+      .returning();
+    
+    return newChallenge;
+  }
+  
+  async getBettingChallenge(id: number): Promise<BettingChallenge | undefined> {
+    const [challenge] = await db
+      .select()
+      .from(bettingChallenges)
+      .where(eq(bettingChallenges.id, id));
+      
+    return challenge;
+  }
+  
+  async getBettingChallengeByUuid(uuid: string): Promise<BettingChallenge | undefined> {
+    const [challenge] = await db
+      .select()
+      .from(bettingChallenges)
+      .where(eq(bettingChallenges.challengeUuid, uuid));
+      
+    return challenge;
+  }
+  
+  async getUserChallenges(userId: string, status?: string): Promise<BettingChallenge[]> {
+    let query = db
+      .select()
+      .from(bettingChallenges)
+      .where(
+        or(
+          eq(bettingChallenges.createdBy, userId),
+          eq(bettingChallenges.acceptedBy, userId)
+        )
+      );
+      
+    if (status) {
+      query = query.where(eq(bettingChallenges.status, status));
+    }
+    
+    // Order by most recent first
+    query = query.orderBy(desc(bettingChallenges.createdAt));
+    
+    return await query;
+  }
+  
+  async acceptBettingChallenge(uuid: string, userId: string): Promise<BettingChallenge> {
+    const now = new Date();
+    
+    const [updatedChallenge] = await db
+      .update(bettingChallenges)
+      .set({ 
+        acceptedBy: userId, 
+        status: 'accepted', 
+        acceptedAt: now,
+        updatedAt: now
+      })
+      .where(eq(bettingChallenges.challengeUuid, uuid))
+      .returning();
+      
+    return updatedChallenge;
+  }
+  
+  async updateBettingChallengeStatus(uuid: string, status: string): Promise<BettingChallenge> {
+    const [updatedChallenge] = await db
+      .update(bettingChallenges)
+      .set({ 
+        status, 
+        updatedAt: new Date() 
+      })
+      .where(eq(bettingChallenges.challengeUuid, uuid))
+      .returning();
+      
+    return updatedChallenge;
+  }
+  
+  async settleBettingChallenge(uuid: string, winnerId?: string, isDraw: boolean = false): Promise<BettingChallenge> {
+    const now = new Date();
+    const updateData: any = { 
+      status: 'settled', 
+      settledAt: now,
+      updatedAt: now
+    };
+    
+    if (isDraw) {
+      updateData.isDraw = true;
+    } else if (winnerId) {
+      updateData.winnerId = winnerId;
+    }
+    
+    const [updatedChallenge] = await db
+      .update(bettingChallenges)
+      .set(updateData)
+      .where(eq(bettingChallenges.challengeUuid, uuid))
+      .returning();
+      
+    return updatedChallenge;
+  }
+  
+  // Notification operations
+  async createNotification(notification: InsertNotification): Promise<Notification> {
+    const [newNotification] = await db
+      .insert(notifications)
+      .values(notification)
+      .returning();
+      
+    return newNotification;
+  }
+  
+  async getUserNotifications(userId: string, unreadOnly: boolean = false): Promise<Notification[]> {
+    let query = db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.userId, userId));
+      
+    if (unreadOnly) {
+      query = query.where(eq(notifications.read, false));
+    }
+    
+    // Order by most recent first
+    query = query.orderBy(desc(notifications.createdAt));
+    
+    return await query;
+  }
+  
+  async markNotificationAsRead(id: number, userId: string): Promise<Notification> {
+    const now = new Date();
+    
+    const [updatedNotification] = await db
+      .update(notifications)
+      .set({ 
+        read: true, 
+        readAt: now,
+        updatedAt: now
+      })
+      .where(
+        and(
+          eq(notifications.id, id),
+          eq(notifications.userId, userId)
+        )
+      )
+      .returning();
+      
+    return updatedNotification;
+  }
 }
+
+// Import eq, and, or, desc from drizzle-orm
+import { eq, and, or, desc } from "drizzle-orm";
 
 // Import DatabaseStorage implementation
 import { DatabaseStorage } from "./DatabaseStorage";
