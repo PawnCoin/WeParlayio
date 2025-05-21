@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { 
   X, BarChart2, Trophy, Medal, History, Settings, 
   Clock, ChevronRight, CircleDot, Flame, Zap, Crown,
-  DollarSign, HelpCircle, HeadphonesIcon
+  DollarSign, HelpCircle, HeadphonesIcon, Wallet, CreditCard
 } from "lucide-react";
 import { 
   FaBasketballBall, FaFootballBall, FaHockeyPuck, 
