@@ -46,9 +46,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <header className="bg-black shadow-md px-4 text-white">
         <div className="container mx-auto">
           <div className="flex items-center justify-between h-16">
-            {/* Logo */}
+            {/* Logo - Enhanced with tagline and hover effects */}
             <div className="flex items-center">
-              <Logo size="md" />
+              <Link href="/">
+                <Logo size="md" withTagline={true} className="cursor-pointer transform hover:scale-105 transition-transform duration-300" />
+              </Link>
             </div>
             
             {/* Navigation for desktop */}
