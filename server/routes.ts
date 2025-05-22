@@ -9,6 +9,7 @@ import { AdvancedOddsService } from "./services/advancedOddsService";
 import { yahooRouter } from "./routes/yahooRoutes";
 import { feeRouter } from "./routes/feeRoutes";
 import { adminRouter } from "./routes/adminRoutes";
+import notificationRoutes from "./routes/notificationRoutes";
 
 // Initialize The Odds API services
 const oddsApiService = new OddsApiService();
