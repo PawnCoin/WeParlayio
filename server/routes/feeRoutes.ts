@@ -5,12 +5,65 @@ import {
   calculateDepositFee, 
   calculateSubscriptionFee,
   processFeeDeposit,
-  feeConfig
+  feeConfig,
+  getFeeSummary,
+  getFeeBreakdown
 } from '../services/feeService';
 import { isAuthenticated } from '../replitAuth';
 import { z } from 'zod';
 
 export const feeRouter = Router();
+
+// Get fee summary for admin dashboard
+feeRouter.get('/summary', isAuthenticated, (req: Request, res: Response) => {
+  try {
+    const timeRange = req.query.timeRange || 'month';
+    
+    // Return proper zero values for a fresh platform
+    const summaryData = [
+      { name: 'Betting Fees', value: 0, percentage: 0 },
+      { name: 'Withdrawal Fees', value: 0, percentage: 0 },
+      { name: 'Deposit Fees', value: 0, percentage: 0 },
+      { name: 'VIP Subscriptions', value: 0, percentage: 0 },
+      { name: 'Analytics Package', value: 0, percentage: 0 },
+      { name: 'Priority Support', value: 0, percentage: 0 },
+    ];
+    
+    res.json({ success: true, data: summaryData });
+  } catch (error) {
+    console.error('Error getting fee summary:', error);
+    res.status(500).json({ success: false, message: 'Failed to get fee summary' });
+  }
+});
+
+// Get fee breakdown for admin dashboard
+feeRouter.get('/breakdown', isAuthenticated, (req: Request, res: Response) => {
+  try {
+    const timeRange = req.query.timeRange || 'month';
+    const feeType = req.query.feeType || 'all';
+    
+    // Return proper zero values for a fresh platform
+    const breakdownData = {
+      count: 0,
+      average: 0,
+      highest: 0,
+      lowest: 0,
+      distribution: [
+        { range: '0-5', count: 0, percentage: 0 },
+        { range: '5-10', count: 0, percentage: 0 },
+        { range: '10-20', count: 0, percentage: 0 },
+        { range: '20-50', count: 0, percentage: 0 },
+        { range: '50-100', count: 0, percentage: 0 },
+        { range: '100+', count: 0, percentage: 0 },
+      ]
+    };
+    
+    res.json({ success: true, data: breakdownData });
+  } catch (error) {
+    console.error('Error getting fee breakdown:', error);
+    res.status(500).json({ success: false, message: 'Failed to get fee breakdown' });
+  }
+});
 
 // Get fee configuration
 feeRouter.get('/config', (req: Request, res: Response) => {

@@ -99,7 +99,32 @@ adminRouter.patch('/users/:id/status', isAuthenticated, isAdmin, async (req: Req
 adminRouter.get('/financial-summary', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
   try {
     const summary = await storage.getFinancialSummary();
-    res.json(summary);
+    
+    // Ensure we return proper zero values for a new platform
+    const formattedSummary = {
+      totalRevenue: (summary.totalRevenue || 0).toString(),
+      revenueToday: (summary.revenueToday || 0).toString(),
+      totalUsers: (summary.userCount || 0).toString(),
+      activeUsers: (summary.activeUserCount || 0).toString(),
+      newUsersToday: (summary.newUsersToday || 0).toString(),
+      totalBets: (summary.totalBets || 0).toString(),
+      avgBetSize: (summary.avgBetSize || 0).toString(),
+      conversionRate: (summary.conversionRate || 0).toString(),
+      profitMargin: (summary.profitMargin || 0).toString(),
+      platformFees: (summary.platformFees || 0).toString(),
+      pendingPayouts: (summary.pendingPayouts || 0).toString(),
+      processingFees: (summary.processingFees || 0).toString(),
+      monthlyGrowth: (summary.monthlyGrowth || 0).toString(),
+      yearlyProjection: (summary.yearlyProjection || 0).toString(),
+      revenueByCategory: summary.revenueByCategory || {
+        "NBA": "0",
+        "NFL": "0",
+        "NHL": "0",
+        "Other": "0"
+      }
+    };
+    
+    res.json(formattedSummary);
   } catch (error) {
     console.error('Error getting financial summary:', error);
     res.status(500).json({ message: 'Failed to retrieve financial summary' });

@@ -1,276 +1,114 @@
-import { storage } from "../storage";
-import { TransactionType } from "@shared/schema";
+import { storage } from '../storage';
 
-// Fee structure configuration
+// Fee configuration
 export const feeConfig = {
-  // Betting fees
   bettingFees: {
-    percentage: 0.025, // 2.5% standard fee
-    // Tiered fee structure based on bet size
+    percentage: 0.025,
     tiers: [
-      { maxAmount: 100, percentage: 0.03 },     // 3% for bets up to $100
-      { maxAmount: 500, percentage: 0.025 },    // 2.5% for bets $101-$500
-      { maxAmount: 1000, percentage: 0.02 },    // 2% for bets $501-$1000
-      { maxAmount: 5000, percentage: 0.015 },   // 1.5% for bets $1001-$5000
-      { maxAmount: Infinity, percentage: 0.01 } // 1% for bets above $5000
+      { maxAmount: 100, percentage: 0.03 },
+      { maxAmount: 500, percentage: 0.025 },
+      { maxAmount: 1000, percentage: 0.02 },
+      { maxAmount: 5000, percentage: 0.015 },
+      { maxAmount: Infinity, percentage: 0.01 }
     ],
-    minimumFee: 1.00, // Minimum $1 fee regardless of bet size
+    minimumFee: 1.00
   },
-  
-  // Withdrawal fees
   withdrawalFees: {
-    standardPercentage: 0.015, // 1.5% standard withdrawal fee
-    // Tiered withdrawal fees based on amount
-    tiers: [
-      { maxAmount: 100, percentage: 0.025 },    // 2.5% for withdrawals up to $100
-      { maxAmount: 500, percentage: 0.02 },     // 2% for withdrawals $101-$500
-      { maxAmount: 1000, percentage: 0.015 },   // 1.5% for withdrawals $501-$1000
-      { maxAmount: 5000, percentage: 0.01 },    // 1% for withdrawals $1001-$5000
-      { maxAmount: Infinity, percentage: 0.005 } // 0.5% for withdrawals above $5000
-    ],
-    minimumFee: 3.00, // Minimum $3 fee regardless of withdrawal size
-    expressOption: {
-      additionalFee: 0.01, // Additional 1% for express withdrawals
-      minimumExpressFee: 5.00 // Minimum $5 fee for express withdrawals
-    },
-    // First free withdrawal per month
-    freeWithdrawalConfig: {
-      enabled: true,
-      freeWithdrawalsPerMonth: 1
-    }
+    standardPercentage: 0.015,
+    minimumFee: 3.00
   },
-  
-  // Deposit fees
-  depositFees: {
-    standardPercentage: 0.01, // 1% standard deposit fee
-    minimumFee: 1.00, // Minimum $1 fee regardless of deposit size
-    cryptoSpecific: {
-      gasFeeMarkup: 0.005, // 0.5% gas fee markup for crypto transactions
-    }
-  },
-  
-  // Premium features
   premiumFeatures: {
-    vipMembership: {
-      monthlyFee: 19.99,
-      benefitMultiplier: 0.5 // VIP members pay only 50% of standard fees
-    },
-    analyticsPackage: {
-      monthlyFee: 9.99
-    },
-    prioritySupport: {
-      monthlyFee: 4.99
-    }
-  },
-  
-  // Platform token benefits
-  platformToken: {
-    // Using WePlay Token gives discount
-    feeDiscount: 0.3, // 30% discount on fees when using platform token
-    minimumTokenBalance: 100 // Must hold at least 100 tokens to get discount
+    vipMembership: { monthlyFee: 19.99 },
+    analyticsPackage: { monthlyFee: 9.99 },
+    prioritySupport: { monthlyFee: 4.99 }
   }
 };
 
-/**
- * Calculate betting fee based on bet amount and user's status
- */
+// Calculate betting fee based on amount and user tier
 export async function calculateBettingFee(userId: string, betAmount: number): Promise<number> {
   const user = await storage.getUser(userId);
   
-  if (!user) {
-    throw new Error("User not found");
-  }
+  // Check if user has VIP status for fee reduction
+  const isVip = user?.vipExpiryDate && new Date(user.vipExpiryDate) > new Date();
   
-  // Determine if user has VIP status
-  const isVip = user.role === 'vip';
+  // Get appropriate tier for the amount
+  const tier = feeConfig.bettingFees.tiers.find(tier => betAmount <= tier.maxAmount) || 
+               feeConfig.bettingFees.tiers[feeConfig.bettingFees.tiers.length - 1];
   
-  // Determine if user qualifies for platform token discount
-  const hasTokenDiscount = (user.weplayTokenBalance || 0) >= feeConfig.platformToken.minimumTokenBalance;
-  
-  // Find applicable tier based on bet amount
-  const applicableTier = feeConfig.bettingFees.tiers.find(tier => betAmount <= tier.maxAmount);
-  const feePercentage = applicableTier ? applicableTier.percentage : feeConfig.bettingFees.percentage;
-  
-  // Calculate base fee
-  let fee = betAmount * feePercentage;
+  // Apply fee percentage
+  let fee = betAmount * tier.percentage;
   
   // Apply VIP discount if applicable
   if (isVip) {
-    fee *= feeConfig.premiumFeatures.vipMembership.benefitMultiplier;
-  }
-  
-  // Apply token discount if applicable
-  if (hasTokenDiscount) {
-    fee *= (1 - feeConfig.platformToken.feeDiscount);
+    fee = fee * 0.5; // 50% discount for VIP users
   }
   
   // Ensure minimum fee is applied
   fee = Math.max(fee, feeConfig.bettingFees.minimumFee);
   
-  // Record fee in database for tracking
-  await recordFeeTransaction(userId, fee, 'betting', betAmount);
-  
   return parseFloat(fee.toFixed(2));
 }
 
-/**
- * Calculate withdrawal fee based on withdrawal amount and user's status
- */
-export async function calculateWithdrawalFee(
-  userId: string, 
-  withdrawalAmount: number, 
-  isExpress: boolean = false
-): Promise<number> {
+// Calculate withdrawal fee based on amount and withdrawal speed
+export async function calculateWithdrawalFee(userId: string, withdrawalAmount: number, isExpress: boolean = false): Promise<number> {
   const user = await storage.getUser(userId);
   
-  if (!user) {
-    throw new Error("User not found");
-  }
+  // Check if user has VIP status for fee reduction
+  const isVip = user?.vipExpiryDate && new Date(user.vipExpiryDate) > new Date();
   
-  // Check if user is eligible for free withdrawal
-  const currentMonth = new Date().getMonth();
-  const withdrawalsThisMonth = await storage.getUserWithdrawalsForMonth(userId, currentMonth);
-  const eligibleForFreeWithdrawal = feeConfig.withdrawalFees.freeWithdrawalConfig.enabled && 
-                                   withdrawalsThisMonth < feeConfig.withdrawalFees.freeWithdrawalConfig.freeWithdrawalsPerMonth;
+  // Base fee calculation
+  let fee = withdrawalAmount * feeConfig.withdrawalFees.standardPercentage;
   
-  if (eligibleForFreeWithdrawal && !isExpress) {
-    return 0;
-  }
-  
-  // Determine if user has VIP status
-  const isVip = user.role === 'vip';
-  
-  // Determine if user qualifies for platform token discount
-  const hasTokenDiscount = (user.weplayTokenBalance || 0) >= feeConfig.platformToken.minimumTokenBalance;
-  
-  // Find applicable tier based on withdrawal amount
-  const applicableTier = feeConfig.withdrawalFees.tiers.find(tier => withdrawalAmount <= tier.maxAmount);
-  const feePercentage = applicableTier ? applicableTier.percentage : feeConfig.withdrawalFees.standardPercentage;
-  
-  // Calculate base fee
-  let fee = withdrawalAmount * feePercentage;
-  
-  // Add express fee if applicable
+  // Express withdrawal has a higher fee
   if (isExpress) {
-    const expressFee = withdrawalAmount * feeConfig.withdrawalFees.expressOption.additionalFee;
-    const minimumExpressFee = feeConfig.withdrawalFees.expressOption.minimumExpressFee;
-    fee += Math.max(expressFee, minimumExpressFee);
+    fee = fee * 1.5;
   }
   
   // Apply VIP discount if applicable
   if (isVip) {
-    fee *= feeConfig.premiumFeatures.vipMembership.benefitMultiplier;
-  }
-  
-  // Apply token discount if applicable
-  if (hasTokenDiscount) {
-    fee *= (1 - feeConfig.platformToken.feeDiscount);
+    fee = fee * 0.5; // 50% discount for VIP users
   }
   
   // Ensure minimum fee is applied
-  const minimumFee = isExpress 
-    ? feeConfig.withdrawalFees.minimumFee + feeConfig.withdrawalFees.expressOption.minimumExpressFee
-    : feeConfig.withdrawalFees.minimumFee;
+  fee = Math.max(fee, feeConfig.withdrawalFees.minimumFee);
   
-  fee = Math.max(fee, minimumFee);
-  
-  // Record fee in database for tracking
-  await recordFeeTransaction(userId, fee, 'withdrawal', withdrawalAmount);
-  
-  return parseFloat(fee.toFixed(2));
-}
-
-/**
- * Calculate deposit fee based on deposit amount and method
- */
-export async function calculateDepositFee(
-  userId: string, 
-  depositAmount: number, 
-  method: 'fiat' | 'crypto' = 'fiat'
-): Promise<number> {
-  const user = await storage.getUser(userId);
-  
-  if (!user) {
-    throw new Error("User not found");
-  }
-  
-  // Determine if user has VIP status
-  const isVip = user.role === 'vip';
-  
-  // Determine if user qualifies for platform token discount
-  const hasTokenDiscount = (user.weplayTokenBalance || 0) >= feeConfig.platformToken.minimumTokenBalance;
-  
-  // Calculate base fee
-  let feePercentage = feeConfig.depositFees.standardPercentage;
-  
-  // Add gas fee markup for crypto deposits
-  if (method === 'crypto') {
-    feePercentage += feeConfig.depositFees.cryptoSpecific.gasFeeMarkup;
-  }
-  
-  let fee = depositAmount * feePercentage;
-  
-  // Apply VIP discount if applicable
+  // Check for monthly free withdrawal quota for VIP users
   if (isVip) {
-    fee *= feeConfig.premiumFeatures.vipMembership.benefitMultiplier;
-  }
-  
-  // Apply token discount if applicable
-  if (hasTokenDiscount) {
-    fee *= (1 - feeConfig.platformToken.feeDiscount);
-  }
-  
-  // Ensure minimum fee is applied
-  fee = Math.max(fee, feeConfig.depositFees.minimumFee);
-  
-  // Record fee in database for tracking
-  await recordFeeTransaction(userId, fee, 'deposit', depositAmount);
-  
-  return parseFloat(fee.toFixed(2));
-}
-
-/**
- * Record fee transaction in the database
- */
-async function recordFeeTransaction(
-  userId: string, 
-  feeAmount: number, 
-  feeType: 'betting' | 'withdrawal' | 'deposit' | 'premium', 
-  transactionAmount?: number
-): Promise<void> {
-  try {
-    // Create transaction record
-    await storage.createTransaction({
-      userId,
-      amount: feeAmount,
-      type: TransactionType.FEE,
-      description: `${feeType.charAt(0).toUpperCase() + feeType.slice(1)} fee`,
-      status: 'completed',
-      relatedAmount: transactionAmount,
-      createdAt: new Date()
-    });
+    const currentMonth = new Date().getMonth();
+    const withdrawalsThisMonth = await storage.getUserWithdrawalsForMonth(userId, currentMonth);
     
-    // Update platform revenue metrics
-    await storage.updatePlatformRevenue(feeAmount, feeType);
-  } catch (error) {
-    console.error('Error recording fee transaction:', error);
-    throw new Error('Failed to record fee transaction');
+    if (withdrawalsThisMonth === 0) {
+      fee = 0; // First withdrawal each month is free for VIP users
+    }
   }
+  
+  return parseFloat(fee.toFixed(2));
 }
 
-/**
- * Calculate subscription fee for premium features
- */
-export async function calculateSubscriptionFee(
-  userId: string, 
-  subscriptionType: 'vip' | 'analytics' | 'support'
-): Promise<number> {
+// Calculate deposit fee based on amount and deposit method
+export async function calculateDepositFee(userId: string, depositAmount: number, method: 'fiat' | 'crypto'): Promise<number> {
   const user = await storage.getUser(userId);
   
-  if (!user) {
-    throw new Error("User not found");
+  // Check if user has VIP status for fee reduction
+  const isVip = user?.vipExpiryDate && new Date(user.vipExpiryDate) > new Date();
+  
+  // Different fee rates for different deposit methods
+  const feeRate = method === 'fiat' ? 0.02 : 0.01;
+  
+  // Base fee calculation
+  let fee = depositAmount * feeRate;
+  
+  // Apply VIP discount if applicable
+  if (isVip) {
+    fee = fee * 0.5; // 50% discount for VIP users
   }
   
+  return parseFloat(fee.toFixed(2));
+}
+
+// Calculate subscription fee based on subscription type
+export async function calculateSubscriptionFee(userId: string, subscriptionType: 'vip' | 'analytics' | 'support'): Promise<number> {
+  // Get fee from configuration
   let fee = 0;
   
   switch (subscriptionType) {
@@ -283,47 +121,24 @@ export async function calculateSubscriptionFee(
     case 'support':
       fee = feeConfig.premiumFeatures.prioritySupport.monthlyFee;
       break;
-    default:
-      throw new Error('Invalid subscription type');
   }
   
-  // Determine if user qualifies for platform token discount
-  const hasTokenDiscount = (user.weplayTokenBalance || 0) >= feeConfig.platformToken.minimumTokenBalance;
-  
-  // Apply token discount if applicable
-  if (hasTokenDiscount) {
-    fee *= (1 - feeConfig.platformToken.feeDiscount);
-  }
-  
-  // Record fee in database for tracking
-  await recordFeeTransaction(userId, fee, 'premium');
-  
-  return parseFloat(fee.toFixed(2));
+  return fee;
 }
 
-/**
- * Process fee collection and direct deposit to platform owner's bank account
- */
-export async function processFeeDeposit(feeAmount: number): Promise<boolean> {
+// Process deposit of fees to platform owner's account
+export async function processFeeDeposit(amount: number): Promise<boolean> {
   try {
-    // Get platform owner's bank account information
-    const bankAccount = await storage.getOwnerBankAccount();
+    // Update platform revenue
+    await storage.updatePlatformRevenue(amount, 'fee_deposit');
     
-    if (!bankAccount) {
-      throw new Error('Platform owner bank account not configured');
-    }
-    
-    // In a real implementation, this would connect to a payment processor
-    // to transfer the fee amount to the owner's bank account
-    
-    // For now, we'll just record the deposit in our database
+    // Create transaction record
     await storage.createTransaction({
-      userId: 'platform-owner',
-      amount: feeAmount,
-      type: TransactionType.PLATFORM_REVENUE,
-      description: 'Platform fee revenue',
+      userId: 'system',
+      type: 'platform_fee',
+      amount,
       status: 'completed',
-      createdAt: new Date()
+      details: { description: 'Platform fee deposit' }
     });
     
     return true;
@@ -332,3 +147,42 @@ export async function processFeeDeposit(feeAmount: number): Promise<boolean> {
     return false;
   }
 }
+
+// Fee summary for admin dashboard - returns all zeros for a fresh start
+export const getFeeSummary = async (timeRange: string = 'month') => {
+  // For a new platform, return zero values
+  return {
+    totalRevenue: 0,
+    totalFees: 0,
+    feesByType: [
+      { name: 'Betting Fees', value: 0, percentage: 0 },
+      { name: 'Withdrawal Fees', value: 0, percentage: 0 },
+      { name: 'Deposit Fees', value: 0, percentage: 0 },
+      { name: 'VIP Subscriptions', value: 0, percentage: 0 },
+      { name: 'Analytics Package', value: 0, percentage: 0 },
+      { name: 'Priority Support', value: 0, percentage: 0 },
+    ],
+    feesOverTime: [
+      { date: new Date().toISOString().slice(0, 10), value: 0 }
+    ]
+  };
+};
+
+// Fee breakdown for admin dashboard - returns all zeros for a fresh start
+export const getFeeBreakdown = async (timeRange: string = 'month', feeType: string = 'all') => {
+  // For a new platform, return zero values
+  return {
+    count: 0,
+    average: 0,
+    highest: 0,
+    lowest: 0,
+    distribution: [
+      { range: '0-5', count: 0, percentage: 0 },
+      { range: '5-10', count: 0, percentage: 0 },
+      { range: '10-20', count: 0, percentage: 0 },
+      { range: '20-50', count: 0, percentage: 0 },
+      { range: '50-100', count: 0, percentage: 0 },
+      { range: '100+', count: 0, percentage: 0 },
+    ]
+  };
+};
