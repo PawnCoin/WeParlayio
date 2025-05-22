@@ -104,6 +104,7 @@ function Router() {
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms-of-service" component={TermsOfService} />
       <Route path="/support" component={Support} />
+      <Route path="/notification-test" component={NotificationTest} />
       <Route path="/wallet-management" component={WalletManagement} />
       <Route path="/crypto-information" component={CryptoInformation} />
       <Route component={NotFound} />
