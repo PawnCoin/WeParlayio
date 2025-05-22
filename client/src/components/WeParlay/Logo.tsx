@@ -26,7 +26,7 @@ const Logo: React.FC<LogoProps> = ({ size = 'md', className = '', withTagline = 
         />
         {withTagline && (
           <div className="text-orange-500 font-bold text-sm mt-1 text-center tracking-wide">
-            THE FUTURE OF SPORTS BETTING
+           
           </div>
         )}
       </div>
