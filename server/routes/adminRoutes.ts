@@ -158,7 +158,11 @@ adminRouter.post('/bank-account', isAuthenticated, isAdmin, async (req: Request,
       return res.status(400).json({ message: 'All bank account fields are required' });
     }
     
+    // Get user ID from authenticated request
+    const userId = (req.user as any).claims?.sub || 'admin-owner';
+    
     const bankAccount = await storage.updateBankAccount({
+      userId,
       accountName,
       bankName,
       accountNumber,
@@ -170,6 +174,42 @@ adminRouter.post('/bank-account', isAuthenticated, isAdmin, async (req: Request,
   } catch (error) {
     console.error('Error updating bank account:', error);
     res.status(500).json({ message: 'Failed to update bank account information' });
+  }
+});
+
+// Get bank account information (admin only)
+adminRouter.get('/bank-account', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+  try {
+    const bankAccount = await storage.getOwnerBankAccount();
+    
+    // If no bank account exists yet, return an empty object with proper structure
+    if (!bankAccount) {
+      return res.json({
+        id: 0,
+        userId: (req.user as any).claims?.sub || 'admin-owner',
+        accountName: '',
+        bankName: '',
+        accountNumber: '',
+        routingNumber: '',
+        isDefault: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+    }
+    
+    // Mask sensitive data for security
+    const maskedAccount = {
+      ...bankAccount,
+      accountNumber: bankAccount.accountNumber ? 
+        '*'.repeat(bankAccount.accountNumber.length - 4) + bankAccount.accountNumber.slice(-4) : '',
+      routingNumber: bankAccount.routingNumber ? 
+        '*'.repeat(bankAccount.routingNumber.length - 4) + bankAccount.routingNumber.slice(-4) : ''
+    };
+    
+    res.json(maskedAccount);
+  } catch (error) {
+    console.error('Error fetching bank account:', error);
+    res.status(500).json({ message: 'Failed to fetch bank account details' });
   }
 });
 
