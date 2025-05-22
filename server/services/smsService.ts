@@ -27,13 +27,20 @@ const getSMSTemplate = (template: string, data: any): string => {
 
 export const sendSMS = async (options: SMSOptions): Promise<boolean> => {
   try {
-    let messageBody = options.message || '';
+    // Check if Twilio credentials are available
+    if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_PHONE_NUMBER) {
+      console.error('❌ Twilio credentials not configured');
+      return false;
+    }
+    
+    let messageBody = options.message || 'WeParlay notification';
     
     // Use template if specified
     if (options.template && options.templateData) {
       messageBody = getSMSTemplate(options.template, options.templateData);
     }
     
+    console.log('📱 Attempting to send SMS to:', options.to);
     const message = await client.messages.create({
       body: messageBody,
       from: process.env.TWILIO_PHONE_NUMBER,
@@ -42,8 +49,8 @@ export const sendSMS = async (options: SMSOptions): Promise<boolean> => {
     
     console.log('✅ SMS sent successfully:', message.sid);
     return true;
-  } catch (error) {
-    console.error('❌ SMS sending failed:', error);
+  } catch (error: any) {
+    console.error('❌ SMS sending failed:', error.message);
     return false;
   }
 };

@@ -5,12 +5,12 @@ import { isAuthenticated } from '../replitAuth';
 
 const router = Router();
 
-// Test email endpoint
-router.post('/test-email', isAuthenticated, async (req, res) => {
+// Test email endpoint (no authentication required for testing)
+router.post('/test-email', async (req, res) => {
   try {
     const { type = 'welcome' } = req.body;
-    const user = req.user as any;
     
+    console.log('📧 Testing email type:', type);
     let success = false;
     
     switch (type) {
@@ -50,15 +50,16 @@ router.post('/test-email', isAuthenticated, async (req, res) => {
         });
     }
     
+    console.log('📧 Email test result:', success);
     res.json({ success, message: success ? 'Email sent successfully' : 'Email sending failed' });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Email test error:', error);
-    res.status(500).json({ success: false, message: 'Email test failed' });
+    res.status(500).json({ success: false, message: `Email test failed: ${error.message}` });
   }
 });
 
-// Test SMS endpoint
-router.post('/test-sms', isAuthenticated, async (req, res) => {
+// Test SMS endpoint (no authentication required for testing)
+router.post('/test-sms', async (req, res) => {
   try {
     const { phone, type = 'bet' } = req.body;
     

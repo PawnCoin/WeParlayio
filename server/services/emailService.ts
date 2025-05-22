@@ -175,8 +175,14 @@ const getEmailTemplate = (template: string, data: any) => {
 
 export const sendEmail = async (options: EmailOptions): Promise<boolean> => {
   try {
+    // Check if SMTP credentials are available
+    if (!process.env.SMTP_USERNAME || !process.env.SMTP_PASSWORD) {
+      console.error('❌ SMTP credentials not configured');
+      return false;
+    }
+    
     let emailContent = {
-      subject: options.subject,
+      subject: options.subject || 'WeParlay Notification',
       text: options.text,
       html: options.html
     };
@@ -196,11 +202,12 @@ export const sendEmail = async (options: EmailOptions): Promise<boolean> => {
       html: emailContent.html,
     };
     
+    console.log('📧 Attempting to send email to:', mailOptions.to);
     const result = await transporter.sendMail(mailOptions);
     console.log('✅ Email sent successfully:', result.messageId);
     return true;
-  } catch (error) {
-    console.error('❌ Email sending failed:', error);
+  } catch (error: any) {
+    console.error('❌ Email sending failed:', error.message);
     return false;
   }
 };
