@@ -26,6 +26,7 @@ import EnhancedFeatures from "@/pages/EnhancedFeatures"; // Advanced features pa
 import VipFeatures from "@/pages/VipFeatures"; // VIP exclusive section
 import ThemeSettingsPage from "@/pages/ThemeSettingsPage"; // Theme settings page
 import AdminDashboard from "@/pages/AdminDashboard"; // Admin dashboard for platform owner
+import NotificationTest from "@/pages/NotificationTest"; // Email and SMS testing
 import PrivacyPolicy from "@/pages/PrivacyPolicy"; // Privacy policy page for social login requirements
 import TermsOfService from "@/pages/TermsOfService"; // Terms of service page for social login requirements
 import SecurityInfo from "@/pages/SecurityInfo"; // Security information page showing our protection measures

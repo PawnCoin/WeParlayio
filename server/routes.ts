@@ -31,6 +31,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register AI Support routes
   app.use('/api/support', aiSupportRoutes);
   
+  // Register notification routes
+  app.use('/api/notifications', notificationRoutes);
+  
   // Head-to-head betting challenge routes
   app.post('/api/challenges', async (req: any, res) => {
     try {
