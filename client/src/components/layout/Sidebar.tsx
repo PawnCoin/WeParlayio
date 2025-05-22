@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import Logo from "@/components/WeParlay/Logo";
 import weparlayLogo from "@assets/weparlaylogo5.png";
 import { 
   X, BarChart2, Trophy, Medal, History, Settings, 
@@ -87,18 +88,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
       {/* Header with branding and close button for mobile */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
         <Link href="/">
-          <div className="flex items-center">
-            <div className="flex items-center">
-              <div className="h-8 w-8 bg-green-600 rounded-full flex items-center justify-center mr-2">
-                <span className="text-white font-bold text-xl">W</span>
-              </div>
-              <span className="text-lg font-bold">
-                <span className="text-blue-600">We</span>
-                <span className="text-white dark:text-white">Parlay</span>
-                <span className="text-blue-400">.io</span>
-              </span>
-            </div>
-          </div>
+          <Logo size="sm" className="cursor-pointer" />
         </Link>
         {onClose && (
           <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
