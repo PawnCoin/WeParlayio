@@ -8,6 +8,7 @@ import { OddsApiService } from "./services/oddsApiService";
 import { AdvancedOddsService } from "./services/advancedOddsService";
 import { yahooRouter } from "./routes/yahooRoutes";
 import { feeRouter } from "./routes/feeRoutes";
+import { adminRouter } from "./routes/adminRoutes";
 
 // Initialize The Odds API services
 const oddsApiService = new OddsApiService();
@@ -22,6 +23,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register fee routes for revenue generation
   app.use('/api/fees', feeRouter);
+  
+  // Register Admin routes
+  app.use('/api/admin', adminRouter);
   
   // Register AI Support routes
   app.use('/api/support', aiSupportRoutes);
