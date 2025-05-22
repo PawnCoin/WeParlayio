@@ -35,10 +35,12 @@ const getEmailTemplate = (template: string, data: any) => {
     welcome: {
       subject: 'Welcome to WeParlay - Your Sports Betting Adventure Begins!',
       html: `
-        <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; background: #1a1a2e; color: #ffffff; padding: 20px; border-radius: 10px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #3498db; margin: 0;">Welcome to WeParlay</h1>
-            <p style="color: #e74c3c; font-size: 18px; margin: 10px 0;">Where Every Bet Counts!</p>
+        <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%); color: #ffffff; padding: 0; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+          <!-- Header with Logo -->
+          <div style="background: linear-gradient(90deg, #3498db 0%, #2ecc71 50%, #f39c12 100%); padding: 20px; text-align: center;">
+            <img src="https://weparlay.io/wp-content/uploads/2024/12/weparlaylogoP1.png" alt="WeParlay Logo" style="height: 60px; margin-bottom: 10px;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">Welcome to WeParlay</h1>
+            <p style="color: #ffffff; font-size: 18px; margin: 5px 0 0 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Where Every Bet Counts!</p>
           </div>
           
           <div style="background: rgba(52, 152, 219, 0.1); padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -69,10 +71,13 @@ const getEmailTemplate = (template: string, data: any) => {
     bet_confirmation: {
       subject: `Bet Confirmed - ${data.betType || 'Your Bet'} is Live!`,
       html: `
-        <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; background: #1a1a2e; color: #ffffff; padding: 20px; border-radius: 10px;">
-          <div style="text-align: center; margin-bottom: 20px;">
-            <h1 style="color: #3498db; margin: 0;">Bet Confirmed! 🎯</h1>
+        <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%); color: #ffffff; padding: 0; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+          <!-- Header with Logo -->
+          <div style="background: linear-gradient(90deg, #3498db 0%, #2ecc71 50%, #f39c12 100%); padding: 15px; text-align: center;">
+            <img src="https://weparlay.io/wp-content/uploads/2024/12/weparlaylogoP1.png" alt="WeParlay Logo" style="height: 50px; margin-bottom: 8px;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 24px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">Bet Confirmed! 🎯</h1>
           </div>
+          <div style="padding: 20px;">
           
           <div style="background: rgba(46, 204, 113, 0.1); padding: 20px; border-radius: 8px; border-left: 4px solid #2ecc71;">
             <h2 style="color: #2ecc71; margin-top: 0;">Your bet is now live!</h2>
@@ -95,11 +100,14 @@ const getEmailTemplate = (template: string, data: any) => {
     win_notification: {
       subject: '🎉 Congratulations! You Won!',
       html: `
-        <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; background: #1a1a2e; color: #ffffff; padding: 20px; border-radius: 10px;">
-          <div style="text-align: center; margin-bottom: 20px;">
-            <h1 style="color: #f1c40f; margin: 0; font-size: 36px;">🏆 WINNER! 🏆</h1>
-            <p style="color: #2ecc71; font-size: 24px;">Congratulations!</p>
+        <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%); color: #ffffff; padding: 0; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+          <!-- Header with Logo -->
+          <div style="background: linear-gradient(90deg, #f39c12 0%, #2ecc71 50%, #3498db 100%); padding: 20px; text-align: center;">
+            <img src="https://weparlay.io/wp-content/uploads/2024/12/weparlaylogoP1.png" alt="WeParlay Logo" style="height: 60px; margin-bottom: 10px;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 36px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">🏆 WINNER! 🏆</h1>
+            <p style="color: #ffffff; font-size: 24px; margin: 5px 0 0 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Congratulations!</p>
           </div>
+          <div style="padding: 20px;">
           
           <div style="background: linear-gradient(45deg, rgba(241, 196, 15, 0.2), rgba(46, 204, 113, 0.2)); padding: 25px; border-radius: 10px; text-align: center;">
             <h2 style="color: #f1c40f; margin: 0 0 15px 0;">You won ${data.winAmount || '$0'}!</h2>
