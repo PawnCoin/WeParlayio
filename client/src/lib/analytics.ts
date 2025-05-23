@@ -1,0 +1,82 @@
+// Define the gtag function globally
+declare global {
+  interface Window {
+    dataLayer: any[];
+    gtag: (...args: any[]) => void;
+  }
+}
+
+// Initialize Google Analytics
+export const initGA = () => {
+  const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID;
+
+  if (!measurementId) {
+    console.warn('Missing required Google Analytics key: VITE_GA_MEASUREMENT_ID');
+    return;
+  }
+
+  // Add Google Analytics script to the head
+  const script1 = document.createElement('script');
+  script1.async = true;
+  script1.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+  document.head.appendChild(script1);
+
+  // Initialize gtag
+  const script2 = document.createElement('script');
+  script2.innerHTML = `
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '${measurementId}');
+  `;
+  document.head.appendChild(script2);
+};
+
+// Track page views - useful for single-page applications
+export const trackPageView = (url: string) => {
+  if (typeof window === 'undefined' || !window.gtag) return;
+  
+  const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID;
+  if (!measurementId) return;
+  
+  window.gtag('config', measurementId, {
+    page_path: url
+  });
+};
+
+// Track events for WeParlay specific actions
+export const trackEvent = (
+  action: string, 
+  category?: string, 
+  label?: string, 
+  value?: number
+) => {
+  if (typeof window === 'undefined' || !window.gtag) return;
+  
+  window.gtag('event', action, {
+    event_category: category,
+    event_label: label,
+    value: value,
+  });
+};
+
+// WeParlay-specific tracking events
+export const trackSMSChallenge = (amount: number, isVip: boolean) => {
+  trackEvent('sms_challenge_sent', 'betting', isVip ? 'vip_user' : 'regular_user', amount);
+};
+
+export const trackBetPlaced = (amount: number, sport: string, betType: string) => {
+  trackEvent('bet_placed', 'betting', `${sport}_${betType}`, amount);
+};
+
+export const trackVipUpgrade = (tier: string) => {
+  trackEvent('vip_upgrade', 'subscription', tier);
+};
+
+export const trackSocialShare = (platform: string, content: string) => {
+  trackEvent('social_share', 'engagement', `${platform}_${content}`);
+};
+
+export const trackWalletConnection = (walletType: string) => {
+  trackEvent('wallet_connected', 'crypto', walletType);
+};

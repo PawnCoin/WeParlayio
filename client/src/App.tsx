@@ -40,6 +40,8 @@ import MobileVoiceBetting from "@/components/mobile/MobileVoiceBetting";
 import { CurrencyModeProvider } from "./contexts/CurrencyModeContext";
 import { TeamThemeProvider } from "./contexts/TeamThemeContext";
 import { BetSlipProvider } from "./contexts/BetSlipContext";
+import { initGA } from "./lib/analytics";
+import { useAnalytics } from "./hooks/use-analytics";
 
 // Import admin components
 import AdminBypass from "@/pages/AdminBypass";
@@ -77,6 +79,9 @@ const AdminRoute = ({ component: Component, ...rest }: any) => {
 };
 
 function Router() {
+  // Track page views when routes change
+  useAnalytics();
+  
   return (
     <Switch>
       <Route path="/" component={Home} />
@@ -114,6 +119,17 @@ function Router() {
 }
 
 function App() {
+  // Initialize Google Analytics when app loads
+  React.useEffect(() => {
+    // Verify required environment variable is present
+    if (!import.meta.env.VITE_GA_MEASUREMENT_ID) {
+      console.warn('Missing required Google Analytics key: VITE_GA_MEASUREMENT_ID');
+    } else {
+      initGA();
+      console.log('🚀 WeParlay Analytics initialized!');
+    }
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
