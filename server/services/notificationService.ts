@@ -190,9 +190,18 @@ export class NotificationService {
         await this.sendEmail(toEmail, emailSubject, emailContent);
       }
       
-      // Send to phone if provided
+      // Send to phone if provided (VIP feature only)
       if (toPhone) {
-        await this.sendSMS(toPhone, smsContent);
+        // Check if the sender has VIP tier for SMS notifications
+        const senderUser = await storage.getUser(fromUserId);
+        if (senderUser?.subscriptionTier) {
+          const tierFeatures = getTierFeatures(senderUser.subscriptionTier);
+          if (tierFeatures.smsNotifications) {
+            await this.sendSMS(toPhone, smsContent);
+          } else {
+            console.log('📱 SMS notifications require VIP tier (Gold/Platinum)');
+          }
+        }
       }
       
       return true;

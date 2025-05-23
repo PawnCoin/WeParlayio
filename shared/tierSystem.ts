@@ -30,6 +30,7 @@ export interface TierFeatures {
     createGroups: boolean;
     joinGroups: boolean;
     maxInvites: number;
+    smsNotifications: boolean;
     
     // Platform features
     supportPriority: 'standard' | 'priority' | 'vip';
