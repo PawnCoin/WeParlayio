@@ -33,6 +33,7 @@ import SecurityInfo from "@/pages/SecurityInfo"; // Security information page sh
 import Support from "@/pages/Support"; // Automated support system
 import WalletManagement from "@/pages/WalletManagement"; // Cryptocurrency wallet management
 import CryptoInformation from "@/pages/CryptoInformation"; // Cryptocurrency information and guides
+import SmsChallenge from "@/pages/SmsChallenge"; // VIP SMS Challenge system
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
 import MobileVoiceBetting from "@/components/mobile/MobileVoiceBetting";

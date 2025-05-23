@@ -211,6 +211,7 @@ export const tierFeatures: Record<SubscriptionTier, TierFeatures> = {
       createGroups: true,
       joinGroups: true,
       maxInvites: 100,
+      smsNotifications: true,
       
       // Platform features
       supportPriority: 'vip',
