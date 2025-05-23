@@ -195,11 +195,12 @@ export class NotificationService {
         // Check if the sender has VIP tier for SMS notifications
         const senderUser = await storage.getUser(fromUserId);
         if (senderUser?.subscriptionTier) {
+          const { getTierFeatures } = await import('../../shared/tierSystem');
           const tierFeatures = getTierFeatures(senderUser.subscriptionTier);
           if (tierFeatures.smsNotifications) {
             await this.sendSMS(toPhone, smsContent);
           } else {
-            console.log('📱 SMS notifications require VIP tier (Gold/Platinum)');
+            console.log('📱 SMS notifications require VIP tier (Gold/Platinum) - user has:', senderUser.subscriptionTier);
           }
         }
       }

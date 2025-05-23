@@ -68,6 +68,7 @@ export const tierFeatures: Record<SubscriptionTier, TierFeatures> = {
       createGroups: false,
       joinGroups: true,
       maxInvites: 5,
+      smsNotifications: false,
       
       // Platform features - standard
       supportPriority: 'standard',
@@ -103,6 +104,7 @@ export const tierFeatures: Record<SubscriptionTier, TierFeatures> = {
       createGroups: true,
       joinGroups: true,
       maxInvites: 10,
+      smsNotifications: false,
       
       // Platform features
       supportPriority: 'standard',
@@ -173,6 +175,7 @@ export const tierFeatures: Record<SubscriptionTier, TierFeatures> = {
       createGroups: true,
       joinGroups: true,
       maxInvites: 50,
+      smsNotifications: true,
       
       // Platform features
       supportPriority: 'priority',
