@@ -15,6 +15,7 @@ import {
   Calendar, Bookmark, Send, UserPlus, ThumbsUp
 } from "lucide-react";
 import { getTeamLogo } from "@/lib/teamLogos";
+import SocialShareButton from "@/components/SocialShareButton";
 
 // Sample social feed data
 const sampleFeed = [
@@ -422,15 +423,20 @@ const Social: React.FC = () => {
                               <MessageSquare className="h-4 w-4 mr-1" />
                               {post.comments}
                             </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="text-muted-foreground"
-                              onClick={() => handleShare(post.id)}
-                            >
-                              <Share2 className="h-4 w-4 mr-1" />
-                              {post.shares}
-                            </Button>
+                            <SocialShareButton
+                              type={post.bet ? 'bet' : 'prediction'}
+                              content={post.content}
+                              betDetails={post.bet ? {
+                                amount: post.bet.amount,
+                                potentialWin: post.bet.potentialWin,
+                                teams: post.bet.selections.map(s => s.team).filter(Boolean),
+                                sport: "NBA"
+                              } : undefined}
+                              user={{
+                                name: post.user.name,
+                                winRate: post.user.winRate
+                              }}
+                            />
                             <Button variant="ghost" size="sm" className="text-muted-foreground">
                               <Bookmark className="h-4 w-4 mr-1" />
                               Save

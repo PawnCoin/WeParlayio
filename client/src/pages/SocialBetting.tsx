@@ -178,10 +178,11 @@ const SocialBetting: React.FC = () => {
                               {post.comments}
                             </Button>
                           </div>
-                          <Button size="sm" variant="outline" className="h-8">
-                            <Share2 className="h-4 w-4 mr-1" />
-                            Share
-                          </Button>
+                          <SocialShareButton
+                            type={post.type === 'win' ? 'win' : post.type === 'share' ? 'challenge' : 'prediction'}
+                            content={post.content}
+                            user={{ name: post.user.name }}
+                          />
                         </div>
                       </div>
                     </div>
