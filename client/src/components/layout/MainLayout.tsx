@@ -143,25 +143,20 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                       <DropdownMenuItem asChild>
                         <Link href="/my-bets">My Bets</Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/settings">Settings</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/security-settings">
-                          <div className="flex items-center">
-                            <Shield className="mr-2 h-4 w-4" />
-                            Security & Wallet Management
-                          </div>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/security">
-                          <div className="flex items-center">
-                            <Shield className="mr-2 h-4 w-4" />
-                            Security Info
-                          </div>
-                        </Link>
-                      </DropdownMenuItem>
+                      {/* Only show these options to authenticated users */}
+                      {isAuthenticated && (
+                        <>
+                          <DropdownMenuItem asChild>
+                            <Link href="/settings">Settings</Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href="/security-settings">Security</Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href="/wallet-management">Wallet Management</Link>
+                          </DropdownMenuItem>
+                        </>
+                      )}
                       <DropdownMenuItem asChild>
                         <Link href="/admin-bypass">
                           <div className="flex items-center text-blue-500 font-semibold">
@@ -174,6 +169,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                       <DropdownMenuItem onClick={logout}>
                         Logout
                       </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </>
