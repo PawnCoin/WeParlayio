@@ -171,8 +171,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
                 </>
               ) : (
                 <WalletConnect 
