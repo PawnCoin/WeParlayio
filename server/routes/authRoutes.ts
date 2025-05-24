@@ -27,6 +27,7 @@ router.post('/register', async (req, res) => {
 
     // Create user
     const userData = {
+      id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
       username,
       email,
       password: hashedPassword,
@@ -124,6 +125,7 @@ router.post('/quick-register', async (req, res) => {
     const hashedPassword = await bcrypt.hash(tempPassword, 12);
 
     const userData = {
+      id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
       username,
       email,
       password: hashedPassword,
