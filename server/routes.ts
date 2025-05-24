@@ -1667,6 +1667,69 @@ Join us: WeParlay.io 🎯
     }
   });
 
+  // Admin authentication endpoints
+  app.post('/api/auth/admin-login', async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      // Check admin credentials
+      if (email === 'support@weparlay.io' && password === 'baysides3') {
+        const adminUser = {
+          id: 'admin-weparlay',
+          email: 'support@weparlay.io',
+          role: 'admin',
+          name: 'WeParlay Administrator'
+        };
+        
+        return res.json({
+          success: true,
+          message: 'Admin login successful',
+          user: adminUser,
+          token: 'admin-token-' + Date.now()
+        });
+      }
+      
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid admin credentials'
+      });
+    } catch (error) {
+      console.error('Admin login error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Login failed'
+      });
+    }
+  });
+
+  app.post('/api/auth/admin-reset-password', async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (email === 'support@weparlay.io') {
+        // In a real system, you'd send an actual email here
+        // For now, we'll just simulate the process
+        console.log(`Password reset requested for: ${email}`);
+        
+        return res.json({
+          success: true,
+          message: 'Password reset instructions sent to your email'
+        });
+      }
+      
+      return res.status(404).json({
+        success: false,
+        message: 'Email address not found'
+      });
+    } catch (error) {
+      console.error('Password reset error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Reset failed'
+      });
+    }
+  });
+
   // Bot user management for populating real data
   app.post("/api/admin/populate-bot-users", async (req, res) => {
     try {
