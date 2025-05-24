@@ -24,13 +24,12 @@ const Home: React.FC = () => {
   const { data: liveEvents, isLoading: isLoadingLive } = useQuery({
     queryKey: ['/api/events/live'],
     refetchInterval: 5000,
-    onError: (error) => console.error('Live events error:', error)
   });
 
-  // Show onboarding for new users
-  if (!localStorage.getItem('hasVisited')) {
-    return <OnboardingExperience />;
-  }
+  // Mark user as visited to skip onboarding
+  React.useEffect(() => {
+    localStorage.setItem('hasVisited', 'true');
+  }, []);
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -94,22 +93,32 @@ const Home: React.FC = () => {
                   game={{
                     id: event.id,
                     homeTeam: {
+                      id: 1,
                       name: event.home_team || 'Home Team',
                       logo: '',
-                      score: event.home_score || 0
+                      record: '0-0',
+                      location: 'Home'
                     },
                     awayTeam: {
+                      id: 2,
                       name: event.away_team || 'Away Team', 
                       logo: '',
-                      score: event.away_score || 0
+                      record: '0-0',
+                      location: 'Away'
                     },
                     sport: event.sport_title || 'Live Event',
                     status: 'live',
                     startTime: event.commence_time || new Date().toISOString(),
                     odds: {
                       moneyline: { home: -110, away: +120 },
-                      spread: { home: { line: -3.5, odds: -110 }, away: { line: 3.5, odds: -110 } },
-                      total: { over: { line: 45.5, odds: -110 }, under: { line: 45.5, odds: -110 } }
+                      pointSpread: { 
+                        home: { line: -3.5, odds: -110 }, 
+                        away: { line: 3.5, odds: -110 } 
+                      },
+                      total: { 
+                        over: { line: 45.5, odds: -110 }, 
+                        under: { line: 45.5, odds: -110 } 
+                      }
                     }
                   }} 
                 />
@@ -137,11 +146,15 @@ const Home: React.FC = () => {
                   key={i}
                   game={{
                     id: i,
-                    homeTeam: { name: 'Team A', logo: '' },
-                    awayTeam: { name: 'Team B', logo: '' },
+                    homeTeam: { id: i+1, name: 'Team A', logo: '' },
+                    awayTeam: { id: i+2, name: 'Team B', logo: '' },
                     sport: 'NFL',
                     startTime: new Date(Date.now() + i * 24 * 60 * 60 * 1000).toISOString(),
-                    odds: { moneyline: { home: -110, away: +120 } }
+                    odds: { 
+                      homeSpread: { line: -3.5, odds: -110 },
+                      awaySpread: { line: 3.5, odds: -110 },
+                      total: { line: 45.5, odds: -110 }
+                    }
                   }}
                 />
               ))}
@@ -164,11 +177,7 @@ const Home: React.FC = () => {
         {/* Fantasy Tab */}
         <TabsContent value="fantasy">
           <div className="max-w-6xl mx-auto">
-            <FantasyTeamBuilder 
-              availablePlayers={[]}
-              onTeamUpdate={() => {}}
-              salaryCap={50000}
-            />
+            <FantasyTeamBuilder />
           </div>
         </TabsContent>
 
