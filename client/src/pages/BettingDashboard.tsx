@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import EnhancedBetTooltip from "@/components/betting/EnhancedBetTooltip";
+import RealTimeOddsVisualization from '@/components/betting/RealTimeOddsVisualization';
 import { useBetSlip } from '@/contexts/BetSlipContext';
 import { Clock, Calendar, Filter, TrendingUp, RefreshCw } from 'lucide-react';
 import { formatGameTime, formatGameDate } from '@/lib/sportsDataUtils';
@@ -242,7 +243,7 @@ const BettingDashboard: React.FC = () => {
         
         <div className="md:col-span-3">
           <Tabs defaultValue="live">
-            <TabsList className="grid grid-cols-2 mb-4">
+            <TabsList className="grid grid-cols-3 mb-4">
               <TabsTrigger value="live" className="flex items-center">
                 <Clock className="h-4 w-4 mr-2" />
                 Live Events
@@ -250,6 +251,10 @@ const BettingDashboard: React.FC = () => {
               <TabsTrigger value="upcoming" className="flex items-center">
                 <Calendar className="h-4 w-4 mr-2" />
                 Upcoming Events
+              </TabsTrigger>
+              <TabsTrigger value="odds-viz" className="flex items-center">
+                <TrendingUp className="h-4 w-4 mr-2" />
+                Real-Time Odds
               </TabsTrigger>
             </TabsList>
             

@@ -267,7 +267,11 @@ export const calculatePayout = (odds: number, stake: number): number => {
  * Format sports event time - converts to user's local time
  */
 export const formatGameTime = (eventTime: string | Date): string => {
+  if (!eventTime) return 'TBD';
+  
   const date = typeof eventTime === 'string' ? new Date(eventTime) : eventTime;
+  
+  if (isNaN(date.getTime())) return 'TBD';
   
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
