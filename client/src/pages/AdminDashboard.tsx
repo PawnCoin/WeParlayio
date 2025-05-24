@@ -283,7 +283,7 @@ export default function AdminDashboard() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-5 mb-6">
+        <TabsList className="grid grid-cols-6 mb-6">
           <TabsTrigger value="overview" className="flex items-center gap-1">
             <PieChart className="h-4 w-4" />
             Overview
@@ -295,6 +295,10 @@ export default function AdminDashboard() {
           <TabsTrigger value="finance" className="flex items-center gap-1">
             <DollarSign className="h-4 w-4" />
             Financial
+          </TabsTrigger>
+          <TabsTrigger value="communications" className="flex items-center gap-1">
+            <Mail className="h-4 w-4" />
+            Communications
           </TabsTrigger>
           <TabsTrigger value="content" className="flex items-center gap-1">
             <Library className="h-4 w-4" />
