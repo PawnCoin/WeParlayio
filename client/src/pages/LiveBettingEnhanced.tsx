@@ -47,9 +47,9 @@ const LiveBettingEnhanced: React.FC = () => {
     );
   }
 
-  const filteredEvents = liveEvents?.filter((event: any) => 
+  const filteredEvents = Array.isArray(liveEvents) ? liveEvents.filter((event: any) => 
     selectedSport === 'all' || event.sport_key === selectedSport
-  ) || [];
+  ) : [];
 
   return (
     <div className="container mx-auto px-4 py-6">

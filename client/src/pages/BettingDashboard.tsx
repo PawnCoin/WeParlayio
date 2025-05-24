@@ -53,15 +53,15 @@ const BettingDashboard: React.FC = () => {
   });
   
   // Filter events based on selected leagues
-  const filteredLiveEvents = (liveEvents || []).filter((event: any) => {
+  const filteredLiveEvents = Array.isArray(liveEvents) ? liveEvents.filter((event: any) => {
     if (selectedLeagues.length === 0) return true; // Show all if none selected
     return selectedLeagues.includes(event.sport_key);
-  });
+  }) : [];
   
-  const filteredUpcomingEvents = (upcomingEvents || []).filter((event: any) => {
+  const filteredUpcomingEvents = Array.isArray(upcomingEvents) ? upcomingEvents.filter((event: any) => {
     if (selectedLeagues.length === 0) return true; // Show all if none selected
     return selectedLeagues.includes(event.sport_key);
-  });
+  }) : [];
   
   // Helper to get team name by ID
   const getTeamName = (teamId: number) => {
@@ -86,7 +86,7 @@ const BettingDashboard: React.FC = () => {
   // Helper to get sport name by key
   const getSportName = (sportKey: string) => {
     const league = PROFESSIONAL_LEAGUES.find(l => l.key === sportKey);
-    return league ? league.displayName : sportKey;
+    return league ? league.displayName : (sportKey || 'Live Event');
   };
   
   // Handle adding a bet to the bet slip
