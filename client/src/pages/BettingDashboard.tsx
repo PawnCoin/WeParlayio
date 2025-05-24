@@ -35,18 +35,21 @@ const BettingDashboard: React.FC = () => {
   const [timeFrame, setTimeFrame] = useState<'today' | 'tomorrow' | 'this-week'>('today');
   
   // Fetch sports data
-  const { data: sports, isLoading: isLoadingSports } = useQuery({
+  const { data: sports, isLoading: isLoadingSports, error: sportsError } = useQuery({
     queryKey: ['/api/sports'],
+    refetchInterval: 30000, // Refresh every 30 seconds
   });
   
   // Fetch upcoming events for all selected leagues
-  const { data: upcomingEvents, isLoading: isLoadingEvents } = useQuery({
+  const { data: upcomingEvents, isLoading: isLoadingEvents, error: eventsError } = useQuery({
     queryKey: ['/api/events/upcoming'],
+    refetchInterval: 60000, // Refresh every minute
   });
   
   // Fetch live events
-  const { data: liveEvents, isLoading: isLoadingLive } = useQuery({
+  const { data: liveEvents, isLoading: isLoadingLive, error: liveError } = useQuery({
     queryKey: ['/api/events/live'],
+    refetchInterval: 10000, // Refresh every 10 seconds for live data
   });
   
   // Filter events based on selected leagues
