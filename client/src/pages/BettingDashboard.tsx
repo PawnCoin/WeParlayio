@@ -1229,6 +1229,10 @@ const BettingDashboard: React.FC = () => {
                 </CardContent>
               </Card>
             </TabsContent>
+
+            <TabsContent value="odds-viz">
+              <RealTimeOddsVisualization />
+            </TabsContent>
           </Tabs>
         </div>
       </div>
