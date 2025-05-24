@@ -4,13 +4,19 @@ import { useToast } from "@/hooks/use-toast";
 // Define the bet structure
 export interface Bet {
   id: string;
-  pick: string;
-  homeTeam: string;
-  awayTeam: string;
+  eventId?: string;
+  gameTitle?: string;
+  pick?: string;
+  homeTeam?: string;
+  awayTeam?: string;
+  selection?: string;
   odds: number;
   betType: string;
   point?: number;
-  sportId: number;
+  sportId?: number;
+  sport?: string;
+  amount?: number;
+  potential?: number;
 }
 
 // Define a saved bet slip structure
@@ -24,8 +30,10 @@ export interface SavedBetSlip {
 // Define the context type
 interface BetSlipContextType {
   betSlip: Bet[];
+  bets: Bet[];
   savedBetSlips: SavedBetSlip[];
   addToBetSlip: (bet: Omit<Bet, 'id'>) => void;
+  addBet: (bet: Bet) => void;
   removeFromBetSlip: (id: string) => void;
   clearBetSlip: () => void;
   saveBetSlip: (name: string) => void;
@@ -44,7 +52,7 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [savedBetSlips, setSavedBetSlips] = useState<SavedBetSlip[]>([]);
   const { toast } = useToast();
 
-  // Add a bet to the slip
+  // Add a bet to the slip (original method)
   const addToBetSlip = (bet: Omit<Bet, 'id'>) => {
     const id = Math.random().toString(36).substring(2, 9);
     const newBet = { ...bet, id };
@@ -71,6 +79,15 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
       title: "Added to Bet Slip",
       description: `${bet.pick} added to your bet slip`,
       variant: "default",
+    });
+  };
+
+  // Add a bet directly (new method for enhanced features)
+  const addBet = (bet: Bet) => {
+    setBetSlip(prev => [...prev, bet]);
+    toast({
+      title: "Bet Added!",
+      description: `${bet.gameTitle || bet.selection || 'Bet'} added to your bet slip`,
     });
   };
 
