@@ -87,6 +87,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/live-betting" component={BettingExperience} />
       <Route path="/admin" component={(props) => <AdminRoute component={AdminDashboard} {...props} />} />
+      <Route path="/admin-dashboard" component={(props) => <AdminRoute component={AdminDashboard} {...props} />} />
       <Route path="/admin-bypass" component={AdminBypass} />
       <Route path="/live-betting-classic" component={LiveBettingReal} />
       <Route path="/betting-dashboard" component={BettingDashboard} />
