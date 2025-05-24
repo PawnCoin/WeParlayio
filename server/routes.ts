@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import authRoutes from "./routes/authRoutes";
 import aiSupportRoutes from "./routes/aiSupport";
 import authRouter from "./auth";
 import { additionalSportsData } from "./services/mockSportsData";
@@ -19,6 +20,7 @@ const advancedOddsService = new AdvancedOddsService();
 export async function registerRoutes(app: Express): Promise<Server> {
   // Register Authentication routes
   app.use('/api/auth', authRouter);
+  app.use('/api/auth', authRoutes);
   
   // Register Yahoo Fantasy routes
   app.use('/api/yahoo', yahooRouter);
