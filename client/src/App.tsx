@@ -33,6 +33,7 @@ import EnhancedFeatures from "@/pages/EnhancedFeatures"; // Advanced features pa
 import VipFeatures from "@/pages/VipFeatures"; // VIP exclusive section
 import ThemeSettingsPage from "@/pages/ThemeSettingsPage"; // Theme settings page
 import AdminDashboard from "@/pages/AdminDashboard"; // Admin dashboard for platform owner
+import AdminLogin from "@/pages/AdminLogin"; // Admin login page
 import NotificationTest from "@/pages/NotificationTest"; // Email and SMS testing
 import PrivacyPolicy from "@/pages/PrivacyPolicy"; // Privacy policy page for social login requirements
 import TermsOfService from "@/pages/TermsOfService"; // Terms of service page for social login requirements
@@ -93,6 +94,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/live-betting" component={BettingExperience} />
+      <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin" component={(props) => <AdminRoute component={AdminDashboard} {...props} />} />
       <Route path="/admin-dashboard" component={(props) => <AdminRoute component={AdminDashboard} {...props} />} />
       <Route path="/admin-bypass" component={AdminBypass} />
