@@ -1667,6 +1667,35 @@ Join us: WeParlay.io 🎯
     }
   });
 
+  // Bot user management for populating real data
+  app.post("/api/admin/populate-bot-users", async (req, res) => {
+    try {
+      const { botUserService } = await import('./services/botUserService');
+      await botUserService.populatePlatformData();
+      res.json({ 
+        success: true, 
+        message: "Bot users created successfully! Platform now has realistic data." 
+      });
+    } catch (error) {
+      console.error('Error creating bot users:', error);
+      res.status(500).json({ error: "Failed to create bot users" });
+    }
+  });
+
+  app.post("/api/admin/generate-daily-activity", async (req, res) => {
+    try {
+      const { botUserService } = await import('./services/botUserService');
+      await botUserService.generateDailyActivity();
+      res.json({ 
+        success: true, 
+        message: "Daily bot activity generated!" 
+      });
+    } catch (error) {
+      console.error('Error generating daily activity:', error);
+      res.status(500).json({ error: "Failed to generate activity" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

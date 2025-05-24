@@ -435,6 +435,83 @@ export default function AdminDashboard() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Bot User Management */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bot className="h-5 w-5 text-green-600" />
+                    Generate Real Platform Data
+                  </CardTitle>
+                  <CardDescription>
+                    Create bot users with realistic betting activity to populate your platform with authentic data
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Button 
+                        onClick={async () => {
+                          try {
+                            const response = await fetch('/api/admin/populate-bot-users', { method: 'POST' });
+                            const result = await response.json();
+                            toast({
+                              title: result.success ? "Success!" : "Error",
+                              description: result.message || result.error,
+                              variant: result.success ? "default" : "destructive"
+                            });
+                          } catch (error) {
+                            toast({
+                              title: "Error",
+                              description: "Failed to create bot users",
+                              variant: "destructive"
+                            });
+                          }
+                        }}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        <Users className="h-4 w-4 mr-2" />
+                        Create Bot Users & Data
+                      </Button>
+                      
+                      <Button 
+                        onClick={async () => {
+                          try {
+                            const response = await fetch('/api/admin/generate-daily-activity', { method: 'POST' });
+                            const result = await response.json();
+                            toast({
+                              title: result.success ? "Success!" : "Error",
+                              description: result.message || result.error,
+                              variant: result.success ? "default" : "destructive"
+                            });
+                          } catch (error) {
+                            toast({
+                              title: "Error",
+                              description: "Failed to generate activity",
+                              variant: "destructive"
+                            });
+                          }
+                        }}
+                        variant="outline"
+                      >
+                        <Activity className="h-4 w-4 mr-2" />
+                        Generate Daily Activity
+                      </Button>
+                    </div>
+                    
+                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                      <h4 className="font-semibold text-blue-900 mb-2">What this will create:</h4>
+                      <ul className="text-sm text-blue-800 space-y-1">
+                        <li>• 5 realistic bot users with different subscription tiers</li>
+                        <li>• Betting history with wins, losses, and pending bets</li>
+                        <li>• Transaction records (deposits and withdrawals)</li>
+                        <li>• Real user stats for your admin dashboard</li>
+                        <li>• Active user directory with profile data</li>
+                      </ul>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
 
