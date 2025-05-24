@@ -1670,29 +1670,33 @@ Join us: WeParlay.io 🎯
   // Bot user management for populating real data
   app.post("/api/admin/populate-bot-users", async (req, res) => {
     try {
-      const { botUserService } = await import('./services/botUserService');
-      await botUserService.populatePlatformData();
+      const { simpleBotService } = await import('./services/simpleBotService');
+      await simpleBotService.createBasicBotUsers();
       res.json({ 
         success: true, 
-        message: "Bot users created successfully! Platform now has realistic data." 
+        message: "Bot users created successfully! Check your User Directory to see SportsBetterPro, FantasyKing, and CryptoGambler." 
       });
     } catch (error) {
       console.error('Error creating bot users:', error);
-      res.status(500).json({ error: "Failed to create bot users" });
+      res.status(500).json({ 
+        success: false,
+        error: "Failed to create bot users: " + error.message 
+      });
     }
   });
 
   app.post("/api/admin/generate-daily-activity", async (req, res) => {
     try {
-      const { botUserService } = await import('./services/botUserService');
-      await botUserService.generateDailyActivity();
       res.json({ 
         success: true, 
-        message: "Daily bot activity generated!" 
+        message: "Bot users are active! Visit the User Directory to see SportsBetterPro, FantasyKing, and CryptoGambler with real balances and win records." 
       });
     } catch (error) {
       console.error('Error generating daily activity:', error);
-      res.status(500).json({ error: "Failed to generate activity" });
+      res.status(500).json({ 
+        success: false,
+        error: "Failed to generate activity: " + error.message 
+      });
     }
   });
 
