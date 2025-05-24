@@ -18,6 +18,7 @@ import HeadToHeadBetting from "@/pages/HeadToHeadBetting"; // Head-to-head real 
 import SignUp from "@/pages/SignUp";
 import SignUpEnhanced from "@/pages/SignUpEnhanced";
 import LoginEnhanced from "@/pages/LoginEnhanced";
+import AuthTestDemo from "@/pages/AuthTestDemo";
 import VideoGaming from "@/pages/VideoGaming";
 import Trivia from "@/pages/Trivia";
 import BettingExperience from "@/pages/BettingExperience"; // New enhanced betting page
@@ -112,6 +113,7 @@ function Router() {
       <Route path="/login" component={LoginEnhanced} />
       <Route path="/login-enhanced" component={LoginEnhanced} />
       <Route path="/mobile-login" component={MobileLogin} />
+      <Route path="/auth-test" component={AuthTestDemo} />
       <Route path="/theme-manager" component={ThemeSettingsPage} />
       <Route path="/sports/:sportKey" component={SportPage} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
