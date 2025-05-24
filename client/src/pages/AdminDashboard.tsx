@@ -37,7 +37,16 @@ import {
   UserPlus,
   LogOut,
   PieChart,
-  MoveLeft
+  MoveLeft,
+  Mail,
+  MessageSquare,
+  Bot,
+  TestTube,
+  Database,
+  Activity,
+  Eye,
+  Zap,
+  Bell
 } from "lucide-react";
 
 // Admin Dashboard component
@@ -283,26 +292,26 @@ export default function AdminDashboard() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-6 mb-6">
+        <TabsList className="grid grid-cols-3 md:grid-cols-6 mb-6">
           <TabsTrigger value="overview" className="flex items-center gap-1">
             <PieChart className="h-4 w-4" />
             Overview
           </TabsTrigger>
           <TabsTrigger value="users" className="flex items-center gap-1">
             <Users className="h-4 w-4" />
-            User Management
-          </TabsTrigger>
-          <TabsTrigger value="finance" className="flex items-center gap-1">
-            <DollarSign className="h-4 w-4" />
-            Financial
+            Users
           </TabsTrigger>
           <TabsTrigger value="communications" className="flex items-center gap-1">
             <Mail className="h-4 w-4" />
             Communications
           </TabsTrigger>
-          <TabsTrigger value="content" className="flex items-center gap-1">
-            <Library className="h-4 w-4" />
-            Content
+          <TabsTrigger value="tools" className="flex items-center gap-1">
+            <Zap className="h-4 w-4" />
+            Admin Tools
+          </TabsTrigger>
+          <TabsTrigger value="finance" className="flex items-center gap-1">
+            <DollarSign className="h-4 w-4" />
+            Financial
           </TabsTrigger>
           <TabsTrigger value="settings" className="flex items-center gap-1">
             <Settings className="h-4 w-4" />
@@ -349,10 +358,18 @@ export default function AdminDashboard() {
         <TabsContent value="users">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold">User Management</h2>
-            <Button>
-              <UserPlus className="h-4 w-4 mr-2" />
-              Add New User
-            </Button>
+            <div className="flex gap-2">
+              <Link href="/community">
+                <Button variant="outline">
+                  <Eye className="h-4 w-4 mr-2" />
+                  User Directory
+                </Button>
+              </Link>
+              <Button>
+                <UserPlus className="h-4 w-4 mr-2" />
+                Add New User
+              </Button>
+            </div>
           </div>
 
           <UserRoleManager 
@@ -360,6 +377,218 @@ export default function AdminDashboard() {
             onUpdateUserRole={handleUpdateUserRole}
             onSearchUsers={() => {}}
           />
+        </TabsContent>
+
+        {/* Communications Tab */}
+        <TabsContent value="communications">
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Communications Management</h2>
+              <div className="flex gap-2">
+                <Link href="/email-monitoring">
+                  <Button>
+                    <Mail className="h-4 w-4 mr-2" />
+                    Email Dashboard
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Mail className="h-5 w-5 text-blue-600" />
+                    Email System
+                  </CardTitle>
+                  <CardDescription>Monitor and manage email communications</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <p className="text-sm text-gray-600">✅ Welcome emails</p>
+                    <p className="text-sm text-gray-600">✅ Bet confirmations</p>
+                    <p className="text-sm text-gray-600">✅ Win notifications</p>
+                    <p className="text-sm text-gray-600">✅ Security alerts</p>
+                  </div>
+                  <Link href="/email-monitoring">
+                    <Button className="w-full mt-4" size="sm">
+                      View Email Logs
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5 text-green-600" />
+                    SMS Notifications
+                  </CardTitle>
+                  <CardDescription>SMS alerts and notifications via Twilio</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <p className="text-sm text-gray-600">📱 Welcome SMS</p>
+                    <p className="text-sm text-gray-600">📱 Bet confirmations</p>
+                    <p className="text-sm text-gray-600">📱 Win alerts</p>
+                    <p className="text-sm text-gray-600">📱 Security notifications</p>
+                  </div>
+                  <Button className="w-full mt-4" size="sm" variant="outline">
+                    Configure SMS
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bot className="h-5 w-5 text-purple-600" />
+                    Social Media Bots
+                  </CardTitle>
+                  <CardDescription>Automated social media marketing</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <p className="text-sm text-gray-600">🐦 Twitter automation</p>
+                    <p className="text-sm text-gray-600">📘 Facebook posts</p>
+                    <p className="text-sm text-gray-600">📊 Marketing campaigns</p>
+                    <p className="text-sm text-gray-600">🎯 Engagement tracking</p>
+                  </div>
+                  <Link href="/social-bots">
+                    <Button className="w-full mt-4" size="sm">
+                      Manage Bots
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* Admin Tools Tab */}
+        <TabsContent value="tools">
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Admin Tools & Testing</h2>
+              <Button onClick={handleRefresh} variant="outline">
+                <Activity className="h-4 w-4 mr-2" />
+                Refresh All
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TestTube className="h-5 w-5 text-blue-600" />
+                    System Testing
+                  </CardTitle>
+                  <CardDescription>Test all platform functionality</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <Link href="/auth-test">
+                      <Button variant="outline" className="w-full justify-start" size="sm">
+                        <Users className="h-4 w-4 mr-2" />
+                        Authentication Test
+                      </Button>
+                    </Link>
+                    <Link href="/notification-test">
+                      <Button variant="outline" className="w-full justify-start" size="sm">
+                        <Bell className="h-4 w-4 mr-2" />
+                        Notification Test
+                      </Button>
+                    </Link>
+                    <Link href="/payment-demo">
+                      <Button variant="outline" className="w-full justify-start" size="sm">
+                        <DollarSign className="h-4 w-4 mr-2" />
+                        Payment Test
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Database className="h-5 w-5 text-green-600" />
+                    Database Management
+                  </CardTitle>
+                  <CardDescription>Monitor and manage data</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <p className="text-sm text-gray-600">👥 {sampleUsers.length} Total Users</p>
+                    <p className="text-sm text-gray-600">🎯 Active Bets</p>
+                    <p className="text-sm text-gray-600">💰 Financial Records</p>
+                    <p className="text-sm text-gray-600">📊 Analytics Data</p>
+                  </div>
+                  <Button className="w-full mt-4" size="sm" variant="outline">
+                    Database Status
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-red-600" />
+                    Security & Access
+                  </CardTitle>
+                  <CardDescription>Security monitoring and controls</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <Link href="/admin-bypass">
+                      <Button variant="outline" className="w-full justify-start" size="sm">
+                        <Shield className="h-4 w-4 mr-2" />
+                        Admin Access
+                      </Button>
+                    </Link>
+                    <Link href="/security-settings">
+                      <Button variant="outline" className="w-full justify-start" size="sm">
+                        <Settings className="h-4 w-4 mr-2" />
+                        Security Settings
+                      </Button>
+                    </Link>
+                    <Button variant="outline" className="w-full justify-start" size="sm">
+                      <Eye className="h-4 w-4 mr-2" />
+                      Activity Logs
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Admin Actions</CardTitle>
+                <CardDescription>Common administrative tasks</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <Button variant="outline" size="sm" onClick={() => window.open('/email-monitoring', '_blank')}>
+                    <Mail className="h-4 w-4 mr-2" />
+                    Email Logs
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => window.open('/community', '_blank')}>
+                    <Users className="h-4 w-4 mr-2" />
+                    User Directory
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => window.open('/social-bots', '_blank')}>
+                    <Bot className="h-4 w-4 mr-2" />
+                    Social Bots
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => window.open('/auth-test', '_blank')}>
+                    <TestTube className="h-4 w-4 mr-2" />
+                    System Test
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         {/* Financial Tab */}
