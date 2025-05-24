@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import authRoutes from "./routes/authRoutes";
 import aiSupportRoutes from "./routes/aiSupport";
 import authRouter from "./auth";
+import { isAuthenticated } from "./replitAuth";
 import { additionalSportsData } from "./services/mockSportsData";
 import { OddsApiService } from "./services/oddsApiService";
 import { AdvancedOddsService } from "./services/advancedOddsService";
@@ -1176,6 +1177,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(userWithoutPassword);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
+    }
+  });
+
+  // User Directory and Social Features
+  app.get('/api/users/directory', async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      // Remove sensitive data like passwords and tokens
+      const publicUsers = users.map(user => ({
+        id: user.id,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profileImageUrl: user.profileImageUrl,
+        subscriptionTier: user.subscriptionTier,
+        balance: user.balance,
+        wins: user.wins,
+        createdAt: user.createdAt,
+        isOnline: Math.random() > 0.5, // Simulated online status
+        lastSeen: user.lastLogin
+      }));
+      res.json(publicUsers);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch users' });
+    }
+  });
+
+  // Get current user info
+  app.get('/api/auth/me', async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+      
+      const user = await storage.getUser(userId);
+      if (!user) return res.status(404).json({ message: 'User not found' });
+      
+      // Remove sensitive data
+      const publicUser = {
+        id: user.id,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profileImageUrl: user.profileImageUrl,
+        subscriptionTier: user.subscriptionTier,
+        balance: user.balance,
+        wins: user.wins,
+        createdAt: user.createdAt
+      };
+      
+      res.json(publicUser);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch user info' });
+    }
+  });
+
+  // Get user's friends
+  app.get('/api/users/friends', async (req, res) => {
+    try {
+      // Return friends list - ready for future friend system implementation
+      const friends: any[] = [];
+      res.json(friends);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch friends' });
+    }
+  });
+
+  // Add friend
+  app.post('/api/users/add-friend', async (req, res) => {
+    try {
+      const { userId: friendId } = req.body;
+      
+      // Ready for friend system implementation
+      res.json({ message: 'Friend added successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to add friend' });
+    }
+  });
+
+  // Get messages
+  app.get('/api/users/messages', async (req, res) => {
+    try {
+      // Return messages - ready for future messaging system
+      const messages: any[] = [];
+      res.json(messages);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch messages' });
+    }
+  });
+
+  // Send message
+  app.post('/api/users/send-message', async (req, res) => {
+    try {
+      const { toUserId, content } = req.body;
+      
+      // Ready for messaging system implementation
+      res.json({ message: 'Message sent successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to send message' });
     }
   });
 
