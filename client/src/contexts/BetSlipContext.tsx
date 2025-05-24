@@ -57,22 +57,6 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const id = Math.random().toString(36).substring(2, 9);
     const newBet = { ...bet, id };
     
-    // Check if the bet already exists
-    const existingBet = betSlip.find(b => 
-      b.homeTeam === bet.homeTeam && 
-      b.awayTeam === bet.awayTeam && 
-      b.pick === bet.pick
-    );
-    
-    if (existingBet) {
-      toast({
-        title: "Already in Bet Slip",
-        description: "This selection is already in your bet slip",
-        variant: "default",
-      });
-      return;
-    }
-
     setBetSlip(prev => [...prev, newBet]);
     
     toast({
@@ -135,7 +119,7 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
     
     toast({
       title: "Bet Slip Saved",
-      description: `Your bet slip "${name}" has been saved`,
+      description: `Bet slip "${name}" saved successfully`,
       variant: "default",
     });
   };
@@ -144,22 +128,15 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const loadSavedBetSlip = (id: string) => {
     const savedSlip = savedBetSlips.find(slip => slip.id === id);
     
-    if (!savedSlip) {
+    if (savedSlip) {
+      setBetSlip(savedSlip.bets);
+      
       toast({
-        title: "Error",
-        description: "Could not find the saved bet slip",
-        variant: "destructive",
+        title: "Bet Slip Loaded",
+        description: `Loaded "${savedSlip.name}" with ${savedSlip.bets.length} selections`,
+        variant: "default",
       });
-      return;
     }
-    
-    setBetSlip(savedSlip.bets);
-    
-    toast({
-      title: "Bet Slip Loaded",
-      description: `Loaded "${savedSlip.name}"`,
-      variant: "default",
-    });
   };
 
   // Delete a saved bet slip
@@ -167,13 +144,13 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setSavedBetSlips(prev => prev.filter(slip => slip.id !== id));
     
     toast({
-      title: "Bet Slip Deleted",
-      description: "The saved bet slip has been deleted",
+      title: "Saved Bet Slip Deleted",
+      description: "Saved bet slip has been removed",
       variant: "default",
     });
   };
 
-  // Share bet slip (simulate sharing functionality)
+  // Share the bet slip
   const shareBetSlip = () => {
     if (betSlip.length === 0) {
       toast({
@@ -183,17 +160,22 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
       });
       return;
     }
+
+    // In a real application, this would generate a shareable link
+    // For now, we'll copy to clipboard
+    const shareText = `Check out my WeParlay bet slip: ${betSlip.length} selections`;
     
-    // In a real application, this would generate a shareable link or open a share dialog
-    // For now, we'll just show a toast message
-    toast({
-      title: "Bet Slip Shared",
-      description: "Your bet slip has been copied to clipboard and is ready to share",
-      variant: "default",
-    });
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(shareText);
+      toast({
+        title: "Bet Slip Shared",
+        description: "Bet slip copied to clipboard!",
+        variant: "default",
+      });
+    }
   };
 
-  // Place a bet
+  // Place the bet
   const placeBet = (amount: string, betType: string, boostEnabled: boolean) => {
     if (betSlip.length === 0 || !amount || parseFloat(amount) <= 0) {
       toast({
@@ -204,8 +186,6 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
       return;
     }
     
-    // In a real application, this would send the bet to the backend
-    // For now, we'll just show a toast message and clear the slip
     toast({
       title: "Bet Placed Successfully!",
       description: `Your ${betType} bet of $${amount} has been placed${boostEnabled ? ' with 5% odds boost' : ''}`,
@@ -219,8 +199,10 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
     <BetSlipContext.Provider
       value={{
         betSlip,
+        bets: betSlip,
         savedBetSlips,
         addToBetSlip,
+        addBet,
         removeFromBetSlip,
         clearBetSlip,
         saveBetSlip,
@@ -235,13 +217,11 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
   );
 };
 
-// Create custom hook for using the bet slip context
+// Custom hook to use the bet slip context
 export const useBetSlip = () => {
   const context = useContext(BetSlipContext);
-  
   if (context === undefined) {
     throw new Error('useBetSlip must be used within a BetSlipProvider');
   }
-  
   return context;
 };
