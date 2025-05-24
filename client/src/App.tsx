@@ -52,6 +52,7 @@ import { OnboardingProvider, useOnboarding } from "./contexts/OnboardingContext"
 import InteractiveOnboardingWizard from "./components/onboarding/InteractiveOnboardingWizard";
 import { initGA } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
+import OnboardingDemo from "@/pages/OnboardingDemo";
 
 // Import admin components
 import AdminBypass from "@/pages/AdminBypass";
@@ -132,6 +133,7 @@ function Router() {
       <Route path="/notification-test" component={NotificationTest} />
       <Route path="/wallet-management" component={WalletManagement} />
       <Route path="/crypto-information" component={CryptoInformation} />
+      <Route path="/onboarding-demo" component={OnboardingDemo} />
       <Route component={NotFound} />
     </Switch>
   );
