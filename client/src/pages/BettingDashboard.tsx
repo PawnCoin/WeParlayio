@@ -53,15 +53,15 @@ const BettingDashboard: React.FC = () => {
   });
   
   // Filter events based on selected leagues
-  const filteredLiveEvents = liveEvents?.filter((event: any) => {
-    const sportKey = sports?.find((sport: any) => sport.id === event.sportId)?.key;
-    return selectedLeagues.includes(sportKey);
-  }) || [];
+  const filteredLiveEvents = (liveEvents || []).filter((event: any) => {
+    if (selectedLeagues.length === 0) return true; // Show all if none selected
+    return selectedLeagues.includes(event.sport_key);
+  });
   
-  const filteredUpcomingEvents = upcomingEvents?.filter((event: any) => {
-    const sportKey = sports?.find((sport: any) => sport.id === event.sportId)?.key;
-    return selectedLeagues.includes(sportKey);
-  }) || [];
+  const filteredUpcomingEvents = (upcomingEvents || []).filter((event: any) => {
+    if (selectedLeagues.length === 0) return true; // Show all if none selected
+    return selectedLeagues.includes(event.sport_key);
+  });
   
   // Helper to get team name by ID
   const getTeamName = (teamId: number) => {
@@ -91,20 +91,17 @@ const BettingDashboard: React.FC = () => {
   
   // Handle adding a bet to the bet slip
   const handleAddBet = (event: any, betType: string, selection: string, odds: number, point?: number) => {
-    const sportKey = sports?.find((sport: any) => sport.id === event.sportId)?.key;
-    const sportName = getSportName(sportKey);
-    
     addBet({
       id: `${event.id}-${betType}-${selection}`,
       eventId: event.id,
-      gameTitle: `${getTeamName(event.awayTeamId)} @ ${getTeamName(event.homeTeamId)}`,
+      gameTitle: `${event.away_team || event.awayTeam || 'Away'} vs ${event.home_team || event.homeTeam || 'Home'}`,
       betType,
       selection,
       odds,
       point,
       amount: 0,
       potential: 0,
-      sport: sportName,
+      sport: event.sport_title || 'Live Event',
     });
   };
   
