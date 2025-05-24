@@ -16,7 +16,7 @@ export default function AdminBypass() {
   const [, navigate] = useLocation();
 
   // Predefined admin key for development - in production this would not exist
-  const ADMIN_BYPASS_KEY = 'weparlay-owner-access';
+  const ADMIN_BYPASS_KEY = 'weparlay-admin-2025';
 
   const handleAdminAccess = () => {
     if (adminKey === ADMIN_BYPASS_KEY) {

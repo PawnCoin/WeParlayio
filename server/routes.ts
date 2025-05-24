@@ -34,9 +34,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register notification routes
   app.use('/api/notifications', notificationRoutes);
   
-  // Register bookie revenue routes
-  const bookieRoutes = await import('./routes/bookieRoutes');
-  app.use('/api/bookie', bookieRoutes.default);
+  // Register bookie revenue routes (temporarily disabled to fix database issues)
+  // const bookieRoutes = await import('./routes/bookieRoutes');
+  // app.use('/api/bookie', bookieRoutes.default);
   
   // Head-to-head betting challenge routes
   app.post('/api/challenges', async (req: any, res) => {
