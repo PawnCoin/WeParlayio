@@ -281,31 +281,76 @@ const UserDirectory: React.FC = () => {
                 </div>
                 
                 {canInteract ? (
-                  <div className="flex gap-2">
-                    {!isFriend(user.id) ? (
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      {!isFriend(user.id) ? (
+                        <Button 
+                          onClick={() => addFriendMutation.mutate(user.id)}
+                          size="sm" 
+                          className="flex-1"
+                          disabled={addFriendMutation.isPending}
+                        >
+                          <UserPlus className="h-4 w-4 mr-1" />
+                          Add Friend
+                        </Button>
+                      ) : (
+                        <Button 
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setShowMessaging(true);
+                          }}
+                          size="sm" 
+                          variant="outline"
+                          className="flex-1"
+                        >
+                          <MessageSquare className="h-4 w-4 mr-1" />
+                          Message
+                        </Button>
+                      )}
+                    </div>
+                    
+                    {/* Social Sharing Actions */}
+                    <div className="flex gap-1">
                       <Button 
-                        onClick={() => addFriendMutation.mutate(user.id)}
-                        size="sm" 
-                        className="flex-1"
-                        disabled={addFriendMutation.isPending}
-                      >
-                        <UserPlus className="h-4 w-4 mr-1" />
-                        Add Friend
-                      </Button>
-                    ) : (
-                      <Button 
-                        onClick={() => {
-                          setSelectedUser(user);
-                          setShowMessaging(true);
-                        }}
                         size="sm" 
                         variant="outline"
-                        className="flex-1"
+                        className="flex-1 text-xs"
+                        onClick={() => {
+                          // Share user profile to social media
+                          const shareText = `Check out ${user.username} on WeParlay! 🎯 ${user.wins} wins with $${user.balance} balance. Join the community! #WeParlay #SportsBox`;
+                          window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`, '_blank');
+                        }}
                       >
-                        <MessageSquare className="h-4 w-4 mr-1" />
-                        Message
+                        Share
                       </Button>
-                    )}
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        className="flex-1 text-xs"
+                        onClick={() => {
+                          toast({
+                            title: "👍 Liked!",
+                            description: `You liked ${user.username}'s profile`,
+                          });
+                        }}
+                      >
+                        Like
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        className="flex-1 text-xs"
+                        onClick={() => {
+                          // Challenge user to bet
+                          toast({
+                            title: "🎯 Challenge Sent!",
+                            description: `Bet challenge sent to ${user.username}`,
+                          });
+                        }}
+                      >
+                        Challenge
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <div className="flex items-center justify-center gap-2 text-gray-500 py-2">
