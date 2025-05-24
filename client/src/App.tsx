@@ -16,6 +16,8 @@ import Settings from "@/pages/Settings";
 import SecuritySettings from "@/pages/SecuritySettings"; // Advanced security & wallet management
 import HeadToHeadBetting from "@/pages/HeadToHeadBetting"; // Head-to-head real money betting
 import SignUp from "@/pages/SignUp";
+import SignUpEnhanced from "@/pages/SignUpEnhanced";
+import LoginEnhanced from "@/pages/LoginEnhanced";
 import VideoGaming from "@/pages/VideoGaming";
 import Trivia from "@/pages/Trivia";
 import BettingExperience from "@/pages/BettingExperience"; // New enhanced betting page
@@ -105,8 +107,10 @@ function Router() {
       <Route path="/security-settings" component={SecuritySettings} />
       <Route path="/security" component={SecurityInfo} />
       <Route path="/head-to-head" component={HeadToHeadBetting} />
-      <Route path="/signup" component={SignUp} />
-      <Route path="/login" component={Login} />
+      <Route path="/signup" component={SignUpEnhanced} />
+      <Route path="/signup-enhanced" component={SignUpEnhanced} />
+      <Route path="/login" component={LoginEnhanced} />
+      <Route path="/login-enhanced" component={LoginEnhanced} />
       <Route path="/mobile-login" component={MobileLogin} />
       <Route path="/theme-manager" component={ThemeSettingsPage} />
       <Route path="/sports/:sportKey" component={SportPage} />
