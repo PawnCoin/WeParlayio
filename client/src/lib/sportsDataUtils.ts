@@ -276,7 +276,11 @@ export const formatGameTime = (eventTime: string | Date): string => {
  * Format event date for display
  */
 export const formatGameDate = (eventTime: string | Date): string => {
+  if (!eventTime) return 'TBD';
+  
   const date = typeof eventTime === 'string' ? new Date(eventTime) : eventTime;
+  
+  if (isNaN(date.getTime())) return 'TBD';
   
   return date.toLocaleDateString();
 };
