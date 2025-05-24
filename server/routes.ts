@@ -1360,9 +1360,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Social Media Bot Integration - Auto-post community highlights
+  // Social Media Bot Integration - Auto-post community highlights (OWNER ONLY)
   app.post('/api/community/auto-share', async (req, res) => {
     try {
+      // Verify owner access - Only Drnielous Luster can trigger bot posts
+      const ownerEmail = req.headers['x-owner-email'];
+      const ownerAccess = req.headers['x-owner-access'];
+      
+      if (ownerEmail !== 'support@weparlay.io' && ownerAccess !== 'true') {
+        return res.status(403).json({ 
+          message: 'Access denied. Only platform owner can control social media bots.',
+          authorizedUser: 'Drnielous Luster (support@weparlay.io)'
+        });
+      }
+
       const users = await storage.getAllUsers();
       
       // Get top performers for social sharing

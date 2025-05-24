@@ -1,20 +1,98 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Zap, Share2, TrendingUp, Users, Target, Bot } from 'lucide-react';
+import { Zap, Share2, TrendingUp, Users, Target, Bot, Lock, Shield } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 
 export default function SocialMediaBots() {
   const [isPosting, setIsPosting] = useState(false);
   const [lastPost, setLastPost] = useState<any>(null);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+
+  // Owner authentication - Only Drnielous Luster can access
+  const OWNER_EMAIL = 'support@weparlay.io';
+  const OWNER_WALLETS = [
+    // Add your wallet addresses here for secure access
+    '0x...', // Placeholder for your actual wallet addresses
+  ];
+
+  useEffect(() => {
+    // Check if user is the platform owner
+    const checkOwnerAccess = () => {
+      // For now, using localStorage - in production this would be server-side auth
+      const userEmail = localStorage.getItem('weparlay-owner-email');
+      const hasOwnerAccess = localStorage.getItem('weparlay-owner-access') === 'true';
+      
+      if (userEmail === OWNER_EMAIL || hasOwnerAccess) {
+        setIsAuthorized(true);
+      }
+      setIsLoading(false);
+    };
+
+    checkOwnerAccess();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full border-2 border-red-200">
+          <CardHeader className="text-center">
+            <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+              <Lock className="h-8 w-8 text-red-600" />
+            </div>
+            <CardTitle className="text-red-800">Owner Access Required</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <div className="flex items-center justify-center gap-2 text-red-600">
+              <Shield className="h-5 w-5" />
+              <span className="font-medium">Restricted Area</span>
+            </div>
+            <p className="text-gray-600">
+              This Social Media Bot Control Center is exclusively accessible to the platform owner:
+            </p>
+            <div className="bg-red-50 p-3 rounded border text-sm">
+              <strong>Authorized User:</strong><br />
+              Drnielous Luster<br />
+              {OWNER_EMAIL}
+            </div>
+            <p className="text-sm text-gray-500">
+              Only the platform owner can control the automated marketing bots to ensure security and prevent unauthorized access.
+            </p>
+            <Button 
+              onClick={() => {
+                // Temporary access for demo - remove in production
+                localStorage.setItem('weparlay-owner-access', 'true');
+                setIsAuthorized(true);
+              }}
+              className="w-full bg-blue-600 hover:bg-blue-700"
+            >
+              Owner Access (Demo)
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const triggerAutomaticPost = async () => {
     setIsPosting(true);
     try {
-      const response = await apiRequest('POST', '/api/community/auto-share', {});
+      const response = await apiRequest('POST', '/api/community/auto-share', {}, {
+        'x-owner-email': OWNER_EMAIL,
+        'x-owner-access': 'true'
+      });
       const data = await response.json();
       
       setLastPost(data);
