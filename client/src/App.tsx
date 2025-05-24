@@ -48,6 +48,8 @@ import MobileVoiceBetting from "@/components/mobile/MobileVoiceBetting";
 import { CurrencyModeProvider } from "./contexts/CurrencyModeContext";
 import { TeamThemeProvider } from "./contexts/TeamThemeContext";
 import { BetSlipProvider } from "./contexts/BetSlipContext";
+import { OnboardingProvider, useOnboarding } from "./contexts/OnboardingContext";
+import InteractiveOnboardingWizard from "./components/onboarding/InteractiveOnboardingWizard";
 import { initGA } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
 
@@ -135,6 +137,30 @@ function Router() {
   );
 }
 
+function AppContent() {
+  const { showOnboarding, completeOnboarding, skipOnboarding } = useOnboarding();
+
+  return (
+    <>
+      <Toaster />
+      <MainLayout>
+        <Router />
+      </MainLayout>
+      <SimpleOnboarding />
+      {/* Mobile voice betting floating button (visible on all pages) */}
+      <MobileVoiceBetting />
+      
+      {/* Interactive Onboarding Wizard for new users */}
+      {showOnboarding && (
+        <InteractiveOnboardingWizard
+          onComplete={completeOnboarding}
+          onSkip={skipOnboarding}
+        />
+      )}
+    </>
+  );
+}
+
 function App() {
   // Initialize Google Analytics when app loads
   React.useEffect(() => {
@@ -150,19 +176,15 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <CurrencyModeProvider>
-          <TeamThemeProvider>
-            <BetSlipProvider>
-              <Toaster />
-              <MainLayout>
-                <Router />
-              </MainLayout>
-              <SimpleOnboarding />
-              {/* Mobile voice betting floating button (visible on all pages) */}
-              <MobileVoiceBetting />
-            </BetSlipProvider>
-          </TeamThemeProvider>
-        </CurrencyModeProvider>
+        <OnboardingProvider>
+          <CurrencyModeProvider>
+            <TeamThemeProvider>
+              <BetSlipProvider>
+                <AppContent />
+              </BetSlipProvider>
+            </TeamThemeProvider>
+          </CurrencyModeProvider>
+        </OnboardingProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

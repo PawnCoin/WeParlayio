@@ -1667,6 +1667,36 @@ Join us: WeParlay.io 🎯
     }
   });
 
+  // User onboarding endpoint
+  app.post('/api/user/onboarding', async (req, res) => {
+    try {
+      const onboardingData = req.body;
+      
+      // In a real application, you would save this to the user's profile
+      // For now, we'll just log it and return success
+      console.log('📝 User onboarding data received:', {
+        displayName: onboardingData.personalInfo?.displayName,
+        experience: onboardingData.personalInfo?.experience,
+        sportsCount: onboardingData.preferences?.sports?.length || 0,
+        betTypesCount: onboardingData.preferences?.betTypes?.length || 0,
+        depositMethod: onboardingData.account?.depositMethod,
+        notifications: onboardingData.preferences?.notifications
+      });
+      
+      res.json({
+        success: true,
+        message: 'Onboarding data saved successfully',
+        preferences: onboardingData
+      });
+    } catch (error) {
+      console.error('Error saving onboarding data:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to save onboarding data'
+      });
+    }
+  });
+
   // Admin authentication endpoints
   app.post('/api/auth/admin-login', async (req, res) => {
     try {
