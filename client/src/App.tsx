@@ -21,7 +21,8 @@ import Trivia from "@/pages/Trivia";
 import BettingExperience from "@/pages/BettingExperience"; // New enhanced betting page
 import SportPage from "@/pages/SportPage"; // New sport page
 import BettingDashboard from "@/pages/BettingDashboard"; // Professional sports betting dashboard
-import Login from "@/pages/Login"; // Login page with social login options
+import Login from "@/pages/Login";
+import MobileLogin from "@/pages/MobileLogin"; // Login page with social login options
 import EnhancedFeatures from "@/pages/EnhancedFeatures"; // Advanced features page
 import VipFeatures from "@/pages/VipFeatures"; // VIP exclusive section
 import ThemeSettingsPage from "@/pages/ThemeSettingsPage"; // Theme settings page
@@ -106,6 +107,7 @@ function Router() {
       <Route path="/head-to-head" component={HeadToHeadBetting} />
       <Route path="/signup" component={SignUp} />
       <Route path="/login" component={Login} />
+      <Route path="/mobile-login" component={MobileLogin} />
       <Route path="/theme-manager" component={ThemeSettingsPage} />
       <Route path="/sports/:sportKey" component={SportPage} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
