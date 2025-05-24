@@ -1,28 +1,27 @@
 import twilio from 'twilio';
 
 // Initialize Twilio client
-const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+const client = twilio(
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN
+);
 
 export interface SMSOptions {
   to: string;
-  message?: string;
-  template?: 'bet_confirmation' | 'win_notification' | 'security_alert' | 'withdrawal_ready';
-  templateData?: any;
+  message: string;
+  type?: 'welcome' | 'bet_confirmation' | 'win_notification' | 'security_alert';
 }
 
-// SMS templates
-const getSMSTemplate = (template: string, data: any): string => {
+// SMS message templates
+const getSMSTemplate = (type: string, data: any = {}) => {
   const templates = {
-    bet_confirmation: `🎯 WeParlay: Bet confirmed! ${data.event || 'Event'} - ${data.betType || 'Bet'} for ${data.amount || '$0'}. Good luck! Track at weparlay.io`,
-    
-    win_notification: `🏆 WeParlay: WINNER! You won ${data.winAmount || '$0'} on ${data.event || 'your bet'}! Funds added to your account. Place another bet at weparlay.io`,
-    
-    security_alert: `🔒 WeParlay Security: ${data.action || 'Account activity'} detected at ${data.time || 'unknown time'}. If this wasn't you, secure your account at weparlay.io/security`,
-    
-    withdrawal_ready: `💰 WeParlay: Your withdrawal of ${data.amount || '$0'} is ready! Funds will arrive in your account within ${data.timeframe || '1-3 business days'}.`
+    welcome: `🎉 Welcome to WeParlay! You've been credited $${data.balance || '1000'} WeParlay Cash. Start betting now at weparlay.io`,
+    bet_confirmation: `✅ Bet confirmed! ${data.event || 'Your bet'} - ${data.betType || ''} for $${data.amount || '0'}. Track at weparlay.io`,
+    win_notification: `🏆 WINNER! You won $${data.winAmount || '0'} on ${data.event || 'your bet'}! Winnings added to your account. Play again at weparlay.io`,
+    security_alert: `🔒 WeParlay Security Alert: ${data.action || 'Account activity detected'} at ${data.time || 'recent'}. Secure your account at weparlay.io/security`
   };
   
-  return templates[template as keyof typeof templates] || data.message || 'WeParlay notification';
+  return templates[type as keyof typeof templates] || data.message || 'WeParlay notification';
 };
 
 export const sendSMS = async (options: SMSOptions): Promise<boolean> => {
@@ -32,22 +31,21 @@ export const sendSMS = async (options: SMSOptions): Promise<boolean> => {
       console.error('❌ Twilio credentials not configured');
       return false;
     }
+
+    let message = options.message;
     
-    let messageBody = options.message || 'WeParlay notification';
-    
-    // Use template if specified
-    if (options.template && options.templateData) {
-      messageBody = getSMSTemplate(options.template, options.templateData);
+    // Use template if type specified
+    if (options.type) {
+      message = getSMSTemplate(options.type, { message: options.message });
     }
-    
-    console.log('📱 Attempting to send SMS to:', options.to);
-    const message = await client.messages.create({
-      body: messageBody,
+
+    const result = await client.messages.create({
+      body: message,
       from: process.env.TWILIO_PHONE_NUMBER,
       to: options.to
     });
-    
-    console.log('✅ SMS sent successfully:', message.sid);
+
+    console.log('✅ SMS sent successfully:', result.sid);
     return true;
   } catch (error: any) {
     console.error('❌ SMS sending failed:', error.message);
@@ -56,34 +54,34 @@ export const sendSMS = async (options: SMSOptions): Promise<boolean> => {
 };
 
 // Convenience functions for common SMS notifications
+export const sendWelcomeSMS = (to: string, userData: any) => {
+  return sendSMS({
+    to,
+    type: 'welcome',
+    message: userData.balance ? `Welcome to WeParlay! $${userData.balance} credited.` : 'Welcome to WeParlay!'
+  });
+};
+
 export const sendBetConfirmationSMS = (to: string, betData: any) => {
   return sendSMS({
     to,
-    template: 'bet_confirmation',
-    templateData: betData
+    type: 'bet_confirmation',
+    message: `Bet confirmed: ${betData.event} - ${betData.betType} for $${betData.amount}`
   });
 };
 
 export const sendWinNotificationSMS = (to: string, winData: any) => {
   return sendSMS({
     to,
-    template: 'win_notification',
-    templateData: winData
+    type: 'win_notification',
+    message: `You won $${winData.winAmount} on ${winData.event}!`
   });
 };
 
 export const sendSecurityAlertSMS = (to: string, alertData: any) => {
   return sendSMS({
     to,
-    template: 'security_alert',
-    templateData: alertData
-  });
-};
-
-export const sendWithdrawalReadySMS = (to: string, withdrawalData: any) => {
-  return sendSMS({
-    to,
-    template: 'withdrawal_ready',
-    templateData: withdrawalData
+    type: 'security_alert',
+    message: `Security alert: ${alertData.action} detected`
   });
 };

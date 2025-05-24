@@ -21,6 +21,7 @@ import LoginEnhanced from "@/pages/LoginEnhanced";
 import AuthTestDemo from "@/pages/AuthTestDemo";
 import UserDirectory from "@/pages/UserDirectory";
 import SocialMediaBots from "@/pages/SocialMediaBots";
+import EmailMonitoring from "@/pages/EmailMonitoring";
 import VideoGaming from "@/pages/VideoGaming";
 import Trivia from "@/pages/Trivia";
 import BettingExperience from "@/pages/BettingExperience"; // New enhanced betting page
@@ -118,6 +119,7 @@ function Router() {
       <Route path="/auth-test" component={AuthTestDemo} />
       <Route path="/community" component={UserDirectory} />
       <Route path="/social-bots" component={SocialMediaBots} />
+      <Route path="/email-monitoring" component={EmailMonitoring} />
       <Route path="/theme-manager" component={ThemeSettingsPage} />
       <Route path="/sports/:sportKey" component={SportPage} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />

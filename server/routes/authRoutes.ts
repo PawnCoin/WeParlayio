@@ -140,6 +140,32 @@ router.post('/quick-register', async (req, res) => {
 
     const newUser = await storage.upsertUser(userData);
 
+    // Send welcome email
+    if (email) {
+      try {
+        const { sendWelcomeEmail, sendAdminAlert } = await import('../services/emailService');
+        await sendWelcomeEmail(email, {
+          name: newUser.username,
+          balance: newUser.balance,
+          userId: newUser.id,
+          tempPassword
+        });
+        
+        // Notify admin of new registration
+        await sendAdminAlert({
+          alertType: 'New Quick Registration',
+          message: `New user registered: ${newUser.username} (${email}) - Quick Registration`,
+          userId: newUser.id,
+          amount: `$${newUser.balance} WeParlay Cash`,
+          time: new Date().toLocaleString()
+        });
+        
+        console.log('✅ Welcome email sent to:', email);
+      } catch (emailError) {
+        console.error('❌ Failed to send welcome email:', emailError);
+      }
+    }
+
     // Generate JWT token
     const token = jwt.sign(
       { userId: newUser.id, username: newUser.username },
