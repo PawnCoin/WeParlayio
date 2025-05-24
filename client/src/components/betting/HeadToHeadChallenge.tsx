@@ -101,30 +101,42 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
     setIsPending(true);
     
     try {
-      // In a real implementation, this would create the challenge in the database
-      // and handle sending invitations via the selected contact method
-      console.log('Challenge values:', values);
+      // Create real challenge in database
+      const challengeData = {
+        eventName: values.eventSelection,
+        amount: parseFloat(values.betAmount),
+        currency: 'USD',
+        isVirtual: values.betType === 'virtual',
+        pick: values.yourPick,
+        customMessage: values.message,
+        inviteMethod: values.inviteMethod,
+        friendEmail: values.friendEmail,
+        friendPhone: values.friendPhone,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
+      };
+
+      const response = await apiRequest('POST', '/api/challenges', challengeData);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      if (response.ok) {
+        const result = await response.json();
+        const generatedLink = `https://weparlay.io/challenge/${result.challengeUuid}`;
+        setChallengeLink(generatedLink);
+        
+        setShowConfirmation(true);
+        
+        toast({
+          title: "Challenge created!",
+          description: "Your head-to-head bet challenge has been sent successfully.",
+        });
+      } else {
+        throw new Error('Failed to create challenge');
+      }
       
-      // Generate a unique challenge link
-      const challengeId = Math.random().toString(36).substring(2, 15);
-      const generatedLink = `https://weparlay.io/challenge/${challengeId}`;
-      setChallengeLink(generatedLink);
-      
-      setShowConfirmation(true);
-      
-      toast({
-        title: "Challenge created!",
-        description: "Your head-to-head bet challenge has been created successfully.",
-      });
-      
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating challenge:', error);
       toast({
         title: "Failed to create challenge",
-        description: "There was an error creating your challenge. Please try again.",
+        description: error.message || "There was an error creating your challenge. Please try again.",
         variant: "destructive",
       });
     } finally {

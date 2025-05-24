@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import sportsBetAPI from "@/lib/sportsBetAPI";
 import yahooFantasyAPI, { YahooTeam, YahooPlayer } from "@/lib/yahooFantasyAPI";
 import FantasyTeamBuilder from "@/components/fantasy/FantasyTeamBuilder";
+import ComingSoon from "@/components/shared/ComingSoon";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
