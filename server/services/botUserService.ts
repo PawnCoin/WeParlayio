@@ -1,5 +1,4 @@
 import { storage } from '../storage';
-import { emailService } from './emailService';
 
 interface BotUser {
   id: string;
@@ -105,14 +104,13 @@ export class BotUserService {
           role: botUser.role,
           subscriptionTier: botUser.subscriptionTier,
           balance: botUser.balance,
-          realMoneyBalance: botUser.realMoneyBalance,
           wins: botUser.wins,
           losses: botUser.losses,
           totalBets: botUser.totalBets,
           status: 'active',
           emailVerified: true,
           profileImageUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${botUser.username}`,
-          joinedAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000) // Random date within last 30 days
+          createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000) // Random date within last 30 days
         });
 
         console.log(`✅ Created bot user: ${botUser.username}`);
@@ -125,7 +123,7 @@ export class BotUserService {
   async createBotBets(): Promise<void> {
     console.log('🎯 Creating realistic betting activity...');
     
-    const sports = ['football_nfl', 'basketball_nba', 'baseball_mlb', 'soccer_epl'];
+    const sports = [1, 2, 3, 4]; // Use sport IDs instead of keys
     const betTypes = ['moneyline', 'spread', 'over_under'];
     
     for (const botUser of BOT_USERS) {
@@ -134,20 +132,19 @@ export class BotUserService {
       
       for (let i = 0; i < numBets; i++) {
         try {
-          const sport = sports[Math.floor(Math.random() * sports.length)];
+          const sportId = sports[Math.floor(Math.random() * sports.length)];
           const betType = betTypes[Math.floor(Math.random() * betTypes.length)];
           const amount = Math.floor(Math.random() * 200) + 50; // $50-$250 bets
           const odds = Math.floor(Math.random() * 300) + 100; // +100 to +400 odds
           
           await storage.createBet({
             userId: botUser.id,
-            eventId: `${sport}_${Date.now()}_${i}`,
+            eventId: sportId,
             betType,
             amount,
             odds,
             status: Math.random() > 0.3 ? 'settled' : 'pending', // 70% settled, 30% pending
-            potentialWin: amount * (odds / 100),
-            placedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000) // Within last week
+            potentialWin: amount * (odds / 100)
           });
         } catch (error) {
           console.error(`❌ Failed to create bet for ${botUser.username}:`, error);
