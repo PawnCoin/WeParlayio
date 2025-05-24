@@ -78,14 +78,22 @@ export const users = pgTable("users", {
 export const insertUserSchema = createInsertSchema(users).pick({
   id: true,
   email: true,
+  username: true,
   firstName: true,
   lastName: true,
   profileImageUrl: true,
   role: true,
   status: true,
+  balance: true,
+  weplayTokenBalance: true,
   subscriptionTier: true,
   inviteCode: true,
-  referredBy: true
+  referredBy: true,
+  createdAt: true,
+  phone: true,
+  dateOfBirth: true,
+  allowMarketing: true,
+  isActive: true
 });
 
 // Bank accounts for owner's deposits

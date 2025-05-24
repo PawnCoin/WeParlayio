@@ -138,7 +138,7 @@ router.post('/quick-register', async (req, res) => {
       isQuickRegistration: true,
     };
 
-    const newUser = await storage.createUser(userData);
+    const newUser = await storage.upsertUser(userData);
 
     // Generate JWT token
     const token = jwt.sign(
