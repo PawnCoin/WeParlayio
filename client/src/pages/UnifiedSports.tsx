@@ -108,6 +108,13 @@ export default function UnifiedSports() {
                 className="pl-10 w-64"
               />
             </div>
+            <Button 
+              onClick={() => window.location.href = '/betting-dashboard'}
+              className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600"
+            >
+              <TrendingUp className="h-4 w-4 mr-2" />
+              Pro Analytics
+            </Button>
           </div>
         </div>
 
@@ -189,6 +196,15 @@ export default function UnifiedSports() {
                               >
                                 <Target className="h-3 w-3 mr-1" />
                                 More Bets
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-blue-200 hover:bg-blue-50"
+                                onClick={() => window.location.href = '/live-betting-classic'}
+                              >
+                                <Activity className="h-3 w-3 mr-1" />
+                                Enhanced Live
                               </Button>
                             </div>
                           )}

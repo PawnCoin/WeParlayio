@@ -1,4 +1,5 @@
 import fetch from 'node-fetch';
+import { rateLimiter } from "../utils/rateLimiter";
 
 interface SportsOdds {
   sport: string;
