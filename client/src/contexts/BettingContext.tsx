@@ -17,6 +17,8 @@ interface BettingContextType {
   removeBet: (id: string) => void;
   clearBets: () => void;
   updateBet: (id: string, updates: Partial<BetItem>) => void;
+  selectedCurrency: string;
+  setSelectedCurrency: (currency: string) => void;
 }
 
 const BettingContext = createContext<BettingContextType | undefined>(undefined);
@@ -37,6 +39,16 @@ export const BettingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       return savedBets ? JSON.parse(savedBets) : [];
     } catch {
       return [];
+    }
+  });
+
+  const [selectedCurrency, setSelectedCurrency] = useState<string>(() => {
+    // Default to WeParlay Cash for safer practice
+    try {
+      const savedCurrency = localStorage.getItem('weparlay_selected_currency');
+      return savedCurrency || 'WEPARLAY';
+    } catch {
+      return 'WEPARLAY';
     }
   });
 
@@ -78,13 +90,24 @@ export const BettingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     ));
   };
 
+  // Save currency selection to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('weparlay_selected_currency', selectedCurrency);
+    } catch (error) {
+      console.error('Failed to save currency selection:', error);
+    }
+  }, [selectedCurrency]);
+
   return (
     <BettingContext.Provider value={{
       betItems,
       addBet,
       removeBet,
       clearBets,
-      updateBet
+      updateBet,
+      selectedCurrency,
+      setSelectedCurrency
     }}>
       {children}
     </BettingContext.Provider>
