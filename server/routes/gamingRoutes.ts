@@ -2,6 +2,8 @@
 import { Router } from 'express';
 import { gamingAPIService } from '../services/gamingAPIService';
 import { unifiedGamingAPI } from '../services/unifiedGamingAPI';
+import { psnProfilesScraper } from '../services/psnProfilesScraper';
+import { leaguepediaAPI } from '../services/leaguepediaAPI';
 
 const router = Router();
 
