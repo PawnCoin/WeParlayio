@@ -29,6 +29,8 @@ export interface TierFeatures {
     // Social features 
     createGroups: boolean;
     joinGroups: boolean;
+    customGamertag: boolean; // Premium feature for Bronze+
+    customBets: boolean; // Create custom betting challenges
     maxInvites: number;
     smsNotifications: boolean;
     
@@ -67,6 +69,8 @@ export const tierFeatures: Record<SubscriptionTier, TierFeatures> = {
       // Social features - minimal
       createGroups: false,
       joinGroups: true,
+      customGamertag: false, // Premium feature for paid members only
+      customBets: false, // Premium feature for paid members only
       maxInvites: 5,
       smsNotifications: false,
       
@@ -103,6 +107,8 @@ export const tierFeatures: Record<SubscriptionTier, TierFeatures> = {
       // Social features
       createGroups: true,
       joinGroups: true,
+      customGamertag: true, // Available for Bronze+ paid members
+      customBets: true, // Create custom betting challenges for Bronze+
       maxInvites: 10,
       smsNotifications: false,
       
@@ -139,7 +145,10 @@ export const tierFeatures: Record<SubscriptionTier, TierFeatures> = {
       // Social features
       createGroups: true,
       joinGroups: true,
+      customGamertag: true, // Available for Silver+ members
+      customBets: true, // Create custom betting challenges
       maxInvites: 20,
+      smsNotifications: true,
       
       // Platform features
       supportPriority: 'priority',
@@ -174,6 +183,8 @@ export const tierFeatures: Record<SubscriptionTier, TierFeatures> = {
       // Social features
       createGroups: true,
       joinGroups: true,
+      customGamertag: true, // Available for Gold+ members
+      customBets: true, // Create custom betting challenges
       maxInvites: 50,
       smsNotifications: true,
       
@@ -210,6 +221,8 @@ export const tierFeatures: Record<SubscriptionTier, TierFeatures> = {
       // Social features
       createGroups: true,
       joinGroups: true,
+      customGamertag: true, // Available for Platinum members
+      customBets: true, // Create custom betting challenges
       maxInvites: 100,
       smsNotifications: true,
       
