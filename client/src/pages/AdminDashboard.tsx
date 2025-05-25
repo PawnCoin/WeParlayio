@@ -416,13 +416,13 @@ export default function AdminDashboard() {
                       <Mail className="h-4 w-4 mr-2" />
                       Email Logs
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => window.open('/community', '_blank')}>
+                    <Button variant="outline" size="sm" onClick={() => window.open('/user-directory', '_blank')}>
                       <Users className="h-4 w-4 mr-2" />
                       User Directory
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => window.open('/social-bots', '_blank')}>
+                    <Button variant="outline" size="sm" onClick={() => window.open('/bot-control', '_blank')}>
                       <Bot className="h-4 w-4 mr-2" />
-                      Social Bots
+                      Bot Control Center
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => window.open('/auth-test', '_blank')}>
                       <TestTube className="h-4 w-4 mr-2" />
