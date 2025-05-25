@@ -10,8 +10,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronUp, ChevronDown, Clock, RefreshCcw, AlertTriangle, Dot, PlayCircle } from "lucide-react";
 
-// Import for bet slip management
-import { useBetSlip } from "@/contexts/BetSlipContext";
+// Import for bet slip management - using the working betting context
+import { useBetting } from "@/contexts/BettingContext";
 
 // Import WatchLive component
 import WatchLive from "@/components/events/WatchLive";
@@ -41,8 +41,8 @@ const LiveBettingContent: React.FC = () => {
     league: string;
   } | null>(null);
   
-  // Get bet slip methods from context
-  const { addToBetSlip } = useBetSlip();
+  // Get bet slip methods from context - using working betting context
+  const { addBet } = useBetting();
   
   // Fetch sports data
   const { 
@@ -105,20 +105,19 @@ const LiveBettingContent: React.FC = () => {
     odds: number,
     point?: number
   ) => {
-    // Create the bet object
+    // Create the bet object in the format that works with BettingContext
     const newBet = {
-      gameId,
-      homeTeam,
-      awayTeam,
-      betType,
-      pick,
-      odds,
-      point,
-      sportId: getSportId(selectedSport)
+      id: `${gameId}-${betType}-${pick}-${Date.now()}`,
+      type: 'Sports',
+      eventName: `${awayTeam} vs ${homeTeam}`,
+      selection: pick,
+      opponent: betType === 'h2h' ? (pick === homeTeam ? awayTeam : homeTeam) : 'Market',
+      odds: odds,
+      status: 'pending' as const
     };
     
     // Use the context method to add to slip
-    addToBetSlip(newBet);
+    addBet(newBet);
   };
   
   // Helper to convert sport key to sportId
