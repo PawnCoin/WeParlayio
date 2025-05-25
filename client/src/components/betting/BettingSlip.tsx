@@ -58,7 +58,7 @@ const BettingSlip: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [wagerAmount, setWagerAmount] = useState("50.00");
-  const [selectedCurrency, setSelectedCurrency] = useState<string>("USD");
+  const [selectedCurrency, setSelectedCurrency] = useState<string>("WEPARLAY");
   const { betItems, removeBet, clearBets } = useBetting();
   
   const [cryptoWallets, setCryptoWallets] = useState<CryptoWallet[]>([
@@ -91,12 +91,38 @@ const BettingSlip: React.FC = () => {
   // State for wallet connection modal
   const [showWalletModal, setShowWalletModal] = useState(false);
   
-  // Currency options for betting
+  // Currency options for betting - WeParlay Cash featured prominently
   const currencyOptions = [
-    { value: "USD", label: "USD ($)", icon: <DollarSign className="h-4 w-4" /> },
-    { value: "BTC", label: "Bitcoin (BTC)", icon: <Bitcoin className="h-4 w-4" /> },
-    { value: "ETH", label: "Ethereum (ETH)", icon: <Bitcoin className="h-4 w-4" /> },
-    { value: "SOL", label: "Solana (SOL)", icon: <Bitcoin className="h-4 w-4" /> }
+    { 
+      value: "WEPARLAY", 
+      label: "WeParlay Cash", 
+      icon: <span className="text-blue-500 font-bold">🎮</span>,
+      description: "Virtual currency - perfect for practice!"
+    },
+    { 
+      value: "USD", 
+      label: "Real Money (USD)", 
+      icon: <DollarSign className="h-4 w-4 text-green-500" />,
+      description: "Actual money betting with real payouts"
+    },
+    { 
+      value: "BTC", 
+      label: "Bitcoin (BTC)", 
+      icon: <Bitcoin className="h-4 w-4 text-orange-500" />,
+      description: "Cryptocurrency betting"
+    },
+    { 
+      value: "ETH", 
+      label: "Ethereum (ETH)", 
+      icon: <Bitcoin className="h-4 w-4 text-blue-600" />,
+      description: "Cryptocurrency betting"
+    },
+    { 
+      value: "SOL", 
+      label: "Solana (SOL)", 
+      icon: <Bitcoin className="h-4 w-4 text-purple-500" />,
+      description: "Cryptocurrency betting"
+    }
   ];
   
   const isEmpty = betItems.length === 0;
@@ -442,10 +468,13 @@ const BettingSlip: React.FC = () => {
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center">
                     {option.icon}
-                    <span className="ml-2 font-medium">{option.label}</span>
+                    <div className="ml-2">
+                      <div className="font-medium">{option.label}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{option.description}</div>
+                    </div>
                   </div>
                   {option.value === 'WEPARLAY' && (
-                    <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">VIRTUAL</span>
+                    <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-medium">RECOMMENDED</span>
                   )}
                   {option.value === 'USD' && (
                     <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">REAL</span>
@@ -469,14 +498,32 @@ const BettingSlip: React.FC = () => {
           </SelectContent>
         </Select>
         
-        {/* Mode Description */}
-        <div className="mt-2 p-2 rounded-lg bg-gray-50 dark:bg-gray-800">
-          <p className="text-xs text-gray-600 dark:text-gray-400">
-            {selectedCurrency === 'WEPARLAY' 
-              ? '🎮 Playing with WeParlay Cash - Practice mode with virtual currency. Great for learning!'
-              : '💰 Betting with real money - All wins and losses affect your actual balance.'
-            }
-          </p>
+        {/* Mode Description with Quick Toggle */}
+        <div className="mt-2 p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border-l-4 border-l-blue-500 dark:border-l-blue-400">
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-gray-600 dark:text-gray-400 flex-1">
+              {selectedCurrency === 'WEPARLAY' 
+                ? '🎮 Playing with WeParlay Cash - Practice mode with virtual currency. Great for learning!'
+                : '💰 Betting with real money - All wins and losses affect your actual balance.'
+              }
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="ml-2 text-xs px-2 py-1 h-auto"
+              onClick={() => {
+                const newMode = selectedCurrency === 'WEPARLAY' ? 'USD' : 'WEPARLAY';
+                setSelectedCurrency(newMode);
+                toast({
+                  title: `Switched to ${newMode === 'WEPARLAY' ? 'WeParlay Cash' : 'Real Money'} Mode`,
+                  description: `You're now betting with ${newMode === 'WEPARLAY' ? 'virtual currency' : 'real money'}`,
+                  duration: 3000,
+                });
+              }}
+            >
+              Switch to {selectedCurrency === 'WEPARLAY' ? 'Real Money' : 'Virtual'}
+            </Button>
+          </div>
         </div>
       </div>
       
