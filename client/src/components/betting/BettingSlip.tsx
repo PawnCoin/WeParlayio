@@ -58,8 +58,7 @@ const BettingSlip: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [wagerAmount, setWagerAmount] = useState("50.00");
-  const [selectedCurrency, setSelectedCurrency] = useState<string>("WEPARLAY");
-  const { betItems, removeBet, clearBets } = useBetting();
+  const { betItems, removeBet, clearBets, selectedCurrency, setSelectedCurrency } = useBetting();
   
   const [cryptoWallets, setCryptoWallets] = useState<CryptoWallet[]>([
     {
