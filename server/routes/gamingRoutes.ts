@@ -1,6 +1,7 @@
 // WeParlay Gaming API Routes
 import { Router } from 'express';
 import { gamingAPIService } from '../services/gamingAPIService';
+import { unifiedGamingAPI } from '../services/unifiedGamingAPI';
 
 const router = Router();
 
@@ -210,13 +211,113 @@ router.get('/leaderboard', async (req, res) => {
   }
 });
 
+// === UNIFIED GAMING API ROUTES ===
+
+// Fortnite player stats
+router.get('/fortnite/:username', async (req, res) => {
+  try {
+    const stats = await unifiedGamingAPI.getFortniteStats(req.params.username);
+    res.json(stats);
+  } catch (error: any) {
+    res.status(500).json({ error: 'Fortnite stats unavailable', details: error.message });
+  }
+});
+
+// League of Legends player stats
+router.get('/lol/:summonerName/:region?', async (req, res) => {
+  try {
+    const { summonerName, region = 'na1' } = req.params;
+    const stats = await unifiedGamingAPI.getRiotPlayerStats(summonerName, region);
+    res.json(stats);
+  } catch (error: any) {
+    res.status(500).json({ error: 'League of Legends stats unavailable', details: error.message });
+  }
+});
+
+// Valorant player stats
+router.get('/valorant/:username/:tag', async (req, res) => {
+  try {
+    const { username, tag } = req.params;
+    const stats = await unifiedGamingAPI.getValorantStats(username, tag);
+    res.json(stats);
+  } catch (error: any) {
+    res.status(500).json({ error: 'Valorant stats unavailable', details: error.message });
+  }
+});
+
+// CS:GO player stats
+router.get('/csgo/:steamId', async (req, res) => {
+  try {
+    const stats = await unifiedGamingAPI.getCSGOStats(req.params.steamId);
+    res.json(stats);
+  } catch (error: any) {
+    res.status(500).json({ error: 'CS:GO stats unavailable', details: error.message });
+  }
+});
+
+// Esports tournaments
+router.get('/tournaments/:game?', async (req, res) => {
+  try {
+    const { game = 'lol' } = req.params;
+    const tournaments = await unifiedGamingAPI.getEsportsTournaments(game);
+    res.json(tournaments);
+  } catch (error: any) {
+    res.status(500).json({ error: 'Tournament data unavailable', details: error.message });
+  }
+});
+
+// Esports matches
+router.get('/matches/:game?', async (req, res) => {
+  try {
+    const { game = 'lol' } = req.params;
+    const matches = await unifiedGamingAPI.getEsportsMatches(game);
+    res.json(matches);
+  } catch (error: any) {
+    res.status(500).json({ error: 'Match data unavailable', details: error.message });
+  }
+});
+
+// NBA players
+router.get('/nba/players', async (req, res) => {
+  try {
+    const players = await unifiedGamingAPI.getNBAPlayers();
+    res.json(players);
+  } catch (error: any) {
+    res.status(500).json({ error: 'NBA data unavailable', details: error.message });
+  }
+});
+
+// College Football
+router.get('/cfb/teams', async (req, res) => {
+  try {
+    const teams = await unifiedGamingAPI.getCollegeFootballTeams();
+    res.json(teams);
+  } catch (error: any) {
+    res.status(500).json({ error: 'College Football data unavailable', details: error.message });
+  }
+});
+
+// Gaming performance analysis
+router.post('/analyze', async (req, res) => {
+  try {
+    const { platform, username, game } = req.body;
+    const analysis = await unifiedGamingAPI.analyzeGamingPerformance(platform, username, game);
+    res.json(analysis);
+  } catch (error: any) {
+    res.status(500).json({ error: 'Performance analysis unavailable', details: error.message });
+  }
+});
+
 // Check API configuration status
 router.get('/api-status', async (req, res) => {
   try {
-    const apiStatus = gamingAPIService.getConfiguredAPIs();
+    const basicStatus = gamingAPIService.getConfiguredAPIs();
+    const unifiedStatus = unifiedGamingAPI.getAPIStatus();
+    
     res.json({
-      configured: apiStatus,
-      message: 'Gaming API configuration status'
+      basic_apis: basicStatus,
+      unified_apis: unifiedStatus,
+      message: 'Complete gaming API configuration status'
     });
   } catch (error) {
     console.error('API status error:', error);
