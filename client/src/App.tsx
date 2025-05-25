@@ -53,6 +53,7 @@ import InteractiveOnboardingWizard from "./components/onboarding/InteractiveOnbo
 import { initGA } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
 import OnboardingDemo from "@/pages/OnboardingDemo";
+import UnifiedGaming from "@/pages/UnifiedGaming";
 
 // Import admin components
 import AdminBypass from "@/pages/AdminBypass";
