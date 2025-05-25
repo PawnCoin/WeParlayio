@@ -111,7 +111,9 @@ function Router() {
       <Route path="/results" component={Results} />
       <Route path="/social" component={Social} />
       <Route path="/social-betting" component={SocialBetting} />
-      <Route path="/video-gaming" component={VideoGaming} />
+      <Route path="/gaming" component={UnifiedGaming} />
+      <Route path="/video-gaming" component={UnifiedGaming} />
+      <Route path="/gaming-integration" component={UnifiedGaming} />
       <Route path="/trivia" component={Trivia} />
       <Route path="/settings" component={Settings} />
       <Route path="/security-settings" component={SecuritySettings} />
