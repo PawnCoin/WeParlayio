@@ -231,19 +231,6 @@ const WeParlayCashSystem: React.FC = () => {
   
   // NO FAKE TRANSACTIONS - Only real WeParlay Cash transactions will be shown
   const sampleTransactions: Transaction[] = [];
-      type: 'earn',
-      timestamp: '2025-05-19T21:45:00Z',
-      status: 'completed'
-    },
-    {
-      id: '9',
-      amount: 1000,
-      description: 'WeParlay Cash promotion',
-      type: 'admin',
-      timestamp: '2025-05-20T11:00:00Z',
-      status: 'completed'
-    },
-  ];
   
   // Use sample data for display (this would be replaced by real data in production)
   const balance = cashData?.balance || sampleCashData.balance;
