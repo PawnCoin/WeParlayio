@@ -3,42 +3,48 @@
 @tailwind components;
 @tailwind utilities;
 
-/* WeParlay custom color scheme */
+/* WeParlay masculine color scheme - Blue, Green, Orange */
 :root {
-  --primary: #2563eb;     /* Blue */
+  --primary: #2563eb;     /* WeParlay Blue */
   --primary-dark: #1d4ed8;
   --primary-light: #60a5fa;
-  --secondary: #10b981;   /* Green */
-  --secondary-dark: #059669;
-  --secondary-light: #34d399;
+  --secondary: #16a34a;   /* WeParlay Green */
+  --secondary-dark: #15803d;
+  --secondary-light: #22c55e;
+  --accent: #ea580c;      /* WeParlay Orange */
+  --accent-dark: #c2410c;
+  --accent-light: #fb923c;
   --background: #f8fafc;
   --foreground: #0f172a;
-  --muted: #e2e8f0;
-  --muted-foreground: #64748b;
+  --muted: #e5e7eb;
+  --muted-foreground: #6b7280;
   --card: #ffffff;
-  --card-foreground: #1e293b;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #94a3b8;
+  --card-foreground: #1f2937;
+  --border: #d1d5db;
+  --input: #d1d5db;
+  --ring: #9ca3af;
   --radius: 0.5rem;
 }
 
 .dark {
-  --primary: #3b82f6;
+  --primary: #3b82f6;        /* WeParlay Blue Dark */
   --primary-dark: #2563eb;
   --primary-light: #60a5fa;
-  --secondary: #10b981;
-  --secondary-dark: #059669;
-  --secondary-light: #34d399;
+  --secondary: #16a34a;      /* WeParlay Green Dark */
+  --secondary-dark: #15803d;
+  --secondary-light: #22c55e;
+  --accent: #ea580c;         /* WeParlay Orange Dark */
+  --accent-dark: #c2410c;
+  --accent-light: #fb923c;
   --background: #0f172a;
   --foreground: #f8fafc;
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
-  --card: #1e293b;
-  --card-foreground: #f1f5f9;
-  --border: #334155;
-  --input: #334155;
-  --ring: #94a3b8;
+  --muted: #374151;
+  --muted-foreground: #9ca3af;
+  --card: #1f2937;
+  --card-foreground: #f9fafb;
+  --border: #4b5563;
+  --input: #4b5563;
+  --ring: #9ca3af;
 }
 
 /* Fix for text color contrast issues */
@@ -90,6 +96,77 @@ button,
 [type="button"], 
 [type="submit"] {
   color: white;
+}
+
+/* WeParlay Color Overrides - Remove ALL purple, pink, red */
+.text-purple-600,
+.text-purple-500,
+.text-purple-700,
+.text-pink-600,
+.text-pink-500,
+.text-pink-700,
+.text-red-600,
+.text-red-500,
+.text-red-700 {
+  color: var(--primary) !important;
+}
+
+.bg-purple-600,
+.bg-purple-500,
+.bg-purple-700,
+.bg-pink-600,
+.bg-pink-500,
+.bg-pink-700,
+.bg-red-600,
+.bg-red-500,
+.bg-red-700 {
+  background-color: var(--primary) !important;
+}
+
+.border-purple-600,
+.border-purple-500,
+.border-purple-700,
+.border-pink-600,
+.border-pink-500,
+.border-pink-700,
+.border-red-600,
+.border-red-500,
+.border-red-700 {
+  border-color: var(--primary) !important;
+}
+
+/* Force gradient backgrounds to use WeParlay colors */
+.bg-gradient-to-r {
+  background: linear-gradient(to right, var(--primary), var(--secondary)) !important;
+}
+
+.bg-gradient-to-br {
+  background: linear-gradient(to bottom right, var(--primary), var(--secondary)) !important;
+}
+
+.from-purple-50,
+.from-pink-50,
+.from-red-50 {
+  --tw-gradient-from: #dbeafe !important;
+}
+
+.to-purple-50,
+.to-pink-50,
+.to-red-50 {
+  --tw-gradient-to: #dcfce7 !important;
+}
+
+/* Override any purple/pink/red hover states */
+.hover\:bg-purple-50:hover,
+.hover\:bg-pink-50:hover,
+.hover\:bg-red-50:hover {
+  background-color: #dbeafe !important;
+}
+
+.hover\:text-purple-600:hover,
+.hover\:text-pink-600:hover,
+.hover\:text-red-600:hover {
+  color: var(--primary) !important;
 }
 
 /* WeParlay logo styling */
