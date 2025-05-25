@@ -131,6 +131,7 @@ function Router() {
       <Route path="/mobile-login" component={MobileLogin} />
       <Route path="/auth-test" component={AuthTestDemo} />
       <Route path="/community" component={UserDirectory} />
+      <Route path="/users" component={UserDirectory} />
       <Route path="/social-bots" component={SocialMediaBots} />
       <Route path="/email-monitoring" component={EmailMonitoring} />
       <Route path="/theme-manager" component={ThemeSettingsPage} />
