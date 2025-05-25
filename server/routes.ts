@@ -1191,9 +1191,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User Directory and Social Features
   app.get('/api/users/directory', async (req, res) => {
     try {
+      console.log('📁 Fetching user directory...');
       let users = await storage.getAllUsers();
+      console.log(`📊 Found ${users.length} users in database`);
       
-      // If no users in database, add demo users from the bot system
+      // Always show your real bot users (SportsBetterPro, FantasyKing, CryptoGambler) plus any other users
+      const realBotUsers = [
+        {
+          id: 'SportsBetterPro',
+          username: 'SportsBetterPro',
+          firstName: 'Alex',
+          lastName: 'Johnson',
+          profileImageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=SportsBetterPro',
+          subscriptionTier: 'gold',
+          balance: 2850,
+          wins: 47,
+          createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+          isOnline: true,
+          lastSeen: new Date().toISOString()
+        },
+        {
+          id: 'FantasyKing',
+          username: 'FantasyKing',
+          firstName: 'Sarah',
+          lastName: 'Martinez',
+          profileImageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=FantasyKing',
+          subscriptionTier: 'diamond',
+          balance: 5420,
+          wins: 89,
+          createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
+          isOnline: true,
+          lastSeen: new Date().toISOString()
+        },
+        {
+          id: 'CryptoGambler',
+          username: 'CryptoGambler',
+          firstName: 'Mike',
+          lastName: 'Chen',
+          profileImageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=CryptoGambler',
+          subscriptionTier: 'silver',
+          balance: 1230,
+          wins: 23,
+          createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+          isOnline: false,
+          lastSeen: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+        }
+      ];
+
+      // Add any real database users to the bot users
+      const databaseUsers = users.map(user => ({
+        id: user.id,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profileImageUrl: user.profileImageUrl,
+        subscriptionTier: user.subscriptionTier,
+        balance: user.balance,
+        wins: user.wins,
+        createdAt: user.createdAt,
+        isOnline: Math.random() > 0.5,
+        lastSeen: user.lastLogin
+      }));
+
+      // Combine real bot users with any database users
+      const allUsers = [...realBotUsers, ...databaseUsers];
+      console.log(`📊 Returning ${allUsers.length} total users (${realBotUsers.length} bots + ${databaseUsers.length} database)`);
+      
+      return res.json(allUsers);
+      
+      // Legacy fallback code (never reached now)
       if (users.length === 0) {
         const demoUsers = [
           {
@@ -1279,23 +1345,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json(demoUsers);
       }
       
-      // Remove sensitive data from real users
-      const publicUsers = users.map(user => ({
-        id: user.id,
-        username: user.username,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        profileImageUrl: user.profileImageUrl,
-        subscriptionTier: user.subscriptionTier,
-        balance: user.balance,
-        wins: user.wins,
-        createdAt: user.createdAt,
-        isOnline: Math.random() > 0.5,
-        lastSeen: user.lastLogin
-      }));
-      
-      res.json(publicUsers);
+
     } catch (error) {
+      console.error('Error fetching users:', error);
       res.status(500).json({ message: 'Failed to fetch users' });
     }
   });
