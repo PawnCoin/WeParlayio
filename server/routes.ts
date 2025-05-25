@@ -1675,26 +1675,49 @@ Join us: WeParlay.io 🎯
     }
   });
 
-  // User onboarding endpoint
-  app.post('/api/user/onboarding', async (req, res) => {
+  // User onboarding endpoint - ACTUALLY SAVES TO DATABASE
+  app.post('/api/user/onboarding', isAuthenticated, async (req: any, res) => {
     try {
       const onboardingData = req.body;
-      
-      // In a real application, you would save this to the user's profile
-      // For now, we'll just log it and return success
-      console.log('📝 User onboarding data received:', {
-        displayName: onboardingData.personalInfo?.displayName,
-        experience: onboardingData.personalInfo?.experience,
-        sportsCount: onboardingData.preferences?.sports?.length || 0,
-        betTypesCount: onboardingData.preferences?.betTypes?.length || 0,
-        depositMethod: onboardingData.account?.depositMethod,
-        notifications: onboardingData.preferences?.notifications
+      const userId = req.user?.claims?.sub;
+
+      if (!userId) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
+
+      // Save user preferences to database
+      const userPreferences = {
+        favoriteTeams: onboardingData.personalInfo?.favoriteTeams || [],
+        favoriteSports: onboardingData.preferences?.sports || [],
+        betTypes: onboardingData.preferences?.betTypes || [],
+        experience: onboardingData.personalInfo?.experience || 'beginner',
+        interests: onboardingData.personalInfo?.interests || [],
+        emailNotifications: onboardingData.preferences?.notifications?.email || false,
+        smsNotifications: onboardingData.preferences?.notifications?.sms || false,
+        pushNotifications: onboardingData.preferences?.notifications?.push || false,
+        profileVisible: onboardingData.preferences?.privacy?.profileVisible || true,
+        shareWins: onboardingData.preferences?.privacy?.shareWins || false,
+        preferredDepositMethod: onboardingData.account?.depositMethod || null,
+        twoFactorEnabled: onboardingData.account?.twoFactorAuth || false
+      };
+
+      // Update user record with onboarding preferences
+      await storage.updateUserPreferences(userId, userPreferences);
+
+      // Mark onboarding as completed
+      await storage.updateUserStatus(userId, 'active');
+
+      console.log('✅ User onboarding completed and saved to database:', {
+        userId,
+        favoriteTeams: userPreferences.favoriteTeams.length,
+        sports: userPreferences.favoriteSports.length,
+        betTypes: userPreferences.betTypes.length
       });
       
       res.json({
         success: true,
-        message: 'Onboarding data saved successfully',
-        preferences: onboardingData
+        message: 'Onboarding completed! Your preferences have been saved.',
+        preferences: userPreferences
       });
     } catch (error) {
       console.error('Error saving onboarding data:', error);
