@@ -107,11 +107,24 @@ export function FeeSummary() {
     ]
   };
 
-  // Use mock data or actual API data if available
-  const config = feeConfig?.data || mockFeeConfig;
-  const summaryData = feeSummary?.data || mockSummaryData;
-  const monthlyData = mockMonthlyData; // Replace with actual API data when available
-  const breakdownData = feeBreakdown?.data || mockFeeBreakdown;
+  // ONLY use real API data - no fake data
+  const config = feeConfig?.data;
+  const summaryData = feeSummary?.data;
+  const monthlyData = null; // Will show loading state until real API data available
+  const breakdownData = feeBreakdown?.data;
+
+  // If no real data, show loading or "no data" message
+  if (!config || !summaryData || !breakdownData) {
+    return (
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold">Revenue Summary</h2>
+        <div className="text-center py-8">
+          <p className="text-gray-500">Loading real financial data...</p>
+          <p className="text-sm text-gray-400 mt-2">No demo data will be shown</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
