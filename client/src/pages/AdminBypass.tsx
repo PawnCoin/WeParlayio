@@ -18,6 +18,7 @@ export default function AdminBypass() {
   // Admin credentials for WeParlay platform
   const ADMIN_EMAIL = 'support@weparlay.io';
   const ADMIN_PASSWORD = 'baysides3';
+  const ADMIN_BYPASS_KEY = 'weparlay-admin-2025'; // Development bypass key
 
   const handleAdminAccess = () => {
     if (adminKey === ADMIN_BYPASS_KEY) {

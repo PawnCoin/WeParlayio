@@ -43,11 +43,7 @@ export default function AdminDashboard() {
   const [dateRange, setDateRange] = useState({ from: new Date(), to: new Date() });
   const { toast } = useToast();
 
-  // Sample data for the admin dashboard
-  const sampleUsers = [
-    { id: 1, username: "admin", email: "admin@weparlay.io", role: "admin", status: "active", wins: 5 },
-    { id: 2, username: "testuser", email: "test@example.com", role: "user", status: "active", wins: 3 },
-  ];
+  // NO FAKE DATA - Only real users from database will be shown
 
   const handleRefresh = () => {
     toast({
@@ -150,8 +146,8 @@ export default function AdminDashboard() {
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{sampleUsers.length}</div>
-                  <p className="text-xs text-muted-foreground">+12% from last month</p>
+                  <div className="text-2xl font-bold">Loading...</div>
+                  <p className="text-xs text-muted-foreground">Real data from database</p>
                 </CardContent>
               </Card>
 
@@ -161,8 +157,8 @@ export default function AdminDashboard() {
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">$45,231</div>
-                  <p className="text-xs text-muted-foreground">+20% from last month</p>
+                  <div className="text-2xl font-bold">Loading...</div>
+                  <p className="text-xs text-muted-foreground">Real revenue data</p>
                 </CardContent>
               </Card>
 

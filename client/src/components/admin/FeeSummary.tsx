@@ -92,20 +92,7 @@ export function FeeSummary() {
     { month: 'Apr', betting: 18750, withdrawal: 8920, deposit: 2100, subscription: 3550 },
   ];
 
-  const mockFeeBreakdown = {
-    count: 3254,
-    average: 9.21,
-    highest: 250.50,
-    lowest: 1.00,
-    distribution: [
-      { range: '0-5', count: 1245, percentage: 38.3 },
-      { range: '5-10', count: 876, percentage: 26.9 },
-      { range: '10-20', count: 645, percentage: 19.8 },
-      { range: '20-50', count: 321, percentage: 9.9 },
-      { range: '50-100', count: 142, percentage: 4.4 },
-      { range: '100+', count: 25, percentage: 0.7 },
-    ]
-  };
+  // NO FAKE DATA - Only real fee breakdown from database will be shown
 
   // ONLY use real API data - no fake data
   const config = feeConfig?.data;
