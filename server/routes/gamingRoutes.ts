@@ -310,6 +310,126 @@ router.post('/analyze', async (req, res) => {
   }
 });
 
+// === PSN PROFILES SCRAPER ROUTES ===
+
+// Get PSN profile data
+router.get('/psn/:username', async (req, res) => {
+  try {
+    const profile = await psnProfilesScraper.scrapeProfile(req.params.username);
+    res.json(profile);
+  } catch (error: any) {
+    res.status(500).json({ error: 'PSN profile unavailable', details: error.message });
+  }
+});
+
+// Search PSN users
+router.get('/psn/search/:query', async (req, res) => {
+  try {
+    const profiles = await psnProfilesScraper.searchProfiles(req.params.query);
+    res.json({ profiles });
+  } catch (error: any) {
+    res.status(500).json({ error: 'PSN search unavailable', details: error.message });
+  }
+});
+
+// Get specific game stats for PSN user
+router.get('/psn/:username/game/:gameId', async (req, res) => {
+  try {
+    const { username, gameId } = req.params;
+    const gameStats = await psnProfilesScraper.getGameStats(username, gameId);
+    res.json(gameStats);
+  } catch (error: any) {
+    res.status(500).json({ error: 'PSN game stats unavailable', details: error.message });
+  }
+});
+
+// Get betting recommendations based on PSN profile
+router.get('/psn/:username/betting-recommendations', async (req, res) => {
+  try {
+    const profile = await psnProfilesScraper.scrapeProfile(req.params.username);
+    const recommendations = psnProfilesScraper.generateBettingRecommendations(profile);
+    res.json({ profile, recommendations });
+  } catch (error: any) {
+    res.status(500).json({ error: 'PSN betting recommendations unavailable', details: error.message });
+  }
+});
+
+// === LEAGUEPEDIA API ROUTES ===
+
+// Get recent League of Legends matches
+router.get('/leaguepedia/matches/:limit?', async (req, res) => {
+  try {
+    const limit = parseInt(req.params.limit || '20');
+    const matches = await leaguepediaAPI.getRecentMatches(limit);
+    res.json(matches);
+  } catch (error: any) {
+    res.status(500).json({ error: 'Leaguepedia matches unavailable', details: error.message });
+  }
+});
+
+// Get League of Legends player stats
+router.get('/leaguepedia/player/:playerName', async (req, res) => {
+  try {
+    const player = await leaguepediaAPI.getPlayerStats(req.params.playerName);
+    if (player) {
+      res.json(player);
+    } else {
+      res.status(404).json({ error: 'Player not found' });
+    }
+  } catch (error: any) {
+    res.status(500).json({ error: 'Leaguepedia player stats unavailable', details: error.message });
+  }
+});
+
+// Get League of Legends tournaments
+router.get('/leaguepedia/tournaments/:region?', async (req, res) => {
+  try {
+    const tournaments = await leaguepediaAPI.getTournaments(req.params.region);
+    res.json(tournaments);
+  } catch (error: any) {
+    res.status(500).json({ error: 'Leaguepedia tournaments unavailable', details: error.message });
+  }
+});
+
+// Get League of Legends team stats
+router.get('/leaguepedia/team/:teamName', async (req, res) => {
+  try {
+    const team = await leaguepediaAPI.getTeamStats(req.params.teamName);
+    if (team) {
+      res.json(team);
+    } else {
+      res.status(404).json({ error: 'Team not found' });
+    }
+  } catch (error: any) {
+    res.status(500).json({ error: 'Leaguepedia team stats unavailable', details: error.message });
+  }
+});
+
+// Get live League of Legends matches
+router.get('/leaguepedia/live', async (req, res) => {
+  try {
+    const liveMatches = await leaguepediaAPI.getLiveMatches();
+    res.json(liveMatches);
+  } catch (error: any) {
+    res.status(500).json({ error: 'Leaguepedia live matches unavailable', details: error.message });
+  }
+});
+
+// Get match predictions for betting
+router.get('/leaguepedia/predictions/:team1/:team2', async (req, res) => {
+  try {
+    const { team1, team2 } = req.params;
+    const predictions = await leaguepediaAPI.getMatchPredictions(team1, team2);
+    if (predictions) {
+      res.json(predictions);
+    } else {
+      res.status(404).json({ error: 'Predictions unavailable for these teams' });
+    }
+  } catch (error: any) {
+    res.status(500).json({ error: 'Leaguepedia predictions unavailable', details: error.message });
+  }
+});
+
 // Check API configuration status
 router.get('/api-status', async (req, res) => {
   try {
