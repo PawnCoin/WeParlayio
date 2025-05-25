@@ -49,6 +49,7 @@ import { CurrencyModeProvider } from "./contexts/CurrencyModeContext";
 import { TeamThemeProvider } from "./contexts/TeamThemeContext";
 import { BetSlipProvider } from "./contexts/BetSlipContext";
 import { OnboardingProvider, useOnboarding } from "./contexts/OnboardingContext";
+import { BettingProvider } from "./contexts/BettingContext";
 import InteractiveOnboardingWizard from "./components/onboarding/InteractiveOnboardingWizard";
 import { initGA } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
@@ -189,7 +190,9 @@ function App() {
           <CurrencyModeProvider>
             <TeamThemeProvider>
               <BetSlipProvider>
-                <AppContent />
+                <BettingProvider>
+                  <AppContent />
+                </BettingProvider>
               </BetSlipProvider>
             </TeamThemeProvider>
           </CurrencyModeProvider>

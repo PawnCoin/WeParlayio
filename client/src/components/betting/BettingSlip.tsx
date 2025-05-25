@@ -59,28 +59,7 @@ const BettingSlip: React.FC = () => {
   const { toast } = useToast();
   const [wagerAmount, setWagerAmount] = useState("50.00");
   const [selectedCurrency, setSelectedCurrency] = useState<string>("USD");
-  const [betItems, setBetItems] = useState<BetItem[]>([
-    {
-      id: "1",
-      type: "NBA - Money Line",
-      eventName: "Boston Celtics",
-      selection: "Boston Celtics",
-      opponent: "LA Lakers",
-      odds: -145,
-      timestamp: new Date().toISOString(),
-      status: 'pending'
-    },
-    {
-      id: "2",
-      type: "NBA - Point Spread",
-      eventName: "LA Lakers +4.5",
-      selection: "LA Lakers +4.5",
-      opponent: "Boston Celtics",
-      odds: -110,
-      timestamp: new Date().toISOString(),
-      status: 'pending'
-    }
-  ]);
+  const { betItems, removeBet, clearBets } = useBetting();
   
   const [cryptoWallets, setCryptoWallets] = useState<CryptoWallet[]>([
     {
@@ -142,7 +121,7 @@ const BettingSlip: React.FC = () => {
   const profit = potentialPayout - parseFloat(wagerAmount);
   
   const handleRemoveBet = (id: string) => {
-    setBetItems(prevItems => prevItems.filter(item => item.id !== id));
+    removeBet(id);
   };
   
   const handleWagerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -349,7 +328,7 @@ const BettingSlip: React.FC = () => {
         betType: betItems.length > 1 ? 'parlay' : 'single'
       };
 
-      const response = await sportsBetAPI.post('/api/bets/place', betData);
+      const response = await apiRequest('POST', '/api/bets/place', betData);
       
       if (response.ok) {
         toast({
@@ -358,7 +337,7 @@ const BettingSlip: React.FC = () => {
         });
         
         // Clear betting slip after successful placement
-        setBetItems([]);
+        clearBets();
         setWagerAmount("50.00");
       } else {
         throw new Error('Failed to place bet');
