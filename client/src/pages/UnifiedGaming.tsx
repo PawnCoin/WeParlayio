@@ -879,7 +879,10 @@ export default function UnifiedGaming() {
                         Average odds: {game.avgOdds}x | {game.platforms.join(', ')}
                       </CardDescription>
                     </div>
-                    <Button className="bg-blue-600 hover:bg-blue-700">
+                    <Button 
+                      className="bg-blue-600 hover:bg-blue-700"
+                      onClick={handleViewAllMatches}
+                    >
                       View All Matches
                     </Button>
                   </div>
