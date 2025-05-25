@@ -70,7 +70,8 @@ export default function UnifiedSports() {
     return <Activity className="h-5 w-5" />;
   };
 
-  const formatOdds = (odds: number) => {
+  const formatOdds = (odds: number | undefined) => {
+    if (!odds) return 'N/A';
     if (odds > 0) return `+${odds}`;
     return odds.toString();
   };
@@ -152,7 +153,7 @@ export default function UnifiedSports() {
                   <CardDescription>Real-time betting on active games</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {liveGames && liveGames.length > 0 ? (
+                  {liveGames && Array.isArray(liveGames) && liveGames.length > 0 ? (
                     <div className="space-y-4">
                       {liveGames.slice(0, 6).map((game: any, index: number) => (
                         <div key={index} className="p-4 border rounded-lg bg-gradient-to-r from-red-50 to-orange-50">
