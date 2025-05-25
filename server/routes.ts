@@ -1811,15 +1811,17 @@ Join us: WeParlay.io 🎯
 
   app.post("/api/admin/generate-daily-activity", async (req, res) => {
     try {
+      const { simpleBotService } = await import('./services/simpleBotService');
+      await simpleBotService.generateDailyActivity();
       res.json({ 
         success: true, 
-        message: "Bot users are active! Visit the User Directory to see SportsBetterPro, FantasyKing, and CryptoGambler with real balances and win records." 
+        message: "Daily activity generated! Bot users placed new bets and made transactions. Check the betting activity in your dashboard." 
       });
     } catch (error) {
       console.error('Error generating daily activity:', error);
       res.status(500).json({ 
         success: false,
-        error: "Failed to generate activity: " + error.message 
+        error: "Failed to generate activity: " + (error as any).message 
       });
     }
   });
