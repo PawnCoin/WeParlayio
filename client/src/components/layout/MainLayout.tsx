@@ -19,6 +19,8 @@ import { ChevronDown, Menu, Wallet, Coins, Shield } from "lucide-react";
 import Logo from "@/components/WeParlay/Logo";
 import WalletConnect from "@/components/auth/WalletConnect";
 import WalletNotifications from "@/components/wallet/WalletNotifications";
+import { useBetting } from "@/contexts/BettingContext";
+import { useQuery } from "@tanstack/react-query";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -28,6 +30,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [location] = useLocation();
   const { user, isAuthenticated, logout, connectWallet } = useAuth();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const { selectedCurrency } = useBetting();
+  
+  // Fetch WeParlay Cash balance
+  const { data: cashBalance } = useQuery({
+    queryKey: ['/api/user/cash-balance'],
+    enabled: isAuthenticated,
+  });
   
   const navLinks = [
     { href: "/", label: "Home" },
@@ -86,9 +95,28 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 <>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="default" className="bg-green-700 text-white px-4 py-2 rounded-md hover:bg-green-600 flex items-center">
-                        <span>${user?.balance?.toFixed(2) || "0.00"}</span>
-                        <ChevronDown className="ml-1 h-4 w-4" />
+                      <Button 
+                        variant="default" 
+                        className={`${
+                          selectedCurrency === 'WEPARLAY' 
+                            ? 'bg-blue-600 hover:bg-blue-700 border-blue-500' 
+                            : 'bg-green-700 hover:bg-green-600 border-green-600'
+                        } text-white px-4 py-2 rounded-md flex items-center transition-all duration-300`}
+                      >
+                        <div className="flex items-center">
+                          {selectedCurrency === 'WEPARLAY' ? (
+                            <>
+                              <span className="text-blue-200 text-xs mr-1">🎮</span>
+                              <span>{(cashBalance?.balance || user?.weplayTokenBalance || 10000).toLocaleString()} WPC</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-green-200 text-xs mr-1">💰</span>
+                              <span>${user?.balance?.toFixed(2) || "0.00"}</span>
+                            </>
+                          )}
+                        </div>
+                        <ChevronDown className="ml-2 h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
