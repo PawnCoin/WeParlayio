@@ -636,7 +636,13 @@ export default function UnifiedGaming() {
                   </div>
                   <p className="text-sm text-gray-600">Playing: Call of Duty</p>
                   <p className="text-sm text-gray-600">K/D: 1.8 (Current Match)</p>
-                  <Button size="sm" className="mt-2 w-full">Bet on This Match</Button>
+                  <Button 
+                    size="sm" 
+                    className="mt-2 w-full"
+                    onClick={() => handleBetOnMatch("xbox-cod-match", "25")}
+                  >
+                    Bet on This Match
+                  </Button>
                 </div>
 
                 <div className="p-4 border rounded-lg bg-orange-50">
@@ -646,7 +652,13 @@ export default function UnifiedGaming() {
                   </div>
                   <p className="text-sm text-gray-600">Playing: FIFA 24</p>
                   <p className="text-sm text-gray-600">Score: 2-1 (75th min)</p>
-                  <Button size="sm" className="mt-2 w-full">Bet on This Match</Button>
+                  <Button 
+                    size="sm" 
+                    className="mt-2 w-full"
+                    onClick={() => handleBetOnMatch("ps-fifa-match", "30")}
+                  >
+                    Bet on This Match
+                  </Button>
                 </div>
 
                 <div className="p-4 border rounded-lg bg-purple-50">
@@ -656,7 +668,13 @@ export default function UnifiedGaming() {
                   </div>
                   <p className="text-sm text-gray-600">Playing: Dota 2</p>
                   <p className="text-sm text-gray-600">MMR: 3,450 (+25)</p>
-                  <Button size="sm" className="mt-2 w-full">Bet on This Match</Button>
+                  <Button 
+                    size="sm" 
+                    className="mt-2 w-full"
+                    onClick={() => handleBetOnMatch("steam-dota-match", "35")}
+                  >
+                    Bet on This Match
+                  </Button>
                 </div>
               </div>
             </CardContent>
