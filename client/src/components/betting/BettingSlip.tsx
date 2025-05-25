@@ -8,7 +8,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useCurrencyMode } from "@/contexts/CurrencyModeContext"; 
 import CurrencyDisplay from "@/components/betting/CurrencyDisplay";
 import { Shield, Trash2, Settings, X, Bitcoin, Wallet, Clock, DollarSign, Plus, Coins } from "lucide-react";
-import sportsBetAPI from "@/lib/sportsBetAPI";
+import { useBetting } from "@/contexts/BettingContext";
+import { apiRequest } from "@/lib/queryClient";
 import CryptoWalletConnect from "@/components/auth/CryptoWalletConnect";
 import { 
   Dialog,
@@ -330,21 +331,43 @@ const BettingSlip: React.FC = () => {
     }
     
     try {
-      // In a real app, we would submit each bet to the API
-      // based on the selected currency
-      toast({
-        title: "Bet Placed Successfully",
-        description: `Your ${selectedCurrency} bet has been placed`,
-      });
+      // Actually place the bet with the API
+      const betData = {
+        userId: user.id,
+        eventId: betItems[0]?.id, // Use the first bet item's event ID
+        selections: betItems.map(item => ({
+          eventName: item.eventName,
+          selection: item.selection,
+          opponent: item.opponent,
+          odds: item.odds,
+          type: item.type
+        })),
+        amount: amount,
+        currency: selectedCurrency,
+        totalOdds: displayOdds,
+        potentialPayout: potentialPayout.toFixed(2),
+        betType: betItems.length > 1 ? 'parlay' : 'single'
+      };
+
+      const response = await sportsBetAPI.post('/api/bets/place', betData);
       
-      // Clear betting slip
-      setBetItems([]);
-      setWagerAmount("50.00");
+      if (response.ok) {
+        toast({
+          title: "Bet Placed Successfully!",
+          description: `Your ${selectedCurrency} bet for ${getCurrencySymbol(selectedCurrency)}${amount.toFixed(2)} has been placed`,
+        });
+        
+        // Clear betting slip after successful placement
+        setBetItems([]);
+        setWagerAmount("50.00");
+      } else {
+        throw new Error('Failed to place bet');
+      }
     } catch (error) {
       console.error("Error placing bet:", error);
       toast({
         title: "Error Placing Bet",
-        description: "An error occurred while placing your bet",
+        description: "Failed to place your bet. Please try again.",
         variant: "destructive"
       });
     }
