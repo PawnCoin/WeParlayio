@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { createSSLServer, getSSLConfig } from "./ssl";
 
 // Export app for production use
 export const app = express();
@@ -67,15 +68,23 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 5000;
-  server.listen({
+  // Get SSL configuration
+  const sslConfig = getSSLConfig();
+  
+  // Create SSL-enabled server if configured
+  const sslServer = createSSLServer(app, sslConfig);
+  
+  // Use port 443 for HTTPS in production, 5000 for development
+  const port = sslConfig.enabled ? sslConfig.port : 5000;
+  
+  sslServer.listen({
     port,
     host: "0.0.0.0",
     reusePort: true,
   }, () => {
-    log(`serving on port ${port}`);
+    log(`🚀 WeParlay server running on ${sslConfig.enabled ? 'HTTPS' : 'HTTP'} port ${port}`);
+    if (sslConfig.enabled) {
+      log(`🔒 SSL/TLS encryption enabled for weparlay.io`);
+    }
   });
 })();
