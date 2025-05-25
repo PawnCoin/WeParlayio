@@ -362,7 +362,7 @@ export default function AdminDashboard() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
-                      <p className="text-sm text-gray-600">👥 {sampleUsers.length} Total Users</p>
+                      <p className="text-sm text-gray-600">👥 Loading real user count...</p>
                       <p className="text-sm text-gray-600">🎯 Active Bets</p>
                       <p className="text-sm text-gray-600">💰 Financial Records</p>
                       <p className="text-sm text-gray-600">📊 Analytics Data</p>
