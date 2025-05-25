@@ -9,7 +9,6 @@ import { useQuery } from "@tanstack/react-query";
 import { 
   Trophy, TrendingUp, Target, Search, Zap, Clock, 
   DollarSign, Users, Globe, Flame, Star, Activity,
-  Football, Basketball, BaseballIcon as Baseball, 
   Swords, Crown, Gamepad2
 } from "lucide-react";
 
@@ -62,9 +61,9 @@ export default function UnifiedSports() {
 
   const getSportIcon = (sport: string) => {
     const sportLower = sport.toLowerCase();
-    if (sportLower.includes('football') || sportLower.includes('nfl')) return <Football className="h-5 w-5" />;
-    if (sportLower.includes('basketball') || sportLower.includes('nba')) return <Basketball className="h-5 w-5" />;
-    if (sportLower.includes('baseball') || sportLower.includes('mlb')) return <Baseball className="h-5 w-5" />;
+    if (sportLower.includes('football') || sportLower.includes('nfl')) return <Activity className="h-5 w-5" />;
+    if (sportLower.includes('basketball') || sportLower.includes('nba')) return <Target className="h-5 w-5" />;
+    if (sportLower.includes('baseball') || sportLower.includes('mlb')) return <Star className="h-5 w-5" />;
     if (sportLower.includes('soccer') || sportLower.includes('epl')) return <Globe className="h-5 w-5" />;
     if (sportLower.includes('tennis')) return <Trophy className="h-5 w-5" />;
     if (sportLower.includes('mma') || sportLower.includes('boxing')) return <Swords className="h-5 w-5" />;
@@ -122,7 +121,7 @@ export default function UnifiedSports() {
               Upcoming Games
             </TabsTrigger>
             <TabsTrigger value="american" className="flex items-center gap-2">
-              <Football className="h-4 w-4" />
+              <Activity className="h-4 w-4" />
               American Sports
             </TabsTrigger>
             <TabsTrigger value="international" className="flex items-center gap-2">

@@ -54,6 +54,7 @@ import { initGA } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
 import OnboardingDemo from "@/pages/OnboardingDemo";
 import UnifiedGaming from "@/pages/UnifiedGaming";
+import UnifiedSports from "@/pages/UnifiedSports";
 
 // Import admin components
 import AdminBypass from "@/pages/AdminBypass";
@@ -112,6 +113,7 @@ function Router() {
       <Route path="/social" component={Social} />
       <Route path="/social-betting" component={SocialBetting} />
       <Route path="/gaming" component={UnifiedGaming} />
+      <Route path="/unified-sports" component={UnifiedSports} />
       <Route path="/video-gaming" component={UnifiedGaming} />
       <Route path="/gaming-integration" component={UnifiedGaming} />
       <Route path="/trivia" component={Trivia} />
