@@ -415,19 +415,42 @@ const BettingSlip: React.FC = () => {
         </div>
       </div>
       
-      {/* Currency selector */}
+      {/* Enhanced Currency Mode Selector with Clear Visual Indicators */}
       <div className="mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Betting Mode</h3>
+          <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+            selectedCurrency === 'WEPARLAY' 
+              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' 
+              : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+          }`}>
+            {selectedCurrency === 'WEPARLAY' ? '🎮 Virtual Mode' : '💰 Real Money'}
+          </div>
+        </div>
+        
         <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select currency" />
+          <SelectTrigger className={`w-full border-2 ${
+            selectedCurrency === 'WEPARLAY' 
+              ? 'border-blue-300 bg-blue-50 dark:border-blue-600 dark:bg-blue-950' 
+              : 'border-green-300 bg-green-50 dark:border-green-600 dark:bg-green-950'
+          }`}>
+            <SelectValue placeholder="Select betting mode" />
           </SelectTrigger>
           <SelectContent>
             {currencyOptions.map(option => (
               <SelectItem key={option.value} value={option.value}>
-                <div className="flex items-center">
-                  {option.icon}
-                  <span className="ml-2">{option.label}</span>
-                  {option.value !== 'USD' && !cryptoWallets.some(w => w.connected) && (
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center">
+                    {option.icon}
+                    <span className="ml-2 font-medium">{option.label}</span>
+                  </div>
+                  {option.value === 'WEPARLAY' && (
+                    <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">VIRTUAL</span>
+                  )}
+                  {option.value === 'USD' && (
+                    <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">REAL</span>
+                  )}
+                  {option.value !== 'USD' && option.value !== 'WEPARLAY' && !cryptoWallets.some(w => w.connected) && (
                     <Button 
                       variant="ghost" 
                       size="sm" 
@@ -445,6 +468,16 @@ const BettingSlip: React.FC = () => {
             ))}
           </SelectContent>
         </Select>
+        
+        {/* Mode Description */}
+        <div className="mt-2 p-2 rounded-lg bg-gray-50 dark:bg-gray-800">
+          <p className="text-xs text-gray-600 dark:text-gray-400">
+            {selectedCurrency === 'WEPARLAY' 
+              ? '🎮 Playing with WeParlay Cash - Practice mode with virtual currency. Great for learning!'
+              : '💰 Betting with real money - All wins and losses affect your actual balance.'
+            }
+          </p>
+        </div>
       </div>
       
       {/* Tab Navigation */}
@@ -493,9 +526,40 @@ const BettingSlip: React.FC = () => {
                 ))}
               </div>
               
+              {/* Balance Display */}
+              <div className="mb-3 p-3 rounded-lg border-2 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <div className={`w-3 h-3 rounded-full ${selectedCurrency === 'WEPARLAY' ? 'bg-blue-500' : 'bg-green-500'}`}></div>
+                    <span className="text-sm font-medium">Available Balance</span>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-bold">
+                      {selectedCurrency === 'WEPARLAY' ? '🎮' : '💰'} {getCurrencySymbol(selectedCurrency)}
+                      {selectedCurrency === 'WEPARLAY' 
+                        ? (user?.weplayTokenBalance ?? 1000).toLocaleString()
+                        : (user?.balance ?? 0).toFixed(2)
+                      }
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {selectedCurrency === 'WEPARLAY' ? 'WeParlay Cash' : 'Real Money'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Wager Input */}
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Wager Amount</label>
+                <label className="block text-sm font-medium mb-2">
+                  Wager Amount 
+                  <span className={`ml-2 text-xs px-2 py-1 rounded ${
+                    selectedCurrency === 'WEPARLAY' 
+                      ? 'bg-blue-100 text-blue-800' 
+                      : 'bg-green-100 text-green-800'
+                  }`}>
+                    {selectedCurrency === 'WEPARLAY' ? 'VIRTUAL' : 'REAL'}
+                  </span>
+                </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                     <span className="text-gray-500 dark:text-gray-400">{getCurrencySymbol(selectedCurrency)}</span>
@@ -504,19 +568,29 @@ const BettingSlip: React.FC = () => {
                     type="text"
                     value={wagerAmount}
                     onChange={handleWagerChange}
-                    className="pl-8 pr-20"
+                    className={`pl-8 pr-20 border-2 ${
+                      selectedCurrency === 'WEPARLAY' 
+                        ? 'border-blue-300 focus:border-blue-500' 
+                        : 'border-green-300 focus:border-green-500'
+                    }`}
+                    placeholder={`Enter ${selectedCurrency === 'WEPARLAY' ? 'virtual' : 'real'} amount`}
                   />
                   <div className="absolute inset-y-0 right-0 flex items-center">
                     <Button 
                       variant="ghost"
                       className="h-full border-l border-gray-200 dark:border-gray-700 px-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 rounded-none rounded-r-md"
                       onClick={() => {
-                        if (user && selectedCurrency === 'USD') {
-                          const userBalance = user.balance ?? 0;
-                          setWagerAmount(userBalance.toFixed(2));
+                        if (user) {
+                          if (selectedCurrency === 'WEPARLAY') {
+                            const weparlayCashBalance = user.weplayTokenBalance ?? 1000;
+                            setWagerAmount(weparlayCashBalance.toFixed(2));
+                          } else if (selectedCurrency === 'USD') {
+                            const userBalance = user.balance ?? 0;
+                            setWagerAmount(userBalance.toFixed(2));
+                          }
                         }
                       }}
-                      disabled={selectedCurrency !== 'USD' || !user}
+                      disabled={!user}
                     >
                       Max
                     </Button>
@@ -594,11 +668,13 @@ const BettingSlip: React.FC = () => {
                 </div>
               </div>
               
-              {/* Place Bet Button */}
+              {/* Enhanced Place Bet Button with Clear Mode Indicators */}
               <Button 
-                className={`w-full py-3 rounded-md font-medium flex items-center justify-center ${
-                  selectedCurrency === 'USD' 
-                    ? 'bg-primary text-white hover:bg-primary/90' 
+                className={`w-full py-4 rounded-md font-bold text-lg flex items-center justify-center transition-all ${
+                  selectedCurrency === 'WEPARLAY'
+                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 border-2 border-blue-400' 
+                    : selectedCurrency === 'USD' 
+                    ? 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 border-2 border-green-400' 
                     : selectedCurrency === 'BTC' 
                     ? 'bg-[#F7931A] text-white hover:bg-[#F7931A]/90' 
                     : selectedCurrency === 'ETH' 
@@ -608,12 +684,35 @@ const BettingSlip: React.FC = () => {
                     : 'bg-primary text-white hover:bg-primary/90'
                 }`}
                 onClick={handlePlaceBet}
-                disabled={selectedCurrency !== 'USD' && isCryptoWalletConnected}
+                disabled={selectedCurrency !== 'USD' && selectedCurrency !== 'WEPARLAY' && isCryptoWalletConnected}
               >
-                {selectedCurrency !== 'USD' && (
-                  <Bitcoin className="h-4 w-4 mr-2" />
-                )}
-                Place {selectedCurrency} Bet
+                <div className="flex items-center space-x-2">
+                  {selectedCurrency === 'WEPARLAY' ? (
+                    <span className="text-xl">🎮</span>
+                  ) : selectedCurrency === 'USD' ? (
+                    <span className="text-xl">💰</span>
+                  ) : (
+                    <Bitcoin className="h-5 w-5" />
+                  )}
+                  <div className="flex flex-col">
+                    <span>
+                      {selectedCurrency === 'WEPARLAY' 
+                        ? 'Place Virtual Bet' 
+                        : selectedCurrency === 'USD'
+                        ? 'Place Real Money Bet'
+                        : `Place ${selectedCurrency} Bet`
+                      }
+                    </span>
+                    <span className="text-xs opacity-80">
+                      {selectedCurrency === 'WEPARLAY' 
+                        ? 'WeParlay Cash - Practice Mode' 
+                        : selectedCurrency === 'USD'
+                        ? 'Real Money - Actual Winnings'
+                        : `Crypto Betting`
+                      }
+                    </span>
+                  </div>
+                </div>
               </Button>
               
               {/* Wallet Connection Prompt */}
