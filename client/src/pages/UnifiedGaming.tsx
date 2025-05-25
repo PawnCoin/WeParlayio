@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,17 +7,44 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
 import { 
   Gamepad2, Monitor, Trophy, Zap, Users, TrendingUp, 
   BarChart2, Settings, Sparkles, Play, Tv, Video,
-  Target, DollarSign, Wifi, Radio,
-  Clock, Eye, MessageCircle, ThumbsUp, Share2
+  Target, DollarSign, Wifi, Radio, Sword, Crown,
+  Clock, Eye, MessageCircle, ThumbsUp, Share2, Star
 } from "lucide-react";
 
 export default function UnifiedGaming() {
   const { toast } = useToast();
   const [connectedAccounts, setConnectedAccounts] = useState<string[]>([]);
   const [useFakeMoney, setUseFakeMoney] = useState(true);
+  const [selectedPlayer, setSelectedPlayer] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Fetch gaming API status
+  const { data: apiStatus } = useQuery({
+    queryKey: ['/api/gaming/api-status'],
+    refetchInterval: 30000 // Refresh every 30 seconds
+  });
+
+  // Fetch Leaguepedia tournaments
+  const { data: tournaments } = useQuery({
+    queryKey: ['/api/gaming/leaguepedia/tournaments'],
+    refetchInterval: 60000 // Refresh every minute
+  });
+
+  // Fetch recent matches
+  const { data: recentMatches } = useQuery({
+    queryKey: ['/api/gaming/leaguepedia/matches/10'],
+    refetchInterval: 30000
+  });
+
+  // Fetch live matches
+  const { data: liveMatches } = useQuery({
+    queryKey: ['/api/gaming/leaguepedia/live'],
+    refetchInterval: 15000 // Refresh every 15 seconds for live data
+  });
   const [liveStreams, setLiveStreams] = useState([
     {
       id: 1,
