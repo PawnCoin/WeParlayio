@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
+import { useBetting } from "@/contexts/BettingContext";
 import { 
   Gamepad2, Monitor, Trophy, Zap, Users, TrendingUp, 
   BarChart2, Settings, Sparkles, Play, Tv, Video,
@@ -17,6 +18,7 @@ import {
 
 export default function UnifiedGaming() {
   const { toast } = useToast();
+  const { addBet } = useBetting();
   const [connectedAccounts, setConnectedAccounts] = useState<string[]>([]);
   const [useFakeMoney, setUseFakeMoney] = useState(true);
   const [selectedPlayer, setSelectedPlayer] = useState('');
@@ -110,9 +112,21 @@ export default function UnifiedGaming() {
     const stream = liveStreams.find(s => s.id === streamId);
     if (!stream) return;
 
+    const newBet = {
+      id: `stream-${streamId}-${betType}-${Date.now()}`,
+      type: 'Live Stream',
+      eventName: `${stream.streamer} ${stream.game}`,
+      selection: betType,
+      opponent: 'Live Audience',
+      odds: betType === 'win' ? (stream.odds as any).win || 1.85 : (stream.odds as any).lose || 1.95,
+      status: 'pending' as const
+    };
+    
+    addBet(newBet);
+
     toast({
-      title: "Live Stream Bet Placed!",
-      description: `$${amount} bet on ${stream.streamer} - ${betType}`,
+      title: "Stream Bet Added!",
+      description: `$${amount} bet on ${stream.streamer} added to your betting slip`,
     });
   };
 
@@ -173,11 +187,32 @@ export default function UnifiedGaming() {
     }
   };
 
-  // Fix for Bet on This Match functionality
+  // Fix for Bet on This Match functionality - now adds real bet to betting slip
   const handleBetOnMatch = (matchId: string, betAmount: string = "25") => {
+    const matchDetails = {
+      "xbox-cod-match": { game: "Call of Duty", platform: "Xbox", odds: 1.85 },
+      "ps-fifa-match": { game: "FIFA 24", platform: "PlayStation", odds: 2.10 },
+      "steam-dota-match": { game: "Dota 2", platform: "Steam", odds: 1.95 }
+    };
+    
+    const match = matchDetails[matchId as keyof typeof matchDetails];
+    if (!match) return;
+    
+    const newBet = {
+      id: `${matchId}-${Date.now()}`,
+      type: 'Gaming',
+      eventName: `${match.game} Match`,
+      selection: `${match.platform} Player to Win`,
+      opponent: 'Opponent',
+      odds: match.odds,
+      status: 'pending' as const
+    };
+    
+    addBet(newBet);
+    
     toast({
-      title: "Match Bet Placed",
-      description: `$${betAmount} bet placed on match ${matchId}`,
+      title: "Bet Added to Slip!",
+      description: `$${betAmount} ${match.game} bet added to your betting slip`,
     });
   };
 
