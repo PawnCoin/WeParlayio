@@ -14,6 +14,7 @@ import { adminRouter } from "./routes/adminRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
 import { socialMediaBotRouter } from "./routes/socialMediaBotRoutes";
 import gamingRoutes from "./routes/gamingRoutes";
+import unifiedSportsRoutes from "./routes/unifiedSportsRoutes";
 
 // Initialize The Odds API services
 const oddsApiService = new OddsApiService();
@@ -44,6 +45,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register Gaming API routes
   app.use('/api/gaming', gamingRoutes);
+  
+  // Register Unified Sports API routes
+  app.use('/api/unified-sports', unifiedSportsRoutes);
   
   // Register bookie revenue routes (temporarily disabled to fix database issues)
   // const bookieRoutes = await import('./routes/bookieRoutes');
