@@ -229,67 +229,8 @@ const WeParlayCashSystem: React.FC = () => {
     referralEarnings: 600
   };
   
-  const sampleTransactions: Transaction[] = [
-    {
-      id: '1',
-      amount: 200,
-      description: 'Sign-up bonus',
-      type: 'earn',
-      timestamp: '2025-05-01T10:30:00Z',
-      status: 'completed'
-    },
-    {
-      id: '2',
-      amount: 200,
-      description: 'Referral bonus - Alex T.',
-      type: 'referral',
-      timestamp: '2025-05-10T14:45:00Z',
-      status: 'completed'
-    },
-    {
-      id: '3',
-      amount: 200,
-      description: 'Referral bonus - Sara M.',
-      type: 'referral',
-      timestamp: '2025-05-12T09:15:00Z',
-      status: 'completed'
-    },
-    {
-      id: '4',
-      amount: 200,
-      description: 'Referral bonus - John D.',
-      type: 'referral',
-      timestamp: '2025-05-15T16:20:00Z',
-      status: 'completed'
-    },
-    {
-      id: '5',
-      amount: 150,
-      description: 'Daily login streak - 7 days',
-      type: 'earn',
-      timestamp: '2025-05-16T08:00:00Z',
-      status: 'completed'
-    },
-    {
-      id: '6',
-      amount: 50,
-      description: 'Tournament entry - NBA Finals Challenge',
-      type: 'spend',
-      timestamp: '2025-05-17T13:10:00Z',
-      status: 'completed'
-    },
-    {
-      id: '7',
-      amount: 100,
-      description: 'Bet on Lakers vs Warriors',
-      type: 'spend',
-      timestamp: '2025-05-18T19:30:00Z',
-      status: 'completed'
-    },
-    {
-      id: '8',
-      amount: 500,
-      description: 'Tournament win - 3rd place',
+  // NO FAKE TRANSACTIONS - Only real WeParlay Cash transactions will be shown
+  const sampleTransactions: Transaction[] = [];
       type: 'earn',
       timestamp: '2025-05-19T21:45:00Z',
       status: 'completed'

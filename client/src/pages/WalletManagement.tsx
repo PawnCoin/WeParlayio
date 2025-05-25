@@ -30,34 +30,8 @@ interface Transaction {
   hash?: string;
 }
 
-// Initial sample transactions (can be replaced with actual API data)
-const initialTransactions: Transaction[] = [
-  {
-    id: '1',
-    type: 'deposit',
-    amount: '0.25',
-    currency: 'ETH',
-    status: 'completed',
-    timestamp: new Date(Date.now() - 86400000), // 1 day ago
-    hash: '0x1234...5678'
-  },
-  {
-    id: '2',
-    type: 'bet',
-    amount: '0.1',
-    currency: 'ETH',
-    status: 'completed',
-    timestamp: new Date(Date.now() - 43200000), // 12 hours ago
-  },
-  {
-    id: '3',
-    type: 'win',
-    amount: '0.2',
-    currency: 'ETH',
-    status: 'completed',
-    timestamp: new Date(Date.now() - 21600000), // 6 hours ago
-  }
-];
+// NO FAKE TRANSACTIONS - Only real blockchain data will be shown
+const initialTransactions: Transaction[] = [];
 
 const WalletManagement: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
