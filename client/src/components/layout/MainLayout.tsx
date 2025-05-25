@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown, Menu, Wallet, Coins, Shield } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import Logo from "@/components/WeParlay/Logo";
 import WalletConnect from "@/components/auth/WalletConnect";
 import WalletNotifications from "@/components/wallet/WalletNotifications";
@@ -30,13 +31,24 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [location] = useLocation();
   const { user, isAuthenticated, logout, connectWallet } = useAuth();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const { selectedCurrency } = useBetting();
+  const { selectedCurrency, setSelectedCurrency } = useBetting();
+  const { toast } = useToast();
   
   // Fetch WeParlay Cash balance
   const { data: cashBalance } = useQuery({
     queryKey: ['/api/user/cash-balance'],
     enabled: isAuthenticated,
   });
+
+  const handleCurrencySwitch = () => {
+    const newMode = selectedCurrency === 'WEPARLAY' ? 'USD' : 'WEPARLAY';
+    setSelectedCurrency(newMode);
+    toast({
+      title: `Switched to ${newMode === 'WEPARLAY' ? 'WeParlay Cash' : 'Real Money'} Mode`,
+      description: `You're now betting with ${newMode === 'WEPARLAY' ? 'virtual currency' : 'real money'}`,
+      duration: 3000,
+    });
+  };
   
   const navLinks = [
     { href: "/", label: "Home" },
@@ -139,6 +151,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                       <DropdownMenuSeparator />
                       <DropdownMenuItem>
                         Transaction History
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleCurrencySwitch} className="flex items-center cursor-pointer">
+                        <div className="flex items-center w-full">
+                          <ArrowRightLeft className="mr-2 h-4 w-4" />
+                          Switch to {selectedCurrency === 'WEPARLAY' ? 'Real Money' : 'WeParlay Cash'}
+                        </div>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <div className="px-2 py-2">
