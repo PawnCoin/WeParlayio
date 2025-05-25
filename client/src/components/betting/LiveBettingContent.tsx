@@ -111,8 +111,9 @@ const LiveBettingContent: React.FC = () => {
       type: 'Sports',
       eventName: `${awayTeam} vs ${homeTeam}`,
       selection: pick,
-      opponent: betType === 'h2h' ? (pick === homeTeam ? awayTeam : homeTeam) : 'Market',
+      opponent: betType === 'moneyline' ? (pick === homeTeam ? awayTeam : homeTeam) : 'Market',
       odds: odds,
+      timestamp: new Date().toISOString(),
       status: 'pending' as const
     };
     
