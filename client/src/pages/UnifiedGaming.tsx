@@ -214,7 +214,11 @@ export default function UnifiedGaming() {
       </div>
 
       <Tabs defaultValue="platforms" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="data-hub" className="flex items-center gap-2">
+            <Star className="h-4 w-4" />
+            Live Data Hub
+          </TabsTrigger>
           <TabsTrigger value="platforms" className="flex items-center gap-2">
             <Monitor className="h-4 w-4" />
             Console Integration
@@ -236,6 +240,253 @@ export default function UnifiedGaming() {
             Leaderboard
           </TabsTrigger>
         </TabsList>
+
+        {/* Live Data Hub Tab */}
+        <TabsContent value="data-hub" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            {/* API Status Overview */}
+            <Card className="lg:col-span-1">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-green-500" />
+                  API Status Live
+                </CardTitle>
+                <CardDescription>Real-time gaming data sources</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {apiStatus && (
+                  <>
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-sm">Gaming Platforms</h4>
+                      {Object.entries(apiStatus.basic_apis).map(([platform, status]) => (
+                        <div key={platform} className="flex items-center justify-between">
+                          <span className="text-sm capitalize">{platform}</span>
+                          <Badge variant={status ? "default" : "secondary"}>
+                            {status ? "🟢 Live" : "🔴 Offline"}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-sm">Unified APIs</h4>
+                      {Object.entries(apiStatus.unified_apis).filter(([key]) => key !== 'message').map(([api, status]) => (
+                        <div key={api} className="flex items-center justify-between">
+                          <span className="text-sm capitalize">{api}</span>
+                          <Badge variant={status ? "default" : "secondary"}>
+                            {status ? "🟢 Ready" : "🔑 Key Needed"}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Live Gaming Matches */}
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Wifi className="h-5 w-5 text-blue-500" />
+                  Live Esports Matches
+                </CardTitle>
+                <CardDescription>Real-time match data from Leaguepedia</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {liveMatches && liveMatches.length > 0 ? (
+                  <div className="space-y-3">
+                    {liveMatches.slice(0, 3).map((match, index) => (
+                      <div key={index} className="p-3 border rounded-lg bg-gradient-to-r from-blue-50 to-purple-50">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Badge variant="outline" className="text-red-600 border-red-200">🔴 LIVE</Badge>
+                            <span className="font-medium">{match.team1} vs {match.team2}</span>
+                          </div>
+                          <Button size="sm" variant="outline">
+                            <Target className="h-4 w-4 mr-1" />
+                            Bet Now
+                          </Button>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1">{match.tournament}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Wifi className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                    <p>No live matches currently</p>
+                    <p className="text-sm">Check back for live esports action!</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* PSN Profile Search */}
+            <Card className="lg:col-span-1">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Gamepad2 className="h-5 w-5 text-purple-500" />
+                  PSN Profile Lookup
+                </CardTitle>
+                <CardDescription>Get player stats for betting insights</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="space-y-2">
+                  <Label htmlFor="psn-search">PSN Username</Label>
+                  <Input
+                    id="psn-search"
+                    placeholder="Enter PSN ID..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <Button 
+                  className="w-full"
+                  onClick={() => {
+                    if (searchTerm) {
+                      // Fetch PSN profile data
+                      fetch(`/api/gaming/psn/${searchTerm}`)
+                        .then(res => res.json())
+                        .then(data => {
+                          toast({
+                            title: "PSN Profile Found!",
+                            description: `Level ${data.level} • ${data.trophies?.total || 0} trophies`,
+                          });
+                        })
+                        .catch(() => {
+                          toast({
+                            title: "Profile Not Found",
+                            description: "Check the PSN ID and try again",
+                            variant: "destructive"
+                          });
+                        });
+                    }
+                  }}
+                >
+                  <Crown className="h-4 w-4 mr-2" />
+                  Get Gaming Stats
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Tournament Schedule */}
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Trophy className="h-5 w-5 text-gold-500" />
+                  Upcoming Tournaments
+                </CardTitle>
+                <CardDescription>Live tournament data with betting opportunities</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {tournaments && tournaments.length > 0 ? (
+                  <div className="space-y-3">
+                    {tournaments.slice(0, 4).map((tournament, index) => (
+                      <div key={index} className="p-3 border rounded-lg hover:bg-muted/30 transition-colors">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-medium">{tournament.name}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              {tournament.region} • {tournament.teams} teams • Prize: {tournament.prizePool}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <Badge variant={tournament.status === 'ongoing' ? 'default' : 'secondary'}>
+                              {tournament.status}
+                            </Badge>
+                            <Button size="sm" variant="outline" className="ml-2">
+                              <DollarSign className="h-4 w-4 mr-1" />
+                              View Odds
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Trophy className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                    <p>Loading tournament data...</p>
+                    <p className="text-sm">Connecting to Leaguepedia API</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Intelligent Betting Recommendations */}
+            <Card className="lg:col-span-3">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-yellow-500" />
+                  AI-Powered Betting Recommendations
+                </CardTitle>
+                <CardDescription>Smart suggestions based on live gaming data</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-4 border rounded-lg bg-gradient-to-br from-blue-50 to-blue-100">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Sword className="h-5 w-5 text-blue-600" />
+                      <h4 className="font-medium">Esports Match</h4>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Based on team performance analysis
+                    </p>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm">Recommended: Team A Win</span>
+                        <Badge variant="outline">2.15x</Badge>
+                      </div>
+                      <Button size="sm" className="w-full">
+                        Place Bet
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="p-4 border rounded-lg bg-gradient-to-br from-purple-50 to-purple-100">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Crown className="h-5 w-5 text-purple-600" />
+                      <h4 className="font-medium">Player Performance</h4>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      PSN trophy completion rate analysis
+                    </p>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm">High Completion Rate</span>
+                        <Badge variant="outline">3.2x</Badge>
+                      </div>
+                      <Button size="sm" className="w-full">
+                        Place Bet
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="p-4 border rounded-lg bg-gradient-to-br from-green-50 to-green-100">
+                    <div className="flex items-center gap-2 mb-2">
+                      <TrendingUp className="h-5 w-5 text-green-600" />
+                      <h4 className="font-medium">Live Stream</h4>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Twitch/YouTube viewer engagement
+                    </p>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm">Viewer Count Spike</span>
+                        <Badge variant="outline">1.85x</Badge>
+                      </div>
+                      <Button size="sm" className="w-full">
+                        Place Bet
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
 
         {/* Console Integration Tab */}
         <TabsContent value="platforms" className="space-y-6">
