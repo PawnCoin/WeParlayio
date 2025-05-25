@@ -24,9 +24,11 @@ export interface IStorage {
   // User operations
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByGamertag(gamertag: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   upsertUser(userData: InsertUser): Promise<User>;
   updateUserBalance(userId: string, amount: number): Promise<User>;
+  updateUserGamertag(userId: string, gamertag: string): Promise<User>;
   updateYahooIntegration(userId: string, token: string, refreshToken: string, expiry: Date): Promise<User>;
   getAllUsers(): Promise<User[]>;
   updateUserStatus(userId: string, status: string): Promise<User>;
