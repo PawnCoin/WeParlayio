@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Menu, Wallet, Coins, Shield } from "lucide-react";
+import { ChevronDown, Menu, Wallet, Coins, Shield, ArrowRightLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Logo from "@/components/WeParlay/Logo";
 import WalletConnect from "@/components/auth/WalletConnect";
