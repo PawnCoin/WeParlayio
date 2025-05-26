@@ -3726,6 +3726,130 @@ Join us: WeParlay.io 🎯
     }
   });
 
+  // Tier Purchase System
+  app.post("/api/tier/purchase", isAuthenticated, async (req, res) => {
+    try {
+      const { tier, amount } = req.body;
+      const userId = req.user?.claims?.sub;
+
+      if (!userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+
+      // Create Stripe payment intent for tier upgrade
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100), // Convert to cents
+        currency: "usd",
+        metadata: {
+          userId,
+          tier,
+          type: 'tier_upgrade'
+        }
+      });
+
+      res.json({ 
+        clientSecret: paymentIntent.client_secret,
+        message: `Payment intent created for ${tier} tier upgrade`
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error processing tier upgrade: " + error.message });
+    }
+  });
+
+  // Complete tier upgrade after payment
+  app.post("/api/tier/complete", isAuthenticated, async (req, res) => {
+    try {
+      const { tier, paymentIntentId } = req.body;
+      const userId = req.user?.claims?.sub;
+
+      // Verify payment with Stripe
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+      
+      if (paymentIntent.status === 'succeeded') {
+        // Update user tier in database
+        await storage.updateUserTier(userId, tier);
+        
+        res.json({ 
+          success: true,
+          message: `Successfully upgraded to ${tier.toUpperCase()} tier!`,
+          tier
+        });
+      } else {
+        res.status(400).json({ message: "Payment not completed" });
+      }
+    } catch (error: any) {
+      res.status(500).json({ message: "Error completing tier upgrade: " + error.message });
+    }
+  });
+
+  // User Profile Routes
+  app.get("/api/users/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Get user betting history and stats
+      const bets = await storage.getUserBets(parseInt(userId));
+      const wins = bets.filter(bet => bet.status === 'won').length;
+      const totalBets = bets.length;
+      const winRate = totalBets > 0 ? wins / totalBets : 0;
+      const totalWinnings = bets
+        .filter(bet => bet.status === 'won')
+        .reduce((sum, bet) => sum + (bet.payout || 0), 0);
+
+      res.json({
+        ...user,
+        stats: {
+          totalBets,
+          wins,
+          winRate,
+          totalWinnings,
+          averageBet: totalBets > 0 ? bets.reduce((sum, bet) => sum + bet.amount, 0) / totalBets : 0,
+          biggestWin: Math.max(...bets.map(bet => bet.payout || 0), 0),
+          favoriteSport: 'Basketball' // Could be calculated from bet data
+        },
+        recentActivity: bets.slice(-5).map(bet => ({
+          description: `${bet.status === 'won' ? 'Won' : bet.status === 'lost' ? 'Lost' : 'Placed'} bet on ${bet.event || 'Event'}`,
+          timestamp: bet.createdAt
+        })),
+        achievements: wins > 5 ? [
+          { name: 'Hot Streak', description: 'Won 5+ bets' },
+          { name: 'High Roller', description: 'Placed large bets' }
+        ] : []
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching user profile: " + error.message });
+    }
+  });
+
+  // Admin: Set highest tier for admin users
+  app.post("/api/admin/set-admin-tier", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const user = await storage.getUser(userId);
+      
+      // Set admin users to highest tier automatically
+      if (user?.email?.includes('admin') || user?.id === 'admin') {
+        await storage.updateUserTier(userId, 'platinum');
+        await storage.updateUserStatus(userId, 'admin');
+        
+        res.json({ 
+          message: "Admin tier privileges granted!",
+          tier: 'platinum',
+          status: 'admin'
+        });
+      } else {
+        res.status(403).json({ message: "Admin access required" });
+      }
+    } catch (error: any) {
+      res.status(500).json({ message: "Error setting admin tier: " + error.message });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
