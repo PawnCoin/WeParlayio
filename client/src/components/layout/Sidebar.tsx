@@ -442,7 +442,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
           {isLoadingSports ? (
             // Loading skeletons for sports
             Array(5).fill(0).map((_, index) => (
-              <li key={index} className="mb-1">
+              <li key={`skeleton-${index}`} className="mb-1">
                 <div className="flex items-center py-2 px-4">
                   <Skeleton className="h-6 w-6 rounded-full mr-3" />
                   <Skeleton className="h-4 w-24" />
@@ -453,38 +453,81 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
           ) : (
             // Loaded sports
             sports && Array.isArray(sports) ? (
-              sports.map((sport) => (
-                <li key={sport.id} className="mb-1">
-                  <Link href={`/sports/${sport.key}`}>
-                    <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
-                      location === `/sports/${sport.key}`
-                        ? "bg-primary text-white"
-                        : "hover:bg-gray-100 dark:hover:bg-gray-800"
-                    }`}>
-                      <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center mr-2">
-                        {getSportIcon(sport.key)}
-                      </span>
-                      <span>
-                        {sport.key === 'basketball' ? 'NBA' :
-                         sport.key === 'football' ? 'NFL' :
-                         sport.key === 'baseball' ? 'MLB' :
-                         sport.key === 'hockey' ? 'NHL' :
-                         sport.key === 'soccer' ? 'MLS' :
-                         sport.key === 'mma' ? 'UFC' :
-                         sport.key === 'motorsport' ? 'NASCAR' :
-                         sport.name}
-                      </span>
-                      <span className={`ml-auto text-xs px-2 py-1 rounded ${
+              sports.map((sport, index) => {
+                // Get REAL icon based on actual sport type from API
+                const getRealSportIcon = (sportKey: string, sportName: string) => {
+                  const key = sportKey.toLowerCase();
+                  const name = sportName?.toLowerCase() || '';
+                  
+                  // Basketball icons
+                  if (key.includes('basketball') || key.includes('nba') || key.includes('ncaam') || key.includes('ncaaw') || name.includes('basketball')) return '🏀';
+                  
+                  // Football icons  
+                  if (key.includes('football') || key.includes('nfl') || key.includes('ncaaf') || name.includes('football')) return '🏈';
+                  
+                  // Soccer icons
+                  if (key.includes('soccer') || key.includes('mls') || key.includes('fifa') || name.includes('soccer')) return '⚽';
+                  
+                  // Tennis icons
+                  if (key.includes('tennis') || key.includes('atp') || key.includes('wta') || name.includes('tennis')) return '🎾';
+                  
+                  // Baseball icons
+                  if (key.includes('baseball') || key.includes('mlb') || name.includes('baseball')) return '⚾';
+                  
+                  // Hockey icons
+                  if (key.includes('hockey') || key.includes('nhl') || name.includes('hockey')) return '🏒';
+                  
+                  // Golf icons
+                  if (key.includes('golf') || key.includes('pga') || name.includes('golf')) return '⛳';
+                  
+                  // Boxing icons
+                  if (key.includes('boxing') || name.includes('boxing')) return '🥊';
+                  
+                  // MMA/UFC icons
+                  if (key.includes('mma') || key.includes('ufc') || name.includes('mma') || name.includes('ufc')) return '🥋';
+                  
+                  // Racing icons
+                  if (key.includes('racing') || key.includes('nascar') || key.includes('f1') || key.includes('motorsport') || name.includes('racing')) return '🏎️';
+                  
+                  // Rugby icons
+                  if (key.includes('rugby') || name.includes('rugby')) return '🏉';
+                  
+                  // Cricket icons
+                  if (key.includes('cricket') || name.includes('cricket')) return '🏏';
+                  
+                  // Volleyball icons
+                  if (key.includes('volleyball') || name.includes('volleyball')) return '🏐';
+                  
+                  // Olympics icons
+                  if (key.includes('olympics') || name.includes('olympics')) return '🏅';
+                  
+                  return '🏆'; // Default for other sports
+                };
+                
+                const realIcon = getRealSportIcon(sport.key, sport.name);
+                
+                return (
+                  <li key={`sport-${sport.key}-${sport.id || index}`} className="mb-1">
+                    <Link href={`/sports/${sport.key}`}>
+                      <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer transition-colors ${
                         location === `/sports/${sport.key}`
-                          ? "bg-white bg-opacity-20 text-white"
-                          : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                          ? "bg-primary text-white"
+                          : "hover:bg-gray-100 dark:hover:bg-gray-800"
                       }`}>
-                        {sport.eventCount || 0}
-                      </span>
-                    </div>
-                  </Link>
-                </li>
-              ))
+                        <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center mr-2 text-lg">
+                          {realIcon}
+                        </span>
+                        <span className="flex-1 text-sm font-medium">
+                          {sport.name}
+                        </span>
+                        <span className="ml-auto text-xs bg-green-500/20 text-green-600 px-2 py-1 rounded-full font-medium">
+                          LIVE
+                        </span>
+                      </div>
+                    </Link>
+                  </li>
+                );
+              })
             ) : null
           )}
         </ul>
