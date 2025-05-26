@@ -42,14 +42,16 @@ const SportPage = () => {
 
   // Get live events for this sport
   const { data: liveEvents, isLoading: isLoadingLiveEvents } = useQuery({
-    queryKey: ['/api/events/live', sportKey],
+    queryKey: [`/api/sports/${sportKey}/live`],
     refetchInterval: 30000, // Refetch every 30 seconds
+    enabled: !!sportKey,
   });
 
   // Get upcoming events for this sport
   const { data: upcomingEvents, isLoading: isLoadingUpcomingEvents } = useQuery({
-    queryKey: ['/api/events/upcoming', sportKey],
+    queryKey: [`/api/sports/${sportKey}/upcoming`],
     staleTime: 1000 * 60 * 15, // 15 minutes
+    enabled: !!sportKey,
   });
 
   // Get odds for this sport

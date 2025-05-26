@@ -421,6 +421,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Sport-specific live events endpoint - REAL DATA ONLY
+  app.get("/api/sports/:sportKey/live", async (req, res) => {
+    try {
+      const { sportKey } = req.params;
+      
+      // Get live events and filter by sport key
+      const liveEvents = await storage.getLiveEvents();
+      const filteredEvents = liveEvents.filter(event => 
+        event.sport_key === sportKey || 
+        event.sportKey === sportKey
+      );
+      
+      res.json(filteredEvents);
+    } catch (error) {
+      console.error(`Error fetching live events for ${req.params.sportKey}:`, error);
+      res.status(500).json({ message: "Failed to fetch live events" });
+    }
+  });
+
+  // Sport-specific upcoming events endpoint - REAL DATA ONLY  
+  app.get("/api/sports/:sportKey/upcoming", async (req, res) => {
+    try {
+      const { sportKey } = req.params;
+      
+      // Get upcoming events and filter by sport key
+      const upcomingEvents = await storage.getUpcomingEvents();
+      const filteredEvents = upcomingEvents.filter(event => 
+        event.sport_key === sportKey || 
+        event.sportKey === sportKey
+      );
+      
+      res.json(filteredEvents);
+    } catch (error) {
+      console.error(`Error fetching upcoming events for ${req.params.sportKey}:`, error);
+      res.status(500).json({ message: "Failed to fetch upcoming events" });
+    }
+  });
+
   // ===== Teams Routes =====
   app.get("/api/teams", async (req, res) => {
     try {
