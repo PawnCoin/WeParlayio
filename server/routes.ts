@@ -1384,6 +1384,772 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // CRITICAL: Tournament bracket betting system
+  app.get('/api/tournaments', async (req, res) => {
+    try {
+      const tournaments = await storage.getAllTournaments();
+      res.json(tournaments);
+    } catch (error) {
+      console.error('Error fetching tournaments:', error);
+      res.status(500).json({ message: 'Failed to fetch tournaments' });
+    }
+  });
+
+  app.get('/api/tournaments/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const tournament = await storage.getTournament(parseInt(id));
+      
+      if (!tournament) {
+        return res.status(404).json({ message: 'Tournament not found' });
+      }
+
+      res.json(tournament);
+    } catch (error) {
+      console.error('Error fetching tournament:', error);
+      res.status(500).json({ message: 'Failed to fetch tournament' });
+    }
+  });
+
+  app.post('/api/tournaments/:id/bets', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
+
+      const { id } = req.params;
+      const { amount, currency, selection, matchup } = req.body;
+
+      if (!amount || !selection) {
+        return res.status(400).json({ message: 'Amount and selection are required' });
+      }
+
+      // Check user balance
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      const userBalance = currency === 'USD' ? (user.balance || 0) : (user.weplayTokenBalance || 0);
+      if (userBalance < parseFloat(amount)) {
+        return res.status(400).json({ message: 'Insufficient balance' });
+      }
+
+      // Create tournament bet
+      const bet = await storage.createBet({
+        userId,
+        eventId: parseInt(id),
+        amount: parseFloat(amount),
+        odds: 2.0, // Tournament odds
+        selection: JSON.stringify({ selection, matchup }),
+        status: 'pending',
+        betType: 'tournament',
+        currency: currency || 'USD',
+        potentialPayout: parseFloat(amount) * 2.0
+      });
+
+      // Deduct balance
+      if (currency === 'USD') {
+        await storage.updateUserBalance(userId, -parseFloat(amount));
+      } else {
+        await storage.updateUserWeplayTokenBalance(userId, -parseFloat(amount));
+      }
+
+      res.json({ 
+        success: true, 
+        bet,
+        message: 'Tournament bet placed successfully!' 
+      });
+    } catch (error) {
+      console.error('Error placing tournament bet:', error);
+      res.status(500).json({ message: 'Failed to place tournament bet' });
+    }
+  });
+
+  // CRITICAL: Fantasy team management endpoints
+  app.get('/api/fantasy/teams', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const fantasyTeams = await storage.getUserFantasyTeams(parseInt(userId));
+      res.json(fantasyTeams);
+    } catch (error) {
+      console.error('Error fetching fantasy teams:', error);
+      res.status(500).json({ message: 'Failed to fetch fantasy teams' });
+    }
+  });
+
+  app.post('/api/fantasy/teams', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { name, sportId, maxSalary } = req.body;
+
+      if (!name || !sportId) {
+        return res.status(400).json({ message: 'Name and sport ID are required' });
+      }
+
+      const fantasyTeam = await storage.createFantasyTeam({
+        userId,
+        name,
+        sportId,
+        salary: 0,
+        maxSalary: maxSalary || 50000
+      });
+
+      res.json({ success: true, fantasyTeam });
+    } catch (error) {
+      console.error('Error creating fantasy team:', error);
+      res.status(500).json({ message: 'Failed to create fantasy team' });
+    }
+  });
+
+  app.post('/api/fantasy/teams/:teamId/players/:playerId', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { teamId, playerId } = req.params;
+
+      // Verify team ownership
+      const fantasyTeam = await storage.getFantasyTeam(parseInt(teamId));
+      if (!fantasyTeam || fantasyTeam.userId !== userId) {
+        return res.status(403).json({ message: 'Access denied' });
+      }
+
+      const result = await storage.addPlayerToFantasyTeam({
+        fantasyTeamId: parseInt(teamId),
+        playerId: parseInt(playerId)
+      });
+
+      res.json({ success: true, result });
+    } catch (error) {
+      console.error('Error adding player to fantasy team:', error);
+      res.status(500).json({ message: 'Failed to add player to fantasy team' });
+    }
+  });
+
+  // CRITICAL: User notification system
+  app.get('/api/notifications', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { unreadOnly } = req.query;
+      
+      const notifications = await storage.getUserNotifications(userId, unreadOnly === 'true');
+      res.json(notifications);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      res.status(500).json({ message: 'Failed to fetch notifications' });
+    }
+  });
+
+  app.post('/api/notifications/:id/read', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { id } = req.params;
+
+      const notification = await storage.markNotificationAsRead(parseInt(id), userId);
+      res.json({ success: true, notification });
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      res.status(500).json({ message: 'Failed to mark notification as read' });
+    }
+  });
+
+  // CRITICAL: User gamertag management (premium feature)
+  app.post('/api/users/gamertag', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { gamertag } = req.body;
+
+      if (!gamertag) {
+        return res.status(400).json({ message: 'Gamertag is required' });
+      }
+
+      // Check if user has premium access (Bronze tier or above)
+      const user = await storage.getUser(userId);
+      if (!user || (user.subscriptionTier !== 'bronze' && user.subscriptionTier !== 'silver' && user.subscriptionTier !== 'gold')) {
+        return res.status(403).json({ message: 'Premium membership required for custom gamertags' });
+      }
+
+      // Check if gamertag is already taken
+      const existingUser = await storage.getUserByGamertag(gamertag);
+      if (existingUser && existingUser.id !== userId) {
+        return res.status(400).json({ message: 'Gamertag is already taken' });
+      }
+
+      const updatedUser = await storage.updateUserGamertag(userId, gamertag);
+      res.json({ success: true, user: updatedUser });
+    } catch (error) {
+      console.error('Error updating gamertag:', error);
+      res.status(500).json({ message: 'Failed to update gamertag' });
+    }
+  });
+
+  // CRITICAL: Leaderboard and stats endpoints
+  app.get('/api/leaderboard', async (req, res) => {
+    try {
+      const { type = 'wins', limit = 10 } = req.query;
+      
+      // Get top users based on wins, balance, or other metrics
+      const users = await storage.getAllUsers();
+      
+      let sortedUsers;
+      if (type === 'wins') {
+        sortedUsers = users.sort((a, b) => (b.wins || 0) - (a.wins || 0));
+      } else if (type === 'balance') {
+        sortedUsers = users.sort((a, b) => (b.balance || 0) - (a.balance || 0));
+      } else {
+        sortedUsers = users.sort((a, b) => (b.wins || 0) - (a.wins || 0));
+      }
+
+      const leaderboard = sortedUsers.slice(0, parseInt(limit.toString())).map(user => ({
+        id: user.id,
+        username: user.username || user.gamertag || 'Anonymous',
+        gamertag: user.gamertag,
+        wins: user.wins || 0,
+        subscriptionTier: user.subscriptionTier,
+        profileImageUrl: user.profileImageUrl
+      }));
+
+      res.json(leaderboard);
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error);
+      res.status(500).json({ message: 'Failed to fetch leaderboard' });
+    }
+  });
+
+  // CRITICAL: Crypto wallet integration
+  app.post('/api/wallet/connect', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { walletAddress, walletType } = req.body;
+
+      if (!walletAddress || !walletType) {
+        return res.status(400).json({ message: 'Wallet address and type are required' });
+      }
+
+      // Check if wallet is already connected to another user
+      const existingUser = await storage.getUserByWallet(walletAddress);
+      if (existingUser && existingUser.id !== userId) {
+        return res.status(400).json({ message: 'Wallet is already connected to another account' });
+      }
+
+      const updatedUser = await storage.upsertUser({
+        id: userId,
+        walletAddress,
+        walletType
+      });
+
+      res.json({ success: true, user: updatedUser });
+    } catch (error) {
+      console.error('Error connecting wallet:', error);
+      res.status(500).json({ message: 'Failed to connect wallet' });
+    }
+  });
+
+  // CRITICAL: Bet settlement and payout system
+  app.post('/api/bets/:id/settle', isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status, winnerId } = req.body;
+
+      if (!status || (status !== 'won' && status !== 'lost' && status !== 'cancelled')) {
+        return res.status(400).json({ message: 'Invalid settlement status' });
+      }
+
+      const bet = await storage.settleBet(parseInt(id), status);
+      
+      // If bet won, add winnings to user balance
+      if (status === 'won' && bet) {
+        await storage.updateUserBalance(bet.userId, bet.potentialPayout || 0);
+        await storage.incrementUserWins(bet.userId);
+        
+        // Create notification for winning bet
+        await storage.createNotification({
+          userId: bet.userId,
+          type: 'bet_won',
+          title: 'Bet Won!',
+          message: `Congratulations! You won $${bet.potentialPayout} on your bet.`,
+          isRead: false
+        });
+      }
+
+      res.json({ success: true, bet });
+    } catch (error) {
+      console.error('Error settling bet:', error);
+      res.status(500).json({ message: 'Failed to settle bet' });
+    }
+  });
+
+  // CRITICAL: Challenge acceptance and management
+  app.post('/api/challenges/:uuid/accept', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { uuid } = req.params;
+
+      const challenge = await storage.acceptBettingChallenge(uuid, userId);
+      
+      // Create notification for challenge creator
+      await storage.createNotification({
+        userId: challenge.createdBy,
+        type: 'challenge_accepted',
+        title: 'Challenge Accepted!',
+        message: `Your betting challenge has been accepted!`,
+        isRead: false
+      });
+
+      res.json({ success: true, challenge });
+    } catch (error) {
+      console.error('Error accepting challenge:', error);
+      res.status(500).json({ message: 'Failed to accept challenge' });
+    }
+  });
+
+  app.post('/api/challenges/:uuid/settle', isAuthenticated, async (req, res) => {
+    try {
+      const { uuid } = req.params;
+      const { winnerId, isDraw } = req.body;
+
+      const challenge = await storage.settleBettingChallenge(uuid, winnerId, isDraw || false);
+
+      // Create notifications for both participants
+      if (challenge.acceptedBy) {
+        const participants = [challenge.createdBy, challenge.acceptedBy];
+        
+        for (const participantId of participants) {
+          await storage.createNotification({
+            userId: participantId,
+            type: 'challenge_settled',
+            title: 'Challenge Settled',
+            message: isDraw ? 'Your challenge ended in a draw.' : `Challenge settled! ${winnerId === participantId ? 'You won!' : 'You lost.'}`,
+            isRead: false
+          });
+        }
+      }
+
+      res.json({ success: true, challenge });
+    } catch (error) {
+      console.error('Error settling challenge:', error);
+      res.status(500).json({ message: 'Failed to settle challenge' });
+    }
+  });
+
+  // CRITICAL: WeParlay Cash earning system
+  app.post('/api/users/earn-weparlay-cash', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { amount, reason } = req.body;
+
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ message: 'Invalid amount' });
+      }
+
+      // Add WeParlay Cash to user balance
+      const updatedUser = await storage.updateUserWeplayTokenBalance(userId, amount);
+      
+      // Create transaction record
+      await storage.createTransaction({
+        userId,
+        type: 'weparlay_cash_earned',
+        amount,
+        currency: 'WeParlay Cash',
+        status: 'completed',
+        description: reason || 'WeParlay Cash earned'
+      });
+
+      // Create notification
+      await storage.createNotification({
+        userId,
+        type: 'weparlay_cash_earned',
+        title: 'WeParlay Cash Earned!',
+        message: `You earned ${amount} WeParlay Cash! ${reason || ''}`,
+        isRead: false
+      });
+
+      res.json({ success: true, user: updatedUser });
+    } catch (error) {
+      console.error('Error earning WeParlay Cash:', error);
+      res.status(500).json({ message: 'Failed to earn WeParlay Cash' });
+    }
+  });
+
+  // CRITICAL: Admin dashboard and financial reporting
+  app.get('/api/admin/financial-summary', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: 'Admin access required' });
+      }
+
+      const summary = await storage.getFinancialSummary();
+      res.json(summary);
+    } catch (error) {
+      console.error('Error fetching financial summary:', error);
+      res.status(500).json({ message: 'Failed to fetch financial summary' });
+    }
+  });
+
+  app.get('/api/admin/transactions', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: 'Admin access required' });
+      }
+
+      const { limit = 50, offset = 0 } = req.query;
+      const transactions = await storage.getTransactions(parseInt(limit.toString()), parseInt(offset.toString()));
+      res.json(transactions);
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
+      res.status(500).json({ message: 'Failed to fetch transactions' });
+    }
+  });
+
+  // CRITICAL: Platform revenue tracking
+  app.post('/api/admin/revenue', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: 'Admin access required' });
+      }
+
+      const { amount, feeType } = req.body;
+      
+      if (!amount || !feeType) {
+        return res.status(400).json({ message: 'Amount and fee type are required' });
+      }
+
+      await storage.updatePlatformRevenue(parseFloat(amount), feeType);
+      res.json({ success: true, message: 'Revenue updated successfully' });
+    } catch (error) {
+      console.error('Error updating platform revenue:', error);
+      res.status(500).json({ message: 'Failed to update platform revenue' });
+    }
+  });
+
+  // CRITICAL: Bank account management for payouts
+  app.post('/api/users/bank-account', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { accountName, bankName, accountNumber, routingNumber, isDefault } = req.body;
+
+      if (!accountName || !bankName || !accountNumber || !routingNumber) {
+        return res.status(400).json({ message: 'All bank account fields are required' });
+      }
+
+      const bankAccount = await storage.updateBankAccount({
+        userId,
+        accountName,
+        bankName,
+        accountNumber,
+        routingNumber,
+        isDefault: isDefault || false
+      });
+
+      res.json({ success: true, bankAccount });
+    } catch (error) {
+      console.error('Error updating bank account:', error);
+      res.status(500).json({ message: 'Failed to update bank account' });
+    }
+  });
+
+  // CRITICAL: Email notifications for bets and events
+  app.post('/api/users/send-bet-notification', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { betId, type, message } = req.body;
+
+      const user = await storage.getUser(userId);
+      if (!user || !user.email) {
+        return res.status(400).json({ message: 'User email not found' });
+      }
+
+      // Import email service
+      const emailService = await import('./services/emailService');
+      await emailService.sendBetConfirmationEmail(user.email, type, message);
+
+      res.json({ success: true, message: 'Notification sent successfully' });
+    } catch (error) {
+      console.error('Error sending bet notification:', error);
+      res.status(500).json({ message: 'Failed to send notification' });
+    }
+  });
+
+  // CRITICAL: SMS notifications via Twilio
+  app.post('/api/users/send-sms-notification', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { message, type } = req.body;
+
+      const user = await storage.getUser(userId);
+      if (!user || !user.phoneNumber) {
+        return res.status(400).json({ message: 'User phone number not found' });
+      }
+
+      // Import SMS service
+      const smsService = await import('./services/smsService');
+      await smsService.sendSMS(user.phoneNumber, message);
+
+      res.json({ success: true, message: 'SMS sent successfully' });
+    } catch (error) {
+      console.error('Error sending SMS notification:', error);
+      res.status(500).json({ message: 'Failed to send SMS' });
+    }
+  });
+
+  // CRITICAL: User preferences and settings management
+  app.post('/api/users/preferences', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const preferences = req.body;
+
+      // Validate preferences structure
+      const allowedPreferences = [
+        'favoriteTeams', 'favoriteSports', 'betTypes', 'experience', 'interests',
+        'emailNotifications', 'smsNotifications', 'pushNotifications', 
+        'profileVisible', 'shareWins', 'preferredDepositMethod', 'twoFactorEnabled',
+        'oddsFormat', 'useVirtualCurrency', 'withdrawalSpeed', 'mobileOptimizedView'
+      ];
+
+      const validPreferences = {};
+      for (const [key, value] of Object.entries(preferences)) {
+        if (allowedPreferences.includes(key)) {
+          validPreferences[key] = value;
+        }
+      }
+
+      const updatedUser = await storage.updateUserPreferences(userId, validPreferences);
+      res.json({ success: true, user: updatedUser });
+    } catch (error) {
+      console.error('Error updating user preferences:', error);
+      res.status(500).json({ message: 'Failed to update preferences' });
+    }
+  });
+
+  // CRITICAL: Platform settings management
+  app.post('/api/admin/platform-settings', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: 'Admin access required' });
+      }
+
+      const settings = req.body;
+      await storage.updatePlatformSettings(settings);
+      res.json({ success: true, message: 'Platform settings updated successfully' });
+    } catch (error) {
+      console.error('Error updating platform settings:', error);
+      res.status(500).json({ message: 'Failed to update platform settings' });
+    }
+  });
+
+  // CRITICAL: Privacy settings management
+  app.post('/api/admin/privacy-settings', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: 'Admin access required' });
+      }
+
+      const settings = req.body;
+      await storage.updatePrivacySettings(settings);
+      res.json({ success: true, message: 'Privacy settings updated successfully' });
+    } catch (error) {
+      console.error('Error updating privacy settings:', error);
+      res.status(500).json({ message: 'Failed to update privacy settings' });
+    }
+  });
+
+  // CRITICAL: Bot service integration for WeParlay promotions
+  app.post('/api/bot/generate-activity', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: 'Admin access required' });
+      }
+
+      // Import bot service
+      const { SimpleBotService } = await import('./services/botService');
+      const botService = new SimpleBotService();
+      
+      const activity = await botService.generateDailyActivity();
+      res.json({ success: true, activity });
+    } catch (error) {
+      console.error('Error generating bot activity:', error);
+      res.status(500).json({ message: 'Failed to generate bot activity' });
+    }
+  });
+
+  // CRITICAL: Referral system tracking
+  app.get('/api/users/referrals', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      
+      // Get user's referral code and referred users
+      const user = await storage.getUser(userId);
+      const referralCode = user?.referralCode || `WP${userId.slice(-6).toUpperCase()}`;
+      
+      // Count referred users (simplified - in production, track actual referrals)
+      const allUsers = await storage.getAllUsers();
+      const referredUsers = allUsers.filter(u => u.referredBy === userId).length;
+
+      res.json({ 
+        referralCode,
+        referredCount: referredUsers,
+        earnings: referredUsers * 25 // $25 per referral
+      });
+    } catch (error) {
+      console.error('Error fetching referrals:', error);
+      res.status(500).json({ message: 'Failed to fetch referrals' });
+    }
+  });
+
+  // CRITICAL: Social betting features - follow users
+  app.post('/api/users/:id/follow', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { id: targetUserId } = req.params;
+
+      if (userId === targetUserId) {
+        return res.status(400).json({ message: 'Cannot follow yourself' });
+      }
+
+      // Create following relationship (simplified)
+      await storage.createNotification({
+        userId: targetUserId,
+        type: 'new_follower',
+        title: 'New Follower!',
+        message: 'Someone started following your bets!',
+        isRead: false
+      });
+
+      res.json({ success: true, message: 'User followed successfully' });
+    } catch (error) {
+      console.error('Error following user:', error);
+      res.status(500).json({ message: 'Failed to follow user' });
+    }
+  });
+
+  // CRITICAL: Live event odds updates
+  app.post('/api/events/:id/update-odds', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: 'Admin access required' });
+      }
+
+      const { id } = req.params;
+      const { odds } = req.body;
+
+      const updatedEvent = await storage.updateEventOdds(parseInt(id), odds);
+      res.json({ success: true, event: updatedEvent });
+    } catch (error) {
+      console.error('Error updating event odds:', error);
+      res.status(500).json({ message: 'Failed to update event odds' });
+    }
+  });
+
+  // CRITICAL: User activity feed
+  app.get('/api/users/activity-feed', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      
+      // Get recent bets and activities (simplified)
+      const userBets = await storage.getUserBets(parseInt(userId));
+      const recentBets = userBets.slice(0, 20).map(bet => ({
+        id: bet.id,
+        type: 'bet_placed',
+        amount: bet.amount,
+        status: bet.status,
+        createdAt: bet.createdAt,
+        description: `Placed ${bet.betType} bet for $${bet.amount}`
+      }));
+
+      res.json(recentBets);
+    } catch (error) {
+      console.error('Error fetching activity feed:', error);
+      res.status(500).json({ message: 'Failed to fetch activity feed' });
+    }
+  });
+
+  // CRITICAL: Challenge feed for social betting
+  app.get('/api/challenges/feed', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      
+      // Get public challenges from other users
+      const challenges = await storage.getUserChallenges(userId, 'pending');
+      const publicChallenges = challenges.filter(c => c.createdBy !== userId).slice(0, 10);
+
+      res.json(publicChallenges);
+    } catch (error) {
+      console.error('Error fetching challenge feed:', error);
+      res.status(500).json({ message: 'Failed to fetch challenge feed' });
+    }
+  });
+
+  // CRITICAL: WeParlay Cash conversion to real money
+  app.post('/api/users/convert-weparlay-cash', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { amount } = req.body;
+
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ message: 'Invalid conversion amount' });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Check if user has enough WeParlay Cash
+      const weplayCashBalance = user.weplayTokenBalance || 0;
+      if (weplayCashBalance < amount) {
+        return res.status(400).json({ message: 'Insufficient WeParlay Cash balance' });
+      }
+
+      // Convert at 10:1 ratio (10 WeParlay Cash = $1 USD)
+      const conversionRate = 0.1;
+      const realMoneyAmount = amount * conversionRate;
+
+      // Deduct WeParlay Cash and add real money
+      await storage.updateUserWeplayTokenBalance(userId, -amount);
+      await storage.updateUserBalance(userId, realMoneyAmount);
+
+      // Create transaction record
+      await storage.createTransaction({
+        userId,
+        type: 'weparlay_cash_conversion',
+        amount: realMoneyAmount,
+        currency: 'USD',
+        status: 'completed',
+        description: `Converted ${amount} WeParlay Cash to $${realMoneyAmount.toFixed(2)}`
+      });
+
+      res.json({ 
+        success: true, 
+        convertedAmount: realMoneyAmount,
+        message: `Successfully converted ${amount} WeParlay Cash to $${realMoneyAmount.toFixed(2)}`
+      });
+    } catch (error) {
+      console.error('Error converting WeParlay Cash:', error);
+      res.status(500).json({ message: 'Failed to convert WeParlay Cash' });
+    }
+  });
+
   // Get all live events (across all sports)
   app.get("/api/events/live", async (req, res) => {
     try {
