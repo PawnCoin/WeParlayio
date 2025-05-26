@@ -407,14 +407,14 @@ export default function ComprehensiveBetting() {
                   <div className="space-y-3">
                     {americanSports && americanSports.length > 0 ? (
                       americanSports.map((sport: any, index: number) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
-                          <span className="font-medium">{sport.sport || 'Sport'}</span>
+                        <div key={`american-${sport.sport || sport.key || sport.id || index}`} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                          <span className="font-medium">{sport.sport || sport.name || 'Sport'}</span>
                           <Button 
                             size="sm" 
                             variant="outline"
-                            onClick={() => setSelectedSport(sport.sport)}
+                            onClick={() => setSelectedSport(sport.sport || sport.key)}
                           >
-                            View
+                            View Events
                           </Button>
                         </div>
                       ))
@@ -437,14 +437,14 @@ export default function ComprehensiveBetting() {
                   <div className="space-y-3">
                     {internationalSports && internationalSports.length > 0 ? (
                       internationalSports.map((sport: any, index: number) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
-                          <span className="font-medium">{sport.sport || 'Sport'}</span>
+                        <div key={`international-${sport.sport || sport.key || sport.id || index}`} className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                          <span className="font-medium">{sport.sport || sport.name || 'Sport'}</span>
                           <Button 
                             size="sm" 
                             variant="outline"
-                            onClick={() => setSelectedSport(sport.sport)}
+                            onClick={() => setSelectedSport(sport.sport || sport.key)}
                           >
-                            View
+                            View Events
                           </Button>
                         </div>
                       ))
