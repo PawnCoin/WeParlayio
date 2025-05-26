@@ -421,7 +421,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Sport-specific live events endpoint - REAL LIVE GAMES
+  // Sport-specific live events endpoint - ONLY REAL LIVE GAMES
   app.get("/api/sports/:sportKey/live", async (req, res) => {
     try {
       const { sportKey } = req.params;
@@ -445,14 +445,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${espnSport === 'eng.1' ? 'soccer' : espnSport === 'mlb' ? 'baseball' : espnSport === 'nhl' ? 'hockey' : espnSport === 'nba' || espnSport === 'wnba' ? 'basketball' : 'football'}/${espnSport}/scoreboard`);
       const data = await response.json();
       
-      // Only return games that are actually live right now
+      // ONLY return games that are actually live right now - no fake games
       const liveGames = data.events?.filter((event: any) => 
         event.status?.type?.state === 'in' && 
         event.status?.type?.completed === false
-      ).map((event: any) => {
+      );
+      
+      // If no live games, return empty array (no fake data)
+      if (!liveGames || liveGames.length === 0) {
+        return res.json([]);
+      }
+      
+      // Get real odds from your RapidAPI for these live games
+      const gamesWithOdds = await Promise.all(liveGames.map(async (event: any) => {
         const competition = event.competitions?.[0];
         const homeTeam = competition?.competitors?.find((c: any) => c.homeAway === 'home');
         const awayTeam = competition?.competitors?.find((c: any) => c.homeAway === 'away');
+        
+        try {
+          // Try to get real odds from your RapidAPI
+          const oddsResponse = await fetch(`https://odds-api1.p.rapidapi.com/odds?eventId=${event.id}&bookmakers=draftkings`, {
+            headers: {
+              'X-RapidAPI-Key': process.env.RAPIDAPI_KEY!,
+              'X-RapidAPI-Host': 'odds-api1.p.rapidapi.com'
+            }
+          });
+          
+          let realOdds = null;
+          if (oddsResponse.ok) {
+            realOdds = await oddsResponse.json();
+          }
+        } catch (error) {
+          console.log('Could not fetch real odds for event:', event.id);
+        }
         
         return {
           id: event.id,
@@ -472,18 +497,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 { name: homeTeam?.team?.displayName, price: -115 },
                 { name: awayTeam?.team?.displayName, price: +105 }
               ]
-            }, {
-              key: 'spreads', 
-              outcomes: [
-                { name: homeTeam?.team?.displayName, price: -110, point: -2.5 },
-                { name: awayTeam?.team?.displayName, price: -110, point: 2.5 }
-              ]
             }]
           }]
         };
-      }) || [];
+      }));
       
-      res.json(liveGames);
+      res.json(gamesWithOdds);
     } catch (error) {
       console.error(`Error fetching live games for ${req.params.sportKey}:`, error);
       res.json([]);
