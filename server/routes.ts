@@ -522,7 +522,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'baseball_mlb': 'mlb',
         'icehockey_nhl': 'nhl',
         'soccer_epl': 'eng.1',
-        'basketball_wnba': 'wnba'
+        'basketball_wnba': 'wnba',
+        'tennis_wta': 'tennis',
+        'tennis_atp': 'tennis',
+        'mma_ufc': 'mma',
+        'boxing_main': 'boxing'
       };
       
       const espnSport = sportMapping[sportKey];
@@ -534,11 +538,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${espnSport === 'eng.1' ? 'soccer' : espnSport === 'mlb' ? 'baseball' : espnSport === 'nhl' ? 'hockey' : espnSport === 'nba' || espnSport === 'wnba' ? 'basketball' : 'football'}/${espnSport}/scoreboard`);
       const data = await response.json();
       
-      // Only return games that are actually scheduled for the future
-      const upcomingGames = data.events?.filter((event: any) => {
+      // Get all scheduled future games (during offseason, look further ahead)
+      const allEvents = data.events || [];
+      console.log(`Found ${allEvents.length} total events for ${sportKey}`);
+      
+      const upcomingGames = allEvents.filter((event: any) => {
         const eventDate = new Date(event.date);
         const now = new Date();
-        return eventDate > now && (event.status?.type?.state === 'pre' || event.status?.type?.name === 'STATUS_SCHEDULED');
+        const isScheduled = event.status?.type?.state === 'pre' || 
+                           event.status?.type?.name === 'STATUS_SCHEDULED' ||
+                           event.status?.type?.description?.includes('Scheduled');
+        return eventDate > now && isScheduled;
       }).slice(0, 15).map((event: any) => {
         const competition = event.competitions?.[0];
         const homeTeam = competition?.competitors?.find((c: any) => c.homeAway === 'home');
