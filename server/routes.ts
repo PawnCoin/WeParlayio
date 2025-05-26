@@ -536,58 +536,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Get upcoming events for a specific sport
+  // Get upcoming events for a specific sport - REAL DATA ONLY
   app.get("/api/sports/:sportKey/upcoming", async (req, res) => {
     try {
       const { sportKey } = req.params;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
       
-      // Check if this is one of our new sports (boxing, MMA, NASCAR, tennis)
-      const newSportsMapping: Record<string, keyof typeof additionalSportsData> = {
-        // Pro Sports
-        'boxing_main': 'boxing_main',
-        'mma_ufc': 'mma_ufc',
-        'motorsport_nascar': 'motorsport_nascar',
-        'tennis_atp': 'tennis_atp',
-        'tennis_wta': 'tennis_wta',
-        'basketball_wnba': 'basketball_wnba',
-        'football_ufl': 'football_ufl',
-        // College Sports
-        'football_ncaaf': 'football_ncaaf',
-        'basketball_ncaam': 'basketball_ncaam',
-        'basketball_ncaaw': 'basketball_ncaaw'
-      };
-      
-      if (newSportsMapping[sportKey]) {
-        const mockDataKey = newSportsMapping[sportKey];
-        const events = additionalSportsData[mockDataKey] || [];
+      try {
+        // Use unified sports API to get REAL upcoming events from all sources
+        const unifiedData = await unifiedSportsApiService.getUnifiedUpcomingEvents();
         
-        // Filter for only upcoming events and sort by start time
+        // Filter events for the specific sport
+        const sportEvents = unifiedData.filter((event: any) => 
+          event.sport_key === sportKey || 
+          event.sport_key?.includes(sportKey) ||
+          event.sport_title?.toLowerCase().includes(sportKey.toLowerCase())
+        );
+        
+        // Sort by start time and limit results
         const now = new Date();
-        const upcomingEvents = events
+        const upcomingEvents = sportEvents
           .filter((event: any) => new Date(event.commence_time) > now)
           .sort((a: any, b: any) => 
             new Date(a.commence_time).getTime() - new Date(b.commence_time).getTime()
           )
           .slice(0, limit);
         
-        return res.json(upcomingEvents);
-      }
-      
-      try {
-        // Get odds for upcoming events from The Odds API for standard sports
+        // If we have real data, return it
+        if (upcomingEvents.length > 0) {
+          return res.json(upcomingEvents);
+        }
+        
+        // Try The Odds API directly as fallback
         const odds = await oddsApiService.getOdds(sportKey);
         
         // Filter for only upcoming events (not started yet) and sort by start time
-        const now = new Date();
-        const upcomingEvents = odds
+        const directUpcomingEvents = odds
           .filter((event: any) => new Date(event.commence_time) > now)
           .sort((a: any, b: any) => 
             new Date(a.commence_time).getTime() - new Date(b.commence_time).getTime()
           )
           .slice(0, limit);
         
-        res.json(upcomingEvents);
+        res.json(directUpcomingEvents);
       } catch (error: any) {
         console.error(`Error fetching upcoming events for ${sportKey}:`, error);
         res.status(500).json({ message: error.message || "Failed to fetch upcoming events" });

@@ -546,6 +546,69 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                 </div>
               </details>
 
+              {/* Football Category - ALL FOOTBALL SPORTS */}
+              <details className="group">
+                <summary className="flex items-center py-2 px-3 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 list-none">
+                  <span className="text-lg mr-3">🏈</span>
+                  <span className="flex-1 text-sm font-medium">All Football</span>
+                  <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
+                </summary>
+                <div className="ml-6 mt-1 space-y-1">
+                  <Link href="/sports/americanfootball_nfl">
+                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
+                      <span>NFL</span>
+                      <span className="ml-auto text-orange-600">Off Season</span>
+                    </div>
+                  </Link>
+                  <Link href="/sports/americanfootball_ncaaf">
+                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
+                      <span>NCAA Football</span>
+                      <span className="ml-auto text-green-600">LIVE</span>
+                    </div>
+                  </Link>
+                  <Link href="/sports/football_ufl">
+                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
+                      <span>UFL</span>
+                      <span className="ml-auto text-blue-600">Spring</span>
+                    </div>
+                  </Link>
+                </div>
+              </details>
+
+              {/* Baseball Category */}
+              <details className="group">
+                <summary className="flex items-center py-2 px-3 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 list-none">
+                  <span className="text-lg mr-3">⚾</span>
+                  <span className="flex-1 text-sm font-medium">Baseball</span>
+                  <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
+                </summary>
+                <div className="ml-6 mt-1 space-y-1">
+                  <Link href="/sports/baseball_mlb">
+                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
+                      <span>MLB</span>
+                      <span className="ml-auto text-green-600">Season</span>
+                    </div>
+                  </Link>
+                </div>
+              </details>
+
+              {/* Ice Hockey Category */}
+              <details className="group">
+                <summary className="flex items-center py-2 px-3 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 list-none">
+                  <span className="text-lg mr-3">🏒</span>
+                  <span className="flex-1 text-sm font-medium">Ice Hockey</span>
+                  <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
+                </summary>
+                <div className="ml-6 mt-1 space-y-1">
+                  <Link href="/sports/icehockey_nhl">
+                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
+                      <span>NHL</span>
+                      <span className="ml-auto text-green-600">Playoffs</span>
+                    </div>
+                  </Link>
+                </div>
+              </details>
+
               {/* Combat Sports Category */}
               <details className="group">
                 <summary className="flex items-center py-2 px-3 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 list-none">
@@ -560,10 +623,51 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                       <span className="ml-auto text-blue-600">Sat</span>
                     </div>
                   </Link>
+                  <Link href="/sports/mma_mixed_martial_arts">
+                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
+                      <span>Mixed Martial Arts</span>
+                      <span className="ml-auto text-purple-600">Events</span>
+                    </div>
+                  </Link>
                   <Link href="/sports/boxing_main">
                     <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
                       <span>Boxing</span>
                       <span className="ml-auto text-purple-600">Sun</span>
+                    </div>
+                  </Link>
+                </div>
+              </details>
+
+              {/* Other Sports Category */}
+              <details className="group">
+                <summary className="flex items-center py-2 px-3 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 list-none">
+                  <span className="text-lg mr-3">🏆</span>
+                  <span className="flex-1 text-sm font-medium">Other Sports</span>
+                  <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
+                </summary>
+                <div className="ml-6 mt-1 space-y-1">
+                  <Link href="/sports/golf_pga">
+                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
+                      <span>Golf PGA</span>
+                      <span className="ml-auto text-green-600">Tours</span>
+                    </div>
+                  </Link>
+                  <Link href="/sports/motorsport_f1">
+                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
+                      <span>Formula 1</span>
+                      <span className="ml-auto text-red-600">Racing</span>
+                    </div>
+                  </Link>
+                  <Link href="/sports/rugbyleague_nrl">
+                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
+                      <span>Rugby NRL</span>
+                      <span className="ml-auto text-orange-600">League</span>
+                    </div>
+                  </Link>
+                  <Link href="/sports/aussierules_afl">
+                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
+                      <span>AFL</span>
+                      <span className="ml-auto text-yellow-600">Season</span>
                     </div>
                   </Link>
                 </div>
