@@ -286,12 +286,17 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         {/* Content Area */}
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
           {/* Main Content Column */}
-          <div className="flex-1 overflow-y-auto p-4 custom-scrollbar bg-neutral-light dark:bg-neutral-dark dark:text-neutral-light">
+          <div className="flex-1 overflow-y-auto p-2 md:p-4 pb-24 md:pb-4 custom-scrollbar bg-neutral-light dark:bg-neutral-dark dark:text-neutral-light">
             {children}
           </div>
 
-          {/* Betting Slip Column */}
-          <div className="w-full md:w-80 bg-white shadow-md flex-shrink-0 overflow-y-auto custom-scrollbar betting-slip-shadow dark:bg-neutral-dark dark:text-neutral-light">
+          {/* Betting Slip Column - Mobile Bottom Sheet */}
+          <div className="hidden md:block w-80 bg-white shadow-md flex-shrink-0 overflow-y-auto custom-scrollbar betting-slip-shadow dark:bg-neutral-dark dark:text-neutral-light">
+            <BettingSlip />
+          </div>
+          
+          {/* Mobile Betting Slip - Fixed Bottom */}
+          <div className="md:hidden fixed bottom-16 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40 max-h-60 overflow-y-auto dark:bg-neutral-dark dark:border-gray-700">
             <BettingSlip />
           </div>
         </div>

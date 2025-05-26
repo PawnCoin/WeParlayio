@@ -110,13 +110,13 @@ export default function Odds() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mb-4">
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-3 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Live Markets</p>
-                <p className="text-2xl font-bold">{filteredOdds.length}</p>
+                <p className="text-xs md:text-sm text-gray-600">Live Markets</p>
+                <p className="text-lg md:text-2xl font-bold">{filteredOdds.length}</p>
               </div>
               <Activity className="h-8 w-8 text-blue-600" />
             </div>
