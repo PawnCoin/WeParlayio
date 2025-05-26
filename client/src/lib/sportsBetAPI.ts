@@ -294,8 +294,28 @@ export default {
     return response.json();
   },
   
+  createTournament: async (tournament: Omit<Tournament, "id" | "createdAt" | "updatedAt">): Promise<Tournament> => {
+    const response = await apiRequest("POST", "/api/tournaments", tournament);
+    return response.json();
+  },
+
+  joinTournament: async (tournamentId: number, userId: string): Promise<any> => {
+    const response = await apiRequest("POST", `/api/tournaments/${tournamentId}/join`, { userId });
+    return response.json();
+  },
+
+  leaveTournament: async (tournamentId: number, userId: string): Promise<any> => {
+    const response = await apiRequest("POST", `/api/tournaments/${tournamentId}/leave`, { userId });
+    return response.json();
+  },
+
   updateTournamentBracket: async (id: number, bracketData: any): Promise<Tournament> => {
     const response = await apiRequest("POST", `/api/tournaments/${id}/bracket`, bracketData);
+    return response.json();
+  },
+
+  getUserTournaments: async (userId: string): Promise<Tournament[]> => {
+    const response = await apiRequest("GET", `/api/users/${userId}/tournaments`);
     return response.json();
   },
   
