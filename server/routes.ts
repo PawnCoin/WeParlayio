@@ -453,6 +453,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // If no live games, return empty array (no fake data)
       if (!liveGames || liveGames.length === 0) {
+        console.log(`No live ${sportKey} games currently happening - showing empty as requested`);
         return res.json([]);
       }
       
