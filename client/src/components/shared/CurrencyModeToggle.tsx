@@ -19,37 +19,34 @@ const CurrencyModeToggle: React.FC<CurrencyModeToggleProps> = ({
   className = ''
 }) => {
   const { selectedCurrency, setSelectedCurrency } = useBetting();
-  const { toast } = useToast();
 
   const isVirtual = selectedCurrency === 'WEPARLAY';
 
   const toggleMode = () => {
     const newMode = selectedCurrency === 'WEPARLAY' ? 'USD' : 'WEPARLAY';
     setSelectedCurrency(newMode);
-    toast({
-      title: `Switched to ${newMode === 'WEPARLAY' ? 'WeParlay Cash' : 'Real Money'} Mode`,
-      description: `You're now betting with ${newMode === 'WEPARLAY' ? 'virtual currency' : 'real money'}`,
-      duration: 3000,
-    });
   };
+  const { toast } = useToast();
+
+  
 
   // Icon-only variant
   if (variant === 'icon-only') {
     return (
-      <Tooltip>
-        <TooltipTrigger asChild>
+      
+        
           <button 
             onClick={toggleMode}
             className={`p-2 rounded-md ${isVirtual ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'} ${className}`}
           >
             {isVirtual ? <Coins className="h-4 w-4" /> : <Wallet className="h-4 w-4" />}
           </button>
-        </TooltipTrigger>
-        <TooltipContent>
+        
+        
           <p>Currently using: {isVirtual ? 'WeParlay Cash' : 'Real Money'}</p>
           <p className="text-xs">Click to switch</p>
-        </TooltipContent>
-      </Tooltip>
+        
+      
     );
   }
 
