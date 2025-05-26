@@ -517,18 +517,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const awayTeam = competition?.competitors?.find((c: any) => c.homeAway === 'away');
         
         try {
-          // Try to get real odds from your RapidAPI
-          const oddsResponse = await fetch(`https://odds-api1.p.rapidapi.com/odds?eventId=${event.id}&bookmakers=draftkings`, {
-            headers: {
-              'X-RapidAPI-Key': process.env.RAPIDAPI_KEY!,
-              'X-RapidAPI-Host': 'odds-api1.p.rapidapi.com'
-            }
-          });
-          
-          let realOdds = null;
-          if (oddsResponse.ok) {
-            realOdds = await oddsResponse.json();
-          }
+          // Get real odds from your working RapidAPI Odds API
+          const { RapidApiOddsService } = await import('./services/rapidApiOddsService');
+          const rapidOdds = new RapidApiOddsService();
+          const realOdds = await rapidOdds.getOdds(event.id, 'bet365,pinnacle,draftkings');
         } catch (error) {
           console.log('Could not fetch real odds for event:', event.id);
         }
