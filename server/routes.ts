@@ -8,6 +8,9 @@ import { isAuthenticated } from "./replitAuth";
 import { additionalSportsData } from "./services/mockSportsData";
 import { OddsApiService } from "./services/oddsApiService";
 import { AdvancedOddsService } from "./services/advancedOddsService";
+import { UnifiedSportsApiService } from "./services/unifiedSportsApiService";
+import { RapidApiService } from "./services/rapidApiService";
+import { SportsGameOddsService } from "./services/sportsGameOddsService";
 import { yahooRouter } from "./routes/yahooRoutes";
 import { feeRouter } from "./routes/feeRoutes";
 import { adminRouter } from "./routes/adminRoutes";
@@ -19,6 +22,9 @@ import unifiedSportsRoutes from "./routes/unifiedSportsRoutes";
 // Initialize The Odds API services
 const oddsApiService = new OddsApiService();
 const advancedOddsService = new AdvancedOddsService();
+const unifiedSportsApi = new UnifiedSportsApiService();
+const rapidApiService = new RapidApiService();
+const sportsGameOddsService = new SportsGameOddsService();
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Register Authentication routes
@@ -2147,6 +2153,215 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error converting WeParlay Cash:', error);
       res.status(500).json({ message: 'Failed to convert WeParlay Cash' });
+    }
+  });
+
+  // MASSIVE SPORTS COVERAGE: 110+ Sports from Multiple APIs
+  
+  // Get comprehensive sports list from all API sources
+  app.get('/api/sports/massive-list', async (req, res) => {
+    try {
+      const massiveSportsList = await unifiedSportsApi.getMassiveSportsList();
+      res.json(massiveSportsList);
+    } catch (error) {
+      console.error('Error fetching massive sports list:', error);
+      res.status(500).json({ message: 'Failed to fetch comprehensive sports list' });
+    }
+  });
+
+  // Get unified odds from all API sources (RapidAPI + SportsGameOdds + The Odds API)
+  app.get('/api/odds/unified', async (req, res) => {
+    try {
+      const { sport } = req.query;
+      const unifiedOdds = await unifiedSportsApi.getUnifiedOdds(sport as string);
+      res.json(unifiedOdds);
+    } catch (error) {
+      console.error('Error fetching unified odds:', error);
+      res.status(500).json({ message: 'Failed to fetch unified odds' });
+    }
+  });
+
+  // Get live events from all API sources
+  app.get('/api/events/unified-live', async (req, res) => {
+    try {
+      const unifiedLiveEvents = await unifiedSportsApi.getUnifiedLiveEvents();
+      res.json(unifiedLiveEvents);
+    } catch (error) {
+      console.error('Error fetching unified live events:', error);
+      res.status(500).json({ message: 'Failed to fetch unified live events' });
+    }
+  });
+
+  // Get upcoming events from all API sources
+  app.get('/api/events/unified-upcoming', async (req, res) => {
+    try {
+      const { days = 7 } = req.query;
+      const unifiedUpcoming = await unifiedSportsApi.getUnifiedUpcomingEvents(parseInt(days.toString()));
+      res.json(unifiedUpcoming);
+    } catch (error) {
+      console.error('Error fetching unified upcoming events:', error);
+      res.status(500).json({ message: 'Failed to fetch unified upcoming events' });
+    }
+  });
+
+  // RapidAPI specific endpoints for your account
+  app.get('/api/rapidapi/football-odds/:league', async (req, res) => {
+    try {
+      const { league } = req.params;
+      const { season = '2024' } = req.query;
+      const footballOdds = await rapidApiService.getFootballOdds(league, season.toString());
+      res.json(footballOdds);
+    } catch (error) {
+      console.error('Error fetching RapidAPI football odds:', error);
+      res.status(500).json({ message: 'Failed to fetch football odds from RapidAPI' });
+    }
+  });
+
+  app.get('/api/rapidapi/basketball-odds/:league', async (req, res) => {
+    try {
+      const { league } = req.params;
+      const { season = '2024-2025' } = req.query;
+      const basketballOdds = await rapidApiService.getBasketballOdds(league, season.toString());
+      res.json(basketballOdds);
+    } catch (error) {
+      console.error('Error fetching RapidAPI basketball odds:', error);
+      res.status(500).json({ message: 'Failed to fetch basketball odds from RapidAPI' });
+    }
+  });
+
+  app.get('/api/rapidapi/baseball-odds/:league', async (req, res) => {
+    try {
+      const { league } = req.params;
+      const { season = '2024' } = req.query;
+      const baseballOdds = await rapidApiService.getBaseballOdds(league, season.toString());
+      res.json(baseballOdds);
+    } catch (error) {
+      console.error('Error fetching RapidAPI baseball odds:', error);
+      res.status(500).json({ message: 'Failed to fetch baseball odds from RapidAPI' });
+    }
+  });
+
+  app.get('/api/rapidapi/hockey-odds/:league', async (req, res) => {
+    try {
+      const { league } = req.params;
+      const { season = '2024' } = req.query;
+      const hockeyOdds = await rapidApiService.getHockeyOdds(league, season.toString());
+      res.json(hockeyOdds);
+    } catch (error) {
+      console.error('Error fetching RapidAPI hockey odds:', error);
+      res.status(500).json({ message: 'Failed to fetch hockey odds from RapidAPI' });
+    }
+  });
+
+  app.get('/api/rapidapi/live-scores/:sport', async (req, res) => {
+    try {
+      const { sport } = req.params;
+      const liveScores = await rapidApiService.getLiveScores(sport);
+      res.json(liveScores);
+    } catch (error) {
+      console.error('Error fetching RapidAPI live scores:', error);
+      res.status(500).json({ message: 'Failed to fetch live scores from RapidAPI' });
+    }
+  });
+
+  app.get('/api/rapidapi/espn/:sport/:league', async (req, res) => {
+    try {
+      const { sport, league } = req.params;
+      const espnData = await rapidApiService.getESPNData(sport, league);
+      res.json(espnData);
+    } catch (error) {
+      console.error('Error fetching ESPN data from RapidAPI:', error);
+      res.status(500).json({ message: 'Failed to fetch ESPN data from RapidAPI' });
+    }
+  });
+
+  app.get('/api/rapidapi/comprehensive-odds', async (req, res) => {
+    try {
+      const comprehensiveOdds = await rapidApiService.getComprehensiveOdds();
+      res.json(comprehensiveOdds);
+    } catch (error) {
+      console.error('Error fetching comprehensive odds from RapidAPI:', error);
+      res.status(500).json({ message: 'Failed to fetch comprehensive odds from RapidAPI' });
+    }
+  });
+
+  // SportsGameOdds.com specific endpoints
+  app.get('/api/sportsgameodds/sports', async (req, res) => {
+    try {
+      const allSports = await sportsGameOddsService.getAllSports();
+      res.json(allSports);
+    } catch (error) {
+      console.error('Error fetching sports from SportsGameOdds:', error);
+      res.status(500).json({ message: 'Failed to fetch sports from SportsGameOdds' });
+    }
+  });
+
+  app.get('/api/sportsgameodds/live-odds', async (req, res) => {
+    try {
+      const { sport } = req.query;
+      const liveOdds = await sportsGameOddsService.getLiveOdds(sport as string);
+      res.json(liveOdds);
+    } catch (error) {
+      console.error('Error fetching live odds from SportsGameOdds:', error);
+      res.status(500).json({ message: 'Failed to fetch live odds from SportsGameOdds' });
+    }
+  });
+
+  app.get('/api/sportsgameodds/upcoming/:sport?', async (req, res) => {
+    try {
+      const { sport } = req.params;
+      const { days = 7 } = req.query;
+      const upcomingEvents = await sportsGameOddsService.getUpcomingEvents(sport, parseInt(days.toString()));
+      res.json(upcomingEvents);
+    } catch (error) {
+      console.error('Error fetching upcoming events from SportsGameOdds:', error);
+      res.status(500).json({ message: 'Failed to fetch upcoming events from SportsGameOdds' });
+    }
+  });
+
+  app.get('/api/sportsgameodds/event/:eventId/odds', async (req, res) => {
+    try {
+      const { eventId } = req.params;
+      const eventOdds = await sportsGameOddsService.getEventOdds(eventId);
+      res.json(eventOdds);
+    } catch (error) {
+      console.error('Error fetching event odds from SportsGameOdds:', error);
+      res.status(500).json({ message: 'Failed to fetch event odds from SportsGameOdds' });
+    }
+  });
+
+  app.get('/api/sportsgameodds/sport/:sport/leagues', async (req, res) => {
+    try {
+      const { sport } = req.params;
+      const leagues = await sportsGameOddsService.getSportLeagues(sport);
+      res.json(leagues);
+    } catch (error) {
+      console.error('Error fetching sport leagues from SportsGameOdds:', error);
+      res.status(500).json({ message: 'Failed to fetch sport leagues from SportsGameOdds' });
+    }
+  });
+
+  app.get('/api/sportsgameodds/markets/:sport', async (req, res) => {
+    try {
+      const { sport } = req.params;
+      const { type = 'all' } = req.query;
+      const marketData = await sportsGameOddsService.getMarketData(sport, type.toString());
+      res.json(marketData);
+    } catch (error) {
+      console.error('Error fetching market data from SportsGameOdds:', error);
+      res.status(500).json({ message: 'Failed to fetch market data from SportsGameOdds' });
+    }
+  });
+
+  // Sport-specific comprehensive data endpoint
+  app.get('/api/sports/:sportKey/comprehensive', async (req, res) => {
+    try {
+      const { sportKey } = req.params;
+      const comprehensiveData = await unifiedSportsApi.getSportSpecificData(sportKey);
+      res.json(comprehensiveData);
+    } catch (error) {
+      console.error('Error fetching comprehensive sport data:', error);
+      res.status(500).json({ message: 'Failed to fetch comprehensive sport data' });
     }
   });
 
