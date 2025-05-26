@@ -64,10 +64,8 @@ export default function ComprehensiveBetting() {
 
   const handleSportSelect = (sportKey: string) => {
     setSelectedSport(sportKey);
-    toast({
-      title: "Sport Selected",
-      description: `Viewing betting options for ${sportKey}`,
-    });
+    // Navigate to specific sport page with real betting options
+    window.location.href = `/sports/${sportKey}`;
   };
 
   return (
