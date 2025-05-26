@@ -23,6 +23,12 @@ export default function LiveBetting() {
   const [refreshing, setRefreshing] = useState(false);
   const { toast } = useToast();
 
+  // Fetch real odds data from your RapidAPI subscription
+  const { data: realOddsData, refetch: refetchRealOdds } = useQuery({
+    queryKey: ["/api/real-odds"],
+    refetchInterval: 10000, // Update every 10 seconds for real odds
+  });
+
   // Fetch live events data with real-time updates
   const { data: liveEvents, refetch: refetchLive } = useQuery({
     queryKey: ["/api/events/live"],
@@ -81,8 +87,11 @@ export default function LiveBetting() {
                 <Badge variant="outline" className="border-red-300 text-red-800">
                   {liveEvents?.length || 0} Live Events
                 </Badge>
+                <Badge variant="outline" className="border-green-300 text-green-800">
+                  {realOddsData?.length || 0} RapidAPI Odds
+                </Badge>
                 <Badge variant="outline" className="border-orange-300 text-orange-800">
-                  Real-time Odds
+                  Real-time Data
                 </Badge>
               </div>
               <Button
@@ -100,6 +109,55 @@ export default function LiveBetting() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Real RapidAPI Odds Section */}
+        {realOddsData && realOddsData.length > 0 && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold flex items-center gap-2">
+              <Brain className="h-6 w-6 text-green-500" />
+              Real Betting Odds from RapidAPI ({realOddsData.length})
+            </h2>
+            
+            <div className="grid gap-4">
+              {realOddsData.map((odds: any, index: number) => (
+                <Card key={odds.id || index} className="border-green-200 bg-green-50">
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <span className="text-lg font-bold">{odds.sport_title}</span>
+                      <Badge className="bg-green-600 text-white">
+                        {odds.real_odds ? 'REAL ODDS' : 'API DATA'}
+                      </Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <p className="font-medium">{odds.home_team}</p>
+                        {odds.bookmakers?.[0]?.markets?.[0]?.outcomes?.[0] && (
+                          <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                            Odds: {odds.bookmakers[0].markets[0].outcomes[0].price}
+                          </Button>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <p className="font-medium">{odds.away_team}</p>
+                        {odds.bookmakers?.[0]?.markets?.[0]?.outcomes?.[1] && (
+                          <Button className="w-full bg-red-600 hover:bg-red-700">
+                            Odds: {odds.bookmakers[0].markets[0].outcomes[1].price}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
+                      <span>Source: {odds.source || 'RapidAPI'}</span>
+                      <span>Sport: {odds.sport_key}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Live Events Section */}
         {liveEvents && liveEvents.length > 0 ? (

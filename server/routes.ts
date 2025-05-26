@@ -1767,6 +1767,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Real odds endpoint using your working RapidAPI subscription
+  app.get('/api/real-odds', async (req, res) => {
+    const { getRealOddsData } = await import('./routes/realOdds');
+    await getRealOddsData(req, res);
+  });
+
   // CRITICAL: Bet settlement and payout system
   app.post('/api/bets/:id/settle', isAuthenticated, async (req, res) => {
     try {
