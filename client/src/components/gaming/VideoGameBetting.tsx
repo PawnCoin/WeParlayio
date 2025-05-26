@@ -31,6 +31,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { PlusCircle, Trophy, Gamepad2, Users, Coins } from "lucide-react";
 
 // Popular video games for betting
@@ -121,31 +122,52 @@ const VideoGameBetting: React.FC = () => {
   });
   
   // Form submission handler
-  const onSubmit = (data: VideoGameBetFormValues) => {
-    console.log(data);
-    
-    // Format bet details for display
-    const gameName = isCustomGame ? data.customGame : popularGames.find(g => g.id === data.gameId)?.name;
-    const betTypeName = isCustomBetType ? data.customBetCondition : betTypes.find(b => b.id === data.betType)?.name;
-    const currency = currencyOptions.find(c => c.id === data.currency)?.icon || "$";
-    
-    // Show toast with bet details
-    toast({
-      title: data.useVirtualCurrency ? "Virtual Bet Created" : "Real Money Bet Created",
-      description: `${gameName}: ${data.team1} vs ${data.team2} - ${betTypeName} - ${currency}${data.amount}`
-    });
-    
-    // Send invite notification if public
-    if (data.isPublic) {
+  const onSubmit = async (data: VideoGameBetFormValues) => {
+    try {
+      // Format bet details for API
+      const gameName = isCustomGame ? data.customGame : popularGames.find(g => g.id === data.gameId)?.name;
+      const betTypeName = isCustomBetType ? data.customBetCondition : betTypes.find(b => b.id === data.betType)?.name;
+      
+      const betData = {
+        gameType: gameName,
+        tournament: `${data.team1} vs ${data.team2}`,
+        team: data.team1, // User's selected team
+        amount: data.amount,
+        currency: data.useVirtualCurrency ? 'WeParlay Cash' : 'USD'
+      };
+
+      const response = await apiRequest('POST', '/api/gaming/bets', betData);
+      
+      if (response.ok) {
+        const result = await response.json();
+        
+        toast({
+          title: "Gaming Bet Placed Successfully!",
+          description: `${gameName}: ${betTypeName} - $${data.amount} bet placed`,
+        });
+        
+        // Send invite notification if public
+        if (data.isPublic) {
+          toast({
+            title: "Bet Challenge Created",
+            description: "Your bet challenge is now visible to other users!",
+            variant: "default"
+          });
+        }
+        
+        // Reset form
+        form.reset(defaultValues);
+      } else {
+        throw new Error('Failed to place gaming bet');
+      }
+    } catch (error) {
+      console.error('Error placing gaming bet:', error);
       toast({
-        title: "Bet Challenge Created",
-        description: "Your bet challenge is now visible to other users!",
-        variant: "default"
+        title: "Error Placing Gaming Bet",
+        description: "Failed to place your gaming bet. Please try again.",
+        variant: "destructive"
       });
     }
-    
-    // Reset form
-    form.reset(defaultValues);
   };
   
   // Handle game selection changes

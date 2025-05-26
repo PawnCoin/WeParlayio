@@ -1166,6 +1166,224 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // CRITICAL: Create head-to-head challenges with real database storage
+  app.post('/api/challenges', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
+
+      const { eventName, amount, currency, isVirtual, pick, customMessage, inviteMethod, friendEmail, friendPhone, expiresAt } = req.body;
+
+      if (!eventName || !amount || !pick) {
+        return res.status(400).json({ message: 'Missing required challenge information' });
+      }
+
+      // Create challenge in database
+      const challenge = await storage.createBettingChallenge({
+        createdBy: userId,
+        eventName,
+        amount,
+        currency: currency || 'USD',
+        isVirtual: isVirtual || false,
+        pick,
+        customMessage,
+        status: 'pending',
+        expiresAt: new Date(expiresAt)
+      });
+
+      // Send invitation based on method
+      if (inviteMethod === 'email' && friendEmail) {
+        // In production, integrate with real email service
+        console.log(`Sending email invitation to ${friendEmail} for challenge ${challenge.uuid}`);
+      } else if (inviteMethod === 'sms' && friendPhone) {
+        // In production, integrate with Twilio SMS service
+        console.log(`Sending SMS invitation to ${friendPhone} for challenge ${challenge.uuid}`);
+      }
+
+      res.json({ 
+        success: true, 
+        challenge,
+        challengeUuid: challenge.uuid,
+        message: 'Challenge created successfully!' 
+      });
+    } catch (error) {
+      console.error('Error creating challenge:', error);
+      res.status(500).json({ message: 'Failed to create challenge' });
+    }
+  });
+
+  // CRITICAL: Video game betting real implementation
+  app.post('/api/gaming/bets', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
+
+      const { gameType, tournament, team, amount, currency } = req.body;
+
+      if (!gameType || !tournament || !team || !amount) {
+        return res.status(400).json({ message: 'Missing required betting information' });
+      }
+
+      // Check user balance
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      const userBalance = currency === 'USD' ? (user.balance || 0) : (user.weplayTokenBalance || 0);
+      if (userBalance < parseFloat(amount)) {
+        return res.status(400).json({ message: 'Insufficient balance' });
+      }
+
+      // Create gaming bet in database
+      const bet = await storage.createBet({
+        userId,
+        eventId: 0, // Gaming bets use eventId 0
+        amount: parseFloat(amount),
+        odds: 2.0, // Default gaming odds
+        selection: JSON.stringify({ gameType, tournament, team }),
+        status: 'pending',
+        betType: 'gaming',
+        currency: currency || 'USD',
+        potentialPayout: parseFloat(amount) * 2.0
+      });
+
+      // Deduct balance
+      if (currency === 'USD') {
+        await storage.updateUserBalance(userId, -parseFloat(amount));
+      } else {
+        await storage.updateUserWeplayTokenBalance(userId, -parseFloat(amount));
+      }
+
+      res.json({ 
+        success: true, 
+        bet,
+        message: 'Gaming bet placed successfully!' 
+      });
+    } catch (error) {
+      console.error('Error placing gaming bet:', error);
+      res.status(500).json({ message: 'Failed to place gaming bet' });
+    }
+  });
+
+  // CRITICAL: Support ticket system endpoints
+  app.post('/api/support/tickets', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
+
+      const { subject, description, priority, category } = req.body;
+
+      if (!subject || !description) {
+        return res.status(400).json({ message: 'Subject and description are required' });
+      }
+
+      const ticket = await storage.createSupportTicket({
+        userId,
+        subject,
+        description,
+        priority: priority || 'medium',
+        category: category || 'general',
+        status: 'open'
+      });
+
+      res.json({ success: true, ticket });
+    } catch (error) {
+      console.error('Error creating support ticket:', error);
+      res.status(500).json({ message: 'Failed to create support ticket' });
+    }
+  });
+
+  app.get('/api/support/tickets/:ticketNumber', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { ticketNumber } = req.params;
+
+      const ticket = await storage.getSupportTicketByNumber(ticketNumber);
+      
+      if (!ticket) {
+        return res.status(404).json({ message: 'Ticket not found' });
+      }
+
+      if (ticket.userId !== userId) {
+        return res.status(403).json({ message: 'Access denied' });
+      }
+
+      const messages = await storage.getTicketMessages(ticket.id);
+
+      res.json({ ticket, messages });
+    } catch (error) {
+      console.error('Error fetching support ticket:', error);
+      res.status(500).json({ message: 'Failed to fetch support ticket' });
+    }
+  });
+
+  app.post('/api/support/tickets/:ticketId/messages', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { ticketId } = req.params;
+      const { message } = req.body;
+
+      if (!message) {
+        return res.status(400).json({ message: 'Message is required' });
+      }
+
+      const messageRecord = await storage.addTicketMessage({
+        ticketId: parseInt(ticketId),
+        userId,
+        message,
+        isFromUser: true
+      });
+
+      res.json({ success: true, message: messageRecord });
+    } catch (error) {
+      console.error('Error adding ticket message:', error);
+      res.status(500).json({ message: 'Failed to add message' });
+    }
+  });
+
+  // CRITICAL: Yahoo Fantasy Sports integration endpoints
+  app.get('/api/yahoo/status', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const user = await storage.getUser(userId);
+      
+      const authenticated = !!(user?.yahooAccessToken && user?.yahooRefreshToken);
+      
+      res.json({ 
+        authenticated,
+        tokenExpiry: user?.yahooTokenExpiry || null
+      });
+    } catch (error) {
+      console.error('Error checking Yahoo status:', error);
+      res.status(500).json({ message: 'Failed to check Yahoo status' });
+    }
+  });
+
+  app.post('/api/yahoo/connect', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { accessToken, refreshToken, expiry } = req.body;
+
+      if (!accessToken || !refreshToken) {
+        return res.status(400).json({ message: 'Access token and refresh token are required' });
+      }
+
+      await storage.updateYahooIntegration(userId, accessToken, refreshToken, new Date(expiry));
+
+      res.json({ success: true, message: 'Yahoo account connected successfully' });
+    } catch (error) {
+      console.error('Error connecting Yahoo account:', error);
+      res.status(500).json({ message: 'Failed to connect Yahoo account' });
+    }
+  });
+
   // Get all live events (across all sports)
   app.get("/api/events/live", async (req, res) => {
     try {
