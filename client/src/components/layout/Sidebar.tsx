@@ -436,101 +436,141 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
         </ul>
         
         <div className="mb-2 text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">
-          Sports
+          Sports Categories
         </div>
-        <ul className="space-y-1">
+        <div className="space-y-2">
           {isLoadingSports ? (
-            // Loading skeletons for sports
-            Array(5).fill(0).map((_, index) => (
-              <li key={`skeleton-${index}`} className="mb-1">
-                <div className="flex items-center py-2 px-4">
-                  <Skeleton className="h-6 w-6 rounded-full mr-3" />
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-6 w-8 ml-auto" />
-                </div>
-              </li>
+            Array(3).fill(0).map((_, index) => (
+              <div key={`skeleton-cat-${index}`} className="mb-1">
+                <Skeleton className="h-8 w-full" />
+              </div>
             ))
           ) : (
-            // Loaded sports
-            sports && Array.isArray(sports) ? (
-              sports.map((sport, index) => {
-                // Get REAL icon based on actual sport type from API
-                const getRealSportIcon = (sportKey: string, sportName: string) => {
-                  const key = sportKey.toLowerCase();
-                  const name = sportName?.toLowerCase() || '';
-                  
-                  // Basketball icons
-                  if (key.includes('basketball') || key.includes('nba') || key.includes('ncaam') || key.includes('ncaaw') || name.includes('basketball')) return '🏀';
-                  
-                  // Football icons  
-                  if (key.includes('football') || key.includes('nfl') || key.includes('ncaaf') || name.includes('football')) return '🏈';
-                  
-                  // Soccer icons
-                  if (key.includes('soccer') || key.includes('mls') || key.includes('fifa') || name.includes('soccer')) return '⚽';
-                  
-                  // Tennis icons
-                  if (key.includes('tennis') || key.includes('atp') || key.includes('wta') || name.includes('tennis')) return '🎾';
-                  
-                  // Baseball icons
-                  if (key.includes('baseball') || key.includes('mlb') || name.includes('baseball')) return '⚾';
-                  
-                  // Hockey icons
-                  if (key.includes('hockey') || key.includes('nhl') || name.includes('hockey')) return '🏒';
-                  
-                  // Golf icons
-                  if (key.includes('golf') || key.includes('pga') || name.includes('golf')) return '⛳';
-                  
-                  // Boxing icons
-                  if (key.includes('boxing') || name.includes('boxing')) return '🥊';
-                  
-                  // MMA/UFC icons
-                  if (key.includes('mma') || key.includes('ufc') || name.includes('mma') || name.includes('ufc')) return '🥋';
-                  
-                  // Racing icons
-                  if (key.includes('racing') || key.includes('nascar') || key.includes('f1') || key.includes('motorsport') || name.includes('racing')) return '🏎️';
-                  
-                  // Rugby icons
-                  if (key.includes('rugby') || name.includes('rugby')) return '🏉';
-                  
-                  // Cricket icons
-                  if (key.includes('cricket') || name.includes('cricket')) return '🏏';
-                  
-                  // Volleyball icons
-                  if (key.includes('volleyball') || name.includes('volleyball')) return '🏐';
-                  
-                  // Olympics icons
-                  if (key.includes('olympics') || name.includes('olympics')) return '🏅';
-                  
-                  return '🏆'; // Default for other sports
-                };
-                
-                const realIcon = getRealSportIcon(sport.key, sport.name);
-                
-                return (
-                  <li key={`sport-${sport.key}-${sport.id || index}`} className="mb-1">
-                    <Link href={`/sports/${sport.key}`}>
-                      <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer transition-colors ${
-                        location === `/sports/${sport.key}`
-                          ? "bg-primary text-white"
-                          : "hover:bg-gray-100 dark:hover:bg-gray-800"
-                      }`}>
-                        <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center mr-2 text-lg">
-                          {realIcon}
-                        </span>
-                        <span className="flex-1 text-sm font-medium">
-                          {sport.name}
-                        </span>
-                        <span className="ml-auto text-xs bg-green-500/20 text-green-600 px-2 py-1 rounded-full font-medium">
-                          LIVE
-                        </span>
-                      </div>
-                    </Link>
-                  </li>
-                );
-              })
-            ) : null
+            // Organized sports dropdown categories
+            <>
+              {/* Basketball Category */}
+              <details className="group">
+                <summary className="flex items-center py-2 px-3 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 list-none">
+                  <span className="text-lg mr-3">🏀</span>
+                  <span className="flex-1 text-sm font-medium">Basketball</span>
+                  <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
+                </summary>
+                <div className="ml-6 mt-1 space-y-1">
+                  <Link href="/sports/basketball_nba">
+                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
+                      <span>NBA</span>
+                      <span className="ml-auto text-green-600">LIVE</span>
+                    </div>
+                  </Link>
+                  <Link href="/sports/basketball_wnba">
+                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
+                      <span>WNBA</span>
+                      <span className="ml-auto text-blue-600">Tue 4PM</span>
+                    </div>
+                  </Link>
+                  <Link href="/sports/basketball_ncaab">
+                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
+                      <span>NCAA Men</span>
+                      <span className="ml-auto text-green-600">LIVE</span>
+                    </div>
+                  </Link>
+                </div>
+              </details>
+
+              {/* Football Category */}
+              <details className="group">
+                <summary className="flex items-center py-2 px-3 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 list-none">
+                  <span className="text-lg mr-3">🏈</span>
+                  <span className="flex-1 text-sm font-medium">Football</span>
+                  <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
+                </summary>
+                <div className="ml-6 mt-1 space-y-1">
+                  <Link href="/sports/americanfootball_nfl">
+                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
+                      <span>NFL</span>
+                      <span className="ml-auto text-orange-600">Off Season</span>
+                    </div>
+                  </Link>
+                  <Link href="/sports/americanfootball_ncaaf">
+                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
+                      <span>NCAA Football</span>
+                      <span className="ml-auto text-green-600">LIVE</span>
+                    </div>
+                  </Link>
+                </div>
+              </details>
+
+              {/* Soccer Category */}
+              <details className="group">
+                <summary className="flex items-center py-2 px-3 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 list-none">
+                  <span className="text-lg mr-3">⚽</span>
+                  <span className="flex-1 text-sm font-medium">Soccer</span>
+                  <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
+                </summary>
+                <div className="ml-6 mt-1 space-y-1">
+                  <Link href="/sports/soccer_epl">
+                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
+                      <span>Premier League</span>
+                      <span className="ml-auto text-green-600">LIVE</span>
+                    </div>
+                  </Link>
+                  <Link href="/sports/soccer_uefa_champs_league">
+                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
+                      <span>Champions League</span>
+                      <span className="ml-auto text-blue-600">Wed</span>
+                    </div>
+                  </Link>
+                </div>
+              </details>
+
+              {/* Tennis Category */}
+              <details className="group">
+                <summary className="flex items-center py-2 px-3 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 list-none">
+                  <span className="text-lg mr-3">🎾</span>
+                  <span className="flex-1 text-sm font-medium">Tennis</span>
+                  <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
+                </summary>
+                <div className="ml-6 mt-1 space-y-1">
+                  <Link href="/sports/tennis_atp">
+                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
+                      <span>ATP</span>
+                      <span className="ml-auto text-green-600">LIVE</span>
+                    </div>
+                  </Link>
+                  <Link href="/sports/tennis_wta">
+                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
+                      <span>WTA</span>
+                      <span className="ml-auto text-green-600">LIVE</span>
+                    </div>
+                  </Link>
+                </div>
+              </details>
+
+              {/* Combat Sports Category */}
+              <details className="group">
+                <summary className="flex items-center py-2 px-3 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 list-none">
+                  <span className="text-lg mr-3">🥊</span>
+                  <span className="flex-1 text-sm font-medium">Combat Sports</span>
+                  <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
+                </summary>
+                <div className="ml-6 mt-1 space-y-1">
+                  <Link href="/sports/mma_ufc">
+                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
+                      <span>UFC</span>
+                      <span className="ml-auto text-blue-600">Sat</span>
+                    </div>
+                  </Link>
+                  <Link href="/sports/boxing_main">
+                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
+                      <span>Boxing</span>
+                      <span className="ml-auto text-purple-600">Sun</span>
+                    </div>
+                  </Link>
+                </div>
+              </details>
+            </>
           )}
-        </ul>
+        </div>
       </nav>
       
       <hr className="border-gray-200 dark:border-gray-700" />

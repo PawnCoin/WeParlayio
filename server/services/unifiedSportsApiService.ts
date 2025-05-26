@@ -41,12 +41,11 @@ export class UnifiedSportsApiService {
         { id: 12, name: 'Soccer', key: 'soccer_epl', category: 'Soccer', active: true },
         { id: 13, name: 'Premier League', key: 'soccer_epl', category: 'Soccer', active: true },
         { id: 14, name: 'UEFA Champions League', key: 'soccer_uefa_champs_league', category: 'Soccer', active: true },
-        { id: 15, name: 'Tennis', key: 'tennis_wta', category: 'Tennis', active: true },
-        { id: 16, name: 'WTA', key: 'tennis_wta', category: 'Tennis', active: true },
-        { id: 17, name: 'ATP', key: 'tennis_atp', category: 'Tennis', active: true },
-        { id: 18, name: 'Boxing', key: 'boxing_main', category: 'Combat Sports', active: true },
-        { id: 19, name: 'MMA', key: 'mma_mixed_martial_arts', category: 'Combat Sports', active: true },
-        { id: 20, name: 'UFC', key: 'mma_mixed_martial_arts', category: 'Combat Sports', active: true }
+        { id: 15, name: 'Tennis WTA', key: 'tennis_wta', category: 'Tennis', active: true },
+        { id: 16, name: 'Tennis ATP', key: 'tennis_atp', category: 'Tennis', active: true },
+        { id: 17, name: 'Boxing', key: 'boxing_main', category: 'Combat Sports', active: true },
+        { id: 18, name: 'MMA', key: 'mma_mixed_martial_arts', category: 'Combat Sports', active: true },
+        { id: 19, name: 'UFC', key: 'mma_ufc', category: 'Combat Sports', active: true }
       ];
 
       allSports.push(...primarySports);
