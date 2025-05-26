@@ -23,10 +23,11 @@ export default function LiveBetting() {
   const [refreshing, setRefreshing] = useState(false);
   const { toast } = useToast();
 
-  // Fetch real odds data from your RapidAPI subscription
+  // Fetch real odds data from your RapidAPI subscription with optimized caching
   const { data: realOddsData, refetch: refetchRealOdds } = useQuery({
     queryKey: ["/api/real-odds"],
     refetchInterval: 10000, // Update every 10 seconds for real odds
+    staleTime: 5000, // Consider data fresh for 5 seconds
   });
 
   // Fetch live events data with real-time updates
@@ -120,7 +121,7 @@ export default function LiveBetting() {
             
             <div className="grid gap-4">
               {realOddsData.map((odds: any, index: number) => (
-                <Card key={odds.id || index} className="border-green-200 bg-green-50">
+                <Card key={`real-odds-${odds.id || odds.sport_key || index}`} className="border-green-200 bg-green-50">
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
                       <span className="text-lg font-bold">{odds.sport_title}</span>

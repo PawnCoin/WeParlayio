@@ -1767,10 +1767,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Real odds endpoint using your working RapidAPI subscription
+  // Real odds endpoint with performance caching
   app.get('/api/real-odds', async (req, res) => {
+    const { performanceCache } = await import('./utils/performanceCache');
+    
+    // Check cache first for faster response times
+    const cacheKey = 'real-odds-data';
+    const cachedData = performanceCache.get(cacheKey);
+    
+    if (cachedData) {
+      return res.json(cachedData);
+    }
+    
+    // Fetch fresh data if not cached
     const { getRealOddsData } = await import('./routes/realOdds');
-    await getRealOddsData(req, res);
+    const start = Date.now();
+    
+    try {
+      // Get fresh data
+      const freshData = await new Promise((resolve, reject) => {
+        const mockRes = {
+          json: resolve,
+          status: () => ({ json: reject })
+        };
+        getRealOddsData(req, mockRes);
+      });
+      
+      // Cache the fresh data
+      performanceCache.set(cacheKey, freshData, 'odds-live');
+      
+      const duration = Date.now() - start;
+      console.log(`⚡ Real odds API response: ${duration}ms`);
+      
+      res.json(freshData);
+    } catch (error) {
+      console.error('Real odds error:', error);
+      res.status(500).json({ error: 'Failed to fetch real odds' });
+    }
   });
 
   // CRITICAL: Bet settlement and payout system
