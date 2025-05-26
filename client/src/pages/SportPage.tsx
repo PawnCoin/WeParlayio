@@ -61,24 +61,9 @@ const SportPage = () => {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Filter events to match the current sport
-  const filteredLiveEvents = liveEvents && Array.isArray(liveEvents) ? 
-    liveEvents.filter((event: Event) => {
-      // If we're looking at a specific sport, filter by it
-      if (currentSport) {
-        return event.sportId === currentSport.id;
-      }
-      return true;
-    }) : [];
-
-  const filteredUpcomingEvents = upcomingEvents && Array.isArray(upcomingEvents) ?
-    upcomingEvents.filter((event: Event) => {
-      // If we're looking at a specific sport, filter by it
-      if (currentSport) {
-        return event.sportId === currentSport.id;
-      }
-      return true;
-    }) : [];
+  // No need to filter - the API already returns sport-specific data
+  const filteredLiveEvents = liveEvents && Array.isArray(liveEvents) ? liveEvents : [];
+  const filteredUpcomingEvents = upcomingEvents && Array.isArray(upcomingEvents) ? upcomingEvents : [];
 
   // Helper function to get odds for an event
   const getOddsForEvent = (eventId: number) => {
@@ -248,11 +233,11 @@ const SportPage = () => {
                             <span className="text-xs text-gray-500">{event.period || 'In Progress'} • {event.timeRemaining || '00:00'}</span>
                           </div>
                           <h3 className="font-medium mt-1">
-                            {getTeamName(event.homeTeamId)} vs {getTeamName(event.awayTeamId)}
+                            {(event as any).home_team} vs {(event as any).away_team}
                           </h3>
                         </div>
                         <div className="text-xl font-bold">
-                          {event.homeScore} - {event.awayScore}
+                          {(event as any).home_score || 0} - {(event as any).away_score || 0}
                         </div>
                       </div>
                       
@@ -267,28 +252,28 @@ const SportPage = () => {
                               sportKey={currentSport?.key || sportKey}
                               betType="Money Line"
                               homeTeam={{
-                                name: getTeamName(event.homeTeamId),
+                                name: (event as any).home_team,
                                 record: "42-18",
                                 currentForm: "W,W,L,W,W",
                                 recentPerformance: 8
                               }}
                               awayTeam={{
-                                name: getTeamName(event.awayTeamId),
+                                name: (event as any).away_team,
                                 record: "36-24",
                                 currentForm: "L,W,W,L,W",
                                 recentPerformance: 6
                               }}
                               odds={-110}
                               matchTime="Live Now"
-                              selection={getTeamName(event.homeTeamId)}
+                              selection={(event as any).home_team}
                             >
                               <Button 
                                 variant="outline" 
                                 size="sm" 
                                 className="w-full"
-                                onClick={() => handleAddBet(event, 'moneyline', getTeamName(event.homeTeamId), -110)}
+                                onClick={() => handleAddBet(event, 'moneyline', (event as any).home_team, -110)}
                               >
-                                {getTeamName(event.homeTeamId).slice(0, 3)} -110
+                                {((event as any).home_team || 'HOME').slice(0, 3)} -110
                               </Button>
                             </EnhancedBetTooltip>
                             
