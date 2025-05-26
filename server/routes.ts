@@ -376,136 +376,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ===== Sports Routes =====
   app.get("/api/sports", async (req, res) => {
     try {
-      // Get basic sports from storage
+      // Get comprehensive sports list from unified API service
+      const { UnifiedSportsApiService } = await import('./services/unifiedSportsApiService');
+      const unifiedSportsAPI = new UnifiedSportsApiService();
+      
+      // Get the massive sports list (110+ sports)
+      const massiveSportsList = await unifiedSportsAPI.getMassiveSportsList();
+      
+      // Combine storage sports with massive API sports list
+      const storageSports = await storage.getAllSports();
+      
+      // Merge with massive sports list, prioritizing API data
+      const allSports = [...massiveSportsList];
+      
+      // Add any storage sports that aren't in the massive list
+      for (const storageSport of storageSports) {
+        const exists = allSports.find(sport => sport.key === storageSport.key);
+        if (!exists) {
+          allSports.push(storageSport);
+        }
+      }
+      
+      // Return the comprehensive sports list with real data
+      res.json(allSports);
+    } catch (error) {
+      console.error("Error fetching comprehensive sports:", error);
+      
+      // Fallback to storage sports if unified API fails
       const sports = await storage.getAllSports();
-      
-      // Keys for our new sports - expanded to include college sports, women's leagues, and UFL
-      const newSportKeys = [
-        // Pro Sports
-        'boxing_main', 'mma_ufc', 'motorsport_nascar', 'tennis_atp', 'tennis_wta', 'basketball_wnba', 'football_ufl',
-        // College Sports
-        'football_ncaaf', 'basketball_ncaam', 'basketball_ncaaw'
-      ];
-      
-      // Filter out existing sports with our target keys to avoid duplicates
-      const existingSportKeys = sports.map(sport => sport.key);
-      const sportsToAdd = [];
-      
-      // Pro Sports
-      // Boxing
-      if (!existingSportKeys.includes('boxing_main')) {
-        sportsToAdd.push({ 
-          name: "Boxing", 
-          key: "boxing_main", 
-          isActive: true, 
-          icon: "🥊" 
-        });
-      }
-      
-      // MMA/UFC
-      if (!existingSportKeys.includes('mma_ufc')) {
-        sportsToAdd.push({ 
-          name: "MMA", 
-          key: "mma_ufc", 
-          isActive: true, 
-          icon: "🥋" 
-        });
-      }
-      
-      // NASCAR
-      if (!existingSportKeys.includes('motorsport_nascar')) {
-        sportsToAdd.push({ 
-          name: "NASCAR", 
-          key: "motorsport_nascar", 
-          isActive: true, 
-          icon: "🏎️" 
-        });
-      }
-      
-      // Tennis (ATP - Men's)
-      if (!existingSportKeys.includes('tennis_atp')) {
-        sportsToAdd.push({ 
-          name: "Tennis (ATP)", 
-          key: "tennis_atp", 
-          isActive: true, 
-          icon: "🎾" 
-        });
-      }
-      
-      // Tennis (WTA - Women's)
-      if (!existingSportKeys.includes('tennis_wta')) {
-        sportsToAdd.push({ 
-          name: "Tennis (WTA)", 
-          key: "tennis_wta", 
-          isActive: true, 
-          icon: "🎾" 
-        });
-      }
-      
-      // WNBA
-      if (!existingSportKeys.includes('basketball_wnba')) {
-        sportsToAdd.push({ 
-          name: "WNBA", 
-          key: "basketball_wnba", 
-          isActive: true, 
-          icon: "🏀" 
-        });
-      }
-      
-      // UFL
-      if (!existingSportKeys.includes('football_ufl')) {
-        sportsToAdd.push({ 
-          name: "UFL", 
-          key: "football_ufl", 
-          isActive: true, 
-          icon: "🏈" 
-        });
-      }
-      
-      // College Sports
-      // NCAA Football
-      if (!existingSportKeys.includes('football_ncaaf')) {
-        sportsToAdd.push({ 
-          name: "NCAA Football", 
-          key: "football_ncaaf", 
-          isActive: true, 
-          icon: "🏈" 
-        });
-      }
-      
-      // NCAA Men's Basketball
-      if (!existingSportKeys.includes('basketball_ncaam')) {
-        sportsToAdd.push({ 
-          name: "NCAA Men's Basketball", 
-          key: "basketball_ncaam", 
-          isActive: true, 
-          icon: "🏀" 
-        });
-      }
-      
-      // NCAA Women's Basketball
-      if (!existingSportKeys.includes('basketball_ncaaw')) {
-        sportsToAdd.push({ 
-          name: "NCAA Women's Basketball", 
-          key: "basketball_ncaaw", 
-          isActive: true, 
-          icon: "🏀" 
-        });
-      }
-      
-      // Add any missing sports
-      for (const sport of sportsToAdd) {
-        await storage.createSport(sport);
-      }
-      
-      // Get updated list of sports without duplicates
-      const updatedSports = await storage.getAllSports();
-      res.json(updatedSports);
-    } catch (error: any) {
-      res.status(500).json({ message: error.message });
+      res.json(sports);
     }
   });
 
+  // Get single sport by ID
   app.get("/api/sports/:id", async (req, res) => {
     try {
       const sport = await storage.getSport(parseInt(req.params.id));
@@ -513,6 +416,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Sport not found" });
       }
       res.json(sport);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // ===== Teams Routes =====
+  app.get("/api/teams", async (req, res) => {
+    try {
+      const teams = await storage.getAllTeams();
+      res.json(teams);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
