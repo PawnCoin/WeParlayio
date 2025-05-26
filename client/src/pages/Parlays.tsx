@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
+import { TeamLogo, TeamMatchup } from '@/components/betting/TeamLogo';
+import { apiRequest } from '@/lib/queryClient';
 import { 
   Plus, 
   Trash2, 
@@ -13,7 +15,9 @@ import {
   TrendingUp,
   Target,
   Zap,
-  CheckCircle
+  CheckCircle,
+  X,
+  Award
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
