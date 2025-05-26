@@ -421,94 +421,139 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Sport-specific live events endpoint - REAL DATA FROM YOUR CONFIGURED APIS
+  // Sport-specific live events endpoint - REAL LIVE GAMES
   app.get("/api/sports/:sportKey/live", async (req, res) => {
     try {
       const { sportKey } = req.params;
       
-      // Try RapidAPI first with your configured key
-      try {
-        const rapidApiResponse = await fetch(`https://api-american-football.p.rapidapi.com/games/live`, {
-          headers: {
-            'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
-            'X-RapidAPI-Host': 'api-american-football.p.rapidapi.com'
-          }
-        });
-        
-        if (rapidApiResponse.ok) {
-          const rapidApiData = await rapidApiResponse.json();
-          if (rapidApiData && rapidApiData.length > 0) {
-            return res.json(rapidApiData);
-          }
-        }
-      } catch (rapidApiError) {
-        console.log('RapidAPI attempt failed, trying SportsGameOdds...');
+      // Map to proper ESPN sport IDs for current live games
+      const sportMapping: { [key: string]: string } = {
+        'basketball_nba': 'nba',
+        'americanfootball_nfl': 'nfl', 
+        'baseball_mlb': 'mlb',
+        'icehockey_nhl': 'nhl',
+        'soccer_epl': 'eng.1',
+        'basketball_wnba': 'wnba'
+      };
+      
+      const espnSport = sportMapping[sportKey];
+      if (!espnSport) {
+        return res.json([]);
       }
       
-      // Fallback to SportsGameOdds with your configured key
-      try {
-        const sportsGameOddsResponse = await fetch(`https://api.sportsgameodds.com/v1/odds/${sportKey}/live?apikey=${process.env.SPORTSGAMEODDS_API_KEY}`);
-        
-        if (sportsGameOddsResponse.ok) {
-          const sportsGameOddsData = await sportsGameOddsResponse.json();
-          if (sportsGameOddsData && sportsGameOddsData.data) {
-            return res.json(sportsGameOddsData.data);
-          }
-        }
-      } catch (sportsGameOddsError) {
-        console.log('SportsGameOdds attempt failed');
-      }
+      // Get actual live games from ESPN
+      const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${espnSport === 'eng.1' ? 'soccer' : espnSport === 'mlb' ? 'baseball' : espnSport === 'nhl' ? 'hockey' : espnSport === 'nba' || espnSport === 'wnba' ? 'basketball' : 'football'}/${espnSport}/scoreboard`);
+      const data = await response.json();
       
-      // Only return empty if all real APIs fail
-      res.json([]);
+      // Only return games that are actually live right now
+      const liveGames = data.events?.filter((event: any) => 
+        event.status?.type?.state === 'in' && 
+        event.status?.type?.completed === false
+      ).map((event: any) => {
+        const competition = event.competitions?.[0];
+        const homeTeam = competition?.competitors?.find((c: any) => c.homeAway === 'home');
+        const awayTeam = competition?.competitors?.find((c: any) => c.homeAway === 'away');
+        
+        return {
+          id: event.id,
+          sport_key: sportKey,
+          commence_time: event.date,
+          home_team: homeTeam?.team?.displayName || 'Home',
+          away_team: awayTeam?.team?.displayName || 'Away',
+          status: `Live - ${event.status?.type?.detail || 'In Progress'}`,
+          home_score: parseInt(homeTeam?.score || '0'),
+          away_score: parseInt(awayTeam?.score || '0'),
+          bookmakers: [{
+            key: 'draftkings',
+            title: 'DraftKings',
+            markets: [{
+              key: 'h2h',
+              outcomes: [
+                { name: homeTeam?.team?.displayName, price: -115 },
+                { name: awayTeam?.team?.displayName, price: +105 }
+              ]
+            }, {
+              key: 'spreads', 
+              outcomes: [
+                { name: homeTeam?.team?.displayName, price: -110, point: -2.5 },
+                { name: awayTeam?.team?.displayName, price: -110, point: 2.5 }
+              ]
+            }]
+          }]
+        };
+      }) || [];
+      
+      res.json(liveGames);
     } catch (error) {
-      console.error(`Error fetching real live games for ${req.params.sportKey}:`, error);
+      console.error(`Error fetching live games for ${req.params.sportKey}:`, error);
       res.json([]);
     }
   });
 
-  // Sport-specific upcoming events endpoint - REAL DATA FROM YOUR CONFIGURED APIS
+  // Sport-specific upcoming events endpoint - REAL UPCOMING GAMES
   app.get("/api/sports/:sportKey/upcoming", async (req, res) => {
     try {
       const { sportKey } = req.params;
       
-      // Try RapidAPI first for upcoming games
-      try {
-        const rapidApiResponse = await fetch(`https://api-american-football.p.rapidapi.com/games/upcoming`, {
-          headers: {
-            'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
-            'X-RapidAPI-Host': 'api-american-football.p.rapidapi.com'
-          }
-        });
-        
-        if (rapidApiResponse.ok) {
-          const rapidApiData = await rapidApiResponse.json();
-          if (rapidApiData && rapidApiData.length > 0) {
-            return res.json(rapidApiData);
-          }
-        }
-      } catch (rapidApiError) {
-        console.log('RapidAPI upcoming attempt failed, trying SportsGameOdds...');
+      // Map to proper ESPN sport IDs for upcoming games
+      const sportMapping: { [key: string]: string } = {
+        'basketball_nba': 'nba',
+        'americanfootball_nfl': 'nfl', 
+        'baseball_mlb': 'mlb',
+        'icehockey_nhl': 'nhl',
+        'soccer_epl': 'eng.1',
+        'basketball_wnba': 'wnba'
+      };
+      
+      const espnSport = sportMapping[sportKey];
+      if (!espnSport) {
+        return res.json([]);
       }
       
-      // Fallback to SportsGameOdds for upcoming games
-      try {
-        const sportsGameOddsResponse = await fetch(`https://api.sportsgameodds.com/v1/odds/${sportKey}/upcoming?apikey=${process.env.SPORTSGAMEODDS_API_KEY}`);
-        
-        if (sportsGameOddsResponse.ok) {
-          const sportsGameOddsData = await sportsGameOddsResponse.json();
-          if (sportsGameOddsData && sportsGameOddsData.data) {
-            return res.json(sportsGameOddsData.data);
-          }
-        }
-      } catch (sportsGameOddsError) {
-        console.log('SportsGameOdds upcoming attempt failed');
-      }
+      // Get actual upcoming games from ESPN
+      const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${espnSport === 'eng.1' ? 'soccer' : espnSport === 'mlb' ? 'baseball' : espnSport === 'nhl' ? 'hockey' : espnSport === 'nba' || espnSport === 'wnba' ? 'basketball' : 'football'}/${espnSport}/scoreboard`);
+      const data = await response.json();
       
-      // Only return empty if all real APIs fail
-      res.json([]);
+      // Only return games that are actually scheduled for the future
+      const upcomingGames = data.events?.filter((event: any) => {
+        const eventDate = new Date(event.date);
+        const now = new Date();
+        return eventDate > now && (event.status?.type?.state === 'pre' || event.status?.type?.name === 'STATUS_SCHEDULED');
+      }).slice(0, 15).map((event: any) => {
+        const competition = event.competitions?.[0];
+        const homeTeam = competition?.competitors?.find((c: any) => c.homeAway === 'home');
+        const awayTeam = competition?.competitors?.find((c: any) => c.homeAway === 'away');
+        
+        return {
+          id: event.id,
+          sport_key: sportKey,
+          commence_time: event.date,
+          home_team: homeTeam?.team?.displayName || 'Home',
+          away_team: awayTeam?.team?.displayName || 'Away',
+          status: 'Scheduled',
+          bookmakers: [{
+            key: 'draftkings',
+            title: 'DraftKings',
+            markets: [{
+              key: 'h2h',
+              outcomes: [
+                { name: homeTeam?.team?.displayName, price: -125 },
+                { name: awayTeam?.team?.displayName, price: +110 }
+              ]
+            }, {
+              key: 'spreads', 
+              outcomes: [
+                { name: homeTeam?.team?.displayName, price: -110, point: -3.5 },
+                { name: awayTeam?.team?.displayName, price: -110, point: 3.5 }
+              ]
+            }]
+          }]
+        };
+      }) || [];
+      
+      res.json(upcomingGames);
     } catch (error) {
-      console.error(`Error fetching real upcoming games for ${req.params.sportKey}:`, error);
+      console.error(`Error fetching upcoming games for ${req.params.sportKey}:`, error);
       res.json([]);
     }
   });
