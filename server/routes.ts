@@ -421,41 +421,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Sport-specific live events endpoint - REAL DATA ONLY
+  // Sport-specific live events endpoint - REAL ODDS DATA FROM THE ODDS API
   app.get("/api/sports/:sportKey/live", async (req, res) => {
     try {
       const { sportKey } = req.params;
       
-      // Get live events and filter by sport key
-      const liveEvents = await storage.getLiveEvents();
-      const filteredEvents = liveEvents.filter(event => 
-        event.sport_key === sportKey || 
-        event.sportKey === sportKey
-      );
+      // Fetch live odds from The Odds API
+      const oddsApiUrl = `https://api.the-odds-api.com/v4/sports/${sportKey}/odds/?apiKey=${process.env.THE_ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&dateFormat=iso`;
       
-      res.json(filteredEvents);
+      const response = await fetch(oddsApiUrl);
+      const oddsData = await response.json();
+      
+      // Filter for live events only (games that have started)
+      const now = new Date();
+      const liveEvents = oddsData.filter((event: any) => {
+        const startTime = new Date(event.commence_time);
+        return startTime <= now && !event.completed;
+      });
+      
+      res.json(liveEvents);
     } catch (error) {
-      console.error(`Error fetching live events for ${req.params.sportKey}:`, error);
-      res.status(500).json({ message: "Failed to fetch live events" });
+      console.error(`Error fetching live odds for ${req.params.sportKey}:`, error);
+      res.status(500).json({ message: "Failed to fetch live odds" });
     }
   });
 
-  // Sport-specific upcoming events endpoint - REAL DATA ONLY  
+  // Sport-specific upcoming events endpoint - REAL ODDS DATA FROM THE ODDS API
   app.get("/api/sports/:sportKey/upcoming", async (req, res) => {
     try {
       const { sportKey } = req.params;
       
-      // Get upcoming events and filter by sport key
-      const upcomingEvents = await storage.getUpcomingEvents();
-      const filteredEvents = upcomingEvents.filter(event => 
-        event.sport_key === sportKey || 
-        event.sportKey === sportKey
-      );
+      // Fetch upcoming odds from The Odds API
+      const oddsApiUrl = `https://api.the-odds-api.com/v4/sports/${sportKey}/odds/?apiKey=${process.env.THE_ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&dateFormat=iso`;
       
-      res.json(filteredEvents);
+      const response = await fetch(oddsApiUrl);
+      const oddsData = await response.json();
+      
+      // Filter for upcoming events only (games that haven't started)
+      const now = new Date();
+      const upcomingEvents = oddsData.filter((event: any) => {
+        const startTime = new Date(event.commence_time);
+        return startTime > now;
+      });
+      
+      res.json(upcomingEvents);
     } catch (error) {
-      console.error(`Error fetching upcoming events for ${req.params.sportKey}:`, error);
-      res.status(500).json({ message: "Failed to fetch upcoming events" });
+      console.error(`Error fetching upcoming odds for ${req.params.sportKey}:`, error);
+      res.status(500).json({ message: "Failed to fetch upcoming odds" });
     }
   });
 
