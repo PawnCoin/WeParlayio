@@ -13,9 +13,11 @@ import {
   Play,
   Pause,
   Users,
-  Target
+  Target,
+  Brain
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import OddsPredictionWidget from "@/components/OddsPredictionWidget";
 
 export default function LiveBetting() {
   const [refreshing, setRefreshing] = useState(false);
@@ -215,6 +217,59 @@ export default function LiveBetting() {
                 <h3 className="font-semibold">Live Updates</h3>
                 <p className="text-sm text-gray-600">Odds and scores update in real-time during games</p>
               </div>
+              <div className="text-center space-y-2">
+                <Brain className="h-8 w-8 text-blue-500 mx-auto" />
+                <h3 className="font-semibold">AI Predictions</h3>
+                <p className="text-sm text-gray-600">Advanced algorithms predict odds movements and market trends</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Real-time Odds Prediction Demo */}
+        <Card className="border-2 border-primary/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Brain className="h-5 w-5 text-primary" />
+              Real-time Odds Prediction Algorithm
+              <Badge variant="outline" className="ml-auto">
+                <Zap className="h-3 w-3 mr-1" />
+                AI Powered
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <Alert>
+                <Target className="h-4 w-4" />
+                <AlertDescription>
+                  Experience our advanced AI prediction engine! Try it with upcoming NFL games or any live sporting event.
+                </AlertDescription>
+              </Alert>
+              
+              {/* Sample prediction widget for demonstration */}
+              <OddsPredictionWidget
+                eventId="demo-nfl-game-2025"
+                sport="americanfootball_nfl"
+                homeTeam="Kansas City Chiefs"
+                awayTeam="Buffalo Bills"
+                currentOdds={{
+                  home: -120,
+                  away: +110,
+                  total: 48.5
+                }}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Continue with existing content */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Additional Features</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-3 gap-6">
               <div className="text-center space-y-2">
                 <Target className="h-8 w-8 text-green-500 mx-auto" />
                 <h3 className="font-semibold">Smart Betting</h3>

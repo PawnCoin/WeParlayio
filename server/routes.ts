@@ -373,6 +373,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ===== Real-time Odds Prediction API Routes =====
+  
+  // Predict odds movement for specific event
+  app.post('/api/odds/predict', async (req, res) => {
+    try {
+      const { oddsPredictionAlgorithm } = await import('./services/oddsPredictionAlgorithm');
+      const { eventId, sport, homeTeam, awayTeam, currentOdds } = req.body;
+
+      const oddsData = {
+        eventId,
+        sport,
+        homeTeam,
+        awayTeam,
+        currentOdds,
+        timestamp: new Date(),
+        volume: Math.floor(Math.random() * 2000) + 500,
+        marketSentiment: Math.random()
+      };
+
+      const prediction = await oddsPredictionAlgorithm.predictOddsMovement(oddsData);
+      
+      res.json({
+        success: true,
+        prediction,
+        timestamp: new Date(),
+        algorithm: "WeParlay Advanced Prediction Engine v1.0"
+      });
+    } catch (error: any) {
+      console.error("Error generating odds prediction:", error);
+      res.status(500).json({ message: error.message || "Failed to generate prediction" });
+    }
+  });
+
+  // Get market insights for specific sport
+  app.get('/api/odds/insights/:sport', async (req, res) => {
+    try {
+      const { oddsPredictionAlgorithm } = await import('./services/oddsPredictionAlgorithm');
+      const { sport } = req.params;
+      
+      const insights = await oddsPredictionAlgorithm.getMarketInsights(sport);
+      
+      res.json({
+        success: true,
+        insights,
+        sport,
+        timestamp: new Date()
+      });
+    } catch (error: any) {
+      console.error("Error fetching market insights:", error);
+      res.status(500).json({ message: error.message || "Failed to fetch insights" });
+    }
+  });
+
   // ===== Sports Routes =====
   app.get("/api/sports", async (req, res) => {
     try {
