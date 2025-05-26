@@ -30,6 +30,7 @@ interface ParlayLeg {
   game_id?: string;
 }
 
+// Enhanced Parlays with Real Team Logos - Updated for WeParlay
 export default function Parlays() {
   const [parlayLegs, setParlayLegs] = useState<ParlayLeg[]>([]);
   const [betAmount, setBetAmount] = useState<number>(10);
