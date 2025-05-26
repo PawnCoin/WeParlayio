@@ -75,18 +75,41 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             </div>
 
             {/* Navigation for desktop */}
-            <div className="hidden md:flex space-x-8">
+            <div className="hidden md:flex space-x-6">
               {navLinks.map((link) => (
                 <Link key={link.href} href={link.href}>
                   <div className={`${
                     location === link.href
-                      ? "text-green-500"
-                      : "text-white hover:text-green-500"
-                  } font-medium cursor-pointer`}>
+                      ? "text-green-500 border-b-2 border-green-500"
+                      : "text-white hover:text-green-500 transition-colors"
+                  } font-medium cursor-pointer py-2 px-1 text-sm`}>
                     {link.label}
                   </div>
                 </Link>
               ))}
+            </div>
+
+            {/* Mobile Navigation */}
+            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 z-50">
+              <div className="grid grid-cols-4 px-2 py-2">
+                {navLinks.slice(0, 4).map((link) => (
+                  <Link key={link.href} href={link.href}>
+                    <div className={`${
+                      location === link.href
+                        ? "text-green-500"
+                        : "text-white"
+                    } flex flex-col items-center py-2 px-1 text-xs font-medium`}>
+                      <div className="w-6 h-6 mb-1 flex items-center justify-center">
+                        {link.label === 'Home' && '🏠'}
+                        {link.label === 'Sports Betting' && '⚡'}
+                        {link.label === 'Fantasy' && '🏆'}
+                        {link.label === 'Tournaments' && '🥇'}
+                      </div>
+                      <span className="truncate">{link.label.split(' ')[0]}</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </div>
 
             {/* Currency Mode Toggle & Wallet Access */}
