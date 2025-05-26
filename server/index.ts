@@ -71,20 +71,29 @@ app.use((req, res, next) => {
   // Get SSL configuration
   const sslConfig = getSSLConfig();
   
-  // Create SSL-enabled server if configured
-  const sslServer = createSSLServer(app, sslConfig);
+  // Always use port 5000 for Replit deployments, regardless of SSL
+  const port = 5000;
   
-  // Use port 443 for HTTPS in production, 5000 for development
-  const port = sslConfig.enabled ? sslConfig.port : 5000;
+  // Create appropriate server based on configuration
+  let server;
+  if (sslConfig.enabled) {
+    try {
+      server = createSSLServer(app, sslConfig);
+      log(`🔒 SSL/TLS encryption enabled for weparlay.io`);
+    } catch (error) {
+      log(`❌ SSL certificate error: ${error.message}`);
+      log(`🔄 Falling back to HTTP server`);
+      server = app;
+    }
+  } else {
+    server = app;
+  }
   
-  sslServer.listen({
+  server.listen({
     port,
     host: "0.0.0.0",
     reusePort: true,
   }, () => {
-    log(`🚀 WeParlay server running on ${sslConfig.enabled ? 'HTTPS' : 'HTTP'} port ${port}`);
-    if (sslConfig.enabled) {
-      log(`🔒 SSL/TLS encryption enabled for weparlay.io`);
-    }
+    log(`🚀 WeParlay server running on HTTP port ${port}`);
   });
 })();

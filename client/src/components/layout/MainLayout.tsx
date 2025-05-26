@@ -33,7 +33,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const { selectedCurrency, setSelectedCurrency } = useBetting();
   const { toast } = useToast();
-  
+
   // Fetch WeParlay Cash balance
   const { data: cashBalance } = useQuery({
     queryKey: ['/api/user/cash-balance'],
@@ -49,7 +49,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       duration: 3000,
     });
   };
-  
+
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/comprehensive-betting", label: "Sports Betting" },
@@ -73,7 +73,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 <Logo size="md" withTagline={true} className="cursor-pointer transform hover:scale-105 transition-transform duration-300" />
               </Link>
             </div>
-            
+
             {/* Navigation for desktop */}
             <div className="hidden md:flex space-x-8">
               {navLinks.map((link) => (
@@ -88,11 +88,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 </Link>
               ))}
             </div>
-            
+
             {/* Currency Mode Toggle & Wallet Access */}
             <div className="hidden md:flex items-center space-x-2">
               <CurrencyModeToggle variant="compact" className="bg-black/20 p-2 rounded-md" />
-              
+
               <Link href="/wallet-management">
                 <Button variant="ghost" size="sm" className="text-white hover:text-green-500 flex items-center">
                   <Wallet className="h-4 w-4 mr-1" />
@@ -165,13 +165,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                       </div>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  
+
                   {/* Betting Notifications */}
                   <BetNotifications userId={user?.id} />
-                  
+
                   {/* Wallet Notifications */}
                   <WalletNotifications />
-                  
+
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="flex items-center space-x-2">
@@ -228,7 +228,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   }}
                 />
               )}
-              
+
               {/* Mobile menu button */}
               <Button 
                 variant="ghost" 
@@ -242,7 +242,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           </div>
         </div>
       </header>
-      
+
       {/* Main Content */}
       <main className="flex-1 flex overflow-hidden">
         {/* Sidebar - hidden on mobile unless open */}
@@ -251,7 +251,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         } md:block fixed md:relative z-20 inset-0 md:inset-auto bg-white md:w-64 shadow-md flex-shrink-0 h-full md:h-auto overflow-y-auto custom-scrollbar dark:bg-neutral-dark dark:text-neutral-light`}>
           <Sidebar onClose={() => setIsMobileSidebarOpen(false)} />
         </div>
-        
+
         {/* Mobile sidebar backdrop */}
         {isMobileSidebarOpen && (
           <div 
@@ -259,14 +259,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             onClick={() => setIsMobileSidebarOpen(false)}
           />
         )}
-        
+
         {/* Content Area */}
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
           {/* Main Content Column */}
           <div className="flex-1 overflow-y-auto p-4 custom-scrollbar bg-neutral-light dark:bg-neutral-dark dark:text-neutral-light">
             {children}
           </div>
-          
+
           {/* Betting Slip Column */}
           <div className="w-full md:w-80 bg-white shadow-md flex-shrink-0 overflow-y-auto custom-scrollbar betting-slip-shadow dark:bg-neutral-dark dark:text-neutral-light">
             <BettingSlip />

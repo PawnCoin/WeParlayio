@@ -20,9 +20,9 @@ const CurrencyModeToggle: React.FC<CurrencyModeToggleProps> = ({
 }) => {
   const { selectedCurrency, setSelectedCurrency } = useBetting();
   const { toast } = useToast();
-  
+
   const isVirtual = selectedCurrency === 'WEPARLAY';
-  
+
   const toggleMode = () => {
     const newMode = selectedCurrency === 'WEPARLAY' ? 'USD' : 'WEPARLAY';
     setSelectedCurrency(newMode);

@@ -19,10 +19,15 @@ export function createSSLServer(app: any, config: SSLConfig) {
   }
 
   try {
+    // Check if files exist before trying to read them
+    if (!fs.existsSync(config.keyPath!) || !fs.existsSync(config.certPath!)) {
+      throw new Error(`SSL certificate files not found`);
+    }
+    
     // SSL certificate paths (you'll need to get these from Let's Encrypt or your provider)
     const sslOptions = {
-      key: fs.readFileSync(config.keyPath || '/etc/letsencrypt/live/weparlay.io/privkey.pem'),
-      cert: fs.readFileSync(config.certPath || '/etc/letsencrypt/live/weparlay.io/fullchain.pem'),
+      key: fs.readFileSync(config.keyPath!),
+      cert: fs.readFileSync(config.certPath!),
       // Add certificate authority if available
       ...(config.caPath && { ca: fs.readFileSync(config.caPath) })
     };
@@ -55,12 +60,26 @@ export function createSSLServer(app: any, config: SSLConfig) {
   } catch (error) {
     console.error('❌ SSL certificate error:', error);
     console.log('🔄 Falling back to HTTP mode...');
+    // Instead of throwing, return HTTP server as fallback
     return http.createServer(app);
   }
 }
 
 // Environment-based SSL configuration
 export function getSSLConfig(): SSLConfig {
+  // For Replit deployments, disable SSL as it's handled by the platform
+  if (process.env.REPLIT || process.env.REPL_ID) {
+    return {
+      enabled: false,
+      keyPath: '',
+      certPath: '',
+      caPath: '',
+      port: 5000,
+      redirectHttp: false
+    };
+  }
+  
+  // For custom deployments, use the environment variables
   const isProduction = process.env.NODE_ENV === 'production';
   const domain = process.env.DOMAIN || 'weparlay.io';
   
