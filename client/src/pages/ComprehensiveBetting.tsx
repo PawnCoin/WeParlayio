@@ -407,7 +407,7 @@ export default function ComprehensiveBetting() {
                   <div className="space-y-3">
                     {americanSports && americanSports.length > 0 ? (
                       americanSports.map((sport: any, index: number) => (
-                        <div key={`american-${sport.sport || sport.key || sport.id || index}`} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                        <div key={`american-sport-${index}-${sport.sport || sport.key || sport.id || Date.now()}`} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
                           <span className="font-medium">{sport.sport || sport.name || 'Sport'}</span>
                           <Button 
                             size="sm" 

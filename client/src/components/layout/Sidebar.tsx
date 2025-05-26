@@ -546,34 +546,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                 </div>
               </details>
 
-              {/* Football Category - ALL FOOTBALL SPORTS */}
-              <details className="group">
-                <summary className="flex items-center py-2 px-3 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 list-none">
-                  <span className="text-lg mr-3">🏈</span>
-                  <span className="flex-1 text-sm font-medium">All Football</span>
-                  <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
-                </summary>
-                <div className="ml-6 mt-1 space-y-1">
-                  <Link href="/sports/americanfootball_nfl">
-                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
-                      <span>NFL</span>
-                      <span className="ml-auto text-orange-600">Off Season</span>
-                    </div>
-                  </Link>
-                  <Link href="/sports/americanfootball_ncaaf">
-                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
-                      <span>NCAA Football</span>
-                      <span className="ml-auto text-green-600">LIVE</span>
-                    </div>
-                  </Link>
-                  <Link href="/sports/football_ufl">
-                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
-                      <span>UFL</span>
-                      <span className="ml-auto text-blue-600">Spring</span>
-                    </div>
-                  </Link>
-                </div>
-              </details>
+
 
               {/* Baseball Category */}
               <details className="group">
