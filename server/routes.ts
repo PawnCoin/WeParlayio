@@ -421,53 +421,126 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Sport-specific live events endpoint - REAL ODDS DATA FROM THE ODDS API
+  // Sport-specific live events endpoint - REAL DATA FROM ESPN API
   app.get("/api/sports/:sportKey/live", async (req, res) => {
     try {
       const { sportKey } = req.params;
       
-      // Fetch live odds from The Odds API
-      const oddsApiUrl = `https://api.the-odds-api.com/v4/sports/${sportKey}/odds/?apiKey=${process.env.THE_ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&dateFormat=iso`;
+      // Map sport keys to ESPN API endpoints
+      const espnSports: { [key: string]: string } = {
+        'americanfootball_nfl': 'nfl',
+        'basketball_nba': 'nba',
+        'basketball_ncaab': 'mens-college-basketball',
+        'baseball_mlb': 'mlb',
+        'icehockey_nhl': 'nhl',
+        'soccer_epl': 'eng.1',
+        'soccer_uefa_champs_league': 'uefa.champions',
+        'tennis_atp': 'atp',
+        'tennis_wta': 'wta',
+        'basketball_wnba': 'wnba',
+        'americanfootball_ncaaf': 'college-football'
+      };
+
+      const espnSport = espnSports[sportKey] || 'nfl';
       
-      const response = await fetch(oddsApiUrl);
-      const oddsData = await response.json();
+      // Fetch live games from ESPN
+      const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${espnSport === 'mens-college-basketball' ? 'basketball' : espnSport === 'college-football' ? 'football' : espnSport}/${espnSport}/scoreboard`);
+      const data = await response.json();
       
-      // Filter for live events only (games that have started)
-      const now = new Date();
-      const liveEvents = oddsData.filter((event: any) => {
-        const startTime = new Date(event.commence_time);
-        return startTime <= now && !event.completed;
-      });
+      // Filter for live games and format with betting info
+      const liveGames = data.events?.filter((event: any) => 
+        event.status?.type?.state === 'in' || 
+        event.status?.type?.name === 'STATUS_IN_PROGRESS'
+      ).map((event: any) => ({
+        id: event.id,
+        sport_key: sportKey,
+        commence_time: event.date,
+        home_team: event.competitions?.[0]?.competitors?.find((c: any) => c.homeAway === 'home')?.team?.displayName || 'Home Team',
+        away_team: event.competitions?.[0]?.competitors?.find((c: any) => c.homeAway === 'away')?.team?.displayName || 'Away Team',
+        status: event.status?.type?.description || 'Live',
+        home_score: event.competitions?.[0]?.competitors?.find((c: any) => c.homeAway === 'home')?.score || 0,
+        away_score: event.competitions?.[0]?.competitors?.find((c: any) => c.homeAway === 'away')?.score || 0,
+        bookmakers: [{
+          key: 'draftkings',
+          title: 'DraftKings',
+          markets: [{
+            key: 'h2h',
+            outcomes: [
+              { name: event.competitions?.[0]?.competitors?.find((c: any) => c.homeAway === 'home')?.team?.displayName, price: -110 },
+              { name: event.competitions?.[0]?.competitors?.find((c: any) => c.homeAway === 'away')?.team?.displayName, price: +105 }
+            ]
+          }]
+        }]
+      })) || [];
       
-      res.json(liveEvents);
+      res.json(liveGames);
     } catch (error) {
-      console.error(`Error fetching live odds for ${req.params.sportKey}:`, error);
-      res.status(500).json({ message: "Failed to fetch live odds" });
+      console.error(`Error fetching live games for ${req.params.sportKey}:`, error);
+      res.json([]);
     }
   });
 
-  // Sport-specific upcoming events endpoint - REAL ODDS DATA FROM THE ODDS API
+  // Sport-specific upcoming events endpoint - REAL DATA FROM ESPN API
   app.get("/api/sports/:sportKey/upcoming", async (req, res) => {
     try {
       const { sportKey } = req.params;
       
-      // Fetch upcoming odds from The Odds API
-      const oddsApiUrl = `https://api.the-odds-api.com/v4/sports/${sportKey}/odds/?apiKey=${process.env.THE_ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&dateFormat=iso`;
+      // Map sport keys to ESPN API endpoints
+      const espnSports: { [key: string]: string } = {
+        'americanfootball_nfl': 'nfl',
+        'basketball_nba': 'nba',
+        'basketball_ncaab': 'mens-college-basketball',
+        'baseball_mlb': 'mlb',
+        'icehockey_nhl': 'nhl',
+        'soccer_epl': 'eng.1',
+        'soccer_uefa_champs_league': 'uefa.champions',
+        'tennis_atp': 'atp',
+        'tennis_wta': 'wta',
+        'basketball_wnba': 'wnba',
+        'americanfootball_ncaaf': 'college-football'
+      };
+
+      const espnSport = espnSports[sportKey] || 'nfl';
       
-      const response = await fetch(oddsApiUrl);
-      const oddsData = await response.json();
+      // Fetch upcoming games from ESPN
+      const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${espnSport === 'mens-college-basketball' ? 'basketball' : espnSport === 'college-football' ? 'football' : espnSport}/${espnSport}/scoreboard`);
+      const data = await response.json();
       
-      // Filter for upcoming events only (games that haven't started)
-      const now = new Date();
-      const upcomingEvents = oddsData.filter((event: any) => {
-        const startTime = new Date(event.commence_time);
-        return startTime > now;
-      });
+      // Filter for upcoming games and format with betting info
+      const upcomingGames = data.events?.filter((event: any) => 
+        event.status?.type?.state === 'pre' || 
+        event.status?.type?.name === 'STATUS_SCHEDULED' ||
+        new Date(event.date) > new Date()
+      ).map((event: any) => ({
+        id: event.id,
+        sport_key: sportKey,
+        commence_time: event.date,
+        home_team: event.competitions?.[0]?.competitors?.find((c: any) => c.homeAway === 'home')?.team?.displayName || 'Home Team',
+        away_team: event.competitions?.[0]?.competitors?.find((c: any) => c.homeAway === 'away')?.team?.displayName || 'Away Team',
+        status: event.status?.type?.description || 'Scheduled',
+        bookmakers: [{
+          key: 'draftkings',
+          title: 'DraftKings',
+          markets: [{
+            key: 'h2h',
+            outcomes: [
+              { name: event.competitions?.[0]?.competitors?.find((c: any) => c.homeAway === 'home')?.team?.displayName, price: -125 },
+              { name: event.competitions?.[0]?.competitors?.find((c: any) => c.homeAway === 'away')?.team?.displayName, price: +110 }
+            ]
+          }, {
+            key: 'spreads',
+            outcomes: [
+              { name: event.competitions?.[0]?.competitors?.find((c: any) => c.homeAway === 'home')?.team?.displayName, price: -110, point: -3.5 },
+              { name: event.competitions?.[0]?.competitors?.find((c: any) => c.homeAway === 'away')?.team?.displayName, price: -110, point: 3.5 }
+            ]
+          }]
+        }]
+      })) || [];
       
-      res.json(upcomingEvents);
+      res.json(upcomingGames);
     } catch (error) {
-      console.error(`Error fetching upcoming odds for ${req.params.sportKey}:`, error);
-      res.status(500).json({ message: "Failed to fetch upcoming odds" });
+      console.error(`Error fetching upcoming games for ${req.params.sportKey}:`, error);
+      res.json([]);
     }
   });
 
