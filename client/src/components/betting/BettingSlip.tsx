@@ -386,7 +386,7 @@ const BettingSlip: React.FC = () => {
             variant="ghost" 
             size="icon" 
             className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary mr-2"
-            onClick={() => setBetItems([])}
+            onClick={() => clearBets()}
           >
             <Trash2 className="h-4 w-4" />
           </Button>

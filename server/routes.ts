@@ -748,6 +748,424 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // CRITICAL: Real bet placement endpoint
+  app.post('/api/bets/place', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
+
+      const { eventId, selections, amount, currency, totalOdds, potentialPayout, betType } = req.body;
+
+      if (!eventId || !selections || !amount || amount <= 0) {
+        return res.status(400).json({ message: 'Invalid bet data' });
+      }
+
+      // Check user balance for real money bets
+      if (currency === 'USD') {
+        const user = await storage.getUser(userId);
+        if (!user || (user.balance || 0) < amount) {
+          return res.status(400).json({ message: 'Insufficient funds' });
+        }
+      }
+
+      // Create the bet in database
+      const bet = await storage.createBet({
+        userId,
+        eventId: parseInt(eventId),
+        amount,
+        odds: parseFloat(totalOdds),
+        selection: JSON.stringify(selections),
+        status: 'pending',
+        betType: betType || 'single',
+        currency: currency || 'USD',
+        potentialPayout: parseFloat(potentialPayout)
+      });
+
+      // Deduct balance for real money bets
+      if (currency === 'USD') {
+        await storage.updateUserBalance(userId, -amount);
+      } else if (currency === 'WeParlay Cash') {
+        await storage.updateUserWeplayTokenBalance(userId, -amount);
+      }
+
+      // Create notification
+      await storage.createNotification({
+        userId,
+        title: 'Bet Placed Successfully',
+        message: `Your ${betType} bet of ${amount} ${currency} has been placed`,
+        type: 'bet_placed'
+      });
+
+      res.json({ 
+        success: true, 
+        bet,
+        message: 'Bet placed successfully!' 
+      });
+    } catch (error) {
+      console.error('Error placing bet:', error);
+      res.status(500).json({ message: 'Failed to place bet' });
+    }
+  });
+
+  // CRITICAL: Calculate real payout endpoint
+  app.post('/api/bets/calculate-payout', async (req, res) => {
+    try {
+      const { selections, amount, betType } = req.body;
+
+      if (!selections || !amount || amount <= 0) {
+        return res.status(400).json({ message: 'Invalid calculation data' });
+      }
+
+      let totalOdds = 1;
+      
+      if (betType === 'parlay') {
+        selections.forEach((selection: any) => {
+          totalOdds *= parseFloat(selection.odds);
+        });
+      } else {
+        totalOdds = parseFloat(selections[0].odds);
+      }
+
+      const potentialPayout = amount * totalOdds;
+      const profit = potentialPayout - amount;
+
+      res.json({
+        totalOdds: totalOdds.toFixed(2),
+        potentialPayout: potentialPayout.toFixed(2),
+        profit: profit.toFixed(2),
+        amount: amount.toFixed(2)
+      });
+    } catch (error) {
+      console.error('Error calculating payout:', error);
+      res.status(500).json({ message: 'Failed to calculate payout' });
+    }
+  });
+
+  // CRITICAL: Accept head-to-head challenges
+  app.post('/api/challenges/accept/:id', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
+
+      const challengeId = req.params.id;
+      const challenge = await storage.getBettingChallengeByUuid(challengeId);
+      
+      if (!challenge) {
+        return res.status(404).json({ message: 'Challenge not found' });
+      }
+
+      if (challenge.status !== 'pending') {
+        return res.status(400).json({ message: 'Challenge no longer available' });
+      }
+
+      const acceptedChallenge = await storage.acceptBettingChallenge(challengeId, userId);
+      
+      res.json({ 
+        success: true, 
+        challenge: acceptedChallenge,
+        message: 'Challenge accepted successfully!' 
+      });
+    } catch (error) {
+      console.error('Error accepting challenge:', error);
+      res.status(500).json({ message: 'Failed to accept challenge' });
+    }
+  });
+
+  // CRITICAL: Real crypto deposit processing
+  app.post('/api/wallet/deposit', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
+
+      const { amount, currency, walletAddress, transactionHash } = req.body;
+
+      if (!amount || !currency || !walletAddress || !transactionHash) {
+        return res.status(400).json({ message: 'Missing required deposit information' });
+      }
+
+      // Create transaction record
+      const transaction = await storage.createTransaction({
+        userId,
+        type: 'deposit',
+        amount: parseFloat(amount),
+        currency,
+        status: 'pending',
+        description: `Crypto deposit - ${currency}`,
+        details: { walletAddress, transactionHash },
+        transactionDate: new Date()
+      });
+
+      // Update user balance (simplified - in production, verify transaction on blockchain first)
+      if (currency === 'USD') {
+        await storage.updateUserBalance(userId, parseFloat(amount));
+      } else {
+        await storage.updateUserWeplayTokenBalance(userId, parseFloat(amount));
+      }
+
+      res.json({ 
+        success: true, 
+        transaction,
+        message: 'Deposit processed successfully!' 
+      });
+    } catch (error) {
+      console.error('Error processing deposit:', error);
+      res.status(500).json({ message: 'Failed to process deposit' });
+    }
+  });
+
+  // CRITICAL: Real crypto withdrawal processing
+  app.post('/api/wallet/withdraw', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
+
+      const { amount, currency, walletAddress } = req.body;
+
+      if (!amount || !currency || !walletAddress) {
+        return res.status(400).json({ message: 'Missing required withdrawal information' });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Check sufficient balance
+      const userBalance = currency === 'USD' ? (user.balance || 0) : (user.weplayTokenBalance || 0);
+      if (userBalance < parseFloat(amount)) {
+        return res.status(400).json({ message: 'Insufficient balance' });
+      }
+
+      // Create withdrawal transaction
+      const transaction = await storage.createTransaction({
+        userId,
+        type: 'withdrawal',
+        amount: parseFloat(amount),
+        currency,
+        status: 'pending',
+        description: `Crypto withdrawal - ${currency}`,
+        details: { walletAddress },
+        transactionDate: new Date()
+      });
+
+      // Deduct from user balance
+      if (currency === 'USD') {
+        await storage.updateUserBalance(userId, -parseFloat(amount));
+      } else {
+        await storage.updateUserWeplayTokenBalance(userId, -parseFloat(amount));
+      }
+
+      res.json({ 
+        success: true, 
+        transaction,
+        message: 'Withdrawal initiated successfully!' 
+      });
+    } catch (error) {
+      console.error('Error processing withdrawal:', error);
+      res.status(500).json({ message: 'Failed to process withdrawal' });
+    }
+  });
+
+  // CRITICAL: Get real wallet balances
+  app.get('/api/wallet/balance', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      res.json({
+        usdBalance: user.balance || 0,
+        weparlayCashBalance: user.weplayTokenBalance || 0,
+        totalBalance: (user.balance || 0) + (user.weplayTokenBalance || 0)
+      });
+    } catch (error) {
+      console.error('Error fetching wallet balance:', error);
+      res.status(500).json({ message: 'Failed to fetch wallet balance' });
+    }
+  });
+
+  // CRITICAL: Real transaction history
+  app.get('/api/transactions/history', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
+
+      const limit = parseInt(req.query.limit as string) || 50;
+      const offset = parseInt(req.query.offset as string) || 0;
+
+      const transactions = await storage.getTransactions(limit, offset);
+      const userTransactions = transactions.filter(t => t.userId === userId);
+
+      res.json(userTransactions);
+    } catch (error) {
+      console.error('Error fetching transaction history:', error);
+      res.status(500).json({ message: 'Failed to fetch transaction history' });
+    }
+  });
+
+  // CRITICAL: Update user profiles  
+  app.post('/api/users/profile/update', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
+
+      const updates = req.body;
+      const allowedFields = ['firstName', 'lastName', 'username', 'gamertag', 'profileImageUrl', 'oddsFormat', 'useVirtualCurrency'];
+      
+      const filteredUpdates: any = {};
+      Object.keys(updates).forEach(key => {
+        if (allowedFields.includes(key)) {
+          filteredUpdates[key] = updates[key];
+        }
+      });
+
+      const updatedUser = await storage.upsertUser({
+        id: userId,
+        ...filteredUpdates,
+        updatedAt: new Date()
+      });
+
+      res.json({ 
+        success: true, 
+        user: updatedUser,
+        message: 'Profile updated successfully!' 
+      });
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      res.status(500).json({ message: 'Failed to update profile' });
+    }
+  });
+
+  // CRITICAL: Handle VIP tier upgrades
+  app.post('/api/users/tier/upgrade', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
+
+      const { tier } = req.body;
+      const validTiers = ['Bronze', 'Silver', 'Gold', 'Platinum'];
+      
+      if (!validTiers.includes(tier)) {
+        return res.status(400).json({ message: 'Invalid tier specified' });
+      }
+
+      // Check if user has sufficient balance for upgrade
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Tier costs (in USD)
+      const tierCosts = { Bronze: 10, Silver: 25, Gold: 50, Platinum: 100 };
+      const cost = tierCosts[tier as keyof typeof tierCosts];
+
+      if ((user.balance || 0) < cost) {
+        return res.status(400).json({ message: 'Insufficient balance for tier upgrade' });
+      }
+
+      // Process upgrade
+      await storage.updateUserBalance(userId, -cost);
+      const updatedUser = await storage.upsertUser({
+        id: userId,
+        tier,
+        updatedAt: new Date()
+      });
+
+      // Create notification
+      await storage.createNotification({
+        userId,
+        title: 'VIP Tier Upgraded',
+        message: `Congratulations! You've been upgraded to ${tier} tier`,
+        type: 'tier_upgrade'
+      });
+
+      res.json({ 
+        success: true, 
+        user: updatedUser,
+        message: `Successfully upgraded to ${tier} tier!` 
+      });
+    } catch (error) {
+      console.error('Error upgrading tier:', error);
+      res.status(500).json({ message: 'Failed to upgrade tier' });
+    }
+  });
+
+  // CRITICAL: Referral system tracking
+  app.get('/api/users/referrals', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
+
+      // Get user's referral code and referrals
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // In a real implementation, you'd track referrals
+      // For now, return basic referral info
+      res.json({
+        referralCode: user.id.slice(-8).toUpperCase(), // Simple referral code
+        totalReferrals: 0, // Would be tracked in database
+        bonusEarned: 0,    // Would be calculated from successful referrals
+        pendingReferrals: 0
+      });
+    } catch (error) {
+      console.error('Error fetching referrals:', error);
+      res.status(500).json({ message: 'Failed to fetch referral data' });
+    }
+  });
+
+  // CRITICAL: Get detailed event information
+  app.get('/api/events/:id/details', async (req, res) => {
+    try {
+      const eventId = parseInt(req.params.id);
+      const event = await storage.getEvent(eventId);
+      
+      if (!event) {
+        return res.status(404).json({ message: 'Event not found' });
+      }
+
+      // Get additional details like teams, sport info
+      const sport = await storage.getSport(event.sportId);
+      const homeTeam = await storage.getTeam(event.homeTeamId);
+      const awayTeam = await storage.getTeam(event.awayTeamId);
+
+      res.json({
+        ...event,
+        sport,
+        homeTeam,
+        awayTeam,
+        markets: event.odds, // Betting markets/odds
+      });
+    } catch (error) {
+      console.error('Error fetching event details:', error);
+      res.status(500).json({ message: 'Failed to fetch event details' });
+    }
+  });
+
   // Get all live events (across all sports)
   app.get("/api/events/live", async (req, res) => {
     try {
