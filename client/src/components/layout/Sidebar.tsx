@@ -11,7 +11,8 @@ import weparlayLogo from "@assets/weparlaylogo5.png";
 import { 
   X, BarChart2, Trophy, Medal, History, Settings, 
   Clock, ChevronRight, CircleDot, Flame, Zap, Crown,
-  DollarSign, HelpCircle, HeadphonesIcon, Wallet, CreditCard
+  DollarSign, HelpCircle, HeadphonesIcon, Wallet, CreditCard,
+  ChevronDown, TrendingUp, Target, Award
 } from "lucide-react";
 
 
@@ -294,16 +295,68 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
             </Link>
           </li>
           <li>
-            <Link href="/betting-dashboard">
-              <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
-                location === '/betting-dashboard' 
+            <details className="group">
+              <summary className={`flex items-center py-2 px-4 rounded-md cursor-pointer list-none ${
+                ['/betting-dashboard', '/odds', '/parlays', '/results'].includes(location) 
                   ? "bg-primary text-white" 
                   : "hover:bg-gray-100 dark:hover:bg-gray-800"
               }`}>
                 <BarChart2 className="h-5 w-5 mr-3" />
                 <span>Betting Dashboard</span>
-              </div>
-            </Link>
+                <ChevronDown className="h-4 w-4 ml-auto group-open:rotate-180 transition-transform" />
+              </summary>
+              <ul className="ml-6 mt-2 space-y-1">
+                <li>
+                  <Link href="/betting-dashboard">
+                    <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${
+                      location === '/betting-dashboard' 
+                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300" 
+                        : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}>
+                      <BarChart2 className="h-4 w-4 mr-2" />
+                      Dashboard
+                    </div>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/odds">
+                    <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${
+                      location === '/odds' 
+                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300" 
+                        : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}>
+                      <TrendingUp className="h-4 w-4 mr-2" />
+                      Live Odds
+                      <span className="ml-auto text-xs bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-300 px-2 py-0.5 rounded-full">FREE</span>
+                    </div>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/parlays">
+                    <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${
+                      location === '/parlays' 
+                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300" 
+                        : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}>
+                      <Target className="h-4 w-4 mr-2" />
+                      Parlay Builder
+                    </div>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/results">
+                    <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${
+                      location === '/results' 
+                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300" 
+                        : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}>
+                      <Award className="h-4 w-4 mr-2" />
+                      Results & Stats
+                    </div>
+                  </Link>
+                </li>
+              </ul>
+            </details>
           </li>
           <li>
             <Link href="/live-betting">
