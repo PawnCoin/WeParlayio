@@ -4196,6 +4196,109 @@ Join us: WeParlay.io 🎯
     }
   });
 
+  // ========== BEAST MODE: FREE API POWERHOUSE ==========
+  // NBA Official API - Real-time games and scores
+  app.get('/api/free/nba', async (req, res) => {
+    try {
+      const games = await freeApiService.getNBAGames();
+      res.json({ 
+        games, 
+        league: 'NBA',
+        count: games.length,
+        source: 'NBA Official API',
+        live: true
+      });
+    } catch (error) {
+      console.error('NBA API error:', error);
+      res.status(500).json({ error: 'Failed to fetch NBA data' });
+    }
+  });
+
+  // MLB Official API - Live baseball coverage  
+  app.get('/api/free/mlb', async (req, res) => {
+    try {
+      const games = await freeApiService.getMLBGames();
+      res.json({ 
+        games, 
+        league: 'MLB',
+        count: games.length,
+        source: 'MLB Stats API',
+        live: true
+      });
+    } catch (error) {
+      console.error('MLB API error:', error);
+      res.status(500).json({ error: 'Failed to fetch MLB data' });
+    }
+  });
+
+  // NFL ESPN API - Football coverage
+  app.get('/api/free/nfl', async (req, res) => {
+    try {
+      const games = await freeApiService.getNFLGames();
+      res.json({ 
+        games, 
+        league: 'NFL',
+        count: games.length,
+        source: 'ESPN NFL API',
+        live: true
+      });
+    } catch (error) {
+      console.error('NFL API error:', error);
+      res.status(500).json({ error: 'Failed to fetch NFL data' });
+    }
+  });
+
+  // Formula 1 API - Racing coverage
+  app.get('/api/free/f1', async (req, res) => {
+    try {
+      const races = await freeApiService.getF1Races();
+      res.json({ 
+        races, 
+        league: 'Formula 1',
+        count: races.length,
+        source: 'Ergast F1 API',
+        live: true
+      });
+    } catch (error) {
+      console.error('F1 API error:', error);
+      res.status(500).json({ error: 'Failed to fetch F1 data' });
+    }
+  });
+
+  // COMBINED POWERHOUSE - All sports in one endpoint
+  app.get('/api/free/all-sports', async (req, res) => {
+    try {
+      const allData = await freeApiService.getAllSportsData();
+      res.json({
+        ...allData,
+        api_coverage: 'BEAST MODE ACTIVATED',
+        free_apis_connected: ['NBA Official', 'MLB Stats', 'ESPN NFL', 'Ergast F1', 'Grid.gg Esports'],
+        total_leagues: 5,
+        cost: 'FREE',
+        quality: 'Official/Premium'
+      });
+    } catch (error) {
+      console.error('Combined sports API error:', error);
+      res.status(500).json({ error: 'Failed to fetch combined sports data' });
+    }
+  });
+
+  // COVERAGE STATS - Show the world what we built!
+  app.get('/api/free/coverage-stats', async (req, res) => {
+    try {
+      const stats = await freeApiService.getSportsCoverage();
+      res.json({
+        ...stats,
+        platform: 'WeParlay.io',
+        status: 'BEAST MODE LIVE',
+        message: 'Official sports data from premium sources - completely FREE!'
+      });
+    } catch (error) {
+      console.error('Coverage stats error:', error);
+      res.status(500).json({ error: 'Failed to fetch coverage stats' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
