@@ -172,8 +172,21 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem>
-                        Transaction History
+                      <DropdownMenuItem asChild className="flex items-center">
+                        <Link href="/weparlay-cash">
+                          <div className="flex items-center w-full">
+                            <History className="mr-2 h-4 w-4" />
+                            WeParlay Cash Hub
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="flex items-center">
+                        <Link href="/wallet-management?tab=transactions">
+                          <div className="flex items-center w-full">
+                            <CreditCard className="mr-2 h-4 w-4" />
+                            Transaction History
+                          </div>
+                        </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={handleCurrencySwitch} className="flex items-center cursor-pointer">
