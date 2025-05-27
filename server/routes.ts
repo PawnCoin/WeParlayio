@@ -11,6 +11,7 @@ import { AdvancedOddsService } from "./services/advancedOddsService";
 import { UnifiedSportsApiService } from "./services/unifiedSportsApiService";
 import { RapidApiService } from "./services/rapidApiService";
 import { SportsGameOddsService } from "./services/sportsGameOddsService";
+import { freeApiService } from "./services/freeApiService";
 import { yahooRouter } from "./routes/yahooRoutes";
 import { feeRouter } from "./routes/feeRoutes";
 import { adminRouter } from "./routes/adminRoutes";
