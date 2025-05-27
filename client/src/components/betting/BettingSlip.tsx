@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { useCurrencyMode } from "@/contexts/CurrencyModeContext"; 
+ 
 import CurrencyDisplay from "@/components/betting/CurrencyDisplay";
 import { Shield, Trash2, Settings, X, Bitcoin, Wallet, Clock, DollarSign, Plus, Coins } from "lucide-react";
 import { useBetting } from "@/contexts/BettingContext";
