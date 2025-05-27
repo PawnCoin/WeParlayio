@@ -27,57 +27,6 @@ const rapidApiService = new RapidApiService();
 const sportsGameOddsService = new SportsGameOddsService();
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Basic route to serve homepage
-  app.get('/', (req, res) => {
-    res.send(`
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>WeParlay - Sports Betting Platform</title>
-        <style>
-          body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 0; padding: 20px; color: white; }
-          .container { max-width: 800px; margin: 0 auto; text-align: center; }
-          .logo { font-size: 3rem; font-weight: bold; margin-bottom: 20px; }
-          .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 40px 0; }
-          .feature { background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; }
-          .btn { background: #28a745; color: white; padding: 15px 30px; border: none; border-radius: 5px; font-size: 1.1rem; cursor: pointer; margin: 10px; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="logo">🏆 WeParlay</div>
-          <h1>Your Sports Betting Platform is Running!</h1>
-          <p>Welcome to WeParlay - The future of sports betting with immersive countdown widgets and real-time hype tracking!</p>
-          
-          <div class="features">
-            <div class="feature">
-              <h3>🔥 Live Countdown Widgets</h3>
-              <p>Real-time event countdowns with dynamic hype levels</p>
-            </div>
-            <div class="feature">
-              <h3>📱 Social Media Sharing</h3>
-              <p>Share bets on Twitter, Facebook, Instagram, TikTok</p>
-            </div>
-            <div class="feature">
-              <h3>🎯 Live Hype Tracking</h3>
-              <p>Monitor fan excitement and betting volume</p>
-            </div>
-          </div>
-          
-          <button class="btn" onclick="window.location.href='/sports-hype'">View Sports Hype Center</button>
-          <button class="btn" onclick="window.location.href='/api/events'">API Status</button>
-          
-          <p style="margin-top: 40px; font-size: 0.9rem;">
-            🚀 Server running on port 5000 | ✅ SMTP ready | 🎮 All systems operational
-          </p>
-        </div>
-      </body>
-      </html>
-    `);
-  });
-
   // Register Authentication routes
   app.use('/api/auth', authRouter);
   app.use('/api/auth', authRoutes);
