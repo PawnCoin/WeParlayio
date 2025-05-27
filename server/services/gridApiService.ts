@@ -1,11 +1,11 @@
 /**
- * GRID API Service - Premium Sports Data Integration
- * Provides comprehensive sports coverage with real-time data
- * https://grid.ai/ - Sports Data API
+ * GRID API Service - Premium Esports and Gaming Data Integration
+ * Provides comprehensive esports coverage with real-time data
+ * https://grid.gg/ - Esports Data API via GraphQL
  */
 
 export class GridApiService {
-  private baseUrl = 'https://api-football-v1.p.rapidapi.com';
+  private baseUrl = 'https://api-op.grid.gg/central-data/graphql';
   private apiKey: string;
 
   constructor() {
@@ -15,31 +15,35 @@ export class GridApiService {
     }
   }
 
-  private async makeRequest(endpoint: string, params: any = {}): Promise<any> {
+  private async makeGraphQLRequest(query: string, variables: any = {}): Promise<any> {
     if (!this.apiKey) {
       throw new Error('GRID API key not configured');
     }
 
-    const url = new URL(endpoint, this.baseUrl);
-    Object.keys(params).forEach(key => {
-      if (params[key] !== undefined && params[key] !== null) {
-        url.searchParams.append(key, params[key].toString());
-      }
-    });
-
     try {
-      const response = await fetch(url.toString(), {
+      const response = await fetch(this.baseUrl, {
+        method: 'POST',
         headers: {
-          'X-API-Key': this.apiKey,
+          'Authorization': `Bearer ${this.apiKey}`,
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          query,
+          variables
+        }),
       });
 
       if (!response.ok) {
         throw new Error(`GRID API error: ${response.status} ${response.statusText}`);
       }
 
-      return await response.json();
+      const data = await response.json();
+      
+      if (data.errors) {
+        throw new Error(`GraphQL errors: ${JSON.stringify(data.errors)}`);
+      }
+
+      return data.data;
     } catch (error) {
       console.error('GRID API request failed:', error);
       throw error;
