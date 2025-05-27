@@ -12,7 +12,7 @@ import {
   X, BarChart2, Trophy, Medal, History, Settings, 
   Clock, ChevronRight, CircleDot, Flame, Zap, Crown,
   DollarSign, HelpCircle, HeadphonesIcon, Wallet, CreditCard,
-  ChevronDown, TrendingUp, Target, Award
+  ChevronDown, TrendingUp, Target, Award, BookOpen, Activity
 } from "lucide-react";
 
 
@@ -352,6 +352,30 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                     }`}>
                       <Award className="h-4 w-4 mr-2" />
                       Results & Stats
+                    </div>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/betting-academy">
+                    <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${
+                      location === '/betting-academy' 
+                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300" 
+                        : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}>
+                      <BookOpen className="h-4 w-4 mr-2" />
+                      Betting Academy
+                    </div>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/live-heatmap">
+                    <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${
+                      location === '/live-heatmap' 
+                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300" 
+                        : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}>
+                      <Activity className="h-4 w-4 mr-2" />
+                      Live Heatmap
                     </div>
                   </Link>
                 </li>

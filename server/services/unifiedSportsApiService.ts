@@ -6,16 +6,19 @@
 import { RapidApiService } from './rapidApiService';
 import { SportsGameOddsService } from './sportsGameOddsService';
 import { OddsApiService } from './oddsApiService';
+import { GridApiService } from './gridApiService';
 
 export class UnifiedSportsApiService {
   private rapidApi: RapidApiService;
   private sportsGameOdds: SportsGameOddsService;
   private oddsApi: OddsApiService;
+  private gridApi: GridApiService;
 
   constructor() {
     this.rapidApi = new RapidApiService();
     this.sportsGameOdds = new SportsGameOddsService();
     this.oddsApi = new OddsApiService();
+    this.gridApi = new GridApiService();
   }
 
   /**
@@ -227,21 +230,23 @@ export class UnifiedSportsApiService {
   }
 
   /**
-   * Get unified odds from all available APIs
+   * Get unified odds from all available APIs including GRID
    */
   async getUnifiedOdds(sport?: string): Promise<any> {
     const allOdds = [];
 
     try {
-      // Fetch from all sources in parallel
+      // Fetch from all sources in parallel including GRID API
       const [
         theOddsApiData,
         rapidApiData,
-        sportsGameOddsData
+        sportsGameOddsData,
+        gridApiData
       ] = await Promise.allSettled([
         this.oddsApi.getOdds(sport || 'americanfootball_nfl'),
         this.rapidApi.getComprehensiveOdds(),
-        this.sportsGameOdds.getLiveOdds(sport)
+        this.sportsGameOdds.getLiveOdds(sport),
+        this.gridApi.getLiveOdds(sport)
       ]);
 
       // Merge data from The Odds API
