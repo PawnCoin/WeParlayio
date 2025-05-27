@@ -79,14 +79,13 @@ export function getSSLConfig(): SSLConfig {
     };
   }
   
-  // For custom deployments, use the environment variables
+  // For custom deployments, use flexible environment variables (no hardcoded domains)
   const isProduction = process.env.NODE_ENV === 'production';
-  const domain = process.env.DOMAIN || 'weparlay.io';
   
   return {
-    enabled: isProduction && process.env.SSL_ENABLED === 'true',
-    keyPath: process.env.SSL_KEY_PATH || `/etc/letsencrypt/live/${domain}/privkey.pem`,
-    certPath: process.env.SSL_CERT_PATH || `/etc/letsencrypt/live/${domain}/fullchain.pem`,
+    enabled: isProduction && process.env.SSL_ENABLED === 'true' && process.env.SSL_KEY_PATH && process.env.SSL_CERT_PATH,
+    keyPath: process.env.SSL_KEY_PATH,
+    certPath: process.env.SSL_CERT_PATH,
     caPath: process.env.SSL_CA_PATH,
     port: parseInt(process.env.HTTPS_PORT || '443'),
     redirectHttp: process.env.REDIRECT_HTTP === 'true'
