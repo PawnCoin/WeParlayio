@@ -14,12 +14,12 @@
   --accent: #ea580c;      /* WeParlay Orange */
   --accent-dark: #c2410c;
   --accent-light: #fb923c;
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --muted: #e5e7eb;
-  --muted-foreground: #6b7280;
-  --card: #ffffff;
-  --card-foreground: #1f2937;
+  --background: #0f172a;
+  --foreground: #f8fafc;
+  --muted: #374151;
+  --muted-foreground: #9ca3af;
+  --card: #1f2937;
+  --card-foreground: #f9fafb;
   --border: #d1d5db;
   --input: #d1d5db;
   --ring: #9ca3af;
@@ -45,6 +45,32 @@
   --border: #4b5563;
   --input: #4b5563;
   --ring: #9ca3af;
+}
+
+/* Enforce dark mode throughout WeParlay */
+body, html, #root {
+  background: #0f172a !important;
+  color: #f8fafc !important;
+  min-height: 100vh;
+}
+
+/* Remove all white backgrounds */
+.bg-white, .bg-gray-50, .bg-gray-100 {
+  background: #1f2937 !important;
+}
+
+/* Fix any remaining light backgrounds */
+* {
+  background-color: inherit;
+}
+
+/* Ensure cards and components use dark theme */
+.bg-background {
+  background: #0f172a !important;
+}
+
+.bg-card {
+  background: #1f2937 !important;
 }
 
 /* Fix for text color contrast issues */
