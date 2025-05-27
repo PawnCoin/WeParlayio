@@ -143,6 +143,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                     <DropdownMenuTrigger asChild>
                       <Button 
                         variant="default" 
+                        onClick={handleCurrencySwitch}
                         className={`${
                           selectedCurrency === 'WEPARLAY' 
                             ? 'bg-blue-600 hover:bg-blue-700 border-blue-500' 
