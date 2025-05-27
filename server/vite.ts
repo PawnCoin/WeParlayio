@@ -1,12 +1,24 @@
 import express, { type Express } from "express";
 import fs from "fs";
 import path from "path";
-import { createServer as createViteServer, createLogger } from "vite";
 import { type Server } from "http";
-import viteConfig from "../vite.config";
 import { nanoid } from "nanoid";
 
-const viteLogger = createLogger();
+// Conditionally import vite only in development
+let createViteServer: any = null;
+let createLogger: any = null;
+let viteConfig: any = null;
+
+if (process.env.NODE_ENV === "development") {
+  try {
+    const vite = await import("vite");
+    createViteServer = vite.createServer;
+    createLogger = vite.createLogger;
+    viteConfig = (await import("../vite.config")).default;
+  } catch (error) {
+    console.warn("Vite not available in production mode");
+  }
+}
 
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
@@ -20,6 +32,12 @@ export function log(message: string, source = "express") {
 }
 
 export async function setupVite(app: Express, server: Server) {
+  if (!createViteServer || !createLogger || !viteConfig) {
+    throw new Error("Vite is not available - this function should only be called in development");
+  }
+
+  const viteLogger = createLogger();
+  
   const serverOptions = {
     middlewareMode: true,
     hmr: { server },
