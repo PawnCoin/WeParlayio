@@ -49,6 +49,132 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register notification routes
   app.use('/api/notifications', notificationRoutes);
+
+  // Create Admin Accounts on Startup
+  app.post('/api/setup-admin-accounts', async (req, res) => {
+    try {
+      // Create WeParlay admin account
+      const weparlayAdmin = await storage.upsertUser({
+        id: 'admin-weparlay-001',
+        email: 'support@weparlay.io',
+        username: 'WeParlay',
+        firstName: 'WeParlay',
+        lastName: 'Admin',
+        role: 'admin',
+        tier: 'platinum',
+        isAdmin: true,
+        status: 'active',
+        balance: 1000000, // 1 million WeParlay Cash
+        weplayTokenBalance: 1000000,
+        totalBets: 0,
+        wins: 0,
+        winRate: 0,
+        totalWinnings: 0,
+        subscriptionTier: 'platinum',
+        subscriptionExpiry: new Date('2030-12-31'),
+        emailVerified: true,
+        phoneVerified: true,
+        kycVerified: true,
+        preferences: {
+          oddsFormat: 'decimal',
+          useVirtualCurrency: false,
+          withdrawalSpeed: 'instant',
+          mobileOptimizedView: true
+        }
+      });
+
+      // Create WeParlay.io admin account  
+      const weparlayIoAdmin = await storage.upsertUser({
+        id: 'admin-weparlay-002',
+        email: 'support@weparlay.io',
+        username: 'WeParlay.io',
+        firstName: 'WeParlay.io',
+        lastName: 'Owner',
+        role: 'admin',
+        tier: 'platinum',
+        isAdmin: true,
+        status: 'active',
+        balance: 1000000, // 1 million WeParlay Cash
+        weplayTokenBalance: 1000000,
+        totalBets: 0,
+        wins: 0,
+        winRate: 0,
+        totalWinnings: 0,
+        subscriptionTier: 'platinum',
+        subscriptionExpiry: new Date('2030-12-31'),
+        emailVerified: true,
+        phoneVerified: true,
+        kycVerified: true,
+        preferences: {
+          oddsFormat: 'decimal',
+          useVirtualCurrency: false,
+          withdrawalSpeed: 'instant',
+          mobileOptimizedView: true
+        }
+      });
+
+      res.json({
+        message: 'Admin accounts created successfully',
+        accounts: [
+          { username: weparlayAdmin.username, email: weparlayAdmin.email, role: weparlayAdmin.role },
+          { username: weparlayIoAdmin.username, email: weparlayIoAdmin.email, role: weparlayIoAdmin.role }
+        ]
+      });
+    } catch (error) {
+      console.error('Error creating admin accounts:', error);
+      res.status(500).json({ message: 'Failed to create admin accounts' });
+    }
+  });
+
+  // Password Reset Route
+  app.post('/api/reset-password', async (req, res) => {
+    try {
+      const { email, newPassword } = req.body;
+      
+      if (!email || !newPassword) {
+        return res.status(400).json({ message: 'Email and new password are required' });
+      }
+
+      // For admin accounts, allow password reset
+      if (email === 'support@weparlay.io') {
+        // In a real app, you'd hash the password and store it
+        // For now, we'll just confirm the reset is available
+        res.json({ 
+          message: 'Password reset available for admin accounts',
+          email: email,
+          resetAvailable: true 
+        });
+      } else {
+        res.status(404).json({ message: 'Email not found or reset not available' });
+      }
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      res.status(500).json({ message: 'Failed to reset password' });
+    }
+  });
+
+  // Check admin privileges
+  app.get('/api/user/admin-status', async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.json({ isAdmin: false });
+      }
+
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      res.json({
+        isAdmin: user?.isAdmin || false,
+        role: user?.role || 'user',
+        tier: user?.tier || 'bronze',
+        hasFullAccess: user?.isAdmin || false,
+        username: user?.username
+      });
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+      res.json({ isAdmin: false });
+    }
+  });
   
   // Register Gaming API routes
   app.use('/api/gaming', gamingRoutes);
