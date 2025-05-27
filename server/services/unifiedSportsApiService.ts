@@ -38,7 +38,7 @@ export class UnifiedSportsApiService {
         { id: 9, name: 'MLB', key: 'baseball_mlb', category: 'Baseball', active: true },
         { id: 10, name: 'Ice Hockey', key: 'icehockey_nhl', category: 'Ice Hockey', active: true },
         { id: 11, name: 'NHL', key: 'icehockey_nhl', category: 'Ice Hockey', active: true },
-        { id: 12, name: 'Soccer', key: 'soccer_epl', category: 'Soccer', active: true },
+        { id: 12, name: 'Soccer', key: 'soccer_general', category: 'Soccer', active: true },
         { id: 13, name: 'Premier League', key: 'soccer_epl', category: 'Soccer', active: true },
         { id: 14, name: 'UEFA Champions League', key: 'soccer_uefa_champs_league', category: 'Soccer', active: true },
         { id: 15, name: 'Tennis WTA', key: 'tennis_wta', category: 'Tennis', active: true },

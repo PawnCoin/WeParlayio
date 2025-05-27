@@ -121,6 +121,9 @@ export const insertUserSchema = createInsertSchema(users).pick({
   favoriteSport: true,
   averageBet: true,
   biggestWin: true
+}).extend({
+  walletAddress: z.string().optional(),
+  phoneNumber: z.string().optional(),
 });
 
 // Bank accounts for owner's deposits
@@ -297,6 +300,7 @@ export const insertBetSchema = createInsertSchema(bets).pick({
   potentialPayout: true,
   selection: true,
   status: true,
+  currency: true,
 });
 
 // Tournaments model
