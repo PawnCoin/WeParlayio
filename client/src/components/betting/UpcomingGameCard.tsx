@@ -32,12 +32,28 @@ interface UpcomingGameCardProps {
       };
     };
   };
+  // Implementing onBetSelect callback prop that was defined but never used in parent components
+  onBetSelect?: (bet: any) => void;
 }
 
-const UpcomingGameCard: React.FC<UpcomingGameCardProps> = ({ game }) => {
+const UpcomingGameCard: React.FC<UpcomingGameCardProps> = ({ game, onBetSelect }) => {
   const { toast } = useToast();
   
   const handleAddToBetSlip = (selection: string, odds: number) => {
+    // Implementing onBetSelect callback functionality that was defined but never used
+    const betData = {
+      gameId: game.id,
+      selection,
+      odds,
+      homeTeam: game.homeTeam.name,
+      awayTeam: game.awayTeam.name,
+      startTime: game.startTime
+    };
+    
+    if (onBetSelect) {
+      onBetSelect(betData);
+    }
+    
     toast({
       title: "Added to Bet Slip",
       description: `${selection} at ${odds > 0 ? '+' : ''}${odds}`

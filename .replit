@@ -11,8 +11,11 @@ deploymentTarget = "autoscale"
 build = ["npm", "run", "build"]
 run = ["npm", "run", "start"]
 
+[env]
+REPLIT_KEEP_PACKAGE_DEV_DEPENDENCIES = "1"
+
 [workflows]
-runButton = "Project"
+runButton = "WeParlay Dev Server"
 
 [[workflows.workflow]]
 name = "Project"
@@ -31,6 +34,19 @@ author = "agent"
 task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
+
+[[workflows.workflow]]
+name = "WeParlay Dev Server"
+author = 42612790
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm install"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
 
 [[ports]]
 localPort = 5000
