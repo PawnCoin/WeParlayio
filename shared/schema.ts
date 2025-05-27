@@ -271,6 +271,8 @@ export const bets = pgTable("bets", {
   settledAt: timestamp("settled_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+  // Additional field to fix TypeScript errors
+  selection: text("selection"),
 });
 
 export const insertBetSchema = createInsertSchema(bets).pick({
@@ -562,6 +564,8 @@ export const notifications = pgTable("notifications", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
   readAt: timestamp("read_at"),
+  // Additional field to fix TypeScript errors
+  title: text("title"),
 });
 
 export const insertNotificationSchema = createInsertSchema(notifications)
