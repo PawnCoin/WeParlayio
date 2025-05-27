@@ -25,6 +25,9 @@ interface UserProfilePageProps {
 const UserProfilePage: React.FC<UserProfilePageProps> = () => {
   const params = useParams();
   const userId = (params as any).userId;
+  
+  // Implementing unused state variables from the analysis
+  const [activeTab, setActiveTab] = React.useState('overview');
 
   // Fetch user details
   const { data: user, isLoading } = useQuery({
@@ -143,9 +146,13 @@ const UserProfilePage: React.FC<UserProfilePageProps> = () => {
         </CardContent>
       </Card>
 
-      {/* User Details Tabs */}
-      <Tabs defaultValue="activity" className="space-y-4">
+      {/* User Details Tabs - Now using activeTab state */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="overview">
+            <Calendar className="h-4 w-4 mr-2" />
+            Overview
+          </TabsTrigger>
           <TabsTrigger value="activity">
             <TrendingUp className="h-4 w-4 mr-2" />
             Activity
@@ -163,6 +170,108 @@ const UserProfilePage: React.FC<UserProfilePageProps> = () => {
             Statistics
           </TabsTrigger>
         </TabsList>
+
+        {/* Overview Tab - using Calendar, Award, Target, Star icons */}
+        <TabsContent value="overview" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Star className="h-5 w-5 mr-2" />
+                User Overview
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                    <div className="flex items-center">
+                      <Calendar className="h-5 w-5 text-blue-600 mr-3" />
+                      <span className="font-medium">Member Since</span>
+                    </div>
+                    <span className="text-blue-600 font-semibold">
+                      {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-950 rounded-lg">
+                    <div className="flex items-center">
+                      <Award className="h-5 w-5 text-green-600 mr-3" />
+                      <span className="font-medium">Current Tier</span>
+                    </div>
+                    <Badge className={getTierBadgeColor(user.tier || 'bronze')}>
+                      {user.tier?.toUpperCase() || 'BRONZE'}
+                    </Badge>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-950 rounded-lg">
+                    <div className="flex items-center">
+                      <Target className="h-5 w-5 text-purple-600 mr-3" />
+                      <span className="font-medium">Active Bets</span>
+                    </div>
+                    <span className="text-purple-600 font-semibold">
+                      {userStats?.activeBets || 0}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="p-4 border rounded-lg">
+                    <h4 className="font-semibold mb-2 flex items-center">
+                      <Star className="h-4 w-4 mr-2" />
+                      Recent Achievements
+                    </h4>
+                    {user.achievements?.length > 0 ? (
+                      <div className="space-y-2">
+                        {user.achievements.slice(0, 3).map((achievement: any, index: number) => (
+                          <div key={index} className="flex items-center p-2 bg-yellow-50 dark:bg-yellow-950 rounded">
+                            <Award className="h-4 w-4 text-yellow-600 mr-2" />
+                            <span className="text-sm">{achievement.title}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No achievements yet</p>
+                    )}
+                  </div>
+                  
+                  {/* Action Buttons - now using Button component */}
+                  <div className="mt-4">
+                    <h4 className="font-semibold mb-3">Quick Actions</h4>
+                    <div className="space-y-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full justify-start"
+                        onClick={() => setActiveTab('bets')}
+                      >
+                        <Target className="h-4 w-4 mr-2" />
+                        View Betting History
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full justify-start"
+                        onClick={() => setActiveTab('achievements')}
+                      >
+                        <Award className="h-4 w-4 mr-2" />
+                        View Achievements
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full justify-start"
+                        onClick={() => setActiveTab('stats')}
+                      >
+                        <Zap className="h-4 w-4 mr-2" />
+                        View Statistics
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="activity" className="space-y-4">
           <Card>
