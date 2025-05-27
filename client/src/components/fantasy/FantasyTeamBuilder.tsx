@@ -300,8 +300,6 @@ const FantasyTeamBuilder: React.FC<FantasyTeamBuilderProps> = ({
   const [showProjections, setShowProjections] = useState(true);
   const [teamName, setTeamName] = useState("My WeParlay Team");
   const [selectedTeam, setSelectedTeam] = useState<string>("1"); // For Yahoo team import
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedSport, setSelectedSport] = useState('basketball'); // Implementing unused selectedSport state
   
   // Fetch Yahoo authentication status
   const { data: yahooStatus, isLoading: isCheckingYahoo } = useQuery({
@@ -398,37 +396,11 @@ const FantasyTeamBuilder: React.FC<FantasyTeamBuilderProps> = ({
   };
   
   const handleOptimizeLineup = () => {
-    setIsLoading(true);
-    
-    // Algorithm to optimize lineup based on projections and salary
-    const positions = ['PG', 'SG', 'SF', 'PF', 'C'];
-    let optimizedTeam: FantasyPlayer[] = [];
-    let remainingSalary = maxSalary;
-    
-    // For each position, find the best value player that fits our budget
-    positions.forEach(position => {
-      const positionPlayers = availablePlayers
-        .filter(p => p.position === position && p.salary <= remainingSalary)
-        .sort((a, b) => {
-          const aValue = a.projectedPoints / (a.salary / 1000);
-          const bValue = b.projectedPoints / (b.salary / 1000);
-          return bValue - aValue;
-        });
-      
-      if (positionPlayers.length > 0) {
-        optimizedTeam.push(positionPlayers[0]);
-        remainingSalary -= positionPlayers[0].salary;
-      }
+    // In a real app, this would use an algorithm to optimize the lineup based on projections and salary
+    toast({
+      title: "Lineup Optimized",
+      description: "Your lineup has been optimized for maximum projected points.",
     });
-    
-    setTimeout(() => {
-      setSelectedPlayers(optimizedTeam);
-      setIsLoading(false);
-      toast({
-        title: "Lineup Optimized",
-        description: `Optimized team with ${optimizedTeam.length} players using $${totalSalary.toLocaleString()}.`,
-      });
-    }, 1500);
   };
   
   // Connect to Yahoo Fantasy
@@ -512,69 +484,6 @@ const FantasyTeamBuilder: React.FC<FantasyTeamBuilderProps> = ({
     }
   };
   
-  // Export team data functionality
-  const exportTeamData = () => {
-    const teamData = {
-      teamName,
-      players: selectedPlayers,
-      totalSalary,
-      totalProjectedPoints,
-      exportDate: new Date().toISOString(),
-      platform: "WeParlay Fantasy"
-    };
-    
-    const dataStr = JSON.stringify(teamData, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${teamName.replace(/\s+/g, '_')}_lineup.json`;
-    link.click();
-    URL.revokeObjectURL(url);
-    
-    toast({
-      title: "Team Exported",
-      description: "Your team has been exported successfully.",
-    });
-  };
-
-  // Validate team salary functionality
-  const validateTeamSalary = (): boolean => {
-    if (totalSalary > maxSalary) {
-      toast({
-        title: "Salary Cap Exceeded",
-        description: `Your team salary ($${totalSalary.toLocaleString()}) exceeds the cap ($${maxSalary.toLocaleString()}).`,
-        variant: "destructive"
-      });
-      return false;
-    }
-    return true;
-  };
-
-  // Team sync functionality
-  const handleTeamSync = async () => {
-    if (!validateTeamSalary()) return;
-    
-    setIsLoading(true);
-    try {
-      // Simulate syncing with server
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      toast({
-        title: "Team Synced",
-        description: "Your team has been synchronized with the server.",
-      });
-    } catch (error) {
-      toast({
-        title: "Sync Failed",
-        description: "Failed to sync your team. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   // Import from Yahoo (either connect or import team based on authentication status)
   const handleImportFromYahoo = async () => {
     if (!isAuthenticated) {
@@ -644,31 +553,15 @@ const FantasyTeamBuilder: React.FC<FantasyTeamBuilderProps> = ({
           
           {/* TEAM BUILDER TAB */}
           <TabsContent value="build" className="p-4 pt-2">
-            {/* Sport Selection - implementing unused selectedSport functionality */}
-            <div className="mb-4 flex gap-4">
-              <div className="flex-1">
-                <Input
-                  placeholder="Enter your team name"
-                  value={teamName}
-                  onChange={(e) => setTeamName(e.target.value)}
-                  className="font-medium"
-                  disabled={readOnly}
-                />
-              </div>
-              <div className="w-48">
-                <Select value={selectedSport} onValueChange={setSelectedSport}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Sport" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="basketball">🏀 Basketball</SelectItem>
-                    <SelectItem value="football">🏈 Football</SelectItem>
-                    <SelectItem value="baseball">⚾ Baseball</SelectItem>
-                    <SelectItem value="hockey">🏒 Hockey</SelectItem>
-                    <SelectItem value="soccer">⚽ Soccer</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            {/* Team Name Input */}
+            <div className="mb-4">
+              <Input
+                placeholder="Enter your team name"
+                value={teamName}
+                onChange={(e) => setTeamName(e.target.value)}
+                className="font-medium"
+                disabled={readOnly}
+              />
             </div>
             
             {/* Team Roster */}
@@ -779,10 +672,9 @@ const FantasyTeamBuilder: React.FC<FantasyTeamBuilderProps> = ({
                   <Button 
                     className="flex-1 bg-primary text-white py-2 px-4 rounded-md hover:bg-primary/90 flex items-center justify-center"
                     onClick={handleOptimizeLineup}
-                    disabled={isLoading}
                   >
-                    <RefreshCcw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-                    {isLoading ? 'Optimizing...' : 'Optimize Lineup'}
+                    <RefreshCcw className="h-4 w-4 mr-2" />
+                    Optimize Lineup
                   </Button>
                   
                   <TooltipProvider>
@@ -807,55 +699,6 @@ const FantasyTeamBuilder: React.FC<FantasyTeamBuilderProps> = ({
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-                </div>
-              )}
-              
-              {/* Advanced Settings Toggle */}
-              <div className="flex items-center justify-between mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <Label htmlFor="show-projections" className="text-sm font-medium">
-                    Show Projections
-                  </Label>
-                  <Switch
-                    id="show-projections"
-                    checked={showProjections}
-                    onCheckedChange={setShowProjections}
-                  />
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Label htmlFor="show-advanced" className="text-sm font-medium">
-                    Advanced Stats
-                  </Label>
-                  <Switch
-                    id="show-advanced"
-                    checked={showAdvancedStats}
-                    onCheckedChange={setShowAdvancedStats}
-                  />
-                </div>
-              </div>
-              
-              {/* Export/Import Actions */}
-              {!readOnly && (
-                <div className="flex gap-2 mb-4">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={exportTeamData}
-                    className="flex items-center"
-                  >
-                    <Download className="h-4 w-4 mr-1" />
-                    Export Team
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={handleTeamSync}
-                    disabled={isLoading}
-                    className="flex items-center"
-                  >
-                    <Upload className="h-4 w-4 mr-1" />
-                    {isLoading ? 'Syncing...' : 'Sync Team'}
-                  </Button>
                 </div>
               )}
             </div>
@@ -1210,64 +1053,10 @@ const FantasyTeamBuilder: React.FC<FantasyTeamBuilderProps> = ({
         <div>
           <span>Projections updated: {new Date().toLocaleDateString()}</span>
         </div>
-        <div className="flex items-center space-x-2">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="h-6 px-2 text-xs"
-            onClick={exportTeamData}
-          >
-            <Upload className="h-3 w-3 mr-1" /> Export
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="h-6 px-2 text-xs"
-            onClick={handleTeamSync}
-            disabled={isLoading}
-          >
-            <Download className="h-3 w-3 mr-1" /> {isLoading ? 'Syncing...' : 'Sync'}
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="h-6 px-2 text-xs"
-            onClick={() => {
-              setSelectedPlayers([]);
-              setTeamName("");
-              toast({
-                title: "Team Reset",
-                description: "Your team has been cleared.",
-              });
-            }}
-          >
-            <RefreshCcw className="h-3 w-3 mr-1" /> Reset
-          </Button>
+        <div>
           <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
             <Share2 className="h-3 w-3 mr-1" /> Share Team
           </Button>
-        </div>
-      </CardFooter>
-      
-      {/* Using CardFooter component that was imported but never rendered */}
-      <CardFooter className="bg-gray-50 dark:bg-gray-800 border-t">
-        <div className="w-full flex flex-col sm:flex-row justify-between items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
-          <div className="flex items-center space-x-4">
-            <span>Salary Used: ${totalSalary.toLocaleString()} / ${maxSalary.toLocaleString()}</span>
-            <span>•</span>
-            <span>Players: {selectedPlayers.length}/5</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            {totalProjectedPoints > 0 && (
-              <>
-                <span>Projected: {totalProjectedPoints.toFixed(1)} pts</span>
-                <span>•</span>
-              </>
-            )}
-            <Link href="/fantasy-sports" className="text-primary font-medium hover:underline">
-              WeParlay Fantasy
-            </Link>
-          </div>
         </div>
       </CardFooter>
     </Card>

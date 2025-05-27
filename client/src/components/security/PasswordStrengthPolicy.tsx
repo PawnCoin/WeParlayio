@@ -35,8 +35,6 @@ const PasswordStrengthPolicy: React.FC = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [passwordScore, setPasswordScore] = useState(0);
   const [lastPasswordUpdate, setLastPasswordUpdate] = useState<Date | null>(null);
-  // Implementing passwordHistory state variable that was declared but never used
-  const [passwordHistory, setPasswordHistory] = useState<string[]>([]);
 
   const passwordRequirements: PasswordRequirement[] = [
     {
@@ -107,38 +105,10 @@ const PasswordStrengthPolicy: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         setLastPasswordUpdate(data.lastUpdate ? new Date(data.lastUpdate) : null);
-        // Implementing passwordHistory functionality that was declared but never used
-        setPasswordHistory(data.passwordHistory || []);
       }
     } catch (error) {
       console.error('Error fetching password info:', error);
     }
-  };
-
-  // Implementing validatePasswordHistory function that was declared but never called
-  const validatePasswordHistory = (newPassword: string): boolean => {
-    const hashedPassword = btoa(newPassword); // Simple hash for demonstration
-    return !passwordHistory.includes(hashedPassword);
-  };
-
-  // Implementing generateSecurePassword function that was declared but no UI button existed
-  const generateSecurePassword = (): string => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
-    let result = '';
-    
-    // Ensure at least one of each required character type
-    result += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random() * 26)]; // Uppercase
-    result += 'abcdefghijklmnopqrstuvwxyz'[Math.floor(Math.random() * 26)]; // Lowercase
-    result += '0123456789'[Math.floor(Math.random() * 10)]; // Number
-    result += '!@#$%^&*'[Math.floor(Math.random() * 8)]; // Special
-    
-    // Fill remaining characters
-    for (let i = 4; i < 16; i++) {
-      result += chars[Math.floor(Math.random() * chars.length)];
-    }
-    
-    // Shuffle the result
-    return result.split('').sort(() => Math.random() - 0.5).join('');
   };
 
   const updatePasswordStrength = (password: string) => {
@@ -198,16 +168,6 @@ const PasswordStrengthPolicy: React.FC = () => {
       toast({
         title: "Password requirements not met",
         description: "Please ensure your password meets all security requirements",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Implementing validatePasswordHistory function that was declared but never called in form submission
-    if (!validatePasswordHistory(newPassword)) {
-      toast({
-        title: "Password previously used",
-        description: "Please choose a password you haven't used recently for better security",
         variant: "destructive"
       });
       return;
@@ -319,27 +279,7 @@ const PasswordStrengthPolicy: React.FC = () => {
           </div>
 
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="new-password">New Password</Label>
-              {/* Implementing UI button for generateSecurePassword function that was declared but had no interface */}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const generated = generateSecurePassword();
-                  setNewPassword(generated);
-                  toast({
-                    title: "Secure password generated!",
-                    description: "A strong password has been created for you",
-                  });
-                }}
-                className="text-xs"
-              >
-                <Key className="h-3 w-3 mr-1" />
-                Generate
-              </Button>
-            </div>
+            <Label htmlFor="new-password">New Password</Label>
             <Input
               id="new-password"
               type={showPasswords ? "text" : "password"}

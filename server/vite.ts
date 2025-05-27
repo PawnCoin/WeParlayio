@@ -1,24 +1,12 @@
 import express, { type Express } from "express";
 import fs from "fs";
 import path from "path";
+import { createServer as createViteServer, createLogger } from "vite";
 import { type Server } from "http";
+import viteConfig from "../vite.config";
 import { nanoid } from "nanoid";
 
-// Conditionally import vite only in development
-let createViteServer: any = null;
-let createLogger: any = null;
-let viteConfig: any = null;
-
-if (process.env.NODE_ENV === "development") {
-  try {
-    const vite = await import("vite");
-    createViteServer = vite.createServer;
-    createLogger = vite.createLogger;
-    viteConfig = (await import("../vite.config")).default;
-  } catch (error) {
-    console.warn("Vite not available:", error.message);
-  }
-}
+const viteLogger = createLogger();
 
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
@@ -32,13 +20,6 @@ export function log(message: string, source = "express") {
 }
 
 export async function setupVite(app: Express, server: Server) {
-  if (!createViteServer || !createLogger || !viteConfig) {
-    console.warn("Vite dependencies not available, falling back to static serving");
-    return;
-  }
-
-  const viteLogger = createLogger();
-  
   const serverOptions = {
     middlewareMode: true,
     hmr: { server },
@@ -87,20 +68,18 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  const staticDir = path.resolve(import.meta.dirname, '..', 'dist', 'public');
+  const distPath = path.resolve(import.meta.dirname, "public");
 
-  if (!fs.existsSync(staticDir)) {
+  if (!fs.existsSync(distPath)) {
     throw new Error(
-      `Could not find the build directory: ${staticDir}, make sure to build the client first`,
+      `Could not find the build directory: ${distPath}, make sure to build the client first`,
     );
   }
 
-  app.use(express.static(staticDir));
+  app.use(express.static(distPath));
 
-  // Serve index.html for all unmatched routes
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(staticDir, 'index.html'));
+  // fall through to index.html if the file doesn't exist
+  app.use("*", (_req, res) => {
+    res.sendFile(path.resolve(distPath, "index.html"));
   });
-  
-  log('📦 Serving static files from ' + staticDir);
 }
