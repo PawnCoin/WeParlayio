@@ -195,36 +195,27 @@ export class LiveMarketingBotsService {
         return false;
       }
 
-      // Twitter API v1.1 with OAuth 1.0a for @weparlayio
-      const { OAuth } = require('oauth');
-      const twitterOAuth = new OAuth(
-        'https://api.twitter.com/oauth/request_token',
-        'https://api.twitter.com/oauth/access_token',
-        process.env.TWITTER_API_KEY,
-        process.env.TWITTER_API_SECRET,
-        '1.0A',
-        null,
-        'HMAC-SHA1'
-      );
-
-      return new Promise((resolve) => {
-        twitterOAuth.post(
-          'https://api.twitter.com/1.1/statuses/update.json',
-          process.env.TWITTER_ACCESS_TOKEN,
-          process.env.TWITTER_ACCESS_TOKEN_SECRET,
-          { status: `${content} @weparlayio` }, // Include your handle
-          (error: any, data: any) => {
-            if (error) {
-              console.log(`[${botName}] Twitter API error:`, error);
-              resolve(false);
-            } else {
-              const result = JSON.parse(data);
-              console.log(`[${botName}] ✅ LIVE TWEET POSTED @weparlayio: ${content.substring(0, 50)}... (ID: ${result.id_str})`);
-              resolve(true);
-            }
-          }
-        );
+      // Twitter API v2 for @weparlayio
+      const response = await fetch('https://api.twitter.com/2/tweets', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.TWITTER_BEARER_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: `${content} @weparlayio`
+        })
       });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log(`[${botName}] ✅ LIVE TWEET POSTED @weparlayio: ${content.substring(0, 50)}... (ID: ${result.data.id})`);
+        return true;
+      } else {
+        const error = await response.json();
+        console.error(`Twitter posting error for ${botName}:`, error);
+        return false;
+      }
     } catch (error) {
       console.error(`[${botName}] Twitter posting error:`, error);
       return false;
@@ -233,11 +224,57 @@ export class LiveMarketingBotsService {
 
   private async postToReddit(content: string, botName: string): Promise<boolean> {
     try {
-      // Reddit API integration would go here
-      console.log(`[${botName}] Posted to Reddit: ${content.substring(0, 50)}...`);
-      return true;
+      if (!process.env.REDDIT_CLIENT_ID || !process.env.REDDIT_CLIENT_SECRET || 
+          !process.env.REDDIT_USERNAME || !process.env.REDDIT_PASSWORD) {
+        console.log(`[${botName}] Reddit posting skipped - API credentials not configured`);
+        return false;
+      }
+
+      // Get Reddit access token
+      const auth = Buffer.from(`${process.env.REDDIT_CLIENT_ID}:${process.env.REDDIT_CLIENT_SECRET}`).toString('base64');
+      
+      const tokenResponse = await fetch('https://www.reddit.com/api/v1/access_token', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${auth}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'User-Agent': 'WeParlay/1.0.0 (by /u/weparlay)'
+        },
+        body: `grant_type=password&username=${process.env.REDDIT_USERNAME}&password=${process.env.REDDIT_PASSWORD}`
+      });
+
+      if (!tokenResponse.ok) {
+        console.error(`[${botName}] Reddit auth failed:`, await tokenResponse.text());
+        return false;
+      }
+
+      const tokenData = await tokenResponse.json();
+      
+      // Choose appropriate subreddit based on content
+      const subreddits = ['sportsbook', 'sportsbetting', 'gambling', 'crypto', 'fantasysports'];
+      const randomSubreddit = subreddits[Math.floor(Math.random() * subreddits.length)];
+
+      // Post to Reddit
+      const postResponse = await fetch('https://oauth.reddit.com/api/submit', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${tokenData.access_token}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'User-Agent': 'WeParlay/1.0.0 (by /u/weparlay)'
+        },
+        body: `kind=self&sr=${randomSubreddit}&title=WeParlay Sports Betting Update&text=${encodeURIComponent(content)}`
+      });
+
+      if (postResponse.ok) {
+        const result = await postResponse.json();
+        console.log(`[${botName}] ✅ LIVE REDDIT POST in r/${randomSubreddit}: ${content.substring(0, 50)}...`);
+        return true;
+      } else {
+        console.error(`[${botName}] Reddit posting error:`, await postResponse.text());
+        return false;
+      }
     } catch (error) {
-      console.error(`Reddit posting error for ${botName}:`, error);
+      console.error(`[${botName}] Reddit posting error:`, error);
       return false;
     }
   }
