@@ -27,10 +27,10 @@ export class UnifiedSportsApiService {
     try {
       // Primary sports from The Odds API
       const primarySports = [
-        { id: 1, name: 'American Football', key: 'americanfootball_nfl', category: 'American Football', active: true },
+        { id: 1, name: 'American Football', key: 'americanfootball_general', category: 'American Football', active: true },
         { id: 2, name: 'NFL', key: 'americanfootball_nfl', category: 'American Football', active: true },
         { id: 3, name: 'NCAA Football', key: 'americanfootball_ncaaf', category: 'American Football', active: true },
-        { id: 4, name: 'Basketball', key: 'basketball_nba', category: 'Basketball', active: true },
+        { id: 4, name: 'Basketball', key: 'basketball_general', category: 'Basketball', active: true },
         { id: 5, name: 'NBA', key: 'basketball_nba', category: 'Basketball', active: true },
         { id: 6, name: 'NCAA Basketball', key: 'basketball_ncaab', category: 'Basketball', active: true },
         { id: 7, name: 'WNBA', key: 'basketball_wnba', category: 'Basketball', active: true },

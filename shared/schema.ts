@@ -287,8 +287,9 @@ export const bets = pgTable("bets", {
   settledAt: timestamp("settled_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-  // Additional field to fix TypeScript errors
+  // Additional fields to fix TypeScript errors
   selection: text("selection"),
+  currency: text("currency").default("USD"),
 });
 
 export const insertBetSchema = createInsertSchema(bets).pick({
@@ -482,6 +483,7 @@ export const supportTicketMessages = pgTable("support_ticket_messages", {
   id: serial("id").primaryKey(),
   ticketId: integer("ticket_id").references(() => supportTickets.id),
   senderId: varchar("sender_id"), // Can be user_id or 'system' or 'ai'
+  userId: varchar("user_id"), // Additional user reference for TypeScript compatibility
   message: text("message").notNull(),
   attachmentUrl: text("attachment_url"),
   createdAt: timestamp("created_at").defaultNow(),
