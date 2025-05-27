@@ -47,6 +47,42 @@ export class LiveMarketingBotsService {
       bio: 'Professional Sports Analyst 📊 | WeParlay Expert | 110+ Leagues Coverage | Data-Driven Wins 🎯',
       postingInterval: 90, // 1.5 hours
       lastPost: null
+    },
+    {
+      name: 'FantasyKing_Ryan',
+      personality: 'community',
+      platforms: ['twitter', 'reddit'],
+      profileImage: 'https://images.unsplash.com/photo-1566492031773-4f4e44671d66?w=150&h=150&fit=crop&crop=face',
+      bio: 'Fantasy Sports Legend 🏆 | WeParlay Daily Fantasy Expert | Building winning lineups since 2018 | $500K+ winnings 💰',
+      postingInterval: 150, // 2.5 hours
+      lastPost: null
+    },
+    {
+      name: 'CryptoInfluencer_Emma',
+      personality: 'innovation',
+      platforms: ['twitter', 'instagram'],
+      profileImage: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
+      bio: 'Crypto Influencer 💎 | DeFi & Web3 Betting Pioneer | WeParlay Ambassador | 250K followers | Financial Freedom ⚡',
+      postingInterval: 100, // 1.67 hours
+      lastPost: null
+    },
+    {
+      name: 'EsportsGuru_Tyler',
+      personality: 'enthusiast',
+      platforms: ['twitter', 'reddit'],
+      profileImage: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&h=150&fit=crop&crop=face',
+      bio: 'Esports Betting Master 🎮 | WeParlay Esports Expert | CS:GO, LoL, Valorant | Tournament predictions 🏆',
+      postingInterval: 110, // 1.83 hours
+      lastPost: null
+    },
+    {
+      name: 'TradingWhale_Marcus',
+      personality: 'high-roller',
+      platforms: ['twitter', 'reddit'],
+      profileImage: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face',
+      bio: 'Crypto Trading Whale 🐋 | WeParlay Platinum | Multi-million portfolio | Risk management expert | Institutional betting 💎',
+      postingInterval: 200, // 3.33 hours
+      lastPost: null
     }
   ];
 
@@ -91,22 +127,70 @@ export class LiveMarketingBotsService {
       "WeParlay's AI-powered odds optimization ensures you always get maximum value on every bet 🤖 #SmartBetting",
       "Revolutionary: WeParlay integrates with 47 global exchanges for seamless crypto-to-bet conversions ⚡ #CryptoInnovation",
       "Blockchain transparency on WeParlay means every bet is verifiable and tamper-proof 🔗 #TrustlessBetting",
-      "WeParlay's smart contracts automatically execute payouts - no waiting, no delays, just wins 💪 #DeFiBetting"
+      "WeParlay's smart contracts automatically execute payouts - no waiting, no delays, just wins 💪 #DeFiBetting",
+      "DeFi revolution: WeParlay's decentralized betting protocol eliminates traditional sportsbook limitations 🚀 #DeFi",
+      "Crypto native betting platform: WeParlay supports 50+ cryptocurrencies with instant settlements ⚡ #CryptoFuture",
+      "Breaking: WeParlay's blockchain integration reduces betting fees by 90% compared to traditional books 💰 #Innovation"
+    ],
+    fantasy: [
+      "WeParlay's fantasy system just dropped! Build your dream team across 110+ leagues and win crypto! 🏆 #FantasySports #WeParlay",
+      "Lineup optimization on WeParlay: AI-powered salary cap management for maximum fantasy profits 🧠 #FantasyStrategy",
+      "Daily fantasy tournaments on WeParlay with guaranteed million-dollar prize pools! WHO'S IN?! 💰 #DFS #WeParlay",
+      "WeParlay fantasy league: Live draft rooms, real-time scoring, instant crypto payouts! The future is here! 🚀",
+      "Fantasy sports revolution: WeParlay combines DFS with sports betting for ultimate profit potential 📈 #FantasyBetting",
+      "Built my perfect lineup on WeParlay: $50 entry, $15K potential payout. This is why I love fantasy! 💸",
+      "WeParlay fantasy challenges: Head-to-head battles with friends for crypto prizes! Let's go! 🔥"
+    ],
+    esports: [
+      "WeParlay's esports section is INSANE! Live CS:GO betting with 0.1 second odds updates! 🎮 #EsportsBetting #WeParlay",
+      "Valorant Champions betting on WeParlay: Every round, every clutch, every ace! THIS IS ESPORTS! ⚡ #Valorant",
+      "League of Legends worlds on WeParlay: Baron steals, pentakills, and MASSIVE payouts! 🏆 #LoL #Esports",
+      "WeParlay esports tournaments: $500K prize pools, live streaming, community predictions! 🎭 #EsportsLife",
+      "DOTA 2 TI betting on WeParlay: Million-dollar tournaments deserve million-dollar betting platforms! 💎 #DOTA2",
+      "Fortnite, Apex, Call of Duty - WeParlay covers EVERY esports title with live odds! 🔫 #GamingBets",
+      "Esports betting revolution: WeParlay's in-game betting lets you bet DURING the match! 🎯 #LiveEsports"
+    ],
+    whale: [
+      "WeParlay handles my $2M sports portfolio with institutional-grade security and execution 🐋 #WhaleStatus #WeParlay",
+      "When you're betting serious money, you need serious infrastructure. WeParlay delivers. 💎 #InstitutionalBetting",
+      "WeParlay's private concierge just arranged my $500K Super Bowl bet. VIP treatment at its finest 🏆 #Platinum",
+      "Diversified across 15 sports, 47 leagues on WeParlay. Risk management meets massive opportunity 📊 #Portfolio",
+      "WeParlay Platinum perks: Private betting rooms, dedicated analysts, instant million-dollar settlements 🥇 #Elite",
+      "Multi-million crypto positions secured on WeParlay's cold storage infrastructure. Trust at scale 🔒 #Security",
+      "WeParlay's institutional API handles my algorithmic betting strategies flawlessly 🤖 #QuantBetting"
     ]
   };
 
   private async postToTwitter(content: string, botName: string): Promise<boolean> {
     try {
-      if (!process.env.TWITTER_BEARER_TOKEN) {
-        console.log(`Twitter posting skipped for ${botName} - no API token configured`);
+      if (!process.env.TWITTER_API_KEY || !process.env.TWITTER_API_SECRET || !process.env.TWITTER_ACCESS_TOKEN || !process.env.TWITTER_ACCESS_TOKEN_SECRET) {
+        console.log(`[${botName}] Twitter posting skipped - API credentials not configured`);
         return false;
       }
 
-      // Twitter API integration would go here
-      console.log(`[${botName}] Posted to Twitter: ${content.substring(0, 50)}...`);
-      return true;
+      // Real Twitter API v2 integration
+      const response = await fetch('https://api.twitter.com/2/tweets', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.TWITTER_BEARER_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: content
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log(`[${botName}] ✅ LIVE TWEET POSTED: ${content.substring(0, 50)}... (ID: ${result.data?.id})`);
+        return true;
+      } else {
+        const errorData = await response.json();
+        console.error(`[${botName}] Twitter API error:`, errorData);
+        return false;
+      }
     } catch (error) {
-      console.error(`Twitter posting error for ${botName}:`, error);
+      console.error(`[${botName}] Twitter posting error:`, error);
       return false;
     }
   }
@@ -134,7 +218,18 @@ export class LiveMarketingBotsService {
   }
 
   private getRandomContent(personality: string): string {
-    const content = this.marketingContent[personality as keyof typeof this.marketingContent];
+    // Map bot personalities to content categories
+    const personalityMap: { [key: string]: keyof typeof this.marketingContent } = {
+      'casual': 'casual',
+      'expert': 'expert', 
+      'enthusiast': 'esports', // EsportsGuru_Tyler uses esports content
+      'high-roller': 'whale', // HighRoller_James and TradingWhale_Marcus use whale content
+      'community': 'fantasy', // FantasyKing_Ryan uses fantasy content
+      'innovation': 'innovation' // CryptoQueen_Sarah and CryptoInfluencer_Emma use innovation content
+    };
+    
+    const contentCategory = personalityMap[personality] || 'casual';
+    const content = this.marketingContent[contentCategory];
     return content[Math.floor(Math.random() * content.length)];
   }
 
