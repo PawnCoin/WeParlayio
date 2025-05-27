@@ -74,6 +74,21 @@ export const users = pgTable("users", {
   useVirtualCurrency: boolean("use_virtual_currency").default(true), // Toggle between real money and WeParlay Cash
   withdrawalSpeed: varchar("withdrawal_speed").default("standard"), // standard, fast, instant
   mobileOptimizedView: boolean("mobile_optimized_view").default(true), // Toggle for mobile optimized views
+  // Additional fields to fix TypeScript errors
+  realMoneyBalance: doublePrecision("real_money_balance").default(0),
+  tier: varchar("tier").default("bronze"),
+  claims: jsonb("claims"),
+  yahooAccessToken: text("yahoo_access_token"),
+  isAdmin: boolean("is_admin").default(false),
+  totalBets: integer("total_bets").default(0),
+  winRate: doublePrecision("win_rate").default(0),
+  totalWinnings: doublePrecision("total_winnings").default(0),
+  recentActivity: jsonb("recent_activity"),
+  achievements: jsonb("achievements"),
+  favoriteSport: varchar("favorite_sport"),
+  averageBet: doublePrecision("average_bet").default(0),
+  biggestWin: doublePrecision("biggest_win").default(0),
+  emailVerified: boolean("email_verified").default(false),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
