@@ -124,6 +124,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
 }).extend({
   walletAddress: z.string().optional(),
   phoneNumber: z.string().optional(),
+  walletType: z.string().optional(),
 });
 
 // Bank accounts for owner's deposits
@@ -384,6 +385,10 @@ export type User = typeof users.$inferSelect & {
   lastActivity?: Date;
   preferences?: any;
   socialLinks?: any;
+  claims?: any;
+  phoneNumber?: string;
+  walletAddress?: string;
+  walletType?: string;
 };
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type UpsertUser = InsertUser;
@@ -515,6 +520,7 @@ export const insertSupportTicketSchema = createInsertSchema(supportTickets).pick
   aiAssigned: true,
   resolutionSteps: true,
   aiResolution: true,
+  status: true,
 });
 
 export const insertSupportTicketMessageSchema = createInsertSchema(supportTicketMessages).pick({
@@ -522,6 +528,7 @@ export const insertSupportTicketMessageSchema = createInsertSchema(supportTicket
   senderId: true,
   message: true,
   attachmentUrl: true,
+  userId: true,
 });
 
 export const insertKnownIssueSchema = createInsertSchema(knownIssues).pick({
