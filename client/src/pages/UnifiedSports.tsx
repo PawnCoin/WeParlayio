@@ -86,7 +86,7 @@ export default function UnifiedSports() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        
+
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
@@ -97,7 +97,7 @@ export default function UnifiedSports() {
               Every sport, every league, best odds from multiple sources
             </p>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -149,7 +149,7 @@ export default function UnifiedSports() {
           {/* Live Betting Tab */}
           <TabsContent value="live" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              
+
               {/* Live Games */}
               <Card className="lg:col-span-2">
                 <CardHeader>
@@ -174,7 +174,7 @@ export default function UnifiedSports() {
                             </div>
                             <Badge variant="secondary">{game.sport}</Badge>
                           </div>
-                          
+
                           {game.odds && game.odds.length > 0 && (
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                               {game.odds[0].moneyline?.map((odd: number, i: number) => (
@@ -284,9 +284,9 @@ export default function UnifiedSports() {
                           {getSportIcon(game.sport)}
                           <Badge variant="secondary">{game.sport}</Badge>
                         </div>
-                        
+
                         <h4 className="font-semibold mb-2">{game.event}</h4>
-                        
+
                         <div className="text-sm text-muted-foreground mb-3">
                           📅 {new Date(game.startTime).toLocaleDateString()}
                           <br />
@@ -309,7 +309,7 @@ export default function UnifiedSports() {
                             ))}
                           </div>
                         )}
-                        
+
                         <Button size="sm" className="w-full mt-2" variant="default">
                           <Target className="h-3 w-3 mr-1" />
                           More Markets
@@ -344,7 +344,7 @@ export default function UnifiedSports() {
                     {sportData.games && sportData.games.length > 0 ? (
                       <div className="space-y-3">
                         {sportData.games.slice(0, 3).map((game: any, gameIndex: number) => (
-                          <div key={gameIndex} className="p-3 border rounded-lg">
+                          <div key={`${sportData.sport}-game-${game.id || gameIndex}-${gameIndex}`} className="p-3 border rounded-lg">
                             <div className="flex items-center justify-between mb-2">
                               <span className="font-medium">{game.event}</span>
                               {game.live && <Badge variant="destructive">LIVE</Badge>}
@@ -386,7 +386,7 @@ export default function UnifiedSports() {
                     {sportData.games && sportData.games.length > 0 ? (
                       <div className="space-y-3">
                         {sportData.games.slice(0, 3).map((game: any, gameIndex: number) => (
-                          <div key={gameIndex} className="p-3 border rounded-lg">
+                          <div key={`${sportData.sport}-intl-game-${game.id || gameIndex}-${gameIndex}`} className="p-3 border rounded-lg">
                             <div className="flex items-center justify-between mb-2">
                               <span className="font-medium">{game.event}</span>
                               {game.live && <Badge variant="destructive">LIVE</Badge>}
@@ -467,7 +467,7 @@ export default function UnifiedSports() {
               <CardContent>
                 {apiStatus ? (
                   <div className="space-y-6">
-                    
+
                     {/* API Sources */}
                     <div>
                       <h4 className="font-medium mb-3">Connected Data Sources</h4>
