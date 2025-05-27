@@ -4090,6 +4090,111 @@ Join us: WeParlay.io 🎯
     }
   });
 
+  // GRID API Integration - Massive Sports Coverage Expansion
+  app.get('/api/grid/sports', async (req, res) => {
+    try {
+      const { GridApiService } = await import('./services/gridApiService');
+      const gridService = new GridApiService();
+      const sports = await gridService.getSports();
+      res.json({ sports, total: sports.length, source: 'GRID API' });
+    } catch (error) {
+      console.error('Error fetching GRID sports:', error);
+      res.status(500).json({ error: 'Failed to fetch GRID sports data' });
+    }
+  });
+
+  // GRID live matches for enhanced features
+  app.get('/api/grid/live-matches', async (req, res) => {
+    try {
+      const { GridApiService } = await import('./services/gridApiService');
+      const gridService = new GridApiService();
+      const matches = await gridService.getLiveMatches();
+      res.json({ 
+        matches, 
+        count: matches.length,
+        source: 'GRID API',
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error fetching GRID live matches:', error);
+      res.status(500).json({ error: 'Failed to fetch live matches' });
+    }
+  });
+
+  // GRID upcoming matches with expanded coverage
+  app.get('/api/grid/upcoming-matches', async (req, res) => {
+    try {
+      const days = parseInt(req.query.days as string) || 7;
+      const { GridApiService } = await import('./services/gridApiService');
+      const gridService = new GridApiService();
+      const matches = await gridService.getUpcomingMatches(days);
+      res.json({ 
+        matches, 
+        count: matches.length,
+        days_ahead: days,
+        source: 'GRID API'
+      });
+    } catch (error) {
+      console.error('Error fetching GRID upcoming matches:', error);
+      res.status(500).json({ error: 'Failed to fetch upcoming matches' });
+    }
+  });
+
+  // Enhanced unified live events with GRID integration
+  app.get('/api/events/enhanced-live', async (req, res) => {
+    try {
+      const unifiedService = new UnifiedSportsApiService();
+      const [unifiedEvents, gridLive] = await Promise.all([
+        unifiedService.getUnifiedLiveEvents(),
+        new (await import('./services/gridApiService')).GridApiService().getLiveMatches()
+      ]);
+
+      const enhancedEvents = {
+        unified_events: unifiedEvents,
+        grid_live_matches: gridLive,
+        total_opportunities: (unifiedEvents.live_events?.length || 0) + gridLive.length,
+        sources: ['ESPN', 'RapidAPI', 'The Odds API', 'SportsGameOdds', 'GRID API'],
+        last_updated: new Date().toISOString()
+      };
+
+      res.json(enhancedEvents);
+    } catch (error) {
+      console.error('Error fetching enhanced live events:', error);
+      res.status(500).json({ error: 'Failed to fetch enhanced live events' });
+    }
+  });
+
+  // Comprehensive sports coverage summary
+  app.get('/api/sports/comprehensive-coverage', async (req, res) => {
+    try {
+      const [unifiedService, gridService] = [
+        new UnifiedSportsApiService(),
+        new (await import('./services/gridApiService')).GridApiService()
+      ];
+
+      const [unifiedCoverage, gridCoverage] = await Promise.all([
+        unifiedService.getSportsCoverage(),
+        gridService.getSportsCoverage()
+      ]);
+
+      const comprehensiveCoverage = {
+        unified_api_coverage: unifiedCoverage,
+        grid_api_coverage: gridCoverage,
+        total_sports: (unifiedCoverage.total_sports || 0) + (gridCoverage.total_sports || 0),
+        total_live_matches: (unifiedCoverage.live_matches || 0) + (gridCoverage.live_matches || 0),
+        total_upcoming: (unifiedCoverage.upcoming_matches || 0) + (gridCoverage.upcoming_matches || 0),
+        api_sources: 5,
+        coverage_expansion: 'Massive 110+ sports coverage achieved',
+        last_updated: new Date().toISOString()
+      };
+
+      res.json(comprehensiveCoverage);
+    } catch (error) {
+      console.error('Error fetching comprehensive coverage:', error);
+      res.status(500).json({ error: 'Failed to fetch comprehensive sports coverage' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

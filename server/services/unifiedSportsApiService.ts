@@ -264,6 +264,11 @@ export class UnifiedSportsApiService {
         allOdds.push(...sportsGameOddsData.value);
       }
 
+      // Merge data from GRID API
+      if (gridApiData.status === 'fulfilled') {
+        allOdds.push(...gridApiData.value);
+      }
+
       // Remove duplicates and prioritize best odds
       return this.consolidateOdds(allOdds);
 
