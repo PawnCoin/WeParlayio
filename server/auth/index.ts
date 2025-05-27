@@ -8,13 +8,26 @@ import facebookAuthRouter from './facebookAuth';
 const router = Router();
 
 // Session configuration
+import connectPg from "connect-pg-simple";
+
+const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
+const pgStore = connectPg(session);
+const sessionStore = new pgStore({
+  conString: process.env.DATABASE_URL,
+  createTableIfMissing: false,
+  ttl: sessionTtl,
+  tableName: "sessions",
+});
+
 const sessionMiddleware = session({
   secret: process.env.SESSION_SECRET || 'weparlay-session-secret',
+  store: sessionStore,
   resave: false,
   saveUninitialized: false,
   cookie: {
+    httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    maxAge: sessionTtl
   }
 });
 
