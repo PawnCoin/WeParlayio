@@ -296,6 +296,7 @@ export const insertBetSchema = createInsertSchema(bets).pick({
   amount: true,
   potentialPayout: true,
   selection: true,
+  status: true,
 });
 
 // Tournaments model

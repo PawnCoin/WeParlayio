@@ -118,7 +118,7 @@ export class UnifiedSportsApiService {
 
       // Rugby Leagues
       const rugbyLeagues = [
-        { id: 57, name: 'Rugby League', key: 'rugbyleague_nrl', category: 'Rugby', active: true },
+        { id: 57, name: 'Rugby League', key: 'rugbyleague_general', category: 'Rugby', active: true },
         { id: 58, name: 'NRL', key: 'rugbyleague_nrl', category: 'Rugby', active: true },
         { id: 59, name: 'Rugby Union', key: 'rugby_world_cup', category: 'Rugby', active: true },
         { id: 60, name: 'Six Nations', key: 'rugby_six_nations', category: 'Rugby', active: true },
