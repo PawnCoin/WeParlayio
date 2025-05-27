@@ -64,7 +64,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <div className="flex flex-col h-screen">
       {/* Header */}
-      <header className="bg-gradient-to-r from-black via-gray-900 to-black shadow-lg px-4 text-white border-b border-gray-800">
+      <header className="bg-black shadow-md px-4 text-white">
         <div className="container mx-auto">
           <div className="flex items-center justify-between h-16">
             {/* Logo - Enhanced with tagline and hover effects */}
@@ -75,14 +75,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             </div>
 
             {/* Navigation for desktop */}
-            <div className="hidden md:flex space-x-8">
+            <div className="hidden md:flex space-x-6">
               {navLinks.map((link) => (
                 <Link key={link.href} href={link.href}>
                   <div className={`${
                     location === link.href
-                      ? "text-green-400 border-b-2 border-green-400 bg-green-400/10"
-                      : "text-gray-300 hover:text-green-400 hover:bg-green-400/5 transition-all duration-300"
-                  } font-semibold cursor-pointer py-2 px-3 text-sm rounded-t-lg`}>
+                      ? "text-green-500 border-b-2 border-green-500"
+                      : "text-white hover:text-green-500 transition-colors"
+                  } font-medium cursor-pointer py-2 px-1 text-sm`}>
                     {link.label}
                   </div>
                 </Link>
@@ -90,22 +90,22 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             </div>
 
             {/* Mobile Navigation */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-gradient-to-t from-black via-gray-900 to-gray-800 border-t border-gray-700 z-50 backdrop-blur-lg">
-              <div className="grid grid-cols-4 px-2 py-3">
+            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 z-50">
+              <div className="grid grid-cols-4 px-2 py-2">
                 {navLinks.slice(0, 4).map((link) => (
                   <Link key={link.href} href={link.href}>
                     <div className={`${
                       location === link.href
-                        ? "text-green-400 bg-green-400/20"
-                        : "text-gray-300 hover:text-white"
-                    } flex flex-col items-center py-3 px-2 text-xs font-medium rounded-lg transition-all duration-300`}>
-                      <div className="w-6 h-6 mb-1 flex items-center justify-center text-lg">
+                        ? "text-green-500"
+                        : "text-white"
+                    } flex flex-col items-center py-2 px-1 text-xs font-medium`}>
+                      <div className="w-6 h-6 mb-1 flex items-center justify-center">
                         {link.label === 'Home' && '🏠'}
                         {link.label === 'Sports Betting' && '⚡'}
                         {link.label === 'Fantasy' && '🏆'}
                         {link.label === 'Tournaments' && '🥇'}
                       </div>
-                      <span className="truncate text-[10px]">{link.label.split(' ')[0]}</span>
+                      <span className="truncate">{link.label.split(' ')[0]}</span>
                     </div>
                   </Link>
                 ))}
@@ -286,14 +286,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         {/* Content Area */}
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
           {/* Main Content Column */}
-          <div className="flex-1 overflow-y-auto p-2 md:p-6 pb-24 md:pb-4 custom-scrollbar bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 dark:text-neutral-light">
-            <div className="max-w-7xl mx-auto">
-              {children}
-            </div>
+          <div className="flex-1 overflow-y-auto p-2 md:p-4 pb-24 md:pb-4 custom-scrollbar bg-neutral-light dark:bg-neutral-dark dark:text-neutral-light">
+            {children}
           </div>
 
           {/* Betting Slip Column - Mobile Bottom Sheet */}
-          <div className="hidden md:block w-80 bg-white/95 backdrop-blur-lg shadow-xl border-l border-gray-200 flex-shrink-0 overflow-y-auto custom-scrollbar dark:bg-gray-900/95 dark:border-gray-700 dark:text-neutral-light">
+          <div className="hidden md:block w-80 bg-white shadow-md flex-shrink-0 overflow-y-auto custom-scrollbar betting-slip-shadow dark:bg-neutral-dark dark:text-neutral-light">
             <BettingSlip />
           </div>
           

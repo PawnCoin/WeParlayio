@@ -20,10 +20,6 @@ const LoginEnhanced: React.FC = () => {
   });
 
   const [quickEmail, setQuickEmail] = useState('');
-  
-  // Implementing unused state variables from the analysis
-  const [rememberMe, setRememberMe] = useState(false);
-  const [loginAttempts, setLoginAttempts] = useState(0);
 
   // Login mutation
   const loginMutation = useMutation({
@@ -35,14 +31,6 @@ const LoginEnhanced: React.FC = () => {
       localStorage.setItem('weparlay-user', JSON.stringify(data.user));
       localStorage.setItem('weparlay-token', data.token);
       
-      // Implementing rememberMe functionality that was declared but never used
-      if (rememberMe) {
-        localStorage.setItem('weparlay-remember', 'true');
-      }
-      
-      // Reset login attempts on successful login
-      setLoginAttempts(0);
-      
       toast({
         title: "Welcome back!",
         description: `Good to see you again, ${data.user.username}!`,
@@ -51,12 +39,9 @@ const LoginEnhanced: React.FC = () => {
       navigate('/');
     },
     onError: (error: any) => {
-      // Implementing loginAttempts tracking that was declared but never used
-      setLoginAttempts(prev => prev + 1);
-      
       toast({
         title: "Login Failed",
-        description: `Please check your username and password. Attempts: ${loginAttempts + 1}`,
+        description: "Please check your username and password",
         variant: "destructive",
       });
     },
@@ -193,24 +178,9 @@ const LoginEnhanced: React.FC = () => {
                       Signing In...
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2">
-                      <Zap className="h-4 w-4" />
-                      Sign In
-                    </div>
+                    'Sign In'
                   )}
                 </Button>
-                
-                {/* Implementing rememberMe checkbox functionality that was declared but never used */}
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="remember"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="rounded border-gray-300"
-                  />
-                  <Label htmlFor="remember" className="text-sm">Remember me</Label>
-                </div>
                 
                 <div className="text-center">
                   <button
@@ -268,7 +238,7 @@ const LoginEnhanced: React.FC = () => {
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <Play className="h-4 w-4" />
+                      <Zap className="h-4 w-4" />
                       Start Betting Now
                     </div>
                   )}
