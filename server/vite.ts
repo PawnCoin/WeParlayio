@@ -16,7 +16,7 @@ if (process.env.NODE_ENV === "development") {
     createLogger = vite.createLogger;
     viteConfig = (await import("../vite.config")).default;
   } catch (error) {
-    console.warn("Vite not available in production mode");
+    console.warn("Vite not available:", error.message);
   }
 }
 
@@ -33,7 +33,8 @@ export function log(message: string, source = "express") {
 
 export async function setupVite(app: Express, server: Server) {
   if (!createViteServer || !createLogger || !viteConfig) {
-    throw new Error("Vite is not available - this function should only be called in development");
+    console.warn("Vite dependencies not available, falling back to static serving");
+    return;
   }
 
   const viteLogger = createLogger();
