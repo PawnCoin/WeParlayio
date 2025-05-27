@@ -196,8 +196,8 @@ export class LiveMarketingBotsService {
       }
 
       // Twitter API v1.1 with OAuth 1.0a for @weparlayio
-      const oauth = require('oauth');
-      const twitterOAuth = new oauth.OAuth(
+      const { OAuth } = require('oauth');
+      const twitterOAuth = new OAuth(
         'https://api.twitter.com/oauth/request_token',
         'https://api.twitter.com/oauth/access_token',
         process.env.TWITTER_API_KEY,
