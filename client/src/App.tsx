@@ -62,6 +62,7 @@ import Odds from "@/pages/Odds";
 import Parlays from "@/pages/Parlays";
 import BettingAcademy from "@/pages/BettingAcademy";
 import LiveHeatmap from "@/pages/LiveHeatmap";
+import IncomeTracker from "@/pages/IncomeTracker";
 
 // Import admin components
 import AdminBypass from "@/pages/AdminBypass";
