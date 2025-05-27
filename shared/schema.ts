@@ -342,6 +342,7 @@ export const insertFantasyTeamSchema = createInsertSchema(fantasyTeams).pick({
   userId: true,
   name: true,
   sportId: true,
+  salary: true,
   yahooTeamId: true,
 });
 

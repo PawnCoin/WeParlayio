@@ -180,7 +180,7 @@ export class UnifiedSportsApiService {
 
       // Regional & Specialty Sports
       const specialtySports = [
-        { id: 89, name: 'Australian Football', key: 'aussierules_afl', category: 'Australian Football', active: true },
+        { id: 89, name: 'Australian Football', key: 'aussierules_general', category: 'Australian Football', active: true },
         { id: 90, name: 'AFL', key: 'aussierules_afl', category: 'Australian Football', active: true },
         { id: 91, name: 'Gaelic Football', key: 'gaelic_football', category: 'Gaelic Sports', active: true },
         { id: 92, name: 'Hurling', key: 'gaelic_hurling', category: 'Gaelic Sports', active: true },
