@@ -207,10 +207,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                           Switch to {selectedCurrency === 'WEPARLAY' ? 'Real Money' : 'WeParlay Cash'}
                         </div>
                       </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <div className="px-2 py-2">
-                        <CurrencyModeToggle variant="default" />
-                      </div>
+
                     </DropdownMenuContent>
                   </DropdownMenu>
 
