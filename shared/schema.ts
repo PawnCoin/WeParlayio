@@ -395,6 +395,9 @@ export type User = typeof users.$inferSelect & {
   wins?: number;
   password?: string;
   tier?: string;
+  isAdmin?: boolean;
+  totalBets?: number;
+  winRate?: number;
 };
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type UpsertUser = InsertUser;
@@ -459,7 +462,9 @@ export type Tournament = typeof tournaments.$inferSelect & {
 };
 export type InsertTournament = z.infer<typeof insertTournamentSchema>;
 
-export type FantasyTeam = typeof fantasyTeams.$inferSelect;
+export type FantasyTeam = typeof fantasyTeams.$inferSelect & {
+  salaryCap?: number;
+};
 export type InsertFantasyTeam = z.infer<typeof insertFantasyTeamSchema>;
 
 export type Player = typeof players.$inferSelect;
@@ -559,7 +564,10 @@ export type InsertSupportTicketMessage = z.infer<typeof insertSupportTicketMessa
 
 export type SupportTicketLog = typeof supportTicketLogs.$inferSelect;
 
-export type KnownIssue = typeof knownIssues.$inferSelect;
+export type KnownIssue = typeof knownIssues.$inferSelect & {
+  keywords?: string[];
+  status?: string;
+};
 export type InsertKnownIssue = z.infer<typeof insertKnownIssueSchema>;
 
 // Head-to-head betting challenges
