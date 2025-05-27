@@ -448,6 +448,8 @@ export type InsertEvent = z.infer<typeof insertEventSchema>;
 export type Bet = typeof bets.$inferSelect & {
   metadata?: any;
   bonusApplied?: boolean;
+  payout?: number;
+  event?: any;
 };
 export type InsertBet = z.infer<typeof insertBetSchema>;
 
