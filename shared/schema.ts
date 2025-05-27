@@ -106,10 +106,20 @@ export const insertUserSchema = createInsertSchema(users).pick({
   inviteCode: true,
   referredBy: true,
   createdAt: true,
-  phone: true,
-  dateOfBirth: true,
-  allowMarketing: true,
-  isActive: true
+  emailVerified: true,
+  realMoneyBalance: true,
+  tier: true,
+  claims: true,
+  yahooAccessToken: true,
+  isAdmin: true,
+  totalBets: true,
+  winRate: true,
+  totalWinnings: true,
+  recentActivity: true,
+  achievements: true,
+  favoriteSport: true,
+  averageBet: true,
+  biggestWin: true
 });
 
 // Bank accounts for owner's deposits
@@ -361,8 +371,12 @@ export const insertFantasyTeamPlayerSchema = createInsertSchema(fantasyTeamPlaye
   playerId: true,
 });
 
-// Type definitions
-export type User = typeof users.$inferSelect;
+// Type definitions with extended properties
+export type User = typeof users.$inferSelect & {
+  lastActivity?: Date;
+  preferences?: any;
+  socialLinks?: any;
+};
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type UpsertUser = InsertUser;
 // Admin dashboard types
