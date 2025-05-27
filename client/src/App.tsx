@@ -10,6 +10,7 @@ import LiveBettingReal from "@/lib/pages/LiveBettingReal-fixed";
 import MainLayout from "@/components/layout/MainLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { BetSlipProvider } from "@/contexts/BetSlipContext";
+import { BettingProvider } from "@/contexts/BettingContext";
 import { TeamThemeProvider } from "@/contexts/TeamThemeContext";
 import { CurrencyModeProvider } from "@/contexts/CurrencyModeContext";
 import ThemeProvider from "@/lib/ThemeProvider";
@@ -44,18 +45,20 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <BetSlipProvider>
-          <CurrencyModeProvider>
-            <TeamThemeProvider>
-              <TooltipProvider>
-                <MainLayout>
-                  <Router />
-                </MainLayout>
-                <Toaster />
-              </TooltipProvider>
-            </TeamThemeProvider>
-          </CurrencyModeProvider>
-        </BetSlipProvider>
+        <BettingProvider>
+          <BetSlipProvider>
+            <CurrencyModeProvider>
+              <TeamThemeProvider>
+                <TooltipProvider>
+                  <MainLayout>
+                    <Router />
+                  </MainLayout>
+                  <Toaster />
+                </TooltipProvider>
+              </TeamThemeProvider>
+            </CurrencyModeProvider>
+          </BetSlipProvider>
+        </BettingProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
