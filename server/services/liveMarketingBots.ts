@@ -195,27 +195,36 @@ export class LiveMarketingBotsService {
         return false;
       }
 
-      // Real Twitter API v2 integration
-      const response = await fetch('https://api.twitter.com/2/tweets', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.TWITTER_BEARER_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          text: content
-        })
-      });
+      // Twitter API v1.1 with OAuth 1.0a for @weparlayio
+      const oauth = require('oauth');
+      const twitterOAuth = new oauth.OAuth(
+        'https://api.twitter.com/oauth/request_token',
+        'https://api.twitter.com/oauth/access_token',
+        process.env.TWITTER_API_KEY,
+        process.env.TWITTER_API_SECRET,
+        '1.0A',
+        null,
+        'HMAC-SHA1'
+      );
 
-      if (response.ok) {
-        const result = await response.json();
-        console.log(`[${botName}] ✅ LIVE TWEET POSTED: ${content.substring(0, 50)}... (ID: ${result.data?.id})`);
-        return true;
-      } else {
-        const errorData = await response.json();
-        console.error(`[${botName}] Twitter API error:`, errorData);
-        return false;
-      }
+      return new Promise((resolve) => {
+        twitterOAuth.post(
+          'https://api.twitter.com/1.1/statuses/update.json',
+          process.env.TWITTER_ACCESS_TOKEN,
+          process.env.TWITTER_ACCESS_TOKEN_SECRET,
+          { status: `${content} @weparlayio` }, // Include your handle
+          (error: any, data: any) => {
+            if (error) {
+              console.log(`[${botName}] Twitter API error:`, error);
+              resolve(false);
+            } else {
+              const result = JSON.parse(data);
+              console.log(`[${botName}] ✅ LIVE TWEET POSTED @weparlayio: ${content.substring(0, 50)}... (ID: ${result.id_str})`);
+              resolve(true);
+            }
+          }
+        );
+      });
     } catch (error) {
       console.error(`[${botName}] Twitter posting error:`, error);
       return false;
