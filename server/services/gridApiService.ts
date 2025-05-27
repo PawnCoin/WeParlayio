@@ -54,11 +54,31 @@ export class GridApiService {
    * Get all available sports and leagues from GRID
    */
   async getSports(): Promise<any[]> {
+    const query = `
+      query GetSeries {
+        allSeries {
+          id
+          title
+          slug
+          videogame {
+            id
+            name
+            slug
+          }
+          tournaments {
+            id
+            title
+            slug
+          }
+        }
+      }
+    `;
+
     try {
-      const data = await this.makeRequest('/v1/sports');
-      return data.sports || [];
+      const data = await this.makeGraphQLRequest(query);
+      return this.formatSports(data.allSeries || []);
     } catch (error) {
-      console.error('Error fetching GRID sports:', error);
+      console.error('Failed to fetch sports from GRID:', error);
       return [];
     }
   }
@@ -67,11 +87,56 @@ export class GridApiService {
    * Get live matches across all sports
    */
   async getLiveMatches(): Promise<any[]> {
+    const query = `
+      query GetLiveMatches {
+        allMatches(filter: { status: RUNNING }) {
+          id
+          status
+          scheduledAt
+          beginAt
+          endedAt
+          name
+          numberOfGames
+          tournament {
+            id
+            name
+            slug
+            serie {
+              id
+              name
+              videogame {
+                id
+                name
+                slug
+              }
+            }
+          }
+          opponents {
+            opponent {
+              id
+              name
+              slug
+              imageUrl
+            }
+          }
+          games {
+            id
+            status
+            position
+            winner {
+              id
+              name
+            }
+          }
+        }
+      }
+    `;
+
     try {
-      const data = await this.makeRequest('/v1/matches/live');
-      return this.formatMatches(data.matches || []);
+      const data = await this.makeGraphQLRequest(query);
+      return this.formatMatches(data.allMatches || []);
     } catch (error) {
-      console.error('Error fetching GRID live matches:', error);
+      console.error('Failed to fetch live matches from GRID:', error);
       return [];
     }
   }
