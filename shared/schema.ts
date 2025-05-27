@@ -392,6 +392,9 @@ export type User = typeof users.$inferSelect & {
   phoneNumber?: string;
   walletAddress?: string;
   walletType?: string;
+  wins?: number;
+  password?: string;
+  tier?: string;
 };
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type UpsertUser = InsertUser;
@@ -488,6 +491,7 @@ export const supportTicketMessages = pgTable("support_ticket_messages", {
   userId: varchar("user_id"), // Additional user reference for TypeScript compatibility
   message: text("message").notNull(),
   attachmentUrl: text("attachment_url"),
+  isFromUser: boolean("is_from_user").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -533,6 +537,7 @@ export const insertSupportTicketMessageSchema = createInsertSchema(supportTicket
   message: true,
   attachmentUrl: true,
   userId: true,
+  isFromUser: true,
 });
 
 export const insertKnownIssueSchema = createInsertSchema(knownIssues).pick({
@@ -619,7 +624,9 @@ export const insertNotificationSchema = createInsertSchema(notifications)
     readAt: true 
   });
 
-export type BettingChallenge = typeof bettingChallenges.$inferSelect;
+export type BettingChallenge = typeof bettingChallenges.$inferSelect & {
+  uuid?: string; // Alias for challengeUuid to maintain compatibility
+};
 export type InsertBettingChallenge = z.infer<typeof insertBettingChallengeSchema>;
 
 export type Notification = typeof notifications.$inferSelect;
