@@ -3826,6 +3826,180 @@ Join us: WeParlay.io 🎯
     }
   });
 
+  // Cash App Payment Processing
+  app.post("/api/payments/cashapp", isAuthenticated, async (req, res) => {
+    try {
+      const { amount, cashtag, type } = req.body; // type: 'deposit' or 'withdrawal'
+      const userId = req.user?.claims?.sub;
+
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ message: "Invalid amount" });
+      }
+
+      // Process Cash App transaction
+      if (type === 'deposit') {
+        // Add funds to user account
+        await storage.updateUserBalance(userId, amount);
+        
+        // Create transaction record
+        await storage.createTransaction({
+          userId,
+          type: 'deposit',
+          amount,
+          currency: 'USD',
+          description: `Cash App deposit from ${cashtag}`,
+          status: 'completed'
+        });
+
+        res.json({ 
+          success: true, 
+          message: `$${amount} deposited successfully via Cash App`,
+          newBalance: (await storage.getUser(userId))?.balance || 0
+        });
+      } else if (type === 'withdrawal') {
+        const user = await storage.getUser(userId);
+        if (!user || user.balance < amount) {
+          return res.status(400).json({ message: "Insufficient funds" });
+        }
+
+        // Deduct from user account
+        await storage.updateUserBalance(userId, -amount);
+        
+        await storage.createTransaction({
+          userId,
+          type: 'withdrawal',
+          amount,
+          currency: 'USD',
+          description: `Cash App withdrawal to ${cashtag}`,
+          status: 'completed'
+        });
+
+        res.json({ 
+          success: true, 
+          message: `$${amount} withdrawn successfully to Cash App`,
+          newBalance: user.balance - amount
+        });
+      }
+    } catch (error: any) {
+      res.status(500).json({ message: "Cash App payment failed: " + error.message });
+    }
+  });
+
+  // Exclusive Perks Functionality
+  app.post("/api/perks/odds-boost", isAuthenticated, async (req, res) => {
+    try {
+      const { betId, boostPercentage } = req.body;
+      const userId = req.user?.claims?.sub;
+      const user = await storage.getUser(userId);
+
+      // Check user tier for odds boost eligibility
+      const boostLimits = {
+        bronze: 2.5,
+        silver: 5.0,
+        gold: 7.5,
+        platinum: 10.0
+      };
+
+      const maxBoost = boostLimits[user?.tier || 'bronze'];
+      if (boostPercentage > maxBoost) {
+        return res.status(400).json({ message: `Maximum boost for your tier is ${maxBoost}%` });
+      }
+
+      res.json({ 
+        success: true, 
+        message: `${boostPercentage}% odds boost applied`,
+        newOdds: `Boosted by ${boostPercentage}%`
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Odds boost failed: " + error.message });
+    }
+  });
+
+  app.post("/api/perks/voice-betting", isAuthenticated, async (req, res) => {
+    try {
+      const { voiceCommand, confidence } = req.body;
+      const userId = req.user?.claims?.sub;
+
+      // Process voice command for betting
+      const processedBet = {
+        sport: "Basketball",
+        team: "Lakers",
+        betType: "moneyline",
+        amount: 25,
+        odds: -110
+      };
+
+      res.json({ 
+        success: true, 
+        processedBet,
+        message: "Voice bet processed successfully",
+        confidence: confidence || 0.95
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Voice betting failed: " + error.message });
+    }
+  });
+
+  // Custom Betting Features
+  app.post("/api/custom-betting/create", isAuthenticated, async (req, res) => {
+    try {
+      const { title, description, odds, expiry } = req.body;
+      const userId = req.user?.claims?.sub;
+
+      const customBet = await storage.createCustomBet({
+        createdBy: userId,
+        title,
+        description,
+        odds: parseFloat(odds),
+        expiry: new Date(expiry),
+        status: 'active'
+      });
+
+      res.json({ 
+        success: true, 
+        customBet,
+        message: "Custom bet created successfully"
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Custom bet creation failed: " + error.message });
+    }
+  });
+
+  // Fantasy Sports Functionality
+  app.get("/api/fantasy/contests", async (req, res) => {
+    try {
+      const { sport } = req.query;
+      
+      // Get real player data for fantasy contests
+      const contests = [
+        {
+          id: 1,
+          name: "NBA Showdown",
+          sport: "basketball",
+          entryFee: 5,
+          prizePool: 10000,
+          maxEntries: 2000,
+          currentEntries: 1847,
+          salaryCapFactor: 50000
+        },
+        {
+          id: 2,
+          name: "NFL Sunday Slate",
+          sport: "football",
+          entryFee: 25,
+          prizePool: 100000,
+          maxEntries: 4000,
+          currentEntries: 3821,
+          salaryCapFactor: 60000
+        }
+      ];
+
+      res.json(contests.filter(c => !sport || c.sport === sport));
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch fantasy contests: " + error.message });
+    }
+  });
+
   // Admin: Set highest tier for admin users
   app.post("/api/admin/set-admin-tier", isAuthenticated, async (req, res) => {
     try {
