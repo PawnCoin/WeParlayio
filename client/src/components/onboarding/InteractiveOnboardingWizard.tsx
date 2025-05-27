@@ -107,8 +107,18 @@ export default function InteractiveOnboardingWizard({ onComplete, onSkip }: Inte
   ];
 
   const teamOptions = [
-    'Cowboys', 'Patriots', 'Packers', 'Steelers', 'Lakers', 'Warriors',
-    'Celtics', 'Heat', 'Yankees', 'Dodgers', 'Red Sox', 'Cardinals'
+    // NFL Teams
+    'Cowboys', 'Patriots', 'Packers', 'Steelers', 'Chiefs', 'Eagles', 'Bills', 'Rams', 'Bengals', 'Ravens', 'Titans', 'Colts', 'Browns', 'Dolphins', 'Jets', 'Giants',
+    'Washington', 'Saints', 'Falcons', 'Panthers', 'Buccaneers', '49ers', 'Seahawks', 'Cardinals', 'Broncos', 'Raiders', 'Chargers', 'Bears', 'Lions', 'Vikings', 'Texans', 'Jaguars',
+    // NBA Teams  
+    'Lakers', 'Warriors', 'Celtics', 'Heat', 'Bulls', 'Knicks', 'Nets', 'Bucks', 'Nuggets', 'Suns', 'Clippers', 'Mavericks', 'Spurs', 'Rockets', 'Thunder', 'Jazz',
+    'Blazers', 'Kings', 'Grizzlies', 'Pelicans', '76ers', 'Raptors', 'Pacers', 'Cavaliers', 'Pistons', 'Hawks', 'Hornets', 'Magic', 'Wizards', 'Timberwolves',
+    // MLB Teams
+    'Yankees', 'Dodgers', 'Red Sox', 'Cardinals', 'Giants', 'Cubs', 'Astros', 'Braves', 'Mets', 'Phillies', 'Padres', 'Blue Jays', 'Mariners', 'Rangers', 'Angels', 'Athletics',
+    'Guardians', 'Tigers', 'Twins', 'White Sox', 'Royals', 'Orioles', 'Rays', 'Marlins', 'Nationals', 'Pirates', 'Reds', 'Brewers', 'Rockies', 'Diamondbacks',
+    // NHL Teams
+    'Maple Leafs', 'Canadiens', 'Bruins', 'Rangers', 'Penguins', 'Capitals', 'Lightning', 'Panthers', 'Hurricanes', 'Devils', 'Islanders', 'Flyers', 'Blue Jackets', 'Sabres',
+    'Red Wings', 'Blackhawks', 'Blues', 'Wild', 'Predators', 'Stars', 'Avalanche', 'Jets', 'Flames', 'Oilers', 'Canucks', 'Kraken', 'Golden Knights', 'Kings', 'Ducks', 'Sharks', 'Coyotes'
   ];
 
   const nextStep = () => {
