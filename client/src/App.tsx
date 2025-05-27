@@ -21,6 +21,7 @@ import LoginEnhanced from "@/pages/LoginEnhanced";
 import AuthTestDemo from "@/pages/AuthTestDemo";
 import UserDirectory from "@/pages/UserDirectory";
 import SocialMediaBots from "@/pages/SocialMediaBots";
+import SocialMediaDashboard from "@/pages/SocialMediaDashboard";
 import EmailMonitoring from "@/pages/EmailMonitoring";
 import VideoGaming from "@/pages/VideoGaming";
 import Trivia from "@/pages/Trivia";
@@ -137,6 +138,7 @@ function Router() {
       <Route path="/community" component={UserDirectory} />
       <Route path="/users" component={UserDirectory} />
       <Route path="/social-bots" component={SocialMediaBots} />
+      <Route path="/social-dashboard" component={SocialMediaDashboard} />
       <Route path="/email-monitoring" component={EmailMonitoring} />
       <Route path="/theme-manager" component={ThemeSettingsPage} />
       <Route path="/sports/:sportKey" component={SportPage} />

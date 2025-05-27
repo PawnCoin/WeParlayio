@@ -359,6 +359,15 @@ export class LiveMarketingBotsService {
           case 'instagram':
             success = await this.postToInstagram(content, bot.name);
             break;
+          case 'facebook':
+            success = await this.postToFacebook(content, bot.name);
+            break;
+          case 'tiktok':
+            success = await this.postToTikTok(content, bot.name);
+            break;
+          case 'snapchat':
+            success = await this.postToSnapchat(content, bot.name);
+            break;
         }
 
         postResults.push({
