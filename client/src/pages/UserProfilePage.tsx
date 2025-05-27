@@ -141,6 +141,19 @@ const UserProfilePage: React.FC<UserProfilePageProps> = () => {
                   <div className="text-sm text-muted-foreground">Total Winnings</div>
                 </div>
               </div>
+              
+              {/* Using Button component that was imported but never rendered */}
+              <div className="flex flex-wrap gap-2 justify-center md:justify-start mt-4">
+                <Button variant="outline" size="sm">
+                  <Star className="h-4 w-4 mr-1" /> Follow User
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Award className="h-4 w-4 mr-1" /> View Achievements
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Users className="h-4 w-4 mr-1" /> Compare Stats
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
