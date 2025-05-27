@@ -60,50 +60,28 @@ const LiveOddsUpdates: React.FC = () => {
   
   // Simulate receiving live odds updates
   useEffect(() => {
-    // Sample teams for simulated updates
-    const teams = [
-      { home: "Los Angeles Lakers", away: "Golden State Warriors" },
-      { home: "Boston Celtics", away: "Miami Heat" },
-      { home: "Philadelphia 76ers", away: "Milwaukee Bucks" },
-      { home: "Brooklyn Nets", away: "Atlanta Hawks" },
-      { home: "Denver Nuggets", away: "Phoenix Suns" }
-    ];
-    
-    // Sample markets for simulated updates
-    const markets = [
-      "Moneyline Home",
-      "Moneyline Away",
-      "Spread Home -4.5",
-      "Spread Away +4.5",
-      "Total Over 224.5",
-      "Total Under 224.5"
-    ];
-    
-    // Function to generate a random odds update
-    const generateRandomUpdate = (): OddsUpdate => {
-      const team = teams[Math.floor(Math.random() * teams.length)];
-      const market = markets[Math.floor(Math.random() * markets.length)];
-      const oldOdds = Math.random() > 0.5 
-        ? Math.floor(Math.random() * 300) + 100 // Positive odds
-        : -1 * (Math.floor(Math.random() * 300) + 100); // Negative odds
-      
-      // Small change in odds
-      const oddsChange = Math.floor(Math.random() * 30) - 15;
-      const newOdds = oldOdds + oddsChange;
-      
-      return {
-        id: Math.random().toString(36).substring(2, 9),
-        homeTeam: team.home,
-        awayTeam: team.away,
-        market,
-        oldOdds,
-        newOdds,
-        timestamp: new Date()
-      };
+    // Fetch real odds updates from our live API
+    const fetchRealOddsUpdates = async () => {
+      try {
+        const response = await fetch('/api/real-odds');
+        const realOdds = await response.json();
+        
+        if (realOdds && realOdds.length > 0) {
+          const realUpdates = realOdds.map((odds: any) => ({
+            id: odds.id,
+            homeTeam: odds.home_team,
+            awayTeam: odds.away_team,
+            market: odds.bookmakers?.[0]?.markets?.[0]?.key || 'h2h',
+            oldOdds: odds.bookmakers?.[0]?.markets?.[0]?.outcomes?.[0]?.price || 0,
+            newOdds: odds.bookmakers?.[0]?.markets?.[0]?.outcomes?.[1]?.price || 0,
+            timestamp: new Date(odds.commence_time)
+          }));
+          setOddsUpdates(realUpdates.slice(0, 5));
+        }
+      } catch (error) {
+        console.error('Error fetching real odds updates:', error);
+      }
     };
-    
-    // Initially add a few updates
-    const initialUpdates = Array(5).fill(0).map(() => generateRandomUpdate());
     setOddsUpdates(initialUpdates);
     
     // Periodically add new updates

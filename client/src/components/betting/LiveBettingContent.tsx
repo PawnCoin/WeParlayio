@@ -17,13 +17,8 @@ import { useBetting } from "@/contexts/BettingContext";
 import WatchLive from "@/components/events/WatchLive";
 
 // Import team logos and utils
-import { 
-  getTeamLogoUrl, 
-  formatOdds, 
-  formatGameTime,
-  formatGameDate,
-  getLeagueInfo
-} from "@/lib/sportsDataUtils";
+// @ts-ignore
+import * as sportsDataUtils from "@/lib/sportsDataUtils";
 
 const LiveBettingContent: React.FC = () => {
   const { toast } = useToast();
@@ -92,7 +87,7 @@ const LiveBettingContent: React.FC = () => {
     
     // Format commence time
     const gameTime = new Date(event.commence_time);
-    return formatGameTime(gameTime);
+    return sportsDataUtils.formatGameTime(gameTime);
   };
   
   // Function to add a selection to the bet slip
@@ -305,7 +300,7 @@ const LiveBettingContent: React.FC = () => {
                           <div className="flex flex-col space-y-1">
                             <div className="flex items-center">
                               <img 
-                                src={getTeamLogoUrl(homeTeam)} 
+                                src={sportsDataUtils.getTeamLogoUrl(homeTeam)} 
                                 alt={homeTeam}
                                 className="w-5 h-5 mr-2"
                               />
@@ -313,7 +308,7 @@ const LiveBettingContent: React.FC = () => {
                             </div>
                             <div className="flex items-center">
                               <img 
-                                src={getTeamLogoUrl(awayTeam)} 
+                                src={sportsDataUtils.getTeamLogoUrl(awayTeam)} 
                                 alt={awayTeam}
                                 className="w-5 h-5 mr-2"
                               />
@@ -353,7 +348,7 @@ const LiveBettingContent: React.FC = () => {
                               className="justify-end px-2 py-0 h-7 hover:bg-muted"
                             >
                               <span className="font-mono">
-                                {formatOdds(homeMoneyline)}
+                                {sportsDataUtils.formatOdds(homeMoneyline)}
                               </span>
                             </Button>
                           ) : (
@@ -375,7 +370,7 @@ const LiveBettingContent: React.FC = () => {
                               className="justify-end px-2 py-0 h-7 hover:bg-muted"
                             >
                               <span className="font-mono">
-                                {formatOdds(awayMoneyline)}
+                                {sportsDataUtils.formatOdds(awayMoneyline)}
                               </span>
                             </Button>
                           ) : (
@@ -405,7 +400,7 @@ const LiveBettingContent: React.FC = () => {
                                 {homeSpread.point > 0 ? '+' : ''}{homeSpread.point}
                               </span>
                               <span className="font-mono">
-                                {formatOdds(homeSpread.price)}
+                                {sportsDataUtils.formatOdds(homeSpread.price)}
                               </span>
                             </Button>
                           ) : (
@@ -431,7 +426,7 @@ const LiveBettingContent: React.FC = () => {
                                 {awaySpread.point > 0 ? '+' : ''}{awaySpread.point}
                               </span>
                               <span className="font-mono">
-                                {formatOdds(awaySpread.price)}
+                                {sportsDataUtils.formatOdds(awaySpread.price)}
                               </span>
                             </Button>
                           ) : (
@@ -461,7 +456,7 @@ const LiveBettingContent: React.FC = () => {
                                 O {overTotal.point}
                               </span>
                               <span className="font-mono">
-                                {formatOdds(overTotal.price)}
+                                {sportsDataUtils.formatOdds(overTotal.price)}
                               </span>
                             </Button>
                           ) : (
@@ -487,7 +482,7 @@ const LiveBettingContent: React.FC = () => {
                                 U {underTotal.point}
                               </span>
                               <span className="font-mono">
-                                {formatOdds(underTotal.price)}
+                                {sportsDataUtils.formatOdds(underTotal.price)}
                               </span>
                             </Button>
                           ) : (
