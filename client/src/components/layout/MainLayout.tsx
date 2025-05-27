@@ -43,11 +43,18 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const handleCurrencySwitch = () => {
     const newMode = selectedCurrency === 'WEPARLAY' ? 'USD' : 'WEPARLAY';
     setSelectedCurrency(newMode);
+    
+    // Save to localStorage for toggle switch sync
+    localStorage.setItem('currencyMode', newMode === 'WEPARLAY' ? 'virtual' : 'real');
+    
     toast({
       title: `Switched to ${newMode === 'WEPARLAY' ? 'WeParlay Cash' : 'Real Money'} Mode`,
       description: `You're now betting with ${newMode === 'WEPARLAY' ? 'virtual currency' : 'real money'}`,
       duration: 3000,
     });
+    
+    // Force page refresh to sync all components
+    window.location.reload();
   };
 
   const navLinks = [
