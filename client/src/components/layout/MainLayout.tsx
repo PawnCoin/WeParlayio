@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Menu, Wallet, Coins, Shield, ArrowRightLeft } from "lucide-react";
+import { ChevronDown, Menu, Wallet, Coins, Shield, ArrowRightLeft, History, CreditCard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Logo from "@/components/WeParlay/Logo";
 import WalletConnect from "@/components/auth/WalletConnect";
@@ -114,7 +114,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
             {/* Currency Mode Toggle & Wallet Access */}
             <div className="hidden md:flex items-center space-x-2">
-              <CurrencyModeToggle variant="compact" className="bg-black/20 p-2 rounded-md" />
+              <CurrencyModeToggle 
+                variant="compact" 
+                className="bg-black/20 p-2 rounded-md" 
+                onCurrencyChange={handleCurrencySwitch}
+              />
 
               <Link href="/wallet-management">
                 <Button variant="ghost" size="sm" className="text-white hover:text-green-500 flex items-center">

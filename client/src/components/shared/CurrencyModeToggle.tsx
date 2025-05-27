@@ -9,22 +9,28 @@ import { useToast } from "@/hooks/use-toast";
 interface CurrencyModeToggleProps {
   variant?: 'default' | 'compact' | 'icon-only';
   className?: string;
+  onCurrencyChange?: () => void;
 }
 
 export default function CurrencyModeToggle({ 
   variant = 'default', 
-  className = '' 
+  className = '',
+  onCurrencyChange
 }: CurrencyModeToggleProps) {
   const { isVirtual, toggleMode } = useCurrencyMode();
   const { toast } = useToast();
 
   const handleToggle = () => {
     toggleMode();
-    toast({
-      title: `Switched to ${!isVirtual ? 'WeParlay Cash' : 'Real Money'}`,
-      description: `You're now using ${!isVirtual ? 'virtual currency' : 'real money'} for betting.`,
-      duration: 2000,
-    });
+    if (onCurrencyChange) {
+      onCurrencyChange();
+    } else {
+      toast({
+        title: `Switched to ${!isVirtual ? 'WeParlay Cash' : 'Real Money'}`,
+        description: `You're now using ${!isVirtual ? 'virtual currency' : 'real money'} for betting.`,
+        duration: 2000,
+      });
+    }
   };
 
   // Icon-only variant
