@@ -1167,4 +1167,51 @@ export class DatabaseStorage implements IStorage {
       return keywords.some(keyword => lowerDesc.includes(keyword.toLowerCase()));
     });
   }
+
+  // Additional methods needed for TypeScript completion
+  async getUserByGamertag(gamertag: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.gamertag, gamertag));
+    return user;
+  }
+
+  async updateUserGamertag(userId: string, gamertag: string): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ 
+        gamertag,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    
+    return updatedUser;
+  }
+
+  async getUserByWallet(walletAddress: string): Promise<User | undefined> {
+    // This would need a wallet column in the users table
+    const [user] = await db.select().from(users).where(eq(users.id, walletAddress));
+    return user;
+  }
+
+  async updateUserTier(userId: string, tier: string): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ 
+        tier,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    
+    return updatedUser;
+  }
+
+  async createCustomBet(betData: any): Promise<Bet> {
+    const [newBet] = await db
+      .insert(bets)
+      .values(betData)
+      .returning();
+    
+    return newBet;
+  }
 }
