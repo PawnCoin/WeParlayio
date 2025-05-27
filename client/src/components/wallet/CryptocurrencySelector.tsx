@@ -180,14 +180,18 @@ const CryptocurrencySelector: React.FC<CryptocurrencySelectorProps> = ({
           }
         ];
         
+        // Fetch real cryptocurrency data from API
+        const response = await fetch('/api/crypto/prices');
+        const realCryptoData = await response.json();
+        
         // Load favorites from local storage
         const storedFavorites = localStorage.getItem('favoriteCryptocurrencies');
         const favorites = storedFavorites ? JSON.parse(storedFavorites) : ["BTC", "ETH", "SOL"];
         
         setFavoriteCurrencies(favorites);
         
-        // Mark favorites in the cryptocurrency list
-        const cryptosWithFavorites = mockData.map(crypto => ({
+        // Mark favorites in the real cryptocurrency list
+        const cryptosWithFavorites = realCryptoData.map((crypto: any) => ({
           ...crypto,
           isFavorite: favorites.includes(crypto.symbol)
         }));

@@ -76,55 +76,36 @@ const GasFeeEstimator: React.FC = () => {
     })));
 
     try {
-      // In a real implementation, we would fetch actual gas prices from each network
-      // For demonstration, using simulated values
+      // Fetch real gas prices from live blockchain APIs
       const ethPrice = await fetchEthPrice();
       
-      // Simulate API response delays and different values per network
-      setTimeout(() => {
-        setNetworksData(prev => prev.map(network => {
-          // Generate different mock gas prices based on network
-          let gasInfo: GasPrice;
+      // Fetch real gas prices from each network
+      setNetworksData(prev => prev.map(async network => {
+        let gasInfo: GasPrice;
+        
+        try {
+          const response = await fetch(`/api/gas-prices/${network.network}`);
+          const realGasData = await response.json();
           
-          switch(network.network) {
-            case "ethereum":
-              gasInfo = {
-                slow: 45,
-                average: 55,
-                fast: 70,
-                baseFee: 40,
-                timestamp: Date.now()
-              };
-              break;
-            case "polygon":
-              gasInfo = {
-                slow: 120,
-                average: 150,
-                fast: 200,
-                baseFee: 100,
-                timestamp: Date.now()
-              };
-              break;
-            case "optimism":
-              gasInfo = {
-                slow: 0.5,
-                average: 0.8,
-                fast: 1.2,
-                baseFee: 0.3,
-                timestamp: Date.now()
-              };
-              break;
-            case "arbitrum":
-              gasInfo = {
-                slow: 0.3,
-                average: 0.5,
-                fast: 0.8,
-                baseFee: 0.25,
-                timestamp: Date.now()
-              };
-              break;
-            case "base":
-              gasInfo = {
+          gasInfo = {
+            slow: realGasData.slow || 0,
+            average: realGasData.average || 0,
+            fast: realGasData.fast || 0,
+            baseFee: realGasData.baseFee || 0,
+            timestamp: Date.now()
+          };
+        } catch (error) {
+          console.error(`Error fetching gas prices for ${network.network}:`, error);
+          gasInfo = {
+            slow: 0,
+            average: 0,
+            fast: 0,
+            baseFee: 0,
+            timestamp: Date.now()
+          };
+        }
+        
+        return {
                 slow: 0.4,
                 average: 0.6,
                 fast: 0.9,

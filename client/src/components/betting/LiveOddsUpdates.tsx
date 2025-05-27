@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Zap, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useBetSlip } from '@/contexts/BetSlipContext';
+import { Button } from '@/components/ui/button';
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  Activity, 
+  Clock,
+  RefreshCw,
+  Zap
+} from 'lucide-react';
 
 interface OddsUpdate {
   id: string;
@@ -16,184 +21,196 @@ interface OddsUpdate {
   timestamp: Date;
 }
 
-const LiveOddsUpdates: React.FC = () => {
+export default function LiveOddsUpdates() {
   const [oddsUpdates, setOddsUpdates] = useState<OddsUpdate[]>([]);
-  const { betSlip } = useBetSlip();
-  
-  // Format odds for display (American format)
+  const [isLoading, setIsLoading] = useState(true);
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+
   const formatOdds = (odds: number) => {
-    return odds > 0 ? `+${odds}` : odds.toString();
+    if (odds > 0) return `+${odds}`;
+    return odds.toString();
   };
-  
-  // Determine the trend of odds change
-  const getOddsTrend = (oldOdds: number, newOdds: number): 'up' | 'down' | 'neutral' => {
-    // For American odds, a higher positive number or a less negative number is worse odds
-    if (oldOdds > 0 && newOdds > 0) {
-      return newOdds > oldOdds ? 'down' : 'up';
-    } else if (oldOdds < 0 && newOdds < 0) {
-      return newOdds < oldOdds ? 'down' : 'up';
-    } else if (oldOdds <= 0 && newOdds > 0) {
-      return 'down';
-    } else if (oldOdds >= 0 && newOdds < 0) {
-      return 'up';
-    }
-    return 'neutral';
-  };
-  
-  // Function to format the time (e.g., "2 minutes ago")
-  const formatTime = (timestamp: Date): string => {
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - timestamp.getTime()) / 1000);
-    
-    if (diffInSeconds < 5) {
-      return 'just now';
-    } else if (diffInSeconds < 60) {
-      return `${diffInSeconds}s ago`;
-    } else if (diffInSeconds < 3600) {
-      const minutes = Math.floor(diffInSeconds / 60);
-      return `${minutes}m ago`;
-    } else {
-      const hours = Math.floor(diffInSeconds / 3600);
-      return `${hours}h ago`;
-    }
-  };
-  
-  // Simulate receiving live odds updates
-  useEffect(() => {
-    // Fetch real odds updates from our live API
-    const fetchRealOddsUpdates = async () => {
-      try {
-        const response = await fetch('/api/real-odds');
-        const realOdds = await response.json();
-        
-        if (realOdds && realOdds.length > 0) {
-          const realUpdates = realOdds.map((odds: any) => ({
-            id: odds.id,
-            homeTeam: odds.home_team,
-            awayTeam: odds.away_team,
-            market: odds.bookmakers?.[0]?.markets?.[0]?.key || 'h2h',
-            oldOdds: odds.bookmakers?.[0]?.markets?.[0]?.outcomes?.[0]?.price || 0,
-            newOdds: odds.bookmakers?.[0]?.markets?.[0]?.outcomes?.[1]?.price || 0,
-            timestamp: new Date(odds.commence_time)
-          }));
-          setOddsUpdates(realUpdates.slice(0, 5));
-        }
-      } catch (error) {
-        console.error('Error fetching real odds updates:', error);
-      }
+
+  const getOddsChange = (oldOdds: number, newOdds: number) => {
+    const change = newOdds - oldOdds;
+    return {
+      value: change,
+      isPositive: change > 0,
+      percentage: oldOdds !== 0 ? Math.abs((change / oldOdds) * 100) : 0
     };
-    setOddsUpdates(initialUpdates);
-    
-    // Periodically add new updates
-    const interval = setInterval(() => {
-      // Add a new update at the beginning
-      const newUpdate = generateRandomUpdate();
+  };
+
+  const formatTime = (timestamp: Date): string => {
+    return timestamp.toLocaleTimeString();
+  };
+
+  const clearUpdate = (id: string) => {
+    setOddsUpdates(prev => prev.filter(update => update.id !== id));
+  };
+
+  const clearAllUpdates = () => {
+    setOddsUpdates([]);
+  };
+
+  const refreshUpdates = () => {
+    fetchRealOddsUpdates();
+  };
+
+  const fetchRealOddsUpdates = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/real-odds');
+      const realOdds = await response.json();
       
-      setOddsUpdates(prev => {
-        // Keep only the latest 20 updates
-        const updatedList = [newUpdate, ...prev].slice(0, 20);
-        return updatedList;
-      });
-    }, 8000); // Every 8 seconds
+      if (realOdds && realOdds.length > 0) {
+        const realUpdates = realOdds.map((odds: any, index: number) => ({
+          id: odds.id || `odds-${index}`,
+          homeTeam: odds.home_team || 'Home Team',
+          awayTeam: odds.away_team || 'Away Team',
+          market: odds.bookmakers?.[0]?.markets?.[0]?.key || 'h2h',
+          oldOdds: odds.bookmakers?.[0]?.markets?.[0]?.outcomes?.[0]?.price || 0,
+          newOdds: odds.bookmakers?.[0]?.markets?.[0]?.outcomes?.[1]?.price || 0,
+          timestamp: new Date(odds.commence_time || Date.now())
+        }));
+        setOddsUpdates(realUpdates.slice(0, 20));
+        setLastUpdate(new Date());
+      }
+    } catch (error) {
+      console.error('Error fetching real odds updates:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRealOddsUpdates();
     
+    // Fetch real odds updates every 5 seconds
+    const interval = setInterval(() => {
+      fetchRealOddsUpdates();
+    }, 5000);
+
     return () => clearInterval(interval);
   }, []);
-  
-  // Filter odds updates for teams in bet slip
-  const getRelevantUpdates = () => {
-    if (betSlip.length === 0) {
-      return oddsUpdates;
-    }
-    
-    // Get all teams from bet slip
-    const betSlipTeams = new Set(
-      betSlip.flatMap(bet => [bet.homeTeam, bet.awayTeam])
-    );
-    
-    // Filter updates for teams in bet slip
-    return oddsUpdates.filter(update => 
-      betSlipTeams.has(update.homeTeam) || betSlipTeams.has(update.awayTeam)
-    );
-  };
-  
-  const relevantUpdates = getRelevantUpdates();
-  
+
   return (
-    <Card className="w-full">
-      <CardHeader className="py-3 px-4 bg-muted">
-        <CardTitle className="text-base font-bold flex items-center">
-          <Zap className="h-4 w-4 mr-2 text-yellow-500" />
-          Live Odds Updates
-        </CardTitle>
+    <Card className="border-green-200 bg-gradient-to-r from-green-50 to-blue-50">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Activity className="h-5 w-5 text-green-600 animate-pulse" />
+            Live Odds Updates
+            <Badge className="bg-green-600 text-white">
+              REAL-TIME API
+            </Badge>
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={refreshUpdates}
+              disabled={isLoading}
+            >
+              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={clearAllUpdates}
+              disabled={oddsUpdates.length === 0}
+            >
+              Clear All
+            </Button>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Clock className="h-4 w-4" />
+          Last Updated: {lastUpdate.toLocaleTimeString()}
+        </div>
       </CardHeader>
-      <CardContent className="p-0">
-        {relevantUpdates.length === 0 ? (
-          <div className="p-4 text-center text-sm text-muted-foreground">
-            No recent odds updates to display
+      <CardContent className="space-y-3">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <RefreshCw className="h-6 w-6 animate-spin text-green-600" />
+            <span className="ml-2">Loading real odds data...</span>
+          </div>
+        ) : oddsUpdates.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            No live odds updates available
           </div>
         ) : (
-          <ScrollArea className="h-[300px]">
-            <div className="p-4 space-y-2">
-              <AnimatePresence>
-                {relevantUpdates.map((update) => {
-                  const trend = getOddsTrend(update.oldOdds, update.newOdds);
-                  
-                  return (
-                    <motion.div
-                      key={update.id}
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="border border-muted rounded-md p-3"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="text-sm font-medium">
-                            {update.homeTeam} vs {update.awayTeam}
-                          </div>
-                          <div className="text-xs text-muted-foreground mt-1">
-                            {update.market}
-                          </div>
-                        </div>
-                        <Badge
-                          variant="outline"
-                          className="text-xs"
-                        >
-                          {formatTime(update.timestamp)}
-                        </Badge>
+          oddsUpdates.map((update) => {
+            const oddsChange = getOddsChange(update.oldOdds, update.newOdds);
+            
+            return (
+              <div
+                key={update.id}
+                className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
+              >
+                <div className="space-y-1">
+                  <div className="font-medium text-sm">
+                    {update.homeTeam} vs {update.awayTeam}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-xs">
+                      {update.market.toUpperCase()}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">
+                      {formatTime(update.timestamp)}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="text-right space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">
+                      {formatOdds(update.newOdds)}
+                    </span>
+                    {oddsChange.value !== 0 && (
+                      <div className={`flex items-center gap-1 ${
+                        oddsChange.isPositive ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        {oddsChange.isPositive ? (
+                          <TrendingUp className="h-3 w-3" />
+                        ) : (
+                          <TrendingDown className="h-3 w-3" />
+                        )}
+                        <span className="text-xs font-medium">
+                          {oddsChange.percentage.toFixed(1)}%
+                        </span>
                       </div>
-                      
-                      <div className="flex items-center mt-2">
-                        <div className="text-sm mr-2">
-                          {formatOdds(update.oldOdds)} →
-                        </div>
-                        <div className={`text-sm font-medium flex items-center ${
-                          trend === 'up' ? 'text-green-600' : 
-                          trend === 'down' ? 'text-red-500' : ''
-                        }`}>
-                          {formatOdds(update.newOdds)}
-                          {trend === 'up' && (
-                            <ArrowUpRight className="h-3 w-3 ml-1 text-green-600" />
-                          )}
-                          {trend === 'down' && (
-                            <ArrowDownRight className="h-3 w-3 ml-1 text-red-500" />
-                          )}
-                          {trend === 'neutral' && (
-                            <Minus className="h-3 w-3 ml-1" />
-                          )}
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </AnimatePresence>
-            </div>
-          </ScrollArea>
+                    )}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Was: {formatOdds(update.oldOdds)}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => clearUpdate(update.id)}
+                    className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                  >
+                    ×
+                  </Button>
+                </div>
+              </div>
+            );
+          })
         )}
+        
+        <div className="bg-blue-50 p-3 rounded-lg">
+          <div className="flex items-center gap-2 text-sm">
+            <Zap className="h-4 w-4 text-blue-600" />
+            <span className="font-medium text-blue-900">
+              Live Data from ESPN & RapidAPI
+            </span>
+          </div>
+          <p className="text-xs text-blue-700 mt-1">
+            Updates every 5 seconds • {oddsUpdates.length} active updates
+          </p>
+        </div>
       </CardContent>
     </Card>
   );
-};
-
-export default LiveOddsUpdates;
+}
