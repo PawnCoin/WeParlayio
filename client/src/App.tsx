@@ -137,8 +137,8 @@ function Router() {
       <Route path="/auth-test" component={AuthTestDemo} />
       <Route path="/community" component={UserDirectory} />
       <Route path="/users" component={UserDirectory} />
-      <Route path="/social-bots" component={SocialMediaBots} />
-      <Route path="/social-dashboard" component={SocialMediaDashboard} />
+      <Route path="/social-bots" component={(props) => <AdminRoute component={SocialMediaBots} {...props} />} />
+      <Route path="/social-dashboard" component={(props) => <AdminRoute component={SocialMediaDashboard} {...props} />} />
       <Route path="/email-monitoring" component={EmailMonitoring} />
       <Route path="/theme-manager" component={ThemeSettingsPage} />
       <Route path="/sports/:sportKey" component={SportPage} />
