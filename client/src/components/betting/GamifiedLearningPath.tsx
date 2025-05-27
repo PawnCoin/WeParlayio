@@ -173,7 +173,7 @@ export default function GamifiedLearningPath() {
               <CardContent className="p-4 text-center">
                 <Star className="w-8 h-8 mx-auto mb-2" />
                 <div className="text-2xl font-bold">Level {userProgress.level}</div>
-                <div className="text-sm opacity-90">{userProgress.xp} XP</div>
+                <div className="text-sm opacity-90">${userProgress.weparlayCash} WeParlay Cash</div>
               </CardContent>
             </Card>
 

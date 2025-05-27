@@ -60,6 +60,8 @@ import UnifiedSports from "@/pages/UnifiedSports";
 import ComprehensiveBetting from "@/pages/ComprehensiveBetting";
 import Odds from "@/pages/Odds";
 import Parlays from "@/pages/Parlays";
+import BettingAcademy from "@/pages/BettingAcademy";
+import LiveHeatmap from "@/pages/LiveHeatmap";
 
 // Import admin components
 import AdminBypass from "@/pages/AdminBypass";
@@ -122,6 +124,8 @@ function Router() {
       <Route path="/comprehensive-betting" component={ComprehensiveBetting} />
       <Route path="/odds" component={Odds} />
       <Route path="/parlays" component={Parlays} />
+      <Route path="/betting-academy" component={BettingAcademy} />
+      <Route path="/live-heatmap" component={LiveHeatmap} />
       <Route path="/video-gaming" component={UnifiedGaming} />
       <Route path="/gaming-integration" component={UnifiedGaming} />
       <Route path="/trivia" component={Trivia} />
