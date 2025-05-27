@@ -497,32 +497,14 @@ const BettingSlip: React.FC = () => {
           </SelectContent>
         </Select>
         
-        {/* Mode Description with Quick Toggle */}
+        {/* Mode Description - Clean and Simple */}
         <div className="mt-2 p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border-l-4 border-l-blue-500 dark:border-l-blue-400">
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-gray-600 dark:text-gray-400 flex-1">
-              {selectedCurrency === 'WEPARLAY' 
-                ? '🎮 Playing with WeParlay Cash - Practice mode with virtual currency. Great for learning!'
-                : '💰 Betting with real money - All wins and losses affect your actual balance.'
-              }
-            </p>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="ml-2 text-xs px-2 py-1 h-auto"
-              onClick={() => {
-                const newMode = selectedCurrency === 'WEPARLAY' ? 'USD' : 'WEPARLAY';
-                setSelectedCurrency(newMode);
-                toast({
-                  title: `Switched to ${newMode === 'WEPARLAY' ? 'WeParlay Cash' : 'Real Money'} Mode`,
-                  description: `You're now betting with ${newMode === 'WEPARLAY' ? 'virtual currency' : 'real money'}`,
-                  duration: 3000,
-                });
-              }}
-            >
-              Switch to {selectedCurrency === 'WEPARLAY' ? 'Real Money' : 'Virtual'}
-            </Button>
-          </div>
+          <p className="text-xs text-gray-600 dark:text-gray-400">
+            {selectedCurrency === 'WEPARLAY' 
+              ? '🎮 Playing with WeParlay Cash - Practice mode with virtual currency. Great for learning!'
+              : '💰 Betting with real money - All wins and losses affect your actual balance.'
+            }
+          </p>
         </div>
       </div>
       
