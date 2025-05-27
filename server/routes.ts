@@ -1832,7 +1832,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           type: 'bet_won',
           title: 'Bet Won!',
           message: `Congratulations! You won $${bet.potentialPayout} on your bet.`,
-          isRead: false
+          read: false
         });
       }
 
@@ -1857,7 +1857,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         type: 'challenge_accepted',
         title: 'Challenge Accepted!',
         message: `Your betting challenge has been accepted!`,
-        isRead: false
+        read: false
       });
 
       res.json({ success: true, challenge });
@@ -1884,7 +1884,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             type: 'challenge_settled',
             title: 'Challenge Settled',
             message: isDraw ? 'Your challenge ended in a draw.' : `Challenge settled! ${winnerId === participantId ? 'You won!' : 'You lost.'}`,
-            isRead: false
+            read: false
           });
         }
       }
@@ -1925,7 +1925,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         type: 'weparlay_cash_earned',
         title: 'WeParlay Cash Earned!',
         message: `You earned ${amount} WeParlay Cash! ${reason || ''}`,
-        isRead: false
+        read: false
       });
 
       res.json({ success: true, user: updatedUser });
@@ -2194,7 +2194,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         type: 'new_follower',
         title: 'New Follower!',
         message: 'Someone started following your bets!',
-        isRead: false
+        read: false
       });
 
       res.json({ success: true, message: 'User followed successfully' });
