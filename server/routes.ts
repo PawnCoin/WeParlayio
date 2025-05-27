@@ -1566,6 +1566,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         eventId: parseInt(id),
         amount: parseFloat(amount),
         odds: 2.0, // Tournament odds
+        pick: JSON.stringify({ selection, matchup }),
         selection: JSON.stringify({ selection, matchup }),
         status: 'pending',
         betType: 'tournament',
