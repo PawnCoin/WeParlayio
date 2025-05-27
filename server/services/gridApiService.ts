@@ -65,14 +65,6 @@ export class GridApiService {
               tournament {
                 id
                 name
-                serie {
-                  id
-                  name
-                  videogame {
-                    id
-                    name
-                  }
-                }
               }
             }
           }
@@ -140,7 +132,7 @@ export class GridApiService {
 
     try {
       const data = await this.makeGraphQLRequest(query);
-      return this.formatMatches(data.allMatches || []);
+      return this.formatMatches(data.allMatches?.edges || []);
     } catch (error) {
       console.error('Failed to fetch live matches from GRID:', error);
       return [];
@@ -246,6 +238,39 @@ export class GridApiService {
       console.error(`Error fetching market data for match ${matchId}:`, error);
       return [];
     }
+  }
+
+  /**
+   * Format sports data for WeParlay compatibility
+   */
+  private formatSports(series: any[]): any[] {
+    const uniqueSports = new Map();
+    
+    series.forEach(edge => {
+      const tournamentName = edge.node.tournament?.name || 'Esports Tournament';
+      const sportKey = 'esports';
+      
+      if (!uniqueSports.has(sportKey)) {
+        uniqueSports.set(sportKey, {
+          id: 'esports',
+          name: 'Esports',
+          key: sportKey,
+          title: 'Esports Competitions',
+          description: 'Professional esports tournaments and matches',
+          active: true,
+          has_outrights: false,
+          tournaments: []
+        });
+      }
+      
+      uniqueSports.get(sportKey).tournaments.push({
+        id: edge.node.id,
+        name: tournamentName,
+        start_time: edge.node.startTimeScheduled
+      });
+    });
+    
+    return Array.from(uniqueSports.values());
   }
 
   /**
