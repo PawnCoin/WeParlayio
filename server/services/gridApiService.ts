@@ -74,7 +74,10 @@ export class GridApiService {
 
     try {
       const data = await this.makeGraphQLRequest(query);
-      return this.formatSports(data.allSeries?.edges || []);
+      if (data && data.allSeries && data.allSeries.edges) {
+        return this.formatSports(data.allSeries.edges);
+      }
+      return [];
     } catch (error) {
       console.error('Failed to fetch sports from GRID:', error);
       return [];
