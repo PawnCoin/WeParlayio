@@ -5,7 +5,7 @@
  */
 
 export class GridApiService {
-  private baseUrl = 'https://api.thegrid.io';
+  private baseUrl = 'https://api-football-v1.p.rapidapi.com';
   private apiKey: string;
 
   constructor() {
