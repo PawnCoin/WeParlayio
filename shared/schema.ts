@@ -419,13 +419,23 @@ export type InsertSport = z.infer<typeof insertSportSchema>;
 export type Team = typeof teams.$inferSelect;
 export type InsertTeam = z.infer<typeof insertTeamSchema>;
 
-export type Event = typeof events.$inferSelect;
+export type Event = typeof events.$inferSelect & {
+  description?: string;
+  venue?: string;
+  weather?: any;
+};
 export type InsertEvent = z.infer<typeof insertEventSchema>;
 
-export type Bet = typeof bets.$inferSelect;
+export type Bet = typeof bets.$inferSelect & {
+  metadata?: any;
+  bonusApplied?: boolean;
+};
 export type InsertBet = z.infer<typeof insertBetSchema>;
 
-export type Tournament = typeof tournaments.$inferSelect;
+export type Tournament = typeof tournaments.$inferSelect & {
+  rules?: any;
+  prizePool?: number;
+};
 export type InsertTournament = z.infer<typeof insertTournamentSchema>;
 
 export type FantasyTeam = typeof fantasyTeams.$inferSelect;
