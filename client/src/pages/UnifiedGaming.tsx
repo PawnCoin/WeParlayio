@@ -24,6 +24,28 @@ export default function UnifiedGaming() {
   const [selectedPlayer, setSelectedPlayer] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Implement search functionality for players
+  const handlePlayerSearch = (term: string) => {
+    setSearchTerm(term);
+    if (term.length > 2) {
+      // Filter players based on search term
+      const filteredPlayers = liveStreams.filter(stream => 
+        stream.streamer.toLowerCase().includes(term.toLowerCase()) ||
+        stream.game.toLowerCase().includes(term.toLowerCase())
+      );
+      console.log('Filtered players:', filteredPlayers);
+    }
+  };
+
+  // Implement player selection
+  const handlePlayerSelect = (playerName: string) => {
+    setSelectedPlayer(playerName);
+    toast({
+      title: "Player Selected",
+      description: `Now tracking ${playerName}'s performance and betting opportunities`,
+    });
+  };
+
   // Fetch gaming API status
   const { data: apiStatus } = useQuery({
     queryKey: ['/api/gaming/api-status'],
