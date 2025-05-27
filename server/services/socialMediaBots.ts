@@ -61,27 +61,37 @@ export class SocialMediaBotsService {
     }
   ];
 
-  // Content templates for different personalities
+  // Enhanced content templates with killer marketing slogans
   private contentTemplates = {
     casual: [
-      "Just placed my first bet on WeParlay! {sport} looking good today 🏈 #WeParlay #BettingFun",
-      "Love how easy WeParlay makes it to bet with friends! Who's in for {sport}? 💰",
-      "WeParlay's live betting is so smooth! Watching {sport} and adjusting my bets 📱"
+      "WeParlay just changed the game! Crypto betting with friends has never been easier 🚀 #WeParlay #CryptoBetting",
+      "Finally found my betting home at WeParlay! Real odds, real wins, real crypto payouts 💰 #BettingEvolution",
+      "WeParlay's tier system is INSANE! Bronze to Platinum perks just for betting 🏆 #WeParlay #VIPLife"
     ],
     expert: [
-      "{sport} analysis: {team1} has strong value at +{odds}. WeParlay's odds are competitive 📊 #BettingTips #WeParlay",
-      "Technical breakdown: {sport} trends favor the under. Placing strategic bets on WeParlay 🎯",
-      "WeParlay's crypto payments make withdrawals instant. Perfect for quick profit taking 💎"
+      "WeParlay's multi-API odds aggregation gives you the edge. 110+ leagues, real-time data 📊 #ProfessionalBetting #WeParlay",
+      "Analyzed 47 betting platforms - WeParlay's crypto integration and instant payouts win 💎 #BettingTech",
+      "WeParlay: Where serious bettors meet serious technology. Blockchain-verified, exchange-grade security 🔒 #WeParlay"
     ],
     enthusiast: [
-      "LET'S GO! {sport} parlay hitting on WeParlay! 🔥🔥🔥 #BettingWins #WeParlay",
-      "WeParlay just made me $500 on that {sport} live bet! WHO'S NEXT?! 💸",
-      "CHALLENGE ACCEPTED! Beat my {sport} betting streak on WeParlay! 🏆"
+      "🔥 BREAKING: WeParlay launches with 110+ sports leagues! The future of betting is HERE! #WeParlay #SportsBetting",
+      "WeParlay community tournaments are LIVE! Winner takes all crypto prizes! WHO'S IN?! 💸 #TournamentMode",
+      "PARLAY PARADISE! WeParlay's custom bet builder just hit different! 🚀🏈🏀⚽ #ParlayKing #WeParlay"
     ],
     'high-roller': [
-      "Just dropped 5K on {sport} through WeParlay. Premium features worth every penny 💎 #HighRoller",
-      "WeParlay's VIP support helped me place a massive {sport} futures bet. Professional service 🥇",
-      "When you're betting serious money, you need serious platforms. WeParlay delivers 💰"
+      "WeParlay Platinum tier: Private concierge, instant million-dollar withdrawals, VIP events 💎 #PlatinumLife #WeParlay",
+      "When you're betting serious money, security matters. WeParlay's military-grade encryption protects every trade 🛡️",
+      "WeParlay's institutional-grade platform handles my seven-figure sports portfolio flawlessly 💰 #HighStakes #WeParlay"
+    ],
+    'community': [
+      "WeParlay is building the ultimate sports betting community! Join 50,000+ verified members 👥 #WeParlayCommunity",
+      "Head-to-head challenges on WeParlay are addictive! Just challenged @SportsFan_Mike to NBA finals bet 🏀 #ChallengeAccepted",
+      "WeParlay's social features make betting with friends epic! Group parlays, shared wins, collective celebration 🎉"
+    ],
+    'innovation': [
+      "Web3 meets sports betting: WeParlay runs on blockchain technology for transparent, instant settlements 🌐 #Web3Betting",
+      "WeParlay's AI-powered odds optimization ensures you always get maximum value on every bet 🤖 #SmartBetting",
+      "Revolutionary: WeParlay integrates with 47 global exchanges for seamless crypto-to-bet conversions ⚡ #CryptoInnovation"
     ]
   };
 

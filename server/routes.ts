@@ -4027,6 +4027,69 @@ Join us: WeParlay.io 🎯
     }
   });
 
+  // 🚀 LIVE SOCIAL MEDIA MARKETING BOTS - ACTIVATE NOW!
+  app.post('/api/marketing/activate-bots', async (req, res) => {
+    try {
+      console.log('🚀 ACTIVATING LIVE MARKETING BOTS!');
+      const { liveMarketingBots } = await import('./services/liveMarketingBots');
+      
+      // Start live posting immediately
+      await liveMarketingBots.startLivePosting();
+      
+      res.json({
+        success: true,
+        message: 'WeParlay Marketing Bots are now LIVE and posting!',
+        botsActivated: 4,
+        platforms: ['Twitter', 'Reddit', 'Instagram']
+      });
+    } catch (error) {
+      console.error('Marketing bot activation error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to activate marketing bots' 
+      });
+    }
+  });
+
+  app.post('/api/marketing/trigger-post', async (req, res) => {
+    try {
+      const { liveMarketingBots } = await import('./services/liveMarketingBots');
+      const results = await liveMarketingBots.triggerLivePost();
+      
+      res.json({
+        success: true,
+        message: 'Marketing posts triggered successfully!',
+        results
+      });
+    } catch (error) {
+      console.error('Marketing post trigger error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to trigger marketing posts' 
+      });
+    }
+  });
+
+  app.get('/api/marketing/bot-status', async (req, res) => {
+    try {
+      const { liveMarketingBots } = await import('./services/liveMarketingBots');
+      const status = liveMarketingBots.getBotStatus();
+      
+      res.json({
+        success: true,
+        bots: status,
+        totalBots: status.length,
+        activePlatforms: ['Twitter', 'Reddit', 'Instagram']
+      });
+    } catch (error) {
+      console.error('Bot status error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to get bot status' 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
