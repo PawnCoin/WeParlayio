@@ -20,8 +20,8 @@ interface LearningModule {
 
 interface UserProgress {
   level: number;
-  xp: number;
-  xpToNextLevel: number;
+  weparlayCash: number;
+  cashToNextLevel: number;
   completedModules: string[];
   badges: string[];
   streak: number;
@@ -34,8 +34,8 @@ export default function GamifiedLearningPath() {
   const [selectedModule, setSelectedModule] = useState<LearningModule | null>(null);
   const [userProgress, setUserProgress] = useState<UserProgress>({
     level: 1,
-    xp: 0,
-    xpToNextLevel: 100,
+    weparlayCash: 1000, // Starting bonus
+    cashToNextLevel: 500,
     completedModules: [],
     badges: ['newcomer'],
     streak: 0,
@@ -50,7 +50,7 @@ export default function GamifiedLearningPath() {
       description: 'Master the essentials: odds, terminology, and your first bet',
       icon: <BookOpen className="w-6 h-6 text-blue-500" />,
       difficulty: 'Beginner',
-      xpReward: 100,
+      xpReward: 250, // WeParlay Cash reward
       completed: false,
       locked: false,
       progress: 0
@@ -61,7 +61,7 @@ export default function GamifiedLearningPath() {
       description: 'Learn responsible betting and bankroll strategies',
       icon: <Shield className="w-6 h-6 text-green-500" />,
       difficulty: 'Beginner',
-      xpReward: 150,
+      xpReward: 500, // WeParlay Cash reward
       completed: false,
       locked: true,
       progress: 0
@@ -72,7 +72,7 @@ export default function GamifiedLearningPath() {
       description: 'Develop analytical skills to spot value bets',
       icon: <TrendingUp className="w-6 h-6 text-purple-500" />,
       difficulty: 'Intermediate',
-      xpReward: 200,
+      xpReward: 750, // WeParlay Cash reward
       completed: false,
       locked: true,
       progress: 0
@@ -83,7 +83,7 @@ export default function GamifiedLearningPath() {
       description: 'Master advanced techniques and portfolio management',
       icon: <Trophy className="w-6 h-6 text-gold-500" />,
       difficulty: 'Advanced',
-      xpReward: 300,
+      xpReward: 1000, // WeParlay Cash reward
       completed: false,
       locked: true,
       progress: 0
@@ -119,12 +119,12 @@ export default function GamifiedLearningPath() {
     if (!module) return;
 
     setUserProgress(prev => {
-      const newXP = prev.xp + module.xpReward;
-      const newLevel = Math.floor(newXP / 100) + 1;
+      const newCash = prev.weparlayCash + module.xpReward;
+      const newLevel = Math.floor(newCash / 1000) + 1;
       
       return {
         ...prev,
-        xp: newXP,
+        weparlayCash: newCash,
         level: newLevel,
         completedModules: [...prev.completedModules, moduleId],
         streak: prev.streak + 1
@@ -139,14 +139,14 @@ export default function GamifiedLearningPath() {
 
     toast({
       title: "Module Mastered! 🎉",
-      description: `+${module.xpReward} XP earned! You're becoming a betting expert!`,
+      description: `+$${module.xpReward} WeParlay Cash earned! You're becoming a betting expert!`,
     });
 
     setSelectedModule(null);
   };
 
   const getProgressPercentage = () => {
-    return (userProgress.xp % 100);
+    return ((userProgress.weparlayCash % 1000) / 1000) * 100;
   };
 
   const getLevelProgress = () => {
