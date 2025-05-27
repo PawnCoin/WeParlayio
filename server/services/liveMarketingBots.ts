@@ -270,19 +270,21 @@ export class LiveMarketingBotsService {
   private async postToFacebook(content: string, botName: string): Promise<boolean> {
     try {
       if (!process.env.FACEBOOK_ACCESS_TOKEN) {
-        console.log(`[${botName}] Facebook posting skipped - API credentials not configured`);
+        console.log(`[${botName}] Facebook posting ready - waiting for API credentials`);
         return false;
       }
 
-      // Facebook Graph API integration
-      const response = await fetch(`https://graph.facebook.com/me/feed`, {
+      // Facebook Graph API integration for page posting
+      const response = await fetch(`https://graph.facebook.com/me/feed?access_token=${process.env.FACEBOOK_ACCESS_TOKEN}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           message: content,
-          access_token: process.env.FACEBOOK_ACCESS_TOKEN
+          link: 'https://weparlay.io', // Link back to WeParlay
+          name: 'WeParlay - Premier Sports Betting',
+          description: 'Experience the future of sports betting with crypto integration and real-time odds.'
         })
       });
 
@@ -291,7 +293,8 @@ export class LiveMarketingBotsService {
         console.log(`[${botName}] ✅ LIVE FACEBOOK POST: ${content.substring(0, 50)}... (ID: ${result.id})`);
         return true;
       } else {
-        console.log(`[${botName}] Facebook posting skipped - API credentials not configured`);
+        const errorData = await response.json();
+        console.log(`[${botName}] Facebook API error:`, errorData);
         return false;
       }
     } catch (error) {
