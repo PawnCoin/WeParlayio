@@ -106,6 +106,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   inviteCode: true,
   referredBy: true,
   createdAt: true,
+  updatedAt: true,
   emailVerified: true,
   realMoneyBalance: true,
   tier: true,
@@ -167,6 +168,7 @@ export const insertTransactionSchema = createInsertSchema(transactions).pick({
   description: true,
   status: true,
   details: true,
+  transactionDate: true,
 });
 
 // Transaction Types
@@ -293,6 +295,7 @@ export const insertBetSchema = createInsertSchema(bets).pick({
   odds: true,
   amount: true,
   potentialPayout: true,
+  selection: true,
 });
 
 // Tournaments model
