@@ -42,6 +42,7 @@ import Support from "@/pages/Support"; // Automated support system
 import WalletManagement from "@/pages/WalletManagement"; // Cryptocurrency wallet management
 import CryptoInformation from "@/pages/CryptoInformation"; // Cryptocurrency information and guides
 import SmsChallenge from "@/pages/SmsChallenge"; // VIP SMS Challenge system
+import SportsHypeCenter from "@/pages/SportsHypeCenter"; // Immersive sports countdown and hype widgets
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
 import MobileVoiceBetting from "@/components/mobile/MobileVoiceBetting";
@@ -146,6 +147,7 @@ function Router() {
       <Route path="/notification-test" component={NotificationTest} />
       <Route path="/wallet-management" component={WalletManagement} />
       <Route path="/crypto-information" component={CryptoInformation} />
+      <Route path="/sports-hype" component={SportsHypeCenter} />
       <Route path="/onboarding-demo" component={OnboardingDemo} />
       <Route component={NotFound} />
     </Switch>
