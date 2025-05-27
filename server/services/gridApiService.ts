@@ -24,7 +24,7 @@ export class GridApiService {
       const response = await fetch(this.baseUrl, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
+          'x-api-key': this.apiKey,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -56,19 +56,25 @@ export class GridApiService {
   async getSports(): Promise<any[]> {
     const query = `
       query GetSeries {
-        allSeries {
-          id
-          title
-          slug
-          videogame {
-            id
-            name
-            slug
-          }
-          tournaments {
-            id
-            title
-            slug
+        allSeries(first: 50) {
+          totalCount
+          edges {
+            node {
+              id
+              startTimeScheduled
+              tournament {
+                id
+                name
+                serie {
+                  id
+                  name
+                  videogame {
+                    id
+                    name
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -76,7 +82,7 @@ export class GridApiService {
 
     try {
       const data = await this.makeGraphQLRequest(query);
-      return this.formatSports(data.allSeries || []);
+      return this.formatSports(data.allSeries?.edges || []);
     } catch (error) {
       console.error('Failed to fetch sports from GRID:', error);
       return [];
