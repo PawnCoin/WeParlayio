@@ -110,7 +110,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             </div>
 
             {/* Mobile Navigation */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 z-50">
+            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-black border-t border-orange-800 z-50">
               <div className="grid grid-cols-4 px-2 py-2">
                 {navLinks.slice(0, 4).map((link) => (
                   <Link key={link.href} href={link.href}>
