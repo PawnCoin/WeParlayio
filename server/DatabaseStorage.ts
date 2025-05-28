@@ -397,6 +397,181 @@ export class DatabaseStorage implements IStorage {
     return { ...settings, updated: true };
   }
 
+  async createLinkedAccount(linkedAccount: any): Promise<any> {
+    // Store linked account information
+    // In a real application, this would use a proper table schema
+    const accountData = {
+      id: Date.now().toString(),
+      ...linkedAccount,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    // Store in a mock linked accounts collection
+    if (!this.linkedAccounts) {
+      this.linkedAccounts = [];
+    }
+    this.linkedAccounts.push(accountData);
+    
+    return accountData;
+  }
+
+  async getLinkedAccounts(userId: string): Promise<any[]> {
+    if (!this.linkedAccounts) {
+      return [];
+    }
+    
+    return this.linkedAccounts.filter(account => 
+      account.userId === userId && account.isActive
+    );
+  }
+
+  async getLinkedAccountByPlaidAccountId(userId: string, accountId: string): Promise<any> {
+    if (!this.linkedAccounts) {
+      return null;
+    }
+    
+    return this.linkedAccounts.find(account => 
+      account.userId === userId && 
+      account.isActive &&
+      account.accounts.some((acc: any) => acc.accountId === accountId)
+    );
+  }
+
+  async removeLinkedAccount(userId: string, itemId: string): Promise<boolean> {
+    if (!this.linkedAccounts) {
+      return false;
+    }
+    
+    const accountIndex = this.linkedAccounts.findIndex(account => 
+      account.userId === userId && account.plaidItemId === itemId
+    );
+    
+    if (accountIndex !== -1) {
+      this.linkedAccounts[accountIndex].isActive = false;
+      this.linkedAccounts[accountIndex].updatedAt = new Date();
+      return true;
+    }
+    
+    return false;
+  }
+
+  async getTransactionByPlaidTransferId(transferId: string): Promise<any> {
+    const transactions = await this.getTransactions(1000, 0);
+    return transactions.find(transaction => transaction.plaidTransferId === transferId);
+  }
+
+  // WeParlay Cash specific methods
+  async transferWeParlayCash(fromUserId: string, toUserId: string, amount: number, reason: string = 'Transfer'): Promise<any> {
+    const fromUser = await this.getUser(fromUserId);
+    const toUser = await this.getUser(toUserId);
+    
+    if (!fromUser || !toUser) {
+      throw new Error('User not found');
+    }
+    
+    if ((fromUser.weplayTokenBalance || 0) < amount) {
+      throw new Error('Insufficient WeParlay Cash balance');
+    }
+    
+    // Update balances
+    await this.updateUserWeplayTokenBalance(fromUserId, -amount);
+    await this.updateUserWeplayTokenBalance(toUserId, amount);
+    
+    // Create transaction records
+    const transferId = `wpc_transfer_${Date.now()}`;
+    
+    await this.createTransaction({
+      userId: fromUserId,
+      type: 'weparlay_transfer_out',
+      amount: -amount,
+      currency: 'WeParlayCash',
+      status: 'completed',
+      method: 'internal_transfer',
+      description: `WeParlay Cash transfer to user ${toUserId}: ${reason}`,
+      timestamp: new Date(),
+      transferId: transferId
+    });
+    
+    await this.createTransaction({
+      userId: toUserId,
+      type: 'weparlay_transfer_in',
+      amount: amount,
+      currency: 'WeParlayCash',
+      status: 'completed',
+      method: 'internal_transfer',
+      description: `WeParlay Cash received from user ${fromUserId}: ${reason}`,
+      timestamp: new Date(),
+      transferId: transferId
+    });
+    
+    return {
+      transferId,
+      success: true,
+      fromBalance: fromUser.weplayTokenBalance - amount,
+      toBalance: (toUser.weplayTokenBalance || 0) + amount
+    };
+  }
+
+  async convertRealToWeParlayCash(userId: string, realAmount: number): Promise<any> {
+    const user = await this.getUser(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    
+    if ((user.balance || 0) < realAmount) {
+      throw new Error('Insufficient real money balance');
+    }
+    
+    // Convert at 1:1 ratio
+    const weparlayCashAmount = realAmount;
+    
+    // Update balances
+    await this.updateUserBalance(userId, -realAmount);
+    await this.updateUserWeplayTokenBalance(userId, weparlayCashAmount);
+    
+    // Create transaction record
+    await this.createTransaction({
+      userId: userId,
+      type: 'currency_conversion',
+      amount: realAmount,
+      currency: 'USD_to_WeParlayCash',
+      status: 'completed',
+      method: 'internal_conversion',
+      description: `Converted $${realAmount} to ${weparlayCashAmount} WeParlay Cash`,
+      timestamp: new Date()
+    });
+    
+    return {
+      success: true,
+      realAmount: -realAmount,
+      weparlayCashAmount: weparlayCashAmount,
+      newRealBalance: user.balance - realAmount,
+      newWeParlayCashBalance: (user.weplayTokenBalance || 0) + weparlayCashAmount
+    };
+  }
+
+  async redeemWeParlayCashRewards(userId: string, amount: number, reason: string = 'Reward redemption'): Promise<any> {
+    await this.updateUserWeplayTokenBalance(userId, amount);
+    
+    await this.createTransaction({
+      userId: userId,
+      type: 'weparlay_reward',
+      amount: amount,
+      currency: 'WeParlayCash',
+      status: 'completed',
+      method: 'reward_system',
+      description: reason,
+      timestamp: new Date()
+    });
+    
+    return {
+      success: true,
+      amount: amount,
+      reason: reason
+    };
+  }
+
   async getOwnerBankAccount(): Promise<BankAccount | undefined> {
     // In a real application, this would retrieve a designated owner bank account
     // For demonstration, we'll get the first bank account

@@ -27,6 +27,8 @@ import {
   Activity,
   AlertCircle
 } from 'lucide-react';
+import PlaidLinkComponent from '@/components/banking/PlaidLinkComponent';
+import EnhancedDepositWithdraw from '@/components/banking/EnhancedDepositWithdraw';
 
 const UserProfileBanking: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
@@ -165,7 +167,7 @@ const UserProfileBanking: React.FC = () => {
 
       {/* Main Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="profile">
             <User className="h-4 w-4 mr-2" />
             Profile
@@ -173,6 +175,10 @@ const UserProfileBanking: React.FC = () => {
           <TabsTrigger value="banking">
             <CreditCard className="h-4 w-4 mr-2" />
             Banking
+          </TabsTrigger>
+          <TabsTrigger value="accounts">
+            <Wallet className="h-4 w-4 mr-2" />
+            Accounts
           </TabsTrigger>
           <TabsTrigger value="transactions">
             <History className="h-4 w-4 mr-2" />
@@ -217,53 +223,11 @@ const UserProfileBanking: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="banking" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Deposit Funds</CardTitle>
-                <CardDescription>Add money to your account</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="depositAmount">Amount</Label>
-                  <Input
-                    id="depositAmount"
-                    type="number"
-                    placeholder="Enter amount"
-                    value={depositAmount}
-                    onChange={(e) => setDepositAmount(e.target.value)}
-                  />
-                </div>
-                <Button className="w-full">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Deposit
-                </Button>
-              </CardContent>
-            </Card>
+          <EnhancedDepositWithdraw />
+        </TabsContent>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Withdraw Funds</CardTitle>
-                <CardDescription>Withdraw money from your account</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="withdrawAmount">Amount</Label>
-                  <Input
-                    id="withdrawAmount"
-                    type="number"
-                    placeholder="Enter amount"
-                    value={withdrawAmount}
-                    onChange={(e) => setWithdrawAmount(e.target.value)}
-                  />
-                </div>
-                <Button className="w-full" variant="outline">
-                  <Minus className="h-4 w-4 mr-2" />
-                  Withdraw
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+        <TabsContent value="accounts" className="space-y-4">
+          <PlaidLinkComponent />
         </TabsContent>
 
         <TabsContent value="transactions" className="space-y-4">
