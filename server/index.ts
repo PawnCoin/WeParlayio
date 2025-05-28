@@ -102,3 +102,388 @@ app.use((req, res, next) => {
   initializeWebSocketService(httpServer);
   log(`🔌 WebSocket service initialized on same port ${port}`);
 })();
+```
+
+```
+import express, { type Request, Response, NextFunction } from "express";
+import { registerRoutes } from "./routes";
+import { setupVite, serveStatic, log } from "./vite";
+import { createSSLServer, getSSLConfig } from "./ssl";
+import { initializeWebSocketService } from "./services/websocketService";
+import authRoutes from './routes/authRoutes';
+import bankingRoutes from './routes/bankingRoutes';
+import plaidRoutes from './routes/plaidRoutes';
+import yahooRoutes from './routes/yahooRoutes';
+import weparlayCashRoutes from './routes/weparlayCashRoutes';
+import consentRoutes from './routes/consentRoutes';
+
+// Export app for production use
+export const app = express();
+app.set('trust proxy', 1); // Trust first proxy - important for secure cookies with custom domain
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+app.use((req, res, next) => {
+  const start = Date.now();
+  const path = req.path;
+  let capturedJsonResponse: Record<string, any> | undefined = undefined;
+
+  const originalResJson = res.json;
+  res.json = function (bodyJson, ...args) {
+    capturedJsonResponse = bodyJson;
+    return originalResJson.apply(res, [bodyJson, ...args]);
+  };
+
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    if (path.startsWith("/api")) {
+      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+      if (capturedJsonResponse) {
+        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+      }
+
+      if (logLine.length > 80) {
+        logLine = logLine.slice(0, 79) + "…";
+      }
+
+      log(logLine);
+    }
+  });
+
+  next();
+});
+
+(async () => {
+  const appServer = await registerRoutes(app);
+
+  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    const status = err.status || err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+
+    // Notify admin of server errors
+    try {
+      import('./hooks/userHooks').then(({ onSystemError }) => {
+        onSystemError(err);
+      }).catch(e => console.error('Failed to notify admin about error:', e));
+    } catch (notifyError) {
+      console.error('Failed to load error notification module:', notifyError);
+    }
+
+    res.status(status).json({ message });
+    throw err;
+  });
+
+  // importantly only setup vite in development and after
+  // setting up all the other routes so the catch-all route
+  // doesn't interfere with the other routes
+  if (app.get("env") === "development") {
+    await setupVite(app, appServer);
+  } else {
+    serveStatic(app);
+  }
+
+  // Get SSL configuration
+  const sslConfig = getSSLConfig();
+
+  // Use port 5000 for production, 5173 for development
+  const port = app.get("env") === "development" ? 5000 : 5000;
+
+  // Create appropriate server based on configuration
+  let server;
+  if (sslConfig.enabled) {
+    try {
+      server = createSSLServer(app, sslConfig);
+      log(`🔒 SSL/TLS encryption enabled for weparlay.io`);
+    } catch (error) {
+      log(`❌ SSL certificate error: ${error.message}`);
+      log(`🔄 Falling back to HTTP server`);
+      server = app;
+    }
+  } else {
+    server = app;
+  }
+
+  const httpServer = server.listen({
+    port,
+    host: "0.0.0.0",
+    reusePort: true,
+  }, () => {
+    log(`🚀 WeParlay server running on HTTP port ${port}`);
+  });
+
+  // Initialize WebSocket service
+  initializeWebSocketService(httpServer);
+  log(`🔌 WebSocket service initialized on same port ${port}`);
+})();
+
+```
+
+```
+import express, { type Request, Response, NextFunction } from "express";
+import { registerRoutes } from "./routes";
+import { setupVite, serveStatic, log } from "./vite";
+import { createSSLServer, getSSLConfig } from "./ssl";
+import { initializeWebSocketService } from "./services/websocketService";
+import authRoutes from './routes/authRoutes';
+import bankingRoutes from './routes/bankingRoutes';
+import plaidRoutes from './routes/plaidRoutes';
+import yahooRoutes from './routes/yahooRoutes';
+import weparlayCashRoutes from './routes/weparlayCashRoutes';
+import consentRoutes from './routes/consentRoutes';
+
+// Export app for production use
+export const app = express();
+app.set('trust proxy', 1); // Trust first proxy - important for secure cookies with custom domain
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+app.use((req, res, next) => {
+  const start = Date.now();
+  const path = req.path;
+  let capturedJsonResponse: Record<string, any> | undefined = undefined;
+
+  const originalResJson = res.json;
+  res.json = function (bodyJson, ...args) {
+    capturedJsonResponse = bodyJson;
+    return originalResJson.apply(res, [bodyJson, ...args]);
+  };
+
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    if (path.startsWith("/api")) {
+      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+      if (capturedJsonResponse) {
+        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+      }
+
+      if (logLine.length > 80) {
+        logLine = logLine.slice(0, 79) + "…";
+      }
+
+      log(logLine);
+    }
+  });
+
+  next();
+});
+
+(async () => {
+  const appServer = await registerRoutes(app);
+
+  // API routes
+  app.use('/api/auth', authRoutes);
+  app.use('/api/banking', bankingRoutes);
+  app.use('/api/plaid', plaidRoutes);
+  app.use('/api/yahoo', yahooRoutes);
+  app.use('/api/weparlay-cash', weparlayCashRoutes);
+  app.use('/api/consent', consentRoutes);
+
+  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    const status = err.status || err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+
+    // Notify admin of server errors
+    try {
+      import('./hooks/userHooks').then(({ onSystemError }) => {
+        onSystemError(err);
+      }).catch(e => console.error('Failed to notify admin about error:', e));
+    } catch (notifyError) {
+      console.error('Failed to load error notification module:', notifyError);
+    }
+
+    res.status(status).json({ message });
+    throw err;
+  });
+
+  // importantly only setup vite in development and after
+  // setting up all the other routes so the catch-all route
+  // doesn't interfere with the other routes
+  if (app.get("env") === "development") {
+    await setupVite(app, appServer);
+  } else {
+    serveStatic(app);
+  }
+
+  // Get SSL configuration
+  const sslConfig = getSSLConfig();
+
+  // Use port 5000 for production, 5173 for development
+  const port = app.get("env") === "development" ? 5000 : 5000;
+
+  // Create appropriate server based on configuration
+  let server;
+  if (sslConfig.enabled) {
+    try {
+      server = createSSLServer(app, sslConfig);
+      log(`🔒 SSL/TLS encryption enabled for weparlay.io`);
+    } catch (error) {
+      log(`❌ SSL certificate error: ${error.message}`);
+      log(`🔄 Falling back to HTTP server`);
+      server = app;
+    }
+  } else {
+    server = app;
+  }
+
+  const httpServer = server.listen({
+    port,
+    host: "0.0.0.0",
+    reusePort: true,
+  }, () => {
+    log(`🚀 WeParlay server running on HTTP port ${port}`);
+  });
+
+  // Initialize WebSocket service
+  initializeWebSocketService(httpServer);
+  log(`🔌 WebSocket service initialized on same port ${port}`);
+})();
+```
+
+```
+// consentRoutes.ts
+import express, { Router, Request, Response } from 'express';
+
+const router: Router = express.Router();
+
+// Sample route to record user consent
+router.post('/record', (req: Request, res: Response) => {
+  // Extract consent data from the request body
+  const { userId, consentType, consentValue } = req.body;
+
+  // Implement your logic to store the consent data securely, including:
+  // - Timestamp of consent
+  // - IP address of the user
+  // - User agent string (optional, but good for audit trails)
+
+  // Example:
+  const timestamp = new Date().toISOString();
+  const ipAddress = req.ip; // Be mindful of proxy configurations
+
+  // In a real application, you'd save this data to a database.
+  console.log('Consent Recorded:', { userId, consentType, consentValue, timestamp, ipAddress });
+
+  res.status(200).json({ message: 'Consent recorded successfully' });
+});
+
+export default router;
+```
+
+```typescript
+import express, { type Request, Response, NextFunction } from "express";
+import { registerRoutes } from "./routes";
+import { setupVite, serveStatic, log } from "./vite";
+import { createSSLServer, getSSLConfig } from "./ssl";
+import { initializeWebSocketService } from "./services/websocketService";
+import authRoutes from './routes/authRoutes';
+import bankingRoutes from './routes/bankingRoutes';
+import plaidRoutes from './routes/plaidRoutes';
+import yahooRoutes from './routes/yahooRoutes';
+import weparlayCashRoutes from './routes/weparlayCashRoutes';
+import consentRoutes from './routes/consentRoutes';
+
+// Export app for production use
+export const app = express();
+app.set('trust proxy', 1); // Trust first proxy - important for secure cookies with custom domain
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+app.use((req, res, next) => {
+  const start = Date.now();
+  const path = req.path;
+  let capturedJsonResponse: Record<string, any> | undefined = undefined;
+
+  const originalResJson = res.json;
+  res.json = function (bodyJson, ...args) {
+    capturedJsonResponse = bodyJson;
+    return originalResJson.apply(res, [bodyJson, ...args]);
+  };
+
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    if (path.startsWith("/api")) {
+      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+      if (capturedJsonResponse) {
+        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+      }
+
+      if (logLine.length > 80) {
+        logLine = logLine.slice(0, 79) + "…";
+      }
+
+      log(logLine);
+    }
+  });
+
+  next();
+});
+
+(async () => {
+  const appServer = await registerRoutes(app);
+
+  // API routes
+  app.use('/api/auth', authRoutes);
+  app.use('/api/banking', bankingRoutes);
+  app.use('/api/plaid', plaidRoutes);
+  app.use('/api/yahoo', yahooRoutes);
+  app.use('/api/weparlay-cash', weparlayCashRoutes);
+  app.use('/api/consent', consentRoutes);
+
+  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    const status = err.status || err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+
+    // Notify admin of server errors
+    try {
+      import('./hooks/userHooks').then(({ onSystemError }) => {
+        onSystemError(err);
+      }).catch(e => console.error('Failed to notify admin about error:', e));
+    } catch (notifyError) {
+      console.error('Failed to load error notification module:', notifyError);
+    }
+
+    res.status(status).json({ message });
+    throw err;
+  });
+
+  // importantly only setup vite in development and after
+  // setting up all the other routes so the catch-all route
+  // doesn't interfere with the other routes
+  if (app.get("env") === "development") {
+    await setupVite(app, appServer);
+  } else {
+    serveStatic(app);
+  }
+
+  // Get SSL configuration
+  const sslConfig = getSSLConfig();
+
+  // Use port 5000 for production, 5173 for development
+  const port = app.get("env") === "development" ? 5000 : 5000;
+
+  // Create appropriate server based on configuration
+  let server;
+  if (sslConfig.enabled) {
+    try {
+      server = createSSLServer(app, sslConfig);
+      log(`🔒 SSL/TLS encryption enabled for weparlay.io`);
+    } catch (error) {
+      log(`❌ SSL certificate error: ${error.message}`);
+      log(`🔄 Falling back to HTTP server`);
+      server = app;
+    }
+  } else {
+    server = app;
+  }
+
+  const httpServer = server.listen({
+    port,
+    host: "0.0.0.0",
+    reusePort: true,
+  }, () => {
+    log(`🚀 WeParlay server running on HTTP port ${port}`);
+  });
+
+  // Initialize WebSocket service
+  initializeWebSocketService(httpServer);
+  log(`🔌 WebSocket service initialized on same port ${port}`);
+})();
