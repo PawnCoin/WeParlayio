@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -165,12 +164,12 @@ const EsportsHub: React.FC = () => {
     };
 
     setLiveBets([...liveBets, newBet]);
-    
+
     toast({
       title: "Micro-bet placed! 🎯",
       description: `${betType} bet for $${amount} at ${odds > 0 ? '+' : ''}${odds} odds`,
     });
-    
+
     setBetAmount('');
   };
 
@@ -182,7 +181,7 @@ const EsportsHub: React.FC = () => {
       timestamp: new Date().toISOString(),
       type: 'chat'
     };
-    
+
     setChatMessages([...chatMessages, newMessage]);
   };
 
@@ -249,9 +248,9 @@ const EsportsHub: React.FC = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {mockLiveMatches
-                    .filter(match => match.game.toLowerCase().includes(selectedGame))
-                    .map(match => (
+                  {(liveMatches || [])
+                    .filter((match: any) => selectedGame === 'all' || match.game?.toLowerCase().includes(selectedGame))
+                    .map((match: any) => (
                     <div key={match.id} className="border rounded-lg p-4 space-y-4">
                       <div className="flex items-center justify-between">
                         <div>
@@ -308,7 +307,7 @@ const EsportsHub: React.FC = () => {
                               </Button>
                             </>
                           )}
-                          
+
                           {match.nextRoundOdds && (
                             <>
                               <Button
@@ -371,7 +370,7 @@ const EsportsHub: React.FC = () => {
                       Search
                     </Button>
                   </div>
-                  
+
                   {realPlayerStats && (
                     <div className="space-y-3 p-4 bg-blue-50 rounded-lg">
                       <div className="font-bold text-lg">{realPlayerStats.summoner.name}</div>
@@ -389,7 +388,7 @@ const EsportsHub: React.FC = () => {
                           <span className="font-medium">Recent Games:</span> {realPlayerStats.recentPerformance.gamesPlayed}
                         </div>
                       </div>
-                      
+
                       {realPlayerStats.rankedStats?.length > 0 && (
                         <div className="mt-3">
                           <div className="font-medium">Ranked Stats:</div>
@@ -400,7 +399,7 @@ const EsportsHub: React.FC = () => {
                           ))}
                         </div>
                       )}
-                      
+
                       <Button 
                         size="sm" 
                         className="w-full"
@@ -449,7 +448,7 @@ const EsportsHub: React.FC = () => {
                           {prop.confidence} confidence
                         </Badge>
                       </div>
-                      
+
                       <div className="grid grid-cols-2 gap-2">
                         <Button
                           size="sm"

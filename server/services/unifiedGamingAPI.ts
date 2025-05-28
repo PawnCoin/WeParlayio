@@ -3,16 +3,29 @@
 
 import axios from 'axios';
 import NodeCache from 'node-cache';
+import { apiRateLimitManager } from './apiRateLimitManager';
 
 // === Caching ===
 const cache = new NodeCache({ stdTTL: 60 }); // cache for 60 seconds
 
-// === Helper with cache ===
-const fetchWithCache = async (key: string, url: string, config: any = {}) => {
+// === Helper with cache and rate limiting ===
+const fetchWithCache = async (key: string, url: string, config: any = {}, apiName: string = 'unknown') => {
+  // Check cache first
   if (cache.has(key)) return cache.get(key);
+  
+  // Check rate limits
+  if (!(await apiRateLimitManager.canMakeRequest(apiName))) {
+    console.warn(`API limit reached for ${apiName}. Using cached data or throwing error.`);
+    throw new Error(`API rate limit exceeded for ${apiName}. Please try again later.`);
+  }
+  
   try {
     const { data } = await axios.get(url, config);
     cache.set(key, data);
+    
+    // Record the API call
+    await apiRateLimitManager.recordRequest(apiName);
+    
     return data;
   } catch (error) {
     console.error(`API fetch error for ${key}:`, error);
@@ -39,7 +52,8 @@ export class UnifiedGamingAPI {
       `https://fortnite-api.com/v2/stats/br/v2?name=${username}`, 
       {
         headers: { Authorization: FORTNITE_API_KEY }
-      }
+      },
+      'fortnite_api'
     );
   }
 
@@ -259,11 +273,10 @@ export class UnifiedGamingAPI {
     );
   }
 
-  // === Esports Tournaments ===
+  // === Real Esports Tournaments Only ===
   async getEsportsTournaments(game: string = 'lol') {
     if (!PANDA_API_KEY) {
-      console.warn('PandaScore API key not configured, using demo data');
-      return this.getDemoTournaments();
+      throw new Error('PandaScore API key required. Please configure PANDA_API_KEY in secrets.');
     }
     
     const key = `tournaments-${game}`;
@@ -277,8 +290,7 @@ export class UnifiedGamingAPI {
 
   async getEsportsMatches(game: string = 'lol') {
     if (!PANDA_API_KEY) {
-      console.warn('PandaScore API key not configured, using demo data');
-      return this.getDemoMatches();
+      throw new Error('PandaScore API key required. Please configure PANDA_API_KEY in secrets.');
     }
     
     const key = `matches-${game}`;
@@ -306,51 +318,33 @@ export class UnifiedGamingAPI {
     return await fetchWithCache(key, `https://api.collegefootballdata.com/games?year=${year}`);
   }
 
-  // === Demo Data Fallbacks ===
-  private getDemoTournaments() {
-    return [
+  // === Real API Data Only ===
+  private async getRealTournaments(game: string) {
+    if (!PANDA_API_KEY) {
+      throw new Error('PandaScore API key required for tournament data');
+    }
+    
+    const key = `real-tournaments-${game}`;
+    return await fetchWithCache(key,
+      `https://api.pandascore.co/${game}/tournaments/running`,
       {
-        id: 'demo_lol_worlds',
-        name: 'League of Legends World Championship',
-        game: 'League of Legends',
-        status: 'running',
-        prize_pool: 2200000,
-        start_date: new Date().toISOString()
-      },
-      {
-        id: 'demo_csgo_major',
-        name: 'CS:GO Major Championship',
-        game: 'CS:GO',
-        status: 'upcoming',
-        prize_pool: 1000000,
-        start_date: new Date(Date.now() + 86400000).toISOString()
+        headers: { Authorization: `Bearer ${PANDA_API_KEY}` }
       }
-    ];
+    );
   }
 
-  private getDemoMatches() {
-    return [
+  private async getRealMatches(game: string) {
+    if (!PANDA_API_KEY) {
+      throw new Error('PandaScore API key required for match data');
+    }
+    
+    const key = `real-matches-${game}`;
+    return await fetchWithCache(key,
+      `https://api.pandascore.co/${game}/matches/running`,
       {
-        id: 'demo_match_1',
-        opponents: [
-          { name: 'Team Liquid', logo: '🏆' },
-          { name: 'FaZe Clan', logo: '⚡' }
-        ],
-        game: 'CS:GO',
-        status: 'running',
-        odds: { team1: 1.85, team2: 2.10 }
-      },
-      {
-        id: 'demo_match_2',
-        opponents: [
-          { name: 'G2 Esports', logo: '🎯' },
-          { name: 'Fnatic', logo: '🔥' }
-        ],
-        game: 'League of Legends',
-        status: 'running',
-        odds: { team1: 1.95, team2: 1.90 }
+        headers: { Authorization: `Bearer ${PANDA_API_KEY}` }
       }
-    ];
+    );
   }
 
   // === API Status Check ===

@@ -113,176 +113,108 @@ router.get('/riot/status', async (req, res) => {
   }
 });
 
-// Live esports matches with real-time data
+// Live esports matches with REAL API data only
 router.get('/live-matches/:game?', async (req, res) => {
   try {
     const { game } = req.params;
 
-    // In production, integrate with real APIs:
-    // - Riot Games API for LoL
-    // - Steam API for CS2  
-    // - PandaScore for tournament data
-    // - HLTV API for CS rankings
+    // Use real PandaScore API for live matches
+    const realMatches = await unifiedGamingAPI.getEsportsMatches(game || 'lol');
+    
+    if (!realMatches || realMatches.length === 0) {
+      return res.json([]);
+    }
 
-    const mockLiveMatches = [
-      {
-        id: 'lol-worlds-2025-final',
-        game: 'League of Legends',
-        tournament: 'Worlds 2025 Finals',
-        team1: { 
-          name: 'T1', 
-          logo: '🏆', 
-          score: 2,
-          players: ['Faker', 'Oner', 'Zeus', 'Gumayusi', 'Keria']
-        },
-        team2: { 
-          name: 'JDG', 
-          logo: '⚡', 
-          score: 1,
-          players: ['Knight', 'Kanavi', '369', 'Ruler', 'Missing']
-        },
-        status: 'live',
-        viewers: 2840000,
-        gameState: {
-          currentGame: 4,
-          timeElapsed: '28:43',
-          goldDifference: 4500,
-          nextObjective: 'Baron spawns in 1:23',
-          killScore: [18, 12]
-        },
-        liveOdds: {
-          matchWinner: { team1: 1.65, team2: 2.35 },
-          nextKill: { team1: 1.85, team2: 2.10 },
-          nextObjective: { team1: 1.75, team2: 2.25 },
-          firstBlood: { team1: 1.90, team2: 1.95 }
-        },
-        microBets: [
-          { type: 'next_kill', odds: { team1: 1.85, team2: 2.10 } },
-          { type: 'next_tower', odds: { team1: 1.70, team2: 2.40 } },
-          { type: 'next_dragon', odds: { team1: 1.95, team2: 1.90 } }
-        ]
+    // Transform real API data to our format
+    const formattedMatches = realMatches.map((match: any) => ({
+      id: match.id,
+      game: match.videogame?.name || game,
+      tournament: match.tournament?.name || 'Unknown Tournament',
+      team1: {
+        name: match.opponents?.[0]?.opponent?.name || 'Team 1',
+        logo: match.opponents?.[0]?.opponent?.image_url || '',
+        score: match.results?.[0]?.score || 0
       },
-      {
-        id: 'cs2-major-semifinal',
-        game: 'CS2',
-        tournament: 'CS2 Major Copenhagen 2025',
-        team1: { 
-          name: 'NAVI', 
-          logo: '🌟', 
-          score: 13,
-          players: ['s1mple', 'electronic', 'Perfecto', 'b1t', 'Boombl4']
-        },
-        team2: { 
-          name: 'FaZe', 
-          logo: '🔥', 
-          score: 11,
-          players: ['karrigan', 'rain', 'Twistzz', 'ropz', 'broky']
-        },
-        status: 'live',
-        viewers: 892000,
-        gameState: {
-          currentMap: 'Mirage',
-          round: 25,
-          halfTime: 'Second Half',
-          economy: 'NAVI: $23,400 | FaZe: $18,200',
-          weaponStats: {
-            navi: { rifles: 4, awp: 1 },
-            faze: { rifles: 3, awp: 1, pistols: 1 }
-          }
-        },
-        liveOdds: {
-          roundWinner: { team1: 1.95, team2: 1.90 },
-          firstKill: { team1: 1.88, team2: 1.97 },
-          bombPlant: { yes: 1.65, no: 2.35 },
-          ecoRound: { yes: 2.80, no: 1.45 }
-        },
-        microBets: [
-          { type: 'round_winner', odds: { team1: 1.95, team2: 1.90 } },
-          { type: 'first_kill', odds: { team1: 1.88, team2: 1.97 } },
-          { type: 'ace_this_round', odds: { yes: 15.0, no: 1.08 } }
-        ]
-      }
-    ];
+      team2: {
+        name: match.opponents?.[1]?.opponent?.name || 'Team 2', 
+        logo: match.opponents?.[1]?.opponent?.image_url || '',
+        score: match.results?.[1]?.score || 0
+      },
+      status: match.status,
+      scheduled_at: match.scheduled_at,
+      live: match.status === 'running'
+    }));
 
-    const filteredMatches = game 
-      ? mockLiveMatches.filter(match => match.game.toLowerCase().includes(game.toLowerCase()))
-      : mockLiveMatches;
-
-    res.json(filteredMatches);
+    res.json(formattedMatches);
   } catch (error) {
-    console.error('Error fetching live matches:', error);
-    res.status(500).json({ error: 'Failed to fetch live matches' });
+    console.error('Error fetching real live matches:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch live matches. Please ensure PandaScore API key is configured.',
+      message: error.message 
+    });
   }
 });
 
-// Player statistics and performance data
+// Real player statistics from PandaScore API
 router.get('/player-stats/:game?', async (req, res) => {
   try {
     const { game } = req.params;
+    const pandaApiKey = process.env.PANDA_API_KEY;
+    
+    if (!pandaApiKey) {
+      return res.status(500).json({ 
+        error: 'PandaScore API key not configured. Please add PANDA_API_KEY to secrets.' 
+      });
+    }
 
-    const mockPlayerStats = [
+    // Fetch real player stats from PandaScore
+    const gameMapping: { [key: string]: string } = {
+      'lol': 'lol',
+      'cs2': 'cs',
+      'csgo': 'cs',
+      'valorant': 'valorant',
+      'dota2': 'dota2'
+    };
+
+    const apiGame = gameMapping[game?.toLowerCase() || 'lol'] || 'lol';
+    
+    const response = await fetch(
+      `https://api.pandascore.co/${apiGame}/players?sort=name&page=1&per_page=20`,
       {
-        id: 'faker-lol-stats',
-        player: 'Faker',
-        team: 'T1',
-        game: 'League of Legends',
-        role: 'Mid',
-        stats: {
-          kda: '4.8/1.2/6.3',
-          winRate: '78%',
-          avgKills: 4.8,
-          avgDeaths: 1.2,
-          avgAssists: 6.3,
-          cs_per_min: 8.9,
-          gold_per_min: 425,
-          dmg_per_min: 512
-        },
-        recentForm: [
-          { match: 'vs JDG', kills: 6, deaths: 0, assists: 8, result: 'W' },
-          { match: 'vs BLG', kills: 3, deaths: 2, assists: 7, result: 'W' },
-          { match: 'vs WBG', kills: 5, deaths: 1, assists: 5, result: 'W' }
-        ],
-        props: [
-          { type: 'kills', line: 4.5, over: -110, under: -110 },
-          { type: 'assists', line: 6.5, over: -105, under: -115 },
-          { type: 'cs', line: 195.5, over: -120, under: 100 }
-        ]
-      },
-      {
-        id: 's1mple-cs2-stats',
-        player: 's1mple',
-        team: 'NAVI',
-        game: 'CS2',
-        role: 'AWPer',
-        stats: {
-          rating: 1.28,
-          kd_ratio: 1.45,
-          adr: 87.3,
-          headshot_pct: 62.1,
-          maps_played: 124,
-          clutch_success: '43%'
-        },
-        recentForm: [
-          { match: 'vs FaZe', kills: 24, deaths: 16, adr: 92.4, result: 'W' },
-          { match: 'vs G2', kills: 19, deaths: 18, adr: 78.2, result: 'L' },
-          { match: 'vs Vitality', kills: 26, deaths: 14, adr: 95.7, result: 'W' }
-        ],
-        props: [
-          { type: 'kills', line: 21.5, over: -115, under: -105 },
-          { type: 'adr', line: 85.5, over: -110, under: -110 },
-          { type: 'first_kills', line: 2.5, over: +105, under: -125 }
-        ]
+        headers: { Authorization: `Bearer ${pandaApiKey}` }
       }
-    ];
+    );
 
-    const filteredStats = game 
-      ? mockPlayerStats.filter(player => player.game.toLowerCase().includes(game.toLowerCase()))
-      : mockPlayerStats;
+    if (!response.ok) {
+      throw new Error(`PandaScore API error: ${response.status}`);
+    }
 
-    res.json(filteredStats);
+    const players = await response.json();
+    
+    // Transform real player data
+    const playerStats = players.map((player: any) => ({
+      id: player.id,
+      player: player.name,
+      team: player.current_team?.name || 'Free Agent',
+      game: player.videogame?.name || apiGame,
+      role: player.role || 'Unknown',
+      image_url: player.image_url,
+      nationality: player.nationality,
+      stats: {
+        // Real stats would come from additional API calls
+        // For now, we'll indicate these need separate endpoints
+        winRate: 'Requires match history API',
+        totalWinnings: player.current_team?.total_winnings || 0
+      }
+    }));
+
+    res.json(playerStats);
   } catch (error) {
-    console.error('Error fetching player stats:', error);
-    res.status(500).json({ error: 'Failed to fetch player stats' });
+    console.error('Error fetching real player stats:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch player stats from PandaScore API',
+      message: error.message 
+    });
   }
 });
 
