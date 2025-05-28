@@ -154,6 +154,51 @@ export default function LiveHeatmap() {
         )}
       </div>
 
+      {/* Original Heatmap Screenshot */}
+      <div className="mb-8">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-6 w-6 text-orange-500" />
+              Classic Heatmap View
+            </CardTitle>
+            <CardDescription>
+              Traditional sports betting heatmap showing popular markets and trends
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="relative">
+              <img 
+                src="/attached_assets/targeted_element_1748382577584.png" 
+                alt="WeParlay Live Betting Heatmap"
+                className="w-full h-auto rounded-lg shadow-lg border"
+                style={{
+                  maxHeight: '600px',
+                  objectFit: 'contain'
+                }}
+              />
+              <div className="absolute top-4 right-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                🔴 LIVE
+              </div>
+            </div>
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="text-center p-3 bg-red-50 rounded-lg">
+                <div className="text-2xl font-bold text-red-600">🔥 Hot</div>
+                <div className="text-sm text-gray-600">High Activity</div>
+              </div>
+              <div className="text-center p-3 bg-yellow-50 rounded-lg">
+                <div className="text-2xl font-bold text-yellow-600">⚡ Active</div>
+                <div className="text-sm text-gray-600">Moderate Activity</div>
+              </div>
+              <div className="text-center p-3 bg-blue-50 rounded-lg">
+                <div className="text-2xl font-bold text-blue-600">❄️ Cool</div>
+                <div className="text-sm text-gray-600">Low Activity</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <Tabs defaultValue="heatmap" className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="heatmap">Activity Heatmap</TabsTrigger>
@@ -195,7 +240,7 @@ export default function LiveHeatmap() {
                         {sport.popularity}% Popular
                       </Badge>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-gray-600">Live Events</span>
@@ -208,7 +253,7 @@ export default function LiveHeatmap() {
                         />
                       </div>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-gray-600">Upcoming</span>
@@ -262,7 +307,7 @@ export default function LiveHeatmap() {
                       </Card>
                     ))}
                   </div>
-                  
+
                   <div className="text-center">
                     <div className="text-lg font-semibold text-green-600 mb-2">
                       {liveEvents.total_opportunities} Total Live Opportunities
@@ -328,7 +373,7 @@ export default function LiveHeatmap() {
                     </div>
                   )}
                 </div>
-                
+
                 <div className="space-y-4">
                   <h4 className="text-lg font-semibold">Live Activity Metrics</h4>
                   <div className="space-y-3">

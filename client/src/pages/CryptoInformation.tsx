@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ const Bitcoin = () => (
 const OddsConversionTable: React.FC = () => {
   const [stake, setStake] = useState<string>("100");
   const [oddsFormat, setOddsFormat] = useState<string>("decimal");
-  
+
   // Sample odds for different bet types
   const sampleOdds = [
     { type: "Moneyline Favorite", decimal: 1.74, american: -135, fraction: "3/4", implied: 57.5, payout: { usd: 174, btc: 0.00348, eth: 0.0435 } },
@@ -41,7 +41,7 @@ const OddsConversionTable: React.FC = () => {
     { type: "Total Over 220.5", decimal: 1.95, american: -105, fraction: "19/20", implied: 51.3, payout: { usd: 195, btc: 0.0039, eth: 0.04875 } },
     { type: "Parlay (3 Team)", decimal: 6.05, american: 505, fraction: "5.05/1", implied: 16.5, payout: { usd: 605, btc: 0.0121, eth: 0.15125 } },
   ];
-  
+
   // Format odds based on selected format
   const formatOdds = (decimalOdds: number, format: string) => {
     switch (format) {
@@ -55,13 +55,13 @@ const OddsConversionTable: React.FC = () => {
         const getGCD = (a: number, b: number): number => {
           return b ? getGCD(b, a % b) : a;
         };
-        
+
         // Convert decimal odds to fraction
         const decimal = Math.round((decimalOdds - 1) * 100);
         const numerator = decimal;
         const denominator = 100;
         const gcd = getGCD(numerator, denominator);
-        
+
         return `${numerator/gcd}/${denominator/gcd}`;
       case "implied":
         return `${Math.round((1 / decimalOdds) * 100)}%`;
@@ -69,21 +69,21 @@ const OddsConversionTable: React.FC = () => {
         return decimalOdds.toFixed(2);
     }
   };
-  
+
   // Calculate payout based on stake and odds
   const calculatePayout = (stakeValue: number, decimalOdds: number, currency: string) => {
     const payout = stakeValue * decimalOdds;
-    
+
     // Convert to cryptocurrency if needed
     if (currency === "btc") {
       return (payout * 0.00002).toFixed(8); // Mock BTC conversion
     } else if (currency === "eth") {
       return (payout * 0.00025).toFixed(6); // Mock ETH conversion
     }
-    
+
     return payout.toFixed(2);
   };
-  
+
   // Handle stake changes
   const handleStakeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -91,7 +91,7 @@ const OddsConversionTable: React.FC = () => {
       setStake(value);
     }
   };
-  
+
   return (
     <Card>
       <CardHeader>
@@ -128,7 +128,7 @@ const OddsConversionTable: React.FC = () => {
             </select>
           </div>
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
@@ -168,7 +168,7 @@ const OddsConversionTable: React.FC = () => {
             </tbody>
           </table>
         </div>
-        
+
         <Alert className="mt-6">
           <Info className="h-4 w-4" />
           <AlertTitle>Understanding Cryptocurrency Returns</AlertTitle>
@@ -188,7 +188,7 @@ const PriceVolatilitySimulator: React.FC = () => {
   const [betAmount, setBetAmount] = useState<string>("0.1");
   const [currency, setCurrency] = useState<string>("ETH");
   const [priceChange, setPriceChange] = useState<number>(0);
-  
+
   // Currency options
   const currencies = [
     { symbol: "BTC", name: "Bitcoin", price: 68521, volatility: "High" },
@@ -197,10 +197,10 @@ const PriceVolatilitySimulator: React.FC = () => {
     { symbol: "USDT", name: "Tether", price: 1.00, volatility: "Very Low" },
     { symbol: "USDC", name: "USD Coin", price: 1.00, volatility: "Very Low" },
   ];
-  
+
   // Get selected currency details
   const selectedCurrency = currencies.find(c => c.symbol === currency);
-  
+
   // Handle betting simulation
   const handleBetAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -208,12 +208,12 @@ const PriceVolatilitySimulator: React.FC = () => {
       setBetAmount(value);
     }
   };
-  
+
   // Handle price change simulation
   const handlePriceChange = (value: number) => {
     setPriceChange(value);
   };
-  
+
   // Calculate USD value
   const calculateUsdValue = (amount: number, currencySymbol: string) => {
     const curr = currencies.find(c => c.symbol === currencySymbol);
@@ -222,20 +222,20 @@ const PriceVolatilitySimulator: React.FC = () => {
       final: 0,
       difference: 0
     };
-    
+
     const baseValue = amount * curr.price;
     const adjustedValue = baseValue * (1 + priceChange / 100);
-    
+
     return {
       initial: baseValue,
       final: adjustedValue,
       difference: adjustedValue - baseValue
     };
   };
-  
+
   const amount = Number(betAmount) || 0;
   const usdValue = calculateUsdValue(amount, currency);
-  
+
   return (
     <Card>
       <CardHeader>
@@ -272,7 +272,7 @@ const PriceVolatilitySimulator: React.FC = () => {
               Current price: ${selectedCurrency?.price.toLocaleString()} per {selectedCurrency?.symbol}
             </div>
           </div>
-          
+
           <div>
             <label className="text-sm font-medium mb-1 block">Price Change Simulation</label>
             <div className="flex items-center">
@@ -326,7 +326,7 @@ const PriceVolatilitySimulator: React.FC = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardHeader className="pb-2">
@@ -339,7 +339,7 @@ const PriceVolatilitySimulator: React.FC = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm">Final USD Value</CardTitle>
@@ -353,7 +353,7 @@ const PriceVolatilitySimulator: React.FC = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm">Value Difference</CardTitle>
@@ -368,7 +368,7 @@ const PriceVolatilitySimulator: React.FC = () => {
             </CardContent>
           </Card>
         </div>
-        
+
         <div className="mt-6 bg-muted/50 rounded-md p-4">
           <h3 className="text-sm font-medium mb-2">Understanding Volatility Risk</h3>
           <p className="text-sm text-muted-foreground">
@@ -380,7 +380,7 @@ const PriceVolatilitySimulator: React.FC = () => {
             <li>If prices decrease, your winnings will be worth less in USD</li>
             <li>Stablecoins like USDT and USDC offer protection against volatility</li>
           </ul>
-          
+
           <div className="flex items-center mt-4 text-xs">
             <div className="flex-1 text-center p-2 border-r">
               <div className="font-medium mb-1">Low Volatility</div>
@@ -405,14 +405,14 @@ const PriceVolatilitySimulator: React.FC = () => {
 const CryptoInformation: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState("odds");
-  
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl md:text-3xl font-bold mb-2">Cryptocurrency Betting Guide</h1>
       <p className="text-muted-foreground mb-6">
         Everything you need to know about betting with cryptocurrency on WeParlay
       </p>
-      
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-1 md:grid-cols-4">
           <TabsTrigger value="odds">
@@ -432,26 +432,26 @@ const CryptoInformation: React.FC = () => {
             Wallet Security
           </TabsTrigger>
         </TabsList>
-        
+
         <div className="mt-6">
           <TabsContent value="odds">
             <OddsConversionTable />
           </TabsContent>
-          
+
           <TabsContent value="volatility">
             <PriceVolatilitySimulator />
           </TabsContent>
-          
+
           <TabsContent value="gas">
             <GasFeeEstimator />
           </TabsContent>
-          
+
           <TabsContent value="security">
             <WalletSecurityFAQ />
           </TabsContent>
         </div>
       </Tabs>
-      
+
       {!isAuthenticated && (
         <Alert className="mt-8" variant="default">
           <AlertCircle className="h-4 w-4" />

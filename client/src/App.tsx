@@ -32,7 +32,6 @@ import Trivia from "@/pages/Trivia";
 import BettingExperience from "@/pages/BettingExperience"; // New enhanced betting page
 import SportPage from "@/pages/SportPage"; // New sport page
 import BettingDashboard from "@/pages/BettingDashboard"; // Professional sports betting dashboard
-import Login from "@/pages/Login";
 import MobileLogin from "@/pages/MobileLogin"; // Login page with social login options
 import EnhancedFeatures from "@/pages/EnhancedFeatures"; // Advanced features page
 import ThemeSettingsPage from "@/pages/ThemeSettingsPage"; // Theme settings page
@@ -66,6 +65,8 @@ import Parlays from "@/pages/Parlays";
 import BettingAcademy from "@/pages/BettingAcademy";
 import LiveHeatmap from "@/pages/LiveHeatmap";
 import ErrorBoundary from "./components/ErrorBoundary";
+import ThemeColorManager from "@/pages/ThemeColorManager";
+import LiveBettingEnhanced from "@/pages/BettingExperience";
 
 // Import admin components
 import AdminBypass from "@/pages/AdminBypass";
@@ -109,7 +110,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
-      <Route path="/live-betting" component={BettingExperience} />
+      <Route path="/live-betting" component={LiveBettingEnhanced} />
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin" component={(props) => <AdminRoute component={AdminDashboard} {...props} />} />
       <Route path="/admin-dashboard" component={(props) => <AdminRoute component={AdminDashboard} {...props} />} />
@@ -136,6 +137,7 @@ function Router() {
       <Route path="/trivia" component={Trivia} />
       <Route path="/settings" component={Settings} />
       <Route path="/security-settings" component={SecuritySettings} />
+      <Route path="/security-info" component={SecurityInfo} />
       <Route path="/security" component={SecurityInfo} />
       <Route path="/head-to-head" component={HeadToHeadBetting} />
       <Route path="/signup" component={SignUpEnhanced} />
@@ -154,6 +156,11 @@ function Router() {
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms-of-service" component={TermsOfService} />
       <Route path="/support" component={Support} />
+      <Route path="/crypto-information" component={CryptoInformation} />
+      <Route path="/sms-challenge" component={SmsChallenge} />
+      <Route path="/security-info" component={SecurityInfo} />
+      <Route path="/theme-color-manager" component={ThemeColorManager} />
+      <Route path="/theme-settings" component={ThemeSettingsPage} />
       <Route path="/notification-test" component={NotificationTest} />
       <Route path="/profile" component={UserProfileBanking} />
       <Route path="/user-profile" component={UserProfileBanking} />
