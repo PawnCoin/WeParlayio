@@ -63,6 +63,7 @@ import Odds from "@/pages/Odds";
 import Parlays from "@/pages/Parlays";
 import BettingAcademy from "@/pages/BettingAcademy";
 import LiveHeatmap from "@/pages/LiveHeatmap";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 // Import admin components
 import AdminBypass from "@/pages/AdminBypass";
@@ -77,14 +78,14 @@ const AdminRoute = ({ component: Component, ...rest }: any) => {
     // Check if user has admin access
     const hasAdminAccess = localStorage.getItem('weparlay-admin-access') === 'true';
     const adminExpiry = localStorage.getItem('weparlay-admin-expiry');
-    
+
     if (hasAdminAccess && adminExpiry && parseInt(adminExpiry) > Date.now()) {
       setIsAuthorized(true);
     } else {
       // Redirect to admin bypass page
       navigate('/admin-bypass');
     }
-    
+
     setIsLoading(false);
   }, [navigate]);
 
@@ -102,7 +103,7 @@ const AdminRoute = ({ component: Component, ...rest }: any) => {
 function Router() {
   // Track page views when routes change
   useAnalytics();
-  
+
   return (
     <Switch>
       <Route path="/" component={Home} />
@@ -172,7 +173,7 @@ function AppContent() {
       <SimpleOnboarding />
       {/* Mobile voice betting floating button (visible on all pages) */}
       <MobileVoiceBetting />
-      
+
       {/* Interactive Onboarding Wizard for new users */}
       {showOnboarding && (
         <InteractiveOnboardingWizard

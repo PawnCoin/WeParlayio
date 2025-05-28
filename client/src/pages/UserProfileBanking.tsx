@@ -10,23 +10,30 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { 
-  User, 
-  CreditCard, 
-  DollarSign, 
-  History, 
-  Settings, 
-  Crown, 
-  LockIcon, 
+  CreditCard,
+  PlusCircle,
+  Wallet,
+  ArrowUpDown,
+  Settings,
   Shield,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  DollarSign,
+  TrendingUp,
   Eye,
   EyeOff,
-  Plus,
-  Minus,
-  Wallet,
-  TrendingUp,
-  Activity,
-  AlertCircle
-} from 'lucide-react';
+  Download,
+  History,
+  Coins,
+  Banknote,
+  Lock,
+  Crown,
+  User,
+  MapPin,
+  Phone,
+  Calendar
+} from "lucide-react";
 import PlaidLinkComponent from '@/components/banking/PlaidLinkComponent';
 import EnhancedDepositWithdraw from '@/components/banking/EnhancedDepositWithdraw';
 
@@ -84,7 +91,7 @@ const UserProfileBanking: React.FC = () => {
       <div className="container mx-auto px-4 py-8">
         <Card>
           <CardContent className="flex flex-col items-center justify-center h-64">
-            <LockIcon className="h-16 w-16 text-gray-400 mb-4" />
+            <Lock className="h-16 w-16 text-gray-400 mb-4" />
             <h3 className="text-lg font-semibold text-gray-600">Authentication Required</h3>
             <p className="text-gray-500">Please log in to view your profile.</p>
           </CardContent>

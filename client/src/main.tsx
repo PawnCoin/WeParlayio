@@ -6,7 +6,12 @@ import "./index.css";
 // Handle unhandled promise rejections
 window.addEventListener('unhandledrejection', (event) => {
   console.error('Unhandled promise rejection:', event.reason);
-  event.preventDefault(); // Prevent the default browser behavior
+  
+  // Don't prevent default for critical errors, but log them properly
+  if (event.reason && event.reason.message && !event.reason.message.includes('WebSocket')) {
+    console.warn('Non-critical promise rejection handled:', event.reason);
+    event.preventDefault();
+  }
 });
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
