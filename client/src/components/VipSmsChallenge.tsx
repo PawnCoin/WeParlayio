@@ -22,6 +22,7 @@ import {
   AlertTriangle,
   CheckCircle
 } from 'lucide-react';
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 interface VipSmsChallengeProps {
   eventId?: string;
@@ -42,7 +43,7 @@ const VipSmsChallenge: React.FC<VipSmsChallengeProps> = ({
 }) => {
   const { user } = useAuth();
   const { toast } = useToast();
-  
+
   const [formData, setFormData] = useState({
     opponentPhone: '',
     opponentEmail: '',
@@ -57,7 +58,7 @@ const VipSmsChallenge: React.FC<VipSmsChallengeProps> = ({
     sendEmail: true,
     isVirtual: true
   });
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [challengeCreated, setChallengeCreated] = useState<any>(null);
 
@@ -112,20 +113,20 @@ const VipSmsChallenge: React.FC<VipSmsChallengeProps> = ({
         betType: formData.betType,
         customMessage: formData.customMessage,
         expiresAt: new Date(Date.now() + parseInt(formData.expiryHours) * 60 * 60 * 1000).toISOString(),
-        
+
         // Contact information
         notificationPhone: formData.opponentPhone ? formatPhoneNumber(formData.opponentPhone) : null,
         notificationEmail: formData.opponentEmail || null,
-        
+
         // Notification preferences
         sendSms: formData.sendSms && isVip, // Only VIP can send SMS
         sendEmail: formData.sendEmail
       };
 
       const response = await apiRequest('POST', '/api/challenges/sms', challengeData);
-      
+
       setChallengeCreated(response);
-      
+
       toast({
         title: "Challenge Sent! 🎯",
         description: `Your ${formData.isVirtual ? 'WeParlay Cash' : 'real money'} challenge has been sent${formData.sendSms && isVip ? ' via SMS and email' : ' via email'}.`
@@ -235,7 +236,7 @@ const VipSmsChallenge: React.FC<VipSmsChallengeProps> = ({
         {/* Opponent Contact */}
         <div className="space-y-3">
           <Label>Opponent Contact Information</Label>
-          
+
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Phone className="h-4 w-4 text-muted-foreground" />
@@ -246,7 +247,7 @@ const VipSmsChallenge: React.FC<VipSmsChallengeProps> = ({
                 disabled={!isVip}
               />
             </div>
-            
+
             <div className="flex items-center gap-2">
               <Mail className="h-4 w-4 text-muted-foreground" />
               <Input
@@ -333,6 +334,64 @@ const VipSmsChallenge: React.FC<VipSmsChallengeProps> = ({
             </SelectContent>
           </Select>
         </div>
+
+        {/* Consent and Privacy Section */}
+            <div className="col-span-2 space-y-3">
+              <Label className="text-sm font-medium">Notification Consent</Label>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="smsConsent"
+                    checked={formData.sendSms && isVip}
+                    onChange={(e) => handleInputChange('sendSms', e.target.checked)}
+                    disabled={!isVip}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50"
+                  />
+                  <label htmlFor="smsConsent" className="text-sm text-gray-700 dark:text-gray-300">
+                    Send SMS notification 
+                    {!isVip && (
+                      <Badge variant="secondary" className="ml-2">
+                        <Crown className="h-3 w-3 mr-1" />
+                        VIP Only
+                      </Badge>
+                    )}
+                  </label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="emailConsent"
+                    checked={formData.sendEmail}
+                    onChange={(e) => handleInputChange('sendEmail', e.target.checked)}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="emailConsent" className="text-sm text-gray-700 dark:text-gray-300">
+                    Send email notification
+                  </label>
+                </div>
+              </div>
+
+              {/* SMS Consent Warning */}
+              {formData.sendSms && isVip && (
+                <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-900/20">
+                  <MessageSquare className="h-4 w-4" />
+                  <AlertDescription className="text-sm">
+                    <strong>SMS Consent Confirmation:</strong> By sending SMS, you confirm you have permission to text the recipient and they've consented to receive betting notifications. Standard message rates may apply.
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {!isVip && (
+                <Alert className="bg-amber-50 border-amber-200 dark:bg-amber-900/20">
+                  <Crown className="h-4 w-4" />
+                  <AlertDescription className="text-sm">
+                    <strong>Upgrade to VIP</strong> (Gold/Platinum) to unlock SMS notifications and challenge friends instantly via text message.
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
 
         {/* VIP Upgrade Notice */}
         {!isVip && (

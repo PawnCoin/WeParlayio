@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import SocialShareOptions from '@/components/betting/SocialShareOptions';
@@ -30,7 +31,9 @@ import {
   Clock,
   Calendar,
   AlertTriangle,
-  Trophy
+  Trophy,
+  Crown,
+  Lock
 } from 'lucide-react';
 
 import {
@@ -77,7 +80,10 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
     { id: '2', name: 'Boston Celtics vs Miami Heat', date: '2023-05-19T20:00:00' },
     { id: '3', name: 'Denver Nuggets vs Minnesota Timberwolves', date: '2023-05-20T21:00:00' },
   ]);
-  
+
+    // Check if user is VIP (Gold or Platinum)
+    const isVip = user?.subscriptionTier === 'gold' || user?.subscriptionTier === 'platinum';
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -93,13 +99,13 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
       currencyType: 'real', // Default to real money for head-to-head bets
     },
   });
-  
+
   const watchChallengeType = form.watch('challengeType');
   const watchContactMethod = form.watch('contactMethod');
-  
+
   const onSubmit = async (values: FormValues) => {
     setIsPending(true);
-    
+
     try {
       // Create real challenge in database
       const challengeData = {
@@ -116,14 +122,14 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
       };
 
       const response = await apiRequest('POST', '/api/challenges', challengeData);
-      
+
       if (response.ok) {
         const result = await response.json();
         const generatedLink = `https://weparlay.io/challenge/${result.challengeUuid}`;
         setChallengeLink(generatedLink);
-        
+
         setShowConfirmation(true);
-        
+
         toast({
           title: "Challenge created!",
           description: "Your head-to-head bet challenge has been sent successfully.",
@@ -131,7 +137,7 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
       } else {
         throw new Error('Failed to create challenge');
       }
-      
+
     } catch (error: any) {
       console.error('Error creating challenge:', error);
       toast({
@@ -143,7 +149,7 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
       setIsPending(false);
     }
   };
-  
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast({
@@ -151,7 +157,7 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
       description: "Challenge link has been copied to your clipboard.",
     });
   };
-  
+
   if (!isAuthenticated) {
     return (
       <Alert>
@@ -163,7 +169,7 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
       </Alert>
     );
   }
-  
+
   if (showConfirmation) {
     return (
       <Card>
@@ -191,7 +197,7 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
             </div>
             <p className="text-sm mt-2 break-all">{challengeLink}</p>
           </div>
-          
+
           <div>
             <SocialShareOptions 
               challengeUrl={challengeLink} 
@@ -204,7 +210,7 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
               }}
             />
           </div>
-          
+
           <div className="border-t pt-4">
             <h4 className="text-sm font-medium mb-2">What happens next?</h4>
             <ol className="space-y-2 text-sm text-muted-foreground">
@@ -234,7 +240,7 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
       </Card>
     );
   }
-  
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -274,7 +280,7 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
                   </FormItem>
                 )}
               />
-              
+
               {/* Currency Type */}
               <FormField
                 control={form.control}
@@ -313,7 +319,7 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
                 )}
               />
             </div>
-            
+
             {/* Challenge Type */}
             <FormField
               control={form.control}
@@ -331,7 +337,7 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
                         <TabsTrigger value="sports">Sports Event</TabsTrigger>
                         <TabsTrigger value="custom">Custom Bet</TabsTrigger>
                       </TabsList>
-                      
+
                       <TabsContent value="sports" className="mt-4">
                         <FormField
                           control={form.control}
@@ -363,7 +369,7 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
                             </FormItem>
                           )}
                         />
-                        
+
                         {form.watch('eventId') && (
                           <div className="mt-4 p-4 border rounded-lg">
                             <h4 className="font-medium">Betting Options</h4>
@@ -380,7 +386,7 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
                           </div>
                         )}
                       </TabsContent>
-                      
+
                       <TabsContent value="custom" className="mt-4">
                         <FormField
                           control={form.control}
@@ -409,11 +415,11 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
                 </FormItem>
               )}
             />
-            
+
             {/* Contact Information */}
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Who are you challenging?</h3>
-              
+
               <FormField
                 control={form.control}
                 name="contactMethod"
@@ -453,7 +459,7 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="contactValue"
@@ -484,7 +490,7 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
                 )}
               />
             </div>
-            
+
             {/* Additional Options */}
             <div className="space-y-4">
               <FormField
@@ -510,7 +516,7 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="notes"
@@ -529,7 +535,7 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
                 )}
               />
             </div>
-            
+
             {/* Terms and Conditions */}
             <FormField
               control={form.control}
@@ -554,7 +560,7 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
                 </FormItem>
               )}
             />
-            
+
             <Alert variant="default" className="bg-amber-50 text-amber-800 dark:bg-amber-900/20 dark:text-amber-200 border-amber-200 dark:border-amber-800">
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Important Notice</AlertTitle>
@@ -563,7 +569,7 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
                 All other bet types use WeParlay Cash until further notice.
               </AlertDescription>
             </Alert>
-            
+
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending ? (
                 <>Creating Challenge...</>
