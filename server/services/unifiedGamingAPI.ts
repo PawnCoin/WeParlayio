@@ -43,16 +43,44 @@ export class UnifiedGamingAPI {
     );
   }
 
-  // === League of Legends ===
+  // === League of Legends - Updated Riot API ===
   async getRiotPlayerStats(summonerName: string, region: string = 'na1') {
     if (!RIOT_API_KEY) {
       throw new Error('Riot API key not configured');
     }
     
-    const key = `riot-${summonerName}-${region}`;
-    return await fetchWithCache(key,
-      `https://${region}.api.riotgames.com/lol/summoner/v4/summoners/by-name/${summonerName}?api_key=${RIOT_API_KEY}`
-    );
+    try {
+      const key = `riot-${summonerName}-${region}`;
+      
+      // Get summoner data
+      const summoner = await fetchWithCache(key,
+        `https://${region}.api.riotgames.com/lol/summoner/v4/summoners/by-name/${encodeURIComponent(summonerName)}`,
+        {
+          headers: { 'X-Riot-Token': RIOT_API_KEY }
+        }
+      );
+      
+      if (!summoner || !summoner.puuid) {
+        throw new Error('Summoner not found');
+      }
+      
+      // Get ranked data
+      const rankedKey = `riot-ranked-${summoner.id}`;
+      const rankedData = await fetchWithCache(rankedKey,
+        `https://${region}.api.riotgames.com/lol/league/v4/entries/by-summoner/${summoner.id}`,
+        {
+          headers: { 'X-Riot-Token': RIOT_API_KEY }
+        }
+      );
+      
+      return {
+        ...summoner,
+        rankedData: rankedData || []
+      };
+    } catch (error) {
+      console.error('Riot API error:', error);
+      throw error;
+    }
   }
 
   async getLeagueMatches(puuid: string, region: string = 'americas') {
@@ -60,25 +88,161 @@ export class UnifiedGamingAPI {
       throw new Error('Riot API key not configured');
     }
     
-    const key = `matches-${puuid}`;
-    return await fetchWithCache(key,
-      `https://${region}.api.riotgames.com/lol/match/v5/matches/by-puuid/${puuid}/ids?start=0&count=20&api_key=${RIOT_API_KEY}`
-    );
+    try {
+      const key = `matches-${puuid}`;
+      const matchIds = await fetchWithCache(key,
+        `https://${region}.api.riotgames.com/lol/match/v5/matches/by-puuid/${puuid}/ids?start=0&count=10`,
+        {
+          headers: { 'X-Riot-Token': RIOT_API_KEY }
+        }
+      );
+      
+      if (!matchIds || matchIds.length === 0) {
+        return [];
+      }
+      
+      // Get detailed match data for first 5 matches
+      const detailedMatches = await Promise.all(
+        matchIds.slice(0, 5).map(async (matchId: string) => {
+          const matchKey = `match-detail-${matchId}`;
+          return await fetchWithCache(matchKey,
+            `https://${region}.api.riotgames.com/lol/match/v5/matches/${matchId}`,
+            {
+              headers: { 'X-Riot-Token': RIOT_API_KEY }
+            }
+          );
+        })
+      );
+      
+      return detailedMatches.filter(match => match !== null);
+    } catch (error) {
+      console.error('League matches error:', error);
+      throw error;
+    }
   }
 
-  // === CS:GO / Valorant ===
-  async getValorantStats(username: string, tag: string) {
-    if (!TRACKER_API_KEY) {
-      throw new Error('Tracker API key not configured');
+  // New: Get live game data
+  async getLiveGame(summonerName: string, region: string = 'na1') {
+    if (!RIOT_API_KEY) {
+      throw new Error('Riot API key not configured');
     }
     
-    const key = `valorant-${username}-${tag}`;
+    try {
+      // First get summoner ID
+      const summoner = await this.getRiotPlayerStats(summonerName, region);
+      
+      const key = `live-game-${summoner.id}`;
+      return await fetchWithCache(key,
+        `https://${region}.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/${summoner.id}`,
+        {
+          headers: { 'X-Riot-Token': RIOT_API_KEY }
+        }
+      );
+    } catch (error) {
+      if (error.message?.includes('404')) {
+        return null; // Player not in game
+      }
+      console.error('Live game error:', error);
+      throw error;
+    }
+  }
+
+  // New: Get champion mastery
+  async getChampionMastery(summonerName: string, region: string = 'na1') {
+    if (!RIOT_API_KEY) {
+      throw new Error('Riot API key not configured');
+    }
+    
+    try {
+      const summoner = await this.getRiotPlayerStats(summonerName, region);
+      
+      const key = `mastery-${summoner.id}`;
+      return await fetchWithCache(key,
+        `https://${region}.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/${summoner.id}`,
+        {
+          headers: { 'X-Riot-Token': RIOT_API_KEY }
+        }
+      );
+    } catch (error) {
+      console.error('Champion mastery error:', error);
+      throw error;
+    }
+  }
+
+  // === Valorant - Updated Riot API ===
+  async getValorantStats(username: string, tag: string, region: string = 'na') {
+    if (!RIOT_API_KEY) {
+      console.warn('Riot API key not configured, falling back to Tracker.gg');
+      return this.getValorantStatsTracker(username, tag);
+    }
+    
+    try {
+      const key = `valorant-${username}-${tag}-${region}`;
+      
+      // Get account data first
+      const account = await fetchWithCache(`valorant-account-${username}-${tag}`,
+        `https://${region}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(username)}/${encodeURIComponent(tag)}`,
+        {
+          headers: { 'X-Riot-Token': RIOT_API_KEY }
+        }
+      );
+      
+      if (!account || !account.puuid) {
+        throw new Error('Valorant account not found');
+      }
+      
+      // Get competitive data
+      const competitive = await fetchWithCache(`valorant-competitive-${account.puuid}`,
+        `https://${region}.api.riotgames.com/val/ranked/v1/leaderboards/by-act/d929bc38-4ab6-7da4-94f0-ee84f8ac141e?size=200&startIndex=0`,
+        {
+          headers: { 'X-Riot-Token': RIOT_API_KEY }
+        }
+      );
+      
+      return {
+        account,
+        competitive,
+        playerFound: true
+      };
+    } catch (error) {
+      console.error('Valorant API error, falling back to Tracker.gg:', error);
+      return this.getValorantStatsTracker(username, tag);
+    }
+  }
+
+  // Fallback method using Tracker.gg
+  private async getValorantStatsTracker(username: string, tag: string) {
+    if (!TRACKER_API_KEY) {
+      throw new Error('No API keys configured for Valorant stats');
+    }
+    
+    const key = `valorant-tracker-${username}-${tag}`;
     return await fetchWithCache(key,
       `https://api.tracker.gg/api/v2/valorant/standard/profile/riot/${username}%23${tag}`,
       {
         headers: { 'TRN-Api-Key': TRACKER_API_KEY }
       }
     );
+  }
+
+  // New: Get Valorant match history
+  async getValorantMatches(puuid: string, region: string = 'na') {
+    if (!RIOT_API_KEY) {
+      throw new Error('Riot API key not configured');
+    }
+    
+    try {
+      const key = `valorant-matches-${puuid}`;
+      return await fetchWithCache(key,
+        `https://${region}.api.riotgames.com/val/match/v1/matchlists/by-puuid/${puuid}`,
+        {
+          headers: { 'X-Riot-Token': RIOT_API_KEY }
+        }
+      );
+    } catch (error) {
+      console.error('Valorant matches error:', error);
+      throw error;
+    }
   }
 
   async getCSGOStats(steamId: string) {

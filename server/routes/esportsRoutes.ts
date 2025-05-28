@@ -391,6 +391,72 @@ router.get('/tournaments/:game?', async (req, res) => {
   }
 });
 
+// New Riot API specific endpoints
+router.get('/riot/summoner/:summonerName/:region?', async (req, res) => {
+  try {
+    const { summonerName, region = 'na1' } = req.params;
+
+    const playerStats = await unifiedGamingAPI.getRiotPlayerStats(summonerName, region);
+    res.json(playerStats);
+  } catch (error) {
+    console.error('Error fetching Riot summoner:', error);
+    res.status(500).json({ error: 'Failed to fetch summoner data' });
+  }
+});
+
+router.get('/riot/live-game/:summonerName/:region?', async (req, res) => {
+  try {
+    const { summonerName, region = 'na1' } = req.params;
+
+    const liveGame = await unifiedGamingAPI.getLiveGame(summonerName, region);
+
+    if (!liveGame) {
+      return res.json({ inGame: false, message: 'Player not currently in a game' });
+    }
+
+    res.json({ inGame: true, gameData: liveGame });
+  } catch (error) {
+    console.error('Error fetching live game:', error);
+    res.status(500).json({ error: 'Failed to fetch live game data' });
+  }
+});
+
+router.get('/riot/mastery/:summonerName/:region?', async (req, res) => {
+  try {
+    const { summonerName, region = 'na1' } = req.params;
+
+    const mastery = await unifiedGamingAPI.getChampionMastery(summonerName, region);
+    res.json(mastery);
+  } catch (error) {
+    console.error('Error fetching champion mastery:', error);
+    res.status(500).json({ error: 'Failed to fetch champion mastery' });
+  }
+});
+
+router.get('/valorant/player/:username/:tag/:region?', async (req, res) => {
+  try {
+    const { username, tag, region = 'na' } = req.params;
+
+    const playerStats = await unifiedGamingAPI.getValorantStats(username, tag, region);
+    res.json(playerStats);
+  } catch (error) {
+    console.error('Error fetching Valorant player:', error);
+    res.status(500).json({ error: 'Failed to fetch Valorant player data' });
+  }
+});
+
+router.get('/valorant/matches/:puuid/:region?', async (req, res) => {
+  try {
+    const { puuid, region = 'na' } = req.params;
+
+    const matches = await unifiedGamingAPI.getValorantMatches(puuid, region);
+    res.json(matches);
+  } catch (error) {
+    console.error('Error fetching Valorant matches:', error);
+    res.status(500).json({ error: 'Failed to fetch Valorant matches' });
+  }
+});
+
 // Real-time match events (for WebSocket simulation)
 router.get('/match-events/:matchId', async (req, res) => {
   try {
