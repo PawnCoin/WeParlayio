@@ -154,6 +154,216 @@ export default function LiveHeatmap() {
         )}
       </div>
 
+      {/* Original Interactive Heatmap */}
+      <div className="mb-8">
+        <Card className="bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white border-gray-700">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-white">
+              🔥 Live Betting Heatmap
+              <span className="text-orange-400">🔥</span>
+            </CardTitle>
+            <CardDescription className="text-gray-300">
+              Real-time betting activity and market movements
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Time & Sport Filters */}
+            <div className="flex flex-wrap gap-4 justify-center">
+              <div className="flex bg-slate-800 rounded-lg p-1">
+                <Button variant="default" size="sm" className="bg-blue-600 text-white">1h</Button>
+                <Button variant="default" size="sm" className="bg-blue-600 text-white">4h</Button>
+                <Button variant="ghost" size="sm" className="text-gray-300">24h</Button>
+              </div>
+              <div className="flex bg-slate-800 rounded-lg p-1">
+                <Button variant="default" size="sm" className="bg-blue-600 text-white">ALL</Button>
+                <Button variant="ghost" size="sm" className="text-gray-300">NFL</Button>
+                <Button variant="ghost" size="sm" className="text-gray-300">NBA</Button>
+                <Button variant="ghost" size="sm" className="text-gray-300">SOCCER</Button>
+              </div>
+            </div>
+
+            {/* Heat Scale Legend */}
+            <div className="grid grid-cols-5 gap-2 max-w-4xl mx-auto">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-blue-500 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                  <span className="text-white font-bold">❄️</span>
+                </div>
+                <div className="text-sm font-semibold">Cold</div>
+                <div className="text-xs text-gray-400">0-20%</div>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-green-500 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                  <span className="text-white font-bold">❄️</span>
+                </div>
+                <div className="text-sm font-semibold">Cool</div>
+                <div className="text-xs text-gray-400">21-40%</div>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-yellow-500 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                  <span className="text-white font-bold">🔥</span>
+                </div>
+                <div className="text-sm font-semibold">Warm</div>
+                <div className="text-xs text-gray-400">41-60%</div>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-orange-500 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                  <span className="text-white font-bold">🔥</span>
+                </div>
+                <div className="text-sm font-semibold">Hot</div>
+                <div className="text-xs text-gray-400">61-80%</div>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-red-500 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                  <span className="text-white font-bold">🔥🔥🔥</span>
+                </div>
+                <div className="text-sm font-semibold">Blazing</div>
+                <div className="text-xs text-gray-400">81-100%</div>
+              </div>
+            </div>
+
+            {/* Interactive Heatmap Grid */}
+            <div className="grid grid-cols-5 gap-3 max-w-6xl mx-auto">
+              {/* Row 1 */}
+              <Card className="bg-green-500 text-white border-none cursor-pointer hover:scale-105 transition-transform">
+                <CardContent className="p-4 text-center">
+                  <div className="text-xs font-semibold mb-1">NBA</div>
+                  <div className="text-sm font-bold mb-1">Lakers vs Warriors</div>
+                  <div className="text-xs opacity-90">❄️</div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-green-500 text-white border-none cursor-pointer hover:scale-105 transition-transform">
+                <CardContent className="p-4 text-center">
+                  <div className="text-xs font-semibold mb-1">NFL</div>
+                  <div className="text-sm font-bold mb-1">Chiefs vs Bills</div>
+                  <div className="text-xs opacity-90">❄️</div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-yellow-500 text-white border-none cursor-pointer hover:scale-105 transition-transform">
+                <CardContent className="p-4 text-center">
+                  <div className="text-xs font-semibold mb-1">Soccer</div>
+                  <div className="text-sm font-bold mb-1">Barcelona vs Madrid</div>
+                  <div className="text-xs opacity-90">🔥</div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-orange-500 text-white border-none cursor-pointer hover:scale-105 transition-transform">
+                <CardContent className="p-4 text-center">
+                  <div className="text-xs font-semibold mb-1">NBA</div>
+                  <div className="text-sm font-bold mb-1">Celtics vs Heat</div>
+                  <div className="text-xs opacity-90">🔥</div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-blue-500 text-white border-none cursor-pointer hover:scale-105 transition-transform">
+                <CardContent className="p-4 text-center">
+                  <div className="text-xs font-semibold mb-1">NFL</div>
+                  <div className="text-sm font-bold mb-1">Cowboys vs Giants</div>
+                  <div className="text-xs opacity-90">🏈</div>
+                </CardContent>
+              </Card>
+
+              {/* Row 2 */}
+              <Card className="bg-green-500 text-white border-none cursor-pointer hover:scale-105 transition-transform">
+                <CardContent className="p-4 text-center">
+                  <div className="text-xs font-semibold mb-1">Soccer</div>
+                  <div className="text-sm font-bold mb-1">Liverpool vs Arsenal</div>
+                  <div className="text-xs opacity-90">❄️</div>
+                  <div className="text-xs font-bold mt-1">38%</div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-blue-500 text-white border-none cursor-pointer hover:scale-105 transition-transform">
+                <CardContent className="p-4 text-center">
+                  <div className="text-xs font-semibold mb-1">NBA</div>
+                  <div className="text-sm font-bold mb-1">Nuggets vs Suns</div>
+                  <div className="text-xs opacity-90">🏀</div>
+                  <div className="text-xs font-bold mt-1">40%</div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-red-500 text-white border-none cursor-pointer hover:scale-105 transition-transform">
+                <CardContent className="p-4 text-center">
+                  <div className="text-xs font-semibold mb-1">NFL</div>
+                  <div className="text-sm font-bold mb-1">Rams vs 49ers</div>
+                  <div className="text-xs opacity-90">🔥🔥🔥</div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-orange-500 text-white border-none cursor-pointer hover:scale-105 transition-transform">
+                <CardContent className="p-4 text-center">
+                  <div className="text-xs font-semibold mb-1">Soccer</div>
+                  <div className="text-sm font-bold mb-1">PSG vs Bayern</div>
+                  <div className="text-xs opacity-90">🔥🔥</div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-green-500 text-white border-none cursor-pointer hover:scale-105 transition-transform">
+                <CardContent className="p-4 text-center">
+                  <div className="text-xs font-semibold mb-1">NBA</div>
+                  <div className="text-sm font-bold mb-1">Bucks vs Nets</div>
+                  <div className="text-xs opacity-90">❄️</div>
+                  <div className="text-xs font-bold mt-1">10%</div>
+                </CardContent>
+              </Card>
+
+              {/* Row 3 */}
+              <Card className="bg-yellow-500 text-white border-none cursor-pointer hover:scale-105 transition-transform">
+                <CardContent className="p-4 text-center">
+                  <div className="text-xs font-semibold mb-1">NFL</div>
+                  <div className="text-sm font-bold mb-1">Eagles vs Packers</div>
+                  <div className="text-xs opacity-90">🔥</div>
+                  <div className="text-xs font-bold mt-1">42%</div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-blue-500 text-white border-none cursor-pointer hover:scale-105 transition-transform">
+                <CardContent className="p-4 text-center">
+                  <div className="text-xs font-semibold mb-1">Soccer</div>
+                  <div className="text-sm font-bold mb-1">City vs United</div>
+                  <div className="text-xs opacity-90">🏈</div>
+                  <div className="text-xs font-bold mt-1">2%</div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-red-500 text-white border-none cursor-pointer hover:scale-105 transition-transform">
+                <CardContent className="p-4 text-center">
+                  <div className="text-xs font-semibold mb-1">NBA</div>
+                  <div className="text-sm font-bold mb-1">Clippers vs Kings</div>
+                  <div className="text-xs opacity-90">🔥🔥🔥</div>
+                  <div className="text-xs font-bold mt-1">86%</div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-orange-500 text-white border-none cursor-pointer hover:scale-105 transition-transform">
+                <CardContent className="p-4 text-center">
+                  <div className="text-xs font-semibold mb-1">NFL</div>
+                  <div className="text-sm font-bold mb-1">Ravens vs Steelers</div>
+                  <div className="text-xs opacity-90">🔥</div>
+                  <div className="text-xs font-bold mt-1">44%</div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-orange-500 text-white border-none cursor-pointer hover:scale-105 transition-transform">
+                <CardContent className="p-4 text-center">
+                  <div className="text-xs font-semibold mb-1">Soccer</div>
+                  <div className="text-sm font-bold mb-1">Juventus vs Milan</div>
+                  <div className="text-xs opacity-90">🔥🔥</div>
+                  <div className="text-xs font-bold mt-1">74%</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="text-center mt-6">
+              <p className="text-sm text-gray-400">
+                Click any game card to view detailed betting options and live odds
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Original Heatmap Screenshot */}
       <div className="mb-8">
         <Card>
