@@ -4430,7 +4430,7 @@ Join us: WeParlay.io 🎯
   });
 
   // SECURE BANKING ROUTES - Bank-level security for deposits/withdrawals
-  app.get('/api/banking/overview', isAuthenticated, async (req, res) => {
+  app.get('/api/banking/overview', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.claims?.sub;
       const user = await storage.getUser(userId);
@@ -4452,7 +4452,7 @@ Join us: WeParlay.io 🎯
     }
   });
 
-  app.get('/api/banking/payment-methods', isAuthenticated, async (req, res) => {
+  app.get('/api/banking/payment-methods', isAuthenticated, async (req: any, res) => {
     try {
       res.json([
         {
@@ -4478,7 +4478,7 @@ Join us: WeParlay.io 🎯
     }
   });
 
-  app.get('/api/banking/transactions', isAuthenticated, async (req, res) => {
+  app.get('/api/banking/transactions', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.claims?.sub;
       const transactions = await storage.getTransactions(50, 0);

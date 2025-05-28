@@ -26,6 +26,8 @@ import { IStorage } from "./storage";
  * Implementation of storage operations using PostgreSQL database
  */
 export class DatabaseStorage implements IStorage {
+  private linkedAccounts: any[] = [];
+  
   // ==================== User Operations ====================
 
   async getUser(id: string): Promise<User | undefined> {
@@ -459,6 +461,19 @@ export class DatabaseStorage implements IStorage {
   async getTransactionByPlaidTransferId(transferId: string): Promise<any> {
     const transactions = await this.getTransactions(1000, 0);
     return transactions.find(transaction => transaction.plaidTransferId === transferId);
+  }
+
+  async updateTransactionStatus(transactionId: number, status: string): Promise<Transaction> {
+    const [updatedTransaction] = await db
+      .update(transactions)
+      .set({ 
+        status,
+        updatedAt: new Date() 
+      })
+      .where(eq(transactions.id, transactionId))
+      .returning();
+    
+    return updatedTransaction;
   }
 
   // WeParlay Cash specific methods
