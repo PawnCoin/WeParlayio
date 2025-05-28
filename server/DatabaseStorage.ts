@@ -1,3 +1,4 @@
+
 import {
   users, User, InsertUser, UpsertUser,
   sports, Sport, InsertSport,
@@ -93,7 +94,7 @@ export class DatabaseStorage implements IStorage {
     const [updatedUser] = await db
       .update(users)
       .set({ 
-        yahooToken: token,
+        yahooAccessToken: token,
         yahooRefreshToken: refreshToken,
         yahooTokenExpiry: expiry,
         updatedAt: new Date()
@@ -227,7 +228,6 @@ export class DatabaseStorage implements IStorage {
     }>
   ): Promise<User> {
     try {
-      // Create an update object with only the fields that were provided
       const updateData: Partial<User> = {
         updatedAt: new Date()
       };
@@ -248,7 +248,6 @@ export class DatabaseStorage implements IStorage {
         updateData.mobileOptimizedView = preferences.mobileOptimizedView;
       }
 
-      // Perform the update
       const [updatedUser] = await db
         .update(users)
         .set(updateData)
@@ -269,7 +268,6 @@ export class DatabaseStorage implements IStorage {
   // ==================== Financial Operations ====================
 
   async getFinancialSummary(): Promise<any> {
-    // Get total deposits
     const depositsResult = await db
       .select({
         total: sql`SUM(amount)`.as('total')
@@ -277,7 +275,6 @@ export class DatabaseStorage implements IStorage {
       .from(transactions)
       .where(eq(transactions.type, 'deposit'));
 
-    // Get total withdrawals
     const withdrawalsResult = await db
       .select({
         total: sql`SUM(amount)`.as('total')
@@ -285,7 +282,6 @@ export class DatabaseStorage implements IStorage {
       .from(transactions)
       .where(eq(transactions.type, 'withdrawal'));
 
-    // Get total fees
     const feesResult = await db
       .select({
         total: sql`SUM(amount)`.as('total')
@@ -293,14 +289,12 @@ export class DatabaseStorage implements IStorage {
       .from(transactions)
       .where(eq(transactions.type, 'fee'));
 
-    // Get user count
     const userCount = await db
       .select({
         count: sql`COUNT(*)`.as('count')
       })
       .from(users);
 
-    // Get transaction count by type
     const transactionCounts = await db
       .select({
         type: transactions.type,
@@ -331,7 +325,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
-    // Ensure proper transaction data with all required fields
     const transactionData = {
       ...transaction,
       currency: transaction.currency || 'USD',
@@ -350,7 +343,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateBankAccount(bankAccount: InsertBankAccount): Promise<BankAccount> {
-    // Make sure bankAccount has userId
     if (!bankAccount.userId) {
       throw new Error("Bank account must have a userId");
     }
@@ -361,7 +353,6 @@ export class DatabaseStorage implements IStorage {
       .where(eq(bankAccounts.userId, bankAccount.userId));
 
     if (existingBankAccount) {
-      // Update existing bank account
       const [updatedBankAccount] = await db
         .update(bankAccounts)
         .set({
@@ -373,7 +364,6 @@ export class DatabaseStorage implements IStorage {
 
       return updatedBankAccount;
     } else {
-      // Create new bank account
       const [newBankAccount] = await db
         .insert(bankAccounts)
         .values({
@@ -388,20 +378,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updatePlatformSettings(settings: any): Promise<any> {
-    // In a real application, this would update platform-wide settings in a dedicated table
-    // For now, we'll return a mock response
     return { ...settings, updated: true };
   }
 
   async updatePrivacySettings(settings: any): Promise<any> {
-    // In a real application, this would update privacy settings in a dedicated table
-    // For now, we'll return a mock response
     return { ...settings, updated: true };
   }
 
   async createLinkedAccount(linkedAccount: any): Promise<any> {
-    // Store linked account information
-    // In a real application, this would use a proper table schema
     const accountData = {
       id: Date.now().toString(),
       ...linkedAccount,
@@ -409,7 +393,6 @@ export class DatabaseStorage implements IStorage {
       updatedAt: new Date()
     };
 
-    // Store in a mock linked accounts collection
     if (!this.linkedAccounts) {
       this.linkedAccounts = [];
     }
@@ -476,7 +459,6 @@ export class DatabaseStorage implements IStorage {
     return updatedTransaction;
   }
 
-  // WeParlay Cash specific methods
   async transferWeParlayCash(fromUserId: string, toUserId: string, amount: number, reason: string = 'Transfer'): Promise<any> {
     const fromUser = await this.getUser(fromUserId);
     const toUser = await this.getUser(toUserId);
@@ -489,11 +471,9 @@ export class DatabaseStorage implements IStorage {
       throw new Error('Insufficient WeParlay Cash balance');
     }
 
-    // Update balances
     await this.updateUserWeplayTokenBalance(fromUserId, -amount);
     await this.updateUserWeplayTokenBalance(toUserId, amount);
 
-    // Create transaction records
     const transferId = `wpc_transfer_${Date.now()}`;
 
     await this.createTransaction({
@@ -538,14 +518,11 @@ export class DatabaseStorage implements IStorage {
       throw new Error('Insufficient real money balance');
     }
 
-    // Convert at 1:1 ratio
     const weparlayCashAmount = realAmount;
 
-    // Update balances
     await this.updateUserBalance(userId, -realAmount);
     await this.updateUserWeplayTokenBalance(userId, weparlayCashAmount);
 
-    // Create transaction record
     await this.createTransaction({
       userId: userId,
       type: 'currency_conversion',
@@ -588,8 +565,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getOwnerBankAccount(): Promise<BankAccount | undefined> {
-    // In a real application, this would retrieve a designated owner bank account
-    // For demonstration, we'll get the first bank account
     const [ownerBankAccount] = await db
       .select()
       .from(bankAccounts)
@@ -599,8 +574,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updatePlatformRevenue(amount: number, feeType: string): Promise<any> {
-    // In a real application, this would update platform revenue records
-    // For demonstration, we'll create a fee transaction
     const [feeTransaction] = await db
       .insert(transactions)
       .values({
@@ -793,11 +766,11 @@ export class DatabaseStorage implements IStorage {
 
   // ==================== Bets Operations ====================
 
-  async getUserBets(userId: number): Promise<Bet[]> {
+  async getUserBets(userId: number | string): Promise<Bet[]> {
     return await db
       .select()
       .from(bets)
-      .where(eq(bets.userId, userId))
+      .where(eq(bets.userId, parseInt(userId.toString())))
       .orderBy(desc(bets.createdAt));
   }
 
@@ -980,10 +953,8 @@ export class DatabaseStorage implements IStorage {
   // ==================== Support Ticket Operations ====================
 
   async createSupportTicket(ticket: InsertSupportTicket): Promise<SupportTicket> {
-    // Generate a unique ticket number
     const ticketNumber = `WP-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
 
-    // Create complete ticket data with all required fields
     const ticketData = {
       ...ticket,
       ticketNumber,
@@ -1046,7 +1017,6 @@ export class DatabaseStorage implements IStorage {
       .values(message)
       .returning();
 
-    // Update the ticket's updatedAt timestamp
     await db
       .update(supportTickets)
       .set({ updatedAt: new Date() })
@@ -1150,7 +1120,6 @@ export class DatabaseStorage implements IStorage {
       updatedAt: new Date()
     };
 
-    // If the challenge is being settled, add settled timestamp
     if (status === 'settled') {
       updateData.settledAt = new Date();
     }
@@ -1165,13 +1134,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async settleBettingChallenge(uuid: string, winnerId?: string, isDraw: boolean = false): Promise<BettingChallenge> {
-    // Get the current challenge
     const challenge = await this.getBettingChallengeByUuid(uuid);
     if (!challenge) {
       throw new Error(`Challenge with UUID ${uuid} not found`);
     }
 
-    // Verify challenge can be settled
     if (challenge.status !== 'accepted') {
       throw new Error(`Challenge with UUID ${uuid} cannot be settled (status: ${challenge.status})`);
     }
@@ -1183,16 +1150,13 @@ export class DatabaseStorage implements IStorage {
     let newStatus = 'settled';
     let winnerUserId = winnerId;
 
-    // Handle draw case
     if (isDraw) {
       newStatus = 'draw';
       winnerUserId = undefined;
 
-      // Refund both users
       if (challenge.createdBy) {
         await this.updateUserBalance(challenge.createdBy, challenge.amount);
 
-        // Create refund transaction record
         await this.createTransaction({
           userId: challenge.createdBy,
           type: TransactionType.REFUND,
@@ -1206,7 +1170,6 @@ export class DatabaseStorage implements IStorage {
       if (challenge.acceptedBy) {
         await this.updateUserBalance(challenge.acceptedBy, challenge.amount);
 
-        // Create refund transaction record
         await this.createTransaction({
           userId: challenge.acceptedBy,
           type: TransactionType.REFUND,
@@ -1217,15 +1180,11 @@ export class DatabaseStorage implements IStorage {
         });
       }
     } 
-    // Handle winner case
     else if (winnerUserId) {
-      // Calculate payout amount (original bet x2)
       const payoutAmount = challenge.amount * 2;
 
-      // Add winnings to winner's balance
       await this.updateUserBalance(winnerUserId, payoutAmount);
 
-      // Create winning transaction record
       await this.createTransaction({
         userId: winnerUserId,
         type: TransactionType.WINNING,
@@ -1235,11 +1194,9 @@ export class DatabaseStorage implements IStorage {
         status: 'completed'
       });
 
-      // Increment winner's win count
       await this.incrementUserWins(winnerUserId);
     }
 
-    // Update challenge status and winner
     const [updatedChallenge] = await db
       .update(bettingChallenges)
       .set({
@@ -1304,7 +1261,6 @@ export class DatabaseStorage implements IStorage {
   // ==================== Known Issues Operations ====================
 
   async createKnownIssue(issue: InsertKnownIssue): Promise<KnownIssue> {
-    // Create complete issue data with all required fields
     const issueData = {
       ...issue,
       createdAt: new Date(),
@@ -1347,8 +1303,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async matchIssueToKnownIssues(description: string): Promise<KnownIssue[]> {
-    // In a real application, this would use text search or similar functionality
-    // For demonstration, we'll do a simple match against keywords
     const lowerDesc = description.toLowerCase();
 
     const activeIssues = await this.getActiveKnownIssues();
@@ -1378,7 +1332,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserByWallet(walletAddress: string): Promise<User | undefined> {
-    // This would need a wallet column in the users table
     const [user] = await db.select().from(users).where(eq(users.id, walletAddress));
     return user;
   }

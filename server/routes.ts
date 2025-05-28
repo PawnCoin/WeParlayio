@@ -20,7 +20,7 @@ import { socialMediaBotRouter } from "./routes/socialMediaBotRoutes";
 import gamingRoutes from "./routes/gamingRoutes";
 import unifiedSportsRoutes from "./routes/unifiedSportsRoutes";
 import { bankingRouter } from "./routes/bankingRoutes";
-import plaidRoutes from "./routes/plaidRoutes";
+import { plaidRoutes } from "./routes/plaidRoutes";
 
 // Initialize The Odds API services
 const oddsApiService = new OddsApiService();

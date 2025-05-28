@@ -23,11 +23,12 @@ import {
   Wallet,
   TrendingUp,
   Activity,
-  AlertCircle
-} from 'lucide-react';
+  AlertCircle,
+  Star,
+  Unlock
+} from "lucide-react";
 import PlaidLinkComponent from '@/components/banking/PlaidLinkComponent';
 import EnhancedDepositWithdraw from '@/components/banking/EnhancedDepositWithdraw';
-import { Crown, Lock } from "lucide-react";
 
 const UserProfileBanking: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
@@ -70,10 +71,10 @@ const UserProfileBanking: React.FC = () => {
 
   const getTierIcon = (tier: string) => {
     switch (tier?.toLowerCase()) {
-      case 'platinum': return <Crown className="h-4 w-4" />;
-      case 'gold': return <Crown className="h-4 w-4" />;
+      case 'platinum': return <Star className="h-4 w-4" />;
+      case 'gold': return <Star className="h-4 w-4" />;
       case 'silver': return <Shield className="h-4 w-4" />;
-      case 'admin': return <Crown className="h-4 w-4" />;
+      case 'admin': return <Star className="h-4 w-4" />;
       default: return <User className="h-4 w-4" />;
     }
   };
@@ -83,7 +84,7 @@ const UserProfileBanking: React.FC = () => {
       <div className="container mx-auto px-4 py-8">
         <Card>
           <CardContent className="flex flex-col items-center justify-center h-64">
-            <Lock className="h-16 w-16 text-gray-400 mb-4" />
+            <Unlock className="h-16 w-16 text-gray-400 mb-4" />
             <h3 className="text-lg font-semibold text-gray-600">Authentication Required</h3>
             <p className="text-gray-500">Please log in to view your profile.</p>
           </CardContent>
@@ -124,7 +125,7 @@ const UserProfileBanking: React.FC = () => {
                 </Badge>
                 {user?.isAdmin && (
                   <Badge className="bg-gradient-to-r from-red-500 to-red-700 text-white">
-                    <Crown className="h-4 w-4 mr-1" />
+                    <Star className="h-4 w-4 mr-1" />
                     ADMIN
                   </Badge>
                 )}
