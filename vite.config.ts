@@ -18,4 +18,10 @@ export default defineConfig({
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
   },
+  server: {
+    hmr: {
+      port: 5000,
+      host: "0.0.0.0",
+    },
+  },
 });
