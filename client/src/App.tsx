@@ -23,7 +23,11 @@ import UserDirectory from "@/pages/UserDirectory";
 import SocialMediaBots from "@/pages/SocialMediaBots";
 import SocialMediaDashboard from "@/pages/SocialMediaDashboard";
 import EmailMonitoring from "@/pages/EmailMonitoring";
-import VideoGaming from "@/pages/VideoGaming";
+import VideoGaming from "./pages/VideoGaming";
+import VipFeatures from "./pages/VipFeatures";
+import WalletManagement from "./pages/WalletManagement";
+import WalletManagementEnhanced from "./pages/WalletManagementEnhanced";
+import EsportsHub from "./pages/EsportsHub";
 import Trivia from "@/pages/Trivia";
 import BettingExperience from "@/pages/BettingExperience"; // New enhanced betting page
 import SportPage from "@/pages/SportPage"; // New sport page
@@ -31,7 +35,6 @@ import BettingDashboard from "@/pages/BettingDashboard"; // Professional sports 
 import Login from "@/pages/Login";
 import MobileLogin from "@/pages/MobileLogin"; // Login page with social login options
 import EnhancedFeatures from "@/pages/EnhancedFeatures"; // Advanced features page
-import VipFeatures from "@/pages/VipFeatures"; // VIP exclusive section
 import ThemeSettingsPage from "@/pages/ThemeSettingsPage"; // Theme settings page
 import AdminDashboard from "@/pages/AdminDashboard"; // Admin dashboard for platform owner
 import AdminLogin from "@/pages/AdminLogin"; // Admin login page
@@ -40,7 +43,6 @@ import PrivacyPolicy from "@/pages/PrivacyPolicy"; // Privacy policy page for so
 import TermsOfService from "@/pages/TermsOfService"; // Terms of service page for social login requirements
 import SecurityInfo from "@/pages/SecurityInfo"; // Security information page showing our protection measures
 import Support from "@/pages/Support"; // Automated support system
-import WalletManagement from "@/pages/WalletManagement"; // Cryptocurrency wallet management
 import CryptoInformation from "@/pages/CryptoInformation"; // Cryptocurrency information and guides
 import SmsChallenge from "@/pages/SmsChallenge"; // VIP SMS Challenge system
 import UserProfileBanking from "@/pages/UserProfileBanking"; // Complete user profile with integrated banking
@@ -128,7 +130,8 @@ function Router() {
       <Route path="/parlays" component={Parlays} />
       <Route path="/betting-academy" component={BettingAcademy} />
       <Route path="/live-heatmap" component={LiveHeatmap} />
-      <Route path="/video-gaming" component={UnifiedGaming} />
+      <Route path="/video-gaming" component={VideoGaming} />
+      <Route path="/esports-hub" component={EsportsHub} />
       <Route path="/gaming-integration" component={UnifiedGaming} />
       <Route path="/trivia" component={Trivia} />
       <Route path="/settings" component={Settings} />
