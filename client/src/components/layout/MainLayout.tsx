@@ -15,13 +15,14 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Menu, Wallet, Coins, Shield, ArrowRightLeft, History, CreditCard, Crown } from "lucide-react";
+import { ChevronDown, Menu, Wallet, Coins, Shield, ArrowRightLeft, History, CreditCard, Crown, Briefcase } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Logo from "@/components/WeParlay/Logo";
 import WalletConnect from "@/components/auth/WalletConnect";
 import WalletNotifications from "@/components/wallet/WalletNotifications";
 import { useBetting } from "@/contexts/BettingContext";
 import { useQuery } from "@tanstack/react-query";
+import BusinessProposalModal from "@/components/business/BusinessProposalModal";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -31,6 +32,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [location] = useLocation();
   const { user, isAuthenticated, logout, connectWallet } = useAuth();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isBusinessProposalOpen, setIsBusinessProposalOpen] = useState(false);
   const { selectedCurrency, setSelectedCurrency } = useBetting();
   const { toast } = useToast();
 
@@ -94,6 +96,17 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   </div>
                 </Link>
               ))}
+              
+              {/* Business Proposal Button */}
+              <Button
+                onClick={() => setIsBusinessProposalOpen(true)}
+                variant="ghost"
+                size="sm"
+                className="text-white hover:text-yellow-400 transition-colors border border-yellow-400/20 hover:border-yellow-400 px-3 py-1 rounded-full"
+              >
+                <Briefcase className="h-4 w-4 mr-1" />
+                <span className="text-xs font-semibold">Partners</span>
+              </Button>
             </div>
 
             {/* Mobile Navigation */}
@@ -336,6 +349,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       </main>
       {/* Footer */}
       <Footer />
+      
+      {/* Business Proposal Modal */}
+      <BusinessProposalModal 
+        isOpen={isBusinessProposalOpen}
+        onClose={() => setIsBusinessProposalOpen(false)}
+      />
     </div>
   );
 };
