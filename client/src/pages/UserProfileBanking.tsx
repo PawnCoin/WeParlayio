@@ -11,11 +11,23 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { apiRequest } from "@/lib/queryClient";
 import { 
-  CreditCard, Shield, DollarSign, ArrowUpRight, ArrowDownRight,
-  Building2, Smartphone, Bitcoin, CheckCircle, AlertTriangle,
-  Lock, Eye, EyeOff, Plus, Trash2, RefreshCw, TrendingUp,
-  User, Trophy, Calendar, Target, Wallet, Award, Crown
-} from 'lucide-react';
+  Wallet, 
+  CreditCard, 
+  Building2, 
+  Shield, 
+  TrendingUp, 
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  DollarSign,
+  ArrowUpRight,
+  ArrowDownLeft,
+  Settings,
+  Plus,
+  Eye,
+  EyeOff,
+  Crown
+} from "lucide-react";
 
 const UserProfileBanking: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
