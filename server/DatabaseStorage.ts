@@ -538,7 +538,7 @@ export class DatabaseStorage implements IStorage {
       throw new Error('Insufficient real money balance');
     }
     
-    // Convert at 1:1 ratio
+    // Convert at 1:1 ratio - real money to WeParlay Cash (one way only)
     const weparlayCashAmount = realAmount;
     
     // Update balances
@@ -553,7 +553,7 @@ export class DatabaseStorage implements IStorage {
       currency: 'USD_to_WeParlayCash',
       status: 'completed',
       method: 'internal_conversion',
-      description: `Converted $${realAmount} to ${weparlayCashAmount} WeParlay Cash`,
+      description: `Converted $${realAmount} to ${weparlayCashAmount} WeParlay Cash (virtual currency)`,
       timestamp: new Date()
     });
     
@@ -562,7 +562,8 @@ export class DatabaseStorage implements IStorage {
       realAmount: -realAmount,
       weparlayCashAmount: weparlayCashAmount,
       newRealBalance: user.balance - realAmount,
-      newWeParlayCashBalance: (user.weplayTokenBalance || 0) + weparlayCashAmount
+      newWeParlayCashBalance: (user.weplayTokenBalance || 0) + weparlayCashAmount,
+      note: 'WeParlay Cash cannot be converted back to real money'
     };
   }
 

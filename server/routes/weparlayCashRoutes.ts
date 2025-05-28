@@ -5,6 +5,9 @@ import { restrictedAuthMiddleware } from '../middleware/restrictedAuth';
 
 const router = Router();
 
+// WeParlay Cash system - Virtual currency that cannot be withdrawn
+// Can only be added through rewards/bonuses or deducted through betting losses
+
 // WeParlay Cash transaction tracking
 router.get('/transactions', isAuthenticated, restrictedAuthMiddleware, async (req: Request, res: Response) => {
   try {
