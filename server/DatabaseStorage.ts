@@ -1358,6 +1358,55 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
+  // ==================== WeParlay Cash Transaction Operations ====================
+
+  async createWeparlayCashTransaction(transactionData: {
+    userId: string;
+    amount: number;
+    type: 'credit' | 'debit';
+    reason: string;
+    adminUserId?: string | null;
+    balanceBefore: number;
+    betId?: number | null;
+  }): Promise<any> {
+    const transaction = {
+      id: Date.now(),
+      ...transactionData,
+      balanceAfter: transactionData.balanceBefore + (transactionData.type === 'credit' ? transactionData.amount : -Math.abs(transactionData.amount)),
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    // Create a standard transaction record as well
+    await this.createTransaction({
+      userId: transactionData.userId,
+      type: transactionData.type === 'credit' ? 'weparlay_credit' : 'weparlay_debit',
+      amount: transactionData.type === 'credit' ? transactionData.amount : -Math.abs(transactionData.amount),
+      currency: 'WeParlayCash',
+      status: 'completed',
+      method: 'internal',
+      description: transactionData.reason,
+      timestamp: new Date()
+    });
+    
+    return transaction;
+  }
+
+  async getWeparlayCashTransactions(userId: string): Promise<any[]> {
+    const allTransactions = await this.getTransactions(1000, 0);
+    return allTransactions.filter(t => 
+      t.userId === userId && 
+      (t.currency === 'WeParlayCash' || t.type?.includes('weparlay'))
+    );
+  }
+
+  async getAllWeparlayCashTransactions(): Promise<any[]> {
+    const allTransactions = await this.getTransactions(10000, 0);
+    return allTransactions.filter(t => 
+      t.currency === 'WeParlayCash' || t.type?.includes('weparlay')
+    );
+  }
+
   // Additional methods needed for TypeScript completion
   async getUserByGamertag(gamertag: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.gamertag, gamertag));

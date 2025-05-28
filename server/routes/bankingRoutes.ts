@@ -259,7 +259,10 @@ router.post('/place-bet', isAuthenticated, async (req: any, res) => {
       amount, 
       odds, 
       currency = 'WeParlayCash',
-      prediction 
+      prediction,
+      homeTeam,
+      awayTeam,
+      eventName
     } = req.body;
 
     const user = await storage.getUser(userId);
@@ -283,6 +286,16 @@ router.post('/place-bet', isAuthenticated, async (req: any, res) => {
       });
     }
 
+    // Calculate potential payout
+    const numericOdds = typeof odds === 'string' ? parseFloat(odds) : odds;
+    let potentialPayout = amount;
+    
+    if (numericOdds > 0) {
+      potentialPayout = amount + (amount * (numericOdds / 100));
+    } else {
+      potentialPayout = amount + (amount * (100 / Math.abs(numericOdds)));
+    }
+
     // Deduct bet amount from appropriate balance
     if (currency === 'WeParlayCash') {
       await storage.updateUserWeplayTokenBalance(userId, -amount);
@@ -290,18 +303,24 @@ router.post('/place-bet', isAuthenticated, async (req: any, res) => {
       await storage.updateUserBalance(userId, -amount);
     }
 
-    // Create the bet record
-    const bet = await storage.createBet({
+    // Create the bet record with proper typing
+    const betData: any = {
       userId: parseInt(userId),
-      eventId: eventId,
+      eventId: parseInt(eventId),
       betType: betType,
       amount: amount,
-      odds: odds,
+      odds: numericOdds,
+      potentialPayout: potentialPayout,
       currency: currency,
       prediction: prediction,
       status: 'pending',
-      timestamp: new Date()
-    });
+      placedAt: new Date(),
+      eventName: eventName || `${homeTeam} vs ${awayTeam}`,
+      homeTeam: homeTeam,
+      awayTeam: awayTeam
+    };
+
+    const bet = await storage.createBet(betData);
 
     // Create transaction record for the bet
     await storage.createTransaction({
@@ -311,15 +330,15 @@ router.post('/place-bet', isAuthenticated, async (req: any, res) => {
       currency: currency,
       status: 'completed',
       method: 'balance',
-      description: `Bet placed on ${betType}`,
-      timestamp: new Date(),
-      betId: bet.id
+      description: `Bet placed on ${betType}: ${prediction} (${eventName || `${homeTeam} vs ${awayTeam}`})`,
+      timestamp: new Date()
     });
 
     res.json({
       success: true,
       betId: bet.id,
       message: 'Bet placed successfully!',
+      potentialPayout: potentialPayout,
       remainingBalance: currency === 'WeParlayCash' 
         ? (user.weplayTokenBalance || 0) - amount
         : (user.balance || 0) - amount
@@ -328,6 +347,70 @@ router.post('/place-bet', isAuthenticated, async (req: any, res) => {
   } catch (error) {
     console.error('Place bet error:', error);
     res.status(500).json({ message: 'Failed to place bet. Please try again.' });
+  }
+});
+
+// Get user's bet history
+router.get('/my-bets', isAuthenticated, async (req: any, res) => {
+  try {
+    const userId = req.user.claims.sub;
+    const bets = await storage.getUserBets(parseInt(userId));
+    
+    res.json({
+      success: true,
+      bets: bets
+    });
+  } catch (error) {
+    console.error('Get bets error:', error);
+    res.status(500).json({ message: 'Failed to fetch bets' });
+  }
+});
+
+// Settlement endpoint for testing
+router.post('/settle-bet/:betId', isAuthenticated, async (req: any, res) => {
+  try {
+    const { betId } = req.params;
+    const { status, isWin } = req.body; // 'won', 'lost', 'push'
+    
+    const bet = await storage.getBet(parseInt(betId));
+    if (!bet) {
+      return res.status(404).json({ message: 'Bet not found' });
+    }
+
+    if (isWin) {
+      // Pay out the bet
+      const user = await storage.getUser(bet.userId.toString());
+      if (user) {
+        if (bet.currency === 'WeParlayCash') {
+          await storage.updateUserWeplayTokenBalance(bet.userId.toString(), bet.potentialPayout || bet.amount * 2);
+        } else {
+          await storage.updateUserBalance(bet.userId.toString(), bet.potentialPayout || bet.amount * 2);
+        }
+
+        // Create winning transaction
+        await storage.createTransaction({
+          userId: bet.userId.toString(),
+          type: 'winning',
+          amount: bet.potentialPayout || bet.amount * 2,
+          currency: bet.currency,
+          status: 'completed',
+          method: 'payout',
+          description: `Winning payout for bet: ${bet.prediction}`,
+          timestamp: new Date()
+        });
+      }
+    }
+
+    // Update bet status
+    await storage.settleBet(parseInt(betId), status);
+
+    res.json({
+      success: true,
+      message: `Bet ${status} successfully`
+    });
+  } catch (error) {
+    console.error('Settle bet error:', error);
+    res.status(500).json({ message: 'Failed to settle bet' });
   }
 });
 
