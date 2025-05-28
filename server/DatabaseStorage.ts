@@ -27,7 +27,7 @@ import { IStorage } from "./storage";
  */
 export class DatabaseStorage implements IStorage {
   private linkedAccounts: any[] = [];
-
+  
   // ==================== User Operations ====================
 
   async getUser(id: string): Promise<User | undefined> {
@@ -65,13 +65,13 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(users)
       .where(eq(users.id, userId));
-
+    
     if (!user) {
       throw new Error(`User with ID ${userId} not found`);
     }
 
     const newBalance = (user.balance || 0) + amount;
-
+    
     const [updatedUser] = await db
       .update(users)
       .set({ 
@@ -80,7 +80,7 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(users.id, userId))
       .returning();
-
+    
     return updatedUser;
   }
 
@@ -100,7 +100,7 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(users.id, userId))
       .returning();
-
+    
     return updatedUser;
   }
 
@@ -117,7 +117,7 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(users.id, userId))
       .returning();
-
+    
     return updatedUser;
   }
 
@@ -126,13 +126,13 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(users)
       .where(eq(users.id, userId));
-
+    
     if (!user) {
       throw new Error(`User with ID ${userId} not found`);
     }
 
     const currentWins = user.wins || 0;
-
+    
     const [updatedUser] = await db
       .update(users)
       .set({ 
@@ -141,7 +141,7 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(users.id, userId))
       .returning();
-
+    
     return updatedUser;
   }
 
@@ -149,7 +149,7 @@ export class DatabaseStorage implements IStorage {
     const year = new Date().getFullYear();
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0, 23, 59, 59);
-
+    
     const result = await db
       .select({
         total: sql`SUM(amount)`.as('total')
@@ -163,7 +163,7 @@ export class DatabaseStorage implements IStorage {
           lt(transactions.createdAt, endDate)
         )
       );
-
+    
     return result[0]?.total || 0;
   }
 
@@ -172,13 +172,13 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(users)
       .where(eq(users.id, userId));
-
+    
     if (!user) {
       throw new Error(`User with ID ${userId} not found`);
     }
 
     const newTokenBalance = (user.weplayTokenBalance || 0) + amount;
-
+    
     const [updatedUser] = await db
       .update(users)
       .set({ 
@@ -187,7 +187,7 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(users.id, userId))
       .returning();
-
+    
     return updatedUser;
   }
 
@@ -199,7 +199,7 @@ export class DatabaseStorage implements IStorage {
     const updateData: Partial<User> = {
       updatedAt: new Date()
     };
-
+    
     if (subscriptionType === 'vip') {
       updateData.vipExpiryDate = expiryDate;
     } else if (subscriptionType === 'analytics') {
@@ -207,16 +207,16 @@ export class DatabaseStorage implements IStorage {
     } else if (subscriptionType === 'support') {
       updateData.supportExpiryDate = expiryDate;
     }
-
+    
     const [updatedUser] = await db
       .update(users)
       .set(updateData)
       .where(eq(users.id, userId))
       .returning();
-
+    
     return updatedUser;
   }
-
+  
   async updateUserPreferences(
     userId: string, 
     preferences: Partial<{ 
@@ -231,34 +231,34 @@ export class DatabaseStorage implements IStorage {
       const updateData: Partial<User> = {
         updatedAt: new Date()
       };
-
+      
       if (preferences.oddsFormat !== undefined) {
         updateData.oddsFormat = preferences.oddsFormat;
       }
-
+      
       if (preferences.useVirtualCurrency !== undefined) {
         updateData.useVirtualCurrency = preferences.useVirtualCurrency;
       }
-
+      
       if (preferences.withdrawalSpeed !== undefined) {
         updateData.withdrawalSpeed = preferences.withdrawalSpeed;
       }
-
+      
       if (preferences.mobileOptimizedView !== undefined) {
         updateData.mobileOptimizedView = preferences.mobileOptimizedView;
       }
-
+      
       // Perform the update
       const [updatedUser] = await db
         .update(users)
         .set(updateData)
         .where(eq(users.id, userId))
         .returning();
-
+      
       if (!updatedUser) {
         throw new Error(`Failed to update preferences for user: ${userId}`);
       }
-
+      
       return updatedUser;
     } catch (error) {
       console.error(`Error updating user preferences: ${error}`);
@@ -276,7 +276,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(transactions)
       .where(eq(transactions.type, 'deposit'));
-
+    
     // Get total withdrawals
     const withdrawalsResult = await db
       .select({
@@ -284,7 +284,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(transactions)
       .where(eq(transactions.type, 'withdrawal'));
-
+    
     // Get total fees
     const feesResult = await db
       .select({
@@ -292,14 +292,14 @@ export class DatabaseStorage implements IStorage {
       })
       .from(transactions)
       .where(eq(transactions.type, 'fee'));
-
+    
     // Get user count
     const userCount = await db
       .select({
         count: sql`COUNT(*)`.as('count')
       })
       .from(users);
-
+    
     // Get transaction count by type
     const transactionCounts = await db
       .select({
@@ -308,7 +308,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(transactions)
       .groupBy(transactions.type);
-
+    
     return {
       totalDeposits: depositsResult[0]?.total || 0,
       totalWithdrawals: withdrawalsResult[0]?.total || 0,
@@ -340,12 +340,12 @@ export class DatabaseStorage implements IStorage {
       createdAt: new Date(),
       updatedAt: new Date()
     };
-
+    
     const [newTransaction] = await db
       .insert(transactions)
       .values(transactionData)
       .returning();
-
+    
     return newTransaction;
   }
 
@@ -354,12 +354,12 @@ export class DatabaseStorage implements IStorage {
     if (!bankAccount.userId) {
       throw new Error("Bank account must have a userId");
     }
-
+    
     const [existingBankAccount] = await db
       .select()
       .from(bankAccounts)
       .where(eq(bankAccounts.userId, bankAccount.userId));
-
+    
     if (existingBankAccount) {
       // Update existing bank account
       const [updatedBankAccount] = await db
@@ -370,7 +370,7 @@ export class DatabaseStorage implements IStorage {
         })
         .where(eq(bankAccounts.userId, bankAccount.userId))
         .returning();
-
+      
       return updatedBankAccount;
     } else {
       // Create new bank account
@@ -382,7 +382,7 @@ export class DatabaseStorage implements IStorage {
           updatedAt: new Date()
         })
         .returning();
-
+      
       return newBankAccount;
     }
   }
@@ -408,13 +408,13 @@ export class DatabaseStorage implements IStorage {
       createdAt: new Date(),
       updatedAt: new Date()
     };
-
+    
     // Store in a mock linked accounts collection
     if (!this.linkedAccounts) {
       this.linkedAccounts = [];
     }
     this.linkedAccounts.push(accountData);
-
+    
     return accountData;
   }
 
@@ -422,7 +422,7 @@ export class DatabaseStorage implements IStorage {
     if (!this.linkedAccounts) {
       return [];
     }
-
+    
     return this.linkedAccounts.filter(account => 
       account.userId === userId && account.isActive
     );
@@ -432,7 +432,7 @@ export class DatabaseStorage implements IStorage {
     if (!this.linkedAccounts) {
       return null;
     }
-
+    
     return this.linkedAccounts.find(account => 
       account.userId === userId && 
       account.isActive &&
@@ -444,17 +444,17 @@ export class DatabaseStorage implements IStorage {
     if (!this.linkedAccounts) {
       return false;
     }
-
+    
     const accountIndex = this.linkedAccounts.findIndex(account => 
       account.userId === userId && account.plaidItemId === itemId
     );
-
+    
     if (accountIndex !== -1) {
       this.linkedAccounts[accountIndex].isActive = false;
       this.linkedAccounts[accountIndex].updatedAt = new Date();
       return true;
     }
-
+    
     return false;
   }
 
@@ -472,7 +472,7 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(transactions.id, transactionId))
       .returning();
-
+    
     return updatedTransaction;
   }
 
@@ -480,22 +480,22 @@ export class DatabaseStorage implements IStorage {
   async transferWeParlayCash(fromUserId: string, toUserId: string, amount: number, reason: string = 'Transfer'): Promise<any> {
     const fromUser = await this.getUser(fromUserId);
     const toUser = await this.getUser(toUserId);
-
+    
     if (!fromUser || !toUser) {
       throw new Error('User not found');
     }
-
+    
     if ((fromUser.weplayTokenBalance || 0) < amount) {
       throw new Error('Insufficient WeParlay Cash balance');
     }
-
+    
     // Update balances
     await this.updateUserWeplayTokenBalance(fromUserId, -amount);
     await this.updateUserWeplayTokenBalance(toUserId, amount);
-
+    
     // Create transaction records
     const transferId = `wpc_transfer_${Date.now()}`;
-
+    
     await this.createTransaction({
       userId: fromUserId,
       type: 'weparlay_transfer_out',
@@ -507,7 +507,7 @@ export class DatabaseStorage implements IStorage {
       timestamp: new Date(),
       transferId: transferId
     });
-
+    
     await this.createTransaction({
       userId: toUserId,
       type: 'weparlay_transfer_in',
@@ -519,7 +519,7 @@ export class DatabaseStorage implements IStorage {
       timestamp: new Date(),
       transferId: transferId
     });
-
+    
     return {
       transferId,
       success: true,
@@ -533,18 +533,18 @@ export class DatabaseStorage implements IStorage {
     if (!user) {
       throw new Error('User not found');
     }
-
+    
     if ((user.balance || 0) < realAmount) {
       throw new Error('Insufficient real money balance');
     }
-
+    
     // Convert at 1:1 ratio
     const weparlayCashAmount = realAmount;
-
+    
     // Update balances
     await this.updateUserBalance(userId, -realAmount);
     await this.updateUserWeplayTokenBalance(userId, weparlayCashAmount);
-
+    
     // Create transaction record
     await this.createTransaction({
       userId: userId,
@@ -556,7 +556,7 @@ export class DatabaseStorage implements IStorage {
       description: `Converted $${realAmount} to ${weparlayCashAmount} WeParlay Cash`,
       timestamp: new Date()
     });
-
+    
     return {
       success: true,
       realAmount: -realAmount,
@@ -568,7 +568,7 @@ export class DatabaseStorage implements IStorage {
 
   async redeemWeParlayCashRewards(userId: string, amount: number, reason: string = 'Reward redemption'): Promise<any> {
     await this.updateUserWeplayTokenBalance(userId, amount);
-
+    
     await this.createTransaction({
       userId: userId,
       type: 'weparlay_reward',
@@ -579,7 +579,7 @@ export class DatabaseStorage implements IStorage {
       description: reason,
       timestamp: new Date()
     });
-
+    
     return {
       success: true,
       amount: amount,
@@ -594,7 +594,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(bankAccounts)
       .limit(1);
-
+    
     return ownerBankAccount;
   }
 
@@ -611,7 +611,7 @@ export class DatabaseStorage implements IStorage {
         status: 'completed'
       })
       .returning();
-
+    
     return { success: true, transaction: feeTransaction };
   }
 
@@ -626,7 +626,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(sports)
       .where(eq(sports.id, id));
-
+    
     return sport;
   }
 
@@ -635,7 +635,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(sports)
       .where(eq(sports.key, key));
-
+    
     return sport;
   }
 
@@ -644,7 +644,7 @@ export class DatabaseStorage implements IStorage {
       .insert(sports)
       .values(sport)
       .returning();
-
+    
     return newSport;
   }
 
@@ -657,7 +657,7 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(sports.id, sportId))
       .returning();
-
+    
     return updatedSport;
   }
 
@@ -679,7 +679,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(teams)
       .where(eq(teams.id, id));
-
+    
     return team;
   }
 
@@ -688,7 +688,7 @@ export class DatabaseStorage implements IStorage {
       .insert(teams)
       .values(team)
       .returning();
-
+    
     return newTeam;
   }
 
@@ -703,7 +703,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(events)
       .where(eq(events.id, id));
-
+    
     return event;
   }
 
@@ -721,11 +721,11 @@ export class DatabaseStorage implements IStorage {
       .from(events)
       .where(gt(events.startTime, now))
       .orderBy(events.startTime);
-
+    
     if (limit) {
       query.limit(limit);
     }
-
+    
     return await query;
   }
 
@@ -747,7 +747,7 @@ export class DatabaseStorage implements IStorage {
       .insert(events)
       .values(event)
       .returning();
-
+    
     return newEvent;
   }
 
@@ -763,18 +763,18 @@ export class DatabaseStorage implements IStorage {
       status,
       updatedAt: new Date()
     };
-
+    
     if (homeScore !== undefined) updateData.homeScore = homeScore;
     if (awayScore !== undefined) updateData.awayScore = awayScore;
     if (period !== undefined) updateData.period = period;
     if (timeRemaining !== undefined) updateData.timeRemaining = timeRemaining;
-
+    
     const [updatedEvent] = await db
       .update(events)
       .set(updateData)
       .where(eq(events.id, eventId))
       .returning();
-
+    
     return updatedEvent;
   }
 
@@ -787,7 +787,7 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(events.id, eventId))
       .returning();
-
+    
     return updatedEvent;
   }
 
@@ -806,7 +806,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(bets)
       .where(eq(bets.id, id));
-
+    
     return bet;
   }
 
@@ -815,7 +815,7 @@ export class DatabaseStorage implements IStorage {
       .insert(bets)
       .values(bet)
       .returning();
-
+    
     return newBet;
   }
 
@@ -829,7 +829,7 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(bets.id, betId))
       .returning();
-
+    
     return updatedBet;
   }
 
@@ -844,7 +844,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(tournaments)
       .where(eq(tournaments.id, id));
-
+    
     return tournament;
   }
 
@@ -860,7 +860,7 @@ export class DatabaseStorage implements IStorage {
       .insert(tournaments)
       .values(tournament)
       .returning();
-
+    
     return newTournament;
   }
 
@@ -873,7 +873,7 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(tournaments.id, tournamentId))
       .returning();
-
+    
     return updatedTournament;
   }
 
@@ -891,7 +891,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(fantasyTeams)
       .where(eq(fantasyTeams.id, id));
-
+    
     return fantasyTeam;
   }
 
@@ -900,7 +900,7 @@ export class DatabaseStorage implements IStorage {
       .insert(fantasyTeams)
       .values(fantasyTeam)
       .returning();
-
+    
     return newFantasyTeam;
   }
 
@@ -913,7 +913,7 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(fantasyTeams.id, fantasyTeamId))
       .returning();
-
+    
     return updatedFantasyTeam;
   }
 
@@ -935,7 +935,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(players)
       .where(eq(players.id, id));
-
+    
     return player;
   }
 
@@ -944,7 +944,7 @@ export class DatabaseStorage implements IStorage {
       .insert(players)
       .values(player)
       .returning();
-
+    
     return newPlayer;
   }
 
@@ -962,7 +962,7 @@ export class DatabaseStorage implements IStorage {
       .insert(fantasyTeamPlayers)
       .values(fantasyTeamPlayer)
       .returning();
-
+    
     return newFantasyTeamPlayer;
   }
 
@@ -982,7 +982,7 @@ export class DatabaseStorage implements IStorage {
   async createSupportTicket(ticket: InsertSupportTicket): Promise<SupportTicket> {
     // Generate a unique ticket number
     const ticketNumber = `WP-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
-
+    
     // Create complete ticket data with all required fields
     const ticketData = {
       ...ticket,
@@ -992,12 +992,12 @@ export class DatabaseStorage implements IStorage {
       createdAt: new Date(),
       updatedAt: new Date()
     };
-
+    
     const [newTicket] = await db
       .insert(supportTickets)
       .values(ticketData)
       .returning();
-
+    
     return newTicket;
   }
 
@@ -1006,7 +1006,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(supportTickets)
       .where(eq(supportTickets.id, id));
-
+    
     return ticket;
   }
 
@@ -1015,7 +1015,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(supportTickets)
       .where(eq(supportTickets.ticketNumber, ticketNumber));
-
+    
     return ticket;
   }
 
@@ -1036,7 +1036,7 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(supportTickets.id, ticketId))
       .returning();
-
+    
     return updatedTicket;
   }
 
@@ -1045,13 +1045,13 @@ export class DatabaseStorage implements IStorage {
       .insert(supportTicketMessages)
       .values(message)
       .returning();
-
+    
     // Update the ticket's updatedAt timestamp
     await db
       .update(supportTickets)
       .set({ updatedAt: new Date() })
       .where(eq(supportTickets.id, message.ticketId));
-
+    
     return newMessage;
   }
 
@@ -1069,17 +1069,17 @@ export class DatabaseStorage implements IStorage {
       action,
       details: details || {}
     };
-
+    
     const [newLog] = await db
       .insert(supportTicketLogs)
       .values(logEntry)
       .returning();
-
+    
     return newLog;
   }
 
   // ==================== Betting Challenge Operations ====================
-
+  
   async createBettingChallenge(challenge: InsertBettingChallenge): Promise<BettingChallenge> {
     const [newChallenge] = await db
       .insert(bettingChallenges)
@@ -1089,28 +1089,28 @@ export class DatabaseStorage implements IStorage {
         updatedAt: new Date()
       })
       .returning();
-
+    
     return newChallenge;
   }
-
+  
   async getBettingChallenge(id: number): Promise<BettingChallenge | undefined> {
     const [challenge] = await db
       .select()
       .from(bettingChallenges)
       .where(eq(bettingChallenges.id, id));
-
+    
     return challenge;
   }
-
+  
   async getBettingChallengeByUuid(uuid: string): Promise<BettingChallenge | undefined> {
     const [challenge] = await db
       .select()
       .from(bettingChallenges)
       .where(eq(bettingChallenges.challengeUuid, uuid));
-
+    
     return challenge;
   }
-
+  
   async getUserChallenges(userId: string, status?: string): Promise<BettingChallenge[]> {
     let query = db
       .select()
@@ -1121,14 +1121,14 @@ export class DatabaseStorage implements IStorage {
           eq(bettingChallenges.acceptedBy, userId)
         )
       );
-
+    
     if (status) {
       query = query.where(eq(bettingChallenges.status, status));
     }
-
+    
     return await query.orderBy(desc(bettingChallenges.createdAt));
   }
-
+  
   async acceptBettingChallenge(uuid: string, acceptedBy: string): Promise<BettingChallenge> {
     const [challenge] = await db
       .update(bettingChallenges)
@@ -1140,58 +1140,58 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(bettingChallenges.challengeUuid, uuid))
       .returning();
-
+    
     return challenge;
   }
-
+  
   async updateBettingChallengeStatus(uuid: string, status: string): Promise<BettingChallenge> {
     const updateData: any = {
       status,
       updatedAt: new Date()
     };
-
+    
     // If the challenge is being settled, add settled timestamp
     if (status === 'settled') {
       updateData.settledAt = new Date();
     }
-
+    
     const [challenge] = await db
       .update(bettingChallenges)
       .set(updateData)
       .where(eq(bettingChallenges.challengeUuid, uuid))
       .returning();
-
+    
     return challenge;
   }
-
+  
   async settleBettingChallenge(uuid: string, winnerId?: string, isDraw: boolean = false): Promise<BettingChallenge> {
     // Get the current challenge
     const challenge = await this.getBettingChallengeByUuid(uuid);
     if (!challenge) {
       throw new Error(`Challenge with UUID ${uuid} not found`);
     }
-
+    
     // Verify challenge can be settled
     if (challenge.status !== 'accepted') {
       throw new Error(`Challenge with UUID ${uuid} cannot be settled (status: ${challenge.status})`);
     }
-
+    
     if (!challenge.acceptedBy) {
       throw new Error(`Challenge with UUID ${uuid} has not been accepted yet`);
     }
-
+    
     let newStatus = 'settled';
     let winnerUserId = winnerId;
-
+    
     // Handle draw case
     if (isDraw) {
       newStatus = 'draw';
       winnerUserId = undefined;
-
+      
       // Refund both users
       if (challenge.createdBy) {
         await this.updateUserBalance(challenge.createdBy, challenge.amount);
-
+        
         // Create refund transaction record
         await this.createTransaction({
           userId: challenge.createdBy,
@@ -1202,10 +1202,10 @@ export class DatabaseStorage implements IStorage {
           status: 'completed'
         });
       }
-
+      
       if (challenge.acceptedBy) {
         await this.updateUserBalance(challenge.acceptedBy, challenge.amount);
-
+        
         // Create refund transaction record
         await this.createTransaction({
           userId: challenge.acceptedBy,
@@ -1221,10 +1221,10 @@ export class DatabaseStorage implements IStorage {
     else if (winnerUserId) {
       // Calculate payout amount (original bet x2)
       const payoutAmount = challenge.amount * 2;
-
+      
       // Add winnings to winner's balance
       await this.updateUserBalance(winnerUserId, payoutAmount);
-
+      
       // Create winning transaction record
       await this.createTransaction({
         userId: winnerUserId,
@@ -1234,11 +1234,11 @@ export class DatabaseStorage implements IStorage {
         description: `Winnings from bet ${challenge.challengeUuid} (${challenge.eventName})`,
         status: 'completed'
       });
-
+      
       // Increment winner's win count
       await this.incrementUserWins(winnerUserId);
     }
-
+    
     // Update challenge status and winner
     const [updatedChallenge] = await db
       .update(bettingChallenges)
@@ -1250,12 +1250,12 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(bettingChallenges.challengeUuid, uuid))
       .returning();
-
+    
     return updatedChallenge;
   }
-
+  
   // ==================== Notification Operations ====================
-
+  
   async createNotification(notification: InsertNotification): Promise<Notification> {
     const [newNotification] = await db
       .insert(notifications)
@@ -1265,23 +1265,23 @@ export class DatabaseStorage implements IStorage {
         updatedAt: new Date()
       })
       .returning();
-
+    
     return newNotification;
   }
-
+  
   async getUserNotifications(userId: string, unreadOnly: boolean = false): Promise<Notification[]> {
     let query = db
       .select()
       .from(notifications)
       .where(eq(notifications.userId, userId));
-
+    
     if (unreadOnly) {
       query = query.where(eq(notifications.read, false));
     }
-
+    
     return await query.orderBy(desc(notifications.createdAt));
   }
-
+  
   async markNotificationAsRead(id: number, userId: string): Promise<Notification> {
     const [notification] = await db
       .update(notifications)
@@ -1297,7 +1297,7 @@ export class DatabaseStorage implements IStorage {
         )
       )
       .returning();
-
+    
     return notification;
   }
 
@@ -1311,12 +1311,12 @@ export class DatabaseStorage implements IStorage {
       updatedAt: new Date(),
       active: true
     };
-
+    
     const [newIssue] = await db
       .insert(knownIssues)
       .values(issueData)
       .returning();
-
+    
     return newIssue;
   }
 
@@ -1342,7 +1342,7 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(knownIssues.id, id))
       .returning();
-
+    
     return updatedIssue;
   }
 
@@ -1350,7 +1350,7 @@ export class DatabaseStorage implements IStorage {
     // In a real application, this would use text search or similar functionality
     // For demonstration, we'll do a simple match against keywords
     const lowerDesc = description.toLowerCase();
-
+    
     const activeIssues = await this.getActiveKnownIssues();
     return activeIssues.filter(issue => {
       const keywords = issue.keywords || [];
@@ -1373,7 +1373,7 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(users.id, userId))
       .returning();
-
+    
     return updatedUser;
   }
 
@@ -1392,7 +1392,7 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(users.id, userId))
       .returning();
-
+    
     return updatedUser;
   }
 
@@ -1401,12 +1401,7 @@ export class DatabaseStorage implements IStorage {
       .insert(bets)
       .values(betData)
       .returning();
-
+    
     return newBet;
-  }
-
-  async getUserCashBalance(userId: string): Promise<{ balance: number }> {
-    const user = await this.getUser(userId);
-    return { balance: user?.weplayTokenBalance || 10000 };
   }
 }

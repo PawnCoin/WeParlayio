@@ -15,6 +15,8 @@ import {
   DollarSign, 
   History, 
   Settings, 
+  Crown, 
+  Lock, 
   Shield,
   Eye,
   EyeOff,
@@ -27,7 +29,6 @@ import {
 } from 'lucide-react';
 import PlaidLinkComponent from '@/components/banking/PlaidLinkComponent';
 import EnhancedDepositWithdraw from '@/components/banking/EnhancedDepositWithdraw';
-import { Crown, Lock } from "lucide-react";
 
 const UserProfileBanking: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
