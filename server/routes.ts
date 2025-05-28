@@ -97,40 +97,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lastName: 'Owner',
         role: 'admin',
         tier: 'platinum',
-        isAdmin: true,
-        status: 'active',
-        balance: 1000000, // 1 million WeParlay Cash
-        weplayTokenBalance: 1000000,
-        totalBets: 0,
-        wins: 0,
-        winRate: 0,
-        totalWinnings: 0,
-        subscriptionTier: 'platinum',
-        subscriptionExpiry: new Date('2030-12-31'),
-        emailVerified: true,
-        phoneVerified: true,
-        kycVerified: true,
-        preferences: {
-          oddsFormat: 'decimal',
-          useVirtualCurrency: false,
-          withdrawalSpeed: 'instant',
-          mobileOptimizedView: true
-        }
-      });
 
-      res.json({
-        message: 'Admin accounts created successfully',
-        accounts: [
-          { username: weparlayAdmin.username, email: weparlayAdmin.email, role: weparlayAdmin.role },
-          { username: weparlayIoAdmin.username, email: weparlayIoAdmin.email, role: weparlayIoAdmin.role }
-        ]
-      });
-    } catch (error) {
-      console.error('Error creating admin accounts:', error);
-      res.status(500).json({ message: 'Failed to create admin accounts' });
-    }
-  });
-
+  
   // Create test users on startup
   app.post('/api/setup-test-users', async (req, res) => {
     try {
@@ -177,6 +145,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: 'Failed to create test users' });
     }
   });
+
+      // Create WeParlay.io admin account  
+      const weparlayIoAdmin = await storage.upsertUser({
+        id: 'admin-weparlay-002',
+        email: 'support@weparlay.io',
+        username: 'WeParlay.io',
+        firstName: 'WeParlay.io',
+        lastName: 'Owner',
+        role: 'admin',
+        tier: 'platinum',
         isAdmin: true,
         status: 'active',
         balance: 1000000, // 1 million WeParlay Cash
