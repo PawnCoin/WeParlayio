@@ -20,6 +20,7 @@ import { socialMediaBotRouter } from "./routes/socialMediaBotRoutes";
 import gamingRoutes from "./routes/gamingRoutes";
 import unifiedSportsRoutes from "./routes/unifiedSportsRoutes";
 import { bankingRouter } from "./routes/bankingRoutes";
+import plaidRoutes from "./routes/plaidRoutes";
 
 // Initialize The Odds API services
 const oddsApiService = new OddsApiService();
@@ -53,6 +54,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register Banking routes for real deposits, withdrawals, and betting
   app.use('/api/banking', bankingRouter);
+  
+  // Register Plaid routes for bank account linking
+  app.use('/api/plaid', plaidRoutes);
 
   // Create Admin Accounts on Startup
   app.post('/api/setup-admin-accounts', async (req, res) => {
