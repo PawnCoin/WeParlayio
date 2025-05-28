@@ -146,7 +146,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-
+      // Create WeParlay.io admin account  
+      const weparlayIoAdmin = await storage.upsertUser({
+        id: 'admin-weparlay-002',
+        email: 'support@weparlay.io',
+        username: 'WeParlay.io',
+        firstName: 'WeParlay.io',
+        lastName: 'Owner',
+        role: 'admin',
+        tier: 'platinum',
         isAdmin: true,
         status: 'active',
         balance: 1000000, // 1 million WeParlay Cash
