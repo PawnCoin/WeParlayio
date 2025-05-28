@@ -233,7 +233,7 @@ td {
   --card-foreground: 0 0% 0%; /* Black text in cards */
   --border: 214 32% 90%;
   --input: 214 32% 90%;
-  --primary: 240 70% 40%; /* Blue from WeParlay logo */
+  --primary: 240 70% 40%; /* Blue from WeParlay logo - #2563eb */
   --primary-foreground: 0 0% 100%;
   --secondary: 142 70% 25%; /* Green from WeParlay shield */
   --secondary-foreground: 0 0% 100%;
