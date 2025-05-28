@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { createSSLServer, getSSLConfig } from "./ssl";
+import { initializeWebSocketService } from "./services/websocketService";
 
 // Export app for production use
 export const app = express();
@@ -89,11 +90,15 @@ app.use((req, res, next) => {
     server = app;
   }
 
-  server.listen({
+  const httpServer = server.listen({
     port,
     host: "0.0.0.0",
     reusePort: true,
   }, () => {
     log(`🚀 WeParlay server running on HTTP port ${port}`);
   });
+
+  // Initialize WebSocket service
+  initializeWebSocketService(httpServer);
+  log(`🔌 WebSocket service initialized on same port ${port}`);
 })();

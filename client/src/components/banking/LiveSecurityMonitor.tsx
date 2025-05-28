@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useWebSocket } from '@/hooks/useWebSocket';
 import { 
   Shield, 
   AlertTriangle, 
@@ -31,6 +32,13 @@ import {
 const LiveSecurityMonitor: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { 
+    isConnected, 
+    connectionStatus, 
+    lastMessage, 
+    subscribe, 
+    unsubscribe 
+  } = useWebSocket();
   
   // Real-time monitoring state
   const [isMonitoring, setIsMonitoring] = useState(true);
@@ -41,39 +49,54 @@ const LiveSecurityMonitor: React.FC = () => {
   const [activeSessions, setActiveSessions] = useState<any[]>([]);
   const [suspiciousActivity, setSuspiciousActivity] = useState<any[]>([]);
 
-  // Mock real-time data (replace with WebSocket connection)
+  // Real-time WebSocket data handling
   useEffect(() => {
-    if (!isMonitoring) return;
+    if (!isConnected || !isMonitoring) return;
 
-    const interval = setInterval(() => {
-      // Simulate real-time transaction updates
-      const newTransaction = {
-        id: Date.now(),
-        type: Math.random() > 0.7 ? 'withdrawal' : 'deposit',
-        amount: Math.floor(Math.random() * 500) + 10,
-        timestamp: new Date(),
-        status: 'pending',
-        location: 'New York, NY',
-        ipAddress: '192.168.1.' + Math.floor(Math.random() * 254),
-        risk: Math.random() > 0.8 ? 'high' : Math.random() > 0.5 ? 'medium' : 'low'
-      };
+    // Subscribe to security and transaction channels
+    subscribe(['transactions', 'security_alerts', 'balance_updates', 'session_updates']);
 
-      setLiveTransactions(prev => [newTransaction, ...prev.slice(0, 9)]);
+    return () => {
+      unsubscribe(['transactions', 'security_alerts', 'balance_updates', 'session_updates']);
+    };
+  }, [isConnected, isMonitoring, subscribe, unsubscribe]);
 
-      // Detect suspicious activity
-      if (newTransaction.risk === 'high') {
-        setSuspiciousActivity(prev => [newTransaction, ...prev.slice(0, 4)]);
-        
-        toast({
-          title: "🚨 SUSPICIOUS ACTIVITY DETECTED",
-          description: `${newTransaction.type} of $${newTransaction.amount} from ${newTransaction.location}`,
-          variant: "destructive"
-        });
-      }
-    }, 3000);
+  // Handle real-time WebSocket messages
+  useEffect(() => {
+    if (!lastMessage) return;
 
-    return () => clearInterval(interval);
-  }, [isMonitoring, toast]);
+    switch (lastMessage.type) {
+      case 'transaction_update':
+        const newTransaction = {
+          id: Date.now(),
+          type: lastMessage.data?.type || 'deposit',
+          amount: lastMessage.data?.amount || 0,
+          timestamp: new Date(),
+          status: lastMessage.data?.status || 'pending',
+          location: lastMessage.data?.location || 'Unknown',
+          ipAddress: lastMessage.data?.ipAddress || '192.168.1.1',
+          risk: lastMessage.data?.risk || 'low'
+        };
+
+        setLiveTransactions(prev => [newTransaction, ...prev.slice(0, 19)]);
+
+        if (newTransaction.risk === 'high') {
+          setSuspiciousActivity(prev => [newTransaction, ...prev.slice(0, 9)]);
+        }
+        break;
+
+      case 'security_alert':
+        setSuspiciousActivity(prev => [lastMessage.data, ...prev.slice(0, 9)]);
+        break;
+
+      case 'session_update':
+        // Update active sessions from real-time data
+        if (lastMessage.data?.sessions) {
+          setActiveSessions(lastMessage.data.sessions);
+        }
+        break;
+    }
+  }, [lastMessage]);
 
   // Initialize mock session data
   useEffect(() => {
@@ -134,6 +157,23 @@ const LiveSecurityMonitor: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* REAL-TIME CONNECTION STATUS */}
+      <Card className={`border-2 mb-4 ${isConnected ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'}`}>
+        <CardContent className="pt-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+              <span className={`font-bold ${isConnected ? 'text-green-700' : 'text-red-700'}`}>
+                REAL-TIME MONITORING: {connectionStatus.toUpperCase()}
+              </span>
+            </div>
+            <Badge className={isConnected ? 'bg-green-600' : 'bg-red-600'}>
+              {isConnected ? 'LIVE' : 'DISCONNECTED'}
+            </Badge>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* PANIC CONTROLS */}
       <Card className={`border-2 ${accountFrozen ? 'border-red-500 bg-red-50' : 'border-green-500 bg-green-50'}`}>
         <CardHeader>
