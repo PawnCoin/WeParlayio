@@ -157,12 +157,26 @@ const Login: React.FC = () => {
             </TabsContent>
           </Tabs>
           
-          <p className="text-center text-sm text-gray-500 mt-6">
-            Don't have an account? No problem! Sign in using any of the methods above to create one.
-          </p>
-          <p className="text-center text-xs text-gray-500 mt-3">
-            By logging in, you agree to our <a href="/privacy-policy" className="text-primary hover:underline">Privacy Policy</a> and <a href="/terms-of-service" className="text-primary hover:underline">Terms of Service</a>.
-          </p>
+          <div className="text-center mt-6 space-y-3">
+            <p className="text-sm text-gray-500">
+              Don't have an account? No problem! Sign in using any of the methods above to create one.
+            </p>
+            
+            {/* Admin & Password Reset Links */}
+            <div className="flex justify-center space-x-4 text-sm">
+              <a href="/admin-login" className="text-blue-600 hover:underline font-medium">
+                Admin Login
+              </a>
+              <span className="text-gray-300">•</span>
+              <a href="/admin-login" className="text-gray-600 hover:underline">
+                Forgot Password?
+              </a>
+            </div>
+            
+            <p className="text-xs text-gray-500">
+              By logging in, you agree to our <a href="/privacy-policy" className="text-primary hover:underline">Privacy Policy</a> and <a href="/terms-of-service" className="text-primary hover:underline">Terms of Service</a>.
+            </p>
+          </div>
         </div>
       </div>
     </div>

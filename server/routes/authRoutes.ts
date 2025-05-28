@@ -228,8 +228,18 @@ router.post('/admin-login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Check for valid admin credentials
-    if (email === 'support@weparlay.io' && password === 'Baysides3!') {
+    // Check for valid admin credentials - support multiple admin accounts
+    const validAdminCredentials = [
+      { email: 'support@weparlay.io', password: 'Baysides3!' },
+      { email: 'admin@weparlay.io', password: 'admin' },
+      { email: 'weparlay@admin.com', password: 'admin123' }
+    ];
+    
+    const isValidAdmin = validAdminCredentials.some(cred => 
+      cred.email === email && cred.password === password
+    );
+
+    if (isValidAdmin) {
       // Get admin user from database
       let adminUser = await storage.getUserByEmail?.(email);
       

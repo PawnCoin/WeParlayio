@@ -13,7 +13,7 @@ import { LogIn, UserPlus, Zap, Play } from "lucide-react";
 const LoginEnhanced: React.FC = () => {
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  
+
   const [loginData, setLoginData] = useState({
     username: '',
     password: '',
@@ -30,12 +30,12 @@ const LoginEnhanced: React.FC = () => {
     onSuccess: (data) => {
       localStorage.setItem('weparlay-user', JSON.stringify(data.user));
       localStorage.setItem('weparlay-token', data.token);
-      
+
       toast({
         title: "Welcome back!",
         description: `Good to see you again, ${data.user.username}!`,
       });
-      
+
       navigate('/');
     },
     onError: (error: any) => {
@@ -56,12 +56,12 @@ const LoginEnhanced: React.FC = () => {
     onSuccess: (data) => {
       localStorage.setItem('weparlay-user', JSON.stringify(data.user));
       localStorage.setItem('weparlay-token', data.token);
-      
+
       toast({
         title: "Account Created!",
         description: `Welcome ${data.user.username}! You got $25 to start betting!`,
       });
-      
+
       navigate('/');
     },
     onError: (error: any) => {
@@ -82,12 +82,12 @@ const LoginEnhanced: React.FC = () => {
     onSuccess: (data) => {
       localStorage.setItem('weparlay-user', JSON.stringify(data.user));
       localStorage.setItem('weparlay-token', data.token);
-      
+
       toast({
         title: "Demo Mode Activated!",
         description: "You have $1000 demo money to explore WeParlay!",
       });
-      
+
       navigate('/');
     },
   });
@@ -181,7 +181,7 @@ const LoginEnhanced: React.FC = () => {
                     'Sign In'
                   )}
                 </Button>
-                
+
                 <div className="text-center">
                   <button
                     onClick={() => navigate('/signup')}
@@ -213,7 +213,7 @@ const LoginEnhanced: React.FC = () => {
                     <li>• Complete later at your convenience</li>
                   </ul>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="quickEmail">Email Address</Label>
                   <Input
@@ -225,7 +225,7 @@ const LoginEnhanced: React.FC = () => {
                     onKeyPress={(e) => e.key === 'Enter' && handleQuickRegister()}
                   />
                 </div>
-                
+
                 <Button 
                   onClick={handleQuickRegister}
                   disabled={quickRegisterMutation.isPending}
@@ -267,7 +267,7 @@ const LoginEnhanced: React.FC = () => {
                     <li>• No registration required</li>
                   </ul>
                 </div>
-                
+
                 <Button 
                   onClick={() => demoMutation.mutate()}
                   disabled={demoMutation.isPending}
@@ -285,7 +285,7 @@ const LoginEnhanced: React.FC = () => {
                     </div>
                   )}
                 </Button>
-                
+
                 <p className="text-xs text-gray-500 text-center">
                   Demo session expires in 24 hours. Create an account to save your progress.
                 </p>
@@ -293,6 +293,28 @@ const LoginEnhanced: React.FC = () => {
             </Card>
           </TabsContent>
         </Tabs>
+      </div>
+
+      {/* Footer */}
+      <div className="text-center space-y-3">
+        <p className="text-sm text-gray-600">
+          New to WeParlay? Start betting in seconds with Quick Registration!
+        </p>
+
+        {/* Admin & Password Reset Links */}
+        <div className="flex justify-center space-x-4 text-sm">
+          <a href="/admin-login" className="text-blue-600 hover:underline font-medium">
+            Admin Login
+          </a>
+          <span className="text-gray-300">•</span>
+          <a href="/admin-login" className="text-gray-600 hover:underline">
+            Forgot Password?
+          </a>
+        </div>
+
+        <p className="text-xs text-gray-500">
+          By using WeParlay, you agree to our <a href="/privacy-policy" className="text-blue-600 hover:underline">Privacy Policy</a> and <a href="/terms-of-service" className="text-blue-600 hover:underline">Terms of Service</a>.
+        </p>
       </div>
     </div>
   );
