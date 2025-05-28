@@ -26,8 +26,12 @@ export async function setupVite(app: Express, server: Server) {
       server,
       host: "0.0.0.0",
       port: 5000,
+      overlay: false,
     },
     allowedHosts: true,
+    watch: {
+      usePolling: true,
+    },
   };
 
   const vite = await createViteServer({
