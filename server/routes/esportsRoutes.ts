@@ -3,6 +3,8 @@ import { unifiedGamingAPI } from '../services/unifiedGamingAPI';
 
 const router = express.Router();
 
+const TRACKER_API_KEY = process.env.TRACKER_API_KEY;
+
 // Real Riot Games API endpoints
 router.get('/riot/player/:summonerName', async (req, res) => {
   try {
@@ -118,103 +120,61 @@ router.get('/live-matches/:game?', async (req, res) => {
   try {
     const { game } = req.params;
 
-    // Use real PandaScore API for live matches
-    const realMatches = await unifiedGamingAPI.getEsportsMatches(game || 'lol');
-    
-    if (!realMatches || realMatches.length === 0) {
-      return res.json([]);
-    }
+    // Only return real live matches from actual APIs
+    const liveMatches = await unifiedGamingAPI.getEsportsMatches(game);
 
-    // Transform real API data to our format
-    const formattedMatches = realMatches.map((match: any) => ({
-      id: match.id,
-      game: match.videogame?.name || game,
-      tournament: match.tournament?.name || 'Unknown Tournament',
-      team1: {
-        name: match.opponents?.[0]?.opponent?.name || 'Team 1',
-        logo: match.opponents?.[0]?.opponent?.image_url || '',
-        score: match.results?.[0]?.score || 0
-      },
-      team2: {
-        name: match.opponents?.[1]?.opponent?.name || 'Team 2', 
-        logo: match.opponents?.[1]?.opponent?.image_url || '',
-        score: match.results?.[1]?.score || 0
-      },
-      status: match.status,
-      scheduled_at: match.scheduled_at,
-      live: match.status === 'running'
-    }));
+    const filteredMatches = game 
+      ? liveMatches.filter((match: any) => match.game?.toLowerCase().includes(game.toLowerCase()))
+      : liveMatches;
 
-    res.json(formattedMatches);
-  } catch (error) {
-    console.error('Error fetching real live matches:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch live matches. Please ensure PandaScore API key is configured.',
-      message: error.message 
-    });
+    res.json(filteredMatches);
+  } catch (error: any) {
+    console.error('Error fetching live matches:', error);
+    // Return empty array when no API available - no fake data
+    res.json([]);
   }
 });
 
-// Real player statistics from PandaScore API
+// Player statistics from REAL APIs only
 router.get('/player-stats/:game?', async (req, res) => {
   try {
     const { game } = req.params;
-    const pandaApiKey = process.env.PANDA_API_KEY;
-    
-    if (!pandaApiKey) {
-      return res.status(500).json({ 
-        error: 'PandaScore API key not configured. Please add PANDA_API_KEY to secrets.' 
-      });
+    const { player } = req.query;
+
+    if (!player) {
+      return res.json([]);
     }
 
-    // Fetch real player stats from PandaScore
-    const gameMapping: { [key: string]: string } = {
-      'lol': 'lol',
-      'cs2': 'cs',
-      'csgo': 'cs',
-      'valorant': 'valorant',
-      'dota2': 'dota2'
-    };
+    let playerStats;
 
-    const apiGame = gameMapping[game?.toLowerCase() || 'lol'] || 'lol';
-    
-    const response = await fetch(
-      `https://api.pandascore.co/${apiGame}/players?sort=name&page=1&per_page=20`,
-      {
-        headers: { Authorization: `Bearer ${pandaApiKey}` }
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`PandaScore API error: ${response.status}`);
+    switch (game?.toLowerCase()) {
+      case 'lol':
+      case 'league of legends':
+        playerStats = await unifiedGamingAPI.getRiotPlayerStats(player as string);
+        break;
+      case 'valorant':
+        const [username, tag] = (player as string).split('#');
+        if (username && tag) {
+          playerStats = await unifiedGamingAPI.getValorantStats(username, tag);
+        }
+        break;
+      case 'csgo':
+      case 'cs2':
+        if (TRACKER_API_KEY) {
+          playerStats = await unifiedGamingAPI.getCSGOStats(player as string);
+        } else {
+          throw new Error('Tracker.gg API key required for CS2 stats');
+        }
+        break;
+      default:
+        return res.json([]);
     }
 
-    const players = await response.json();
-    
-    // Transform real player data
-    const playerStats = players.map((player: any) => ({
-      id: player.id,
-      player: player.name,
-      team: player.current_team?.name || 'Free Agent',
-      game: player.videogame?.name || apiGame,
-      role: player.role || 'Unknown',
-      image_url: player.image_url,
-      nationality: player.nationality,
-      stats: {
-        // Real stats would come from additional API calls
-        // For now, we'll indicate these need separate endpoints
-        winRate: 'Requires match history API',
-        totalWinnings: player.current_team?.total_winnings || 0
-      }
-    }));
-
-    res.json(playerStats);
-  } catch (error) {
-    console.error('Error fetching real player stats:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch player stats from PandaScore API',
-      message: error.message 
-    });
+    res.json(playerStats ? [playerStats] : []);
+  } catch (error: any) {
+    console.error('Error fetching player stats:', error);
+    // Return empty array when no real data available
+    res.json([]);
   }
 });
 

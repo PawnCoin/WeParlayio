@@ -12,20 +12,20 @@ const cache = new NodeCache({ stdTTL: 60 }); // cache for 60 seconds
 const fetchWithCache = async (key: string, url: string, config: any = {}, apiName: string = 'unknown') => {
   // Check cache first
   if (cache.has(key)) return cache.get(key);
-  
+
   // Check rate limits
   if (!(await apiRateLimitManager.canMakeRequest(apiName))) {
     console.warn(`API limit reached for ${apiName}. Using cached data or throwing error.`);
     throw new Error(`API rate limit exceeded for ${apiName}. Please try again later.`);
   }
-  
+
   try {
     const { data } = await axios.get(url, config);
     cache.set(key, data);
-    
+
     // Record the API call
     await apiRateLimitManager.recordRequest(apiName);
-    
+
     return data;
   } catch (error) {
     console.error(`API fetch error for ${key}:`, error);
@@ -40,13 +40,13 @@ const RIOT_API_KEY = process.env.RIOT_API_KEY;
 const PANDA_API_KEY = process.env.PANDA_API_KEY;
 
 export class UnifiedGamingAPI {
-  
+
   // === Fortnite Stats ===
   async getFortniteStats(username: string) {
     if (!FORTNITE_API_KEY) {
       throw new Error('Fortnite API key not configured');
     }
-    
+
     const key = `fortnite-${username}`;
     return await fetchWithCache(key, 
       `https://fortnite-api.com/v2/stats/br/v2?name=${username}`, 
@@ -62,10 +62,10 @@ export class UnifiedGamingAPI {
     if (!RIOT_API_KEY) {
       throw new Error('Riot API key not configured');
     }
-    
+
     try {
       const key = `riot-${summonerName}-${region}`;
-      
+
       // Get summoner data
       const summoner = await fetchWithCache(key,
         `https://${region}.api.riotgames.com/lol/summoner/v4/summoners/by-name/${encodeURIComponent(summonerName)}`,
@@ -73,11 +73,11 @@ export class UnifiedGamingAPI {
           headers: { 'X-Riot-Token': RIOT_API_KEY }
         }
       );
-      
+
       if (!summoner || !summoner.puuid) {
         throw new Error('Summoner not found');
       }
-      
+
       // Get ranked data
       const rankedKey = `riot-ranked-${summoner.id}`;
       const rankedData = await fetchWithCache(rankedKey,
@@ -86,7 +86,7 @@ export class UnifiedGamingAPI {
           headers: { 'X-Riot-Token': RIOT_API_KEY }
         }
       );
-      
+
       return {
         ...summoner,
         rankedData: rankedData || []
@@ -101,7 +101,7 @@ export class UnifiedGamingAPI {
     if (!RIOT_API_KEY) {
       throw new Error('Riot API key not configured');
     }
-    
+
     try {
       const key = `matches-${puuid}`;
       const matchIds = await fetchWithCache(key,
@@ -110,11 +110,11 @@ export class UnifiedGamingAPI {
           headers: { 'X-Riot-Token': RIOT_API_KEY }
         }
       );
-      
+
       if (!matchIds || matchIds.length === 0) {
         return [];
       }
-      
+
       // Get detailed match data for first 5 matches
       const detailedMatches = await Promise.all(
         matchIds.slice(0, 5).map(async (matchId: string) => {
@@ -127,7 +127,7 @@ export class UnifiedGamingAPI {
           );
         })
       );
-      
+
       return detailedMatches.filter(match => match !== null);
     } catch (error) {
       console.error('League matches error:', error);
@@ -140,11 +140,11 @@ export class UnifiedGamingAPI {
     if (!RIOT_API_KEY) {
       throw new Error('Riot API key not configured');
     }
-    
+
     try {
       // First get summoner ID
       const summoner = await this.getRiotPlayerStats(summonerName, region);
-      
+
       const key = `live-game-${summoner.id}`;
       return await fetchWithCache(key,
         `https://${region}.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/${summoner.id}`,
@@ -166,10 +166,10 @@ export class UnifiedGamingAPI {
     if (!RIOT_API_KEY) {
       throw new Error('Riot API key not configured');
     }
-    
+
     try {
       const summoner = await this.getRiotPlayerStats(summonerName, region);
-      
+
       const key = `mastery-${summoner.id}`;
       return await fetchWithCache(key,
         `https://${region}.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/${summoner.id}`,
@@ -189,10 +189,10 @@ export class UnifiedGamingAPI {
       console.warn('Riot API key not configured, falling back to Tracker.gg');
       return this.getValorantStatsTracker(username, tag);
     }
-    
+
     try {
       const key = `valorant-${username}-${tag}-${region}`;
-      
+
       // Get account data first
       const account = await fetchWithCache(`valorant-account-${username}-${tag}`,
         `https://${region}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(username)}/${encodeURIComponent(tag)}`,
@@ -200,11 +200,11 @@ export class UnifiedGamingAPI {
           headers: { 'X-Riot-Token': RIOT_API_KEY }
         }
       );
-      
+
       if (!account || !account.puuid) {
         throw new Error('Valorant account not found');
       }
-      
+
       // Get competitive data
       const competitive = await fetchWithCache(`valorant-competitive-${account.puuid}`,
         `https://${region}.api.riotgames.com/val/ranked/v1/leaderboards/by-act/d929bc38-4ab6-7da4-94f0-ee84f8ac141e?size=200&startIndex=0`,
@@ -212,7 +212,7 @@ export class UnifiedGamingAPI {
           headers: { 'X-Riot-Token': RIOT_API_KEY }
         }
       );
-      
+
       return {
         account,
         competitive,
@@ -229,7 +229,7 @@ export class UnifiedGamingAPI {
     if (!TRACKER_API_KEY) {
       throw new Error('No API keys configured for Valorant stats');
     }
-    
+
     const key = `valorant-tracker-${username}-${tag}`;
     return await fetchWithCache(key,
       `https://api.tracker.gg/api/v2/valorant/standard/profile/riot/${username}%23${tag}`,
@@ -244,7 +244,7 @@ export class UnifiedGamingAPI {
     if (!RIOT_API_KEY) {
       throw new Error('Riot API key not configured');
     }
-    
+
     try {
       const key = `valorant-matches-${puuid}`;
       return await fetchWithCache(key,
@@ -263,7 +263,7 @@ export class UnifiedGamingAPI {
     if (!TRACKER_API_KEY) {
       throw new Error('Tracker API key not configured');
     }
-    
+
     const key = `csgo-${steamId}`;
     return await fetchWithCache(key,
       `https://api.tracker.gg/api/v2/csgo/standard/profile/steam/${steamId}`,
@@ -273,12 +273,12 @@ export class UnifiedGamingAPI {
     );
   }
 
-  // === Real Esports Tournaments Only ===
+  // === Esports Tournaments ===
   async getEsportsTournaments(game: string = 'lol') {
     if (!PANDA_API_KEY) {
-      throw new Error('PandaScore API key required. Please configure PANDA_API_KEY in secrets.');
+      throw new Error('PandaScore API key not configured - no tournaments available');
     }
-    
+
     const key = `tournaments-${game}`;
     return await fetchWithCache(key,
       `https://api.pandascore.co/${game}/tournaments/running`,
@@ -290,9 +290,9 @@ export class UnifiedGamingAPI {
 
   async getEsportsMatches(game: string = 'lol') {
     if (!PANDA_API_KEY) {
-      throw new Error('PandaScore API key required. Please configure PANDA_API_KEY in secrets.');
+      throw new Error('PandaScore API key not configured - no matches available');
     }
-    
+
     const key = `matches-${game}`;
     return await fetchWithCache(key,
       `https://api.pandascore.co/${game}/matches/running`,
@@ -323,7 +323,7 @@ export class UnifiedGamingAPI {
     if (!PANDA_API_KEY) {
       throw new Error('PandaScore API key required for tournament data');
     }
-    
+
     const key = `real-tournaments-${game}`;
     return await fetchWithCache(key,
       `https://api.pandascore.co/${game}/tournaments/running`,
@@ -337,7 +337,7 @@ export class UnifiedGamingAPI {
     if (!PANDA_API_KEY) {
       throw new Error('PandaScore API key required for match data');
     }
-    
+
     const key = `real-matches-${game}`;
     return await fetchWithCache(key,
       `https://api.pandascore.co/${game}/matches/running`,
@@ -361,7 +361,7 @@ export class UnifiedGamingAPI {
   // === Gaming Performance Analysis ===
   async analyzeGamingPerformance(platform: string, username: string, game: string) {
     let stats;
-    
+
     try {
       switch (game.toLowerCase()) {
         case 'fortnite':
@@ -412,7 +412,7 @@ export class UnifiedGamingAPI {
 
   private generateBettingRecommendations(stats: any, game: string) {
     const rating = this.calculatePerformanceRating(stats, game);
-    
+
     return {
       confidence: rating > 70 ? 'high' : rating > 40 ? 'medium' : 'low',
       recommended_bets: [

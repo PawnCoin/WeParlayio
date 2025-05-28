@@ -31,7 +31,7 @@ const EsportsHub: React.FC = () => {
   const [betAmount, setBetAmount] = useState('');
 
   // Fetch live esports matches with REAL data integration
-  const { data: liveMatches, isLoading } = useQuery({
+  const { data: liveMatches, isLoading, error } = useQuery({
     queryKey: ['/api/esports/live-matches', selectedGame],
     refetchInterval: 5000, // 5 second updates for live data
   });
