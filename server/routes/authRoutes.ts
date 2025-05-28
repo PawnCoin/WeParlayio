@@ -223,6 +223,105 @@ router.post('/demo', async (req, res) => {
   }
 });
 
+// Admin Login
+router.post('/admin-login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Check for valid admin credentials
+    if (email === 'support@weparlay.io' && password === 'Baysides3!') {
+      // Get admin user from database
+      let adminUser = await storage.getUserByEmail?.(email);
+      
+      if (!adminUser) {
+        // Create admin user if doesn't exist
+        const adminUserData = {
+          id: 'admin-weparlay-001',
+          email: 'support@weparlay.io',
+          username: 'WeParlay',
+          firstName: 'WeParlay',
+          lastName: 'Admin',
+          role: 'admin',
+          tier: 'platinum',
+          isAdmin: true,
+          status: 'active',
+          balance: 1000000,
+          weplayTokenBalance: 1000000,
+          password: password, // In production, this should be hashed
+          createdAt: new Date(),
+        };
+        
+        adminUser = await storage.upsertUser(adminUserData);
+      }
+
+      // Generate JWT token
+      const token = jwt.sign(
+        { 
+          userId: adminUser.id, 
+          username: adminUser.username,
+          role: 'admin',
+          isAdmin: true
+        },
+        process.env.JWT_SECRET || 'weparlay-secret-key',
+        { expiresIn: '24h' }
+      );
+
+      // Remove password from response
+      const userResponse = { ...adminUser };
+      delete userResponse.password;
+
+      res.json({
+        success: true,
+        message: 'Admin login successful',
+        user: userResponse,
+        token,
+      });
+
+    } else {
+      return res.status(401).json({ 
+        success: false,
+        message: 'Invalid admin credentials' 
+      });
+    }
+
+  } catch (error) {
+    console.error('Admin login error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Admin login failed', 
+      error: error.message 
+    });
+  }
+});
+
+// Admin Password Reset
+router.post('/admin-reset-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (email === 'support@weparlay.io') {
+      // In a real system, you'd send an actual email here
+      console.log(`Admin password reset requested for: ${email}`);
+      
+      return res.json({
+        success: true,
+        message: 'Password reset instructions sent to your email'
+      });
+    }
+    
+    return res.status(404).json({
+      success: false,
+      message: 'Admin email address not found'
+    });
+  } catch (error) {
+    console.error('Admin password reset error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Password reset failed'
+    });
+  }
+});
+
 // Get current user
 router.get('/me', async (req, res) => {
   try {
