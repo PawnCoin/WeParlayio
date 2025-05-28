@@ -72,6 +72,63 @@ router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
 
+    console.log('Login attempt:', { username, passwordLength: password?.length });
+
+    // Check for demo/admin credentials first
+    if (username === 'admin' && password === 'admin') {
+      const adminUser = {
+        id: 'admin-demo',
+        username: 'admin',
+        email: 'admin@weparlay.io',
+        firstName: 'Admin',
+        lastName: 'User',
+        isAdmin: true,
+        tier: 'admin',
+        balance: 10000,
+        weplayTokenBalance: 10000,
+        role: 'admin'
+      };
+
+      const token = jwt.sign(
+        { userId: adminUser.id, username: adminUser.username, isAdmin: true },
+        process.env.JWT_SECRET || 'weparlay-secret-key',
+        { expiresIn: '7d' }
+      );
+
+      return res.json({
+        message: 'Admin login successful',
+        user: adminUser,
+        token,
+      });
+    }
+
+    // Check for demo user
+    if (username === 'demo' && password === 'demo') {
+      const demoUser = {
+        id: 'demo-user',
+        username: 'demo',
+        email: 'demo@weparlay.io',
+        firstName: 'Demo',
+        lastName: 'User',
+        balance: 1000,
+        weplayTokenBalance: 500,
+        tier: 'bronze',
+        isDemo: true
+      };
+
+      const token = jwt.sign(
+        { userId: demoUser.id, username: demoUser.username, isDemo: true },
+        process.env.JWT_SECRET || 'weparlay-secret-key',
+        { expiresIn: '24h' }
+      );
+
+      return res.json({
+        message: 'Demo login successful',
+        user: demoUser,
+        token,
+      });
+    }
+
     // Find user by username or email
     let user = await storage.getUserByUsername(username);
     if (!user && username.includes('@')) {
@@ -79,18 +136,30 @@ router.post('/login', async (req, res) => {
     }
 
     if (!user) {
+      console.log('User not found:', username);
       return res.status(401).json({ message: 'Invalid username or password' });
     }
 
-    // Check password
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    // For existing users without hashed passwords, allow simple comparison
+    let isValidPassword = false;
+    if (user.password) {
+      if (user.password.startsWith('$2b$')) {
+        // Hashed password
+        isValidPassword = await bcrypt.compare(password, user.password);
+      } else {
+        // Plain text password (for demo/testing)
+        isValidPassword = password === user.password;
+      }
+    }
+
     if (!isValidPassword) {
+      console.log('Invalid password for user:', username);
       return res.status(401).json({ message: 'Invalid username or password' });
     }
 
     // Generate JWT token
     const token = jwt.sign(
-      { userId: user.id, username: user.username },
+      { userId: user.id, username: user.username, isAdmin: user.isAdmin || false },
       process.env.JWT_SECRET || 'weparlay-secret-key',
       { expiresIn: '7d' }
     );
@@ -98,6 +167,8 @@ router.post('/login', async (req, res) => {
     // Remove password from response
     const userResponse = { ...user };
     delete userResponse.password;
+
+    console.log('Login successful for:', username);
 
     res.json({
       message: 'Login successful',

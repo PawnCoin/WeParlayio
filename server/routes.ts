@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import jwt from 'jsonwebtoken';
 import { storage } from "./storage";
 import authRoutes from "./routes/authRoutes";
 import aiSupportRoutes from "./routes/aiSupport";
@@ -96,6 +97,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lastName: 'Owner',
         role: 'admin',
         tier: 'platinum',
+
+  
+  // Create test users on startup
+  app.post('/api/setup-test-users', async (req, res) => {
+    try {
+      // Create admin test user
+      const adminUser = await storage.upsertUser({
+        id: 'admin-test',
+        email: 'admin@weparlay.io',
+        username: 'admin',
+        password: 'admin', // Plain text for testing
+        firstName: 'Admin',
+        lastName: 'User',
+        role: 'admin',
+        tier: 'admin',
+        isAdmin: true,
+        balance: 10000,
+        weplayTokenBalance: 10000,
+        status: 'active'
+      });
+
+      // Create demo test user
+      const demoUser = await storage.upsertUser({
+        id: 'demo-test',
+        email: 'demo@weparlay.io',
+        username: 'demo',
+        password: 'demo', // Plain text for testing
+        firstName: 'Demo',
+        lastName: 'User',
+        role: 'user',
+        tier: 'bronze',
+        balance: 1000,
+        weplayTokenBalance: 500,
+        status: 'active'
+      });
+
+      res.json({
+        message: 'Test users created successfully',
+        users: [
+          { username: 'admin', password: 'admin', role: 'admin' },
+          { username: 'demo', password: 'demo', role: 'user' }
+        ]
+      });
+    } catch (error) {
+      console.error('Error creating test users:', error);
+      res.status(500).json({ message: 'Failed to create test users' });
+    }
+  });
+
+
         isAdmin: true,
         status: 'active',
         balance: 1000000, // 1 million WeParlay Cash
@@ -160,20 +211,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Check admin privileges
   app.get('/api/user/admin-status', async (req: any, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      // Check for JWT token in headers
+      const token = req.headers.authorization?.replace('Bearer ', '');
+      
+      if (!token) {
         return res.json({ isAdmin: false });
       }
 
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      
-      res.json({
-        isAdmin: user?.isAdmin || false,
-        role: user?.role || 'user',
-        tier: user?.tier || 'bronze',
-        hasFullAccess: user?.isAdmin || false,
-        username: user?.username
-      });
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'weparlay-secret-key') as any;
+        
+        // Check if it's admin or demo user
+        if (decoded.isAdmin || decoded.userId === 'admin-demo') {
+          return res.json({
+            isAdmin: true,
+            role: 'admin',
+            tier: 'admin',
+            hasFullAccess: true,
+            username: decoded.username
+          });
+        }
+
+        const user = await storage.getUser(decoded.userId);
+        
+        res.json({
+          isAdmin: user?.isAdmin || false,
+          role: user?.role || 'user',
+          tier: user?.tier || 'bronze',
+          hasFullAccess: user?.isAdmin || false,
+          username: user?.username || decoded.username
+        });
+      } catch (jwtError) {
+        console.error('JWT verification failed:', jwtError);
+        return res.json({ isAdmin: false });
+      }
     } catch (error) {
       console.error('Error checking admin status:', error);
       res.json({ isAdmin: false });
