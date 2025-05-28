@@ -27,7 +27,7 @@ import {
   History,
   Coins,
   Banknote,
-  Lock,
+  ShieldCheck,
   Crown,
   User,
   MapPin,
@@ -93,7 +93,7 @@ const UserProfileBanking: React.FC = () => {
       <div className="container mx-auto px-4 py-8">
         <Card>
           <CardContent className="flex flex-col items-center justify-center h-64">
-            <Lock className="h-16 w-16 text-gray-400 mb-4" />
+            <ShieldCheck className="h-16 w-16 text-gray-400 mb-4" />
             <h3 className="text-lg font-semibold text-gray-600">Authentication Required</h3>
             <p className="text-gray-500">Please log in to view your profile.</p>
           </CardContent>
