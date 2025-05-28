@@ -228,71 +228,96 @@ router.post('/admin-login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Check for valid admin credentials - support multiple admin accounts
+    // Define valid admin credentials
     const validAdminCredentials = [
       { email: 'support@weparlay.io', password: 'Baysides3!' },
       { email: 'admin@weparlay.io', password: 'admin' },
       { email: 'weparlay@admin.com', password: 'admin123' }
     ];
     
-    const isValidAdmin = validAdminCredentials.some(cred => 
-      cred.email === email && cred.password === password
-    );
-
-    if (isValidAdmin) {
-      // Get admin user from database
-      let adminUser = await storage.getUserByEmail?.(email);
-      
-      if (!adminUser) {
-        // Create admin user if doesn't exist
-        const adminUserData = {
-          id: 'admin-weparlay-001',
-          email: 'support@weparlay.io',
-          username: 'WeParlay',
-          firstName: 'WeParlay',
-          lastName: 'Admin',
-          role: 'admin',
-          tier: 'platinum',
-          isAdmin: true,
-          status: 'active',
-          balance: 1000000,
-          weplayTokenBalance: 1000000,
-          password: password, // In production, this should be hashed
-          createdAt: new Date(),
-        };
-        
-        adminUser = await storage.upsertUser(adminUserData);
-      }
-
-      // Generate JWT token
-      const token = jwt.sign(
-        { 
-          userId: adminUser.id, 
-          username: adminUser.username,
-          role: 'admin',
-          isAdmin: true
-        },
-        process.env.JWT_SECRET || 'weparlay-secret-key',
-        { expiresIn: '24h' }
-      );
-
-      // Remove password from response
-      const userResponse = { ...adminUser };
-      delete userResponse.password;
-
-      res.json({
-        success: true,
-        message: 'Admin login successful',
-        user: userResponse,
-        token,
-      });
-
-    } else {
+    // Check if this is a valid admin email
+    const adminCred = validAdminCredentials.find(cred => cred.email === email);
+    
+    if (!adminCred) {
       return res.status(401).json({ 
         success: false,
         message: 'Invalid admin credentials' 
       });
     }
+
+    // Get admin user from database if exists
+    let adminUser = await storage.getUserByEmail?.(email);
+    
+    let isValidPassword = false;
+    
+    if (adminUser) {
+      // If user exists, check if password is hashed or plain text
+      if (adminUser.password && adminUser.password.startsWith('$2b$')) {
+        // Password is hashed, use bcrypt to compare
+        isValidPassword = await bcrypt.compare(password, adminUser.password);
+      } else {
+        // Password is plain text, direct comparison
+        isValidPassword = adminUser.password === password;
+      }
+    } else {
+      // User doesn't exist, check against valid credentials
+      isValidPassword = adminCred.password === password;
+    }
+
+    if (!isValidPassword) {
+      return res.status(401).json({ 
+        success: false,
+        message: 'Invalid admin credentials' 
+      });
+    }
+
+    // Create admin user if doesn't exist
+    if (!adminUser) {
+      // Hash the password for storage
+      const hashedPassword = await bcrypt.hash(adminCred.password, 12);
+      
+      const adminUserData = {
+        id: `admin-${email.split('@')[0]}-${Date.now()}`,
+        email: adminCred.email,
+        username: email === 'support@weparlay.io' ? 'WeParlay' : 'Admin',
+        firstName: 'WeParlay',
+        lastName: 'Admin',
+        role: 'admin',
+        tier: 'platinum',
+        isAdmin: true,
+        status: 'active',
+        balance: 1000000,
+        weplayTokenBalance: 1000000,
+        password: hashedPassword,
+        createdAt: new Date(),
+      };
+      
+      adminUser = await storage.upsertUser(adminUserData);
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { 
+        userId: adminUser.id, 
+        username: adminUser.username,
+        role: 'admin',
+        isAdmin: true,
+        email: adminUser.email
+      },
+      process.env.JWT_SECRET || 'weparlay-secret-key',
+      { expiresIn: '24h' }
+    );
+
+    // Remove password from response
+    const userResponse = { ...adminUser };
+    delete userResponse.password;
+
+    res.json({
+      success: true,
+      message: 'Admin login successful',
+      user: userResponse,
+      token,
+    });
 
   } catch (error) {
     console.error('Admin login error:', error);
