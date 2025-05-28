@@ -97,7 +97,10 @@ const VideoGameBetting: React.FC = () => {
   const { toast } = useToast();
   const [isCustomGame, setIsCustomGame] = useState(false);
   const [isCustomBetType, setIsCustomBetType] = useState(false);
-  
+  const [selectedGame, setSelectedGame] = useState<string>("valorant");
+  const [liveMatches, setLiveMatches] = useState<any[]>([]);
+  const [playerProps, setPlayerProps] = useState<any[]>([]);
+
   // Default form values
   const defaultValues: VideoGameBetFormValues = {
     gameId: "",
@@ -115,19 +118,19 @@ const VideoGameBetting: React.FC = () => {
     isPublic: true,
     useVirtualCurrency: true
   };
-  
+
   const form = useForm<VideoGameBetFormValues>({
     resolver: zodResolver(videoGameBetSchema),
     defaultValues
   });
-  
+
   // Form submission handler
   const onSubmit = async (data: VideoGameBetFormValues) => {
     try {
       // Format bet details for API
       const gameName = isCustomGame ? data.customGame : popularGames.find(g => g.id === data.gameId)?.name;
       const betTypeName = isCustomBetType ? data.customBetCondition : betTypes.find(b => b.id === data.betType)?.name;
-      
+
       const betData = {
         gameType: gameName,
         tournament: `${data.team1} vs ${data.team2}`,
@@ -137,15 +140,15 @@ const VideoGameBetting: React.FC = () => {
       };
 
       const response = await apiRequest('POST', '/api/gaming/bets', betData);
-      
+
       if (response.ok) {
         const result = await response.json();
-        
+
         toast({
           title: "Gaming Bet Placed Successfully!",
           description: `${gameName}: ${betTypeName} - $${data.amount} bet placed`,
         });
-        
+
         // Send invite notification if public
         if (data.isPublic) {
           toast({
@@ -154,7 +157,7 @@ const VideoGameBetting: React.FC = () => {
             variant: "default"
           });
         }
-        
+
         // Reset form
         form.reset(defaultValues);
       } else {
@@ -169,19 +172,19 @@ const VideoGameBetting: React.FC = () => {
       });
     }
   };
-  
+
   // Handle game selection changes
   const handleGameChange = (value: string) => {
     form.setValue("gameId", value);
     setIsCustomGame(value === "custom");
   };
-  
+
   // Handle bet type selection changes
   const handleBetTypeChange = (value: string) => {
     form.setValue("betType", value);
     setIsCustomBetType(value === "custom");
   };
-  
+
   // Toggle between real and virtual currency
   const handleCurrencyToggle = (checked: boolean) => {
     form.setValue("useVirtualCurrency", checked);
@@ -204,7 +207,7 @@ const VideoGameBetting: React.FC = () => {
             Create custom bets for any video game with WeParlay
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent className="pt-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -219,7 +222,7 @@ const VideoGameBetting: React.FC = () => {
                     {form.watch("useVirtualCurrency") ? "WeParlay Cash" : "Real Money"}
                   </span>
                 </div>
-                
+
                 <div className="flex items-center">
                   <span className="text-sm font-medium mr-2">Public Challenge</span>
                   <Switch 
@@ -228,7 +231,7 @@ const VideoGameBetting: React.FC = () => {
                   />
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <FormField
@@ -258,7 +261,7 @@ const VideoGameBetting: React.FC = () => {
                       </FormItem>
                     )}
                   />
-                  
+
                   {isCustomGame && (
                     <FormField
                       control={form.control}
@@ -274,7 +277,7 @@ const VideoGameBetting: React.FC = () => {
                       )}
                     />
                   )}
-                  
+
                   <FormField
                     control={form.control}
                     name="betType"
@@ -302,7 +305,7 @@ const VideoGameBetting: React.FC = () => {
                       </FormItem>
                     )}
                   />
-                  
+
                   {isCustomBetType && (
                     <FormField
                       control={form.control}
@@ -319,7 +322,7 @@ const VideoGameBetting: React.FC = () => {
                     />
                   )}
                 </div>
-                
+
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
@@ -335,7 +338,7 @@ const VideoGameBetting: React.FC = () => {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="team2"
@@ -350,7 +353,7 @@ const VideoGameBetting: React.FC = () => {
                       )}
                     />
                   </div>
-                  
+
                   <FormField
                     control={form.control}
                     name="odds.team1"
@@ -373,7 +376,7 @@ const VideoGameBetting: React.FC = () => {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="odds.team2"
@@ -395,7 +398,7 @@ const VideoGameBetting: React.FC = () => {
                   />
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
@@ -428,7 +431,7 @@ const VideoGameBetting: React.FC = () => {
                             </Select>
                           )}
                         />
-                        
+
                         <FormControl>
                           <Input 
                             type="number" 
@@ -443,7 +446,7 @@ const VideoGameBetting: React.FC = () => {
                   )}
                 />
               </div>
-              
+
               <Button type="submit" className="w-full">
                 <PlusCircle className="h-4 w-4 mr-2" />
                 {form.watch("isPublic") ? "Create Betting Challenge" : "Create Private Bet"}
