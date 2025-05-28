@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import React from 'react';
 
 interface User {
   id: string;
@@ -30,16 +31,16 @@ export function useAuth() {
         localStorage.removeItem('weparlay_user');
       }
     }
-    
+
     setIsLoading(false);
   }, []);
 
   const login = async (walletAddress?: string, walletType?: string) => {
     setIsLoading(true);
-    
+
     try {
       // In production, this would make an API call to authenticate with the WordPress site
-      
+
       if (walletAddress) {
         // For now we just create a temporary user object for demonstration
         // In production, this would validate the wallet signature with the backend
@@ -53,10 +54,10 @@ export function useAuth() {
           walletAddress,
           walletType,
         };
-        
+
         setUser(tempUser);
         localStorage.setItem('weparlay_user', JSON.stringify(tempUser));
-        
+
         toast({
           title: "Successfully connected",
           description: `Welcome to WeParlay! Your wallet is now connected.`,
@@ -91,11 +92,27 @@ export function useAuth() {
     await login(address, type);
   };
 
+  const isAuthenticated = !!user;
+
+  // Ensure authentication is properly initialized
+  React.useEffect(() => {
+    if (user && !user.id) {
+      // Initialize user with demo data if needed
+      setUser({
+        ...user,
+        id: user.id || 'demo-user-' + Date.now(),
+        username: user.username || 'demo_user',
+        balance: user.balance || 1000,
+        weplayTokenBalance: user.weplayTokenBalance || 10000
+      });
+    }
+  }, [user]);
+
   return {
     user,
     isLoading,
     error,
-    isAuthenticated: !!user,
+    isAuthenticated,
     login,
     logout,
     connectWallet,

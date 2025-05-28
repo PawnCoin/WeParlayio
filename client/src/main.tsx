@@ -34,7 +34,12 @@ console.log('🛡️ WeParlay Error Reporting System initialized');
 
 // Apply theme and WordPress config early
 import('./lib/wordpressSync').then(({ applyWordPressConfig }) => {
-  applyWordPressConfig();
+  // Apply WordPress configuration if available
+  if (window.wordpressConfig && typeof applyWordPressConfig === 'function') {
+    applyWordPressConfig(window.wordpressConfig);
+  } else {
+    console.log('WordPress config not available or function not defined');
+  }
 }).catch(console.error);
 
 createRoot(document.getElementById("root")!).render(

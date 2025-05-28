@@ -62,7 +62,7 @@ let currentConfig: DesignConfig = { ...defaultConfig };
 function applyDesignConfig(config: DesignConfig) {
   // Store the current configuration
   currentConfig = { ...config };
-  
+
   // Apply CSS variables
   document.documentElement.style.setProperty('--weparlay-primary', config.colors.primary);
   document.documentElement.style.setProperty('--weparlay-secondary', config.colors.secondary);
@@ -73,7 +73,7 @@ function applyDesignConfig(config: DesignConfig) {
     '--weparlay-button-radius', 
     config.buttons.style === 'rounded' ? '25px' : '4px'
   );
-  
+
   // Apply logo if provided
   if (config.logo.url) {
     const logoElements = document.querySelectorAll('.weparlay-logo') as NodeListOf<HTMLImageElement>;
@@ -82,7 +82,7 @@ function applyDesignConfig(config: DesignConfig) {
       logo.style.display = 'block';
     });
   }
-  
+
   // Apply layout
   const appContainer = document.querySelector('.app-container');
   if (appContainer) {
@@ -94,10 +94,10 @@ function applyDesignConfig(config: DesignConfig) {
       appContainer.classList.remove('boxed-layout');
     }
   }
-  
+
   // Apply widget visibility and order
   applyWidgetConfig(config.widgets);
-  
+
   console.log('Applied WordPress design configuration', config);
 }
 
@@ -106,7 +106,7 @@ function applyDesignConfig(config: DesignConfig) {
  */
 function applyWidgetConfig(widgetConfig: DesignConfig['widgets']) {
   const { order, visible } = widgetConfig;
-  
+
   // Hide/show widgets based on visibility settings
   document.querySelectorAll('[data-widget-id]').forEach((widget) => {
     const widgetId = widget.getAttribute('data-widget-id');
@@ -118,12 +118,12 @@ function applyWidgetConfig(widgetConfig: DesignConfig['widgets']) {
       }
     }
   });
-  
+
   // Reorder widgets based on order settings
   const widgetContainer = document.querySelector('.weparlay-widgets-container');
   if (widgetContainer) {
     const widgetElements: { [key: string]: HTMLElement } = {};
-    
+
     // Collect all widgets
     document.querySelectorAll('[data-widget-id]').forEach((widget) => {
       const widgetId = widget.getAttribute('data-widget-id');
@@ -131,10 +131,10 @@ function applyWidgetConfig(widgetConfig: DesignConfig['widgets']) {
         widgetElements[widgetId] = widget as HTMLElement;
       }
     });
-    
+
     // Clear the container
     widgetContainer.innerHTML = '';
-    
+
     // Append widgets in the specified order
     order.forEach((widgetId) => {
       if (widgetElements[widgetId] && visible.includes(widgetId)) {
@@ -150,13 +150,13 @@ function applyWidgetConfig(widgetConfig: DesignConfig['widgets']) {
 export function initWordPressSync() {
   // Apply default configuration
   applyDesignConfig(defaultConfig);
-  
+
   // Listen for messages from the parent window (WordPress)
   window.addEventListener('message', (event) => {
     // Only accept messages from trusted domain (will be the WordPress site)
     // For development, we accept messages from any origin
     // In production, this should be restricted to the WordPress domain
-    
+
     try {
       // Check if the message has the expected shape
       if (event.data && event.data.action === 'theme') {
@@ -181,7 +181,7 @@ export function initWordPressSync() {
       console.error('Error processing WordPress design message', error);
     }
   });
-  
+
   // Helper function to send current size to parent
   function sendSizeToParent() {
     if (window.self !== window.top) {
@@ -196,7 +196,7 @@ export function initWordPressSync() {
       }
     }
   }
-  
+
   // Notify the parent window (WordPress) that we're ready to receive design updates
   try {
     // Only send the message if we're in an iframe
@@ -212,7 +212,7 @@ export function initWordPressSync() {
           '*' // Using * to work in all environments
         );
       }, 500);
-      
+
       // Send initial ready message
       window.parent.postMessage(
         { 
@@ -234,6 +234,34 @@ export function initWordPressSync() {
 export function getDesignConfig(): DesignConfig {
   return { ...currentConfig };
 }
+
+// Apply WordPress configuration function
+export const applyWordPressConfig = (config: any) => {
+  try {
+    console.log('Applied WordPress design configuration', config);
+
+    // Apply color scheme
+    if (config.colors) {
+      document.documentElement.style.setProperty('--wp-primary', config.colors.primary || '#3498db');
+      document.documentElement.style.setProperty('--wp-secondary', config.colors.secondary || '#2c3e50');
+      document.documentElement.style.setProperty('--wp-background', config.colors.background || '#ffffff');
+      document.documentElement.style.setProperty('--wp-text', config.colors.text || '#333333');
+    }
+
+    // Apply fonts
+    if (config.fonts?.family) {
+      document.documentElement.style.setProperty('--wp-font-family', config.fonts.family);
+    }
+
+    // Store config for use across components
+    window.wpConfig = config;
+  } catch (error) {
+    console.error('Error applying WordPress config:', error);
+  }
+};
+
+// Make function globally available
+(window as any).applyWordPressConfig = applyWordPressConfig;
 
 export default {
   initWordPressSync,
