@@ -43,7 +43,7 @@ import Support from "@/pages/Support"; // Automated support system
 import WalletManagement from "@/pages/WalletManagement"; // Cryptocurrency wallet management
 import CryptoInformation from "@/pages/CryptoInformation"; // Cryptocurrency information and guides
 import SmsChallenge from "@/pages/SmsChallenge"; // VIP SMS Challenge system
-import SecureBankingHub from "@/components/banking/SecureBankingHub"; // Secure banking with multiple payment methods
+import UserProfileBanking from "@/pages/UserProfileBanking"; // Complete user profile with integrated banking
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
 import MobileVoiceBetting from "@/components/mobile/MobileVoiceBetting";
@@ -151,12 +151,9 @@ function Router() {
       <Route path="/terms-of-service" component={TermsOfService} />
       <Route path="/support" component={Support} />
       <Route path="/notification-test" component={NotificationTest} />
-      <Route path="/wallet-management" component={WalletManagement} />
-      <Route path="/crypto-information" component={CryptoInformation} />
-      <Route path="/banking" component={SecureBankingHub} />
-      <Route path="/secure-banking" component={SecureBankingHub} />
-      <Route path="/deposit" component={SecureBankingHub} />
-      <Route path="/withdraw" component={SecureBankingHub} />
+      <Route path="/profile" component={UserProfileBanking} />
+      <Route path="/user-profile" component={UserProfileBanking} />
+      <Route path="/my-account" component={UserProfileBanking} />
       <Route path="/onboarding-demo" component={OnboardingDemo} />
       <Route component={NotFound} />
     </Switch>

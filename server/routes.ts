@@ -19,6 +19,7 @@ import notificationRoutes from "./routes/notificationRoutes";
 import { socialMediaBotRouter } from "./routes/socialMediaBotRoutes";
 import gamingRoutes from "./routes/gamingRoutes";
 import unifiedSportsRoutes from "./routes/unifiedSportsRoutes";
+import { bankingRouter } from "./routes/bankingRoutes";
 
 // Initialize The Odds API services
 const oddsApiService = new OddsApiService();
@@ -49,6 +50,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register notification routes
   app.use('/api/notifications', notificationRoutes);
+  
+  // Register Banking routes for real deposits, withdrawals, and betting
+  app.use('/api/banking', bankingRouter);
 
   // Create Admin Accounts on Startup
   app.post('/api/setup-admin-accounts', async (req, res) => {
