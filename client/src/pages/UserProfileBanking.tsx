@@ -38,6 +38,7 @@ import {
 import PlaidLinkComponent from '@/components/banking/PlaidLinkComponent';
 import EnhancedDepositWithdraw from '@/components/banking/EnhancedDepositWithdraw';
 import SecurityAuditPanel from '@/components/banking/SecurityAuditPanel';
+import LiveSecurityMonitor from '@/components/banking/LiveSecurityMonitor';
 
 const UserProfileBanking: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
@@ -176,7 +177,7 @@ const UserProfileBanking: React.FC = () => {
 
       {/* Main Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="profile">
             <User className="h-4 w-4 mr-2" />
             Profile
@@ -188,6 +189,10 @@ const UserProfileBanking: React.FC = () => {
           <TabsTrigger value="accounts">
             <Wallet className="h-4 w-4 mr-2" />
             Accounts
+          </TabsTrigger>
+          <TabsTrigger value="monitor">
+            <Activity className="h-4 w-4 mr-2" />
+            Live Monitor
           </TabsTrigger>
           <TabsTrigger value="security">
             <Shield className="h-4 w-4 mr-2" />
@@ -241,6 +246,10 @@ const UserProfileBanking: React.FC = () => {
 
         <TabsContent value="accounts" className="space-y-4">
           <PlaidLinkComponent />
+        </TabsContent>
+
+        <TabsContent value="monitor" className="space-y-4">
+          <LiveSecurityMonitor />
         </TabsContent>
 
         <TabsContent value="security" className="space-y-4">
