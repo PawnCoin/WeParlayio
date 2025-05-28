@@ -127,7 +127,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 onCurrencyChange={handleCurrencySwitch}
               />
 
-              <Link href="/wallet-management">
+              <Link href="/wallet-management-enhanced">
                 <Button variant="ghost" size="sm" className="text-white hover:text-green-500 flex items-center">
                   <Wallet className="h-4 w-4 mr-1" />
                   <span>Wallet</span>
@@ -168,7 +168,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem asChild className="flex items-center">
-                        <Link href="/wallet-management">
+                        <Link href="/wallet-management-enhanced">
                           <div className="flex items-center w-full">
                             <Wallet className="mr-2 h-4 w-4" />
                             Manage Wallets
@@ -176,7 +176,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild className="flex items-center">
-                        <Link href="/wallet-management?tab=deposit-withdraw">
+                        <Link href="/wallet-management-enhanced?tab=deposit-withdraw">
                           <div className="flex items-center w-full">
                             <Coins className="mr-2 h-4 w-4" />
                             Deposit/Withdraw
@@ -193,7 +193,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild className="flex items-center">
-                        <Link href="/wallet-management?tab=transactions">
+                        <Link href="/wallet-management-enhanced?tab=transactions">
                           <div className="flex items-center w-full">
                             <CreditCard className="mr-2 h-4 w-4" />
                             Transaction History
@@ -245,7 +245,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                             <Link href="/security-settings">Security</Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
-                            <Link href="/wallet-management">Wallet Management</Link>
+                            <Link href="/wallet-management-enhanced">Wallet Management</Link>
                           </DropdownMenuItem>
                         </>
                       )}
