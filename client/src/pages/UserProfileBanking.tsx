@@ -14,7 +14,7 @@ import {
   CreditCard, Shield, DollarSign, ArrowUpRight, ArrowDownRight,
   Building2, Smartphone, Bitcoin, CheckCircle, AlertTriangle,
   Lock, Eye, EyeOff, Plus, Trash2, RefreshCw, TrendingUp,
-  User, Trophy, Calendar, Target, Wallet, Award
+  User, Trophy, Calendar, Target, Wallet, Award, Crown
 } from 'lucide-react';
 
 const UserProfileBanking: React.FC = () => {
