@@ -1,20 +1,129 @@
-
 import express from 'express';
 import { unifiedGamingAPI } from '../services/unifiedGamingAPI';
 
 const router = express.Router();
 
+// Real Riot Games API endpoints
+router.get('/riot/player/:summonerName', async (req, res) => {
+  try {
+    const { summonerName } = req.params;
+    const { region = 'na1' } = req.query;
+
+    const playerStats = await unifiedGamingAPI.getEsportsPlayerStats(summonerName, region as string);
+    res.json(playerStats);
+  } catch (error: any) {
+    console.error('Riot player stats error:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch player stats',
+      message: error.message 
+    });
+  }
+});
+
+router.get('/riot/live-game/:summonerName', async (req, res) => {
+  try {
+    const { summonerName } = req.params;
+    const { region = 'na1' } = req.query;
+
+    const liveGame = await unifiedGamingAPI.checkLiveGame(summonerName, region as string);
+    res.json(liveGame);
+  } catch (error: any) {
+    console.error('Riot live game error:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch live game',
+      message: error.message 
+    });
+  }
+});
+
+router.get('/riot/summoner/:summonerName', async (req, res) => {
+  try {
+    const { summonerName } = req.params;
+    const { region = 'na1' } = req.query;
+
+    const summoner = await unifiedGamingAPI.getSummonerByName(summonerName, region as string);
+    res.json(summoner);
+  } catch (error: any) {
+    console.error('Riot summoner error:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch summoner',
+      message: error.message 
+    });
+  }
+});
+
+router.get('/riot/ranked/:summonerId', async (req, res) => {
+  try {
+    const { summonerId } = req.params;
+    const { region = 'na1' } = req.query;
+
+    const rankedStats = await unifiedGamingAPI.getRankedStats(summonerId, region as string);
+    res.json(rankedStats);
+  } catch (error: any) {
+    console.error('Riot ranked stats error:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch ranked stats',
+      message: error.message 
+    });
+  }
+});
+
+router.get('/riot/matches/:puuid', async (req, res) => {
+  try {
+    const { puuid } = req.params;
+    const { region = 'americas', count = '10' } = req.query;
+
+    const matches = await unifiedGamingAPI.getMatchHistory(puuid, region as string, parseInt(count as string));
+    res.json(matches);
+  } catch (error: any) {
+    console.error('Riot match history error:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch match history',
+      message: error.message 
+    });
+  }
+});
+
+router.get('/riot/match/:matchId', async (req, res) => {
+  try {
+    const { matchId } = req.params;
+    const { region = 'americas' } = req.query;
+
+    const matchDetails = await unifiedGamingAPI.getMatchDetails(matchId, region as string);
+    res.json(matchDetails);
+  } catch (error: any) {
+    console.error('Riot match details error:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch match details',
+      message: error.message 
+    });
+  }
+});
+
+router.get('/riot/status', async (req, res) => {
+  try {
+    const status = unifiedGamingAPI.getAPIStatus();
+    res.json(status);
+  } catch (error: any) {
+    console.error('Riot API status error:', error);
+    res.status(500).json({ 
+      error: 'Failed to get API status',
+      message: error.message 
+    });
+  }
+});
+
 // Live esports matches with real-time data
 router.get('/live-matches/:game?', async (req, res) => {
   try {
     const { game } = req.params;
-    
+
     // In production, integrate with real APIs:
     // - Riot Games API for LoL
     // - Steam API for CS2  
     // - PandaScore for tournament data
     // - HLTV API for CS rankings
-    
+
     const mockLiveMatches = [
       {
         id: 'lol-worlds-2025-final',
@@ -110,7 +219,7 @@ router.get('/live-matches/:game?', async (req, res) => {
 router.get('/player-stats/:game?', async (req, res) => {
   try {
     const { game } = req.params;
-    
+
     const mockPlayerStats = [
       {
         id: 'faker-lol-stats',
@@ -273,7 +382,7 @@ router.post('/micro-bet', async (req, res) => {
 router.get('/tournaments/:game?', async (req, res) => {
   try {
     const { game } = req.params;
-    
+
     const tournaments = await unifiedGamingAPI.getEsportsTournaments(game);
     res.json(tournaments);
   } catch (error) {
@@ -286,7 +395,7 @@ router.get('/tournaments/:game?', async (req, res) => {
 router.get('/match-events/:matchId', async (req, res) => {
   try {
     const { matchId } = req.params;
-    
+
     // Simulate live match events
     const events = [
       {
@@ -313,5 +422,9 @@ router.get('/match-events/:matchId', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch match events' });
   }
 });
+
+// Get gaming platform information
+getGamingPlatforms() {
+    return [
 
 export default router;

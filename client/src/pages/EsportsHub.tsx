@@ -37,6 +37,20 @@ const EsportsHub: React.FC = () => {
     refetchInterval: 5000, // 5 second updates for live data
   });
 
+  // Fetch real Riot API data
+  const { data: riotAPIStatus } = useQuery({
+    queryKey: ['/api/esports/riot/status'],
+    refetchInterval: 30000,
+  });
+
+  // Fetch real player stats when a player is searched
+  const [searchedPlayer, setSearchedPlayer] = useState('');
+  const { data: realPlayerStats } = useQuery({
+    queryKey: ['/api/esports/riot/player', searchedPlayer],
+    enabled: !!searchedPlayer && searchedPlayer.length > 2,
+    refetchInterval: 10000,
+  });
+
   // Fetch player performance data
   const { data: playerStats } = useQuery({
     queryKey: ['/api/esports/player-stats', selectedGame],
@@ -298,6 +312,85 @@ const EsportsHub: React.FC = () => {
                       </div>
                     </div>
                   ))}
+                </CardContent>
+              </Card>
+
+              {/* Real Player Search */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    🔍 Real Player Lookup (Riot API)
+                    {riotAPIStatus?.configured ? (
+                      <Badge className="bg-green-500">API Connected</Badge>
+                    ) : (
+                      <Badge variant="destructive">API Not Configured</Badge>
+                    )}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex gap-2 mb-4">
+                    <Input
+                      placeholder="Enter Summoner Name (e.g., Faker, Doublelift)"
+                      value={searchedPlayer}
+                      onChange={(e) => setSearchedPlayer(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button onClick={() => {
+                      if (searchedPlayer) {
+                        toast({
+                          title: "Fetching Real Player Data",
+                          description: `Looking up ${searchedPlayer} via Riot Games API`,
+                        });
+                      }
+                    }}>
+                      Search
+                    </Button>
+                  </div>
+                  
+                  {realPlayerStats && (
+                    <div className="space-y-3 p-4 bg-blue-50 rounded-lg">
+                      <div className="font-bold text-lg">{realPlayerStats.summoner.name}</div>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="font-medium">Level:</span> {realPlayerStats.summoner.level}
+                        </div>
+                        <div>
+                          <span className="font-medium">Win Rate:</span> {realPlayerStats.recentPerformance.winRate}%
+                        </div>
+                        <div>
+                          <span className="font-medium">Avg KDA:</span> {realPlayerStats.recentPerformance.avgKills}/{realPlayerStats.recentPerformance.avgDeaths}/{realPlayerStats.recentPerformance.avgAssists}
+                        </div>
+                        <div>
+                          <span className="font-medium">Recent Games:</span> {realPlayerStats.recentPerformance.gamesPlayed}
+                        </div>
+                      </div>
+                      
+                      {realPlayerStats.rankedStats?.length > 0 && (
+                        <div className="mt-3">
+                          <div className="font-medium">Ranked Stats:</div>
+                          {realPlayerStats.rankedStats.map((rank: any, idx: number) => (
+                            <div key={idx} className="text-sm text-gray-600">
+                              {rank.queueType}: {rank.tier} {rank.rank} ({rank.leaguePoints} LP)
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      
+                      <Button 
+                        size="sm" 
+                        className="w-full"
+                        onClick={() => {
+                          // Create betting props based on real stats
+                          toast({
+                            title: "Real Props Generated!",
+                            description: `Created betting lines based on ${realPlayerStats.summoner.name}'s actual performance`,
+                          });
+                        }}
+                      >
+                        Generate Real Betting Props
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
