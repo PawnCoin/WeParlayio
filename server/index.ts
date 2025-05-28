@@ -3,12 +3,12 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { createSSLServer, getSSLConfig } from "./ssl";
 import { initializeWebSocketService } from "./services/websocketService";
-import authRoutes from './routes/authRoutes';
-import bankingRoutes from './routes/bankingRoutes';
-import plaidRoutes from './routes/plaidRoutes';
-import yahooRoutes from './routes/yahooRoutes';
-import weparlayCashRoutes from './routes/weparlayCashRoutes';
-import consentRoutes from './routes/consentRoutes';
+import { router as authRoutes } from './routes/authRoutes';
+import { bankingRouter as bankingRoutes } from './routes/bankingRoutes';
+import { router as plaidRoutes } from './routes/plaidRoutes';
+import { router as yahooRoutes } from './routes/yahooRoutes';
+import { router as weparlayCashRoutes } from './routes/weparlayCashRoutes';
+import { router as consentRoutes } from './routes/consentRoutes';
 
 // Export app for production use
 export const app = express();
