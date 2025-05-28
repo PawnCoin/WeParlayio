@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
@@ -20,7 +19,7 @@ interface UseWebSocketOptions {
 export function useWebSocket(options: UseWebSocketOptions = {}) {
   const { user, getToken } = useAuth();
   const { toast } = useToast();
-  
+
   const {
     autoConnect = true,
     reconnectAttempts = 5,
@@ -32,7 +31,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
   const [isConnecting, setIsConnecting] = useState(false);
   const [lastMessage, setLastMessage] = useState<WebSocketMessage | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected' | 'error'>('disconnected');
-  
+
   const reconnectAttemptsRef = useRef(0);
   const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -46,7 +45,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     if (heartbeatIntervalRef.current) {
       clearInterval(heartbeatIntervalRef.current);
     }
-    
+
     heartbeatIntervalRef.current = setInterval(() => {
       if (ws.current?.readyState === WebSocket.OPEN) {
         ws.current.send(JSON.stringify({ type: 'ping' }));
@@ -74,7 +73,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     try {
       const wsUrl = getWebSocketUrl();
       console.log('🔌 Connecting to WebSocket:', wsUrl);
-      
+
       ws.current = new WebSocket(wsUrl);
 
       ws.current.onopen = async () => {
@@ -117,7 +116,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
         if (event.code !== 1000 && reconnectAttemptsRef.current < reconnectAttempts) {
           reconnectAttemptsRef.current++;
           console.log(`🔄 Reconnecting... Attempt ${reconnectAttemptsRef.current}/${reconnectAttempts}`);
-          
+
           setTimeout(() => {
             connect();
           }, reconnectInterval);
@@ -127,7 +126,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       ws.current.onerror = (error) => {
         console.error('❌ WebSocket error:', error);
         setConnectionStatus('error');
-        
+
         toast({
           title: "Connection Error",
           description: "Lost connection to real-time updates. Attempting to reconnect...",
@@ -152,7 +151,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
           description: "Real-time monitoring active",
           duration: 2000
         });
-        
+
         // Subscribe to essential channels
         subscribe(['transactions', 'balance_updates', 'security_alerts', 'odds_updates']);
         break;
@@ -228,7 +227,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     if (autoConnect && user && !isConnected && !isConnecting) {
       connect();
     }
-    
+
     return () => {
       disconnect();
     };
