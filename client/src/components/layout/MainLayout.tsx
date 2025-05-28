@@ -65,8 +65,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     { href: "/tournaments", label: "Tournaments" },
     { href: "/video-gaming", label: "Gaming" },
     { href: "/trivia", label: "Trivia" },
-    { href: "/results", label: "Results" },
-    { href: "/social", label: "Social" }
+    { href: "/results", label: "Results" }
   ];
 
   return (
@@ -258,6 +257,17 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                           </div>
                         </Link>
                       </DropdownMenuItem>
+                      {/* Only show for admins */}
+                      {(user?.isAdmin || user?.tier === 'admin' || user?.email === 'support@weparlay.io') && (
+                        <DropdownMenuItem asChild>
+                          <Link href="/social-media-dashboard">
+                            <div className="flex items-center text-orange-500 font-semibold">
+                              <Crown className="mr-2 h-4 w-4" />
+                              Marketing Bots
+                            </div>
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={logout}>
                         Logout
