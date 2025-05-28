@@ -45,7 +45,7 @@ app.use((req, res, next) => {
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-    
+
     // Notify admin of server errors
     try {
       import('./hooks/userHooks').then(({ onSystemError }) => {
@@ -70,10 +70,10 @@ app.use((req, res, next) => {
 
   // Get SSL configuration
   const sslConfig = getSSLConfig();
-  
+
   // Always use port 5000 for Replit deployments, regardless of SSL
   const port = 5000;
-  
+
   // Create appropriate server based on configuration
   let server;
   if (sslConfig.enabled) {
@@ -88,7 +88,7 @@ app.use((req, res, next) => {
   } else {
     server = app;
   }
-  
+
   server.listen({
     port,
     host: "0.0.0.0",

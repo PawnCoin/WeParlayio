@@ -14,14 +14,14 @@ import {
   CreditCard, Shield, DollarSign, ArrowUpRight, ArrowDownRight,
   Building2, Smartphone, Bitcoin, CheckCircle, AlertTriangle,
   Lock, Eye, EyeOff, Plus, Trash2, RefreshCw, TrendingUp,
-  User, Trophy, Calendar, Target, Wallet, Crown
+  User, Trophy, Calendar, Target, Wallet, Award
 } from 'lucide-react';
 
 const UserProfileBanking: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   const [activeTab, setActiveTab] = useState('profile');
   const [showBalance, setShowBalance] = useState(true);
   const [depositAmount, setDepositAmount] = useState('');
@@ -146,7 +146,7 @@ const UserProfileBanking: React.FC = () => {
               <h1 className="text-2xl font-bold text-gray-900">{user?.username || 'WeParlay User'}</h1>
               <div className="flex items-center gap-3 mt-2">
                 <Badge className={getTierColor(user?.tier)}>
-                  <Crown className="h-3 w-3 mr-1" />
+                  <Award className="h-3 w-3 mr-1" />
                   {user?.tier || 'Bronze'} Member
                 </Badge>
                 {user?.isAdmin && (
@@ -342,7 +342,7 @@ const UserProfileBanking: React.FC = () => {
                   </select>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-4 gap-3">
                 {['25', '50', '100', '250'].map((amount) => (
                   <Button
