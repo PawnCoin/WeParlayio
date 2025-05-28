@@ -227,16 +227,36 @@ export class UnifiedGamingAPI {
   // Fallback method using Tracker.gg
   private async getValorantStatsTracker(username: string, tag: string) {
     if (!TRACKER_API_KEY) {
-      throw new Error('No API keys configured for Valorant stats');
+      return {
+        error: 'Tracker.gg API key pending approval',
+        message: 'Valorant stats will be available once API access is approved',
+        username: username,
+        tag: tag,
+        status: 'pending_approval'
+      };
     }
 
     const key = `valorant-tracker-${username}-${tag}`;
-    return await fetchWithCache(key,
-      `https://api.tracker.gg/api/v2/valorant/standard/profile/riot/${username}%23${tag}`,
-      {
-        headers: { 'TRN-Api-Key': TRACKER_API_KEY }
+    try {
+      return await fetchWithCache(key,
+        `https://api.tracker.gg/api/v2/valorant/standard/profile/riot/${username}%23${tag}`,
+        {
+          headers: { 'TRN-Api-Key': TRACKER_API_KEY }
+        },
+        'tracker_gg'
+      );
+    } catch (error: any) {
+      if (error.message?.includes('401') || error.message?.includes('403')) {
+        return {
+          error: 'Tracker.gg API access not yet approved',
+          message: 'Please check API key approval status',
+          username: username,
+          tag: tag,
+          status: 'approval_pending'
+        };
       }
-    );
+      throw error;
+    }
   }
 
   // New: Get Valorant match history
@@ -261,16 +281,34 @@ export class UnifiedGamingAPI {
 
   async getCSGOStats(steamId: string) {
     if (!TRACKER_API_KEY) {
-      throw new Error('Tracker API key not configured');
+      return {
+        error: 'Tracker.gg API key pending approval',
+        message: 'CS:GO stats will be available once API access is approved',
+        steamId: steamId,
+        status: 'pending_approval'
+      };
     }
 
     const key = `csgo-${steamId}`;
-    return await fetchWithCache(key,
-      `https://api.tracker.gg/api/v2/csgo/standard/profile/steam/${steamId}`,
-      {
-        headers: { 'TRN-Api-Key': TRACKER_API_KEY }
+    try {
+      return await fetchWithCache(key,
+        `https://api.tracker.gg/api/v2/csgo/standard/profile/steam/${steamId}`,
+        {
+          headers: { 'TRN-Api-Key': TRACKER_API_KEY }
+        },
+        'tracker_gg'
+      );
+    } catch (error: any) {
+      if (error.message?.includes('401') || error.message?.includes('403')) {
+        return {
+          error: 'Tracker.gg API access not yet approved',
+          message: 'Please check API key approval status',
+          steamId: steamId,
+          status: 'approval_pending'
+        };
       }
-    );
+      throw error;
+    }
   }
 
   // === Esports Tournaments ===
@@ -352,9 +390,10 @@ export class UnifiedGamingAPI {
     return {
       fortnite: !!FORTNITE_API_KEY,
       riot: !!RIOT_API_KEY,
-      tracker: !!TRACKER_API_KEY,
+      tracker: TRACKER_API_KEY ? 'installed_pending_approval' : false,
       pandascore: !!PANDA_API_KEY,
-      message: 'Unified Gaming API status'
+      message: 'Unified Gaming API status',
+      tracker_status: TRACKER_API_KEY ? 'API key installed, awaiting approval from Tracker.gg' : 'Not configured'
     };
   }
 

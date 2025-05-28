@@ -23,7 +23,8 @@ export default defineConfig({
     port: 5173,
     hmr: {
       port: 5173,
-      host: "0.0.0.0"
+      host: "0.0.0.0",
+      clientPort: process.env.REPL_SLUG ? 443 : 5173
     },
     watch: {
       usePolling: true,
