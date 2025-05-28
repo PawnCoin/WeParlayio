@@ -166,6 +166,8 @@ function Router() {
       <Route path="/user-profile" component={UserProfileBanking} />
       <Route path="/my-account" component={UserProfileBanking} />
       <Route path="/onboarding-demo" component={OnboardingDemo} />
+      <Route path="/wallet-management" component={WalletManagement} />
+      <Route path="/wallet-management-enhanced" component={WalletManagementEnhanced} />
       <Route component={NotFound} />
     </Switch>
   );

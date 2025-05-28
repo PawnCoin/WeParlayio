@@ -141,10 +141,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               />
 
               <Link href="/wallet-management-enhanced">
-                <Button variant="ghost" size="sm" className="text-white hover:text-green-500 flex items-center">
-                  <Wallet className="h-4 w-4 mr-1" />
-                  <span>Wallet</span>
-                </Button>
+                <a>
+                  <Button variant="ghost" size="sm" className="text-white hover:text-green-500 flex items-center">
+                    <Wallet className="h-4 w-4 mr-1" />
+                    <span>Wallet</span>
+                  </Button>
+                </a>
               </Link>
             </div>
 
