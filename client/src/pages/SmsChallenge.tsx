@@ -2,7 +2,9 @@ import React from 'react';
 import { useSearchParams } from 'wouter';
 import VipSmsChallenge from '@/components/VipSmsChallenge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MessageSquare, Crown } from 'lucide-react';
+import { MessageSquare, Crown, ArrowRight } from 'lucide-react';
+import { Link } from 'wouter';
+import { Button } from '@/components/ui/button';
 
 export default function SmsChallengePage() {
   const [searchParams] = useSearchParams();
@@ -81,6 +83,26 @@ export default function SmsChallengePage() {
                     <p className="text-sm text-muted-foreground">Get immediate responses to your challenges</p>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5 text-blue-500" />
+                  Ready for Real Money?
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Take your challenges to the next level with real money Head-to-Head betting.
+                </p>
+                <Link href="/head-to-head">
+                  <Button className="w-full">
+                    View Head-to-Head Betting
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
 

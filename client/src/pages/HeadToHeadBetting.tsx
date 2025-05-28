@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import HeadToHeadChallenge from '@/components/betting/HeadToHeadChallenge';
-import { DollarSign, AlertTriangle, Clock, Trophy, Plus, ArrowRight, ArrowUpRight, CreditCard, CheckCircle } from 'lucide-react';
+import { DollarSign, AlertTriangle, Clock, Trophy, Plus, ArrowRight, ArrowUpRight, CreditCard, CheckCircle, MessageSquare } from 'lucide-react';
+import { Link } from 'wouter';
 
 interface ChallengeProps {
   id: string;
@@ -392,6 +393,27 @@ const HeadToHeadBetting: React.FC = () => {
             </CardContent>
           </Card>
           
+          {/* SMS Challenge Integration */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare className="h-5 w-5 text-blue-500" />
+                Quick SMS Challenges
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Send instant challenge notifications via SMS or email to friends.
+              </p>
+              <Link href="/sms-challenge">
+                <Button variant="outline" className="w-full">
+                  Try SMS Challenge Center
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
           {/* How It Works Card */}
           <Card>
             <CardHeader>
