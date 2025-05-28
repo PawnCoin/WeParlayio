@@ -1,28 +1,18 @@
 import React, { useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Crown, MessageSquare, Phone, Mail, Zap, DollarSign, Clock, AlertTriangle, CheckCircle, Lock } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { 
-  Crown, 
-  MessageSquare, 
-  Phone, 
-  Mail, 
-  Zap, 
-  DollarSign,
-  Clock,
-  AlertTriangle,
-  CheckCircle
-} from 'lucide-react';
-import { Alert, AlertDescription } from "@/components/ui/alert"
 
 interface VipSmsChallengeProps {
   eventId?: string;
@@ -61,6 +51,9 @@ const VipSmsChallenge: React.FC<VipSmsChallengeProps> = ({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [challengeCreated, setChallengeCreated] = useState<any>(null);
+  const [smsConsent, setSmsConsent] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
+  const [showConsentModal, setShowConsentModal] = useState(false);
 
   // Check if user is VIP
   const isVip = user?.subscriptionTier === 'gold' || user?.subscriptionTier === 'platinum';
@@ -99,6 +92,12 @@ const VipSmsChallenge: React.FC<VipSmsChallengeProps> = ({
       return;
     }
 
+    // Check consent requirements
+    if (formData.sendSms && isVip && !smsConsent) {
+      setShowConsentModal(true);
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -119,8 +118,10 @@ const VipSmsChallenge: React.FC<VipSmsChallengeProps> = ({
         notificationEmail: formData.opponentEmail || null,
 
         // Notification preferences
-        sendSms: formData.sendSms && isVip, // Only VIP can send SMS
-        sendEmail: formData.sendEmail
+        sendSms: formData.sendSms && isVip && smsConsent, // Only VIP can send SMS with consent
+        sendEmail: formData.sendEmail,
+        smsConsent: smsConsent, // Track SMS consent
+        marketingConsent: marketingConsent // Track marketing consent
       };
 
       const response = await apiRequest('POST', '/api/challenges/sms', challengeData);
@@ -335,64 +336,6 @@ const VipSmsChallenge: React.FC<VipSmsChallengeProps> = ({
           </Select>
         </div>
 
-        {/* Consent and Privacy Section */}
-            <div className="col-span-2 space-y-3">
-              <Label className="text-sm font-medium">Notification Consent</Label>
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="smsConsent"
-                    checked={formData.sendSms && isVip}
-                    onChange={(e) => handleInputChange('sendSms', e.target.checked)}
-                    disabled={!isVip}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50"
-                  />
-                  <label htmlFor="smsConsent" className="text-sm text-gray-700 dark:text-gray-300">
-                    Send SMS notification 
-                    {!isVip && (
-                      <Badge variant="secondary" className="ml-2">
-                        <Crown className="h-3 w-3 mr-1" />
-                        VIP Only
-                      </Badge>
-                    )}
-                  </label>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="emailConsent"
-                    checked={formData.sendEmail}
-                    onChange={(e) => handleInputChange('sendEmail', e.target.checked)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor="emailConsent" className="text-sm text-gray-700 dark:text-gray-300">
-                    Send email notification
-                  </label>
-                </div>
-              </div>
-
-              {/* SMS Consent Warning */}
-              {formData.sendSms && isVip && (
-                <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-900/20">
-                  <MessageSquare className="h-4 w-4" />
-                  <AlertDescription className="text-sm">
-                    <strong>SMS Consent Confirmation:</strong> By sending SMS, you confirm you have permission to text the recipient and they've consented to receive betting notifications. Standard message rates may apply.
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {!isVip && (
-                <Alert className="bg-amber-50 border-amber-200 dark:bg-amber-900/20">
-                  <Crown className="h-4 w-4" />
-                  <AlertDescription className="text-sm">
-                    <strong>Upgrade to VIP</strong> (Gold/Platinum) to unlock SMS notifications and challenge friends instantly via text message.
-                  </AlertDescription>
-                </Alert>
-              )}
-            </div>
-
         {/* VIP Upgrade Notice */}
         {!isVip && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
@@ -406,10 +349,42 @@ const VipSmsChallenge: React.FC<VipSmsChallengeProps> = ({
           </div>
         )}
 
+         {/* Consent Section */}
+         {isVip && (
+            <div className="space-y-3 p-4 bg-blue-50 rounded-lg">
+              <h4 className="font-medium text-blue-900">SMS & Communication Consent</h4>
+              <div className="space-y-2">
+                <div className="flex items-start space-x-2">
+                  <Checkbox
+                    id="sms-consent"
+                    checked={smsConsent}
+                    onCheckedChange={setSmsConsent}
+                  />
+                  <Label htmlFor="sms-consent" className="text-sm text-blue-800">
+                    I consent to sending SMS challenges to my friends and understand that standard message rates may apply.
+                  </Label>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <Checkbox
+                    id="marketing-consent"
+                    checked={marketingConsent}
+                    onCheckedChange={setMarketingConsent}
+                  />
+                  <Label htmlFor="marketing-consent" className="text-sm text-blue-800">
+                    I agree to receive promotional SMS messages about WeParlay features (optional).
+                  </Label>
+                </div>
+              </div>
+              <p className="text-xs text-blue-600">
+                We respect your privacy. You can update these preferences anytime in your account settings.
+              </p>
+            </div>
+          )}
+
         {/* Submit Button */}
         <Button 
           onClick={handleSubmitChallenge}
-          disabled={isSubmitting}
+          disabled={isSubmitting || (isVip && formData.sendSms && !smsConsent)}
           className="w-full"
           size="lg"
         >
@@ -432,6 +407,66 @@ const VipSmsChallenge: React.FC<VipSmsChallengeProps> = ({
           )}
         </Button>
       </CardContent>
+
+       {/* Consent Modal */}
+       {showConsentModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <Card className="max-w-md mx-4">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                SMS Consent Required
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Before sending SMS challenges, we need your consent to send text messages on your behalf.
+              </p>
+              <div className="space-y-3">
+                <div className="flex items-start space-x-2">
+                  <Checkbox
+                    id="modal-sms-consent"
+                    checked={smsConsent}
+                    onCheckedChange={setSmsConsent}
+                  />
+                  <Label htmlFor="modal-sms-consent" className="text-sm">
+                    I consent to sending SMS challenges to my friends. Standard message rates may apply.
+                  </Label>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <Checkbox
+                    id="modal-marketing-consent"
+                    checked={marketingConsent}
+                    onCheckedChange={setMarketingConsent}
+                  />
+                  <Label htmlFor="modal-marketing-consent" className="text-sm">
+                    I agree to receive promotional SMS messages (optional).
+                  </Label>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowConsentModal(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowConsentModal(false);
+                    handleSubmitChallenge();
+                  }}
+                  disabled={!smsConsent}
+                  className="flex-1"
+                >
+                  Continue
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </Card>
   );
 };

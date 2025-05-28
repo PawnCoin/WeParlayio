@@ -190,6 +190,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // const bookieRoutes = await import('./routes/bookieRoutes');
   // app.use('/api/bookie', bookieRoutes.default);
   
+  // SMS Challenge endpoint with VIP and consent validation
+  app.post('/api/challenges/sms', async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const userId = req.user.claims.sub;
+      const { friendPhone, challengeAmount, customMessage, gameData, smsConsent, marketingConsent, userTier } = req.body;
+
+      // Check VIP tier access
+      const vipTiers = ['bronze', 'silver', 'gold', 'platinum'];
+      if (!userTier || !vipTiers.includes(userTier.toLowerCase())) {
+        return res.status(403).json({ 
+          message: "VIP membership required. SMS challenges are available for Bronze tier and above." 
+        });
+      }
+
+      // Validate consent
+      if (!smsConsent) {
+        return res.status(400).json({ 
+          message: "SMS consent is required to send challenges to friends." 
+        });
+      }
+
+      // Validate required fields
+      if (!friendPhone || !challengeAmount) {
+        return res.status(400).json({ message: "Phone number and challenge amount are required" });
+      }
+
+      // Get user details
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Create SMS challenge record
+      const challenge = await storage.createBettingChallenge({
+        createdBy: userId,
+        eventName: gameData?.event || 'Custom Challenge',
+        amount: parseFloat(challengeAmount),
+        isVirtual: true,
+        notificationPhone: friendPhone,
+        customMessage: customMessage || `${user.username || 'A friend'} challenged you to a bet on WeParlay!`,
+        status: 'pending',
+        expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000), // 48 hours
+        metadata: {
+          smsConsent: true,
+          marketingConsent: marketingConsent || false,
+          userTier,
+          challengeType: 'sms'
+        }
+      });
+
+      // Store user consent preferences
+      await storage.updateUserPreferences(userId, {
+        smsConsent: true,
+        marketingConsent: marketingConsent || false,
+        lastConsentUpdate: new Date()
+      });
+
+      // Send SMS notification (integrate with SMS service)
+      try {
+        const { smsService } = await import('./services/smsService');
+        const message = `🎯 WeParlay Challenge: ${customMessage || `${user.username || 'A friend'} challenged you to a $${challengeAmount} bet!`} Join: ${req.protocol}://${req.get('host')}/challenges/${challenge.challengeUuid}`;
+        
+        await smsService.sendSMS(friendPhone, message);
+        
+        // Log successful SMS for admin tracking
+        console.log(`SMS Challenge sent: User ${userId} (${userTier}) -> ${friendPhone} for $${challengeAmount}`);
+        
+      } catch (smsError) {
+        console.error('SMS sending failed:', smsError);
+        // Don't fail the challenge creation if SMS fails
+      }
+
+      res.json({ 
+        success: true, 
+        message: "SMS challenge sent successfully!",
+        challenge: {
+          id: challenge.id,
+          uuid: challenge.challengeUuid,
+          amount: challenge.amount,
+          expiresAt: challenge.expiresAt
+        }
+      });
+    } catch (error) {
+      console.error("Error creating SMS challenge:", error);
+      res.status(500).json({ message: "Failed to create SMS challenge" });
+    }
+  });
+
   // Head-to-head betting challenge routes
   app.post('/api/challenges', async (req: any, res) => {
     try {
@@ -479,6 +571,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // User consent preferences management
+  app.post('/api/user/consent-preferences', async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = req.user.claims.sub;
+      const { smsConsent, marketingConsent, emailConsent } = req.body;
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Update consent preferences
+      const updatedUser = await storage.updateUserPreferences(userId, {
+        smsConsent: smsConsent !== undefined ? smsConsent : user.smsConsent,
+        marketingConsent: marketingConsent !== undefined ? marketingConsent : user.marketingConsent,
+        emailConsent: emailConsent !== undefined ? emailConsent : user.emailConsent,
+        lastConsentUpdate: new Date()
+      });
+
+      res.json({
+        success: true,
+        message: "Consent preferences updated successfully",
+        preferences: {
+          smsConsent: updatedUser.smsConsent,
+          marketingConsent: updatedUser.marketingConsent,
+          emailConsent: updatedUser.emailConsent
+        }
+      });
+    } catch (error) {
+      console.error("Error updating consent preferences:", error);
+      res.status(500).json({ message: "Failed to update consent preferences" });
+    }
+  });
+
+  app.get('/api/user/consent-preferences', async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({
+        preferences: {
+          smsConsent: user.smsConsent || false,
+          marketingConsent: user.marketingConsent || false,
+          emailConsent: user.emailConsent !== false, // Default to true
+          lastConsentUpdate: user.lastConsentUpdate
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching consent preferences:", error);
+      res.status(500).json({ message: "Failed to fetch consent preferences" });
+    }
+  });
+
   // User preferences endpoint
   app.post('/api/user/preferences', async (req: any, res) => {
     try {

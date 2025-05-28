@@ -399,15 +399,25 @@ const HeadToHeadBetting: React.FC = () => {
               <CardTitle className="flex items-center gap-2">
                 <MessageSquare className="h-5 w-5 text-blue-500" />
                 Quick SMS Challenges
+                {!user?.tier || !['bronze', 'silver', 'gold', 'platinum'].includes(user.tier.toLowerCase()) && (
+                  <Badge variant="secondary" className="text-xs">VIP Only</Badge>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground mb-4">
-                Send instant challenge notifications via SMS or email to friends.
+                {user?.tier && ['bronze', 'silver', 'gold', 'platinum'].includes(user.tier.toLowerCase()) 
+                  ? 'Send instant challenge notifications via SMS or email to friends.'
+                  : 'SMS challenges are available for VIP members (Bronze tier and above).'}
               </p>
               <Link href="/sms-challenge">
-                <Button variant="outline" className="w-full">
-                  Try SMS Challenge Center
+                <Button 
+                  variant="outline" 
+                  className={`w-full ${!user?.tier || !['bronze', 'silver', 'gold', 'platinum'].includes(user.tier.toLowerCase()) ? 'opacity-60' : ''}`}
+                >
+                  {user?.tier && ['bronze', 'silver', 'gold', 'platinum'].includes(user.tier.toLowerCase()) 
+                    ? 'Try SMS Challenge Center'
+                    : 'Upgrade for SMS Challenges'}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
