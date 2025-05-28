@@ -39,7 +39,6 @@ import PlaidLinkComponent from '@/components/banking/PlaidLinkComponent';
 import EnhancedDepositWithdraw from '@/components/banking/EnhancedDepositWithdraw';
 import SecurityAuditPanel from '@/components/banking/SecurityAuditPanel';
 import LiveSecurityMonitor from '@/components/banking/LiveSecurityMonitor';
-import ConsentManager from '@/components/compliance/ConsentManager';
 
 const UserProfileBanking: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
@@ -178,7 +177,7 @@ const UserProfileBanking: React.FC = () => {
 
       {/* Main Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-8">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="profile">
             <User className="h-4 w-4 mr-2" />
             Profile
@@ -198,10 +197,6 @@ const UserProfileBanking: React.FC = () => {
           <TabsTrigger value="security">
             <Shield className="h-4 w-4 mr-2" />
             Security
-          </TabsTrigger>
-          <TabsTrigger value="consent">
-            <ShieldCheck className="h-4 w-4 mr-2" />
-            Privacy
           </TabsTrigger>
           <TabsTrigger value="transactions">
             <History className="h-4 w-4 mr-2" />
@@ -259,10 +254,6 @@ const UserProfileBanking: React.FC = () => {
 
         <TabsContent value="security" className="space-y-4">
           <SecurityAuditPanel />
-        </TabsContent>
-
-        <TabsContent value="consent" className="space-y-4">
-          <ConsentManager />
         </TabsContent>
 
         <TabsContent value="transactions" className="space-y-4">

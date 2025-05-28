@@ -396,4 +396,4 @@ router.get('/me', async (req, res) => {
   }
 });
 
-export { router };
+export default router;

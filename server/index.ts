@@ -3,12 +3,6 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { createSSLServer, getSSLConfig } from "./ssl";
 import { initializeWebSocketService } from "./services/websocketService";
-import { router as authRoutes } from './routes/authRoutes';
-import { bankingRouter as bankingRoutes } from './routes/bankingRoutes';
-import { router as plaidRoutes } from './routes/plaidRoutes';
-import { router as yahooRoutes } from './routes/yahooRoutes';
-import { router as weparlayCashRoutes } from './routes/weparlayCashRoutes';
-import { router as consentRoutes } from './routes/consentRoutes';
 
 // Export app for production use
 export const app = express();
@@ -48,14 +42,6 @@ app.use((req, res, next) => {
 
 (async () => {
   const appServer = await registerRoutes(app);
-
-  // API routes
-  app.use('/api/auth', authRoutes);
-  app.use('/api/banking', bankingRoutes);
-  app.use('/api/plaid', plaidRoutes);
-  app.use('/api/yahoo', yahooRoutes);
-  app.use('/api/weparlay-cash', weparlayCashRoutes);
-  app.use('/api/consent', consentRoutes);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

@@ -152,14 +152,6 @@ const SignUpEnhanced: React.FC = () => {
       phone: formData.phone,
       dateOfBirth: formData.dateOfBirth,
       allowMarketing: formData.allowMarketing,
-      // Record consent information
-      consents: {
-        terms: formData.agreeToTerms,
-        privacy: formData.agreeToPrivacy,
-        marketing: formData.allowMarketing,
-        cookies: true, // Implied for platform functionality
-        dataProcessing: true // Implied for betting services
-      }
     });
   };
 

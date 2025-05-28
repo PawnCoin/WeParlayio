@@ -45,68 +45,6 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  // Consent management methods
-  async recordConsent(consentData: any): Promise<any> {
-    try {
-      // In a real implementation, you'd have a consents table
-      // For now, we'll store in a simple way or extend the users table
-      const consentRecord = {
-        ...consentData,
-        id: consentData.id || `consent_${Date.now()}`,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-
-      // Store consent record (you would create a proper consents table)
-      console.log('Recording consent:', consentRecord);
-      
-      // For demo purposes, store in memory or extend user record
-      return consentRecord;
-    } catch (error) {
-      console.error('Error recording consent:', error);
-      throw error;
-    }
-  }
-
-  async getUserConsents(userId: string): Promise<any[]> {
-    try {
-      // In a real implementation, query the consents table
-      // For now, return mock data
-      return [
-        {
-          id: 'consent_1',
-          userId,
-          consentType: 'terms',
-          consented: true,
-          timestamp: new Date(),
-          source: 'registration'
-        },
-        {
-          id: 'consent_2',
-          userId,
-          consentType: 'marketing',
-          consented: false,
-          timestamp: new Date(),
-          source: 'registration'
-        }
-      ];
-    } catch (error) {
-      console.error('Error getting user consents:', error);
-      return [];
-    }
-  }
-
-  async getConsentAuditTrail(filters: any): Promise<any[]> {
-    try {
-      // Implementation for audit trail retrieval
-      console.log('Getting consent audit trail with filters:', filters);
-      return [];
-    } catch (error) {
-      console.error('Error getting consent audit trail:', error);
-      return [];
-    }
-  }
-
   async createUser(userData: InsertUser): Promise<User> {
     const [user] = await db.insert(users).values(userData).returning();
     return user;
