@@ -281,7 +281,7 @@ const WeParlayCashSystem: React.FC = () => {
               {formatCurrency(balance)}
             </span>
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             Virtual currency for practice betting and tournaments
           </CardDescription>
         </CardHeader>
