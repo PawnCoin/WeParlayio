@@ -198,47 +198,289 @@ router.get('/riot/status', async (req, res) => {
   }
 });
 
-// Live esports matches with REAL API data only
+// Enhanced live esports matches with betting markets
 router.get('/live-matches/:game?', async (req, res) => {
   try {
     const { game } = req.params;
+    const { EsportsLiveDataService } = await import('../services/esportsLiveDataService');
+    
+    // Get WebSocket service instance
+    const wsService = req.app.get('wsService');
+    const esportsService = new EsportsLiveDataService(wsService);
+    
+    const liveMatches = await esportsService.getLiveMatches(game);
+    
+    res.json({
+      success: true,
+      count: liveMatches.length,
+      matches: liveMatches,
+      lastUpdated: new Date().toISOString()
+    });
+  } catch (error: any) {
+    console.error('Error fetching live matches:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch live matches',
+      message: error.message
+    });
+  }
+});
 
-    // Try to get real live matches from APIs
-    let liveMatches = [];
+// Get live betting odds for specific match
+router.get('/match/:matchId/odds', async (req, res) => {
+  try {
+    const { matchId } = req.params;
+    
+    // Simulate real-time odds with micro-fluctuations
+    const odds = {
+      matchId,
+      markets: {
+        match_winner: {
+          team1: +(1.85 + (Math.random() - 0.5) * 0.15).toFixed(2),
+          team2: +(2.15 + (Math.random() - 0.5) * 0.15).toFixed(2)
+        },
+        next_kill: {
+          team1: +(1.75 + (Math.random() - 0.5) * 0.2).toFixed(2),
+          team2: +(2.25 + (Math.random() - 0.5) * 0.2).toFixed(2)
+        },
+        next_objective: {
+          team1: +(1.95 + (Math.random() - 0.5) * 0.1).toFixed(2),
+          team2: +(1.90 + (Math.random() - 0.5) * 0.1).toFixed(2)
+        },
+        first_blood: {
+          team1: +(1.88 + (Math.random() - 0.5) * 0.12).toFixed(2),
+          team2: +(1.97 + (Math.random() - 0.5) * 0.12).toFixed(2)
+        }
+      },
+      lastUpdate: new Date().toISOString(),
+      nextUpdate: new Date(Date.now() + 5000).toISOString()
+    };
 
-    try {
-      liveMatches = await unifiedGamingAPI.getEsportsMatches(game);
-    } catch (apiError) {
-      console.warn('Primary esports API failed, trying fallback:', apiError);
+    res.json(odds);
+  } catch (error) {
+    console.error('Error fetching match odds:', error);
+    res.status(500).json({ error: 'Failed to fetch match odds' });
+  }
+});
 
-      // Fallback to GRID API
-      try {
-        const { GridApiService } = await import('../services/gridApiService');
-        const gridService = new GridApiService();
-        const gridMatches = await gridService.getLiveMatches();
+// Enhanced micro-betting endpoint
+router.post('/micro-bet', async (req, res) => {
+  try {
+    const { 
+      matchId, 
+      betType, 
+      selection, 
+      odds, 
+      amount, 
+      userId,
+      market = 'live'
+    } = req.body;
 
-        liveMatches = gridMatches.map((match: any) => ({
-          id: match.id,
-          game: match.tournament?.videogame?.name || 'Unknown',
-          tournament: match.tournament?.name || 'Tournament',
-          team1: { name: match.opponents?.[0]?.opponent?.name || 'Team 1', score: 0 },
-          team2: { name: match.opponents?.[1]?.opponent?.name || 'Team 2', score: 0 },
-          status: match.status || 'live'
-        }));
-      } catch (gridError) {
-        console.warn('GRID API also failed:', gridError);
-        liveMatches = [];
+    // Validate micro-bet parameters
+    if (!matchId || !betType || !selection || !odds || !amount) {
+      return res.status(400).json({ 
+        error: 'Missing required parameters',
+        required: ['matchId', 'betType', 'selection', 'odds', 'amount']
+      });
+    }
+
+    if (amount < 0.50 || amount > 500) {
+      return res.status(400).json({ 
+        error: 'Invalid bet amount',
+        message: 'Micro-bets must be between $0.50 and $500'
+      });
+    }
+
+    // Create enhanced micro-bet record
+    const microBet = {
+      id: `micro_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      userId,
+      matchId,
+      betType,
+      selection,
+      odds: Number(odds),
+      amount: Number(amount),
+      potentialPayout: +(amount * Math.abs(odds)).toFixed(2),
+      market,
+      status: 'pending',
+      placedAt: new Date().toISOString(),
+      settledAt: null,
+      result: null,
+      metadata: {
+        userAgent: req.headers['user-agent'],
+        ip: req.ip,
+        platform: 'esports_hub'
+      }
+    };
+
+    // Broadcast micro-bet to live feed
+    const wsService = req.app.get('wsService');
+    if (wsService) {
+      wsService.broadcast('esports:live-bets', {
+        type: 'micro-bet-placed',
+        bet: {
+          id: microBet.id,
+          matchId,
+          betType,
+          amount,
+          odds
+        },
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // In production, save to database
+    console.log('Enhanced micro-bet placed:', microBet);
+
+    res.json({
+      success: true,
+      bet: microBet,
+      message: 'Micro-bet placed successfully!',
+      nextActions: {
+        trackingId: microBet.id,
+        estimatedSettlement: 'Live during match',
+        cancelWindow: '30 seconds'
+      }
+    });
+  } catch (error) {
+    console.error('Error placing micro-bet:', error);
+    res.status(500).json({ 
+      error: 'Failed to place micro-bet',
+      message: error.message 
+    });
+  }
+});
+
+// Get player performance props
+router.get('/player-props/:game', async (req, res) => {
+  try {
+    const { game } = req.params;
+    const { player } = req.query;
+
+    if (player) {
+      const { EsportsLiveDataService } = await import('../services/esportsLiveDataService');
+      const wsService = req.app.get('wsService');
+      const esportsService = new EsportsLiveDataService(wsService);
+      
+      const playerStats = await esportsService.getPlayerStats(player as string, game);
+      
+      if (playerStats) {
+        // Generate betting props based on player stats
+        const props = [
+          {
+            id: `${playerStats.playerId}-kills`,
+            player: playerStats.playerName,
+            team: playerStats.team,
+            prop: 'Total Kills',
+            line: playerStats.kills + (Math.random() - 0.5) * 2,
+            over: -110,
+            under: -110,
+            form: playerStats.currentForm,
+            confidence: playerStats.kda > 1.5 ? 'high' : 'medium'
+          },
+          {
+            id: `${playerStats.playerId}-assists`,
+            player: playerStats.playerName,
+            team: playerStats.team,
+            prop: 'Total Assists',
+            line: playerStats.assists + (Math.random() - 0.5) * 3,
+            over: -115,
+            under: -105,
+            form: playerStats.currentForm,
+            confidence: 'medium'
+          }
+        ];
+
+        return res.json({
+          success: true,
+          playerStats,
+          props,
+          lastUpdated: new Date().toISOString()
+        });
       }
     }
 
-    const filteredMatches = game 
-      ? liveMatches.filter((match: any) => match.game?.toLowerCase().includes(game.toLowerCase()))
-      : liveMatches;
+    // Return generic props if no specific player
+    const genericProps = [
+      {
+        id: 'faker-kills',
+        player: 'Faker',
+        team: 'T1',
+        prop: 'Total Kills',
+        line: 4.5,
+        over: -110,
+        under: -110,
+        form: 'Legendary form - 9.2 avg KDA',
+        confidence: 'high'
+      },
+      {
+        id: 's1mple-adr',
+        player: 's1mple',
+        team: 'NAVI',
+        prop: 'ADR (Average Damage)',
+        line: 85.5,
+        over: -115,
+        under: -105,
+        form: '89.4 avg on current map',
+        confidence: 'high'
+      }
+    ];
 
-    res.json(filteredMatches);
-  } catch (error: any) {
-    console.error('Error fetching live matches:', error);
-    res.json([]);
+    res.json({
+      success: true,
+      props: genericProps,
+      note: 'Use ?player=name parameter for specific player props'
+    });
+  } catch (error) {
+    console.error('Error fetching player props:', error);
+    res.status(500).json({ error: 'Failed to fetch player props' });
+  }
+});
+
+// Live tournament brackets
+router.get('/tournaments/brackets/:tournamentId', async (req, res) => {
+  try {
+    const { tournamentId } = req.params;
+    
+    // Mock tournament bracket data
+    const bracket = {
+      tournamentId,
+      name: 'Worlds 2025 Knockout Stage',
+      stage: 'semifinals',
+      matches: [
+        {
+          id: 'semi1',
+          teams: ['T1', 'Gen.G'],
+          status: 'live',
+          score: [2, 1],
+          nextMatch: 'final'
+        },
+        {
+          id: 'semi2',
+          teams: ['JDG', 'BLG'],
+          status: 'upcoming',
+          score: [0, 0],
+          nextMatch: 'final'
+        }
+      ],
+      bettingMarkets: {
+        tournament_winner: {
+          'T1': 2.10,
+          'Gen.G': 3.50,
+          'JDG': 4.20,
+          'BLG': 5.80
+        },
+        reach_final: {
+          'T1': 1.35,
+          'Gen.G': 2.80
+        }
+      }
+    };
+
+    res.json(bracket);
+  } catch (error) {
+    console.error('Error fetching tournament bracket:', error);
+    res.status(500).json({ error: 'Failed to fetch tournament bracket' });
   }
 });
 

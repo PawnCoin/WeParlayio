@@ -246,15 +246,68 @@ export const useWebSocket = (config: WebSocketConfig = {}) => {
     };
   }, [autoConnect, connect, disconnect]);
 
+  const subscribe = useCallback((channel: string, callback: (data: any) => void) => {
+    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+      console.warn('⚠️ Cannot subscribe - WebSocket not connected');
+      return () => {};
+    }
+
+    const listener = (event: MessageEvent) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.channel === channel || data.type === channel) {
+          callback(data.payload || data.data || data);
+        }
+      } catch (error) {
+        console.error('❌ Error parsing WebSocket message:', error);
+      }
+    };
+
+    wsRef.current.addEventListener('message', listener);
+
+    // Send subscription message with esports support
+    send({
+      type: 'subscribe',
+      channel,
+      metadata: {
+        timestamp: new Date().toISOString(),
+        clientType: 'esports_hub'
+      }
+    });
+
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.removeEventListener('message', listener);
+        send({
+          type: 'unsubscribe',
+          channel
+        });
+      }
+    };
+  }, [send]);
+
+  // Esports-specific subscription helpers
+  const subscribeToEsportsMatches = useCallback((callback: (matches: any[]) => void) => {
+    return subscribe('esports:live-matches', callback);
+  }, [subscribe]);
+
+  const subscribeToMatchOdds = useCallback((matchId: string, callback: (odds: any) => void) => {
+    return subscribe(`esports:match:${matchId}`, callback);
+  }, [subscribe]);
+
+  const subscribeToLiveBets = useCallback((callback: (bet: any) => void) => {
+    return subscribe('esports:live-bets', callback);
+  }, [subscribe]);
+
   return {
     ...state,
     connect,
     disconnect,
     send,
     resetCircuitBreaker,
-    subscribe: (channels: string[]) => {
-      // Mock subscription for now
-      console.log('📡 Subscribed to channels:', channels);
-    }
+    subscribe,
+    subscribeToEsportsMatches,
+    subscribeToMatchOdds,
+    subscribeToLiveBets
   };
 };

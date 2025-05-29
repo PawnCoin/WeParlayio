@@ -15,6 +15,8 @@ class WebSocketService {
   private heartbeatInterval: NodeJS.Timeout | null = null;
   private isShuttingDown = false;
   private initialized = false;
+  private esportsChannels: Map<string, any> = new Map();
+  private reconnectAttempts: Map<string, number> = new Map();
 
   initialize(server: HTTPServer) {
     try {
