@@ -121,6 +121,53 @@ router.get('/riot/match/:matchId', async (req, res) => {
   }
 });
 
+router.get('/api-status', async (req, res) => {
+  try {
+    const riotStatus = unifiedGamingAPI.getAPIStatus();
+    
+    // Check all API configurations
+    const apiStatus = {
+      riot: {
+        ...riotStatus,
+        configured: !!process.env.RIOT_API_KEY,
+        keyLength: process.env.RIOT_API_KEY?.length || 0
+      },
+      grid: {
+        configured: !!process.env.GRID_API_KEY,
+        keyLength: process.env.GRID_API_KEY?.length || 0,
+        status: process.env.GRID_API_KEY ? 'ready' : 'demo_mode'
+      },
+      pandascore: {
+        configured: !!process.env.PANDA_API_KEY,
+        keyLength: process.env.PANDA_API_KEY?.length || 0,
+        status: process.env.PANDA_API_KEY ? 'ready' : 'not_configured'
+      },
+      tracker: {
+        configured: !!process.env.TRACKER_API_KEY,
+        keyLength: process.env.TRACKER_API_KEY?.length || 0,
+        status: process.env.TRACKER_API_KEY ? 'ready' : 'not_configured'
+      },
+      environment: {
+        lastChecked: new Date().toISOString(),
+        totalConfigured: [
+          process.env.RIOT_API_KEY,
+          process.env.GRID_API_KEY,
+          process.env.PANDA_API_KEY,
+          process.env.TRACKER_API_KEY
+        ].filter(Boolean).length
+      }
+    };
+
+    res.json(apiStatus);
+  } catch (error: any) {
+    console.error('API status error:', error);
+    res.status(500).json({ 
+      error: 'Failed to get API status',
+      message: error.message 
+    });
+  }
+});
+
 router.get('/riot/status', async (req, res) => {
   try {
     const status = unifiedGamingAPI.getAPIStatus();

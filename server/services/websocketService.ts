@@ -14,10 +14,14 @@ class WebSocketService {
   private clients: Map<string, WebSocketClient> = new Map();
   private heartbeatInterval: NodeJS.Timeout | null = null;
   private isShuttingDown = false;
+  private initialized = false;
 
   initialize(server: HTTPServer) {
     try {
-      console.log('🔌 Initializing WebSocket service...');
+      if (this.initialized) {
+        console.log('🔌 WebSocket service already initialized');
+        return;
+      }
 
       this.wss = new WebSocketServer({ 
         server,
@@ -51,9 +55,11 @@ class WebSocketService {
       // Start heartbeat to clean up dead connections
       this.startHeartbeat();
 
+      this.initialized = true;
       console.log('✅ WebSocket service initialized successfully');
     } catch (error) {
       console.error('🚨 Failed to initialize WebSocket service:', error);
+      this.initialized = false;
     }
   }
 

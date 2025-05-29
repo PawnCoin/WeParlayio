@@ -299,8 +299,9 @@ export class RiotGamesAPI {
 
   // Get API status
   getAPIStatus(): any {
-    return {
+    const status = {
       configured: !!this.apiKey,
+      apiKeyLength: this.apiKey ? this.apiKey.length : 0,
       regions: Object.keys(riotConfig.platforms),
       rateLimits: {
         personal: '100 requests every 2 minutes',
@@ -312,8 +313,16 @@ export class RiotGamesAPI {
         'Match History',
         'Live Games',
         'Champion Mastery'
-      ]
+      ],
+      lastChecked: new Date().toISOString(),
+      demoMode: !this.apiKey
     };
+
+    if (!this.apiKey) {
+      console.warn('⚠️ Riot API key not configured - API status check shows demo mode');
+    }
+
+    return status;
   }
 }
 

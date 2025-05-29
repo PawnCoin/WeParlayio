@@ -243,6 +243,57 @@ const EsportsHub: React.FC = () => {
     );
   }
 
+  // Fetch esports data with proper error handling
+  const { data: liveMatches = [], isLoading: liveLoading, error: liveError } = useQuery({
+    queryKey: ['/api/esports/live-matches'],
+    refetchInterval: 5000,
+    retry: 1,
+    staleTime: 30000,
+  });
+
+  const { data: liveOdds = [], isLoading: oddsLoading, error: oddsError } = useQuery({
+    queryKey: ['/api/esports/live-odds'],
+    refetchInterval: 10000,
+    retry: 1,
+    staleTime: 30000,
+  });
+
+  const { data: gridSeries = [], isLoading: gridLoading, error: gridError } = useQuery({
+    queryKey: ['/api/esports/grid/series'],
+    refetchInterval: 30000,
+    retry: 1,
+    staleTime: 60000,
+  });
+
+  const { data: playerStats = {}, isLoading: statsLoading, error: statsError } = useQuery({
+    queryKey: ['/api/esports/player-stats'],
+    refetchInterval: 60000,
+    retry: 1,
+    staleTime: 120000,
+  });
+
+  const { data: riotStatus = {}, isLoading: riotStatusLoading, error: riotError } = useQuery({
+    queryKey: ['/api/esports/riot/status'],
+    refetchInterval: 120000,
+    retry: 1,
+    staleTime: 300000,
+  });
+
+  // Riot API specific queries with error handling
+  const { data: fakerStats, error: fakerError } = useQuery({
+    queryKey: ['/api/esports/riot/summoner/Faker/kr'],
+    refetchInterval: 300000, // 5 minutes
+    retry: 1,
+    staleTime: 600000,
+  });
+
+  const { data: tenzStats, error: tenzError } = useQuery({
+    queryKey: ['/api/esports/valorant/player/TenZ/tenz/na'],
+    refetchInterval: 300000, // 5 minutes
+    retry: 1,
+    staleTime: 600000,
+  });
+
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       {/* Header */}
