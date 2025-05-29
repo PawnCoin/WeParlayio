@@ -4,9 +4,10 @@
 @tailwind utilities;
 
 /* WeParlay masculine color scheme - Blue, Green, Orange */
---primary: rgb(37 99 235);     /* WeParlay Blue */
-  --primary-dark: rgb(37 99 235);
-  --primary-light: rgb(37 99 235);
+:root {
+  --primary: #2563eb;     /* WeParlay Blue */
+  --primary-dark: #1d4ed8;
+  --primary-light: #60a5fa;
   --secondary: #16a34a;   /* WeParlay Green */
   --secondary-dark: #15803d;
   --secondary-light: #22c55e;
@@ -26,9 +27,9 @@
 }
 
 .dark {
-  --primary: rgb(37 99 235);        /* WeParlay Blue Dark */
-  --primary-dark: rgb(37 99 235);
-  --primary-light: rgb(37 99 235);
+  --primary: #3b82f6;        /* WeParlay Blue Dark */
+  --primary-dark: #2563eb;
+  --primary-light: #60a5fa;
   --secondary: #16a34a;      /* WeParlay Green Dark */
   --secondary-dark: #15803d;
   --secondary-light: #22c55e;
@@ -232,7 +233,7 @@ td {
   --card-foreground: 0 0% 0%; /* Black text in cards */
   --border: 214 32% 90%;
   --input: 214 32% 90%;
-  --primary: 220 93% 53%; /* Blue from WeParlay logo - rgb(37 99 235) */
+  --primary: 240 70% 40%; /* Blue from WeParlay logo - #2563eb */
   --primary-foreground: 0 0% 100%;
   --secondary: 142 70% 25%; /* Green from WeParlay shield */
   --secondary-foreground: 0 0% 100%;
@@ -242,14 +243,14 @@ td {
   --success-foreground: 0 0% 100%;
   --destructive: 0 85% 44%;
   --destructive-foreground: 0 0% 100%;
-  --ring: 220 93% 53%;
+  --ring: 240 70% 40%;
   --radius: 0.5rem;
   
   /* Chart colors based on the WeParlay palette */
-  --chart-1: 220 93% 53%; /* Blue - rgb(37 99 235) */
+  --chart-1: 240 70% 40%; /* Blue */
   --chart-2: 142 70% 25%; /* Green */
   --chart-3: 30 100% 50%; /* Orange */
-  --chart-4: 220 93% 53%; /* Blue - rgb(37 99 235) */
+  --chart-4: 240 70% 60%; /* Lighter Blue */
   --chart-5: 142 70% 40%; /* Lighter Green */
 }
 
@@ -264,7 +265,7 @@ td {
   --card-foreground: 0 0% 98%;
   --border: 223 30% 20%;
   --input: 223 30% 20%;
-  --primary: 220 93% 53%; /* Blue for dark mode - rgb(37 99 235) */
+  --primary: 240 70% 55%; /* Brighter Blue for dark mode */
   --primary-foreground: 0 0% 100%;
   --secondary: 142 70% 35%; /* Brighter Green for dark mode */
   --secondary-foreground: 0 0% 100%;
@@ -274,14 +275,14 @@ td {
   --success-foreground: 0 0% 100%;
   --destructive: 0 85% 60%;
   --destructive-foreground: 0 0% 100%;
-  --ring: 220 93% 53%;
+  --ring: 240 70% 55%;
   --radius: 0.5rem;
   
   /* Chart colors for dark mode */
-  --chart-1: 220 93% 53%; /* Blue - rgb(37 99 235) */
+  --chart-1: 240 70% 55%; /* Blue */
   --chart-2: 142 70% 35%; /* Green */
   --chart-3: 30 100% 60%; /* Orange */
-  --chart-4: 220 93% 53%; /* Blue - rgb(37 99 235) */
+  --chart-4: 240 70% 75%; /* Lighter Blue */
   --chart-5: 142 70% 55%; /* Lighter Green */
 }
 
