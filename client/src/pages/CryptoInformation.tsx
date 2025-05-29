@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { 
   Bitcoin, 
   DollarSign, 
@@ -125,7 +124,7 @@ const CryptoInformation: React.FC = () => {
       title: "Refreshing Prices",
       description: "Getting latest cryptocurrency prices...",
     });
-    
+
     setCryptoPrices(prev => prev.map(crypto => ({
       ...crypto,
       price: crypto.price * (1 + (Math.random() - 0.5) * 0.01),
@@ -160,7 +159,7 @@ const CryptoInformation: React.FC = () => {
         <p className="text-lg text-muted-foreground mb-6">
           Comprehensive guide to betting with cryptocurrency and managing your digital assets
         </p>
-        
+
         <div className="flex items-center justify-center gap-4 mb-6">
           <Badge variant="outline" className="text-green-600 border-green-600">
             <CheckCircle className="h-3 w-3 mr-1" />
@@ -356,7 +355,7 @@ const CryptoInformation: React.FC = () => {
                             <p className="text-sm text-muted-foreground">{crypto.symbol}</p>
                           </div>
                         </div>
-                        
+
                         <div className="text-right space-y-1">
                           <div className="font-bold text-lg">{formatPrice(crypto.price)}</div>
                           <div className={`flex items-center gap-1 text-sm ${
@@ -369,12 +368,12 @@ const CryptoInformation: React.FC = () => {
                             {crypto.change24h >= 0 ? '+' : ''}{crypto.change24h.toFixed(2)}%
                           </div>
                         </div>
-                        
+
                         <div className="text-right text-sm text-muted-foreground">
                           <div>Vol: {formatMarketCap(crypto.volume24h)}</div>
                           <div>MCap: {formatMarketCap(crypto.marketCap)}</div>
                         </div>
-                        
+
                         <Badge variant={crypto.symbol === 'SOL' || crypto.symbol === 'LTC' ? 'secondary' : 'default'}>
                           {crypto.symbol === 'SOL' || crypto.symbol === 'LTC' ? 'Coming Soon' : 'Live'}
                         </Badge>
@@ -473,10 +472,9 @@ const CryptoInformation: React.FC = () => {
                       </table>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
           <TabsContent value="security">
             <Card>
@@ -611,7 +609,7 @@ const CryptoInformation: React.FC = () => {
                         <li>• Cross-chain bridge support</li>
                       </ul>
                     </div>
-                    
+
                     <div className="space-y-4">
                       <h3 className="font-semibold">Trading Tools</h3>
                       <ul className="text-sm space-y-2 text-muted-foreground">
@@ -638,7 +636,7 @@ const CryptoInformation: React.FC = () => {
                         Cryptocurrency regulations vary by jurisdiction. WeParlay complies with all applicable laws and may restrict services based on your location.
                       </AlertDescription>
                     </Alert>
-                    
+
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <h4 className="font-medium mb-2">KYC/AML Compliance</h4>
@@ -646,7 +644,7 @@ const CryptoInformation: React.FC = () => {
                           Identity verification required for withdrawals over $2,000 daily or $10,000 monthly.
                         </p>
                       </div>
-                      
+
                       <div>
                         <h4 className="font-medium mb-2">Tax Responsibilities</h4>
                         <p className="text-sm text-muted-foreground">

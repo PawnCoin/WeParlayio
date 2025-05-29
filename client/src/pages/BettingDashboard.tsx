@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import sportsBetAPI from '@/lib/sportsBetAPI';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import EnhancedBetTooltip from "@/components/betting/EnhancedBetTooltip";
 import RealTimeOddsVisualization from '@/components/betting/RealTimeOddsVisualization';
 import { useBetSlip } from '@/contexts/BetSlipContext';
-import { Clock, Calendar, Filter, TrendingUp, RefreshCw } from 'lucide-react';
+import { Clock, Calendar, Filter, TrendingUp, RefreshCw, AlertTriangle } from 'lucide-react';
 import { formatGameTime, formatGameDate } from '@/lib/sportsDataUtils';
 
 const PROFESSIONAL_LEAGUES = [
@@ -40,6 +39,13 @@ const BettingDashboard: React.FC = () => {
     queryKey: ['/api/sports'],
     refetchInterval: 30000, // Refresh every 30 seconds
   });
+
+  // Handle sports error
+  useEffect(() => {
+    if (sportsError) {
+      console.error('Sports data fetch error:', sportsError);
+    }
+  }, [sportsError]);
   
   // Fetch upcoming events for all selected leagues
   const { data: upcomingEvents, isLoading: isLoadingEvents, error: eventsError } = useQuery({
@@ -52,6 +58,13 @@ const BettingDashboard: React.FC = () => {
     queryKey: ['/api/events/live'],
     refetchInterval: 10000, // Refresh every 10 seconds for live data
   });
+
+  // Handle live events error
+  useEffect(() => {
+    if (liveError) {
+      console.error('Live events fetch error:', liveError);
+    }
+  }, [liveError]);
   
   // Filter events based on selected leagues
   const filteredLiveEvents = Array.isArray(liveEvents) ? liveEvents.filter((event: any) => {
@@ -131,6 +144,32 @@ const BettingDashboard: React.FC = () => {
     <div className="container px-4 max-w-7xl mx-auto py-6">
       <h1 className="text-3xl font-bold mb-6">Professional Sports Betting Dashboard</h1>
       
+      {isLoadingSports && (
+        <div className="mb-6">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <span className="ml-2 text-muted-foreground">Loading sports data...</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {sportsError && (
+        <div className="mb-6">
+          <Card className="border-red-200 bg-red-50">
+            <CardContent className="p-6">
+              <div className="flex items-center text-red-600">
+                <AlertTriangle className="h-5 w-5 mr-2" />
+                <span>Error loading sports data. Please try refreshing the page.</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
         <div className="md:col-span-1">
           <Card>
@@ -273,6 +312,16 @@ const BettingDashboard: React.FC = () => {
                   {isLoadingLive ? (
                     <div className="flex justify-center py-8">
                       <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent" />
+                    </div>
+                  ) : liveError ? (
+                    <div className="bg-red-50 p-6 text-center rounded-lg border border-red-200">
+                      <div className="flex items-center justify-center text-red-600 mb-2">
+                        <AlertTriangle className="h-5 w-5 mr-2" />
+                        <span className="font-medium">Error Loading Live Events</span>
+                      </div>
+                      <p className="text-red-700 text-sm">
+                        Unable to fetch live events data. Please check your connection and try again.
+                      </p>
                     </div>
                   ) : filteredLiveEvents.length > 0 ? (
                     <div className="space-y-6">
