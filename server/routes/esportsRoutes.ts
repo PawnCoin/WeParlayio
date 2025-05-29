@@ -129,14 +129,19 @@ router.get('/riot/status', async (req, res) => {
     const apiKeyConfigured = !!process.env.RIOT_API_KEY;
     const apiKeyLength = process.env.RIOT_API_KEY?.length || 0;
     
-    res.json({
+    const responseData = {
       ...status,
       environment: {
         apiKeyConfigured,
         apiKeyLength: apiKeyLength > 0 ? `${apiKeyLength} characters` : 'Not set',
         lastChecked: new Date().toISOString()
       }
-    });
+    };
+
+    // Debug log to see what's actually being returned
+    console.log('🔍 Riot API Status Response:', JSON.stringify(responseData, null, 2));
+    
+    res.json(responseData);
   } catch (error: any) {
     console.error('Riot API status error:', error);
     res.status(500).json({ 
@@ -412,8 +417,34 @@ router.get('/match-events/:matchId', async (req, res) => {
   }
 });
 
-// Get gaming platform information
-getGamingPlatforms() {
-    return [
+// Test endpoint to verify Riot API is working
+router.get('/riot/test-connection', async (req, res) => {
+  try {
+    console.log('🧪 Testing Riot API connection...');
+    
+    // Try to fetch a well-known summoner
+    const testSummoner = await unifiedGamingAPI.getSummonerByName('Faker', 'kr');
+    
+    res.json({
+      success: true,
+      message: 'Riot API connection working!',
+      testResult: {
+        summonerFound: !!testSummoner,
+        summonerName: testSummoner?.name,
+        summonerLevel: testSummoner?.summonerLevel
+      },
+      timestamp: new Date().toISOString()
+    });
+  } catch (error: any) {
+    console.error('🚨 Riot API test failed:', error.message);
+    
+    res.json({
+      success: false,
+      message: 'Riot API test failed',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
 
 export default router;
