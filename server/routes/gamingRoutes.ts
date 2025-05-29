@@ -47,6 +47,102 @@ router.post('/connect/:platform', async (req, res) => {
       success: true,
       platform,
       username,
+
+
+// Player search endpoint
+router.get('/search-players', async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q || typeof q !== 'string' || q.length < 2) {
+      return res.status(400).json({ error: 'Search query must be at least 2 characters' });
+    }
+
+    // Search across multiple platforms
+    const results = [];
+    
+    // Search Riot API for League/Valorant players
+    if (unifiedGamingAPI.getAPIStatus().riot) {
+      try {
+        const riotPlayer = await unifiedGamingAPI.getRiotPlayerStats(q);
+        if (riotPlayer) {
+          results.push({
+            name: riotPlayer.name,
+            platform: 'League of Legends',
+            level: riotPlayer.summonerLevel,
+            verified: true
+          });
+        }
+      } catch (error) {
+        console.log('Riot search failed for:', q);
+      }
+    }
+
+    // Add PSN search if available
+    try {
+      const psnData = await psnProfilesScraper.getProfile(q);
+      if (psnData) {
+        results.push({
+          name: psnData.username,
+          platform: 'PlayStation',
+          level: psnData.level,
+          verified: true
+        });
+      }
+    } catch (error) {
+      console.log('PSN search failed for:', q);
+    }
+
+    res.json(results);
+  } catch (error) {
+    console.error('Player search error:', error);
+    res.status(500).json({ error: 'Search failed' });
+  }
+});
+
+// Database status endpoint
+router.get('/database-status', async (req, res) => {
+  try {
+    const apiStatus = unifiedGamingAPI.getAPIStatus();
+    const configuredAPIs = gamingAPIService.getConfiguredAPIs();
+    
+    const activeCount = Object.values(configuredAPIs).filter(Boolean).length;
+    
+    res.json({
+      connected: true,
+      apiCount: activeCount,
+      apis: {
+        ...configuredAPIs,
+        unified: apiStatus
+      },
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Database status error:', error);
+    res.json({
+      connected: false,
+      apiCount: 0,
+      error: 'Database connection failed'
+    });
+  }
+});
+
+// Autopost trigger endpoint
+router.post('/trigger-autopost', async (req, res) => {
+  try {
+    // Trigger gaming content autopost
+    const result = await gamingAPIService.triggerAutopost();
+    
+    res.json({
+      success: true,
+      message: 'Gaming autopost triggered successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Autopost trigger error:', error);
+    res.status(500).json({ error: 'Failed to trigger autopost' });
+  }
+});
+
       accountData,
       message: `Successfully connected ${platform} account`
     });

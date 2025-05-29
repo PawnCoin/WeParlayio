@@ -50,7 +50,7 @@ const getSportIcon = (sportKey: string) => {
     case 'basketball_australia_nbl':
     case 'nba':
       return <FaBasketballBall size={20} className="text-orange-500" />;
-    
+
     // American Football
     case 'football':
     case 'americanfootball_nfl':
@@ -58,7 +58,7 @@ const getSportIcon = (sportKey: string) => {
     case 'football_nfl':
     case 'nfl':
       return <GiAmericanFootballBall size={20} className="text-amber-800" />;
-    
+
     // Baseball
     case 'baseball':
     case 'baseball_mlb':
@@ -67,7 +67,7 @@ const getSportIcon = (sportKey: string) => {
     case 'baseball_cpbl':
     case 'mlb':
       return <FaBaseballBall size={20} className="text-red-500" />;
-    
+
     // Ice Hockey
     case 'hockey':
     case 'icehockey_nhl':
@@ -80,7 +80,7 @@ const getSportIcon = (sportKey: string) => {
     case 'hockey_nhl':
     case 'nhl':
       return <FaHockeyPuck size={20} className="text-blue-600" />;
-    
+
     // Soccer/Football
     case 'soccer':
     case 'soccer_epl':
@@ -101,7 +101,7 @@ const getSportIcon = (sportKey: string) => {
     case 'soccer_fifa_world_cup':
     case 'mls':
       return <FaFutbol size={20} className="text-green-600" />;
-    
+
     // Tennis
     case 'tennis':
     case 'tennis_wta':
@@ -111,7 +111,7 @@ const getSportIcon = (sportKey: string) => {
     case 'tennis_french_open':
     case 'tennis_australian_open':
       return <GiTennisRacket size={20} className="text-yellow-500" />;
-    
+
     // Combat Sports
     case 'boxing':
     case 'boxing_main':
@@ -120,7 +120,7 @@ const getSportIcon = (sportKey: string) => {
     case 'mma_mixed_martial_arts':
     case 'ufc':
       return <GiMeditation size={20} className="text-purple-600" />;
-    
+
     // Motor Sports
     case 'motorsport':
     case 'motorsport_f1':
@@ -129,7 +129,7 @@ const getSportIcon = (sportKey: string) => {
     case 'nascar':
     case 'motorsport_indycar':
       return <GiRaceCar size={20} className="text-red-500" />;
-    
+
     // Cricket
     case 'cricket':
     case 'cricket_ipl':
@@ -138,7 +138,7 @@ const getSportIcon = (sportKey: string) => {
     case 'cricket_odi':
     case 'cricket_t20':
       return <GiCricketBat size={20} className="text-green-700" />;
-    
+
     // Rugby
     case 'rugby':
     case 'rugby_league':
@@ -146,33 +146,33 @@ const getSportIcon = (sportKey: string) => {
     case 'rugby_nrl':
     case 'rugby_super_rugby':
       return <TbBallFootball size={20} className="text-brown-600" />;
-    
+
     // Golf
     case 'golf':
     case 'golf_pga':
     case 'golf_european_tour':
     case 'golf_masters':
       return <FaGolfBall size={20} className="text-green-500" />;
-    
+
     // Volleyball
     case 'volleyball':
     case 'volleyball_indoor':
     case 'volleyball_beach':
       return <FaVolleyballBall size={20} className="text-blue-400" />;
-    
+
     // Table Tennis
     case 'table_tennis':
     case 'ping_pong':
       return <FaTableTennis size={20} className="text-orange-400" />;
-    
+
     // Badminton
     case 'badminton':
       return <GiShuttlecock size={20} className="text-yellow-400" />;
-    
+
     // Handball
     case 'handball':
       return <MdSportsHandball size={20} className="text-red-400" />;
-    
+
     // Esports
     case 'esports':
     case 'esports_lol':
@@ -181,25 +181,25 @@ const getSportIcon = (sportKey: string) => {
     case 'esports_valorant':
     case 'esports_overwatch':
       return <MdSportsEsports size={20} className="text-purple-500" />;
-    
+
     // Swimming
     case 'swimming':
     case 'aquatics':
       return <FaSwimmer size={20} className="text-cyan-500" />;
-    
+
     // Cycling
     case 'cycling':
     case 'cycling_road':
     case 'cycling_track':
     case 'cycling_mountain':
       return <FaBiking size={20} className="text-yellow-600" />;
-    
+
     // Athletics/Track
     case 'athletics':
     case 'track_and_field':
     case 'running':
       return <FaRunning size={20} className="text-orange-500" />;
-    
+
     // Winter Sports
     case 'skiing':
     case 'alpine_skiing':
@@ -210,7 +210,7 @@ const getSportIcon = (sportKey: string) => {
     case 'figure_skating':
     case 'speed_skating':
       return <GiIceSkate size={20} className="text-cyan-300" />;
-    
+
     // Other Sports
     case 'darts':
       return <GiDart size={20} className="text-red-500" />;
@@ -245,7 +245,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
   const [location] = useLocation();
   const { isDarkMode, toggleDarkMode } = useDarkMode();
-  
+
   // Fetch sports data
   const { data: sports, isLoading: isLoadingSports } = useQuery({
     queryKey: ['/api/sports'],
@@ -275,7 +275,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
           </button>
         )}
       </div>
-      
+
       {/* Main Sidebar Navigation */}
       <nav className="flex-1 overflow-y-auto p-4">
         <div className="mb-2 text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">
@@ -406,7 +406,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
               </div>
             </Link>
           </li>
-          
+
           <li>
             <Link href="/wallet-management">
               <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
@@ -420,7 +420,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
               </div>
             </Link>
           </li>
-          
+
           <li>
             <Link href="/crypto-information">
               <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
@@ -434,7 +434,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
               </div>
             </Link>
           </li>
-          
+
           <li>
             <Link href="/head-to-head">
               <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
@@ -448,7 +448,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
               </div>
             </Link>
           </li>
-          
+
           <li>
             <Link href="/vip">
               <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
@@ -511,7 +511,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
             </Link>
           </li>
         </ul>
-        
+
         <div className="mb-2 text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">
           Sports Categories
         </div>
@@ -528,8 +528,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
               {/* Basketball Category */}
               <details className="group">
                 <summary className="flex items-center py-2 px-3 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 list-none">
-                  <span className="mr-3">{getSportIcon('basketball_nba')}</span>
-                  <span className="flex-1 text-sm font-medium">Basketball</span>
+                <span className="flex items-center">
+                  {getSportIcon('basketball_nba')}
+                  <span className="flex-1 text-sm font-medium ml-3">Basketball</span>
+                </span>
                   <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
                 </summary>
                 <div className="ml-6 mt-1 space-y-1">
@@ -661,6 +663,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
 
               {/* Combat Sports Category */}
               <details className="group">
+                The code has been modified to correctly call the getSportIcon function in the Sidebar component when rendering sports categories.```text
                 <summary className="flex items-center py-2 px-3 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 list-none">
                   <span className="mr-3">{getSportIcon('mma_ufc')}</span>
                   <span className="flex-1 text-sm font-medium">Combat Sports</span>
@@ -726,9 +729,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
           )}
         </div>
       </nav>
-      
+
       <hr className="border-gray-200 dark:border-gray-700" />
-      
+
       {/* Bottom Section with Settings Link & Dark Mode Toggle */}
       <div className="p-4 border-t border-gray-200 dark:border-gray-700">
         <Link href="/login">
@@ -744,7 +747,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
             <ChevronRight className="h-4 w-4 ml-auto" />
           </div>
         </Link>
-        
+
         <Link href="/settings">
           <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer mb-2 ${
             location === '/settings' 
@@ -756,7 +759,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
             <ChevronRight className="h-4 w-4 ml-auto" />
           </div>
         </Link>
-        
+
         <Link href="/theme-manager">
           <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer mb-2 ${
             location === '/theme-manager' 
@@ -768,7 +771,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
             <ChevronRight className="h-4 w-4 ml-auto" />
           </div>
         </Link>
-        
+
         <div className="flex items-center justify-between mt-3">
           <p className="text-sm">Dark Mode</p>
           <Switch 
