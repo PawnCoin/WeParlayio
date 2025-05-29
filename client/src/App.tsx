@@ -16,7 +16,6 @@ import Settings from "@/pages/Settings";
 import SecuritySettings from "@/pages/SecuritySettings"; // Advanced security & wallet management
 import HeadToHeadBetting from "@/pages/HeadToHeadBetting"; // Head-to-head real money betting
 import SignUp from "@/pages/SignUp";
-import SignUpEnhanced from "@/pages/SignUpEnhanced";
 import LoginEnhanced from "@/pages/LoginEnhanced";
 import AuthTestDemo from "@/pages/AuthTestDemo";
 import UserDirectory from "@/pages/UserDirectory";
@@ -26,7 +25,6 @@ import EmailMonitoring from "@/pages/EmailMonitoring";
 import VideoGaming from "./pages/VideoGaming";
 import VipFeatures from "./pages/VipFeatures";
 import WalletManagement from "./pages/WalletManagement";
-import WalletManagementEnhanced from "./pages/WalletManagementEnhanced";
 import EsportsHub from "./pages/EsportsHub";
 import Trivia from "@/pages/Trivia";
 import BettingExperience from "@/pages/BettingExperience"; // New enhanced betting page
@@ -53,7 +51,6 @@ import WalletTest from "@/pages/WalletTest";
 import UserProfilePage from "@/pages/UserProfilePage";
 import FantasySportsEnhanced from "@/pages/FantasySportsEnhanced";
 import GamingIntegration from "@/pages/GamingIntegration";
-import LiveBettingEnhanced from "@/pages/LiveBettingEnhanced";
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
 import MobileVoiceBetting from "@/components/mobile/MobileVoiceBetting";
@@ -75,10 +72,12 @@ import BettingAcademy from "@/pages/BettingAcademy";
 import LiveHeatmap from "@/pages/LiveHeatmap";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ThemeColorManager from "@/pages/ThemeColorManager";
-import LiveBettingEnhanced from "@/pages/BettingExperience";
+import LiveBettingRealFixed from "@/pages/LiveBettingReal-fixed";
+import SignUpEnhanced from "@/pages/SignUpEnhanced";
 
 // Import admin components
 import AdminBypass from "@/pages/AdminBypass";
+//import LiveBettingEnhanced from "@/pages/BettingExperience";
 
 // Admin route guard component
 const AdminRoute = ({ component: Component, ...rest }: any) => {
@@ -118,40 +117,86 @@ function Router() {
 
   return (
     <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/live-betting" component={LiveBettingEnhanced} />
-      <Route path="/admin-login" component={AdminLogin} />
-      <Route path="/admin" component={(props) => <AdminRoute component={AdminDashboard} {...props} />} />
-      <Route path="/admin-dashboard" component={(props) => <AdminRoute component={AdminDashboard} {...props} />} />
-      <Route path="/admin-bypass" component={AdminBypass} />
-      <Route path="/live-betting-classic" component={LiveBettingReal} />
-      <Route path="/betting-dashboard" component={BettingDashboard} />
-      <Route path="/enhanced-features" component={EnhancedFeatures} />
-      <Route path="/vip" component={VipFeatures} />
-      <Route path="/fantasy" component={FantasySports} />
-      <Route path="/tournaments" component={Tournaments} />
-      <Route path="/results" component={Results} />
-      <Route path="/social" component={Social} />
-      <Route path="/social-betting" component={SocialBetting} />
-      <Route path="/gaming" component={UnifiedGaming} />
-      <Route path="/unified-sports" component={UnifiedSports} />
+      {/* Main Application Routes */}
+      <Route path="/home" component={Home} />
+      <Route path="/betting" component={BettingDashboard} />
+      <Route path="/betting-experience" component={BettingExperience} />
+      <Route path="/betting-manager" component={BettingManager} />
       <Route path="/comprehensive-betting" component={ComprehensiveBetting} />
       <Route path="/odds" component={Odds} />
-      <Route path="/parlays" component={Parlays} />
-      <Route path="/betting-academy" component={BettingAcademy} />
+      <Route path="/live-betting" component={LiveBettingEnhanced} />
+      <Route path="/live-betting-real-fixed" component={LiveBettingRealFixed} />
       <Route path="/live-heatmap" component={LiveHeatmap} />
+      <Route path="/my-bets" component={MyBets} />
+      <Route path="/results" component={Results} />
+      <Route path="/parlays" component={Parlays} />
+
+      {/* Sports Pages */}
+      <Route path="/sport/:sportKey" component={SportPage} />
+      <Route path="/unified-sports" component={UnifiedSports} />
+
+      {/* Gaming & Esports */}
+      <Route path="/gaming" component={GamingIntegration} />
+      <Route path="/unified-gaming" component={UnifiedGaming} />
       <Route path="/video-gaming" component={VideoGaming} />
-      <Route path="/esports-hub" component={EsportsHub} />
-      <Route path="/gaming-integration" component={UnifiedGaming} />
+      <Route path="/esports" component={EsportsHub} />
+
+      {/* Fantasy Sports */}
+      <Route path="/fantasy" component={FantasySportsEnhanced} />
+
+      {/* Tournaments */}
+      <Route path="/tournaments" component={Tournaments} />
+      <Route path="/tournament/:id" component={Tournaments} />
+
+      {/* Social Features */}
+      <Route path="/social" component={Social} />
+      <Route path="/social-betting" component={SocialBetting} />
+      <Route path="/head-to-head" component={HeadToHeadBetting} />
+
+      {/* Trivia */}
       <Route path="/trivia" component={Trivia} />
+
+      {/* Enhanced Features */}
+      <Route path="/enhanced-features" component={EnhancedFeatures} />
+
+      {/* VIP Features */}
+      <Route path="/vip" component={VipFeatures} />
+
+      {/* WeParlay Cash */}
+      <Route path="/weparlay-cash" component={WeParlayCash} />
+
+      {/* Wallet & Banking */}
+      <Route path="/wallet" component={WalletManagement} />
+      <Route path="/wallet-management-enhanced" component={WalletManagementEnhanced} />
+      <Route path="/wallet-test" component={WalletTest} />
+      <Route path="/user-profile-banking" component={UserProfileBanking} />
+      <Route path="/user-profile" component={UserProfilePage} />
+
+      {/* Payment & Demo */}
+      <Route path="/payment-demo" component={PaymentDemo} />
+      <Route path="/onboarding-demo" component={OnboardingDemo} />
+      <Route path="/notification-test" component={NotificationTest} />
+      <Route path="/sms-challenge" component={SmsChallenge} />
+
+      {/* Academy */}
+      <Route path="/betting-academy" component={BettingAcademy} />
+
+      {/* Settings */}
       <Route path="/settings" component={Settings} />
       <Route path="/security-settings" component={SecuritySettings} />
+      <Route path="/theme-settings" component={ThemeSettingsPage} />
+      <Route path="/theme-color-manager" component={ThemeColorManager} />
+
+      {/* Crypto */}
+      <Route path="/crypto-info" component={CryptoInformation} />
+
+      {/* Support & Legal */}
+      <Route path="/support" component={Support} />
+      <Route path="/privacy-policy" component={PrivacyPolicy} />
+      <Route path="/terms-of-service" component={TermsOfService} />
       <Route path="/security-info" component={SecurityInfo} />
-      <Route path="/security" component={SecurityInfo} />
-      <Route path="/head-to-head" component={HeadToHeadBetting} />
-      <Route path="/signup" component={SignUpEnhanced} />
-      <Route path="/signup-classic" component={SignUp} />
-      <Route path="/signup-enhanced" component={SignUpEnhanced} />
+
+      {/* Authentication */}
       <Route path="/login" component={LoginEnhanced} />
       <Route path="/login-enhanced" component={LoginEnhanced} />
       <Route path="/mobile-login" component={MobileLogin} />
@@ -160,38 +205,18 @@ function Router() {
       <Route path="/community" component={UserDirectory} />
       <Route path="/users" component={UserDirectory} />
       <Route path="/social-bots" component={(props) => <AdminRoute component={SocialMediaBots} {...props} />} />
-      <Route path="/social-dashboard" component={(props) => <AdminRoute component={SocialMediaDashboard} {...props} />} />
-      <Route path="/email-monitoring" component={EmailMonitoring} />
-      <Route path="/theme-manager" component={ThemeSettingsPage} />
-      <Route path="/sports/:sportKey" component={SportPage} />
-      <Route path="/privacy-policy" component={PrivacyPolicy} />
-      <Route path="/terms-of-service" component={TermsOfService} />
-      <Route path="/support" component={Support} />
-      <Route path="/crypto-information" component={CryptoInformation} />
-      <Route path="/sms-challenge" component={SmsChallenge} />
-      <Route path="/security-info" component={SecurityInfo} />
-      <Route path="/theme-color-manager" component={ThemeColorManager} />
-      <Route path="/theme-settings" component={ThemeSettingsPage} />
-      <Route path="/notification-test" component={NotificationTest} />
-      <Route path="/profile" component={UserProfileBanking} />
-      <Route path="/user-profile" component={UserProfileBanking} />
-      <Route path="/my-account" component={UserProfileBanking} />
-      <Route path="/my-bets" component={MyBets} />
-      <Route path="/weparlay-cash" component={WeParlayCash} />
-      <Route path="/onboarding-demo" component={OnboardingDemo} />
-      <Route path="/wallet-management" component={WalletManagement} />
-      <Route path="/wallet-management-enhanced" component={WalletManagementEnhanced} />
-      
-      {/* Additional Pages - Previously Missing Routes */}
-      <Route path="/betting-manager" component={BettingManager} />
-      <Route path="/live-betting-fixed" component={LiveBettingReal} />
-      <Route path="/payment-demo" component={PaymentDemo} />
-      <Route path="/wallet-test" component={WalletTest} />
-      <Route path="/user-profile-page" component={UserProfilePage} />
-      <Route path="/fantasy-enhanced" component={FantasySportsEnhanced} />
-      <Route path="/gaming-integration-alt" component={GamingIntegration} />
-      <Route path="/live-betting-enhanced" component={LiveBettingEnhanced} />
-      
+      <Route path="/social-media-dashboard" component={(props) => <AdminRoute component={SocialMediaDashboard} {...props} />} />
+      <Route path="/email-monitoring" component={(props) => <AdminRoute component={EmailMonitoring} {...props} />} />
+
+      {/* Authentication Routes */}
+      <Route path="/signup" component={SignUpEnhanced} />
+      <Route path="/signup-enhanced" component={SignUpEnhanced} />
+
+      {/* Admin Routes */}
+      <Route path="/admin" component={(props) => <AdminRoute component={AdminDashboard} {...props} />} />
+      <Route path="/admin-dashboard" component={(props) => <AdminRoute component={AdminDashboard} {...props} />} />
+      <Route path="/admin-login" component={AdminLogin} />
+      <Route path="/admin-bypass" component={AdminBypass} />
       <Route component={NotFound} />
     </Switch>
   );
