@@ -33,14 +33,20 @@ const loadStart = performance.now();
 console.log('🛡️ WeParlay Error Reporting System initialized');
 
 // Apply theme and WordPress config early
-import('./lib/wordpressSync').then(({ applyWordPressConfig }) => {
+import('./lib/wordpressSync').then((module) => {
   // Apply WordPress configuration if available
-  if (window.wordpressConfig && typeof applyWordPressConfig === 'function') {
-    applyWordPressConfig(window.wordpressConfig);
-  } else {
-    console.log('WordPress config not available or function not defined');
+  try {
+    if (window.wordpressConfig && module.applyWordPressConfig) {
+      module.applyWordPressConfig(window.wordpressConfig);
+    } else {
+      console.log('WordPress config not available, using defaults');
+    }
+  } catch (error) {
+    console.log('WordPress config not available, using defaults');
   }
-}).catch(console.error);
+}).catch(() => {
+  console.log('WordPress sync module not available, using defaults');
+});
 
 createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>
