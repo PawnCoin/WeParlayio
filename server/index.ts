@@ -95,12 +95,8 @@ app.use((req, res, next) => {
     server = app;
   }
 
-  const httpServer = server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`🚀 WeParlay server running on HTTP port ${port}`);
+  const httpServer = server.listen(port, "0.0.0.0", () => {
+    log(`🚀 WeParlay server running on HTTP at 0.0.0.0:${port}`);
   });
 
   // Initialize WebSocket service after server is created
