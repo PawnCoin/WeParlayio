@@ -23,6 +23,7 @@ import WalletNotifications from "@/components/wallet/WalletNotifications";
 import { useBetting } from "@/contexts/BettingContext";
 import { useQuery } from "@tanstack/react-query";
 import BusinessProposalModal from "@/components/business/BusinessProposalModal";
+import { useWebSocket } from "@/hooks/useWebSocket";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -35,6 +36,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [isBusinessProposalOpen, setIsBusinessProposalOpen] = useState(false);
   const { selectedCurrency, setSelectedCurrency } = useBetting();
   const { toast } = useToast();
+  
+  // Initialize WebSocket connection for real-time updates
+  const { isConnected, connectionStatus } = useWebSocket({
+    autoConnect: isAuthenticated,
+    reconnectAttempts: 5,
+    reconnectInterval: 3000
+  });
 
   // Fetch WeParlay Cash balance
   const { data: cashBalance } = useQuery({
@@ -134,18 +142,28 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
             {/* Currency Mode Toggle & Wallet Access */}
             <div className="hidden md:flex items-center space-x-2">
+              {/* WebSocket Connection Status */}
+              {isAuthenticated && (
+                <div className={`w-2 h-2 rounded-full ${
+                  isConnected ? 'bg-green-500' : connectionStatus === 'connecting' ? 'bg-yellow-500' : 'bg-red-500'
+                }`} title={`Real-time updates: ${isConnected ? 'Connected' : connectionStatus}`} />
+              )}
+              
               <CurrencyModeToggle 
                 variant="compact" 
                 className="bg-black/20 p-2 rounded-md" 
                 onCurrencyChange={handleCurrencySwitch}
               />
 
-              <Link href="/wallet-management-enhanced">
-                <Button variant="ghost" size="sm" className="text-white hover:text-green-500 flex items-center">
-                  <Wallet className="h-4 w-4 mr-1" />
-                  <span>Wallet</span>
-                </Button>
-              </Link>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-white hover:text-green-500 flex items-center"
+                onClick={() => window.location.href = '/wallet-management-enhanced'}
+              >
+                <Wallet className="h-4 w-4 mr-1" />
+                <span>Wallet</span>
+              </Button>
             </div>
 
             {/* User menu */}
