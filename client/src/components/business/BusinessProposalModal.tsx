@@ -73,7 +73,7 @@ const BusinessProposalModal: React.FC<BusinessProposalModalProps> = ({ isOpen, o
             <Rocket className="mr-2 h-6 w-6" />
             WeParlay.io - Strategic Partnership & Business Proposal
           </DialogTitle>
-          <p className="text-gray-600">Where Sports Betting Meets Innovation - Join the Revolution!</p>
+          <div className="text-gray-600">Where Sports Betting Meets Innovation - Join the Revolution!</div>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
