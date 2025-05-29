@@ -77,7 +77,7 @@ import SignUpEnhanced from "@/pages/SignUpEnhanced";
 
 // Import admin components
 import AdminBypass from "@/pages/AdminBypass";
-//import LiveBettingEnhanced from "@/pages/BettingExperience";
+import LiveBettingEnhanced from "@/pages/BettingExperience";
 
 // Admin route guard component
 const AdminRoute = ({ component: Component, ...rest }: any) => {

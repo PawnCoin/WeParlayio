@@ -70,9 +70,11 @@ export const useWebSocket = (config: WebSocketConfig = {}) => {
     try {
       setState(prev => ({ ...prev, connectionStatus: 'connecting' }));
 
-      // Determine WebSocket URL
+      // Try development server first, fallback to production
+      const isDev = window.location.hostname === 'localhost' || window.location.hostname.includes('replit.dev');
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${window.location.host}/ws`;
+      const port = isDev ? ':5000' : '';
+      const wsUrl = `${protocol}//${window.location.hostname}${port}/ws`;
 
       console.log('🔌 Attempting WebSocket connection to:', wsUrl);
 
