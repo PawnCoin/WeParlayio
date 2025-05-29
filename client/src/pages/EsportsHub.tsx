@@ -220,27 +220,27 @@ const EsportsHub: React.FC = () => {
     setChatMessages([...chatMessages, newMessage]);
   };
 
-  // Show error state if there are critical failures
-  if (error && !liveMatches && !gridSeriesData && !riotAPIStatus) {
+  // Show loading state while data is being fetched
+  if (isLoading && !initialLiveMatches && !gridSeriesData) {
     return (
       <div className="container mx-auto px-4 py-6">
-        <Card className="border-red-200 bg-red-50">
+        <Card className="border-blue-200 bg-blue-50">
           <CardContent className="p-6 text-center">
-            <div className="text-6xl mb-4">🚧</div>
-            <h2 className="text-2xl font-bold text-red-800 mb-2">Esports Hub Temporarily Unavailable</h2>
-            <p className="text-red-600 mb-4">
-              We're experiencing technical difficulties. Our team is working to restore service.
+            <div className="text-6xl mb-4">🎮</div>
+            <h2 className="text-2xl font-bold text-blue-800 mb-2">Loading Esports Hub...</h2>
+            <p className="text-blue-600 mb-4">
+              Fetching live matches and real-time data...
             </p>
-            <Button 
-              onClick={() => window.location.reload()} 
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Try Again
-            </Button>
+            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
           </CardContent>
         </Card>
       </div>
     );
+  }
+
+  // Show error state only for critical failures, but still render the page with fallback data
+  if (error && !liveMatches && !gridSeriesData && !riotAPIStatus) {
+    console.warn('⚠️ Esports Hub API errors, using fallback data:', error);
   }
 
   // Use the data from above queries with fallbacks

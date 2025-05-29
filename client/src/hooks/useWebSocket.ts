@@ -90,7 +90,13 @@ export const useWebSocket = (config: WebSocketConfig = {}) => {
       // Determine WebSocket URL based on current location
       const getWebSocketUrl = () => {
         // For Replit deployments, use the correct WebSocket URL format
-        if (window.location.hostname.includes('replit.dev')) {
+        if (window.location.hostname.includes('replit.dev') || window.location.hostname.includes('replit.co')) {
+          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+          return `${protocol}//${window.location.host}/ws`;
+        }
+
+        // For localhost development
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
           const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
           return `${protocol}//${window.location.host}/ws`;
         }
