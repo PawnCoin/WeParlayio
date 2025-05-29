@@ -2,7 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { createSSLServer, getSSLConfig } from "./ssl";
-import { initializeWebSocketService } from "./services/websocketService";
+import { initializeWebSocketService, websocketService } from './services/websocketService.js';
 import notificationRoutes from './routes/notificationRoutes';
 import websocketPollingRoutes from './routes/websocketPollingRoutes';
 
@@ -103,7 +103,17 @@ app.use((req, res, next) => {
     log(`🚀 WeParlay server running on HTTP port ${port}`);
   });
 
-  // Initialize WebSocket service
-  initializeWebSocketService(httpServer);
-  log(`🔌 WebSocket service initialized on same port ${port}`);
+  // Initialize WebSocket service after server is created
+  try {
+    initializeWebSocketService(httpServer);
+    log(`🔌 WebSocket service initialized on same port ${port}`);
+
+    // Test WebSocket server status
+    setTimeout(() => {
+      const stats = websocketService.getStats();
+      console.log('📊 WebSocket stats:', stats);
+    }, 1000);
+  } catch (error) {
+    console.error('🚨 Failed to initialize WebSocket service:', error);
+  }
 })();

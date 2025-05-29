@@ -46,11 +46,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const { toast } = useToast();
 
   // Initialize WebSocket connection for real-time updates
-  const { isConnected, connectionStatus } = useWebSocket({
+  const {
+    isConnected = false,
+    connectionStatus = 'disconnected'
+  } = useWebSocket({
     autoConnect: isAuthenticated,
     reconnectAttempts: 5,
     reconnectInterval: 3000
-  });
+  }) || {};
 
   // Fetch WeParlay Cash balance
   const { data: cashBalance } = useQuery({

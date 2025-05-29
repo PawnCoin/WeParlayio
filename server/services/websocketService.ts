@@ -24,14 +24,28 @@ class WebSocketService {
         path: '/ws',
         perMessageDeflate: false, // Disable compression to reduce overhead
         maxPayload: 1024 * 1024, // 1MB max message size
+        clientTracking: true,
+        handleProtocols: () => false, // Accept any protocol
       });
 
       this.wss.on('connection', (ws, request) => {
+        console.log('👤 New WebSocket connection from:', request.socket.remoteAddress);
         this.handleConnection(ws, request);
       });
 
       this.wss.on('error', (error) => {
         console.error('🚨 WebSocket server error:', error);
+        // Try to recover from server errors
+        setTimeout(() => {
+          if (this.wss && this.wss.readyState === WebSocket.CLOSED) {
+            console.log('🔄 Attempting to restart WebSocket server...');
+            this.initialize(server);
+          }
+        }, 5000);
+      });
+
+      this.wss.on('listening', () => {
+        console.log('🎧 WebSocket server is listening');
       });
 
       // Start heartbeat to clean up dead connections

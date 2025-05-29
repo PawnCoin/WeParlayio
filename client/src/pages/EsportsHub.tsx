@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { useWebSocket } from '@/hooks/use-websocket';
+import { useWebSocket } from '@/hooks/useWebSocket';
 
 const EsportsHub: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
@@ -37,15 +37,19 @@ const EsportsHub: React.FC = () => {
   const [isLoadingPlayerData, setIsLoadingPlayerData] = useState(false);
 
   // Initialize WebSocket connection for real-time updates
-  const websocketData = useWebSocket({
+  const {
+    isConnected = false,
+    connectionStatus = 'disconnected',
+    connect,
+    disconnect,
+    send,
+    subscribe,
+    resetCircuitBreaker
+  } = useWebSocket({
     autoConnect: isAuthenticated,
     reconnectAttempts: 5,
     reconnectInterval: 3000
-  });
-
-  // Extract with fallback values to prevent undefined errors
-  const isConnected = websocketData?.isConnected || false;
-  const connectionStatus = websocketData?.connectionStatus || 'disconnected';
+  }) || {};
 
   // Fetch live esports matches with REAL data integration
   const { data: liveMatches, isLoading, error } = useQuery({
