@@ -36,7 +36,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [isBusinessProposalOpen, setIsBusinessProposalOpen] = useState(false);
   const { selectedCurrency, setSelectedCurrency } = useBetting();
   const { toast } = useToast();
-  
+
   // Initialize WebSocket connection for real-time updates
   const { isConnected, connectionStatus } = useWebSocket({
     autoConnect: isAuthenticated,
@@ -53,16 +53,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const handleCurrencySwitch = () => {
     const newMode = selectedCurrency === 'WEPARLAY' ? 'USD' : 'WEPARLAY';
     setSelectedCurrency(newMode);
-    
+
     // Save to localStorage for toggle switch sync
     localStorage.setItem('currencyMode', newMode === 'WEPARLAY' ? 'virtual' : 'real');
-    
+
     toast({
       title: `Switched to ${newMode === 'WEPARLAY' ? 'WeParlay Cash' : 'Real Money'} Mode`,
       description: `You're now betting with ${newMode === 'WEPARLAY' ? 'virtual currency' : 'real money'}`,
       duration: 3000,
     });
-    
+
     // Force page refresh to sync all components
     window.location.reload();
   };
@@ -104,7 +104,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   </div>
                 </Link>
               ))}
-              
+
               {/* Business Proposal Button */}
               <Button
                 onClick={() => setIsBusinessProposalOpen(true)}
@@ -150,14 +150,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   isConnected ? 'bg-green-500' : connectionStatus === 'connecting' ? 'bg-yellow-500' : 'bg-red-500'
                 }`} title={`Real-time updates: ${isConnected ? 'Connected' : connectionStatus}`} />
               )}
-              
+
               <CurrencyModeToggle 
                 variant="compact" 
                 className="bg-black/20 p-2 rounded-md" 
                 onCurrencyChange={handleCurrencySwitch}
               />
 
-              
+
             </div>
 
             {/* User menu */}
@@ -173,22 +173,22 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                           selectedCurrency === 'WEPARLAY' 
                             ? 'bg-blue-600 hover:bg-blue-700 border-blue-500' 
                             : 'bg-green-700 hover:bg-green-600 border-green-600'
-                        } text-white px-4 py-2 rounded-md flex items-center transition-all duration-300`}
+                        } text-white px-3 py-2 rounded-md flex items-center transition-all duration-300 min-w-0`}
                       >
-                        <div className="flex items-center">
+                        <div className="flex items-center min-w-0">
                           {selectedCurrency === 'WEPARLAY' ? (
                             <>
-                              <span className="text-blue-200 text-xs mr-1">🎮</span>
-                              <span>{(cashBalance?.balance || user?.weplayTokenBalance || 10000).toLocaleString()} WPC</span>
+                              <span className="text-blue-200 text-xs mr-1 flex-shrink-0">🎮</span>
+                              <span className="text-sm font-medium truncate">{(cashBalance?.balance || user?.weplayTokenBalance || 10000).toLocaleString()} WPC</span>
                             </>
                           ) : (
                             <>
-                              <span className="text-green-200 text-xs mr-1">💰</span>
-                              <span>${user?.balance?.toFixed(2) || "0.00"}</span>
+                              <span className="text-green-200 text-xs mr-1 flex-shrink-0">💰</span>
+                              <span className="text-sm font-medium">${user?.balance?.toFixed(2) || "0.00"}</span>
                             </>
                           )}
                         </div>
-                        <ChevronDown className="ml-2 h-4 w-4" />
+                        <ChevronDown className="ml-2 h-4 w-4 flex-shrink-0" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
@@ -337,7 +337,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           <div className="hidden md:block w-80 bg-white shadow-md flex-shrink-0 overflow-y-auto custom-scrollbar betting-slip-shadow dark:bg-neutral-dark dark:text-neutral-light">
             <BettingSlip />
           </div>
-          
+
           {/* Mobile Betting Slip - Fixed Bottom */}
           <div className="md:hidden fixed bottom-16 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40 max-h-60 overflow-y-auto dark:bg-neutral-dark dark:border-gray-700">
             <BettingSlip />
@@ -346,7 +346,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       </main>
       {/* Footer */}
       <Footer />
-      
+
       {/* Business Proposal Modal */}
       <BusinessProposalModal 
         isOpen={isBusinessProposalOpen}
