@@ -74,6 +74,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import ThemeColorManager from "@/pages/ThemeColorManager";
 import LiveBettingRealFixed from "@/pages/LiveBettingReal-fixed";
 import SignUpEnhanced from "@/pages/SignUpEnhanced";
+import WalletManagementEnhanced from "@/pages/WalletManagementEnhanced";
 
 // Import admin components
 import AdminBypass from "@/pages/AdminBypass";
@@ -168,7 +169,7 @@ function Router() {
 
       {/* Wallet & Banking */}
       <Route path="/wallet" component={WalletManagement} />
-      <Route path="/wallet-management-enhanced" component={WalletManagement} />
+      <Route path="/wallet-management-enhanced" component={WalletManagementEnhanced} />
       <Route path="/wallet-test" component={WalletTest} />
       <Route path="/user-profile-banking" component={UserProfileBanking} />
       <Route path="/user-profile" component={UserProfilePage} />
@@ -218,7 +219,7 @@ function Router() {
       <Route path="/admin-dashboard" component={(props) => <AdminRoute component={AdminDashboard} {...props} />} />
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin-bypass" component={AdminBypass} />
-      
+
       {/* Default route */}
       <Route path="/" component={Home} />
       <Route component={NotFound} />
