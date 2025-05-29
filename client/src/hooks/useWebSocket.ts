@@ -164,7 +164,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
             description: "Real-time monitoring active",
             duration: 2000
           });
-          
+
           // Subscribe to essential channels
           subscribe(['transactions', 'balance_updates', 'security_alerts', 'odds_updates']);
         }
