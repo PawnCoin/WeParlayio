@@ -271,6 +271,44 @@ const Home: React.FC = () => {
         </div>
       </div>
 
+      {/* Live Streaming Promotion - Simple but Effective */}
+      <div className="mb-8">
+        <Card className="bg-gradient-to-r from-red-600 via-red-700 to-red-800 border-0 text-white overflow-hidden relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-red-600/90 via-red-700/90 to-red-800/90"></div>
+          <div className="absolute top-2 right-2">
+            <div className="flex items-center bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold animate-pulse">
+              <div className="w-2 h-2 bg-white rounded-full mr-1"></div>
+              LIVE
+            </div>
+          </div>
+          <CardContent className="relative z-10 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-2xl font-bold mb-2 flex items-center">
+                  <Crown className="h-6 w-6 text-yellow-400 mr-2" />
+                  Watch Games Live While You Bet
+                </h3>
+                <p className="text-red-100 mb-3">
+                  🔥 Stream live sports directly on WeParlay • Real-time betting • No switching apps
+                </p>
+                <p className="text-sm text-red-200">
+                  Exclusive to Platinum members only
+                </p>
+              </div>
+              <div className="text-right">
+                <Button 
+                  size="lg"
+                  className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold"
+                >
+                  Upgrade to Platinum
+                </Button>
+                <p className="text-xs text-red-200 mt-1">Join the elite</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Animated Sports Stats Carousel */}
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-4 flex items-center">
