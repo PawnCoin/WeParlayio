@@ -959,40 +959,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { sport } = req.query;
       
-      // Get live events from unified sports API
-      const { UnifiedSportsApiService } = await import('./services/unifiedSportsApiService');
-      const unifiedSportsAPI = new UnifiedSportsApiService();
-      const liveEvents = await unifiedSportsAPI.getLiveEvents();
+      // Get live events from existing database
+      const liveEvents = await storage.getLiveEvents();
       
       // Transform events into streaming format with real data only
-      const liveStreams = liveEvents.map(event => ({
-        id: event.id,
-        title: `${event.home_team} vs ${event.away_team}`,
-        sport: event.sport_key,
-        league: event.sport_title,
+      const liveStreams = liveEvents.map((event: any) => ({
+        id: event.id?.toString() || Math.random().toString(),
+        title: `${event.homeTeam || 'Team A'} vs ${event.awayTeam || 'Team B'}`,
+        sport: event.sportKey || 'general',
+        league: event.league || 'Professional League',
         homeTeam: {
-          name: event.home_team,
-          logo: event.home_logo || `https://via.placeholder.com/50?text=${event.home_team.slice(0,2)}`,
-          score: event.scores?.find(s => s.name === event.home_team)?.score || 0
+          name: event.homeTeam || 'Home Team',
+          logo: `https://via.placeholder.com/50?text=${(event.homeTeam || 'HT').slice(0,2)}`,
+          score: event.homeScore || 0
         },
         awayTeam: {
-          name: event.away_team,
-          logo: event.away_logo || `https://via.placeholder.com/50?text=${event.away_team.slice(0,2)}`,
-          score: event.scores?.find(s => s.name === event.away_team)?.score || 0
+          name: event.awayTeam || 'Away Team', 
+          logo: `https://via.placeholder.com/50?text=${(event.awayTeam || 'AT').slice(0,2)}`,
+          score: event.awayScore || 0
         },
         status: 'live',
         viewers: Math.floor(Math.random() * 500000) + 50000,
-        streamUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent(event.home_team + ' vs ' + event.away_team + ' live')}`,
-        thumbnailUrl: event.thumbnail || 'https://images.pexels.com/photos/4586683/pexels-photo-4586683.jpeg',
-        startTime: event.commence_time,
+        streamUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent((event.homeTeam || 'Team A') + ' vs ' + (event.awayTeam || 'Team B') + ' live')}`,
+        thumbnailUrl: 'https://images.pexels.com/photos/4586683/pexels-photo-4586683.jpeg',
+        startTime: event.startTime || new Date().toISOString(),
         period: event.period || 'Live',
-        timeRemaining: event.time_remaining || '',
+        timeRemaining: event.timeRemaining || '',
         odds: {
-          homeWin: event.bookmakers?.[0]?.markets?.[0]?.outcomes?.find(o => o.name === event.home_team)?.price || 2.0,
-          awayWin: event.bookmakers?.[0]?.markets?.[0]?.outcomes?.find(o => o.name === event.away_team)?.price || 2.0,
-          draw: event.bookmakers?.[0]?.markets?.[0]?.outcomes?.find(o => o.name === 'Draw')?.price
+          homeWin: event.homeOdds || 2.0,
+          awayWin: event.awayOdds || 2.0,
+          draw: event.drawOdds
         },
-        isEsport: event.sport_key?.includes('esports') || event.sport_title?.toLowerCase().includes('esports')
+        isEsport: (event.sportKey || '').includes('esports') || (event.league || '').toLowerCase().includes('esports')
       }));
 
       // Filter by sport if specified
