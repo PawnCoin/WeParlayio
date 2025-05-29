@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PlayCircle, Eye, Users, Wifi, Timer, Share2, Star, X, ArrowLeft, TrendingUp } from 'lucide-react';
+import { PlayCircle, Eye, Users, Wifi, Timer, Share2, Star, X, ArrowLeft, TrendingUp, Crown, Lock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { SubscriptionTier, canUserAccess } from '../../../shared/tierSystem';
 
 
 // Types for live streaming
@@ -50,11 +52,15 @@ interface SportCategory {
 
 const LiveSportsStreaming: React.FC = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [selectedStream, setSelectedStream] = useState<LiveStream | null>(null);
   const [selectedSport, setSelectedSport] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [bettingSlipOpen, setBettingSlipOpen] = useState(false);
   const [liveBets, setLiveBets] = useState<any[]>([]);
+
+  // Check if user has access to live streaming (Platinum only)
+  const hasLiveStreamAccess = user?.tier && canUserAccess(user.tier as SubscriptionTier, 'liveStreamingAccess');
 
   // Fetch live streams from your unified sports API
   const { data: liveStreams = [], isLoading } = useQuery({
@@ -87,7 +93,7 @@ const LiveSportsStreaming: React.FC = () => {
       status: 'live',
       viewers: 485000,
       streamUrl: 'https://www.youtube.com/watch?v=live_nfl_stream',
-      thumbnailUrl: 'https://images.pexels.com/photos/4586683/pexels-photo-4586683.jpeg',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1566577739112-5180d4bf9390?w=800&q=80',
       startTime: new Date().toISOString(),
       period: '4th Quarter',
       timeRemaining: '03:45',
@@ -115,7 +121,7 @@ const LiveSportsStreaming: React.FC = () => {
       status: 'live',
       viewers: 324000,
       streamUrl: 'https://www.youtube.com/watch?v=live_nba_stream',
-      thumbnailUrl: 'https://images.pexels.com/photos/3755440/pexels-photo-3755440.jpeg',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800&q=80',
       startTime: new Date().toISOString(),
       period: '4th Quarter',
       timeRemaining: '02:18',
@@ -143,7 +149,7 @@ const LiveSportsStreaming: React.FC = () => {
       status: 'live',
       viewers: 892000,
       streamUrl: 'https://www.twitch.tv/lck',
-      thumbnailUrl: 'https://images.pexels.com/photos/3165335/pexels-photo-3165335.jpeg',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&q=80',
       startTime: new Date().toISOString(),
       period: 'Game 4',
       timeRemaining: '28:45',
@@ -504,13 +510,41 @@ const LiveSportsStreaming: React.FC = () => {
         </Tabs>
 
         {/* Live streams grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <AnimatePresence>
-            {filteredStreams.map((stream) => (
-              <StreamCard key={stream.id} stream={stream} />
-            ))}
-          </AnimatePresence>
-        </div>
+        {!hasLiveStreamAccess ? (
+          <div className="text-center py-12">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-8 border-2 border-yellow-200 max-w-md mx-auto"
+            >
+              <div className="flex justify-center mb-4">
+                <div className="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full p-4">
+                  <Crown className="h-8 w-8 text-white" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">Platinum Exclusive</h3>
+              <p className="text-gray-600 mb-4">
+                Live sports streaming is available exclusively for Platinum members. 
+                Upgrade now to watch live games while betting in real-time!
+              </p>
+              <div className="flex items-center justify-center gap-2 text-yellow-600 mb-4">
+                <Lock className="h-4 w-4" />
+                <span className="text-sm font-medium">Premium Feature</span>
+              </div>
+              <Button className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white">
+                Upgrade to Platinum
+              </Button>
+            </motion.div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <AnimatePresence>
+              {filteredStreams.map((stream) => (
+                <StreamCard key={stream.id} stream={stream} />
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
 
         {/* Empty state */}
         {filteredStreams.length === 0 && (

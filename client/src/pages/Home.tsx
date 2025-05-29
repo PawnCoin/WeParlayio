@@ -131,26 +131,26 @@ const Home: React.FC = () => {
   const [sportFilter, setSportFilter] = useState("All Sports");
   const [selectedTab, setSelectedTab] = useState("game-lines");
   const [showPartnersModal, setShowPartnersModal] = useState(false);
-  
+
   // Get all available sports
   const { data: sports, isLoading: isLoadingSports } = useQuery({
     queryKey: ["/api/sports"],
     queryFn: () => sportsBetAPI.getSports(),
   });
-  
+
   // Get live events from all sports
   const { data: liveEvents, isLoading: isLoadingLiveEvents } = useQuery({
     queryKey: ["/api/events/live"],
     queryFn: () => sportsBetAPI.getLiveEvents(),
     refetchInterval: 30000, // Refresh every 30 seconds
   });
-  
+
   // Get upcoming events from all sports
   const { data: upcomingEvents, isLoading: isLoadingUpcomingEvents } = useQuery({
     queryKey: ["/api/events/upcoming"],
     queryFn: () => sportsBetAPI.getUpcomingEvents(10), // Get next 10 upcoming events
   });
-  
+
   // Get active tournament
   const { data: activeTournament, isLoading: isLoadingTournament } = useQuery({
     queryKey: ["/api/tournaments/1"],
@@ -161,12 +161,12 @@ const Home: React.FC = () => {
       console.log("Active tournament not found", error);
     }
   });
-  
+
   return (
     <div data-bind="dashboard">
       {/* Interactive Onboarding Experience */}
       <OnboardingExperience />
-      
+
       {/* Personalized Welcome Dashboard */}
       <div className="mb-8">
         <WelcomeDashboard />
@@ -195,7 +195,7 @@ const Home: React.FC = () => {
                   🎯 Up to $60,000/month potential • 🔥 Premium API showcase • 💎 VIP tier access
                 </p>
               </div>
-              
+
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button
                   size="lg"
@@ -216,7 +216,7 @@ const Home: React.FC = () => {
                 </Button>
               </div>
             </div>
-            
+
             <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
               <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
                 <div className="text-2xl font-bold text-yellow-400">25-45%</div>
@@ -234,7 +234,7 @@ const Home: React.FC = () => {
           </CardContent>
         </Card>
       </div>
-      
+
       {/* Dashboard Header With Tabs */}
       <div className="mb-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -258,7 +258,7 @@ const Home: React.FC = () => {
             </Button>
           </div>
         </div>
-        
+
         <div className="mt-4 border-b border-gray-200 dark:border-gray-700">
           <Tabs defaultValue="game-lines" value={selectedTab} onValueChange={setSelectedTab} className="w-full">
             <TabsList className="flex-wrap">
@@ -270,7 +270,7 @@ const Home: React.FC = () => {
           </Tabs>
         </div>
       </div>
-      
+
       {/* Animated Sports Stats Carousel */}
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-4 flex items-center">
@@ -279,14 +279,14 @@ const Home: React.FC = () => {
         </h2>
         <StatsCarousel />
       </div>
-      
+
       {/* Live Events Section */}
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-4 flex items-center">
           <span className="h-3 w-3 rounded-full bg-green-500 mr-2"></span>
           Live Events
         </h2>
-        
+
         {isLoadingLiveEvents ? (
           <div className="space-y-4">
             <Skeleton className="h-48 w-full" />
@@ -330,11 +330,11 @@ const Home: React.FC = () => {
           </div>
         )}
       </div>
-      
+
       {/* Upcoming Events Section */}
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-4">Upcoming Events</h2>
-        
+
         {isLoadingUpcomingEvents ? (
           <div className="space-y-4">
             <Skeleton className="h-24 w-full" />
@@ -373,21 +373,21 @@ const Home: React.FC = () => {
           </div>
         )}
       </div>
-      
+
       {/* Tournament Bracket Section */}
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-4">Tournament Bracket</h2>
         <BracketView tournamentId={1} />
       </div>
-      
+
       {/* Fantasy Tools Section */}
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-4">Fantasy Tools</h2>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Fantasy Team Builder */}
           <FantasyTeamBuilder />
-          
+
           {/* Player Props Tool */}
           <Card>
             <CardContent className="p-0">
@@ -398,7 +398,7 @@ const Home: React.FC = () => {
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Compare player props across multiple sportsbooks</p>
               </div>
-              
+
               <div className="p-4">
                 <PlayerPropsTable />
               </div>

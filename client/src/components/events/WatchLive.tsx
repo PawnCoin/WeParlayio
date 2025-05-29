@@ -12,6 +12,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getTeamLogoUrl } from "@/lib/sportsDataUtils";
 import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/useAuth";
+import { SubscriptionTier, canUserAccess } from '../../../shared/tierSystem';
+import { Crown, Lock } from 'lucide-react';
 
 type LiveStreamProps = {
   eventId: number;
@@ -236,12 +239,16 @@ export const WatchLive: React.FC<LiveStreamProps> = ({
   isOpen, 
   onClose 
 }) => {
+  const { user } = useAuth();
   // Game time and period state
   const [period, setPeriod] = useState<string>('');
   const [timeRemaining, setTimeRemaining] = useState<string>('');
   const [stats, setStats] = useState<GameStats | null>(null);
   const [activeTab, setActiveTab] = useState<string>('stream');
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Check if user has access to live streaming (Platinum only)
+  const hasLiveStreamAccess = user?.tier && canUserAccess(user.tier as SubscriptionTier, 'liveStreamingAccess');
   
   // League for team logos
   const league = getSportLeague(sportKey);
@@ -417,7 +424,26 @@ export const WatchLive: React.FC<LiveStreamProps> = ({
           </TabsList>
           
           <TabsContent value="stream" className="flex-1 relative overflow-hidden">
-            {isLoading ? (
+            {!hasLiveStreamAccess ? (
+              <div className="h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+                <div className="text-center p-8 bg-white rounded-lg shadow-lg border-2 border-yellow-200 max-w-sm">
+                  <div className="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <Crown className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-800 mb-2">Platinum Required</h3>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Live streaming is exclusive to Platinum members
+                  </p>
+                  <div className="flex items-center justify-center gap-2 text-yellow-600 mb-4">
+                    <Lock className="h-4 w-4" />
+                    <span className="text-xs font-medium">Premium Feature</span>
+                  </div>
+                  <Button size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500">
+                    Upgrade Now
+                  </Button>
+                </div>
+              </div>
+            ) : isLoading ? (
               <div className="absolute inset-0 flex items-center justify-center bg-background/80">
                 <div className="animate-pulse flex flex-col items-center">
                   <div className="h-10 w-10 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>

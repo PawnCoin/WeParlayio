@@ -19,13 +19,13 @@ export interface TierFeatures {
     parlayVirtual: boolean;
     tournamentParticipation: boolean;
     maxBetAmount: number;
-    
+
     // Content access features
     liveOddsAccess: boolean;
     statsAccess: boolean;
     advancedStatsAccess: boolean;
     predictionEngineAccess: boolean;
-    
+
     // Social features 
     createGroups: boolean;
     joinGroups: boolean;
@@ -33,12 +33,12 @@ export interface TierFeatures {
     customBets: boolean; // Create custom betting challenges
     maxInvites: number;
     smsNotifications: boolean;
-    
+
     // Platform features
     supportPriority: 'standard' | 'priority' | 'vip';
     withdrawalFeeDiscount: number; // percentage
     weeklyBonus: number; // WeParlay cash amount
-    
+
     // Other
     customizationOptions: boolean;
     betProtection: boolean;
@@ -59,13 +59,13 @@ export const tierFeatures: Record<SubscriptionTier, TierFeatures> = {
       parlayVirtual: true,
       tournamentParticipation: false,
       maxBetAmount: 50, // Real money max bet
-      
+
       // Content access features - basic access only
       liveOddsAccess: true,
       statsAccess: true,
       advancedStatsAccess: false,
       predictionEngineAccess: false,
-      
+
       // Social features - minimal
       createGroups: false,
       joinGroups: true,
@@ -73,12 +73,12 @@ export const tierFeatures: Record<SubscriptionTier, TierFeatures> = {
       customBets: false, // Premium feature for paid members only
       maxInvites: 5,
       smsNotifications: false,
-      
+
       // Platform features - standard
       supportPriority: 'standard',
       withdrawalFeeDiscount: 0,
       weeklyBonus: 100, // Small weekly bonus in WeParlay cash
-      
+
       // Other - minimal
       customizationOptions: false,
       betProtection: false,
@@ -97,13 +97,13 @@ export const tierFeatures: Record<SubscriptionTier, TierFeatures> = {
       parlayVirtual: true,
       tournamentParticipation: true,
       maxBetAmount: 200,
-      
+
       // Content access features
       liveOddsAccess: true,
       statsAccess: true,
       advancedStatsAccess: false,
       predictionEngineAccess: false,
-      
+
       // Social features
       createGroups: true,
       joinGroups: true,
@@ -111,12 +111,12 @@ export const tierFeatures: Record<SubscriptionTier, TierFeatures> = {
       customBets: true, // Create custom betting challenges for Bronze+
       maxInvites: 10,
       smsNotifications: false,
-      
+
       // Platform features
       supportPriority: 'standard',
       withdrawalFeeDiscount: 5, // 5% discount on withdrawal fees
       weeklyBonus: 250,
-      
+
       // Other
       customizationOptions: true,
       betProtection: false,
@@ -135,13 +135,13 @@ export const tierFeatures: Record<SubscriptionTier, TierFeatures> = {
       parlayVirtual: true,
       tournamentParticipation: true,
       maxBetAmount: 500,
-      
+
       // Content access features
       liveOddsAccess: true,
       statsAccess: true,
       advancedStatsAccess: true,
       predictionEngineAccess: false,
-      
+
       // Social features
       createGroups: true,
       joinGroups: true,
@@ -149,12 +149,12 @@ export const tierFeatures: Record<SubscriptionTier, TierFeatures> = {
       customBets: true, // Create custom betting challenges
       maxInvites: 20,
       smsNotifications: true,
-      
+
       // Platform features
       supportPriority: 'priority',
       withdrawalFeeDiscount: 10, // 10% discount on withdrawal fees
       weeklyBonus: 500,
-      
+
       // Other
       customizationOptions: true,
       betProtection: false,
@@ -173,13 +173,14 @@ export const tierFeatures: Record<SubscriptionTier, TierFeatures> = {
       parlayVirtual: true,
       tournamentParticipation: true,
       maxBetAmount: 1000,
-      
+
       // Content access features
       liveOddsAccess: true,
       statsAccess: true,
       advancedStatsAccess: true,
       predictionEngineAccess: true,
-      
+      liveStreamingAccess: false,
+
       // Social features
       createGroups: true,
       joinGroups: true,
@@ -187,12 +188,12 @@ export const tierFeatures: Record<SubscriptionTier, TierFeatures> = {
       customBets: true, // Create custom betting challenges
       maxInvites: 50,
       smsNotifications: true,
-      
+
       // Platform features
       supportPriority: 'priority',
       withdrawalFeeDiscount: 20, // 20% discount on withdrawal fees
       weeklyBonus: 1000,
-      
+
       // Other
       customizationOptions: true,
       betProtection: true,
@@ -211,13 +212,14 @@ export const tierFeatures: Record<SubscriptionTier, TierFeatures> = {
       parlayVirtual: true,
       tournamentParticipation: true,
       maxBetAmount: 2500,
-      
+
       // Content access features
       liveOddsAccess: true,
       statsAccess: true,
       advancedStatsAccess: true,
       predictionEngineAccess: true,
-      
+      liveStreamingAccess: true,
+
       // Social features
       createGroups: true,
       joinGroups: true,
@@ -225,12 +227,12 @@ export const tierFeatures: Record<SubscriptionTier, TierFeatures> = {
       customBets: true, // Create custom betting challenges
       maxInvites: 100,
       smsNotifications: true,
-      
+
       // Platform features
       supportPriority: 'vip',
       withdrawalFeeDiscount: 50, // 50% discount on withdrawal fees
       weeklyBonus: 2500,
-      
+
       // Other
       customizationOptions: true,
       betProtection: true,
