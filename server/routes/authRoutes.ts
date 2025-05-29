@@ -250,9 +250,9 @@ router.post('/admin-login', async (req, res) => {
     
     let isValidPassword = false;
     
-    if (adminUser) {
-      // If user exists, check if password is hashed or plain text
-      if (adminUser.password && adminUser.password.startsWith('$2b$')) {
+    if (adminUser && adminUser.password) {
+      // If user exists and has a password, check if password is hashed or plain text
+      if (adminUser.password.startsWith('$2b$')) {
         // Password is hashed, use bcrypt to compare
         isValidPassword = await bcrypt.compare(password, adminUser.password);
       } else {
@@ -260,7 +260,7 @@ router.post('/admin-login', async (req, res) => {
         isValidPassword = adminUser.password === password;
       }
     } else {
-      // User doesn't exist, check against valid credentials
+      // User doesn't exist or has no password, check against valid credentials
       isValidPassword = adminCred.password === password;
     }
 

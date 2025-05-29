@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { FaGoogle, FaFacebook, FaTwitter, FaApple, FaDiscord } from 'react-icons/fa';
+import { FaGoogle, FaFacebook, FaTwitter, FaApple, FaDiscord, FaTiktok } from 'react-icons/fa';
+import { FaXTwitter } from 'react-icons/fa6';
 
 interface SocialLoginProps {
   onSuccess?: () => void;
@@ -105,6 +106,24 @@ export const SocialLogin: React.FC<SocialLoginProps> = ({
         >
           <FaDiscord className="h-4 w-4 mr-2" />
           Continue with Discord
+        </Button>
+        
+        <Button 
+          variant="outline" 
+          className="bg-black hover:bg-gray-900 border-black text-white"
+          onClick={() => handleSocialLogin('x')}
+        >
+          <FaXTwitter className="h-4 w-4 mr-2" />
+          Continue with X
+        </Button>
+        
+        <Button 
+          variant="outline" 
+          className="bg-[#ff0050] hover:bg-[#e6004a] border-[#ff0050] text-white"
+          onClick={() => handleSocialLogin('tiktok')}
+        >
+          <FaTiktok className="h-4 w-4 mr-2" />
+          Continue with TikTok
         </Button>
       </CardContent>
       

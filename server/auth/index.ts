@@ -37,9 +37,15 @@ passport.deserializeUser(async (id: string, done) => {
   }
 });
 
+// Import additional social auth routes
+import tiktokAuthRouter from './tiktokAuth';
+import xAuthRouter from './xAuth';
+
 // Mount social auth routes
 router.use('/google', googleAuthRouter);
 router.use('/facebook', facebookAuthRouter);
+router.use('/tiktok', tiktokAuthRouter);
+router.use('/x', xAuthRouter);
 
 // Current user endpoint
 router.get('/user', (req, res) => {
