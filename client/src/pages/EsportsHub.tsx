@@ -396,18 +396,43 @@ const EsportsHub: React.FC = () => {
                             });
 
                             try {
-                              const response = await fetch(`/api/esports/riot/summoner/${encodeURIComponent(searchedPlayer.trim())}/${searchRegion}`);
+                              // Use the correct API endpoint that matches your server routes
+                              const apiUrl = `/api/esports/riot/summoner/${encodeURIComponent(searchedPlayer.trim())}/${searchRegion}`;
+                              console.log('🔍 Making API request to:', apiUrl);
+                              
+                              const response = await fetch(apiUrl, {
+                                method: 'GET',
+                                headers: {
+                                  'Accept': 'application/json',
+                                  'Content-Type': 'application/json'
+                                }
+                              });
+
+                              console.log('📡 Response status:', response.status, response.statusText);
+                              console.log('📡 Response headers:', response.headers.get('content-type'));
 
                               if (!response.ok) {
-                                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                                // Try to get error message from response
+                                let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                                try {
+                                  const errorData = await response.json();
+                                  errorMessage = errorData.message || errorData.error || errorMessage;
+                                } catch (e) {
+                                  // If we can't parse error as JSON, use status text
+                                }
+                                throw new Error(errorMessage);
                               }
 
                               const contentType = response.headers.get('content-type');
                               if (!contentType || !contentType.includes('application/json')) {
-                                throw new Error('Server returned non-JSON response');
+                                console.error('❌ Expected JSON but got:', contentType);
+                                const textResponse = await response.text();
+                                console.error('❌ Response body:', textResponse.substring(0, 200));
+                                throw new Error('Server returned HTML instead of JSON - check API endpoint');
                               }
 
                               const playerData = await response.json();
+                              console.log('✅ Player data received:', playerData);
                               setRealPlayerData(playerData);
 
                               toast({
@@ -415,10 +440,10 @@ const EsportsHub: React.FC = () => {
                                 description: `Successfully loaded ${playerData.name || searchedPlayer}'s data`,
                               });
                             } catch (error: any) {
-                              console.error('Player lookup error:', error);
+                              console.error('❌ Player lookup error:', error);
                               toast({
                                 title: "Player Lookup Failed",
-                                description: error.message || "Unable to find player data",
+                                description: error.message === 'Failed to fetch' ? 'Network error - check your connection' : error.message || "Unable to find player data",
                                 variant: "destructive"
                               });
                               setRealPlayerData(null);

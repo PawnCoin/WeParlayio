@@ -319,16 +319,33 @@ router.get('/tournaments/:game?', async (req, res) => {
   }
 });
 
+// Debug middleware to log all esports API requests
+router.use((req, res, next) => {
+  console.log(`🎮 Esports API Request: ${req.method} ${req.path}`);
+  console.log(`🎮 Query params:`, req.query);
+  console.log(`🎮 Route params:`, req.params);
+  next();
+});
+
 // New Riot API specific endpoints
 router.get('/riot/summoner/:summonerName/:region?', async (req, res) => {
   try {
     const { summonerName, region = 'na1' } = req.params;
-
+    
+    console.log(`🔍 Looking up summoner: ${summonerName} in region: ${region}`);
+    
     const playerStats = await unifiedGamingAPI.getRiotPlayerStats(summonerName, region);
+    
+    console.log(`✅ Successfully fetched data for ${summonerName}`);
     res.json(playerStats);
-  } catch (error) {
-    console.error('Error fetching Riot summoner:', error);
-    res.status(500).json({ error: 'Failed to fetch summoner data' });
+  } catch (error: any) {
+    console.error('❌ Error fetching Riot summoner:', error.message);
+    res.status(500).json({ 
+      error: 'Failed to fetch summoner data',
+      message: error.message,
+      summonerName,
+      region 
+    });
   }
 });
 
