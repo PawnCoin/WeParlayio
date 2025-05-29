@@ -1,5 +1,8 @@
 # WeParlay Marketing Blitz - Social Media Campaign
 
+## 🤝 **PARTNERSHIP OPPORTUNITIES**
+**[👉 EXPLORE OUR INTERACTIVE PARTNERSHIP PORTAL](https://weparlay.io/?partners=true)**
+
 ## KILLER MARKETING SLOGANS FOR SOCIAL BOTS
 
 ### High-Impact Promotional Messages

@@ -1,3 +1,8 @@
+# WeParlay.io - The Future of Sports Betting
+
+## 🤝 **PARTNERSHIP OPPORTUNITIES**
+**[👉 EXPLORE OUR INTERACTIVE PARTNERSHIP PORTAL](https://weparlay.io/?partners=true)**
+
 # WeParlay Sports Betting Platform
 
 A sophisticated sports betting platform with tournament management capabilities, real-time odds integration, and comprehensive betting features.

@@ -34,6 +34,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const { user, isAuthenticated, logout, connectWallet } = useAuth();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isBusinessProposalOpen, setIsBusinessProposalOpen] = useState(false);
+
+  // Check URL parameters to open business proposal modal
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('partners') === 'true') {
+      setIsBusinessProposalOpen(true);
+    }
+  }, []);
   const { selectedCurrency, setSelectedCurrency } = useBetting();
   const { toast } = useToast();
 

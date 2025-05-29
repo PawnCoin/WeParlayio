@@ -234,6 +234,11 @@ const sportsData = await YourAPI.getLiveGames({
 
 ## 📞 **CONTACT INFORMATION**
 
+### **🚀 INTERACTIVE PARTNERSHIP PORTAL**
+**[👉 CLICK HERE TO OPEN OUR INTERACTIVE PARTNERSHIP PORTAL](https://weparlay.io/?partners=true)**
+
+*Experience our complete business proposal with interactive features, projections, and partnership packages in a beautiful interface.*
+
 ### **Partnership Team**
 - **Email**: partnerships@weparlay.io
 - **Phone**: +1 (555) WEPARLAY

@@ -1,5 +1,8 @@
 # WeParlay.io - Pre-Launch Verification Report
 
+## 🤝 **PARTNERSHIP OPPORTUNITIES**
+**[👉 EXPLORE OUR INTERACTIVE PARTNERSHIP PORTAL](https://weparlay.io/?partners=true)**
+
 ## Compliance Features
 - ✅ US Betting Law Compliance System
   - State-by-state restriction enforcement

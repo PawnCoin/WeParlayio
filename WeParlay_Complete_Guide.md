@@ -1,4 +1,7 @@
-# WeParlay - Complete Platform Guide
+# WeParlay.io - Complete Platform Guide
+
+## 🤝 **PARTNERSHIP OPPORTUNITIES**
+**[👉 EXPLORE OUR INTERACTIVE PARTNERSHIP PORTAL](https://weparlay.io/?partners=true)**
 
 ## 🚀 Project Overview
 WeParlay is a cutting-edge sports betting platform with cryptocurrency wallet integration, real-time data from multiple APIs, and interactive betting experiences. The platform features 44+ live betting opportunities sourced from ESPN and RapidAPI.
