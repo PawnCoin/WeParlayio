@@ -94,9 +94,9 @@ const BusinessProposalModal: React.FC<BusinessProposalModalProps> = ({ isOpen, o
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-lg mb-4">
+                <div className="text-lg mb-4">
                   WeParlay.io is a next-generation sports betting platform revolutionizing the industry with <Badge className="bg-green-100 text-green-800">100% completion</Badge> and ready for explosive growth.
-                </p>
+                </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-blue-600">$231B</div>
