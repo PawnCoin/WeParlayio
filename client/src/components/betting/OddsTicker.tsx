@@ -145,7 +145,7 @@ const OddsTicker: React.FC = () => {
       case 'basketball':
         return 'bg-orange-900/30 text-orange-400';
       case 'tennis':
-        return 'bg-purple-900/30 text-purple-400';
+        return 'bg-gray-900/30 text-gray-400';
       case 'american football':
       case 'nfl':
         return 'bg-blue-900/30 text-blue-400';
@@ -195,7 +195,7 @@ const OddsTicker: React.FC = () => {
           ))}
         </div>
 
-        <style jsx>{`
+        <style>{`
           @keyframes ticker {
             0% {
               transform: translateX(100%);
@@ -267,7 +267,7 @@ const OddsTicker: React.FC = () => {
         })}
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes ticker {
           0% {
             transform: translateX(100%);

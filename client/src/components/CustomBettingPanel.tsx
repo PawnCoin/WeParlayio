@@ -290,10 +290,10 @@ export const CustomBettingPanel: React.FC = () => {
       </Card>
 
       {/* Bet Builder */}
-      <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50">
+      <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Star className="h-5 w-5 text-purple-600" />
+            <Star className="h-5 w-5 text-blue-600" />
             Advanced Bet Builder
           </CardTitle>
         </CardHeader>
@@ -309,7 +309,7 @@ export const CustomBettingPanel: React.FC = () => {
             </Button>
           </div>
           
-          <Button className="w-full bg-purple-600 hover:bg-purple-700">
+          <Button className="w-full bg-blue-600 hover:bg-blue-700">
             <Calendar className="h-4 w-4 mr-2" />
             Schedule Custom Event
           </Button>

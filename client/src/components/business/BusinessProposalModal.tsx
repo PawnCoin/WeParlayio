@@ -61,7 +61,7 @@ const BusinessProposalModal: React.FC<BusinessProposalModalProps> = ({ isOpen, o
       name: 'Platinum Partner',
       price: '$500K+',
       features: ['Strategic partnership status', 'Equity consideration', 'Board advisory position', 'Co-development opportunities'],
-      color: 'bg-purple-100 text-purple-800'
+      color: 'bg-yellow-100 text-yellow-800'
     }
   ];
 

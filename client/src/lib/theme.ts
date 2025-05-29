@@ -49,6 +49,15 @@ export const PROFESSIONAL_COLORS = {
   }
 };
 
+export const WEPARLAY_COLORS = {
+  primary: '#2563eb',      // Blue
+  secondary: '#10b981',    // Green
+  accent: '#f59e0b',       // Amber
+  gold: '#eab308',         // Gold (VIP tier replacement)
+  red: '#ef4444',          // Red (danger)
+  gray: '#6b7280'          // Gray (neutral)
+};
+
 export const ThemeContext = createContext<ThemeContextType>({
   theme: "light",
   setTheme: () => {},
