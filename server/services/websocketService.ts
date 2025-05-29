@@ -50,10 +50,13 @@ export class SecureWebSocketService {
       timestamp: Date.now()
     }));
 
-    // Set authentication timeout
+    // Set authentication timeout - give more time for demo
     const authTimeout = setTimeout(() => {
-      ws.close(4001, 'Authentication timeout');
-    }, 30000);
+      if (!this.authenticatedConnections.has(ws)) {
+        console.log('⏰ WebSocket authentication timeout');
+        ws.close(4001, 'Authentication timeout');
+      }
+    }, 60000); // Increased to 60 seconds
 
     ws.on('message', (message: string) => {
       try {
@@ -64,6 +67,7 @@ export class SecureWebSocketService {
 
           // Simple authentication - in production, verify the token
           this.authenticatedConnections.add(ws);
+          ws.isAuthenticated = true;
 
           // Add client to real-time odds service
           this.addToRealTimeOdds(ws);
@@ -71,10 +75,17 @@ export class SecureWebSocketService {
           ws.send(JSON.stringify({
             type: 'authentication',
             status: 'success',
+            message: 'Successfully authenticated',
             timestamp: Date.now()
           }));
 
           console.log('✅ WebSocket client authenticated and added to real-time updates');
+        } else if (data.type === 'ping') {
+          // Respond to heartbeat
+          ws.send(JSON.stringify({
+            type: 'pong',
+            timestamp: Date.now()
+          }));
         }
       } catch (error) {
         console.error('WebSocket message parsing error:', error);
