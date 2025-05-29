@@ -20,6 +20,10 @@ import { socialMediaBotRouter } from "./routes/socialMediaBotRoutes";
 import gamingRoutes from "./routes/gamingRoutes";
 import unifiedSportsRoutes from "./routes/unifiedSportsRoutes";
 import { bankingRouter } from "./routes/bankingRoutes";
+import websocketPollingRoutes from "./routes/websocketPollingRoutes";
+
+// Export the routes so they can be imported by index.ts
+export { notificationRoutes, websocketPollingRoutes };
 
 // Initialize The Odds API services
 const oddsApiService = new OddsApiService();

@@ -3,10 +3,8 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { createSSLServer, getSSLConfig } from "./ssl";
 import { initializeWebSocketService } from "./services/websocketService";
-import {
-  notificationRoutes,
-  websocketPollingRoutes,
-} from './routes';
+import notificationRoutes from './routes/notificationRoutes';
+import websocketPollingRoutes from './routes/websocketPollingRoutes';
 
 // Export app for production use
 export const app = express();
