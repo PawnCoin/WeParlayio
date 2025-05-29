@@ -15,6 +15,25 @@ router.get('/riot/player/:summonerName', async (req, res) => {
     res.json(playerStats);
   } catch (error: any) {
     console.error('Riot player stats error:', error);
+    
+    // Handle specific API errors
+    if (error.message.includes('Rate limit')) {
+      return res.status(429).json({ 
+        error: 'Rate limit exceeded',
+        message: 'Too many requests. Please try again in a moment.' 
+      });
+    } else if (error.message.includes('API key')) {
+      return res.status(401).json({ 
+        error: 'API authentication failed',
+        message: 'Riot API key configuration issue.' 
+      });
+    } else if (error.message.includes('not found')) {
+      return res.status(404).json({ 
+        error: 'Player not found',
+        message: `Player "${summonerName}" not found in region "${region}".` 
+      });
+    }
+    
     res.status(500).json({ 
       error: 'Failed to fetch player stats',
       message: error.message 
@@ -105,7 +124,19 @@ router.get('/riot/match/:matchId', async (req, res) => {
 router.get('/riot/status', async (req, res) => {
   try {
     const status = unifiedGamingAPI.getAPIStatus();
-    res.json(status);
+    
+    // Add environment check
+    const apiKeyConfigured = !!process.env.RIOT_API_KEY;
+    const apiKeyLength = process.env.RIOT_API_KEY?.length || 0;
+    
+    res.json({
+      ...status,
+      environment: {
+        apiKeyConfigured,
+        apiKeyLength: apiKeyLength > 0 ? `${apiKeyLength} characters` : 'Not set',
+        lastChecked: new Date().toISOString()
+      }
+    });
   } catch (error: any) {
     console.error('Riot API status error:', error);
     res.status(500).json({ 

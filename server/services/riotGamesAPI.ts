@@ -74,25 +74,45 @@ export class RiotGamesAPI {
         headers: {
           'X-Riot-Token': this.apiKey
         },
-        timeout: 10000
+        timeout: 10000,
+        validateStatus: (status) => status < 500 // Don't throw for 4xx errors
       });
 
-      // Cache the response
-      if (cacheKey) {
+      // Handle specific status codes
+      if (response.status === 429) {
+        console.warn('Riot API rate limit exceeded');
+        throw new Error('Rate limit exceeded. Please try again later.');
+      } else if (response.status === 403) {
+        console.warn('Riot API access denied - check API key');
+        throw new Error('Invalid Riot API key or access denied.');
+      } else if (response.status === 404) {
+        console.warn('Riot API resource not found');
+        throw new Error('Player or match not found.');
+      } else if (response.status >= 400) {
+        console.warn(`Riot API error ${response.status}:`, response.data);
+        throw new Error(`Riot API error: ${response.status} ${response.statusText}`);
+      }
+
+      // Cache successful responses
+      if (cacheKey && response.data) {
         cache.set(cacheKey, response.data);
       }
 
       return response.data;
     } catch (error: any) {
-      if (error.response?.status === 429) {
-        throw new Error('Rate limit exceeded. Please try again later.');
-      } else if (error.response?.status === 403) {
-        throw new Error('Invalid Riot API key or access denied.');
-      } else if (error.response?.status === 404) {
-        throw new Error('Player or match not found.');
+      // Log the full error for debugging
+      console.error('Riot API request failed:', {
+        url: url.replace(this.apiKey, '[API_KEY_HIDDEN]'),
+        error: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText
+      });
+      
+      // Re-throw with a clean message
+      if (error.message.includes('Rate limit') || error.message.includes('API key') || error.message.includes('not found')) {
+        throw error; // Already has a good message
       }
       
-      console.error('Riot API error:', error.message);
       throw new Error(`Riot API request failed: ${error.message}`);
     }
   }

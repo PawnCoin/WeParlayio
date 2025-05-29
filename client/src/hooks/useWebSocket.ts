@@ -231,7 +231,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     return () => {
       disconnect();
     };
-  }, [user, autoConnect]);
+  }, [user, autoConnect, connect, disconnect, isConnected, isConnecting]);
 
   // Cleanup on unmount
   useEffect(() => {
