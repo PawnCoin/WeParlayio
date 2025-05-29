@@ -119,6 +119,7 @@ function Router() {
     <Switch>
       {/* Main Application Routes */}
       <Route path="/home" component={Home} />
+      <Route path="/dashboard" component={BettingDashboard} />
       <Route path="/betting" component={BettingDashboard} />
       <Route path="/betting-experience" component={BettingExperience} />
       <Route path="/betting-manager" component={BettingManager} />

@@ -59,7 +59,7 @@ class WebSocketService {
       console.log('✅ WebSocket service initialized successfully');
     } catch (error) {
       console.error('🚨 Failed to initialize WebSocket service:', error);
-      this.initialized = false;
+      // Don't throw - let the app continue without WebSocket
     }
   }
 

@@ -49,6 +49,23 @@ export const useWebSocket = (config: WebSocketConfig = {}) => {
   }, []);
 
   const connect = useCallback(() => {
+    if (state.connectionStatus === 'connecting' || state.connectionStatus === 'connected') {
+      return;
+    }
+
+    const maxReconnectAttempts = reconnectAttempts; // changed from useRef to const
+
+    // Check if we've exceeded max attempts
+    if (attemptsRef.current >= maxReconnectAttempts) {
+      console.log('🚫 Max reconnection attempts reached - continuing without WebSocket');
+      setState(prev => ({ 
+        ...prev, 
+        connectionStatus: 'disabled',
+        lastError: 'WebSocket disabled - app will continue to function'
+      }));
+      return;
+    }
+
     // Don't connect if circuit breaker is active
     if (circuitBreakerRef.current) {
       console.log('🚫 WebSocket connection blocked by circuit breaker');
@@ -140,14 +157,14 @@ export const useWebSocket = (config: WebSocketConfig = {}) => {
         console.log(`🔌 WebSocket closed: ${event.code} ${event.reason}`);
 
         // Only attempt reconnection if it wasn't a manual close and we haven't hit the circuit breaker
-        if (event.code !== 1000 && !circuitBreakerRef.current && attemptsRef.current < reconnectAttempts) {
+        if (event.code !== 1000 && !circuitBreakerRef.current && attemptsRef.current < maxReconnectAttempts) {
           attemptsRef.current++;
-          console.log(`🔄 Scheduling reconnection attempt ${attemptsRef.current}/${reconnectAttempts} in ${reconnectInterval}ms`);
+          console.log(`🔄 Scheduling reconnection attempt ${attemptsRef.current}/${maxReconnectAttempts} in ${reconnectInterval}ms`);
 
           reconnectTimeoutRef.current = setTimeout(() => {
             connect();
           }, reconnectInterval * attemptsRef.current); // Exponential backoff
-        } else if (attemptsRef.current >= reconnectAttempts) {
+        } else if (attemptsRef.current >= maxReconnectAttempts) {
           console.log('🚫 Max reconnection attempts reached, activating circuit breaker');
           openCircuitBreaker();
         }
@@ -171,7 +188,7 @@ export const useWebSocket = (config: WebSocketConfig = {}) => {
         lastError: 'Failed to create connection'
       });
     }
-  }, [reconnectAttempts, reconnectInterval, heartbeatInterval, openCircuitBreaker]);
+  }, [reconnectAttempts, reconnectInterval, heartbeatInterval, openCircuitBreaker, state.connectionStatus]);
 
   const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
