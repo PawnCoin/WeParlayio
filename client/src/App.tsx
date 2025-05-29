@@ -148,6 +148,7 @@ function Router() {
       <Route path="/login-enhanced" component={LoginEnhanced} />
       <Route path="/mobile-login" component={MobileLogin} />
       <Route path="/auth-test" component={AuthTestDemo} />
+      <Route path="/auth-test-demo" component={AuthTestDemo} />
       <Route path="/community" component={UserDirectory} />
       <Route path="/users" component={UserDirectory} />
       <Route path="/social-bots" component={(props) => <AdminRoute component={SocialMediaBots} {...props} />} />
