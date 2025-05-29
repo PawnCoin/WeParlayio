@@ -74,7 +74,7 @@ export class SecureWebSocketService {
 
           ws.send(JSON.stringify({
             type: 'authentication',
-            status: 'success',
+            data: { status: 'success' },
             message: 'Successfully authenticated',
             timestamp: Date.now()
           }));
@@ -86,9 +86,23 @@ export class SecureWebSocketService {
             type: 'pong',
             timestamp: Date.now()
           }));
+        } else {
+          // Handle other message types after authentication
+          if (this.authenticatedConnections.has(ws)) {
+            this.handleMessage(ws, data);
+          } else {
+            ws.send(JSON.stringify({
+              type: 'error',
+              message: 'Please authenticate first'
+            }));
+          }
         }
       } catch (error) {
         console.error('WebSocket message parsing error:', error);
+        ws.send(JSON.stringify({
+          type: 'error',
+          message: 'Invalid message format'
+        }));
       }
     });
 

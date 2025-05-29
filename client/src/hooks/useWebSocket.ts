@@ -34,6 +34,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 
   const reconnectAttemptsRef = useRef(0);
   const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const lastConnectAttempt = useRef<number>(0);
 
   const getWebSocketUrl = () => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -67,8 +68,15 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       return;
     }
 
+    // Rate limiting: prevent rapid reconnection attempts
+    if (reconnectAttemptsRef.current > 0 && Date.now() - (lastConnectAttempt.current || 0) < 2000) {
+      console.log('⏳ Rate limiting WebSocket connection attempts');
+      return;
+    }
+
     setIsConnecting(true);
     setConnectionStatus('connecting');
+    lastConnectAttempt.current = Date.now();
 
     try {
       const wsUrl = getWebSocketUrl();
@@ -83,14 +91,8 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
         setConnectionStatus('connected');
         reconnectAttemptsRef.current = 0;
 
-        // Authenticate with JWT token
-        const token = await getToken();
-        if (token && ws.current) {
-          ws.current.send(JSON.stringify({
-            type: 'auth',
-            payload: { token }
-          }));
-        }
+        // Authentication will be triggered by the 'connection' message
+        // No need to immediately authenticate here
 
         startHeartbeat();
       };
@@ -145,6 +147,29 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     console.log('📨 WebSocket message:', message);
 
     switch (message.type) {
+      case 'connection':
+        // Handle initial connection message and authenticate
+        console.log('🔌 WebSocket connection established, authenticating...');
+        if (ws.current?.readyState === WebSocket.OPEN) {
+          ws.current.send(JSON.stringify({
+            type: 'authenticate'
+          }));
+        }
+        break;
+
+      case 'authentication':
+        if (message.data?.status === 'success') {
+          toast({
+            title: "🔒 Secure Connection Established",
+            description: "Real-time monitoring active",
+            duration: 2000
+          });
+          
+          // Subscribe to essential channels
+          subscribe(['transactions', 'balance_updates', 'security_alerts', 'odds_updates']);
+        }
+        break;
+
       case 'auth_success':
         toast({
           title: "🔒 Secure Connection Established",

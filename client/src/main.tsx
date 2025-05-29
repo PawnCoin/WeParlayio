@@ -7,8 +7,16 @@ import "./index.css";
 window.addEventListener('unhandledrejection', (event) => {
   console.error('Unhandled promise rejection:', event.reason);
 
-  // Don't prevent default for critical errors, but log them properly
-  if (event.reason && event.reason.message && !event.reason.message.includes('WebSocket')) {
+  // Handle WebSocket and other non-critical errors
+  if (event.reason && (
+    typeof event.reason === 'object' && 
+    Object.keys(event.reason).length === 0 || // Empty object rejections
+    (event.reason.message && (
+      event.reason.message.includes('WebSocket') ||
+      event.reason.message.includes('Failed to fetch') ||
+      event.reason.message.includes('NetworkError')
+    ))
+  )) {
     console.warn('Non-critical promise rejection handled:', event.reason);
     event.preventDefault();
   }
