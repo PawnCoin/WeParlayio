@@ -56,9 +56,9 @@ router.get('/live-ticker', async (req, res) => {
       }
     });
 
-    // If no data from APIs, use mock data
+    // If no data from APIs, return empty array to trigger loading state
     if (allOdds.length === 0) {
-      allOdds.push(...generateMockTickerOdds());
+      console.log('No real odds data available from any source');
     }
 
     // Update cache
@@ -76,7 +76,7 @@ router.get('/live-ticker', async (req, res) => {
   } catch (error) {
     console.error('Error fetching ticker odds:', error);
     
-    // Return cached data or mock data on error
+    // Return cached data or empty array on error
     if (oddsCache.length > 0) {
       res.json({ 
         success: true, 
@@ -86,10 +86,10 @@ router.get('/live-ticker', async (req, res) => {
       });
     } else {
       res.json({ 
-        success: true, 
-        odds: generateMockTickerOdds(),
+        success: false, 
+        odds: [],
         cached: false,
-        error: 'Using mock data due to API error'
+        error: 'No real odds data available - check API connections'
       });
     }
   }

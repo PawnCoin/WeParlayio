@@ -27,13 +27,10 @@ const OddsTicker: React.FC = () => {
         if (response.ok) {
           const data = await response.json();
           setOddsData(data.odds || []);
-        } else {
-          // Fallback to mock data if API fails
-          setOddsData(generateMockOdds());
         }
       } catch (error) {
         console.error('Failed to fetch odds data:', error);
-        setOddsData(generateMockOdds());
+        // Don't set mock data, leave empty to show loading message
       }
     };
 
@@ -98,20 +95,22 @@ const OddsTicker: React.FC = () => {
         const response = await fetch('/api/odds/live-updates');
         if (response.ok) {
           const updates = await response.json();
-          setOddsData(prevData => 
-            prevData.map(item => {
-              const update = updates.find((u: any) => u.id === item.id);
-              if (update) {
-                return {
-                  ...item,
-                  previousOdds: item.currentOdds,
-                  currentOdds: update.odds,
-                  timestamp: new Date().toISOString()
-                };
-              }
-              return item;
-            })
-          );
+          if (updates && updates.length > 0) {
+            setOddsData(prevData => 
+              prevData.map(item => {
+                const update = updates.find((u: any) => u.id === item.id);
+                if (update) {
+                  return {
+                    ...item,
+                    previousOdds: item.currentOdds,
+                    currentOdds: update.odds,
+                    timestamp: new Date().toISOString()
+                  };
+                }
+                return item;
+              })
+            );
+          }
         }
       } catch (error) {
         console.error('Failed to fetch odds updates:', error);
@@ -121,51 +120,7 @@ const OddsTicker: React.FC = () => {
     return () => clearInterval(updateInterval);
   }, [isConnected, isPaused]);
 
-  // Generate mock odds for fallback
-  const generateMockOdds = (): OddsItem[] => {
-    return [
-      {
-        id: 'mock-1',
-        sport: 'Basketball',
-        teams: 'Lakers vs Warriors',
-        currentOdds: 1.85,
-        previousOdds: null,
-        timestamp: new Date().toISOString()
-      },
-      {
-        id: 'mock-2',
-        sport: 'Football',
-        teams: 'Chiefs vs Bills',
-        currentOdds: 2.15,
-        previousOdds: null,
-        timestamp: new Date().toISOString()
-      },
-      {
-        id: 'mock-3',
-        sport: 'Soccer',
-        teams: 'Barcelona vs Real Madrid',
-        currentOdds: 1.75,
-        previousOdds: null,
-        timestamp: new Date().toISOString()
-      },
-      {
-        id: 'mock-4',
-        sport: 'Baseball',
-        teams: 'Yankees vs Red Sox',
-        currentOdds: 1.95,
-        previousOdds: null,
-        timestamp: new Date().toISOString()
-      },
-      {
-        id: 'mock-5',
-        sport: 'Tennis',
-        teams: 'Djokovic vs Nadal',
-        currentOdds: 1.65,
-        previousOdds: null,
-        timestamp: new Date().toISOString()
-      }
-    ];
-  };
+  
 
   // Function to determine if odds have improved or worsened
   const getOddsMovement = (current: number, previous: number | null) => {
@@ -206,10 +161,54 @@ const OddsTicker: React.FC = () => {
 
   if (oddsData.length === 0) {
     return (
-      <footer className="bg-gray-900 py-2">
-        <div className="text-center text-gray-400 text-sm">
-          Loading live odds...
+      <footer className="bg-gray-900 py-1 overflow-hidden relative">
+        {/* Connection status indicator */}
+        <div className="absolute top-0 left-0 z-10 bg-gray-900 px-2 h-full flex items-center">
+          <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" 
+               title="Connecting to live odds feeds..." />
         </div>
+
+        {/* Pause/Play control */}
+        <div className="flex items-center absolute top-0 right-0 z-10 bg-gray-900 px-2 h-full">
+          <button 
+            onClick={() => setIsPaused(!isPaused)}
+            className="text-white p-1 hover:bg-gray-700 rounded transition-colors"
+            aria-label={isPaused ? "Play ticker" : "Pause ticker"}
+          >
+            {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+          </button>
+        </div>
+        
+        <div className={`flex whitespace-nowrap ${!isPaused ? 'animate-ticker' : ''}`}>
+          {/* Continuous loading messages */}
+          {Array(6).fill(null).map((_, index) => (
+            <div key={index} className="inline-flex items-center mr-12">
+              <span className="px-2 py-0.5 text-xs font-medium rounded bg-blue-900/30 text-blue-400 animate-pulse">
+                LIVE
+              </span>
+              <span className="mx-2 text-gray-300 font-medium">
+                Connecting to real-time odds feeds...
+              </span>
+              <span className="font-mono font-bold text-yellow-400 animate-pulse">
+                ⚡
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <style jsx>{`
+          @keyframes ticker {
+            0% {
+              transform: translateX(100%);
+            }
+            100% {
+              transform: translateX(-100%);
+            }
+          }
+          .animate-ticker {
+            animation: ticker 30s linear infinite;
+          }
+        `}</style>
       </footer>
     );
   }
