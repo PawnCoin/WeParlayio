@@ -45,6 +45,8 @@ import Support from "@/pages/Support"; // Automated support system
 import CryptoInformation from "@/pages/CryptoInformation"; // Cryptocurrency information and guides
 import SmsChallenge from "@/pages/SmsChallenge"; // VIP SMS Challenge system
 import UserProfileBanking from "@/pages/UserProfileBanking"; // Complete user profile with integrated banking
+import MyBets from "@/pages/MyBets"; // User betting history and tracking
+import WeParlayCash from "@/pages/WeParlayCash"; // WeParlay Cash hub and management
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
 import MobileVoiceBetting from "@/components/mobile/MobileVoiceBetting";
@@ -165,6 +167,8 @@ function Router() {
       <Route path="/profile" component={UserProfileBanking} />
       <Route path="/user-profile" component={UserProfileBanking} />
       <Route path="/my-account" component={UserProfileBanking} />
+      <Route path="/my-bets" component={MyBets} />
+      <Route path="/weparlay-cash" component={WeParlayCash} />
       <Route path="/onboarding-demo" component={OnboardingDemo} />
       <Route path="/wallet-management" component={WalletManagement} />
       <Route path="/wallet-management-enhanced" component={WalletManagementEnhanced} />
