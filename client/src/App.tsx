@@ -167,7 +167,7 @@ function Router() {
 
       {/* Wallet & Banking */}
       <Route path="/wallet" component={WalletManagement} />
-      <Route path="/wallet-management-enhanced" component={WalletManagementEnhanced} />
+      <Route path="/wallet-management-enhanced" component={WalletManagement} />
       <Route path="/wallet-test" component={WalletTest} />
       <Route path="/user-profile-banking" component={UserProfileBanking} />
       <Route path="/user-profile" component={UserProfilePage} />
@@ -217,6 +217,9 @@ function Router() {
       <Route path="/admin-dashboard" component={(props) => <AdminRoute component={AdminDashboard} {...props} />} />
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin-bypass" component={AdminBypass} />
+      
+      {/* Default route */}
+      <Route path="/" component={Home} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -229,7 +232,9 @@ function AppContent() {
     <>
       <Toaster />
       <MainLayout>
-        <Router />
+        <ErrorBoundary>
+          <Router />
+        </ErrorBoundary>
       </MainLayout>
       <SimpleOnboarding />
       {/* Mobile voice betting floating button (visible on all pages) */}

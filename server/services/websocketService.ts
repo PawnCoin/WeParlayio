@@ -291,63 +291,12 @@ class WebSocketService {
 
 export const websocketService = new WebSocketService();
 
-import * as http from 'http';
-export let wss: WebSocketServer;
-
-export function initializeWebSocketService(server: http.Server): void {
-  try {
-    console.log('🔌 Initializing WebSocket service...');
-
-    wss = new WebSocketServer({ 
-      server,
-      path: '/ws',
-      perMessageDeflate: false,
-      maxPayload: 16 * 1024,
-      clientTracking: true
-    });
-
-  wss.on('connection', ws => {
-    console.log('🔗 WebSocket connected');
-
-    ws.on('message', message => {
-      console.log(`✉️ Received message: ${message}`);
-      ws.send(`👍 Echo: ${message}`);
-    });
-
-    ws.on('close', () => {
-      console.log('🔒 WebSocket disconnected');
-    });
-
-    ws.on('error', error => {
-      console.error(`🚨 WebSocket error: ${error}`);
-    });
-  });
-
-  wss.on('error', error => {
-    console.error(`🚨 WebSocket server error: ${error}`);
-  });
-
-    console.log('✅ WebSocket service initialized successfully');
-  } catch (error) {
-    console.error('🚨 Failed to initialize WebSocket service:', error);
-  }
+export function initializeWebSocketService(server: HTTPServer) {
+  websocketService.initialize(server);
 
   // Graceful shutdown
-  process.on('SIGTERM', () => {
-    console.log('👋 SIGTERM signal received: closing WebSocket server');
-    wss.close(() => {
-      console.log('✔️ WebSocket server closed');
-      process.exit(0);
-    });
-  });
-
-  process.on('SIGINT', () => {
-    console.log('👋 SIGINT signal received: closing WebSocket server');
-    wss.close(() => {
-      console.log('✔️ WebSocket server closed');
-      process.exit(0);
-    });
-  });
+  process.on('SIGTERM', () => websocketService.shutdown());
+  process.on('SIGINT', () => websocketService.shutdown());
 }
 
 // Export for use in routes
