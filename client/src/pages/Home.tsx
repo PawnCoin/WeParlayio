@@ -173,62 +173,40 @@ const Home: React.FC = () => {
       </div>
 
       {/* Partnership Opportunities Banner */}
-      <div className="mb-8">
-        <Card className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-800 border-0 text-white overflow-hidden relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/90 via-indigo-600/90 to-blue-800/90"></div>
-          <div className="absolute inset-0" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-            opacity: 0.2
-          }}></div>
-          <CardContent className="relative z-10 p-8">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+      <div className="mb-6">
+        <Card className="bg-gradient-to-r from-gray-900 via-slate-900 to-black border-0 text-white overflow-hidden relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-gray-900/95 via-slate-900/95 to-black/95"></div>
+          <CardContent className="relative z-10 p-4">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="text-center md:text-left">
-                <div className="flex items-center justify-center md:justify-start mb-4">
-                  <Crown className="h-8 w-8 text-yellow-400 mr-3" />
-                  <h2 className="text-3xl font-bold">Partner with WeParlay</h2>
-                  <Sparkles className="h-6 w-6 text-yellow-400 ml-2" />
+                <div className="flex items-center justify-center md:justify-start mb-2">
+                  <Crown className="h-5 w-5 text-yellow-400 mr-2" />
+                  <h2 className="text-lg font-bold">Partner with WeParlay</h2>
+                  <Sparkles className="h-4 w-4 text-yellow-400 ml-2" />
                 </div>
-                <p className="text-xl mb-2 text-blue-100">
-                  Join our elite partnership program and unlock massive revenue opportunities
-                </p>
-                <p className="text-lg text-blue-200">
-                  🎯 Up to $60,000/month potential • 🔥 Premium API showcase • 💎 VIP tier access
+                <p className="text-sm text-gray-300">
+                  🎯 Up to $60,000/month • 🔥 Premium API showcase • 💎 VIP tier access
                 </p>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex gap-3">
                 <Button
-                  size="lg"
+                  size="sm"
                   onClick={() => setShowPartnersModal(true)}
-                  className="bg-white text-blue-600 hover:bg-blue-50 font-bold py-4 px-8 rounded-xl shadow-xl transform hover:scale-105 transition-all duration-200"
+                  className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-4 py-2 rounded-lg transition-all duration-200"
                 >
-                  <Handshake className="h-5 w-5 mr-2" />
-                  Explore Partnerships
+                  <Handshake className="h-4 w-4 mr-1" />
+                  Explore
                 </Button>
                 <Button
-                  size="lg"
+                  size="sm"
                   variant="outline"
                   onClick={() => setShowPartnersModal(true)}
-                  className="border-2 border-white text-white hover:bg-white hover:text-blue-600 font-bold py-4 px-8 rounded-xl transition-all duration-200"
+                  className="border border-gray-400 text-gray-300 hover:bg-gray-800 hover:text-white font-bold px-4 py-2 rounded-lg transition-all duration-200"
                 >
-                  <Users className="h-5 w-5 mr-2" />
-                  View Opportunities
+                  <Users className="h-4 w-4 mr-1" />
+                  View
                 </Button>
-              </div>
-            </div>
-
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-              <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
-                <div className="text-2xl font-bold text-yellow-400">25-45%</div>
-                <div className="text-sm text-blue-200">Commission Rates</div>
-              </div>
-              <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
-                <div className="text-2xl font-bold text-yellow-400">$100K+</div>
-                <div className="text-sm text-blue-200">Annual Commitment</div>
-              </div>
-              <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
-                <div className="text-2xl font-bold text-yellow-400">50K+</div>
-                <div className="text-sm text-blue-200">User Exposure</div>
               </div>
             </div>
           </CardContent>
