@@ -115,6 +115,22 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
         }
 
         console.log('🔌 WebSocket closed:', event.code, event.reason || 'No reason provided');
+
+        // Report WebSocket errors for monitoring
+        if (event.code !== 1000) { // 1000 = normal closure
+          try {
+            import('../utils/errorReporting').then(({ reportError }) => {
+              reportError(`WebSocket connection closed unexpectedly`, {
+                code: event.code,
+                reason: event.reason,
+                url: url
+              });
+            });
+          } catch (e) {
+            console.warn('Failed to report WebSocket error:', e);
+          }
+        }
+
         setIsConnected(false);
         wsRef.current = null;
         onDisconnect?.();

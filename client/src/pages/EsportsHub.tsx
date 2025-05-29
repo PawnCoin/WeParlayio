@@ -30,6 +30,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
+import { reportError } from '@/utils/errorReporting';
 
 interface LiveMatch {
   id: string;
@@ -787,7 +788,7 @@ const EsportsHub: React.FC = () => {
                       <div className="flex items-center gap-1 mb-1">
                         <span>{msg.avatar}</span>
                         <span className="font-bold text-blue-600">{msg.user}:</span>
-                        {msg.type === 'win' && <Badge className="text-xs bg-green-500">WIN</Badge>}
+                        {msg.type === 'win' && <Badge className="text-xs bgreen-500">WIN</Badge>}
                       </div>
                       <span>{msg.message}</span>
                     </motion.div>
