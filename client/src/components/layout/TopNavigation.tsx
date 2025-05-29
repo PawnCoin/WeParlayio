@@ -12,7 +12,8 @@ import {
   Medal,
   Gamepad2,
   Settings,
-  DollarSign
+  DollarSign,
+  Handshake
 } from 'lucide-react';
 
 const navigationItems = [
@@ -24,6 +25,7 @@ const navigationItems = [
   { path: '/fantasy', label: 'Fantasy', icon: Medal },
   { path: '/gaming', label: 'Gaming', icon: Gamepad2 },
   { path: '/betting-challenges', label: 'Challenges', icon: DollarSign },
+  { path: '/?partners=true', label: 'Partnerships', icon: Handshake, badge: 'HOT' },
   { path: '/admin', label: 'Admin', icon: Settings }
 ];
 
