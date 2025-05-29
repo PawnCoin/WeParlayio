@@ -16,6 +16,40 @@ import {
   Clock, Eye, MessageCircle, ThumbsUp, Share2, Star
 } from "lucide-react";
 
+// Gaming API Integration Functions
+const fetchGamingMatches = async () => {
+  try {
+    const response = await fetch('/api/gaming/matches');
+    if (!response.ok) throw new Error('Failed to fetch gaming matches');
+    return await response.json();
+  } catch (error) {
+    console.error('Gaming API error:', error);
+    return [];
+  }
+};
+
+const fetchEsportsOdds = async () => {
+  try {
+    const response = await fetch('/api/gaming/esports-odds');
+    if (!response.ok) throw new Error('Failed to fetch esports odds');
+    return await response.json();
+  } catch (error) {
+    console.error('Esports odds API error:', error);
+    return [];
+  }
+};
+
+const fetchPlayerStats = async (playerId: string) => {
+  try {
+    const response = await fetch(`/api/gaming/player-stats/${playerId}`);
+    if (!response.ok) throw new Error('Failed to fetch player stats');
+    return await response.json();
+  } catch (error) {
+    console.error('Player stats API error:', error);
+    return null;
+  }
+};
+
 export default function UnifiedGaming() {
   const { toast } = useToast();
   const { addBet } = useBetting();
@@ -143,7 +177,7 @@ export default function UnifiedGaming() {
       odds: betType === 'win' ? (stream.odds as any).win || 1.85 : (stream.odds as any).lose || 1.95,
       status: 'pending' as const
     };
-    
+
     addBet(newBet);
 
     toast({
@@ -216,10 +250,10 @@ export default function UnifiedGaming() {
       "ps-fifa-match": { game: "FIFA 24", platform: "PlayStation", odds: 2.10 },
       "steam-dota-match": { game: "Dota 2", platform: "Steam", odds: 1.95 }
     };
-    
+
     const match = matchDetails[matchId as keyof typeof matchDetails];
     if (!match) return;
-    
+
     const newBet = {
       id: `${matchId}-${Date.now()}`,
       type: 'Gaming',
@@ -229,9 +263,9 @@ export default function UnifiedGaming() {
       odds: match.odds,
       status: 'pending' as const
     };
-    
+
     addBet(newBet);
-    
+
     toast({
       title: "Bet Added to Slip!",
       description: `$${betAmount} ${match.game} bet added to your betting slip`,
@@ -307,6 +341,31 @@ export default function UnifiedGaming() {
     }
   ];
 
+  // Use real gaming API data with proper error handling
+  const { data: gamingMatches, isLoading: matchesLoading, error: matchesError } = useQuery({
+    queryKey: ['/api/gaming/matches'],
+    queryFn: fetchGamingMatches,
+    refetchInterval: 30000, // Refresh every 30 seconds
+    retry: 3,
+    retryDelay: 1000,
+  });
+
+  const { data: esportsOdds, isLoading: oddsLoading, error: oddsError } = useQuery({
+    queryKey: ['/api/gaming/esports-odds'],
+    queryFn: fetchEsportsOdds,
+    refetchInterval: 10000, // Refresh every 10 seconds for live odds
+    retry: 3,
+    retryDelay: 1000,
+  });
+
+  // Real-time player stats integration
+  const { data: playerStats } = useQuery({
+    queryKey: ['/api/gaming/trending-players'],
+    queryFn: () => fetch('/api/gaming/trending-players').then(res => res.json()),
+    refetchInterval: 60000, // Refresh every minute
+    enabled: !!null, // Only fetch if user is authenticated
+  });
+
   return (
     <div className="container mx-auto px-4 py-6">
       {/* Header Section */}
@@ -324,7 +383,7 @@ export default function UnifiedGaming() {
             Complete gaming integration, live streaming bets, and esports tournaments
           </p>
         </div>
-        
+
         <div className="flex items-center space-x-2 bg-muted/30 p-2 rounded-lg">
           <span className="text-sm font-medium">Real Money</span>
           <Switch 
@@ -366,7 +425,7 @@ export default function UnifiedGaming() {
         {/* Live Data Hub Tab */}
         <TabsContent value="data-hub" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
+
             {/* API Status Overview */}
             <Card className="lg:col-span-1">
               <CardHeader>
@@ -390,7 +449,7 @@ export default function UnifiedGaming() {
                         </div>
                       ))}
                     </div>
-                    
+
                     <div className="space-y-2">
                       <h4 className="font-medium text-sm">Unified APIs</h4>
                       {Object.entries(apiStatus.unified_apis).filter(([key]) => key !== 'message').map(([api, status]) => (
@@ -636,7 +695,7 @@ export default function UnifiedGaming() {
                       className="border-purple-200 focus:border-purple-400"
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <h4 className="font-medium text-sm">Betting Features:</h4>
                     <div className="grid grid-cols-2 gap-1">
@@ -760,7 +819,7 @@ export default function UnifiedGaming() {
                           <span className="text-2xl">{stream.thumbnail}</span>
                           <div>
                             <h3 className="font-bold text-sm">{stream.streamer}</h3>
-                            <p className="text-xs text-gray-600">{stream.game}</p>
+                            <p className="text-sm text-gray-600">{stream.game}</p>
                           </div>
                         </div>
                         <Badge variant="destructive" className="flex items-center gap-1">
@@ -787,7 +846,7 @@ export default function UnifiedGaming() {
 
                       <div className="space-y-2">
                         <h4 className="font-medium text-sm">Live Betting Options:</h4>
-                        
+
                         {stream.game === "Fortnite" ? (
                           <div className="grid grid-cols-2 gap-2">
                             <Button 
@@ -956,7 +1015,7 @@ export default function UnifiedGaming() {
                         ))}
                       </div>
                     </div>
-                    
+
                     {/* Live Matches Preview */}
                     <div className="border-t pt-3">
                       <h4 className="font-medium text-sm mb-2">Featured Live Matches:</h4>

@@ -4,6 +4,7 @@ import { gamingAPIService } from '../services/gamingAPIService';
 import { unifiedGamingAPI } from '../services/unifiedGamingAPI';
 import { psnProfilesScraper } from '../services/psnProfilesScraper';
 import { leaguepediaAPI } from '../services/leaguepediaAPI';
+import { fetchLiveGamingMatches, fetchEsportsOdds, fetchPlayerStatistics, fetchTournamentData } from '../services/gamingAPIService';
 
 const router = Router();
 
@@ -16,7 +17,7 @@ router.post('/connect/:platform', async (req, res) => {
     console.log(`Connecting ${platform} account for user: ${userId}, username: ${username}`);
 
     let accountData;
-    
+
     switch (platform) {
       case 'xbox':
         accountData = await gamingAPIService.getXboxPlayerStats(username);
@@ -63,10 +64,10 @@ router.post('/connect/:platform', async (req, res) => {
 router.get('/live-sessions/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    
+
     // Get user's connected gaming accounts from database
     // const connections = await storage.getUserGamingConnections(userId);
-    
+
     // For now, return mock data until real connections are established
     const liveSessions = [
       {
@@ -98,7 +99,7 @@ router.get('/live-sessions/:userId', async (req, res) => {
 router.get('/live-streams', async (req, res) => {
   try {
     const { game } = req.query;
-    
+
     const twitchStreams = await gamingAPIService.getTwitchStreams(game as string);
     const youtubeStreams = await gamingAPIService.getYouTubeLiveStreams();
 
@@ -213,6 +214,77 @@ router.get('/leaderboard', async (req, res) => {
   }
 });
 
+// Get gaming matches endpoint
+router.get('/matches', async (req, res) => {
+  try {
+    const matches = await fetchLiveGamingMatches();
+    res.json(matches);
+  } catch (error) {
+    console.error('Gaming matches API error:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch gaming matches',
+      fallback: []
+    });
+  }
+});
+
+// Get esports odds endpoint  
+router.get('/esports-odds', async (req, res) => {
+  try {
+    const odds = await fetchEsportsOdds();
+    res.json(odds);
+  } catch (error) {
+    console.error('Esports odds API error:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch esports odds',
+      fallback: []
+    });
+  }
+});
+
+// Get player statistics endpoint
+router.get('/player-stats/:playerId', async (req, res) => {
+  try {
+    const { playerId } = req.params;
+    const stats = await fetchPlayerStatistics(playerId);
+    res.json(stats);
+  } catch (error) {
+    console.error('Player stats API error:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch player statistics',
+      fallback: null
+    });
+  }
+});
+
+// Get trending players endpoint
+router.get('/trending-players', async (req, res) => {
+  try {
+    const trendingPlayers = await fetchPlayerStatistics('trending');
+    res.json(trendingPlayers);
+  } catch (error) {
+    console.error('Trending players API error:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch trending players',
+      fallback: []
+    });
+  }
+});
+
+// Get tournament data endpoint
+router.get('/tournaments', async (req, res) => {
+  try {
+    const tournaments = await fetchTournamentData();
+    res.json(tournaments);
+  } catch (error) {
+    console.error('Tournament data API error:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch tournament data',
+      fallback: []
+    });
+  }
+});
+
 // === UNIFIED GAMING API ROUTES ===
 
 // Fortnite player stats
@@ -295,7 +367,8 @@ router.get('/cfb/teams', async (req, res) => {
     const teams = await unifiedGamingAPI.getCollegeFootballTeams();
     res.json(teams);
   } catch (error: any) {
-    res.status(500).json({ error: 'College Football data unavailable', details: error.message });
+    res.status(```typescript
+500).json({ error: 'College Football data unavailable', details: error.message });
   }
 });
 
@@ -435,7 +508,7 @@ router.get('/api-status', async (req, res) => {
   try {
     const basicStatus = gamingAPIService.getConfiguredAPIs();
     const unifiedStatus = unifiedGamingAPI.getAPIStatus();
-    
+
     res.json({
       basic_apis: basicStatus,
       unified_apis: unifiedStatus,
