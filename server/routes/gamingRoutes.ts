@@ -367,8 +367,7 @@ router.get('/cfb/teams', async (req, res) => {
     const teams = await unifiedGamingAPI.getCollegeFootballTeams();
     res.json(teams);
   } catch (error: any) {
-    res.status(```typescript
-500).json({ error: 'College Football data unavailable', details: error.message });
+    res.status(500).json({ error: 'College Football data unavailable', details: error.message });
   }
 });
 
