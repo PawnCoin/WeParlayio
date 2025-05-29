@@ -47,6 +47,13 @@ import SmsChallenge from "@/pages/SmsChallenge"; // VIP SMS Challenge system
 import UserProfileBanking from "@/pages/UserProfileBanking"; // Complete user profile with integrated banking
 import MyBets from "@/pages/MyBets"; // User betting history and tracking
 import WeParlayCash from "@/pages/WeParlayCash"; // WeParlay Cash hub and management
+import BettingManager from "@/pages/BettingManager";
+import PaymentDemo from "@/pages/PaymentDemo";
+import WalletTest from "@/pages/WalletTest";
+import UserProfilePage from "@/pages/UserProfilePage";
+import FantasySportsEnhanced from "@/pages/FantasySportsEnhanced";
+import GamingIntegration from "@/pages/GamingIntegration";
+import LiveBettingEnhanced from "@/pages/LiveBettingEnhanced";
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
 import MobileVoiceBetting from "@/components/mobile/MobileVoiceBetting";
@@ -143,6 +150,7 @@ function Router() {
       <Route path="/security" component={SecurityInfo} />
       <Route path="/head-to-head" component={HeadToHeadBetting} />
       <Route path="/signup" component={SignUpEnhanced} />
+      <Route path="/signup-classic" component={SignUp} />
       <Route path="/signup-enhanced" component={SignUpEnhanced} />
       <Route path="/login" component={LoginEnhanced} />
       <Route path="/login-enhanced" component={LoginEnhanced} />
@@ -173,6 +181,17 @@ function Router() {
       <Route path="/onboarding-demo" component={OnboardingDemo} />
       <Route path="/wallet-management" component={WalletManagement} />
       <Route path="/wallet-management-enhanced" component={WalletManagementEnhanced} />
+      
+      {/* Additional Pages - Previously Missing Routes */}
+      <Route path="/betting-manager" component={BettingManager} />
+      <Route path="/live-betting-fixed" component={LiveBettingReal} />
+      <Route path="/payment-demo" component={PaymentDemo} />
+      <Route path="/wallet-test" component={WalletTest} />
+      <Route path="/user-profile-page" component={UserProfilePage} />
+      <Route path="/fantasy-enhanced" component={FantasySportsEnhanced} />
+      <Route path="/gaming-integration-alt" component={GamingIntegration} />
+      <Route path="/live-betting-enhanced" component={LiveBettingEnhanced} />
+      
       <Route component={NotFound} />
     </Switch>
   );
