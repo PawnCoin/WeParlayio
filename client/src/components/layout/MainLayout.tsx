@@ -180,37 +180,29 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem className="flex items-center">
-                        <Link href="/wallet-management-enhanced">
-                          <div className="flex items-center w-full">
-                            <Wallet className="mr-2 h-4 w-4" />
-                            Manage Wallets
-                          </div>
+                      <DropdownMenuItem asChild>
+                        <Link href="/wallet-management-enhanced" className="flex items-center w-full">
+                          <Wallet className="mr-2 h-4 w-4" />
+                          Manage Wallets
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="flex items-center">
-                        <Link href="/wallet-management-enhanced?tab=deposit-withdraw">
-                          <div className="flex items-center w-full">
-                            <Coins className="mr-2 h-4 w-4" />
-                            Deposit/Withdraw
-                          </div>
+                      <DropdownMenuItem asChild>
+                        <Link href="/wallet-management-enhanced?tab=deposit-withdraw" className="flex items-center w-full">
+                          <Coins className="mr-2 h-4 w-4" />
+                          Deposit/Withdraw
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="flex items-center">
-                        <Link href="/weparlay-cash">
-                          <div className="flex items-center w-full">
-                            <History className="mr-2 h-4 w-4" />
-                            WeParlay Cash Hub
-                          </div>
+                      <DropdownMenuItem asChild>
+                        <Link href="/weparlay-cash" className="flex items-center w-full">
+                          <History className="mr-2 h-4 w-4" />
+                          WeParlay Cash Hub
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="flex items-center">
-                        <Link href="/wallet-management-enhanced?tab=transactions">
-                          <div className="flex items-center w-full">
-                            <CreditCard className="mr-2 h-4 w-4" />
-                            Transaction History
-                          </div>
+                      <DropdownMenuItem asChild>
+                        <Link href="/wallet-management-enhanced?tab=transactions" className="flex items-center w-full">
+                          <CreditCard className="mr-2 h-4 w-4" />
+                          Transaction History
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
@@ -263,21 +255,17 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                         </>
                       )}
                       <DropdownMenuItem asChild>
-                        <Link href="/admin-bypass">
-                          <div className="flex items-center text-blue-500 font-semibold">
-                            <Shield className="mr-2 h-4 w-4" />
-                            Admin Dashboard
-                          </div>
+                        <Link href="/admin-bypass" className="flex items-center text-blue-500 font-semibold">
+                          <Shield className="mr-2 h-4 w-4" />
+                          Admin Dashboard
                         </Link>
                       </DropdownMenuItem>
                       {/* Only show for admins */}
                       {(user?.isAdmin || user?.tier === 'admin' || user?.email === 'support@weparlay.io') && (
                         <DropdownMenuItem asChild>
-                          <Link href="/social-media-dashboard">
-                            <div className="flex items-center text-orange-500 font-semibold">
-                              <Crown className="mr-2 h-4 w-4" />
-                              Marketing Bots
-                            </div>
+                          <Link href="/social-media-dashboard" className="flex items-center text-orange-500 font-semibold">
+                            <Crown className="mr-2 h-4 w-4" />
+                            Marketing Bots
                           </Link>
                         </DropdownMenuItem>
                       )}
