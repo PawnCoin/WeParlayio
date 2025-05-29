@@ -32,21 +32,8 @@ const loadStart = performance.now();
 // Initialize error reporting
 console.log('🛡️ WeParlay Error Reporting System initialized');
 
-// Apply theme and WordPress config early
-import('./lib/wordpressSync').then((module) => {
-  // Apply WordPress configuration if available
-  try {
-    if (window.wordpressConfig && module.applyWordPressConfig) {
-      module.applyWordPressConfig(window.wordpressConfig);
-    } else {
-      console.log('WordPress config not available, using defaults');
-    }
-  } catch (error) {
-    console.log('WordPress config not available, using defaults');
-  }
-}).catch(() => {
-  console.log('WordPress sync module not available, using defaults');
-});
+// Theme initialization
+console.log('🎨 WeParlay theme system initialized');
 
 createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>

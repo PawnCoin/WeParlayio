@@ -26,25 +26,25 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect }) => {
     { id: 'trustwallet', name: 'Trust Wallet', icon: <SiTrustpilot className="h-5 w-5 text-blue-400" />, color: 'bg-blue-400' },
     { id: 'binance', name: 'Binance Wallet', icon: <SiBinance className="h-5 w-5 text-yellow-500" />, color: 'bg-yellow-500' },
   ];
-  
+
   // Simulated wallet connection
   const connectWallet = async (walletId: string) => {
     setSelectedWallet(walletId);
     setConnecting(true);
-    
+
     // Simulate connection delay
     setTimeout(() => {
       setConnecting(false);
       setOpen(false);
-      
+
       // Generate mock wallet address
       const mockAddress = `0x${Array.from({length: 40}, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
-      
+
       // Notify parent component
       if (onConnect) {
         onConnect(mockAddress, walletId);
       }
-      
+
       // Show success toast
       toast({
         title: "Wallet Connected",
@@ -52,7 +52,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect }) => {
       });
     }, 1500);
   };
-  
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -68,13 +68,13 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect }) => {
             Connect your preferred wallet to login and bet with crypto.
           </DialogDescription>
         </DialogHeader>
-        
+
         <Tabs defaultValue="wallets" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="wallets">Crypto Wallets</TabsTrigger>
             <TabsTrigger value="social">Social Login</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="wallets" className="space-y-4 py-4">
             <div className="space-y-2">
               {wallets.map((wallet) => (
@@ -91,7 +91,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect }) => {
                     </div>
                     <span>{wallet.name}</span>
                   </div>
-                  
+
                   {selectedWallet === wallet.id && connecting ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
                   ) : (
@@ -100,41 +100,16 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect }) => {
                 </Button>
               ))}
             </div>
-            
+
             <div className="text-xs text-center text-muted-foreground mt-4">
               By connecting your wallet, you agree to the <a href="#" className="underline">Terms of Service</a> and <a href="#" className="underline">Privacy Policy</a>.
             </div>
           </TabsContent>
-          
+
           <TabsContent value="social" className="space-y-4 py-4">
             <div className="space-y-2">
-              <Button 
-                variant="outline" 
-                className="w-full justify-between items-center h-14"
-                onClick={() => {
-                  setOpen(false);
-                  window.location.href = "https://weparlay.io/login";
-                }}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="p-1.5 rounded-md bg-blue-500 bg-opacity-10">
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      viewBox="0 0 24 24" 
-                      width="20" 
-                      height="20" 
-                      fill="#3858e9"
-                    >
-                      <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 19.5c-5.247 0-9.5-4.253-9.5-9.5S6.753 2.5 12 2.5s9.5 4.253 9.5 9.5-4.253 9.5-9.5 9.5z"/>
-                      <path d="M12 4.25a7.75 7.75 0 100 15.5 7.75 7.75 0 000-15.5zM12 17a5 5 0 110-10 5 5 0 010 10z"/>
-                      <circle cx="12" cy="12" r="2.25"/>
-                    </svg>
-                  </div>
-                  <span>Continue with WordPress</span>
-                </div>
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-              
+              {/* WordPress login removed - app is not WordPress-based */}
+
               <Button 
                 variant="outline" 
                 className="w-full justify-between items-center h-14"
@@ -167,7 +142,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect }) => {
                 </div>
                 <ArrowRight className="h-4 w-4" />
               </Button>
-              
+
               <Button 
                 variant="outline" 
                 className="w-full justify-between items-center h-14"
@@ -200,13 +175,13 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect }) => {
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </div>
-            
+
             <div className="text-xs text-center text-muted-foreground mt-4">
               You'll be redirected to weparlay.io to complete your login through your preferred social platform.
             </div>
           </TabsContent>
         </Tabs>
-        
+
         <DialogFooter className="sm:justify-start">
           <Button 
             variant="secondary" 

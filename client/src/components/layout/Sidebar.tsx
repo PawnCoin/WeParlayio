@@ -27,7 +27,7 @@ import {
   GiCricketBat, GiBowlingAlley, GiArcheryTarget, GiMountainClimbing,
   GiWeightLiftingUp, GiSurfBoard, GiFencer, GiIceSkate,
   GiAmericanFootballHelmet, GiDart, GiSnowboard,
-  GiMeditation, GiShuttlecock
+  GiMeditation, GiShuttlecock, GiBaseballBat
 } from "react-icons/gi";
 import { MdSportsKabaddi, MdSportsEsports, MdSportsTennis, MdSportsHandball } from "react-icons/md";
 import { IoTennisball } from "react-icons/io5";
@@ -49,192 +49,42 @@ const getSportIcon = (sportKey: string) => {
     case 'basketball_turkey_bsl':
     case 'basketball_australia_nbl':
     case 'nba':
-      return <FaBasketballBall size={20} className="text-orange-500" />;
+      return <FaBasketballBall size={16} className="text-orange-500" />;
 
     // American Football
     case 'football':
     case 'americanfootball_nfl':
-    case 'americanfootball_ncaaf':
-    case 'football_nfl':
-    case 'nfl':
-      return <GiAmericanFootballBall size={20} className="text-amber-800" />;
-
-    // Baseball
-    case 'baseball':
-    case 'baseball_mlb':
-    case 'baseball_npb':
-    case 'baseball_kbo':
-    case 'baseball_cpbl':
-    case 'mlb':
-      return <FaBaseballBall size={20} className="text-red-500" />;
-
-    // Ice Hockey
-    case 'hockey':
-    case 'icehockey_nhl':
-    case 'icehockey_khl':
-    case 'icehockey_sweden_hockey_league':
-    case 'icehockey_finland_sm_liiga':
-    case 'icehockey_switzerland_nl':
-    case 'icehockey_czech_extraliga':
-    case 'icehockey_ahl':
-    case 'hockey_nhl':
-    case 'nhl':
-      return <FaHockeyPuck size={20} className="text-blue-600" />;
+      return <GiAmericanFootballHelmet size={16} className="text-brown-600" />;
 
     // Soccer/Football
     case 'soccer':
     case 'soccer_epl':
-    case 'soccer_spain_la_liga':
-    case 'soccer_germany_bundesliga':
-    case 'soccer_italy_serie_a':
-    case 'soccer_france_ligue_one':
-    case 'soccer_usa_mls':
-    case 'soccer_mexico_ligamx':
-    case 'soccer_brazil_campeonato':
-    case 'soccer_argentina_primera_division':
-    case 'soccer_netherlands_eredivisie':
-    case 'soccer_portugal_primeira_liga':
-    case 'soccer_efl_champ':
     case 'soccer_uefa_champs_league':
-    case 'soccer_uefa_europa_league':
-    case 'soccer_fa_cup':
-    case 'soccer_fifa_world_cup':
-    case 'mls':
-      return <FaFutbol size={20} className="text-green-600" />;
+      return <TbBallFootball size={16} className="text-green-600" />;
+
+    // Baseball
+    case 'baseball':
+    case 'baseball_mlb':
+      return <GiBaseballBat size={16} className="text-blue-600" />;
+
+    // Hockey
+    case 'hockey':
+    case 'icehockey_nhl':
+      return <GiIceSkate size={16} className="text-blue-400" />;
 
     // Tennis
     case 'tennis':
-    case 'tennis_wta':
-    case 'tennis_atp':
-    case 'tennis_wimbledon':
-    case 'tennis_us_open':
-    case 'tennis_french_open':
-    case 'tennis_australian_open':
-      return <GiTennisRacket size={20} className="text-yellow-500" />;
-
-    // Combat Sports
-    case 'boxing':
-    case 'boxing_main':
-      return <GiBoxingGlove size={20} className="text-red-600" />;
-    case 'mma':
-    case 'mma_mixed_martial_arts':
-    case 'ufc':
-      return <GiMeditation size={20} className="text-purple-600" />;
-
-    // Motor Sports
-    case 'motorsport':
-    case 'motorsport_f1':
-    case 'formula1':
-    case 'motorsport_nascar':
-    case 'nascar':
-    case 'motorsport_indycar':
-      return <GiRaceCar size={20} className="text-red-500" />;
-
-    // Cricket
-    case 'cricket':
-    case 'cricket_ipl':
-    case 'cricket_big_bash':
-    case 'cricket_test_match':
-    case 'cricket_odi':
-    case 'cricket_t20':
-      return <GiCricketBat size={20} className="text-green-700" />;
-
-    // Rugby
-    case 'rugby':
-    case 'rugby_league':
-    case 'rugby_union':
-    case 'rugby_nrl':
-    case 'rugby_super_rugby':
-      return <TbBallFootball size={20} className="text-brown-600" />;
-
-    // Golf
-    case 'golf':
-    case 'golf_pga':
-    case 'golf_european_tour':
-    case 'golf_masters':
-      return <FaGolfBall size={20} className="text-green-500" />;
-
-    // Volleyball
-    case 'volleyball':
-    case 'volleyball_indoor':
-    case 'volleyball_beach':
-      return <FaVolleyballBall size={20} className="text-blue-400" />;
-
-    // Table Tennis
-    case 'table_tennis':
-    case 'ping_pong':
-      return <FaTableTennis size={20} className="text-orange-400" />;
-
-    // Badminton
-    case 'badminton':
-      return <GiShuttlecock size={20} className="text-yellow-400" />;
-
-    // Handball
-    case 'handball':
-      return <MdSportsHandball size={20} className="text-red-400" />;
+      return <IoTennisball size={16} className="text-yellow-500" />;
 
     // Esports
     case 'esports':
-    case 'esports_lol':
-    case 'esports_dota2':
-    case 'esports_csgo':
-    case 'esports_valorant':
-    case 'esports_overwatch':
-      return <MdSportsEsports size={20} className="text-purple-500" />;
+    case 'gaming':
+      return <MdSportsEsports size={16} className="text-purple-500" />;
 
-    // Swimming
-    case 'swimming':
-    case 'aquatics':
-      return <FaSwimmer size={20} className="text-cyan-500" />;
-
-    // Cycling
-    case 'cycling':
-    case 'cycling_road':
-    case 'cycling_track':
-    case 'cycling_mountain':
-      return <FaBiking size={20} className="text-yellow-600" />;
-
-    // Athletics/Track
-    case 'athletics':
-    case 'track_and_field':
-    case 'running':
-      return <FaRunning size={20} className="text-orange-500" />;
-
-    // Winter Sports
-    case 'skiing':
-    case 'alpine_skiing':
-    case 'cross_country_skiing':
-      return <FaSkiing size={20} className="text-blue-300" />;
-    case 'snowboarding':
-      return <GiSnowboard size={20} className="text-purple-300" />;
-    case 'figure_skating':
-    case 'speed_skating':
-      return <GiIceSkate size={20} className="text-cyan-300" />;
-
-    // Other Sports
-    case 'darts':
-      return <GiDart size={20} className="text-red-500" />;
-    case 'snooker':
-    case 'pool':
-    case 'billiards':
-      return <FaGamepad size={20} className="text-green-800" />;
-    case 'archery':
-      return <GiArcheryTarget size={20} className="text-red-600" />;
-    case 'weightlifting':
-      return <GiWeightLiftingUp size={20} className="text-gray-600" />;
-    case 'surfing':
-      return <GiSurfBoard size={20} className="text-blue-500" />;
-    case 'climbing':
-    case 'rock_climbing':
-      return <GiMountainClimbing size={20} className="text-brown-500" />;
-    case 'fencing':
-      return <GiFencer size={20} className="text-gray-500" />;
-    case 'chess':
-      return <FaChessKnight size={20} className="text-black dark:text-white" />;
-    case 'bowling':
-      return <GiBowlingAlley size={20} className="text-purple-600" />;
+    // General sports
+    case 'sports':
     default:
-      return <FaBasketballBall size={20} className="text-orange-500" />;
+      return <MdSportsTennis size={16} className="text-gray-500" />;
   }
 };
 
