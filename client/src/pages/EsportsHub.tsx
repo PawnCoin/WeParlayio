@@ -29,6 +29,11 @@ const EsportsHub: React.FC = () => {
   const [liveBets, setLiveBets] = useState<any[]>([]);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [betAmount, setBetAmount] = useState('');
+  const [selectedTournament, setSelectedTournament] = useState<string>('');
+  const [searchedPlayer, setSearchedPlayer] = useState('');
+  const [searchRegion, setSearchRegion] = useState('na1');
+  const [realPlayerData, setRealPlayerData] = useState<any>(null);
+  const [isLoadingPlayerData, setIsLoadingPlayerData] = useState(false);
 
   // Fetch live esports matches with REAL data integration
   const { data: liveMatches, isLoading, error } = useQuery({
@@ -43,8 +48,6 @@ const EsportsHub: React.FC = () => {
   });
 
   // Fetch real player stats when a player is searched
-  const [searchedPlayer, setSearchedPlayer] = useState('');
-  const [searchRegion, setSearchRegion] = useState('na1');
   const { data: realPlayerStats, isLoading: playerLoading, error: playerError } = useQuery({
     queryKey: ['/api/esports/riot/summoner', searchedPlayer, searchRegion],
     enabled: !!searchedPlayer && searchedPlayer.length > 2,
@@ -384,20 +387,52 @@ const EsportsHub: React.FC = () => {
                         <option value="oc1">OCE</option>
                       </select>
                       <Button 
-                        onClick={() => {
-                          if (searchedPlayer) {
+                        onClick={async () => {
+                          if (searchedPlayer.trim()) {
+                            setIsLoadingPlayerData(true);
                             toast({
                               title: "Fetching Real Player Data",
                               description: `Looking up ${searchedPlayer} via Riot Games API`,
                             });
+
+                            try {
+                              const response = await fetch(`/api/esports/riot/summoner/${encodeURIComponent(searchedPlayer.trim())}/${searchRegion}`);
+
+                              if (!response.ok) {
+                                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                              }
+
+                              const contentType = response.headers.get('content-type');
+                              if (!contentType || !contentType.includes('application/json')) {
+                                throw new Error('Server returned non-JSON response');
+                              }
+
+                              const playerData = await response.json();
+                              setRealPlayerData(playerData);
+
+                              toast({
+                                title: "Player Found!",
+                                description: `Successfully loaded ${playerData.name || searchedPlayer}'s data`,
+                              });
+                            } catch (error: any) {
+                              console.error('Player lookup error:', error);
+                              toast({
+                                title: "Player Lookup Failed",
+                                description: error.message || "Unable to find player data",
+                                variant: "destructive"
+                              });
+                              setRealPlayerData(null);
+                            } finally {
+                              setIsLoadingPlayerData(false);
+                            }
                           }
                         }}
-                        disabled={playerLoading || !searchedPlayer}
+                        disabled={!searchedPlayer.trim() || isLoadingPlayerData}
                       >
-                        {playerLoading ? 'Searching...' : 'Search'}
+                        {isLoadingPlayerData ? "Searching..." : "🔍 Search"}
                       </Button>
                     </div>
-                    
+
                     {playerError && (
                       <div className="text-red-600 text-sm">
                         Error: {playerError.message || 'Failed to fetch player data'}
@@ -405,71 +440,38 @@ const EsportsHub: React.FC = () => {
                     )}
                   </div>
 
-                  {realPlayerStats && (
-                    <div className="space-y-3 p-4 bg-blue-50 rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <div className="font-bold text-lg">{realPlayerStats.name}</div>
-                        <Badge className="bg-green-500">✅ LIVE DATA</Badge>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <span className="font-medium">Level:</span> {realPlayerStats.summonerLevel}
-                        </div>
-                        <div>
-                          <span className="font-medium">Region:</span> {searchRegion.toUpperCase()}
-                        </div>
-                        <div>
-                          <span className="font-medium">Account ID:</span> {realPlayerStats.accountId?.slice(0, 8)}...
-                        </div>
-                        <div>
-                          <span className="font-medium">Profile Icon:</span> #{realPlayerStats.profileIconId}
-                        </div>
-                      </div>
-
-                      <div className="mt-3 p-2 bg-white rounded border">
-                        <div className="text-xs text-gray-500 mb-1">Raw API Response:</div>
-                        <pre className="text-xs overflow-auto max-h-32 text-gray-700">
-                          {JSON.stringify(realPlayerStats, null, 2)}
-                        </pre>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <Button 
-                          size="sm" 
-                          className="flex-1"
-                          onClick={() => {
-                            toast({
-                              title: "Real Props Generated!",
-                              description: `Created betting lines based on ${realPlayerStats.name}'s actual performance`,
-                            });
-                          }}
-                        >
-                          Generate Real Betting Props
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => {
-                            window.open(`/api/esports/riot/summoner/${searchedPlayer}/${searchRegion}`, '_blank');
-                          }}
-                        >
-                          View Raw API
-                        </Button>
+                  {/* Player Data Display */}
+                  {isLoadingPlayerData && (
+                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="flex items-center space-x-2">
+                        <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+                        <p className="text-sm text-blue-600">Searching for: {searchedPlayer} in {searchRegion.toUpperCase()}...</p>
                       </div>
                     </div>
                   )}
 
-                  {playerLoading && (
-                    <div className="text-center py-4">
-                      <div className="animate-spin h-6 w-6 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-2"></div>
-                      <div className="text-sm text-gray-600">Fetching player data from Riot API...</div>
+                  {realPlayerData && (
+                    <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold text-green-800">{realPlayerData.name}</h4>
+                        <span className="text-sm text-green-600">Level {realPlayerData.summonerLevel}</span>
+                      </div>
+                      {realPlayerData.rankedData && realPlayerData.rankedData.length > 0 && (
+                        <div className="space-y-2">
+                          {realPlayerData.rankedData.map((rank: any, index: number) => (
+                            <div key={index} className="text-sm">
+                              <span className="font-medium">{rank.queueType}:</span> {rank.tier} {rank.rank} ({rank.leaguePoints} LP)
+                              <span className="ml-2 text-gray-600">{rank.wins}W {rank.losses}L</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
 
-                  {!realPlayerStats && !playerLoading && searchedPlayer.length > 2 && (
-                    <div className="text-center py-4 text-gray-500 text-sm">
-                      No data found. Try searching for a valid summoner name.
+                  {searchedPlayer && !isLoadingPlayerData && !realPlayerData && (
+                    <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                      <p className="text-sm text-gray-600">Enter a summoner name and click search to fetch real player data</p>
                     </div>
                   )}
                 </CardContent>
