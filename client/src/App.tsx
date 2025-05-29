@@ -121,6 +121,7 @@ function Router() {
       {/* Main Application Routes */}
       <Route path="/home" component={Home} />
       <Route path="/dashboard" component={BettingDashboard} />
+      <Route path="/betting-dashboard" component={BettingDashboard} />
       <Route path="/betting" component={BettingDashboard} />
       <Route path="/betting-experience" component={BettingExperience} />
       <Route path="/betting-manager" component={BettingManager} />
@@ -142,6 +143,7 @@ function Router() {
       <Route path="/unified-gaming" component={UnifiedGaming} />
       <Route path="/video-gaming" component={VideoGaming} />
       <Route path="/esports" component={EsportsHub} />
+      <Route path="/esports-hub" component={EsportsHub} />
 
       {/* Fantasy Sports */}
       <Route path="/fantasy" component={FantasySportsEnhanced} />
@@ -191,6 +193,8 @@ function Router() {
 
       {/* Crypto */}
       <Route path="/crypto-info" component={CryptoInformation} />
+      <Route path="/crypto-guide" component={CryptoInformation} />
+      <Route path="/crypto-information" component={CryptoInformation} />
 
       {/* Support & Legal */}
       <Route path="/support" component={Support} />
