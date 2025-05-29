@@ -21,9 +21,10 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useWebSocket } from '@/hooks/use-websocket';
 
 const EsportsHub: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [selectedGame, setSelectedGame] = useState('lol');
   const [liveBets, setLiveBets] = useState<any[]>([]);
@@ -34,6 +35,17 @@ const EsportsHub: React.FC = () => {
   const [searchRegion, setSearchRegion] = useState('na1');
   const [realPlayerData, setRealPlayerData] = useState<any>(null);
   const [isLoadingPlayerData, setIsLoadingPlayerData] = useState(false);
+
+  // Initialize WebSocket connection for real-time updates
+  const websocketData = useWebSocket({
+    autoConnect: isAuthenticated,
+    reconnectAttempts: 5,
+    reconnectInterval: 3000
+  });
+
+  // Extract with fallback values to prevent undefined errors
+  const isConnected = websocketData?.isConnected || false;
+  const connectionStatus = websocketData?.connectionStatus || 'disconnected';
 
   // Fetch live esports matches with REAL data integration
   const { data: liveMatches, isLoading, error } = useQuery({
@@ -358,7 +370,7 @@ const EsportsHub: React.FC = () => {
                 <div className="text-gray-600">Real Data</div>
               </div>
             </div>
-            
+
             <div className="flex flex-wrap gap-2">
               {gridSeriesData.data.games_covered?.slice(0, 8).map((game: string, index: number) => (
                 <Badge key={index} variant="secondary" className="text-xs">
@@ -542,7 +554,7 @@ const EsportsHub: React.FC = () => {
                               // Use the correct API endpoint that matches your server routes
                               const apiUrl = `/api/esports/riot/summoner/${encodeURIComponent(searchedPlayer.trim())}/${searchRegion}`;
                               console.log('🔍 Making API request to:', apiUrl);
-                              
+
                               const response = await fetch(apiUrl, {
                                 method: 'GET',
                                 headers: {
@@ -756,7 +768,7 @@ const EsportsHub: React.FC = () => {
                   No live bets yet. Place your first micro-bet!
                 </p>
               )}
-            </CardContent>
+              </CardContent>
           </Card>
 
           {/* Live Chat */}
