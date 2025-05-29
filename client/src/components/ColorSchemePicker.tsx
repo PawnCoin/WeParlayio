@@ -55,6 +55,14 @@ const PREDEFINED_SCHEMES = [
   {
     name: 'Industrial Dark',
     colors: { primary: '#1f2937', secondary: '#374151', accent: '#4b5563' }
+  },
+  {
+    name: 'Ocean Depths',
+    colors: { primary: '#0d9488', secondary: '#0891b2', accent: '#0369a1' }
+  },
+  {
+    name: 'Military Green',
+    colors: { primary: '#16a34a', secondary: '#15803d', accent: '#166534' }
   }
 ];
 

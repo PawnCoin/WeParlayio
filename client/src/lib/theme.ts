@@ -53,11 +53,13 @@ export const WEPARLAY_COLORS = {
   primary: '#2563eb',      // Blue
   secondary: '#10b981',    // Green
   accent: '#f59e0b',       // Amber
-  gold: '#eab308',         // Gold (VIP tier replacement)
+  gold: '#eab308',         // Gold
   red: '#ef4444',          // Red (danger)
   gray: '#6b7280',         // Gray (neutral)
   charcoal: '#374151',     // Dark gray
-  steel: '#4b5563'         // Steel gray
+  steel: '#4b5563',        // Steel gray
+  orange: '#ea580c',       // Orange
+  teal: '#0d9488'          // Teal
 };
 
 export const ThemeContext = createContext<ThemeContextType>({

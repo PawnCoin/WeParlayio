@@ -184,5 +184,7 @@ export const WEPARLAY_COLORS = {
   yellow: '#f1c40f',
   charcoal: '#374151',
   dark: '#2c3e50',
-  light: '#ecf0f1'
+  light: '#ecf0f1',
+  steel: '#4b5563',
+  teal: '#0d9488'
 };
