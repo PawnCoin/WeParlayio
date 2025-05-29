@@ -5,7 +5,7 @@ import { Badge } from '../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../components/ui/accordion';
 import { Alert, AlertDescription } from '../components/ui/alert';
-import { TrendingUp, TrendingDown, DollarSign, Activity, Wallet, Shield, Zap, AlertTriangle, Info, Clock, Calculator, Network, Gas } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Activity, Wallet, Shield, Zap, AlertTriangle, Info, Clock, Calculator, Network, Fuel } from 'lucide-react';
 
 interface CryptoData {
   symbol: string;
@@ -228,7 +228,7 @@ export default function CryptoInformation() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="space-y-2">
                   <h4 className="font-semibold flex items-center">
-                    <Gas className="h-4 w-4 mr-2" />
+                    <Fuel className="h-4 w-4 mr-2" />
                     Transaction Costs
                   </h4>
                   <p className="text-sm text-muted-foreground">Network Fee: ${getSelectedCryptoData().networkFee}</p>
