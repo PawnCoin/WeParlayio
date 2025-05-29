@@ -304,7 +304,7 @@ export default function CryptoInformation() {
                           <ul className="space-y-1 text-sm">
                             <li>Standard Deposits: 0% (We cover the cost)</li>
                             <li>Express Deposits: 1% (Instant credit)</li>
-                            <li>Large Deposits (>$10,000): 0.5%</li>
+                            <li>Large Deposits (&gt;$10,000): 0.5%</li>
                             <li>VIP Members: 0% on all deposits</li>
                           </ul>
                         </div>
