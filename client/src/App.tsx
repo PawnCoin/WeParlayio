@@ -51,6 +51,7 @@ import WalletTest from "@/pages/WalletTest";
 import UserProfilePage from "@/pages/UserProfilePage";
 import FantasySportsEnhanced from "@/pages/FantasySportsEnhanced";
 import GamingIntegration from "@/pages/GamingIntegration";
+import LiveSportsStreaming from "@/pages/LiveSportsStreaming";
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
 import MobileVoiceBetting from "@/components/mobile/MobileVoiceBetting";
@@ -130,6 +131,7 @@ function Router() {
       <Route path="/live-betting" component={LiveBettingEnhanced} />
       <Route path="/live-betting-real-fixed" component={LiveBettingRealFixed} />
       <Route path="/live-heatmap" component={LiveHeatmap} />
+      <Route path="/live-streaming" component={LiveSportsStreaming} />
       <Route path="/my-bets" component={MyBets} />
       <Route path="/results" component={Results} />
       <Route path="/parlays" component={Parlays} />
