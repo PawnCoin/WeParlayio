@@ -68,7 +68,13 @@ class APIRateLimitManager {
     }
 
     // Check if we're under limit
-    return limit.currentCount < limit.dailyLimit;
+    const canMake = limit.currentCount < limit.dailyLimit;
+    
+    if (!canMake) {
+      console.warn(`🚨 API limit reached for ${apiName}. ${limit.currentCount}/${limit.dailyLimit} calls used.`);
+    }
+    
+    return canMake;
   }
 
   async recordRequest(apiName: string): Promise<void> {
@@ -110,12 +116,47 @@ class APIRateLimitManager {
       }
     }
 
-    if (availableAPIs.length === 0) return null;
+    if (availableAPIs.length === 0) {
+      console.warn('🚨 No APIs available! Activating emergency fallback mode.');
+      return 'fallback_mode';
+    }
 
     // Sort by score (best first)
     availableAPIs.sort((a, b) => b.score - a.score);
     
     return availableAPIs[0].name;
+  }
+
+  // Emergency fallback when all APIs are exhausted
+  async getEmergencyFallbackData(dataType: string): Promise<any> {
+    console.log(`🆘 Emergency fallback activated for ${dataType}`);
+    
+    const fallbackData = {
+      'esports_matches': [
+        {
+          id: 'emergency-1',
+          game: 'League of Legends',
+          tournament: 'Demo Tournament',
+          team1: { name: 'Team Alpha', logo: '🏆', score: 1 },
+          team2: { name: 'Team Beta', logo: '⚡', score: 0 },
+          status: 'live',
+          viewers: 50000,
+          odds: { team1Win: 1.50, team2Win: 2.75 }
+        }
+      ],
+      'sports_games': [
+        {
+          id: 'emergency-sport-1',
+          sport: 'NBA',
+          homeTeam: 'Lakers',
+          awayTeam: 'Warriors',
+          status: 'live',
+          odds: { home: 1.85, away: 1.95 }
+        }
+      ]
+    };
+
+    return fallbackData[dataType] || { error: 'No fallback data available', useDemoMode: true };
   }
 
   // Warning system when approaching limits

@@ -11,24 +11,63 @@ const cache = new NodeCache({ stdTTL: 60 }); // cache for 60 seconds
 // === Helper with cache and rate limiting ===
 const fetchWithCache = async (key: string, url: string, config: any = {}, apiName: string = 'unknown') => {
   // Check cache first
-  if (cache.has(key)) return cache.get(key);
+  if (cache.has(key)) {
+    console.log(`📦 Cache hit for ${key}`);
+    return cache.get(key);
+  }
 
   // Check rate limits
   if (!(await apiRateLimitManager.canMakeRequest(apiName))) {
-    console.warn(`API limit reached for ${apiName}. Using cached data or throwing error.`);
-    throw new Error(`API rate limit exceeded for ${apiName}. Please try again later.`);
+    console.warn(`⚠️ API limit reached for ${apiName}. Checking for fallback options...`);
+    
+    // Try to get emergency fallback data
+    try {
+      const fallbackData = await apiRateLimitManager.getEmergencyFallbackData(key);
+      if (fallbackData && !fallbackData.error) {
+        console.log(`🆘 Using emergency fallback for ${key}`);
+        return fallbackData;
+      }
+    } catch (fallbackError) {
+      console.error('Fallback also failed:', fallbackError);
+    }
+    
+    throw new Error(`API rate limit exceeded for ${apiName}. No fallback available.`);
   }
 
   try {
-    const { data } = await axios.get(url, config);
-    cache.set(key, data);
+    console.log(`🌐 Making API request to ${apiName} for ${key}`);
+    const { data } = await axios.get(url, {
+      ...config,
+      timeout: 10000, // 10 second timeout
+      validateStatus: (status) => status < 500 // Don't throw on 4xx errors
+    });
 
-    // Record the API call
-    await apiRateLimitManager.recordRequest(apiName);
+    if (data) {
+      cache.set(key, data);
+      await apiRateLimitManager.recordRequest(apiName);
+      console.log(`✅ Successfully cached ${key}`);
+      return data;
+    } else {
+      throw new Error('No data received from API');
+    }
+  } catch (error: any) {
+    console.error(`🚨 API fetch error for ${key}:`, {
+      status: error.response?.status,
+      message: error.message,
+      apiName
+    });
 
-    return data;
-  } catch (error) {
-    console.error(`API fetch error for ${key}:`, error);
+    // Try emergency fallback on any error
+    try {
+      const fallbackData = await apiRateLimitManager.getEmergencyFallbackData(key);
+      if (fallbackData && !fallbackData.error) {
+        console.log(`🆘 Using emergency fallback after API error for ${key}`);
+        return fallbackData;
+      }
+    } catch (fallbackError) {
+      console.error('Fallback failed after API error:', fallbackError);
+    }
+
     throw error;
   }
 };
