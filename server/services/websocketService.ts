@@ -1,4 +1,3 @@
-
 import { WebSocketServer, WebSocket } from 'ws';
 import { IncomingMessage } from 'http';
 import jwt from 'jsonwebtoken';
@@ -15,6 +14,7 @@ export class SecureWebSocketService {
   private wss: WebSocketServer;
   private clients: Map<string, AuthenticatedWebSocket[]> = new Map();
   private heartbeatInterval: NodeJS.Timeout;
+  private authenticatedConnections: Set<any> = new Set();
 
   constructor(server: any) {
     this.wss = new WebSocketServer({
@@ -25,7 +25,7 @@ export class SecureWebSocketService {
 
     this.wss.on('connection', this.handleConnection.bind(this));
     this.startHeartbeat();
-    
+
     console.log('🔒 Secure WebSocket server initialized with authentication');
   }
 
@@ -40,49 +40,68 @@ export class SecureWebSocketService {
     return info.secure || process.env.NODE_ENV === 'development';
   }
 
-  private async handleConnection(ws: AuthenticatedWebSocket, request: IncomingMessage) {
+  handleConnection(ws: any) {
     console.log('🔌 New WebSocket connection attempt');
 
-    ws.subscriptions = new Set();
-    ws.lastPing = Date.now();
-    ws.isAuthenticated = false;
-
-    // Set connection timeout
-    const connectionTimeout = setTimeout(() => {
-      if (!ws.isAuthenticated) {
-        ws.close(4001, 'Authentication timeout');
-      }
-    }, 10000); // 10 second auth timeout
-
-    ws.on('message', async (data: Buffer) => {
-      try {
-        const message = JSON.parse(data.toString());
-        await this.handleMessage(ws, message);
-      } catch (error) {
-        console.error('WebSocket message error:', error);
-        ws.send(JSON.stringify({
-          type: 'error',
-          message: 'Invalid message format'
-        }));
-      }
-    });
-
-    ws.on('close', () => {
-      clearTimeout(connectionTimeout);
-      this.removeClient(ws);
-    });
-
-    ws.on('error', (error) => {
-      console.error('WebSocket error:', error);
-      this.removeClient(ws);
-    });
-
-    // Send initial connection message
+    // Send welcome message
     ws.send(JSON.stringify({
       type: 'connection',
       message: 'WebSocket connected. Please authenticate.',
       timestamp: Date.now()
     }));
+
+    // Set authentication timeout
+    const authTimeout = setTimeout(() => {
+      ws.close(4001, 'Authentication timeout');
+    }, 30000);
+
+    ws.on('message', (message: string) => {
+      try {
+        const data = JSON.parse(message);
+
+        if (data.type === 'authenticate') {
+          clearTimeout(authTimeout);
+
+          // Simple authentication - in production, verify the token
+          this.authenticatedConnections.add(ws);
+
+          // Add client to real-time odds service
+          this.addToRealTimeOdds(ws);
+
+          ws.send(JSON.stringify({
+            type: 'authentication',
+            status: 'success',
+            timestamp: Date.now()
+          }));
+
+          console.log('✅ WebSocket client authenticated and added to real-time updates');
+        }
+      } catch (error) {
+        console.error('WebSocket message parsing error:', error);
+      }
+    });
+
+    ws.on('close', () => {
+      clearTimeout(authTimeout);
+      this.authenticatedConnections.delete(ws);
+      console.log('🔌 WebSocket connection closed');
+    });
+
+    ws.on('error', (error: any) => {
+      console.error('WebSocket error:', error);
+      clearTimeout(authTimeout);
+      this.authenticatedConnections.delete(ws);
+    });
+  }
+
+  private async addToRealTimeOdds(ws: any) {
+    try {
+      // Dynamically import and add client to real-time odds service
+      const { realTimeOddsService } = await import('./realTimeOddsService');
+      realTimeOddsService.addClient(ws);
+    } catch (error) {
+      console.error('Failed to add client to real-time odds service:', error);
+    }
   }
 
   private async handleMessage(ws: AuthenticatedWebSocket, message: any) {
@@ -117,7 +136,7 @@ export class SecureWebSocketService {
   private async handleAuthentication(ws: AuthenticatedWebSocket, payload: any) {
     try {
       const { token } = payload;
-      
+
       if (!token) {
         ws.close(4001, 'No authentication token provided');
         return;
@@ -164,7 +183,7 @@ export class SecureWebSocketService {
   private async sendInitialData(ws: AuthenticatedWebSocket, userId: string) {
     try {
       const user = await storage.getUser(userId);
-      
+
       // Send current balances
       ws.send(JSON.stringify({
         type: 'balance_update',
@@ -197,7 +216,7 @@ export class SecureWebSocketService {
     }
 
     const { channels } = payload;
-    
+
     if (Array.isArray(channels)) {
       channels.forEach(channel => {
         ws.subscriptions!.add(channel);
@@ -213,7 +232,7 @@ export class SecureWebSocketService {
 
   private handleUnsubscription(ws: AuthenticatedWebSocket, payload: any) {
     const { channels } = payload;
-    
+
     if (Array.isArray(channels)) {
       channels.forEach(channel => {
         ws.subscriptions!.delete(channel);

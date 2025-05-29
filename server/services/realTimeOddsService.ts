@@ -39,28 +39,76 @@ export class RealTimeOddsService {
   }
 
   private async fetchOddsApiData() {
-    // Implement actual API calls
-    return {
-      source: 'odds_api',
-      data: [],
-      timestamp: Date.now()
-    };
+    try {
+      // Import and use actual odds API service
+      const { oddsApiService } = await import('./oddsApiService');
+      const sportsKeys = ['basketball_nba', 'americanfootball_nfl', 'soccer_epl'];
+      const allData: any[] = [];
+      
+      for (const sport of sportsKeys) {
+        try {
+          const odds = await oddsApiService.getOdds(sport, 'us', 'h2h,spreads');
+          allData.push(...odds);
+        } catch (error) {
+          console.warn(`Failed to fetch ${sport} odds:`, error);
+        }
+      }
+      
+      return {
+        source: 'odds_api',
+        data: allData,
+        timestamp: Date.now()
+      };
+    } catch (error) {
+      console.error('Odds API fetch error:', error);
+      return {
+        source: 'odds_api',
+        data: [],
+        timestamp: Date.now()
+      };
+    }
   }
 
   private async fetchRapidApiData() {
-    return {
-      source: 'rapid_api',
-      data: [],
-      timestamp: Date.now()
-    };
+    try {
+      // Import and use rapid API service
+      const { rapidApiOddsService } = await import('./rapidApiOddsService');
+      const data = await rapidApiOddsService.getLiveOdds();
+      
+      return {
+        source: 'rapid_api',
+        data: data || [],
+        timestamp: Date.now()
+      };
+    } catch (error) {
+      console.error('Rapid API fetch error:', error);
+      return {
+        source: 'rapid_api',
+        data: [],
+        timestamp: Date.now()
+      };
+    }
   }
 
   private async fetchFreeApiData() {
-    return {
-      source: 'free_api',
-      data: [],
-      timestamp: Date.now()
-    };
+    try {
+      // Import and use free API service
+      const { freeApiService } = await import('./freeApiService');
+      const data = await freeApiService.getBasicOdds();
+      
+      return {
+        source: 'free_api',
+        data: data || [],
+        timestamp: Date.now()
+      };
+    } catch (error) {
+      console.error('Free API fetch error:', error);
+      return {
+        source: 'free_api',
+        data: [],
+        timestamp: Date.now()
+      };
+    }
   }
 
   private processUpdates(results: any[]) {

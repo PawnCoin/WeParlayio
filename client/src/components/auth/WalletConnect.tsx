@@ -3,6 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
+import { 
+  connectWallet, 
+  disconnectWallet, 
+  isMetaMaskAvailable, 
+  isPhantomAvailable, 
+  isCoinbaseWalletAvailable, 
+  isTrustWalletAvailable,
+  WalletType, 
+  ConnectionStatus 
+} from "@/services/walletService";
 
 // Icons
 import { Wallet, ArrowRight } from 'lucide-react';

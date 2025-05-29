@@ -378,11 +378,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
               {/* Basketball Category */}
               <details className="group">
                 <summary className="flex items-center py-2 px-3 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 list-none">
-                  <span className="mr-3">{getSportIcon('basketball_nba')}</span>
-                  <span className="flex items-center">
-          {getSportIcon('basketball_nba')}
-          <span className="flex-1 text-sm font-medium ml-3">Basketball</span>
-        </span>
+                  {getSportIcon('basketball_nba')}
+                  <span className="flex-1 text-sm font-medium ml-3">Basketball</span>
                   <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
                 </summary>
                 <div className="ml-6 mt-1 space-y-1">
@@ -410,8 +407,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
               {/* Football Category */}
               <details className="group">
                 <summary className="flex items-center py-2 px-3 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 list-none">
-                  <span className="mr-3">{getSportIcon('americanfootball_nfl')}</span>
-                  <span className="flex-1 text-sm font-medium">Football</span>
+                  {getSportIcon('americanfootball_nfl')}
+                  <span className="flex-1 text-sm font-medium ml-3">Football</span>
                   <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
                 </summary>
                 <div className="ml-6 mt-1 space-y-1">
@@ -433,8 +430,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
               {/* Soccer Category */}
               <details className="group">
                 <summary className="flex items-center py-2 px-3 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 list-none">
-                  <span className="mr-3">{getSportIcon('soccer_epl')}</span>
-                  <span className="flex-1 text-sm font-medium">Soccer</span>
+                  {getSportIcon('soccer_epl')}
+                  <span className="flex-1 text-sm font-medium ml-3">Soccer</span>
                   <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
                 </summary>
                 <div className="ml-6 mt-1 space-y-1">
@@ -456,8 +453,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
               {/* Tennis Category */}
               <details className="group">
                 <summary className="flex items-center py-2 px-3 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 list-none">
-                  <span className="mr-3">{getSportIcon('tennis_atp')}</span>
-                  <span className="flex-1 text-sm font-medium">Tennis</span>
+                  {getSportIcon('tennis_atp')}
+                  <span className="flex-1 text-sm font-medium ml-3">Tennis</span>
                   <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
                 </summary>
                 <div className="ml-6 mt-1 space-y-1">
@@ -481,8 +478,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
               {/* Baseball Category */}
               <details className="group">
                 <summary className="flex items-center py-2 px-3 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 list-none">
-                  <span className="mr-3">{getSportIcon('baseball_mlb')}</span>
-                  <span className="flex-1 text-sm font-medium">Baseball</span>
+                  {getSportIcon('baseball_mlb')}
+                  <span className="flex-1 text-sm font-medium ml-3">Baseball</span>
                   <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
                 </summary>
                 <div className="ml-6 mt-1 space-y-1">
@@ -498,8 +495,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
               {/* Ice Hockey Category */}
               <details className="group">
                 <summary className="flex items-center py-2 px-3 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 list-none">
-                  <span className="mr-3">{getSportIcon('icehockey_nhl')}</span>
-                  <span className="flex-1 text-sm font-medium">Ice Hockey</span>
+                  {getSportIcon('icehockey_nhl')}
+                  <span className="flex-1 text-sm font-medium ml-3">Ice Hockey</span>
                   <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
                 </summary>
                 <div className="ml-6 mt-1 space-y-1">
@@ -515,8 +512,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
               {/* Combat Sports Category */}
               <details className="group">
                 <summary className="flex items-center py-2 px-3 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 list-none">
-                  <span className="mr-3">{getSportIcon('mma_ufc')}</span>
-                  <span className="flex-1 text-sm font-medium">Combat Sports</span>
+                  {getSportIcon('mma_ufc')}
+                  <span className="flex-1 text-sm font-medium ml-3">Combat Sports</span>
                   <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
                 </summary>
                 <div className="ml-6 mt-1 space-y-1">
@@ -544,8 +541,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
               {/* Other Sports Category */}
               <details className="group">
                 <summary className="flex items-center py-2 px-3 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 list-none">
-                  <span className="mr-3">{getSportIcon('golf_pga')}</span>
-                  <span className="flex-1 text-sm font-medium">Other Sports</span>
+                  {getSportIcon('golf_pga')}
+                  <span className="flex-1 text-sm font-medium ml-3">Other Sports</span>
                   <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
                 </summary>
                 <div className="ml-6 mt-1 space-y-1">
