@@ -7,122 +7,6 @@ interface WebSocketMessage {
   timestamp: number;
 }
 
-class WebSocketService {
-  private wss: WebSocketServer | null = null;
-  private clients: Set<WebSocket> = new Set();
-  private subscriptions: Map<string, Set<WebSocket>> = new Map();
-
-  initialize(server: any) {
-    this.wss = new WebSocketServer({ 
-      server,
-      host: '0.0.0.0'
-    });
-
-    this.wss.on('connection', (ws: WebSocket) => {
-      console.log('🔌 New WebSocket connection established');
-      this.clients.add(ws);
-
-      ws.on('message', (message: string) => {
-        try {
-          const data = JSON.parse(message);
-          this.handleMessage(ws, data);
-        } catch (error) {
-          console.error('❌ WebSocket message parsing error:', error);
-        }
-      });
-
-      ws.on('close', () => {
-        console.log('🔌 WebSocket connection closed');
-        this.clients.delete(ws);
-        this.removeFromAllSubscriptions(ws);
-      });
-
-      ws.on('error', (error) => {
-        console.error('🚨 WebSocket error:', error);
-        this.clients.delete(ws);
-        this.removeFromAllSubscriptions(ws);
-      });
-    });
-
-    console.log('✅ WebSocket service initialized successfully');
-  }
-
-  private handleMessage(ws: WebSocket, data: any) {
-    switch (data.type) {
-      case 'subscribe':
-        this.subscribe(ws, data.channel);
-        break;
-      case 'unsubscribe':
-        this.unsubscribe(ws, data.channel);
-        break;
-      default:
-        console.warn('Unknown WebSocket message type:', data.type);
-    }
-  }
-
-  private subscribe(ws: WebSocket, channel: string) {
-    if (!this.subscriptions.has(channel)) {
-      this.subscriptions.set(channel, new Set());
-    }
-    this.subscriptions.get(channel)!.add(ws);
-  }
-
-  private unsubscribe(ws: WebSocket, channel: string) {
-    const channelSubs = this.subscriptions.get(channel);
-    if (channelSubs) {
-      channelSubs.delete(ws);
-      if (channelSubs.size === 0) {
-        this.subscriptions.delete(channel);
-      }
-    }
-  }
-
-  private removeFromAllSubscriptions(ws: WebSocket) {
-    for (const [channel, subs] of this.subscriptions.entries()) {
-      subs.delete(ws);
-      if (subs.size === 0) {
-        this.subscriptions.delete(channel);
-      }
-    }
-  }
-
-  broadcast(channel: string, data: any) {
-    const channelSubs = this.subscriptions.get(channel);
-    if (channelSubs) {
-      const message = JSON.stringify({
-        type: 'broadcast',
-        channel,
-        data,
-        timestamp: Date.now()
-      });
-
-      channelSubs.forEach(ws => {
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.send(message);
-        }
-      });
-    }
-  }
-
-  getStats() {
-    return {
-      totalClients: this.clients.size,
-      subscriptions: Object.fromEntries(
-        Array.from(this.subscriptions.entries()).map(([channel, subs]) => [
-          channel,
-          subs.size
-        ])
-      )
-    };
-  }
-}
-
-export const websocketService = new WebSocketService();
-
-export function initializeWebSocketService(server: any) {
-  websocketService.initialize(server);
-}
-
 interface ConnectedClient {
   ws: WebSocket;
   userId?: string;
@@ -150,6 +34,7 @@ class WebSocketService {
       this.wss = new WebSocketServer({ 
         server,
         path: '/ws',
+        host: '0.0.0.0',
         perMessageDeflate: false,
         clientTracking: true,
         maxPayload: 16 * 1024 * 1024 // 16MB
@@ -183,11 +68,11 @@ class WebSocketService {
       console.log(`🔌 Client ${clientId} connected. Total clients: ${this.clients.size}`);
 
       // Set up proper WebSocket state
-      ws.isAlive = true;
+      (ws as any).isAlive = true;
 
       // Handle ping/pong for connection health
       ws.on('pong', () => {
-        ws.isAlive = true;
+        (ws as any).isAlive = true;
         client.lastPing = Date.now();
       });
 
@@ -231,7 +116,7 @@ class WebSocketService {
       });
     });
 
-    console.log('🎧 WebSocket server is listening');
+    console.log('🎧 WebSocket server is listening on 0.0.0.0');
   }
 
   private startHeartbeat(): void {
