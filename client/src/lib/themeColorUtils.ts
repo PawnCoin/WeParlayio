@@ -11,12 +11,12 @@ function getLuminance(hexColor: string): number {
   let r = parseInt(hexColor.slice(1, 3), 16) / 255;
   let g = parseInt(hexColor.slice(3, 5), 16) / 255;
   let b = parseInt(hexColor.slice(5, 7), 16) / 255;
-  
+
   // Adjust values based on perception
   r = r <= 0.03928 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4);
   g = g <= 0.03928 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, 2.4);
   b = b <= 0.03928 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, 2.4);
-  
+
   // Calculate luminance
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
@@ -25,10 +25,10 @@ function getLuminance(hexColor: string): number {
 export function getContrastRatio(foreground: string, background: string): number {
   const lumFg = getLuminance(foreground);
   const lumBg = getLuminance(background);
-  
+
   const light = Math.max(lumFg, lumBg);
   const dark = Math.min(lumFg, lumBg);
-  
+
   return (light + 0.05) / (dark + 0.05);
 }
 
@@ -54,12 +54,12 @@ export function adjustBrightness(color: string, amount: number): string {
   let r = parseInt(color.slice(1, 3), 16);
   let g = parseInt(color.slice(3, 5), 16);
   let b = parseInt(color.slice(5, 7), 16);
-  
+
   // Adjust brightness
   r = Math.max(0, Math.min(255, r + amount));
   g = Math.max(0, Math.min(255, g + amount));
   b = Math.max(0, Math.min(255, b + amount));
-  
+
   // Convert back to hex
   return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
 }
@@ -68,7 +68,7 @@ export function adjustBrightness(color: string, amount: number): string {
 export function generateThemeColorPalette(primaryColor: string) {
   // Calculate contrasting colors
   const isDarkPrimary = getLuminance(primaryColor) < 0.5;
-  
+
   return {
     light: {
       background: "#FFFFFF",
@@ -104,7 +104,7 @@ export function validateProfessionalContrast(foreground: string, background: str
   level: 'AAA' | 'AA' | 'Fail';
 } {
   const ratio = getContrastRatio(foreground, background);
-  
+
   return {
     ratio,
     isAccessible: ratio >= 4.5,
@@ -115,7 +115,7 @@ export function validateProfessionalContrast(foreground: string, background: str
 // Generate professional color palette with guaranteed contrast
 export function generateProfessionalPalette(primaryColor: string, isDarkMode: boolean) {
   const primaryL = getLuminance(primaryColor);
-  
+
   if (isDarkMode) {
     return {
       background: "#0f172a",
@@ -156,7 +156,7 @@ export function generateProfessionalPalette(primaryColor: string, isDarkMode: bo
 // This function can be used when creating component-specific overrides
 export function generateComponentContrastColors(baseColor: string, isDarkMode: boolean) {
   const baseL = getLuminance(baseColor);
-  
+
   if (isDarkMode) {
     // Dark mode - ensure text is light enough
     return {
@@ -175,3 +175,14 @@ export function generateComponentContrastColors(baseColor: string, isDarkMode: b
     };
   }
 }
+
+export const WEPARLAY_COLORS = {
+  blue: '#3498db',
+  green: '#2ecc71',
+  orange: '#e67e22',
+  red: '#e74c3c',
+  yellow: '#f1c40f',
+  charcoal: '#374151',
+  dark: '#2c3e50',
+  light: '#ecf0f1'
+};

@@ -8,9 +8,9 @@ import { generateThemeColorPalette } from "@/lib/themeColorUtils";
 
 export default function ThemeColorManager() {
   const [currentColorScheme, setCurrentColorScheme] = useState({
-    primary: "#3498db",
-    secondary: "#2ecc71", 
-    accent: "#e67e22"
+    primary: "#2563eb",
+    secondary: "#10b981", 
+    accent: "#f59e0b"
   });
   const [generatedPalette, setGeneratedPalette] = useState<any>(null);
   const { toast } = useToast();

@@ -43,6 +43,18 @@ const PREDEFINED_SCHEMES = [
       background: "#ffffff",
       text: "#212529"
     }
+  },
+  {
+    name: 'Steel Professional',
+    colors: { primary: '#374151', secondary: '#4b5563', accent: '#6b7280' }
+  },
+  {
+    name: 'Sunset Vibes',
+    colors: { primary: '#f59e0b', secondary: '#f97316', accent: '#dc2626' }
+  },
+  {
+    name: 'Industrial Dark',
+    colors: { primary: '#1f2937', secondary: '#374151', accent: '#4b5563' }
   }
 ];
 
@@ -60,7 +72,7 @@ export default function ColorSchemePicker({ onSchemeChange, onCustomColorChange 
   });
   const [previewMode, setPreviewMode] = useState<'light' | 'dark'>('light');
   const [autoContrast, setAutoContrast] = useState(true);
-  
+
   // Update theme when scheme changes
   useEffect(() => {
     const selectedScheme = PREDEFINED_SCHEMES.find(s => s.name === activeScheme);
@@ -68,26 +80,26 @@ export default function ColorSchemePicker({ onSchemeChange, onCustomColorChange 
       onSchemeChange(selectedScheme.colors);
     }
   }, [activeScheme, onSchemeChange]);
-  
+
   // Update theme when custom colors change
   useEffect(() => {
     if (activeScheme === 'custom' && onCustomColorChange) {
       onCustomColorChange(customColors);
     }
   }, [customColors, activeScheme, onCustomColorChange]);
-  
+
   const handleColorChange = (type: 'primary' | 'secondary' | 'accent', color: string) => {
     setCustomColors(prev => ({
       ...prev,
       [type]: color
     }));
-    
+
     // If auto contrast is enabled, adjust other colors to maintain proper contrast
     if (autoContrast) {
       const newPalette = generateThemeColorPalette(color);
       // Only apply to the current preview mode
       const modeColors = newPalette[previewMode];
-      
+
       if (type === 'primary') {
         setCustomColors(prev => ({
           ...prev,
@@ -98,16 +110,16 @@ export default function ColorSchemePicker({ onSchemeChange, onCustomColorChange 
       }
     }
   };
-  
+
   // Current scheme's colors for preview
   const currentColors = activeScheme === 'custom' 
     ? customColors 
     : PREDEFINED_SCHEMES.find(s => s.name === activeScheme)?.colors || PREDEFINED_SCHEMES[0].colors;
-  
+
   // Generate color palette for preview
   const colorPalette = generateThemeColorPalette(currentColors.primary);
   const previewColors = colorPalette[previewMode];
-  
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -139,7 +151,7 @@ export default function ColorSchemePicker({ onSchemeChange, onCustomColorChange 
             <TabsTrigger value="preset">Preset Schemes</TabsTrigger>
             <TabsTrigger value="custom">Custom Colors</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="preset" className="mt-4">
             <RadioGroup 
               value={activeScheme}
@@ -165,7 +177,7 @@ export default function ColorSchemePicker({ onSchemeChange, onCustomColorChange 
               ))}
             </RadioGroup>
           </TabsContent>
-          
+
           <TabsContent value="custom" className="mt-4">
             <div className="mb-4 flex items-center space-x-2">
               <Switch
@@ -175,7 +187,7 @@ export default function ColorSchemePicker({ onSchemeChange, onCustomColorChange 
               />
               <Label htmlFor="auto-contrast">Auto-adjust for optimal contrast</Label>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <Label htmlFor="primary-color">Primary Color</Label>
@@ -190,7 +202,7 @@ export default function ColorSchemePicker({ onSchemeChange, onCustomColorChange 
                   <span className="ml-2 text-sm font-mono">{customColors.primary}</span>
                 </div>
               </div>
-              
+
               <div>
                 <Label htmlFor="secondary-color">Secondary Color</Label>
                 <div className="flex items-center mt-1">
@@ -204,7 +216,7 @@ export default function ColorSchemePicker({ onSchemeChange, onCustomColorChange 
                   <span className="ml-2 text-sm font-mono">{customColors.secondary}</span>
                 </div>
               </div>
-              
+
               <div>
                 <Label htmlFor="accent-color">Accent Color</Label>
                 <div className="flex items-center mt-1">
@@ -221,7 +233,7 @@ export default function ColorSchemePicker({ onSchemeChange, onCustomColorChange 
             </div>
           </TabsContent>
         </Tabs>
-        
+
         {/* Color Preview */}
         <div className="mt-6">
           <h3 className="text-sm font-semibold mb-2">Preview</h3>
@@ -232,7 +244,7 @@ export default function ColorSchemePicker({ onSchemeChange, onCustomColorChange 
             <div className="mb-3 text-sm" style={{ color: previewColors.foreground }}>
               This is how your theme will look
             </div>
-            
+
             <div className="grid grid-cols-3 gap-2">
               <Button style={{ 
                 backgroundColor: previewColors.primary, 
@@ -240,14 +252,14 @@ export default function ColorSchemePicker({ onSchemeChange, onCustomColorChange 
               }}>
                 Primary
               </Button>
-              
+
               <Button style={{ 
                 backgroundColor: previewColors.secondary, 
                 color: previewColors.secondaryForeground 
               }}>
                 Secondary
               </Button>
-              
+
               <Button style={{ 
                 backgroundColor: previewColors.accent, 
                 color: previewColors.accentForeground 

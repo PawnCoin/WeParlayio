@@ -55,7 +55,9 @@ export const WEPARLAY_COLORS = {
   accent: '#f59e0b',       // Amber
   gold: '#eab308',         // Gold (VIP tier replacement)
   red: '#ef4444',          // Red (danger)
-  gray: '#6b7280'          // Gray (neutral)
+  gray: '#6b7280',         // Gray (neutral)
+  charcoal: '#374151',     // Dark gray
+  steel: '#4b5563'         // Steel gray
 };
 
 export const ThemeContext = createContext<ThemeContextType>({
