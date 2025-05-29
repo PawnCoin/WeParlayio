@@ -29,7 +29,7 @@ import {
   GiAmericanFootballHelmet, GiDart, GiSnowboard,
   GiMeditation, GiShuttlecock, GiBaseballBat
 } from "react-icons/gi";
-import { MdSportsKabaddi, MdSportsEsports, MdSportsTennis, MdSportsHandball } from "react-icons/md";
+import { MdSportsKabaddi, MdSportsEsports, MdSportsTennis, MdSportsHandball, MdSports } from "react-icons/md";
 import { IoTennisball } from "react-icons/io5";
 import { TbBallFootball, TbCar } from "react-icons/tb";
 
@@ -67,24 +67,64 @@ const getSportIcon = (sportKey: string) => {
     case 'baseball_mlb':
       return <GiBaseballBat size={16} className="text-blue-600" />;
 
-    // Hockey
+    // Ice Hockey - Updated with hockey puck icon
     case 'hockey':
     case 'icehockey_nhl':
-      return <GiIceSkate size={16} className="text-blue-400" />;
+      return <FaHockeyPuck size={16} className="text-blue-400" />;
 
     // Tennis
     case 'tennis':
       return <IoTennisball size={16} className="text-yellow-500" />;
+
+    // Combat Sports - Updated with boxing glove icon
+    case 'mma_ufc':
+    case 'boxing_main':
+    case 'mma_mixed_martial_arts':
+    case 'boxing':
+    case 'mma':
+      return <GiBoxingGlove size={16} className="text-red-600" />;
 
     // Esports
     case 'esports':
     case 'gaming':
       return <MdSportsEsports size={16} className="text-purple-500" />;
 
+    // Golf
+    case 'golf_pga':
+    case 'golf':
+      return <FaGolfBall size={16} className="text-green-500" />;
+
+    // Motorsports
+    case 'motorsport_f1':
+    case 'motorsport':
+      return <GiRaceCar size={16} className="text-red-500" />;
+
+    // Other Sports - Updated with multi-sport icon
+    case 'rugbyleague_nrl':
+    case 'cricket':
+    case 'volleyball':
+    case 'handball':
+    case 'swimming':
+    case 'cycling':
+    case 'athletics':
+    case 'darts':
+    case 'snooker':
+    case 'badminton':
+    case 'tabletennis':
+    case 'waterpolo':
+    case 'aussierules_afl':
+    case 'gaelic_football':
+    case 'futsal':
+    case 'lacrosse':
+    case 'field_hockey':
+    case 'netball':
+    case 'squash':
+      return <MdSports size={16} className="text-indigo-500" />;
+
     // General sports
     case 'sports':
     default:
-      return <MdSportsTennis size={16} className="text-gray-500" />;
+      return <MdSports size={16} className="text-gray-500" />;
   }
 };
 
@@ -524,7 +564,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
               {/* Combat Sports Category */}
               <details className="group">
                 <summary className="flex items-center py-2 px-3 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 list-none">
-                  {getSportIcon('mma_ufc')}
+                  <GiBoxingGlove size={16} className="text-red-600" />
                   <span className="flex-1 text-sm font-medium ml-3">Combat Sports</span>
                   <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
                 </summary>
@@ -553,7 +593,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
               {/* Other Sports Category */}
               <details className="group">
                 <summary className="flex items-center py-2 px-3 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 list-none">
-                  {getSportIcon('golf_pga')}
+                  <MdSports size={16} className="text-indigo-500" />
                   <span className="flex-1 text-sm font-medium ml-3">Other Sports</span>
                   <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
                 </summary>
