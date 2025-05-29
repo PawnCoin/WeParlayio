@@ -1,4 +1,3 @@
-
 import { Router } from 'express';
 import { z } from 'zod';
 import { rapidApiOddsService } from '../services/rapidApiOddsService';
@@ -27,7 +26,7 @@ const CACHE_DURATION = 30000; // 30 seconds
 router.get('/live-ticker', async (req, res) => {
   try {
     const now = Date.now();
-    
+
     // Return cached data if still fresh
     if (now - lastUpdate < CACHE_DURATION && oddsCache.length > 0) {
       return res.json({ 
@@ -75,7 +74,7 @@ router.get('/live-ticker', async (req, res) => {
 
   } catch (error) {
     console.error('Error fetching ticker odds:', error);
-    
+
     // Return cached data or empty array on error
     if (oddsCache.length > 0) {
       res.json({ 
@@ -100,7 +99,7 @@ router.get('/live-updates', async (req, res) => {
   try {
     // This endpoint provides incremental updates
     const updates = await fetchOddsUpdates();
-    
+
     res.json({ 
       success: true, 
       updates,
@@ -120,10 +119,10 @@ router.get('/live-updates', async (req, res) => {
 router.post('/subscribe', async (req, res) => {
   try {
     const { clientId } = req.body;
-    
+
     // Subscribe client to odds updates
     websocketService.subscribeToChannel(clientId, 'odds_ticker');
-    
+
     res.json({ 
       success: true, 
       message: 'Subscribed to odds ticker updates' 
@@ -161,7 +160,9 @@ async function fetchFromRapidApi(): Promise<TickerOdds[]> {
 // Fetch odds from The Odds API
 async function fetchFromTheOddsApi(): Promise<TickerOdds[]> {
   try {
-    const oddsData = await theOddsApiService.getUpcomingOdds(['americanfootball_nfl', 'basketball_nba', 'soccer_epl']);
+    // Use valid sport keys from The Odds API
+    const sports = ['soccer_epl', 'basketball_nba', 'americanfootball_nfl', 'baseball_mlb', 'icehockey_nhl'];
+    const oddsData = await theOddsApiService.getUpcomingOdds(sports);
     return oddsData.slice(0, 10).map((item: any) => ({
       id: `odds-api-${item.id || Math.random().toString(36).substr(2, 9)}`,
       sport: item.sport_title || 'Sports',
@@ -184,7 +185,7 @@ async function fetchFromFreeApi(): Promise<TickerOdds[]> {
     // Use ESPN or other free APIs for additional data
     const response = await fetch('http://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard');
     const data = await response.json();
-    
+
     return data.events?.slice(0, 5).map((event: any) => ({
       id: `espn-${event.id}`,
       sport: 'NFL',
@@ -240,14 +241,14 @@ function generateMockTickerOdds(): TickerOdds[] {
 setInterval(async () => {
   try {
     const updates = await fetchOddsUpdates();
-    
+
     // Broadcast updates via WebSocket
     websocketService.broadcastToChannel('odds_ticker', {
       type: 'odds_update',
       updates,
       timestamp: new Date().toISOString()
     });
-    
+
   } catch (error) {
     console.error('Error in periodic odds update:', error);
   }

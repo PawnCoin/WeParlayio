@@ -142,9 +142,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
   });
 
   return (
-    <div className="h-full w-full flex flex-col bg-white dark:bg-gray-900 shadow-lg">
+    <div className="h-full w-full flex flex-col bg-background dark:bg-background shadow-lg">
       {/* Header with branding and close button for mobile */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between p-4 border-b border-border">
         <Link href="/">
           <div className="flex items-center">
             <div className="flex items-center">

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { ArrowDownRight, ArrowUpRight, Pause, Play } from 'lucide-react';
 import { useWebSocket } from '@/hooks/useWebSocket';
@@ -48,7 +47,7 @@ const OddsTicker: React.FC = () => {
           setOddsData(prevData => {
             const updatedData = [...prevData];
             const index = updatedData.findIndex(item => item.id === data.odds.id);
-            
+
             if (index !== -1) {
               updatedData[index] = {
                 ...updatedData[index],
@@ -69,7 +68,7 @@ const OddsTicker: React.FC = () => {
                 bookmaker: data.odds.bookmaker
               });
             }
-            
+
             return updatedData.slice(0, 20); // Keep only latest 20 items
           });
         }
@@ -80,7 +79,7 @@ const OddsTicker: React.FC = () => {
 
     // Subscribe to WebSocket odds updates
     window.addEventListener('message', handleOddsUpdate);
-    
+
     return () => {
       window.removeEventListener('message', handleOddsUpdate);
     };
@@ -120,7 +119,7 @@ const OddsTicker: React.FC = () => {
     return () => clearInterval(updateInterval);
   }, [isConnected, isPaused]);
 
-  
+
 
   // Function to determine if odds have improved or worsened
   const getOddsMovement = (current: number, previous: number | null) => {
@@ -161,15 +160,15 @@ const OddsTicker: React.FC = () => {
 
   if (oddsData.length === 0) {
     return (
-      <footer className="bg-gray-900 py-1 overflow-hidden relative">
+      <footer className="bg-background dark:bg-background py-1 overflow-hidden relative border-t border-border">
         {/* Connection status indicator */}
-        <div className="absolute top-0 left-0 z-10 bg-gray-900 px-2 h-full flex items-center">
+        <div className="absolute top-0 left-0 z-10 bg-background dark:bg-background px-2 h-full flex items-center">
           <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" 
                title="Connecting to live odds feeds..." />
         </div>
 
         {/* Pause/Play control */}
-        <div className="flex items-center absolute top-0 right-0 z-10 bg-gray-900 px-2 h-full">
+        <div className="flex items-center absolute top-0 right-0 z-10 bg-background dark:bg-background px-2 h-full">
           <button 
             onClick={() => setIsPaused(!isPaused)}
             className="text-white p-1 hover:bg-gray-700 rounded transition-colors"
@@ -178,7 +177,7 @@ const OddsTicker: React.FC = () => {
             {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
           </button>
         </div>
-        
+
         <div className={`flex whitespace-nowrap ${!isPaused ? 'animate-ticker' : ''}`}>
           {/* Continuous loading messages */}
           {Array(6).fill(null).map((_, index) => (
@@ -214,15 +213,15 @@ const OddsTicker: React.FC = () => {
   }
 
   return (
-    <footer className="bg-gray-900 py-1 overflow-hidden relative">
+    <footer className="bg-background dark:bg-background py-1 overflow-hidden relative border-t border-border">
       {/* Connection status indicator */}
-      <div className="absolute top-0 left-0 z-10 bg-gray-900 px-2 h-full flex items-center">
+      <div className="absolute top-0 left-0 z-10 bg-background dark:bg-background px-2 h-full flex items-center">
         <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-yellow-500'}`} 
              title={isConnected ? 'Live updates active' : 'Using fallback updates'} />
       </div>
 
       {/* Pause/Play control */}
-      <div className="flex items-center absolute top-0 right-0 z-10 bg-gray-900 px-2 h-full">
+      <div className="flex items-center absolute top-0 right-0 z-10 bg-background dark:bg-background px-2 h-full">
         <button 
           onClick={() => setIsPaused(!isPaused)}
           className="text-white p-1 hover:bg-gray-700 rounded transition-colors"
@@ -231,7 +230,7 @@ const OddsTicker: React.FC = () => {
           {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
         </button>
       </div>
-      
+
       <div 
         className={`flex whitespace-nowrap ${!isPaused ? 'animate-ticker' : ''}`}
         onMouseEnter={() => setIsPaused(true)}
@@ -245,11 +244,11 @@ const OddsTicker: React.FC = () => {
               <span className={`px-2 py-0.5 text-xs font-medium rounded ${getSportColor(item.sport)}`}>
                 {item.sport}
               </span>
-              
+
               <span className="mx-2 text-gray-300 font-medium">
                 {item.teams}
               </span>
-              
+
               <span className={`font-mono font-bold flex items-center ${
                 movement === 'improved' ? 'text-green-400' :
                 movement === 'worsened' ? 'text-red-400' : 'text-white'

@@ -88,8 +88,19 @@ export const useWebSocket = (config: WebSocketConfig = {}) => {
       setState(prev => ({ ...prev, connectionStatus: 'connecting' }));
 
       // Determine WebSocket URL based on current location
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${window.location.host}/ws`;
+      const getWebSocketUrl = () => {
+        // For Replit deployments, use the correct WebSocket URL format
+        if (window.location.hostname.includes('replit.dev')) {
+          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+          return `${protocol}//${window.location.host}/ws`;
+        }
+
+        // For production or other environments
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const host = window.location.host;
+        return `${protocol}//${host}/ws`;
+      };
+      const wsUrl = getWebSocketUrl();
 
       console.log('🔌 Attempting WebSocket connection to:', wsUrl);
 
