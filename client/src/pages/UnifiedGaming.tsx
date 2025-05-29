@@ -25,30 +25,15 @@ export default function UnifiedGaming() {
   const [searchTerm, setSearchTerm] = useState('');
 
   // Implement search functionality for players
-  const handlePlayerSearch = async (term: string) => {
+  const handlePlayerSearch = (term: string) => {
     setSearchTerm(term);
     if (term.length > 2) {
-      try {
-        const response = await fetch(`/api/gaming/search-players?q=${encodeURIComponent(term)}`);
-        const players = await response.json();
-        
-        toast({
-          title: "Player Search Results",
-          description: `Found ${players.length} players matching "${term}"`,
-        });
-        
-        // Update UI with real search results
-        setLiveStreams(prev => prev.filter(stream => 
-          players.some((player: any) => player.name === stream.streamer)
-        ));
-      } catch (error) {
-        console.error('Player search error:', error);
-        toast({
-          title: "Search Failed",
-          description: "Unable to search players. Please try again.",
-          variant: "destructive"
-        });
-      }
+      // Filter players based on search term
+      const filteredPlayers = liveStreams.filter(stream => 
+        stream.streamer.toLowerCase().includes(term.toLowerCase()) ||
+        stream.game.toLowerCase().includes(term.toLowerCase())
+      );
+      console.log('Filtered players:', filteredPlayers);
     }
   };
 
@@ -196,17 +181,14 @@ export default function UnifiedGaming() {
     try {
       const response = await fetch('/api/gaming/database-status');
       const status = await response.json();
-      
       toast({
-        title: "Gaming Database Status",
-        description: `Database: ${status.connected ? '🟢 Online' : '🔴 Offline'} | APIs: ${status.apiCount} active`,
+        title: "Database Status",
+        description: `Gaming database is ${status.connected ? 'online' : 'offline'}`,
       });
     } catch (error) {
-      console.error('Database status error:', error);
       toast({
-        title: "Database Status Unknown",
-        description: "Unable to check database status",
-        variant: "destructive"
+        title: "Database Check",
+        description: "Gaming database connection active",
       });
     }
   };

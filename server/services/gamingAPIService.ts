@@ -295,27 +295,6 @@ export class GamingAPIService {
       youtube: !!gamingConfig.youtube.apiKey
     };
   }
-
-  // Trigger autopost for gaming content
-  async triggerAutopost() {
-    try {
-      // Get latest gaming data and trigger social media posts
-      const configuredAPIs = this.getConfiguredAPIs();
-      const activeAPIs = Object.entries(configuredAPIs).filter(([_, active]) => active);
-      
-      console.log(`Triggering autopost for ${activeAPIs.length} gaming platforms`);
-      
-      // Here you would integrate with your social media posting service
-      return {
-        triggered: true,
-        platforms: activeAPIs.length,
-        timestamp: new Date().toISOString()
-      };
-    } catch (error) {
-      console.error('Autopost trigger error:', error);
-      throw error;
-    }
-  }
 }
 
 export const gamingAPIService = new GamingAPIService();
