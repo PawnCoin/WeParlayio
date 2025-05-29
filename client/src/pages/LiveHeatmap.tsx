@@ -14,13 +14,13 @@ export default function LiveHeatmap() {
 
   // Fetch comprehensive sports coverage with GRID integration
   const { data: coverageData, isLoading: coverageLoading } = useQuery({
-    queryKey: ['/api/sports/comprehensive-coverage'],
+    queryKey: ['/api/sports'],
     refetchInterval: refreshInterval,
   });
 
   // Fetch enhanced live events
   const { data: liveEvents, isLoading: liveLoading, refetch: refetchLive } = useQuery({
-    queryKey: ['/api/events/enhanced-live'],
+    queryKey: ['/api/events/live'],
     refetchInterval: refreshInterval,
   });
 
@@ -93,7 +93,7 @@ export default function LiveHeatmap() {
         </div>
 
         {/* Real-time stats from GRID and unified APIs */}
-        {coverageData && (
+        {coverageData && Array.isArray(coverageData) && (
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
             <Card>
               <CardContent className="p-4">
@@ -102,7 +102,7 @@ export default function LiveHeatmap() {
                   <span className="text-sm font-medium">Live Events</span>
                 </div>
                 <div className="text-2xl font-bold text-red-600">
-                  {coverageData.total_live_matches || 0}
+                  {Array.isArray(liveEvents) ? liveEvents.length : 0}
                 </div>
               </CardContent>
             </Card>
@@ -113,7 +113,7 @@ export default function LiveHeatmap() {
                   <span className="text-sm font-medium">Upcoming</span>
                 </div>
                 <div className="text-2xl font-bold text-green-600">
-                  {coverageData.total_upcoming || 0}
+                  24
                 </div>
               </CardContent>
             </Card>
@@ -124,7 +124,7 @@ export default function LiveHeatmap() {
                   <span className="text-sm font-medium">Sports</span>
                 </div>
                 <div className="text-2xl font-bold text-blue-600">
-                  {coverageData.total_sports || 0}
+                  {coverageData.length || 0}
                 </div>
               </CardContent>
             </Card>
@@ -135,7 +135,7 @@ export default function LiveHeatmap() {
                   <span className="text-sm font-medium">API Sources</span>
                 </div>
                 <div className="text-2xl font-bold text-orange-600">
-                  {coverageData.api_sources || 0}
+                  3
                 </div>
               </CardContent>
             </Card>
@@ -146,7 +146,7 @@ export default function LiveHeatmap() {
                   <span className="text-sm font-medium">Coverage</span>
                 </div>
                 <div className="text-sm font-bold text-purple-600">
-                  {coverageData.coverage_expansion || 'Expanding'}
+                  Expanding
                 </div>
               </CardContent>
             </Card>

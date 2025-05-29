@@ -46,17 +46,8 @@ const VideoGaming: React.FC = () => {
             Video Game Betting
           </h1>
           <p className="text-muted-foreground">
-            Create custom bets on any game, any matchup, with any currency
+            Create custom bets on any game, any matchup
           </p>
-        </div>
-        
-        <div className="flex items-center space-x-2 bg-muted/30 p-2 rounded-lg">
-          <span className="text-sm font-medium">Real Money</span>
-          <Switch 
-            checked={useFakeMoney}
-            onCheckedChange={handleCurrencyToggle}
-          />
-          <span className="text-sm font-medium">WeParlay Cash</span>
         </div>
       </div>
 

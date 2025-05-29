@@ -244,7 +244,17 @@ export default function Odds() {
                     <span className="text-xs text-gray-500">
                       Updated: {new Date(odds.last_update || Date.now()).toLocaleTimeString()}
                     </span>
-                    <Button size="sm">
+                    <Button 
+                      size="sm"
+                      onClick={() => {
+                        toast({
+                          title: "Bet Added to Slip",
+                          description: `${odds.home_team} vs ${odds.away_team} added to your betting slip`,
+                        });
+                        // Redirect to betting page
+                        window.location.href = '/comprehensive-betting';
+                      }}
+                    >
                       <DollarSign className="h-4 w-4 mr-2" />
                       Place Bet
                     </Button>

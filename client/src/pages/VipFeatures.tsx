@@ -278,22 +278,46 @@ const VipFeatures: React.FC = () => {
     }
   ];
   
-  const handleClaimReward = () => {
-    setShowConfetti(true);
-    
-    toast({
-      title: "Weekly VIP Reward Claimed!",
-      description: "You've received a $50 free bet token and 500 VIP points.",
-    });
-    
-    setVipData({
-      ...vipData,
-      points: vipData.points + 500
-    });
-    
-    setTimeout(() => {
-      setShowConfetti(false);
-    }, 3000);
+  const handleClaimReward = async () => {
+    try {
+      // Make actual API call to claim reward
+      const response = await fetch('/api/vip/claim-reward', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rewardType: 'weekly' })
+      });
+      
+      if (response.ok) {
+        setShowConfetti(true);
+        
+        toast({
+          title: "Weekly VIP Reward Claimed!",
+          description: "You've received a $50 free bet token and 500 VIP points.",
+        });
+        
+        setVipData({
+          ...vipData,
+          points: vipData.points + 500
+        });
+        
+        setTimeout(() => {
+          setShowConfetti(false);
+        }, 3000);
+      } else {
+        toast({
+          title: "Claim Failed",
+          description: "Unable to claim reward at this time. Please try again.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Reward claim failed:', error);
+      toast({
+        title: "Error",
+        description: "Network error. Please check your connection.",
+        variant: "destructive"
+      });
+    }
   };
   
   const handleEnableEarlyAccess = (enabled: boolean) => {

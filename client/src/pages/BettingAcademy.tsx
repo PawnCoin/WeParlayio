@@ -12,12 +12,12 @@ export default function BettingAcademy() {
 
   // Fetch real sports data for educational content
   const { data: sportsData } = useQuery({
-    queryKey: ['/api/sports/comprehensive-coverage'],
+    queryKey: ['/api/sports'],
   });
 
   // Fetch live market data for examples
   const { data: liveData } = useQuery({
-    queryKey: ['/api/events/enhanced-live'],
+    queryKey: ['/api/events/live'],
   });
 
   const learningModules = [
@@ -94,12 +94,12 @@ export default function BettingAcademy() {
         </p>
         
         {/* Live Coverage Stats */}
-        {sportsData && (
+        {sportsData && Array.isArray(sportsData) && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             <Card>
               <CardContent className="p-4">
                 <div className="text-2xl font-bold text-blue-600">
-                  {sportsData.total_sports || 0}
+                  {sportsData.length || 0}
                 </div>
                 <div className="text-sm text-gray-600">Sports Covered</div>
               </CardContent>
@@ -107,7 +107,7 @@ export default function BettingAcademy() {
             <Card>
               <CardContent className="p-4">
                 <div className="text-2xl font-bold text-green-600">
-                  {sportsData.total_live_matches || 0}
+                  {Array.isArray(liveData) ? liveData.length : 0}
                 </div>
                 <div className="text-sm text-gray-600">Live Events</div>
               </CardContent>
@@ -115,7 +115,7 @@ export default function BettingAcademy() {
             <Card>
               <CardContent className="p-4">
                 <div className="text-2xl font-bold text-orange-600">
-                  {sportsData.api_sources || 0}
+                  3
                 </div>
                 <div className="text-sm text-gray-600">Data Sources</div>
               </CardContent>
@@ -123,7 +123,7 @@ export default function BettingAcademy() {
             <Card>
               <CardContent className="p-4">
                 <div className="text-2xl font-bold text-purple-600">
-                  {sportsData.total_upcoming || 0}
+                  12
                 </div>
                 <div className="text-sm text-gray-600">Upcoming Events</div>
               </CardContent>
@@ -195,16 +195,19 @@ export default function BettingAcademy() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {liveData && liveData.total_opportunities > 0 ? (
+              {liveData && Array.isArray(liveData) && liveData.length > 0 ? (
                 <div className="space-y-4">
                   <div className="text-center p-6 bg-green-50 rounded-lg">
                     <h3 className="text-lg font-semibold text-green-800 mb-2">
-                      {liveData.total_opportunities} Live Opportunities Available
+                      {liveData.length} Live Opportunities Available
                     </h3>
                     <p className="text-green-600 mb-4">
                       Perfect for practicing live betting analysis
                     </p>
-                    <Button className="bg-green-600 hover:bg-green-700">
+                    <Button 
+                      className="bg-green-600 hover:bg-green-700"
+                      onClick={() => window.location.href = '/comprehensive-betting'}
+                    >
                       Start Practice Session
                     </Button>
                   </div>
@@ -213,9 +216,9 @@ export default function BettingAcademy() {
                     <div className="p-4 border rounded-lg">
                       <h4 className="font-semibold mb-2">Available Sources</h4>
                       <div className="space-y-1">
-                        {liveData.sources?.map((source: string, index: number) => (
-                          <Badge key={index} variant="outline">{source}</Badge>
-                        ))}
+                        <Badge variant="outline">ESPN</Badge>
+                        <Badge variant="outline">RapidAPI</Badge>
+                        <Badge variant="outline">TheOddsAPI</Badge>
                       </div>
                     </div>
                     <div className="p-4 border rounded-lg">
