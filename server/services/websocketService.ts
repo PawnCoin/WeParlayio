@@ -67,8 +67,13 @@ class WebSocketService {
       try {
         const message = JSON.parse(data.toString());
         this.handleMessage(clientId, message);
+        client.lastSeen = new Date(); // Update last seen on message
       } catch (error) {
         console.warn(`⚠️ Invalid message from client ${clientId}:`, error);
+        this.sendToClient(clientId, {
+          type: 'error',
+          message: 'Invalid message format'
+        });
       }
     });
 
@@ -184,12 +189,26 @@ class WebSocketService {
           continue;
         }
 
+        // Check for stale connections based on last activity
+        const now = new Date();
+        const inactivityDuration = now.getTime() - client.lastSeen.getTime();
+        const maxInactivity = 5 * 60 * 1000; // 5 minutes
+
+        if (inactivityDuration > maxInactivity) {
+          console.log(`💀 Terminating stale connection: ${clientId}`);
+          deadClients.push(clientId);
+          client.ws.close(1001, 'Idle timeout'); // Inform client of timeout
+          continue;
+        }
+
         client.isAlive = false;
 
         try {
           client.ws.ping();
         } catch (error) {
+          console.error(`🚨 Ping failed for client ${clientId}:`, error);
           deadClients.push(clientId);
+          client.ws.close(1011, 'Ping failed'); // Inform client of ping failure
         }
       }
 

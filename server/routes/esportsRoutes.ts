@@ -156,8 +156,33 @@ router.get('/live-matches/:game?', async (req, res) => {
   try {
     const { game } = req.params;
 
-    // Only return real live matches from actual APIs
-    const liveMatches = await unifiedGamingAPI.getEsportsMatches(game);
+    // Try to get real live matches from APIs
+    let liveMatches = [];
+    
+    try {
+      liveMatches = await unifiedGamingAPI.getEsportsMatches(game);
+    } catch (apiError) {
+      console.warn('Primary esports API failed, trying fallback:', apiError);
+      
+      // Fallback to GRID API
+      try {
+        const { GridApiService } = await import('../services/gridApiService');
+        const gridService = new GridApiService();
+        const gridMatches = await gridService.getLiveMatches();
+        
+        liveMatches = gridMatches.map((match: any) => ({
+          id: match.id,
+          game: match.tournament?.videogame?.name || 'Unknown',
+          tournament: match.tournament?.name || 'Tournament',
+          team1: { name: match.opponents?.[0]?.opponent?.name || 'Team 1', score: 0 },
+          team2: { name: match.opponents?.[1]?.opponent?.name || 'Team 2', score: 0 },
+          status: match.status || 'live'
+        }));
+      } catch (gridError) {
+        console.warn('GRID API also failed:', gridError);
+        liveMatches = [];
+      }
+    }
 
     const filteredMatches = game 
       ? liveMatches.filter((match: any) => match.game?.toLowerCase().includes(game.toLowerCase()))
@@ -166,7 +191,6 @@ router.get('/live-matches/:game?', async (req, res) => {
     res.json(filteredMatches);
   } catch (error: any) {
     console.error('Error fetching live matches:', error);
-    // Return empty array when no API available - no fake data
     res.json([]);
   }
 });

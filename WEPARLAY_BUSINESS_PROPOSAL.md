@@ -1,6 +1,7 @@
-
 # 🚀 WeParlay.io - Strategic Partnership & Business Proposal
 ## **Where Sports Betting Meets Innovation - Join the Revolution!**
+
+🤝 **Quick Business Proposal**: [Open Partnership Modal](https://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/?partners=true)
 
 ### 📊 **EXECUTIVE SUMMARY**
 WeParlay.io is a next-generation sports betting platform revolutionizing the industry with **92% completion** and ready for explosive growth. We're seeking strategic partnerships with API providers, affiliates, and business partners to create mutually beneficial revenue streams.

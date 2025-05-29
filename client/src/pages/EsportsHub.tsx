@@ -39,18 +39,26 @@ const EsportsHub: React.FC = () => {
   const { data: liveMatches, isLoading, error } = useQuery({
     queryKey: ['/api/esports/live-matches', selectedGame],
     refetchInterval: 5000, // 5 second updates for live data
+    retry: 3,
+    retryDelay: 1000,
+    staleTime: 30000 // Keep data for 30 seconds
   });
 
   // Fetch real Riot API data
   const { data: riotAPIStatus } = useQuery({
     queryKey: ['/api/esports/riot/status'],
     refetchInterval: 30000,
+    retry: 2,
+    staleTime: 60000
   });
 
   // Fetch GRID API series data (74,000+ esports series)
   const { data: gridSeriesData } = useQuery({
     queryKey: ['/api/esports/grid/series'],
     refetchInterval: 300000, // 5 minutes
+    retry: 2,
+    retryDelay: 2000,
+    staleTime: 300000 // Keep data for 5 minutes
   });
 
   // Fetch real player stats when a player is searched
@@ -196,6 +204,29 @@ const EsportsHub: React.FC = () => {
     setChatMessages([...chatMessages, newMessage]);
   };
 
+  // Show error state if there are critical failures
+  if (error && !liveMatches && !gridSeriesData && !riotAPIStatus) {
+    return (
+      <div className="container mx-auto px-4 py-6">
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="p-6 text-center">
+            <div className="text-6xl mb-4">🚧</div>
+            <h2 className="text-2xl font-bold text-red-800 mb-2">Esports Hub Temporarily Unavailable</h2>
+            <p className="text-red-600 mb-4">
+              We're experiencing technical difficulties. Our team is working to restore service.
+            </p>
+            <Button 
+              onClick={() => window.location.reload()} 
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       {/* Header */}
@@ -210,6 +241,11 @@ const EsportsHub: React.FC = () => {
         <p className="text-lg text-gray-600">
           Live esports betting with micro-bets, player props, and real-time chat
         </p>
+        {error && (
+          <div className="text-sm text-yellow-600 bg-yellow-50 p-2 rounded">
+            ⚠️ Some features may be limited due to API connectivity issues
+          </div>
+        )}
       </div>
 
       {/* Live Stats Bar */}

@@ -1,4 +1,8 @@
-# WeParlay.io - Complete Platform Guide
+# WeParlay Complete Platform Guide
+
+🤝 **Partner With Us**: [Business Proposal Portal](https://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/?partners=true)
+
+# WeParlay Complete Platform Guide
 
 ## 🤝 **PARTNERSHIP OPPORTUNITIES**
 **[👉 EXPLORE OUR INTERACTIVE PARTNERSHIP PORTAL](https://weparlay.io/?partners=true)**
