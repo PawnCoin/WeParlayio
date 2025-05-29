@@ -15,7 +15,7 @@ router.get('/riot/player/:summonerName', async (req, res) => {
     res.json(playerStats);
   } catch (error: any) {
     console.error('Riot player stats error:', error);
-    
+
     // Handle specific API errors
     if (error.message.includes('Rate limit')) {
       return res.status(429).json({ 
@@ -33,7 +33,7 @@ router.get('/riot/player/:summonerName', async (req, res) => {
         message: `Player "${summonerName}" not found in region "${region}".` 
       });
     }
-    
+
     res.status(500).json({ 
       error: 'Failed to fetch player stats',
       message: error.message 
@@ -124,7 +124,7 @@ router.get('/riot/match/:matchId', async (req, res) => {
 router.get('/api-status', async (req, res) => {
   try {
     const riotStatus = unifiedGamingAPI.getAPIStatus();
-    
+
     // Check all API configurations
     const apiStatus = {
       riot: {
@@ -171,11 +171,11 @@ router.get('/api-status', async (req, res) => {
 router.get('/riot/status', async (req, res) => {
   try {
     const status = unifiedGamingAPI.getAPIStatus();
-    
+
     // Add environment check
     const apiKeyConfigured = !!process.env.RIOT_API_KEY;
     const apiKeyLength = process.env.RIOT_API_KEY?.length || 0;
-    
+
     const responseData = {
       ...status,
       environment: {
@@ -187,7 +187,7 @@ router.get('/riot/status', async (req, res) => {
 
     // Debug log to see what's actually being returned
     console.log('🔍 Riot API Status Response:', JSON.stringify(responseData, null, 2));
-    
+
     res.json(responseData);
   } catch (error: any) {
     console.error('Riot API status error:', error);
@@ -205,18 +205,18 @@ router.get('/live-matches/:game?', async (req, res) => {
 
     // Try to get real live matches from APIs
     let liveMatches = [];
-    
+
     try {
       liveMatches = await unifiedGamingAPI.getEsportsMatches(game);
     } catch (apiError) {
       console.warn('Primary esports API failed, trying fallback:', apiError);
-      
+
       // Fallback to GRID API
       try {
         const { GridApiService } = await import('../services/gridApiService');
         const gridService = new GridApiService();
         const gridMatches = await gridService.getLiveMatches();
-        
+
         liveMatches = gridMatches.map((match: any) => ({
           id: match.id,
           game: match.tournament?.videogame?.name || 'Unknown',
@@ -399,23 +399,21 @@ router.use((req, res, next) => {
 });
 
 // New Riot API specific endpoints
-router.get('/riot/summoner/:summonerName/:region?', async (req, res) => {
+router.get('/riot/summoner/:summonerName/:region', async (req, res) => {
   try {
-    const { summonerName, region = 'na1' } = req.params;
-    
-    console.log(`🔍 Looking up summoner: ${summonerName} in region: ${region}`);
-    
-    const playerStats = await unifiedGamingAPI.getRiotPlayerStats(summonerName, region);
-    
-    console.log(`✅ Successfully fetched data for ${summonerName}`);
-    res.json(playerStats);
+    const { summonerName, region } = req.params;
+    console.log(`🔍 Riot API request: ${summonerName} in ${region}`);
+    console.log(`🔑 API Key configured: ${!!process.env.RIOT_API_KEY} (length: ${process.env.RIOT_API_KEY?.length || 0})`);
+
+    const summoner = await unifiedGamingAPI.getRiotPlayerStats(summonerName, region as string);
+    console.log(`✅ Riot API response received for ${summonerName}`);
+    res.json(summoner);
   } catch (error: any) {
-    console.error('❌ Error fetching Riot summoner:', error.message);
+    console.error('❌ Riot summoner error:', error.message);
     res.status(500).json({ 
-      error: 'Failed to fetch summoner data',
+      error: 'Failed to fetch summoner',
       message: error.message,
-      summonerName,
-      region 
+      details: error.toString()
     });
   }
 });
@@ -510,10 +508,10 @@ router.get('/grid/series', async (req, res) => {
   try {
     const { GridApiService } = await import('../services/gridApiService');
     const gridService = new GridApiService();
-    
+
     const limit = parseInt(req.query.limit as string) || 100;
     const allSeries = await gridService.getAllSeries(limit);
-    
+
     res.json({
       success: true,
       message: `GRID API: Esports series data (${allSeries.length} series shown)`,
@@ -531,7 +529,7 @@ router.get('/grid/series', async (req, res) => {
     });
   } catch (error: any) {
     console.error('🚨 GRID series fetch failed:', error.message);
-    
+
     res.json({
       success: false,
       message: 'GRID API series fetch failed',
@@ -547,10 +545,10 @@ router.get('/grid/matches/:game', async (req, res) => {
   try {
     const { GridApiService } = await import('../services/gridApiService');
     const gridService = new GridApiService();
-    
+
     const { game } = req.params;
     const matches = await gridService.getMatchesBySport(game);
-    
+
     res.json({
       success: true,
       message: `GRID API: ${game} matches`,
@@ -563,7 +561,7 @@ router.get('/grid/matches/:game', async (req, res) => {
     });
   } catch (error: any) {
     console.error(`🚨 GRID ${req.params.game} matches fetch failed:`, error.message);
-    
+
     res.json({
       success: false,
       message: 'GRID API matches fetch failed',
@@ -577,10 +575,10 @@ router.get('/grid/matches/:game', async (req, res) => {
 router.get('/riot/test-connection', async (req, res) => {
   try {
     console.log('🧪 Testing Riot API connection...');
-    
+
     // Try to fetch a well-known summoner
     const testSummoner = await unifiedGamingAPI.getSummonerByName('Faker', 'kr');
-    
+
     res.json({
       success: true,
       message: 'Riot API connection working!',
@@ -593,7 +591,7 @@ router.get('/riot/test-connection', async (req, res) => {
     });
   } catch (error: any) {
     console.error('🚨 Riot API test failed:', error.message);
-    
+
     res.json({
       success: false,
       message: 'Riot API test failed',
