@@ -249,6 +249,51 @@ const EsportsHub: React.FC = () => {
         </CardContent>
       </Card>
 
+      {/* API Status Debug Info */}
+      <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50 mb-4">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex items-center gap-2">
+            🔧 API Status Debug
+            <Badge className="bg-blue-600 text-white">Live Status</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+            <div className="text-center p-2 bg-white/50 rounded-lg">
+              <div className="font-bold text-lg text-green-600">
+                {riotAPIStatus?.environment?.apiKeyConfigured ? '✅' : '❌'}
+              </div>
+              <div className="text-gray-600">Riot API</div>
+            </div>
+            <div className="text-center p-2 bg-white/50 rounded-lg">
+              <div className="font-bold text-lg text-green-600">
+                {gridSeriesData?.success ? '✅' : '❌'}
+              </div>
+              <div className="text-gray-600">GRID API</div>
+            </div>
+            <div className="text-center p-2 bg-white/50 rounded-lg">
+              <div className="font-bold text-lg text-green-600">
+                {isConnected ? '✅' : '❌'}
+              </div>
+              <div className="text-gray-600">WebSocket</div>
+            </div>
+            <div className="text-center p-2 bg-white/50 rounded-lg">
+              <div className="font-bold text-lg text-green-600">
+                {liveMatches ? '✅' : '❌'}
+              </div>
+              <div className="text-gray-600">Live Data</div>
+            </div>
+          </div>
+          <div className="text-xs text-gray-600 mt-2">
+            {riotAPIStatus && (
+              <span>Riot API Key: {riotAPIStatus.environment?.apiKeyLength || 'Not configured'} | </span>
+            )}
+            WebSocket Status: {connectionStatus} | 
+            Grid Series: {gridSeriesData?.data?.series_count || 0} available
+          </div>
+        </CardContent>
+      </Card>
+
       {/* GRID API Coverage Display */}
       {gridSeriesData?.success && (
         <Card className="border-green-200 bg-gradient-to-r from-green-50 to-emerald-50">
