@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import Sidebar from "./Sidebar";
 import Footer from "./Footer";
+import SystemStatusIndicator from '../SystemStatusIndicator';
 import UnifiedBetSlip from "../betting/UnifiedBetSlip";
 import BetNotifications from "../notifications/BetNotifications";
 import { useAuth } from "@/hooks/useAuth";
@@ -367,14 +368,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <OddsTicker />
       {/* Footer */}
       <Footer />
-
-      {/* Business Proposal Modal */}
-      <BusinessProposalModal 
-        isOpen={isBusinessProposalOpen}
-        onClose={() => setIsBusinessProposalOpen(false)}
-      />
+      <SystemStatusIndicator />
     </div>
   );
-};
+}
 
 export default MainLayout;

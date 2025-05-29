@@ -7,6 +7,7 @@ import notificationRoutes from './routes/notificationRoutes';
 import websocketPollingRoutes from './routes/websocketPollingRoutes';
 import apiMonitoringRoutes from './routes/apiMonitoringRoutes';
 import apiHealthRoutes from './routes/apiHealthRoutes';
+import systemHealthRoutes from './routes/systemHealthRoutes';
 
 // Export app for production use
 export const app = express();
@@ -51,6 +52,7 @@ app.use((req, res, next) => {
   app.use('/api/websocket', websocketPollingRoutes);
   app.use('/api/monitoring', apiMonitoringRoutes);
   app.use('/api/health', apiHealthRoutes);
+  app.use('/api/system', systemHealthRoutes);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
