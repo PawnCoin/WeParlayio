@@ -27,7 +27,7 @@ export class RapidApiSportsService {
       });
 
       const data = await response.json();
-      
+
       if (!response.ok) {
         return { error: data.message || 'API request failed' };
       }
@@ -71,7 +71,7 @@ export class RapidApiSportsService {
   // Master feed aggregation from all available RapidAPI services
   async getUnifiedRapidAPIFeed(): Promise<any[]> {
     const allSportsData = [];
-    
+
     // Get all available services first
     const availableServices = await this.getAvailableServices();
     console.log(`🚀 Aggregating data from ${availableServices.length} available RapidAPI services`);
@@ -92,12 +92,12 @@ export class RapidApiSportsService {
 
     try {
       const results = await Promise.allSettled(dataPromises);
-      
+
       results.forEach((result, index) => {
         if (result.status === 'fulfilled' && result.value && result.value.length > 0) {
           const sportNames = ['NFL', 'NBA', 'Soccer', 'MLB', 'NHL', 'Live Scores', 'Tennis', 'Combat Sports', 'Motorsports', 'Esports'];
           console.log(`✅ ${sportNames[index]}: ${result.value.length} events`);
-          
+
           // Add source metadata to each event
           const enrichedData = result.value.map((event: any) => ({
             ...event,
@@ -106,14 +106,14 @@ export class RapidApiSportsService {
             feed_timestamp: new Date().toISOString(),
             api_source: `rapidapi_${sportNames[index].toLowerCase().replace(/\s+/g, '_')}`
           }));
-          
+
           allSportsData.push(...enrichedData);
         }
       });
 
       console.log(`🎯 UNIFIED RAPIDAPI FEED: ${allSportsData.length} total events from all subscribed APIs`);
       return allSportsData;
-      
+
     } catch (error) {
       console.error('Error aggregating RapidAPI feed:', error);
       return [];

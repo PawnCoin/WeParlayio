@@ -245,15 +245,30 @@ class WebSocketService {
     return `client_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
   }
 
-  public getStats(): { totalClients: number, subscriptions: any } {
+  public getStats(): { totalClients: number, subscriptions: any, apiHealth?: any } {
     const subscriptionStats: any = {};
     for (const [channel, clients] of this.subscriptions) {
       subscriptionStats[channel] = clients.size;
     }
 
+    // Check API health if available
+    let apiHealth = null;
+    try {
+      const { validateAPIConfiguration } = require('../config/apiConfiguration');
+      const validation = validateAPIConfiguration();
+      apiHealth = {
+        configured: validation.configured.length,
+        missing: validation.missing.length,
+        critical: validation.criticalFailure
+      };
+    } catch (error) {
+      console.warn('Could not check API health:', error.message);
+    }
+
     return {
       totalClients: this.clients.size,
-      subscriptions: subscriptionStats
+      subscriptions: subscriptionStats,
+      apiHealth
     };
   }
 

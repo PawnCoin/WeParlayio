@@ -115,18 +115,31 @@ export const REQUIRED_ENV_VARS = [
 export function validateAPIConfiguration() {
   const missing = [];
   const configured = [];
+  const warnings = [];
   
   for (const envVar of REQUIRED_ENV_VARS) {
     if (process.env[envVar]) {
       configured.push(envVar);
     } else {
       missing.push(envVar);
+      // Log which specific API will be affected
+      const affectedAPI = Object.entries(API_CONFIGS).find(([_, config]) => config.keyName === envVar);
+      if (affectedAPI) {
+        warnings.push(`${envVar} missing - ${affectedAPI[1].name} will not work`);
+      }
     }
+  }
+  
+  // Critical validation - halt if too many APIs are missing
+  if (missing.length > 3) {
+    console.error('🚨 CRITICAL: Too many API keys missing. Platform functionality severely limited.');
   }
   
   return {
     configured,
     missing,
-    allConfigured: missing.length === 0
+    warnings,
+    allConfigured: missing.length === 0,
+    criticalFailure: missing.length > 3
   };
 }
