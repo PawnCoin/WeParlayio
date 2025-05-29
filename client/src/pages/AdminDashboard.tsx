@@ -19,6 +19,24 @@ export default function AdminDashboard() {
   const { data: adminStatus } = useQuery({
     queryKey: ["/api/user/admin-status"],
     retry: false,
+    queryFn: async () => {
+      const token = localStorage.getItem('weparlay-admin-token');
+      if (!token) {
+        throw new Error('No admin token found');
+      }
+      
+      const response = await fetch('/api/user/admin-status', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to check admin status');
+      }
+      
+      return response.json();
+    }
   });
 
   // Create admin accounts mutation
