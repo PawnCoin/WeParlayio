@@ -295,15 +295,15 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
                         className="flex space-x-2"
                       >
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="real" id="currency-real" />
-                          <Label htmlFor="currency-real" className="flex items-center cursor-pointer">
+                          <RadioGroupItem value="real" id="h2h-currency-real" />
+                          <Label htmlFor="h2h-currency-real" className="flex items-center cursor-pointer">
                             <DollarSign className="h-4 w-4 mr-1 text-green-600" /> 
                             Real Money
                           </Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="virtual" id="currency-virtual" disabled />
-                          <Label htmlFor="currency-virtual" className="flex items-center cursor-pointer text-muted-foreground">
+                          <RadioGroupItem value="virtual" id="h2h-currency-virtual" disabled />
+                          <Label htmlFor="h2h-currency-virtual" className="flex items-center cursor-pointer text-muted-foreground">
                             <div className="h-4 w-4 mr-1 text-blue-500 font-bold">W</div>
                             WeParlay Cash
                             <Badge variant="outline" className="ml-2 text-xs">Head-to-Head Only</Badge>
@@ -375,12 +375,12 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
                             <h4 className="font-medium">Betting Options</h4>
                             <RadioGroup defaultValue="lakers" className="mt-2 space-y-2">
                               <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="lakers" id="lakers" />
-                                <Label htmlFor="lakers">Los Angeles Lakers to Win</Label>
+                                <RadioGroupItem value="lakers" id="h2h-bet-lakers" />
+                                <Label htmlFor="h2h-bet-lakers">Los Angeles Lakers to Win</Label>
                               </div>
                               <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="warriors" id="warriors" />
-                                <Label htmlFor="warriors">Golden State Warriors to Win</Label>
+                                <RadioGroupItem value="warriors" id="h2h-bet-warriors" />
+                                <Label htmlFor="h2h-bet-warriors">Golden State Warriors to Win</Label>
                               </div>
                             </RadioGroup>
                           </div>
@@ -433,22 +433,22 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
                         className="flex space-x-4"
                       >
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="email" id="contact-email" />
-                          <Label htmlFor="contact-email" className="flex items-center cursor-pointer">
+                          <RadioGroupItem value="email" id="h2h-contact-email" />
+                          <Label htmlFor="h2h-contact-email" className="flex items-center cursor-pointer">
                             <Mail className="h-4 w-4 mr-1" />
                             Email
                           </Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="phone" id="contact-phone" />
-                          <Label htmlFor="contact-phone" className="flex items-center cursor-pointer">
+                          <RadioGroupItem value="phone" id="h2h-contact-phone" />
+                          <Label htmlFor="h2h-contact-phone" className="flex items-center cursor-pointer">
                             <Phone className="h-4 w-4 mr-1" />
                             Phone
                           </Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="username" id="contact-username" />
-                          <Label htmlFor="contact-username" className="flex items-center cursor-pointer">
+                          <RadioGroupItem value="username" id="h2h-contact-username" />
+                          <Label htmlFor="h2h-contact-username" className="flex items-center cursor-pointer">
                             <Users className="h-4 w-4 mr-1" />
                             Username
                           </Label>
