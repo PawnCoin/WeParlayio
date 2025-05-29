@@ -344,7 +344,7 @@ const EsportsHub: React.FC = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     🔍 Real Player Lookup (Riot API)
-                    {riotAPIStatus?.configured ? (
+                    {riotAPIStatus?.environment?.apiKeyConfigured ? (
                       <Badge className="bg-green-500">API Connected</Badge>
                     ) : (
                       <Badge variant="destructive">API Not Configured</Badge>
