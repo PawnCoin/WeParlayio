@@ -3,6 +3,10 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { createSSLServer, getSSLConfig } from "./ssl";
 import { initializeWebSocketService } from "./services/websocketService";
+import {
+  notificationRoutes,
+  websocketPollingRoutes,
+} from './routes';
 
 // Export app for production use
 export const app = express();
@@ -42,6 +46,9 @@ app.use((req, res, next) => {
 
 (async () => {
   const appServer = await registerRoutes(app);
+
+  app.use('/api/notifications', notificationRoutes);
+  app.use('/api/websocket', websocketPollingRoutes);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
