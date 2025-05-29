@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Bell, BellOff, Check, AlertTriangle, Trophy, X } from "lucide-react";
+import { Bell, BellOff, Check, AlertTriangle, Trophy, X, CheckCircle, Clock, TrendingUp, Gift } from "lucide-react";
 
 interface BetNotification {
   id: string;
@@ -61,9 +61,9 @@ const BetNotifications: React.FC<BetNotificationsProps> = ({ userId }) => {
       console.log('This browser does not support desktop notifications');
       return;
     }
-    
+
     setPermissionState(Notification.permission);
-    
+
     // Load sample notifications
     setNotifications(sampleNotifications);
     updateUnreadCount(sampleNotifications);
@@ -89,16 +89,16 @@ const BetNotifications: React.FC<BetNotificationsProps> = ({ userId }) => {
     try {
       const permission = await Notification.requestPermission();
       setPermissionState(permission);
-      
+
       if (permission === 'granted') {
         setNotificationsEnabled(true);
-        
+
         // Send a test notification
         const notification = new Notification('Notifications Enabled', {
           body: 'You will now receive updates about your bets in real-time',
           icon: '/favicon.ico'
         });
-        
+
         toast({
           title: "Notifications Enabled",
           description: "You will now receive updates about your bets in real-time",
@@ -182,7 +182,7 @@ const BetNotifications: React.FC<BetNotificationsProps> = ({ userId }) => {
     const updatedNotifications = notifications.map(notification => 
       notification.id === id ? { ...notification, read: true } : notification
     );
-    
+
     setNotifications(updatedNotifications);
     updateUnreadCount(updatedNotifications);
   };
@@ -215,14 +215,14 @@ const BetNotifications: React.FC<BetNotificationsProps> = ({ userId }) => {
           <Bell className="h-6 w-6" /> : 
           <BellOff className="h-6 w-6" />
         }
-        
+
         {unreadCount > 0 && (
           <span className="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
             {unreadCount}
           </span>
         )}
       </button>
-      
+
       {/* Notification center dropdown */}
       {showNotificationCenter && (
         <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto bg-white dark:bg-gray-900 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50">
@@ -239,7 +239,7 @@ const BetNotifications: React.FC<BetNotificationsProps> = ({ userId }) => {
               />
             </div>
           </div>
-          
+
           {permissionState !== 'granted' && !notificationsEnabled && (
             <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border-b border-blue-100 dark:border-blue-800">
               <p className="text-sm text-blue-800 dark:text-blue-200">
@@ -255,7 +255,7 @@ const BetNotifications: React.FC<BetNotificationsProps> = ({ userId }) => {
               </Button>
             </div>
           )}
-          
+
           {notifications.length === 0 ? (
             <div className="p-6 text-center">
               <p className="text-gray-500 dark:text-gray-400">No notifications yet</p>
@@ -298,7 +298,7 @@ const BetNotifications: React.FC<BetNotificationsProps> = ({ userId }) => {
               ))}
             </div>
           )}
-          
+
           {notifications.length > 0 && notificationsEnabled && (
             <div className="p-2 border-t border-gray-200 dark:border-gray-700">
               <Button 

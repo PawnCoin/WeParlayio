@@ -236,11 +236,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                     </DropdownMenuContent>
                   </DropdownMenu>
 
-                  {/* Betting Notifications */}
-                  <BetNotifications userId={user?.id} />
-
-                  {/* Wallet Notifications */}
-                  <WalletNotifications />
+                  {/* Unified Notifications - Combined Betting & Wallet */}
+                  <BetNotifications userId={user?.id} showWalletNotifications={true} />
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

@@ -258,29 +258,15 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
           </li>
 
           <li>
-            <Link href="/wallet-management">
+            <Link href="/esports-hub">
               <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
-                location === '/wallet-management' 
+                location === '/esports-hub' 
                   ? "bg-primary text-white" 
-                  : "bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/40 dark:hover:to-indigo-900/40"
+                  : "bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 hover:from-indigo-100 hover:to-purple-100 dark:hover:from-indigo-900/40 dark:hover:to-purple-900/40"
               }`}>
-                <Wallet className="h-5 w-5 mr-3 text-blue-600" />
-                <span className="text-blue-700 dark:text-blue-300 font-medium">Wallet Management</span>
-                <span className="ml-2 text-[10px] font-bold py-0.5 px-1.5 bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200 rounded-full">NEW</span>
-              </div>
-            </Link>
-          </li>
-
-          <li>
-            <Link href="/crypto-information">
-              <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
-                location === '/crypto-information' 
-                  ? "bg-primary text-white" 
-                  : "bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 hover:from-purple-100 hover:to-indigo-100 dark:hover:from-purple-900/40 dark:hover:to-indigo-900/40"
-              }`}>
-                <CreditCard className="h-5 w-5 mr-3 text-purple-600" />
-                <span className="text-purple-700 dark:text-purple-300 font-medium">Crypto Guide</span>
-                <span className="ml-2 text-[10px] font-bold py-0.5 px-1.5 bg-purple-200 dark:bg-purple-800 text-purple-800 dark:text-purple-200 rounded-full">NEW</span>
+                <MdSportsEsports className="h-5 w-5 mr-3 text-indigo-600" />
+                <span className="text-indigo-700 dark:text-indigo-300 font-medium">Esports Hub</span>
+                <span className="ml-2 text-[10px] font-bold py-0.5 px-1.5 bg-indigo-200 dark:bg-indigo-800 text-indigo-800 dark:text-indigo-200 rounded-full">HOT</span>
               </div>
             </Link>
           </li>
@@ -309,6 +295,20 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                 <Crown className="h-5 w-5 mr-3 text-amber-500" />
                 <span className="text-amber-700 dark:text-amber-300 font-medium">VIP Features</span>
                 <span className="ml-2 text-[10px] font-bold py-0.5 px-1.5 bg-amber-200 dark:bg-amber-800 text-amber-800 dark:text-amber-200 rounded-full">NEW</span>
+              </div>
+            </Link>
+          </li>
+
+          <li>
+            <Link href="/crypto-information">
+              <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
+                location === '/crypto-information' 
+                  ? "bg-primary text-white" 
+                  : "bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 hover:from-purple-100 hover:to-indigo-100 dark:hover:from-purple-900/40 dark:hover:to-indigo-900/40"
+              }`}>
+                <CreditCard className="h-5 w-5 mr-3 text-purple-600" />
+                <span className="text-purple-700 dark:text-purple-300 font-medium">Crypto Guide</span>
+                <span className="ml-2 text-[10px] font-bold py-0.5 px-1.5 bg-purple-200 dark:bg-purple-800 text-purple-800 dark:text-purple-200 rounded-full">NEW</span>
               </div>
             </Link>
           </li>
