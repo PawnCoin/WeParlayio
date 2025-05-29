@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ThemeContext, Theme } from "./theme";
+import { ThemeContext, Theme, PROFESSIONAL_COLORS } from "./theme";
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -23,10 +23,20 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
     if (typeof window !== 'undefined') {
       localStorage.setItem("theme", theme);
       
+      const root = document.documentElement;
+      
       if (theme === "dark") {
-        document.documentElement.classList.add("dark");
+        root.classList.add("dark");
+        // Apply dark mode CSS variables
+        Object.entries(PROFESSIONAL_COLORS.dark).forEach(([key, value]) => {
+          root.style.setProperty(`--${key}`, value);
+        });
       } else {
-        document.documentElement.classList.remove("dark");
+        root.classList.remove("dark");
+        // Apply light mode CSS variables
+        Object.entries(PROFESSIONAL_COLORS.light).forEach(([key, value]) => {
+          root.style.setProperty(`--${key}`, value);
+        });
       }
     }
   }, [theme]);

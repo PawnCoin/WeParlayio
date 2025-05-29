@@ -50,7 +50,7 @@ interface LiveMatch {
     team2Win: number;
     nextKill?: { team1: number; team2: number };
     nextRound?: { team1: number; team2: number };
-  };
+    };
   streaming: {
     platform: string;
     url: string;

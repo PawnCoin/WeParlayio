@@ -97,6 +97,62 @@ export function generateThemeColorPalette(primaryColor: string) {
   };
 }
 
+// Professional contrast validation (WCAG AA requires 4.5:1 for normal text, 3:1 for large text)
+export function validateProfessionalContrast(foreground: string, background: string): {
+  ratio: number;
+  isAccessible: boolean;
+  level: 'AAA' | 'AA' | 'Fail';
+} {
+  const ratio = getContrastRatio(foreground, background);
+  
+  return {
+    ratio,
+    isAccessible: ratio >= 4.5,
+    level: ratio >= 7 ? 'AAA' : ratio >= 4.5 ? 'AA' : 'Fail'
+  };
+}
+
+// Generate professional color palette with guaranteed contrast
+export function generateProfessionalPalette(primaryColor: string, isDarkMode: boolean) {
+  const primaryL = getLuminance(primaryColor);
+  
+  if (isDarkMode) {
+    return {
+      background: "#0f172a",
+      foreground: "#f8fafc",
+      card: "#1e293b", 
+      cardForeground: "#f1f5f9",
+      primary: primaryL < 0.4 ? adjustBrightness(primaryColor, 40) : primaryColor,
+      primaryForeground: "#ffffff",
+      secondary: "#334155",
+      secondaryForeground: "#f1f5f9",
+      muted: "#334155",
+      mutedForeground: "#94a3b8",
+      accent: "#475569",
+      accentForeground: "#f1f5f9",
+      border: "#334155",
+      input: "#334155",
+    };
+  } else {
+    return {
+      background: "#ffffff",
+      foreground: "#1a1a1a",
+      card: "#f8fafc",
+      cardForeground: "#1e293b", 
+      primary: primaryL > 0.6 ? adjustBrightness(primaryColor, -40) : primaryColor,
+      primaryForeground: "#ffffff",
+      secondary: "#f1f5f9",
+      secondaryForeground: "#334155",
+      muted: "#f1f5f9",
+      mutedForeground: "#64748b",
+      accent: "#e2e8f0", 
+      accentForeground: "#1e293b",
+      border: "#e2e8f0",
+      input: "#e2e8f0",
+    };
+  }
+}
+
 // This function can be used when creating component-specific overrides
 export function generateComponentContrastColors(baseColor: string, isDarkMode: boolean) {
   const baseL = getLuminance(baseColor);

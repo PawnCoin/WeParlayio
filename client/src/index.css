@@ -1,399 +1,185 @@
-@import url('./lib/tailwind-fixes.css');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Odds Ticker Animation */
-@keyframes ticker {
-  0% {
-    transform: translateX(100%);
-  }
-  100% {
-    transform: translateX(-100%);
-  }
-}
-
-.animate-ticker {
-  animation: ticker 120s linear infinite;
-}
-
-/* WeParlay masculine color scheme - Blue, Green, Orange */
 :root {
-  --primary: #2563eb;     /* WeParlay Blue */
-  --primary-dark: #1d4ed8;
-  --primary-light: #60a5fa;
-  --secondary: #16a34a;   /* WeParlay Green */
-  --secondary-dark: #15803d;
-  --secondary-light: #22c55e;
-  --accent: #ea580c;      /* WeParlay Orange */
-  --accent-dark: #c2410c;
-  --accent-light: #fb923c;
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --muted: #e5e7eb;
-  --muted-foreground: #6b7280;
-  --card: #ffffff;
-  --card-foreground: #1f2937;
-  --border: #d1d5db;
-  --input: #d1d5db;
-  --ring: #9ca3af;
+  /* Professional Light Mode Colors */
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+  --card: #f8fafc;
+  --card-foreground: #1e293b;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #334155;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #e2e8f0;
+  --accent-foreground: #1e293b;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #2563eb;
   --radius: 0.5rem;
+
+  /* Sidebar colors */
+  --sidebar-background: var(--card);
+  --sidebar-foreground: var(--card-foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+
+  /* Chart colors */
+  --chart-1: #2563eb;
+  --chart-2: #16a34a;
+  --chart-3: #dc2626;
+  --chart-4: #ca8a04;
+  --chart-5: #7c3aed;
 }
 
 .dark {
-  --primary: #3b82f6;        /* WeParlay Blue Dark */
-  --primary-dark: #2563eb;
-  --primary-light: #60a5fa;
-  --secondary: #16a34a;      /* WeParlay Green Dark */
-  --secondary-dark: #15803d;
-  --secondary-light: #22c55e;
-  --accent: #ea580c;         /* WeParlay Orange Dark */
-  --accent-dark: #c2410c;
-  --accent-light: #fb923c;
+  /* Professional Dark Mode Colors */
   --background: #0f172a;
   --foreground: #f8fafc;
-  --muted: #374151;
-  --muted-foreground: #9ca3af;
-  --card: #1f2937;
-  --card-foreground: #f9fafb;
-  --border: #4b5563;
-  --input: #4b5563;
-  --ring: #9ca3af;
+  --card: #1e293b;
+  --card-foreground: #f1f5f9;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #334155;
+  --secondary-foreground: #f1f5f9;
+  --muted: #334155;
+  --muted-foreground: #94a3b8;
+  --accent: #475569;
+  --accent-foreground: #f1f5f9;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #334155;
+  --input: #334155;
+  --ring: #3b82f6;
+
+  /* Dark mode chart colors */
+  --chart-1: #60a5fa;
+  --chart-2: #4ade80;
+  --chart-3: #f87171;
+  --chart-4: #facc15;
+  --chart-5: #a78bfa;
 }
 
-/* Fix for text color contrast issues */
+* {
+  border-color: var(--border);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Enhanced focus states for accessibility */
+*:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Professional button enhancements */
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border: 1px solid var(--primary);
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+}
+
+.btn-secondary {
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+}
+
+/* Professional card styling */
+.card {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Text contrast optimization */
 .text-primary {
   color: var(--primary);
 }
 
-.bg-primary {
-  background-color: hsl(var(--primary));
-}
-
 .text-secondary {
-  color: var(--secondary);
+  color: var(--muted-foreground);
 }
 
-.bg-secondary {
-  background-color: var(--secondary);
+.text-muted {
+  color: var(--muted-foreground);
 }
 
-/* Make sure text has proper contrast */
-.card, .card-header, .card-content, .card-footer {
-  color: var(--card-foreground);
-}
-
-/* Dark mode adjustments */
-.dark .card,
-.dark .card-header,
-.dark .card-content,
-.dark .card-footer {
-  color: var(--card-foreground);
-}
-
-/* Ensure all text inputs have proper contrast */
-input, select, textarea {
-  color: var(--foreground);
+/* Professional input styling */
+input, textarea, select {
   background-color: var(--background);
-}
-
-.dark input, 
-.dark select, 
-.dark textarea {
-  color: var(--foreground);
-  background-color: var(--muted);
-}
-
-/* Ensure buttons have proper text contrast */
-button, 
-.btn, 
-[type="button"], 
-[type="submit"] {
-  color: white;
-}
-
-/* WeParlay Color Overrides - Remove ALL purple, pink, red */
-.text-purple-600,
-.text-purple-500,
-.text-purple-700,
-.text-pink-600,
-.text-pink-500,
-.text-pink-700,
-.text-red-600,
-.text-red-500,
-.text-red-700 {
-  color: var(--primary) !important;
-}
-
-.bg-purple-600,
-.bg-purple-500,
-.bg-purple-700,
-.bg-pink-600,
-.bg-pink-500,
-.bg-pink-700,
-.bg-red-600,
-.bg-red-500,
-.bg-red-700 {
-  background-color: var(--primary) !important;
-}
-
-.border-purple-600,
-.border-purple-500,
-.border-purple-700,
-.border-pink-600,
-.border-pink-500,
-.border-pink-700,
-.border-red-600,
-.border-red-500,
-.border-red-700 {
-  border-color: var(--primary) !important;
-}
-
-/* Force gradient backgrounds to use WeParlay colors */
-.bg-gradient-to-r {
-  background: linear-gradient(to right, var(--primary), var(--secondary)) !important;
-}
-
-.bg-gradient-to-br {
-  background: linear-gradient(to bottom right, var(--primary), var(--secondary)) !important;
-}
-
-.from-purple-50,
-.from-pink-50,
-.from-red-50 {
-  --tw-gradient-from: #dbeafe !important;
-}
-
-.to-purple-50,
-.to-pink-50,
-.to-red-50 {
-  --tw-gradient-to: #dcfce7 !important;
-}
-
-/* Override any purple/pink/red hover states */
-.hover\:bg-purple-50:hover,
-.hover\:bg-pink-50:hover,
-.hover\:bg-red-50:hover {
-  background-color: #dbeafe !important;
-}
-
-.hover\:text-purple-600:hover,
-.hover\:text-pink-600:hover,
-.hover\:text-red-600:hover {
-  color: var(--primary) !important;
-}
-
-/* WeParlay logo styling */
-.weparlay-logo {
-  font-weight: bold;
-  font-size: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.weparlay-logo span:first-child {
-  color: var(--primary);
-}
-
-.weparlay-logo span:last-child {
-  color: var(--secondary);
-}
-
-/* Enhanced table styling for better readability */
-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-}
-
-th {
-  text-align: left;
-  font-weight: 600;
-  padding: 0.75rem;
-}
-
-td {
-  padding: 0.75rem;
-  border-top: 1px solid var(--border);
-}
-
-/* Ensure proper contrast in tab interfaces */
-.tabs-trigger {
-  color: var(--muted-foreground);
-}
-
-.tabs-trigger[data-state="active"] {
+  border: 1px solid var(--border);
   color: var(--foreground);
 }
 
-.dark .tabs-trigger {
-  color: var(--muted-foreground);
+input:focus, textarea:focus, select:focus {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
 }
 
-.dark .tabs-trigger[data-state="active"] {
-  color: var(--foreground);
+/* Dark mode specific improvements */
+.dark input, .dark textarea, .dark select {
+  background-color: var(--card);
 }
 
-:root {
-  /* WeParlay.io color scheme based on logo */
-  --background: 0 0% 100%;
-  --foreground: 0 0% 0%; /* Black text in light mode */
-  --muted: 210 20% 96%; 
-  --muted-foreground: 0 0% 40%; /* Darker muted text for better contrast */
-  --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 0%; /* Black text in popovers */
-  --card: 0 0% 100%;
-  --card-foreground: 0 0% 0%; /* Black text in cards */
-  --border: 214 32% 90%;
-  --input: 214 32% 90%;
-  --primary: 220 93% 53%; /* Blue from WeParlay logo - #2563eb */
-  --primary-foreground: 0 0% 100%;
-  --secondary: 142 70% 25%; /* Green from WeParlay shield */
-  --secondary-foreground: 0 0% 100%;
-  --accent: 30 100% 50%; /* Orange from WeParlay text */
-  --accent-foreground: 0 0% 100%;
-  --success: 142 72% 29%; /* Success green */
-  --success-foreground: 0 0% 100%;
-  --destructive: 0 85% 44%;
-  --destructive-foreground: 0 0% 100%;
-  --ring: 240 70% 40%;
-  --radius: 0.5rem;
-
-  /* Chart colors based on the WeParlay palette */
-  --chart-1: 240 70% 40%; /* Blue */
-  --chart-2: 142 70% 25%; /* Green */
-  --chart-3: 30 100% 50%; /* Orange */
-  --chart-4: 240 70% 60%; /* Lighter Blue */
-  --chart-5: 142 70% 40%; /* Lighter Green */
-}
-
-.dark {
-  --background: 222 47% 11%;
-  --foreground: 0 0% 98%;
-  --muted: 223 30% 20%;
-  --muted-foreground: 215 25% 65%;
-  --popover: 222 47% 11%;
-  --popover-foreground: 0 0% 98%;
-  --card: 222 47% 11%;
-  --card-foreground: 0 0% 98%;
-  --border: 223 30% 20%;
-  --input: 223 30% 20%;
-  --primary: 220 93% 53%; /* Blue for dark mode - #2563eb */
-  --primary-foreground: 0 0% 100%;
-  --secondary: 142 70% 35%; /* Brighter Green for dark mode */
-  --secondary-foreground: 0 0% 100%;
-  --accent: 30 100% 60%; /* Brighter Orange for dark mode */
-  --accent-foreground: 0 0% 100%;
-  --success: 142 72% 40%; /* Brighter Success green for dark mode */
-  --success-foreground: 0 0% 100%;
-  --destructive: 0 85% 60%;
-  --destructive-foreground: 0 0% 100%;
-  --ring: 240 70% 55%;
-  --radius: 0.5rem;
-
-  /* Chart colors for dark mode */
-  --chart-1: 240 70% 55%; /* Blue */
-  --chart-2: 142 70% 35%; /* Green */
-  --chart-3: 30 100% 60%; /* Orange */
-  --chart-4: 240 70% 75%; /* Lighter Blue */
-  --chart-5: 142 70% 55%; /* Lighter Green */
-}
-
-@layer base {
-  * {
-    @apply border-border;
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --foreground: #000000;
+    --background: #ffffff;
+    --border: #000000;
   }
 
-  body {
-    @apply font-sans antialiased bg-background text-foreground;
+  .dark {
+    --foreground: #ffffff;
+    --background: #000000;
+    --border: #ffffff;
   }
 }
 
-/* Mobile-friendly bet slip styles */
-.betting-slip-container {
-  position: sticky;
-  bottom: 0;
-  z-index: 50;
-  max-height: 300px;
-  overflow-y: auto;
-  border-top-left-radius: 0.75rem;
-  border-top-right-radius: 0.75rem;
-  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-.dark .betting-slip-container {
-  background-color: #0f172a !important; /* Darker slate background for dark mode */
-  color: white !important;
-}
-
-.dark .betting-slip-container * {
-  background-color: transparent;
-}
-
-.dark .betting-slip-container .card-content {
-  background-color: #0f172a !important; 
-}
-
-.dark .betting-slip-container input[type="number"],
-.dark .betting-slip-container input[type="text"] {
-  background-color: #1e293b !important;
-  color: white !important;
-  border-color: #334155 !important;
-}
-
-/* When in mobile view, make the bet slip more compact */
-@media (max-width: 768px) {
-  .betting-slip-container {
-    max-height: 250px;
-    border-radius: 0.75rem 0.75rem 0 0;
-    margin-left: -1rem;
-    margin-right: -1rem;
-    width: calc(100% + 2rem);
-  }
-
-  /* Add a collapsible toggle for mobile */
-  .betting-slip-container .card-header {
-    cursor: pointer;
-  }
-
-  /* Adjust layout for mobile */
-  .betting-layout {
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* Make sure the betting content is not blocked by the slip */
-  .betting-content {
-    padding-bottom: 60px;
-  }
-}
-
-/* Desktop layout */
-@media (min-width: 769px) {
-  .betting-slip-container {
-    position: relative;
-    max-height: none;
-  }
-
-  /* For desktop we use a more traditional layout */
-  .betting-layout {
-    display: grid;
-    grid-template-columns: 200px 1fr 300px;
-    gap: 1rem;
-  }
-
-  .sports-sidebar {
-    position: sticky;
-    top: 100px;
-    height: calc(100vh - 150px);
-    overflow-y: auto;
-  }
-
-  .betting-sidebar {
-    position: sticky;
-    top: 100px;
-    height: calc(100vh - 150px);
-    overflow-y: auto;
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
