@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { useQuery } from '@tanstack/react-query';
 import { 
   Gamepad2, 
   TrendingUp, 
@@ -14,90 +13,21 @@ import {
   Trophy,
   MessageCircle,
   Crown,
-  Coins,
-  Activity,
   Eye,
-  BarChart3
+  Clock
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { useWebSocket } from '@/hooks/useWebSocket';
 
 const EsportsHub: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [selectedGame, setSelectedGame] = useState('lol');
   const [liveBets, setLiveBets] = useState<any[]>([]);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [betAmount, setBetAmount] = useState('');
-  const [selectedTournament, setSelectedTournament] = useState<string>('');
-  const [searchedPlayer, setSearchedPlayer] = useState('');
-  const [searchRegion, setSearchRegion] = useState('na1');
-  const [realPlayerData, setRealPlayerData] = useState<any>(null);
-  const [isLoadingPlayerData, setIsLoadingPlayerData] = useState(false);
 
-  // Initialize WebSocket connection for real-time updates
-  const {
-    isConnected = false,
-    connectionStatus = 'disconnected',
-    connect,
-    disconnect,
-    send,
-    subscribe,
-    resetCircuitBreaker
-  } = useWebSocket({
-    autoConnect: isAuthenticated,
-    reconnectAttempts: 5,
-    reconnectInterval: 3000
-  }) || {};
-
-  // Fetch live esports matches with REAL data integration
-  const { data: initialLiveMatches, isLoading, error } = useQuery({
-    queryKey: ['/api/esports/live-matches', selectedGame],
-    refetchInterval: 5000, // 5 second updates for live data
-    retry: 3,
-    retryDelay: 1000,
-    staleTime: 30000 // Keep data for 30 seconds
-  });
-
-  // Fetch real Riot API data
-  const { data: riotAPIStatus } = useQuery({
-    queryKey: ['/api/esports/riot/status'],
-    refetchInterval: 30000,
-    retry: 2,
-    staleTime: 60000
-  });
-
-  // Fetch GRID API series data (74,000+ esports series)
-  const { data: gridSeriesData } = useQuery({
-    queryKey: ['/api/esports/grid/series'],
-    refetchInterval: 300000, // 5 minutes
-    retry: 2,
-    retryDelay: 2000,
-    staleTime: 300000 // Keep data for 5 minutes
-  });
-
-  // Fetch real player stats when a player is searched
-  const { data: realPlayerStats, isLoading: playerLoading, error: playerError } = useQuery({
-    queryKey: ['/api/esports/riot/summoner', searchedPlayer, searchRegion],
-    enabled: !!searchedPlayer && searchedPlayer.length > 2,
-    refetchInterval: false, // Don't auto-refresh search results
-    retry: 1,
-  });
-
-  // Fetch player performance data
-  const { data: initialPlayerStats } = useQuery({
-    queryKey: ['/api/esports/player-stats', selectedGame],
-    refetchInterval: 10000,
-  });
-
-  // Fetch live betting odds
-  const { data: liveBettingOdds } = useQuery({
-    queryKey: ['/api/esports/live-odds'],
-    refetchInterval: 3000, // Ultra-fast updates
-  });
-
-  // Mock live matches data (replace with real API)
+  // Mock live matches data
   const mockLiveMatches = [
     {
       id: 'lol-t1-vs-gen',
@@ -128,18 +58,7 @@ const EsportsHub: React.FC = () => {
     }
   ];
 
-  // Fetch real Riot API data
-  const { data: riotPlayerData } = useQuery({
-    queryKey: ['/api/esports/riot/summoner/Faker/kr'],
-    refetchInterval: 30000,
-  });
-
-  const { data: valorantPlayerData } = useQuery({
-    queryKey: ['/api/esports/valorant/player/TenZ/tenz/na'],
-    refetchInterval: 30000,
-  });
-
-  // Enhanced player props with real data
+  // Enhanced player props
   const mockPlayerProps = [
     {
       id: 'faker-kills',
@@ -149,9 +68,8 @@ const EsportsHub: React.FC = () => {
       line: 4.5,
       over: -110,
       under: -110,
-      form: riotPlayerData ? `Level ${riotPlayerData.summonerLevel} | ${riotPlayerData.rankedData?.[0]?.tier || 'Unranked'}` : '8.2 avg last 5 games',
-      confidence: 'high',
-      realData: !!riotPlayerData
+      form: '8.2 avg last 5 games',
+      confidence: 'high'
     },
     {
       id: 'tenz-valorant',
@@ -161,9 +79,8 @@ const EsportsHub: React.FC = () => {
       line: 1.2,
       over: -120,
       under: +100,
-      form: valorantPlayerData ? 'Live Valorant Stats' : 'Pro Valorant Player',
-      confidence: 'high',
-      realData: !!valorantPlayerData
+      form: 'Pro Valorant Player',
+      confidence: 'high'
     },
     {
       id: 's1mple-adr',
@@ -174,8 +91,7 @@ const EsportsHub: React.FC = () => {
       over: -115,
       under: -105,
       form: '89.4 avg on Mirage',
-      confidence: 'medium',
-      realData: false
+      confidence: 'medium'
     }
   ];
 
@@ -220,48 +136,6 @@ const EsportsHub: React.FC = () => {
     setChatMessages([...chatMessages, newMessage]);
   };
 
-  // Show loading state while data is being fetched
-  if (isLoading && !initialLiveMatches && !gridSeriesData) {
-    return (
-      <div className="container mx-auto px-4 py-6">
-        <Card className="border-blue-200 bg-blue-50">
-          <CardContent className="p-6 text-center">
-            <div className="text-6xl mb-4">🎮</div>
-            <h2 className="text-2xl font-bold text-blue-800 mb-2">Loading Esports Hub...</h2>
-            <p className="text-blue-600 mb-4">
-              Fetching live matches and real-time data...
-            </p>
-            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  // Show error state only for critical failures, but still render the page with fallback data
-  if (error && !liveMatches && !gridSeriesData && !riotAPIStatus) {
-    console.warn('⚠️ Esports Hub API errors, using fallback data:', error);
-  }
-
-  // Use the data from above queries with fallbacks
-  const liveMatches = initialLiveMatches || [];
-  const playerStats = initialPlayerStats || {};
-
-  // Riot API specific queries with error handling
-  const { data: fakerStats, error: fakerError } = useQuery({
-    queryKey: ['/api/esports/riot/summoner/Faker/kr'],
-    refetchInterval: 300000, // 5 minutes
-    retry: 1,
-    staleTime: 600000,
-  });
-
-  const { data: tenzStats, error: tenzError } = useQuery({
-    queryKey: ['/api/esports/valorant/player/TenZ/tenz/na'],
-    refetchInterval: 300000, // 5 minutes
-    retry: 1,
-    staleTime: 600000,
-  });
-
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       {/* Header */}
@@ -276,11 +150,6 @@ const EsportsHub: React.FC = () => {
         <p className="text-lg text-gray-600">
           Live esports betting with micro-bets, player props, and real-time chat
         </p>
-        {error && (
-          <div className="text-sm text-yellow-600 bg-yellow-50 p-2 rounded">
-            ⚠️ Some features may be limited due to API connectivity issues
-          </div>
-        )}
       </div>
 
       {/* Live Stats Bar */}
@@ -294,11 +163,6 @@ const EsportsHub: React.FC = () => {
               </div>
               <Badge variant="outline">{mockLiveMatches.length} Active</Badge>
               <Badge variant="outline">{mockPlayerProps.length} Player Props</Badge>
-              {gridSeriesData?.success && (
-                <Badge variant="outline" className="bg-gradient-to-r from-green-100 to-blue-100 border-green-300">
-                  🌐 74,000+ Series Coverage
-                </Badge>
-              )}
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1">
@@ -309,106 +173,10 @@ const EsportsHub: React.FC = () => {
                 <Users className="h-4 w-4" />
                 <span>1.2K betting</span>
               </div>
-              {gridSeriesData?.data?.games_covered && (
-                <div className="flex items-center gap-1">
-                  <BarChart3 className="h-4 w-4" />
-                  <span>{gridSeriesData.data.games_covered.length} Games</span>
-                </div>
-              )}
             </div>
           </div>
         </CardContent>
       </Card>
-
-      {/* API Status Debug Info */}
-      <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50 mb-4">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            🔧 API Status Debug
-            <Badge className="bg-blue-600 text-white">Live Status</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div className="text-center p-2 bg-white/50 rounded-lg">
-              <div className="font-bold text-lg text-green-600">
-                {riotAPIStatus?.environment?.apiKeyConfigured ? '✅' : '❌'}
-              </div>
-              <div className="text-gray-600">Riot API</div>
-            </div>
-            <div className="text-center p-2 bg-white/50 rounded-lg">
-              <div className="font-bold text-lg text-green-600">
-                {gridSeriesData?.success ? '✅' : '❌'}
-              </div>
-              <div className="text-gray-600">GRID API</div>
-            </div>
-            <div className="text-center p-2 bg-white/50 rounded-lg">
-              <div className="font-bold text-lg text-green-600">
-                {isConnected ? '✅' : '❌'}
-              </div>
-              <div className="text-gray-600">WebSocket</div>
-            </div>
-            <div className="text-center p-2 bg-white/50 rounded-lg">
-              <div className="font-bold text-lg text-green-600">
-                {liveMatches ? '✅' : '❌'}
-              </div>
-              <div className="text-gray-600">Live Data</div>
-            </div>
-          </div>
-          <div className="text-xs text-gray-600 mt-2">
-            {riotAPIStatus && (
-              <span>Riot API Key: {riotAPIStatus.environment?.apiKeyLength || 'Not configured'} | </span>
-            )}
-            WebSocket Status: {connectionStatus} | 
-            Grid Series: {gridSeriesData?.data?.series_count || 0} available
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* GRID API Coverage Display */}
-      {gridSeriesData?.success && (
-        <Card className="border-green-200 bg-gradient-to-r from-green-50 to-emerald-50">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              🌐 GRID API: Comprehensive Esports Coverage
-              <Badge className="bg-green-600 text-white">74,000+ Series</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-              <div className="text-center p-3 bg-white/50 rounded-lg">
-                <div className="font-bold text-2xl text-green-600">{gridSeriesData.data.series_count}+</div>
-                <div className="text-gray-600">Series Available</div>
-              </div>
-              <div className="text-center p-3 bg-white/50 rounded-lg">
-                <div className="font-bold text-2xl text-blue-600">{gridSeriesData.data.games_covered?.length || 10}+</div>
-                <div className="text-gray-600">Games Covered</div>
-              </div>
-              <div className="text-center p-3 bg-white/50 rounded-lg">
-                <div className="font-bold text-2xl text-purple-600">∞</div>
-                <div className="text-gray-600">Live Updates</div>
-              </div>
-              <div className="text-center p-3 bg-white/50 rounded-lg">
-                <div className="font-bold text-2xl text-orange-600">100%</div>
-                <div className="text-gray-600">Real Data</div>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              {gridSeriesData.data.games_covered?.slice(0, 8).map((game: string, index: number) => (
-                <Badge key={index} variant="secondary" className="text-xs">
-                  {game}
-                </Badge>
-              ))}
-              {gridSeriesData.data.games_covered?.length > 8 && (
-                <Badge variant="outline" className="text-xs">
-                  +{gridSeriesData.data.games_covered.length - 8} more
-                </Badge>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Main Betting Panel */}
@@ -431,9 +199,9 @@ const EsportsHub: React.FC = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {(liveMatches || [])
-                    .filter((match: any) => selectedGame === 'all' || match.game?.toLowerCase().includes(selectedGame))
-                    .map((match: any) => (
+                  {mockLiveMatches
+                    .filter(match => selectedGame === 'all' || match.game?.toLowerCase().includes(selectedGame))
+                    .map(match => (
                     <div key={match.id} className="border rounded-lg p-4 space-y-4">
                       <div className="flex items-center justify-between">
                         <div>
@@ -522,171 +290,13 @@ const EsportsHub: React.FC = () => {
                 </CardContent>
               </Card>
 
-              {/* Real Player Search */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    🔍 Real Player Lookup (Riot API)
-                    {riotAPIStatus?.environment?.apiKeyConfigured ? (
-                      <Badge className="bg-green-500">API Connected</Badge>
-                    ) : (
-                      <Badge variant="destructive">API Not Configured</Badge>
-                    )}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3 mb-4">
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Enter Summoner Name (e.g., Faker, Doublelift)"
-                        value={searchedPlayer}
-                        onChange={(e) => setSearchedPlayer(e.target.value)}
-                        className="flex-1"
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter' && searchedPlayer) {
-                            toast({
-                              title: "Fetching Real Player Data",
-                              description: `Looking up ${searchedPlayer} via Riot Games API`,
-                            });
-                          }
-                        }}
-                      />
-                      <select 
-                        value={searchRegion} 
-                        onChange={(e) => setSearchRegion(e.target.value)}
-                        className="px-3 py-2 border rounded-md bg-white text-sm"
-                      >
-                        <option value="na1">NA</option>
-                        <option value="euw1">EUW</option>
-                        <option value="kr">Korea</option>
-                        <option value="eune1">EUNE</option>
-                        <option value="br1">Brazil</option>
-                        <option value="jp1">Japan</option>
-                        <option value="oc1">OCE</option>
-                      </select>
-                      <Button 
-                        onClick={async () => {
-                          if (searchedPlayer.trim()) {
-                            setIsLoadingPlayerData(true);
-                            toast({
-                              title: "Fetching Real Player Data",
-                              description: `Looking up ${searchedPlayer} via Riot Games API`,
-                            });
-
-                            try {
-                              // Use the correct API endpoint that matches your server routes
-                              const apiUrl = `/api/esports/riot/summoner/${encodeURIComponent(searchedPlayer.trim())}/${searchRegion}`;
-                              console.log('🔍 Making API request to:', apiUrl);
-
-                              const response = await fetch(apiUrl, {
-                                method: 'GET',
-                                headers: {
-                                  'Accept': 'application/json',
-                                  'Content-Type': 'application/json'
-                                }
-                              });
-
-                              console.log('📡 Response status:', response.status, response.statusText);
-                              console.log('📡 Response headers:', response.headers.get('content-type'));
-
-                              if (!response.ok) {
-                                // Try to get error message from response
-                                let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-                                try {
-                                  const errorData = await response.json();
-                                  errorMessage = errorData.message || errorData.error || errorMessage;
-                                } catch (e) {
-                                  // If we can't parse error as JSON, use status text
-                                }
-                                throw new Error(errorMessage);
-                              }
-
-                              const contentType = response.headers.get('content-type');
-                              if (!contentType || !contentType.includes('application/json')) {
-                                console.error('❌ Expected JSON but got:', contentType);
-                                const textResponse = await response.text();
-                                console.error('❌ Response body:', textResponse.substring(0, 200));
-                                throw new Error('Server returned HTML instead of JSON - check API endpoint');
-                              }
-
-                              const playerData = await response.json();
-                              console.log('✅ Player data received:', playerData);
-                              setRealPlayerData(playerData);
-
-                              toast({
-                                title: "Player Found!",
-                                description: `Successfully loaded ${playerData.name || searchedPlayer}'s data`,
-                              });
-                            } catch (error: any) {
-                              console.error('❌ Player lookup error:', error);
-                              toast({
-                                title: "Player Lookup Failed",
-                                description: error.message === 'Failed to fetch' ? 'Network error - check your connection' : error.message || "Unable to find player data",
-                                variant: "destructive"
-                              });
-                              setRealPlayerData(null);
-                            } finally {
-                              setIsLoadingPlayerData(false);
-                            }
-                          }
-                        }}
-                        disabled={!searchedPlayer.trim() || isLoadingPlayerData}
-                      >
-                        {isLoadingPlayerData ? "Searching..." : "🔍 Search"}
-                      </Button>
-                    </div>
-
-                    {playerError && (
-                      <div className="text-red-600 text-sm">
-                        Error: {playerError.message || 'Failed to fetch player data'}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Player Data Display */}
-                  {isLoadingPlayerData && (
-                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="flex items-center space-x-2">
-                        <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
-                        <p className="text-sm text-blue-600">Searching for: {searchedPlayer} in {searchRegion.toUpperCase()}...</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {realPlayerData && (
-                    <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold text-green-800">{realPlayerData.name}</h4>
-                        <span className="text-sm text-green-600">Level {realPlayerData.summonerLevel}</span>
-                      </div>
-                      {realPlayerData.rankedData && realPlayerData.rankedData.length > 0 && (
-                        <div className="space-y-2">
-                          {realPlayerData.rankedData.map((rank: any, index: number) => (
-                            <div key={index} className="text-sm">
-                              <span className="font-medium">{rank.queueType}:</span> {rank.tier} {rank.rank} ({rank.leaguePoints} LP)
-                              <span className="ml-2 text-gray-600">{rank.wins}W {rank.losses}L</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {searchedPlayer && !isLoadingPlayerData && !realPlayerData && (
-                    <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-600">Enter a summoner name and click search to fetch real player data</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
               {/* Player Props */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <span>🎯 Player Performance Props</span>
-                    <Badge className="bg-green-500 text-white animate-pulse">
-                      RIOT API LIVE
+                    <Badge className="bg-green-500 text-white">
+                      LIVE
                     </Badge>
                   </CardTitle>
                 </CardHeader>
@@ -697,11 +307,6 @@ const EsportsHub: React.FC = () => {
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="font-bold">{prop.player} ({prop.team})</span>
-                            {prop.realData && (
-                              <Badge variant="outline" className="text-xs bg-green-50 border-green-300">
-                                🔴 LIVE
-                              </Badge>
-                            )}
                           </div>
                           <div className="text-sm text-gray-600">{prop.prop}</div>
                           <div className="text-xs text-blue-600">{prop.form}</div>
@@ -791,7 +396,7 @@ const EsportsHub: React.FC = () => {
                   No live bets yet. Place your first micro-bet!
                 </p>
               )}
-              </CardContent>
+            </CardContent>
           </Card>
 
           {/* Live Chat */}
