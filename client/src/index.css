@@ -3,6 +3,20 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Odds Ticker Animation */
+@keyframes ticker {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-ticker {
+  animation: ticker 120s linear infinite;
+}
+
 /* WeParlay masculine color scheme - Blue, Green, Orange */
 :root {
   --primary: #2563eb;     /* WeParlay Blue */
