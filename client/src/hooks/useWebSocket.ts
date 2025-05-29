@@ -1,116 +1,68 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { useToast } from './use-toast';
 
-interface WebSocketConfig {
-  autoConnect?: boolean;
+interface WebSocketMessage {
+  type: string;
+  data: any;
+  timestamp: number;
+}
+
+interface UseWebSocketOptions {
+  url?: string;
   reconnectAttempts?: number;
   reconnectInterval?: number;
-  heartbeatInterval?: number;
+  onMessage?: (message: WebSocketMessage) => void;
+  onConnect?: () => void;
+  onDisconnect?: () => void;
+  onError?: (error: Event) => void;
 }
 
-interface WebSocketState {
-  isConnected: boolean;
-  connectionStatus: 'disconnected' | 'connecting' | 'connected' | 'error' | 'circuit_breaker';
-  lastError?: string;
-}
-
-export const useWebSocket = (config: WebSocketConfig = {}) => {
+export const useWebSocket = (options: UseWebSocketOptions = {}) => {
   const {
-    autoConnect = true,
-    reconnectAttempts = 3,
+    url = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`,
+    reconnectAttempts = 5,
     reconnectInterval = 5000,
-    heartbeatInterval = 30000
-  } = config;
+    onMessage,
+    onConnect,
+    onDisconnect,
+    onError
+  } = options;
 
-  const [state, setState] = useState<WebSocketState>({
-    isConnected: false,
-    connectionStatus: 'disconnected'
-  });
-
+  const { toast } = useToast();
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const heartbeatTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const attemptsRef = useRef(0);
-  const circuitBreakerRef = useRef(false);
-  const { toast } = useToast();
-
-  // Circuit breaker - stop trying after too many failures
-  const openCircuitBreaker = useCallback(() => {
-    circuitBreakerRef.current = true;
-    setState(prev => ({ ...prev, connectionStatus: 'circuit_breaker' }));
-    console.log('🚫 WebSocket circuit breaker activated - stopping connection attempts');
-
-    // Reset circuit breaker after 5 minutes
-    setTimeout(() => {
-      circuitBreakerRef.current = false;
-      attemptsRef.current = 0;
-      console.log('🔄 WebSocket circuit breaker reset');
-    }, 300000);
-  }, []);
+  const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [reconnectCount, setReconnectCount] = useState(0);
+  const [lastReconnectAttempt, setLastReconnectAttempt] = useState(0);
+  const isConnectingRef = useRef(false);
 
   const connect = useCallback(() => {
-    if (state.connectionStatus === 'connecting' || state.connectionStatus === 'connected') {
+    // Prevent multiple simultaneous connection attempts
+    if (isConnectingRef.current || (wsRef.current && wsRef.current.readyState === WebSocket.CONNECTING)) {
+      console.log('⏳ Connection attempt already in progress');
       return;
     }
 
-    const maxReconnectAttempts = reconnectAttempts; // changed from useRef to const
-
-    // Check if we've exceeded max attempts
-    if (attemptsRef.current >= maxReconnectAttempts) {
-      console.log('🚫 Max reconnection attempts reached - continuing without WebSocket');
-      setState(prev => ({ 
-        ...prev, 
-        connectionStatus: 'disabled',
-        lastError: 'WebSocket disabled - app will continue to function'
-      }));
+    // Rate limiting: don't reconnect more than once per 3 seconds
+    const now = Date.now();
+    if (now - lastReconnectAttempt < 3000) {
+      console.log('⏳ Rate limiting WebSocket connection attempts');
       return;
     }
+    setLastReconnectAttempt(now);
+    isConnectingRef.current = true;
 
-    // Don't connect if circuit breaker is active
-    if (circuitBreakerRef.current) {
-      console.log('🚫 WebSocket connection blocked by circuit breaker');
-      return;
-    }
-
-    // Don't connect if already connected or connecting
-    if (wsRef.current?.readyState === WebSocket.CONNECTING || 
-        wsRef.current?.readyState === WebSocket.OPEN) {
-      return;
-    }
-
-    // Clean up existing connection
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
-    }
+    console.log('🔌 Connecting to WebSocket:', url);
 
     try {
-      setState(prev => ({ ...prev, connectionStatus: 'connecting' }));
+      // Close existing connection if any
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
 
-      // Determine WebSocket URL based on current location
-      const getWebSocketUrl = () => {
-        // For Replit deployments, use the correct WebSocket URL format
-        if (window.location.hostname.includes('replit.dev') || window.location.hostname.includes('replit.co')) {
-          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-          return `${protocol}//${window.location.host}/ws`;
-        }
-
-        // For localhost development
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-          return `${protocol}//${window.location.host}/ws`;
-        }
-
-        // For production or other environments
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const host = window.location.host;
-        return `${protocol}//${host}/ws`;
-      };
-      const wsUrl = getWebSocketUrl();
-
-      console.log('🔌 Attempting WebSocket connection to:', wsUrl);
-
-      const ws = new WebSocket(wsUrl);
+      const ws = new WebSocket(url);
       wsRef.current = ws;
 
       // Connection timeout
@@ -123,96 +75,92 @@ export const useWebSocket = (config: WebSocketConfig = {}) => {
 
       ws.onopen = () => {
         clearTimeout(connectionTimeout);
-        attemptsRef.current = 0;
-        setState({
-          isConnected: true,
-          connectionStatus: 'connected'
-        });
-
+        isConnectingRef.current = false;
         console.log('✅ WebSocket connected successfully');
+        setIsConnected(true);
+        setReconnectCount(0);
 
         // Start heartbeat
-        if (heartbeatTimeoutRef.current) {
-          clearTimeout(heartbeatTimeoutRef.current);
-        }
+        heartbeatIntervalRef.current = setInterval(() => {
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'ping', timestamp: Date.now() }));
+          }
+        }, 30000);
 
-        const startHeartbeat = () => {
-          heartbeatTimeoutRef.current = setTimeout(() => {
-            if (ws.readyState === WebSocket.OPEN) {
-              ws.send(JSON.stringify({ type: 'ping' }));
-              startHeartbeat();
-            }
-          }, heartbeatInterval);
-        };
-        startHeartbeat();
+        onConnect?.();
       };
 
       ws.onmessage = (event) => {
         try {
-          const data = JSON.parse(event.data);
-          if (data.type === 'pong') {
-            // Heartbeat response - connection is alive
+          const message: WebSocketMessage = JSON.parse(event.data);
+
+          // Handle pong response
+          if (message.type === 'pong') {
             return;
           }
-          // Handle other message types here
+
+          onMessage?.(message);
         } catch (error) {
-          console.warn('Failed to parse WebSocket message:', event.data);
+          console.error('❌ Error parsing WebSocket message:', error);
         }
       };
 
       ws.onclose = (event) => {
         clearTimeout(connectionTimeout);
-        if (heartbeatTimeoutRef.current) {
-          clearTimeout(heartbeatTimeoutRef.current);
+        isConnectingRef.current = false;
+
+        if (heartbeatIntervalRef.current) {
+          clearInterval(heartbeatIntervalRef.current);
+          heartbeatIntervalRef.current = null;
         }
 
-        setState({
-          isConnected: false,
-          connectionStatus: 'disconnected'
-        });
+        console.log('🔌 WebSocket closed:', event.code, event.reason || 'No reason provided');
+        setIsConnected(false);
+        wsRef.current = null;
+        onDisconnect?.();
 
-        console.log(`🔌 WebSocket closed: ${event.code} ${event.reason}`);
+        // Only attempt to reconnect if it wasn't a clean close (code 1000)
+        if (event.code !== 1000 && reconnectCount < reconnectAttempts) {
+          const newCount = reconnectCount + 1;
+          setReconnectCount(newCount);
+          console.log(`🔄 Reconnecting... Attempt ${newCount}/${reconnectAttempts}`);
 
-        // Only attempt reconnection if it wasn't a manual close and we haven't hit the circuit breaker
-        if (event.code !== 1000 && !circuitBreakerRef.current && attemptsRef.current < maxReconnectAttempts) {
-          attemptsRef.current++;
-          console.log(`🔄 Scheduling reconnection attempt ${attemptsRef.current}/${maxReconnectAttempts} in ${reconnectInterval}ms`);
+          // Exponential backoff with jitter
+          const delay = Math.min(reconnectInterval * Math.pow(1.5, newCount - 1), 30000) + Math.random() * 1000;
 
           reconnectTimeoutRef.current = setTimeout(() => {
             connect();
-          }, reconnectInterval * attemptsRef.current); // Exponential backoff
-        } else if (attemptsRef.current >= maxReconnectAttempts) {
-          console.log('🚫 Max reconnection attempts reached, activating circuit breaker');
-          openCircuitBreaker();
+          }, delay);
+        } else if (reconnectCount >= reconnectAttempts) {
+          console.log('❌ Max reconnection attempts reached');
+          toast({
+            title: "Connection Lost",
+            description: "Unable to maintain connection to live updates. Please refresh the page.",
+            variant: "destructive"
+          });
         }
       };
 
       ws.onerror = (error) => {
         clearTimeout(connectionTimeout);
-        console.error('🚨 WebSocket error:', error);
-        setState(prev => ({
-          ...prev,
-          connectionStatus: 'error',
-          lastError: 'Connection failed'
-        }));
+        isConnectingRef.current = false;
+        console.error('❌ WebSocket error:', error);
+        onError?.(error);
+        setIsConnected(false);
       };
 
     } catch (error) {
-      console.error('🚨 Failed to create WebSocket:', error);
-      setState({
-        isConnected: false,
-        connectionStatus: 'error',
-        lastError: 'Failed to create connection'
-      });
+      isConnectingRef.current = false;
+      console.error('❌ Failed to create WebSocket connection:', error);
     }
-  }, [reconnectAttempts, reconnectInterval, heartbeatInterval, openCircuitBreaker, state.connectionStatus]);
+  }, [url, reconnectCount, reconnectAttempts, reconnectInterval, onConnect, onMessage, onDisconnect, onError, toast, lastReconnectAttempt]);
 
   const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
     }
-    if (heartbeatTimeoutRef.current) {
-      clearTimeout(heartbeatTimeoutRef.current);
+    if (heartbeatIntervalRef.current) {
+      clearInterval(heartbeatIntervalRef.current);
     }
 
     if (wsRef.current) {
@@ -220,10 +168,7 @@ export const useWebSocket = (config: WebSocketConfig = {}) => {
       wsRef.current = null;
     }
 
-    setState({
-      isConnected: false,
-      connectionStatus: 'disconnected'
-    });
+    setIsConnected(false);
   }, []);
 
   const send = useCallback((data: any) => {
@@ -234,86 +179,18 @@ export const useWebSocket = (config: WebSocketConfig = {}) => {
     return false;
   }, []);
 
-  // Reset circuit breaker manually
-  const resetCircuitBreaker = useCallback(() => {
-    circuitBreakerRef.current = false;
-    attemptsRef.current = 0;
-    setState(prev => ({ ...prev, connectionStatus: 'disconnected' }));
-    console.log('🔄 Circuit breaker manually reset');
-  }, []);
-
   useEffect(() => {
-    if (autoConnect && !circuitBreakerRef.current) {
-      connect();
-    }
+    connect(); // Automatically connect on component mount
 
     return () => {
-      disconnect();
+      disconnect(); // Clean up on unmount
     };
-  }, [autoConnect, connect, disconnect]);
-
-  const subscribe = useCallback((channel: string, callback: (data: any) => void) => {
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
-      console.warn('⚠️ Cannot subscribe - WebSocket not connected');
-      return () => {};
-    }
-
-    const listener = (event: MessageEvent) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.channel === channel || data.type === channel) {
-          callback(data.payload || data.data || data);
-        }
-      } catch (error) {
-        console.error('❌ Error parsing WebSocket message:', error);
-      }
-    };
-
-    wsRef.current.addEventListener('message', listener);
-
-    // Send subscription message with esports support
-    send({
-      type: 'subscribe',
-      channel,
-      metadata: {
-        timestamp: new Date().toISOString(),
-        clientType: 'esports_hub'
-      }
-    });
-
-    return () => {
-      if (wsRef.current) {
-        wsRef.current.removeEventListener('message', listener);
-        send({
-          type: 'unsubscribe',
-          channel
-        });
-      }
-    };
-  }, [send]);
-
-  // Esports-specific subscription helpers
-  const subscribeToEsportsMatches = useCallback((callback: (matches: any[]) => void) => {
-    return subscribe('esports:live-matches', callback);
-  }, [subscribe]);
-
-  const subscribeToMatchOdds = useCallback((matchId: string, callback: (odds: any) => void) => {
-    return subscribe(`esports:match:${matchId}`, callback);
-  }, [subscribe]);
-
-  const subscribeToLiveBets = useCallback((callback: (bet: any) => void) => {
-    return subscribe('esports:live-bets', callback);
-  }, [subscribe]);
+  }, [connect, disconnect]);
 
   return {
-    ...state,
+    isConnected,
     connect,
     disconnect,
     send,
-    resetCircuitBreaker,
-    subscribe,
-    subscribeToEsportsMatches,
-    subscribeToMatchOdds,
-    subscribeToLiveBets
   };
 };

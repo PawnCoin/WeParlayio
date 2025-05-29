@@ -1,305 +1,291 @@
-import { Server as HTTPServer } from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
+import { Server } from 'http';
 
-interface WebSocketClient {
-  id: string;
+interface WebSocketMessage {
+  type: string;
+  data: any;
+  timestamp: number;
+}
+
+interface ConnectedClient {
   ws: WebSocket;
-  isAlive: boolean;
+  userId?: string;
   subscriptions: Set<string>;
-  lastSeen: Date;
+  lastPing: number;
+  id: string;
 }
 
 class WebSocketService {
   private wss: WebSocketServer | null = null;
-  private clients: Map<string, WebSocketClient> = new Map();
+  private clients: Map<string, ConnectedClient> = new Map();
+  private subscriptions: Map<string, Set<string>> = new Map();
+  private server: Server | null = null;
+  private isInitialized = false;
   private heartbeatInterval: NodeJS.Timeout | null = null;
-  private isShuttingDown = false;
-  private initialized = false;
-  private esportsChannels: Map<string, any> = new Map();
-  private reconnectAttempts: Map<string, number> = new Map();
 
-  initialize(server: HTTPServer) {
+  public initialize(server: Server): boolean {
     try {
-      if (this.initialized) {
-        console.log('🔌 WebSocket service already initialized');
-        return;
+      if (this.isInitialized) {
+        console.log('🔄 WebSocket service already initialized');
+        return true;
       }
 
+      this.server = server;
       this.wss = new WebSocketServer({ 
         server,
         path: '/ws',
-        perMessageDeflate: false, // Disable compression to reduce overhead
-        maxPayload: 1024 * 1024, // 1MB max message size
+        perMessageDeflate: false,
         clientTracking: true,
-        handleProtocols: () => false, // Accept any protocol
+        maxPayload: 16 * 1024 * 1024 // 16MB
       });
 
-      this.wss.on('connection', (ws, request) => {
-        console.log('👤 New WebSocket connection from:', request.socket.remoteAddress);
-        this.handleConnection(ws, request);
-      });
-
-      this.wss.on('error', (error) => {
-        console.error('🚨 WebSocket server error:', error);
-        // Try to recover from server errors
-        setTimeout(() => {
-          if (this.wss && this.wss.readyState === WebSocket.CLOSED) {
-            console.log('🔄 Attempting to restart WebSocket server...');
-            this.initialize(server);
-          }
-        }, 5000);
-      });
-
-      this.wss.on('listening', () => {
-        console.log('🎧 WebSocket server is listening');
-      });
-
-      // Start heartbeat to clean up dead connections
+      this.setupWebSocketServer();
       this.startHeartbeat();
+      this.isInitialized = true;
 
-      this.initialized = true;
       console.log('✅ WebSocket service initialized successfully');
+      return true;
     } catch (error) {
-      console.error('🚨 Failed to initialize WebSocket service:', error);
-      // Don't throw - let the app continue without WebSocket
+      console.error('❌ Failed to initialize WebSocket service:', error);
+      return false;
     }
   }
 
-  private handleConnection(ws: WebSocket, request: any) {
-    const clientId = this.generateClientId();
-    const client: WebSocketClient = {
-      id: clientId,
-      ws,
-      isAlive: true,
-      subscriptions: new Set(),
-      lastSeen: new Date()
-    };
+  private setupWebSocketServer(): void {
+    if (!this.wss) return;
 
-    this.clients.set(clientId, client);
-    console.log(`👤 Client ${clientId} connected (${this.clients.size} total)`);
+    this.wss.on('connection', (ws: WebSocket, request) => {
+      const clientId = this.generateClientId();
+      const client: ConnectedClient = {
+        ws,
+        subscriptions: new Set(),
+        lastPing: Date.now(),
+        id: clientId
+      };
 
-    // Send welcome message
-    this.sendToClient(clientId, {
-      type: 'welcome',
-      clientId,
-      timestamp: new Date().toISOString()
+      this.clients.set(clientId, client);
+      console.log(`🔌 Client ${clientId} connected. Total clients: ${this.clients.size}`);
+
+      // Set up proper WebSocket state
+      ws.isAlive = true;
+
+      // Handle ping/pong for connection health
+      ws.on('pong', () => {
+        ws.isAlive = true;
+        client.lastPing = Date.now();
+      });
+
+      // Handle incoming messages
+      ws.on('message', (data: Buffer) => {
+        try {
+          const message: WebSocketMessage = JSON.parse(data.toString());
+          this.handleMessage(clientId, message);
+        } catch (error) {
+          console.error('❌ Error parsing WebSocket message:', error);
+          this.sendToClient(clientId, {
+            type: 'error',
+            data: { message: 'Invalid message format' },
+            timestamp: Date.now()
+          });
+        }
+      });
+
+      // Handle client disconnect
+      ws.on('close', (code, reason) => {
+        console.log(`🔌 Client ${clientId} disconnected with code ${code}: ${reason}`);
+        this.handleDisconnect(clientId);
+      });
+
+      // Handle errors
+      ws.on('error', (error) => {
+        console.error(`❌ WebSocket error for client ${clientId}:`, error);
+        this.handleDisconnect(clientId);
+      });
+
+      // Send welcome message with proper connection info
+      this.sendToClient(clientId, {
+        type: 'connection',
+        data: { 
+          status: 'connected', 
+          clientId,
+          serverTime: Date.now(),
+          features: ['live-odds', 'bet-updates', 'notifications']
+        },
+        timestamp: Date.now()
+      });
     });
 
-    ws.on('message', (data) => {
-      try {
-        const message = JSON.parse(data.toString());
-        this.handleMessage(clientId, message);
-        client.lastSeen = new Date(); // Update last seen on message
-      } catch (error) {
-        console.warn(`⚠️ Invalid message from client ${clientId}:`, error);
-        this.sendToClient(clientId, {
-          type: 'error',
-          message: 'Invalid message format'
-        });
-      }
-    });
-
-    ws.on('pong', () => {
-      const client = this.clients.get(clientId);
-      if (client) {
-        client.isAlive = true;
-        client.lastSeen = new Date();
-      }
-    });
-
-    ws.on('close', (code, reason) => {
-      console.log(`👋 Client ${clientId} disconnected: ${code} ${reason}`);
-      this.clients.delete(clientId);
-    });
-
-    ws.on('error', (error) => {
-      console.error(`🚨 Client ${clientId} error:`, error);
-      this.clients.delete(clientId);
-    });
+    console.log('🎧 WebSocket server is listening');
   }
 
-  private handleMessage(clientId: string, message: any) {
+  private startHeartbeat(): void {
+    this.heartbeatInterval = setInterval(() => {
+      if (!this.wss) return;
+
+      this.wss.clients.forEach((ws: any) => {
+        if (ws.isAlive === false) {
+          // Find and remove dead connection
+          for (const [clientId, client] of this.clients.entries()) {
+            if (client.ws === ws) {
+              this.handleDisconnect(clientId);
+              break;
+            }
+          }
+          return ws.terminate();
+        }
+
+        ws.isAlive = false;
+        ws.ping();
+      });
+    }, 30000); // 30 second heartbeat
+  }
+
+  private handleMessage(clientId: string, message: WebSocketMessage): void {
+    const client = this.clients.get(clientId);
+    if (!client) {
+      console.log(`❌ Client ${clientId} not found`);
+      return;
+    }
+
+    switch (message.type) {
+      case 'subscribe':
+        if (typeof message.data === 'string') {
+          this.subscribe(clientId, message.data);
+        } else if (Array.isArray(message.data)) {
+          message.data.forEach(channel => this.subscribe(clientId, channel));
+        }
+        break;
+      case 'unsubscribe':
+        if (typeof message.data === 'string') {
+          this.unsubscribe(clientId, message.data);
+        } else if (Array.isArray(message.data)) {
+          message.data.forEach(channel => this.unsubscribe(clientId, channel));
+        }
+        break;
+      case 'ping':
+        client.lastPing = Date.now();
+        this.sendToClient(clientId, { type: 'pong', data: null, timestamp: Date.now() });
+        break;
+      default:
+        console.warn(`⚠️ Unknown message type from client ${clientId}: ${message.type}`);
+        this.sendToClient(clientId, {
+          type: 'error',
+          data: { message: 'Unknown message type' },
+          timestamp: Date.now()
+        });
+    }
+  }
+
+  private subscribe(clientId: string, channel: string): void {
     const client = this.clients.get(clientId);
     if (!client) return;
 
-    client.lastSeen = new Date();
-
-    switch (message.type) {
-      case 'ping':
-        this.sendToClient(clientId, { type: 'pong', timestamp: new Date().toISOString() });
-        break;
-
-      case 'subscribe':
-        if (Array.isArray(message.channels)) {
-          message.channels.forEach((channel: string) => {
-            client.subscriptions.add(channel);
-          });
-          this.sendToClient(clientId, { 
-            type: 'subscribed', 
-            channels: message.channels,
-            timestamp: new Date().toISOString()
-          });
-        }
-        break;
-
-      case 'unsubscribe':
-        if (Array.isArray(message.channels)) {
-          message.channels.forEach((channel: string) => {
-            client.subscriptions.delete(channel);
-          });
-          this.sendToClient(clientId, { 
-            type: 'unsubscribed', 
-            channels: message.channels,
-            timestamp: new Date().toISOString()
-          });
-        }
-        break;
-
-      default:
-        console.log(`📨 Received message from ${clientId}:`, message.type);
+    if (!client.subscriptions.has(channel)) {
+      client.subscriptions.add(channel);
+      if (!this.subscriptions.has(channel)) {
+        this.subscriptions.set(channel, new Set());
+      }
+      this.subscriptions.get(channel)?.add(clientId);
+      console.log(`✅ Client ${clientId} subscribed to ${channel}`);
     }
   }
 
-  private sendToClient(clientId: string, data: any): boolean {
+  private unsubscribe(clientId: string, channel: string): void {
     const client = this.clients.get(clientId);
-    if (!client || client.ws.readyState !== WebSocket.OPEN) {
-      return false;
-    }
+    if (!client) return;
 
-    try {
-      client.ws.send(JSON.stringify(data));
-      return true;
-    } catch (error) {
-      console.error(`🚨 Failed to send message to ${clientId}:`, error);
-      this.clients.delete(clientId);
-      return false;
+    if (client.subscriptions.has(channel)) {
+      client.subscriptions.delete(channel);
+      this.subscriptions.get(channel)?.delete(clientId);
+      console.log(`✅ Client ${clientId} unsubscribed from ${channel}`);
     }
   }
 
-  broadcast(channel: string, data: any) {
-    let sent = 0;
-    const message = {
-      ...data,
-      channel,
-      timestamp: new Date().toISOString()
-    };
+  private handleDisconnect(clientId: string): void {
+    const client = this.clients.get(clientId);
+    if (!client) return;
 
-    for (const [clientId, client] of this.clients) {
-      if (client.subscriptions.has(channel)) {
-        if (this.sendToClient(clientId, message)) {
-          sent++;
-        }
+    // Remove client from all subscriptions
+    client.subscriptions.forEach(channel => {
+      this.subscriptions.get(channel)?.delete(clientId);
+      if (this.subscriptions.get(channel)?.size === 0) {
+        this.subscriptions.delete(channel);
       }
-    }
+    });
 
-    return sent;
+    this.clients.delete(clientId);
+    console.log(`🔌 Client ${clientId} disconnected. Total clients: ${this.clients.size}`);
   }
 
-  private startHeartbeat() {
-    if (this.heartbeatInterval) {
-      clearInterval(this.heartbeatInterval);
-    }
-
-    this.heartbeatInterval = setInterval(() => {
-      if (this.isShuttingDown) return;
-
-      const deadClients: string[] = [];
-
-      for (const [clientId, client] of this.clients) {
-        if (!client.isAlive) {
-          deadClients.push(clientId);
-          continue;
+  public sendToClient(clientId: string, message: WebSocketMessage): void {
+    const client = this.clients.get(clientId);
+    if (client && client.ws.readyState === WebSocket.OPEN) {
+      client.ws.send(JSON.stringify(message), err => {
+        if (err) {
+          console.error(`❌ Error sending message to client ${clientId}:`, err);
         }
-
-        // Check for stale connections based on last activity
-        const now = new Date();
-        const inactivityDuration = now.getTime() - client.lastSeen.getTime();
-        const maxInactivity = 5 * 60 * 1000; // 5 minutes
-
-        if (inactivityDuration > maxInactivity) {
-          console.log(`💀 Terminating stale connection: ${clientId}`);
-          deadClients.push(clientId);
-          client.ws.close(1001, 'Idle timeout'); // Inform client of timeout
-          continue;
-        }
-
-        client.isAlive = false;
-
-        try {
-          client.ws.ping();
-        } catch (error) {
-          console.error(`🚨 Ping failed for client ${clientId}:`, error);
-          deadClients.push(clientId);
-          client.ws.close(1011, 'Ping failed'); // Inform client of ping failure
-        }
-      }
-
-      // Clean up dead clients
-      deadClients.forEach(clientId => {
-        console.log(`🧹 Cleaning up dead client: ${clientId}`);
-        this.clients.delete(clientId);
       });
+    } else {
+      console.log(`❌ Cannot send message to client ${clientId} - not connected`);
+      this.handleDisconnect(clientId);
+    }
+  }
 
-      if (this.clients.size > 0) {
-        console.log(`💓 Heartbeat: ${this.clients.size} active connections`);
-      }
-    }, 30000); // 30 seconds
+  public broadcast(channel: string, message: WebSocketMessage): void {
+    const subscribers = this.subscriptions.get(channel);
+    if (subscribers) {
+      subscribers.forEach(clientId => {
+        this.sendToClient(clientId, message);
+      });
+    }
   }
 
   private generateClientId(): string {
-    return `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `client_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
   }
 
-  getStats() {
-    const subscriptionCounts: Record<string, number> = {};
-
-    for (const client of this.clients.values()) {
-      for (const channel of client.subscriptions) {
-        subscriptionCounts[channel] = (subscriptionCounts[channel] || 0) + 1;
-      }
+  public getStats(): { totalClients: number, subscriptions: any } {
+    const subscriptionStats: any = {};
+    for (const [channel, clients] of this.subscriptions) {
+      subscriptionStats[channel] = clients.size;
     }
 
     return {
       totalClients: this.clients.size,
-      subscriptionCounts,
-      uptime: process.uptime()
+      subscriptions: subscriptionStats
     };
   }
 
-  shutdown() {
-    console.log('🔌 Shutting down WebSocket service...');
-    this.isShuttingDown = true;
+  public close(): void {
+    console.log('🔌 Closing WebSocket server...');
 
     if (this.heartbeatInterval) {
       clearInterval(this.heartbeatInterval);
     }
 
-    // Close all client connections
-    for (const [clientId, client] of this.clients) {
-      try {
-        client.ws.close(1001, 'Server shutting down');
-      } catch (error) {
-        console.error(`Error closing client ${clientId}:`, error);
-      }
-    }
+    this.clients.forEach(client => {
+      client.ws.close(1000, 'Server is closing');
+    });
 
     if (this.wss) {
-      this.wss.close();
+      this.wss.close(err => {
+        if (err) {
+          console.error('❌ Error closing WebSocket server:', err);
+        } else {
+          console.log('✅ WebSocket server closed');
+        }
+      });
     }
-
-    console.log('✅ WebSocket service shut down');
   }
 }
 
 export const websocketService = new WebSocketService();
 
-export function initializeWebSocketService(server: HTTPServer) {
+export function initializeWebSocketService(server: Server) {
   websocketService.initialize(server);
 
-  // Graceful shutdown
-  process.on('SIGTERM', () => websocketService.shutdown());
-  process.on('SIGINT', () => websocketService.shutdown());
+  process.on('SIGTERM', () => websocketService.close());
+  process.on('SIGINT', () => websocketService.close());
 }
 
-// Export for use in routes
 export { websocketService as default };
