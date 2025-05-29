@@ -790,8 +790,7 @@ const EsportsHub: React.FC = () => {
                         <span className="font-bold text-blue-600">{msg.user}:</span>
                         {msg.type === 'win' && <Badge className="text-xs bgreen-500">WIN</Badge>}
                       </div>
-                      <span>{msg.message}</span>
-                    </motion.div>
+                      <span>{msg.message}                    </motion.div>
                   ))}
                 </div>
               <div className="flex gap-2">
@@ -849,7 +848,7 @@ const EsportsHub: React.FC = () => {
           </Card>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 
