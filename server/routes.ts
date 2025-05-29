@@ -2719,6 +2719,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Unified RapidAPI feed from all subscribed APIs
+  app.get('/api/rapidapi/unified-feed', async (req, res) => {
+    try {
+      const unifiedFeed = await rapidApiSportsService.getUnifiedRapidAPIFeed();
+      res.json({
+        success: true,
+        total_events: unifiedFeed.length,
+        data: unifiedFeed,
+        timestamp: new Date().toISOString(),
+        sources: [...new Set(unifiedFeed.map(event => event.sport_category))]
+      });
+    } catch (error) {
+      console.error('Error fetching unified RapidAPI feed:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to fetch unified RapidAPI feed',
+        error: error.message 
+      });
+    }
+  });
+
   app.get('/api/rapidapi/espn/:sport/:league', async (req, res) => {
     try {
       const { sport, league } = req.params;
