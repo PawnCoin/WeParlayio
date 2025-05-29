@@ -434,6 +434,74 @@ router.get('/match-events/:matchId', async (req, res) => {
   }
 });
 
+// Get comprehensive esports series data (74,000+ series)
+router.get('/grid/series', async (req, res) => {
+  try {
+    const { GridApiService } = await import('../services/gridApiService');
+    const gridService = new GridApiService();
+    
+    const limit = parseInt(req.query.limit as string) || 100;
+    const allSeries = await gridService.getAllSeries(limit);
+    
+    res.json({
+      success: true,
+      message: `GRID API: Esports series data (${allSeries.length} series shown)`,
+      data: {
+        series_count: allSeries.length,
+        series: allSeries.slice(0, 50), // Show first 50 for demo
+        note: "GRID API provides access to 74,000+ esports series across all major games",
+        games_covered: [
+          "League of Legends", "CS2", "Dota 2", "Valorant", 
+          "Overwatch", "Rocket League", "Rainbow Six Siege",
+          "Call of Duty", "FIFA", "Fortnite", "and many more..."
+        ]
+      },
+      timestamp: new Date().toISOString()
+    });
+  } catch (error: any) {
+    console.error('🚨 GRID series fetch failed:', error.message);
+    
+    res.json({
+      success: false,
+      message: 'GRID API series fetch failed',
+      error: error.message,
+      note: "Ensure GRID_API_KEY is configured in environment variables",
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Get esports matches by specific game
+router.get('/grid/matches/:game', async (req, res) => {
+  try {
+    const { GridApiService } = await import('../services/gridApiService');
+    const gridService = new GridApiService();
+    
+    const { game } = req.params;
+    const matches = await gridService.getMatchesBySport(game);
+    
+    res.json({
+      success: true,
+      message: `GRID API: ${game} matches`,
+      data: {
+        game: game,
+        matches_count: matches.length,
+        matches: matches
+      },
+      timestamp: new Date().toISOString()
+    });
+  } catch (error: any) {
+    console.error(`🚨 GRID ${req.params.game} matches fetch failed:`, error.message);
+    
+    res.json({
+      success: false,
+      message: 'GRID API matches fetch failed',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // Test endpoint to verify Riot API is working
 router.get('/riot/test-connection', async (req, res) => {
   try {

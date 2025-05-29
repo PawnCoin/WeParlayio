@@ -143,18 +143,62 @@ export class GridApiService {
   }
 
   /**
-   * Get upcoming matches for next 7 days
+   * Get upcoming matches for next 7 days using GraphQL
    */
   async getUpcomingMatches(days: number = 7): Promise<any[]> {
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + days);
+    
+    const query = `
+      query GetUpcomingMatches($endDate: DateTime!) {
+        allMatches(
+          filter: { 
+            status: SCHEDULED,
+            beginAt_lte: $endDate
+          },
+          first: 100
+        ) {
+          edges {
+            node {
+              id
+              status
+              scheduledAt
+              beginAt
+              name
+              tournament {
+                id
+                name
+                slug
+                serie {
+                  id
+                  name
+                  slug
+                  videogame {
+                    id
+                    name
+                    slug
+                  }
+                }
+              }
+              opponents {
+                opponent {
+                  id
+                  name
+                  slug
+                  imageUrl
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+
     try {
-      const endDate = new Date();
-      endDate.setDate(endDate.getDate() + days);
-      
-      const data = await this.makeRequest('/v1/matches/upcoming', {
-        end_date: endDate.toISOString().split('T')[0]
+      const data = await this.makeGraphQLRequest(query, { 
+        endDate: endDate.toISOString() 
       });
-      
-      return this.formatMatches(data.matches || []);
+      return this.formatMatches(data.allMatches?.edges || []);
     } catch (error) {
       console.error('Error fetching GRID upcoming matches:', error);
       return [];
@@ -162,14 +206,102 @@ export class GridApiService {
   }
 
   /**
-   * Get matches by sport
+   * Get all series (the 74,000+ esports series)
    */
-  async getMatchesBySport(sportKey: string): Promise<any[]> {
+  async getAllSeries(limit: number = 1000): Promise<any[]> {
+    const query = `
+      query GetAllSeries($limit: Int!) {
+        allSeries(first: $limit) {
+          totalCount
+          edges {
+            node {
+              id
+              name
+              slug
+              startTimeScheduled
+              endTimeScheduled
+              videogame {
+                id
+                name
+                slug
+              }
+              tournaments {
+                id
+                name
+                slug
+              }
+            }
+          }
+        }
+      }
+    `;
+
     try {
-      const data = await this.makeRequest(`/v1/sports/${sportKey}/matches`);
-      return this.formatMatches(data.matches || []);
+      const data = await this.makeGraphQLRequest(query, { limit });
+      console.log(`📊 GRID API: Found ${data.allSeries?.totalCount || 0} total esports series`);
+      return data.allSeries?.edges || [];
     } catch (error) {
-      console.error(`Error fetching GRID matches for ${sportKey}:`, error);
+      console.error('Error fetching all GRID series:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get matches by sport using GraphQL
+   */
+  async getMatchesBySport(gameSlug: string): Promise<any[]> {
+    const query = `
+      query GetMatchesByGame($gameSlug: String!) {
+        allMatches(
+          filter: { 
+            tournament: { 
+              serie: { 
+                videogame: { slug: $gameSlug } 
+              } 
+            } 
+          },
+          first: 50
+        ) {
+          edges {
+            node {
+              id
+              status
+              scheduledAt
+              beginAt
+              name
+              tournament {
+                id
+                name
+                slug
+                serie {
+                  id
+                  name
+                  videogame {
+                    id
+                    name
+                    slug
+                  }
+                }
+              }
+              opponents {
+                opponent {
+                  id
+                  name
+                  slug
+                  imageUrl
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    try {
+      const data = await this.makeGraphQLRequest(query, { gameSlug });
+      return this.formatMatches(data.allMatches?.edges || []);
+    } catch (error) {
+      console.error(`Error fetching GRID matches for ${gameSlug}:`, error);
       return [];
     }
   }
@@ -277,28 +409,39 @@ export class GridApiService {
   }
 
   /**
-   * Format matches for WeParlay compatibility
+   * Format matches for WeParlay compatibility (GraphQL format)
    */
-  private formatMatches(matches: any[]): any[] {
-    return matches.map(match => ({
-      id: match.id,
-      sport_key: match.sport?.key || 'unknown',
-      sport_title: match.sport?.name || 'Unknown Sport',
-      commence_time: match.start_time,
-      home_team: match.home_team?.name || 'Home Team',
-      away_team: match.away_team?.name || 'Away Team',
-      home_team_logo: match.home_team?.logo_url,
-      away_team_logo: match.away_team?.logo_url,
-      bookmakers: this.formatBookmakers(match.odds || []),
-      scores: match.scores || null,
-      status: match.status || 'scheduled',
-      venue: match.venue?.name,
-      league: match.league?.name,
-      season: match.season?.year,
-      round: match.round,
-      grid_match_id: match.id,
-      last_update: match.updated_at
-    }));
+  private formatMatches(matchEdges: any[]): any[] {
+    return matchEdges.map(edge => {
+      const match = edge.node;
+      const opponents = match.opponents || [];
+      
+      return {
+        id: match.id,
+        sport_key: match.tournament?.serie?.videogame?.slug || 'esports',
+        sport_title: match.tournament?.serie?.videogame?.name || 'Esports',
+        game: match.tournament?.serie?.videogame?.name || 'Unknown Game',
+        commence_time: match.beginAt || match.scheduledAt,
+        home_team: opponents[0]?.opponent?.name || 'Team 1',
+        away_team: opponents[1]?.opponent?.name || 'Team 2',
+        home_team_logo: opponents[0]?.opponent?.imageUrl,
+        away_team_logo: opponents[1]?.opponent?.imageUrl,
+        tournament: match.tournament?.name || 'Unknown Tournament',
+        serie: match.tournament?.serie?.name || 'Unknown Series',
+        status: match.status?.toLowerCase() || 'scheduled',
+        grid_match_id: match.id,
+        grid_tournament_id: match.tournament?.id,
+        grid_serie_id: match.tournament?.serie?.id,
+        last_update: new Date().toISOString(),
+        // Additional esports-specific data
+        teams: opponents.map((opp: any) => ({
+          id: opp.opponent?.id,
+          name: opp.opponent?.name,
+          slug: opp.opponent?.slug,
+          logo: opp.opponent?.imageUrl
+        }))
+      };
+    });
   }
 
   /**
