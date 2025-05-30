@@ -63,8 +63,8 @@ export function useAuth() {
           description: `Welcome to WeParlay! Your wallet is now connected.`,
         });
       } else {
-        // Redirect to WordPress login
-        window.location.href = 'https://weparlay.io/login';
+        // Handle login error
+        throw new Error('No wallet connected');
         return;
       }
     } catch (err: any) {
