@@ -22,7 +22,7 @@ const OddsTicker: React.FC = () => {
   useEffect(() => {
     const fetchOddsData = async () => {
       try {
-        const response = await fetch('/api/odds/live-ticker');
+        const response = await fetch('/api/odds/basketball_nba');
         if (response.ok) {
           const data = await response.json();
           setOddsData(data.odds || []);
@@ -91,7 +91,7 @@ const OddsTicker: React.FC = () => {
 
     const updateInterval = setInterval(async () => {
       try {
-        const response = await fetch('/api/odds/live-updates');
+        const response = await fetch('/api/odds/americanfootball_nfl');
         if (response.ok) {
           const updates = await response.json();
           if (updates && updates.length > 0) {

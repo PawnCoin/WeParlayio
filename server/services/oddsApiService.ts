@@ -64,8 +64,8 @@ export class OddsApiService {
       if (!response.ok) {
         const errorText = await response.text();
         if (response.status === 404) {
-          console.warn(`Sport "${sport}" not found in Odds API, returning mock data`);
-          return this.getMockOddsData(sport);
+          console.warn(`Sport "${sport}" not found in Odds API`);
+          return [];
         }
         throw new Error(`The Odds API error: ${response.status} - ${errorText}`);
       }

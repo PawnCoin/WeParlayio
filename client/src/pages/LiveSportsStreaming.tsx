@@ -389,7 +389,7 @@ const LiveSportsStreaming: React.FC = () => {
                 {stream.odds.draw && (
                   <Button
                     className="w-full justify-between bg-gray-700 hover:bg-green-800"
-                    onClick={() => placeLiveBet(stream.id, 'Draw', stream.odds.draw, 25)}
+                    onClick={() => placeLiveBet(stream.id, 'Draw', stream.odds.draw || 0, 25)}
                   >
                     <span>Draw</span>
                     <span className="font-bold text-green-400">{stream.odds.draw}</span>
