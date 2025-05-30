@@ -105,7 +105,22 @@ class ErrorReportingService {
   private async flushErrors() {
     if (this.errorQueue.length === 0) return;
 
-    const errors = [...this.errorQueue];
+    // Filter out known benign errors
+    const filteredErrors = this.errorQueue.filter(error => {
+      const message = error.message.toLowerCase();
+      return !message.includes('websocket') && 
+             !message.includes('cors') && 
+             !message.includes('metamask') &&
+             !message.includes('unrecognized feature') &&
+             !message.includes('invalid sandbox flag');
+    });
+
+    if (filteredErrors.length === 0) {
+      this.errorQueue = [];
+      return;
+    }
+
+    const errors = [...filteredErrors];
     this.errorQueue = [];
 
     try {

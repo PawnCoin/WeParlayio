@@ -299,37 +299,10 @@ export const tennisPlayerLogos: Record<string, string> = {
 };
 
 // Get team logo for a sport
-export function getTeamLogo(teamName: string, league: string = 'NBA'): string {
-  // Check league-specific logo collections
-  if (league === 'NBA' && nbaTeamLogos[teamName]) {
-    return nbaTeamLogos[teamName];
-  } else if (league === 'NFL' && nflTeamLogos[teamName]) {
-    return nflTeamLogos[teamName];
-  } else if (league === 'MLB' && mlbTeamLogos[teamName]) {
-    return mlbTeamLogos[teamName];
-  } else if (league === 'NHL' && nhlTeamLogos[teamName]) {
-    return nhlTeamLogos[teamName];
-  } else if (league === 'WNBA' && wnbaTeamLogos[teamName]) {
-    return wnbaTeamLogos[teamName];
-  } else if (league === 'NCAAF' && ncaafTeamLogos[teamName]) {
-    return ncaafTeamLogos[teamName];
-  } else if (league === 'NCAAB' && ncaabTeamLogos[teamName]) {
-    return ncaabTeamLogos[teamName];
-  } else if (league === 'NCAAW' && ncaawTeamLogos[teamName]) {
-    return ncaawTeamLogos[teamName];
-  } else if (league === 'UFC' && ufcFighterLogos[teamName]) {
-    return ufcFighterLogos[teamName];
-  } else if (league === 'BOXING' && boxingFighterLogos[teamName]) {
-    return boxingFighterLogos[teamName];
-  } else if (league === 'NASCAR' && nascarDriverLogos[teamName]) {
-    return nascarDriverLogos[teamName];
-  } else if ((league === 'TENNIS' || league === 'ATP' || league === 'WTA') && tennisPlayerLogos[teamName]) {
-    return tennisPlayerLogos[teamName];
-  }
-  
-  // Return default sport logo if no team logo is found
-  return sportLogos[league.toLowerCase()] || sportLogos.basketball;
-}
+export const getTeamLogo = (teamName: string, league: string = 'NBA'): string => {
+  const normalizedName = teamName.toLowerCase().replace(/\s+/g, '');
+  return teamLogos[normalizedName] || `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/><text x="20" y="26" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#6b7280">${teamName.charAt(0).toUpperCase()}</text></svg>`)}`;
+};
 
 // Sport logo mappings (for general sport icons)
 export const sportLogos: Record<string, string> = {
