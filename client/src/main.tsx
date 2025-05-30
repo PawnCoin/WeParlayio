@@ -1,63 +1,72 @@
-import React from "react";
-import { createRoot } from "react-dom/client";
-import App from "./App";
-import "./index.css";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient } from "./lib/queryClient";
-import ThemeProvider from "./lib/ThemeProvider";
-import { initializeCrashPrevention } from "./utils/crashPrevention";
 
-// Initialize crash prevention immediately
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from '@/components/ui/toaster';
+import App from './App';
+import './index.css';
+import { initializeCrashPrevention } from './utils/crashPrevention';
+import { errorReporting } from './utils/errorReporting';
+import ErrorBoundary from './components/ErrorBoundary';
+
+// Initialize crash prevention first
 initializeCrashPrevention();
 
-// Comprehensive error handling to prevent site crashes
-window.addEventListener('error', (event) => {
-  console.error('Global error caught:', event.error);
-
-  // Prevent crashes from missing modules
-  if (event.error?.message?.includes('does not provide an export named') ||
-      event.error?.message?.includes('Failed to resolve module specifier')) {
-    console.warn('Module import error handled gracefully - continuing without problematic module');
-    event.preventDefault();
-    return;
-  }
+// Create query client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 5 * 60 * 1000,
+    },
+  },
 });
 
-// Handle unhandled promise rejections
-window.addEventListener('unhandledrejection', (event) => {
-  console.error('Unhandled promise rejection:', event.reason);
+// Safe initialization function
+function initializeApp() {
+  try {
+    const root = ReactDOM.createRoot(
+      document.getElementById('root') as HTMLElement
+    );
 
-  // Check if it's a network-related error that we can safely ignore
-  const reason = event.reason;
-  const isIgnorableError = reason && (
-    typeof reason === 'string' && (
-      reason.includes('WebSocket') ||
-      reason.includes('Failed to fetch') ||
-      reason.includes('NetworkError') ||
-      reason.includes('1006')
-    ) ||
-    (reason.message && typeof reason.message === 'string' && (
-      reason.message.includes('WebSocket') ||
-      reason.message.includes('Failed to fetch') ||
-      reason.message.includes('NetworkError') ||
-      reason.message.includes('1006')
-    ))
-  );
+    root.render(
+      <React.StrictMode>
+        <ErrorBoundary>
+          <QueryClientProvider client={queryClient}>
+            <BrowserRouter>
+              <App />
+              <Toaster />
+            </BrowserRouter>
+          </QueryClientProvider>
+        </ErrorBoundary>
+      </React.StrictMode>
+    );
 
-  if (isIgnorableError) {
-    console.warn('Non-critical promise rejection handled:', reason);
-    event.preventDefault();
-    return;
+    console.log('🚀 WeParlay application initialized successfully');
+  } catch (error) {
+    console.error('Failed to initialize app:', error);
+    errorReporting.reportError({
+      message: 'App initialization failed',
+      errorType: 'javascript',
+      severity: 'critical',
+      context: { error }
+    });
+    
+    // Show fallback UI
+    document.getElementById('root')!.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: center; height: 100vh; font-family: Arial, sans-serif;">
+        <div style="text-align: center; padding: 2rem;">
+          <h1 style="color: #1f2937; margin-bottom: 1rem;">WeParlay</h1>
+          <p style="color: #6b7280; margin-bottom: 1rem;">Loading your premium betting experience...</p>
+          <button onclick="window.location.reload()" style="background: #3b82f6; color: white; padding: 0.5rem 1rem; border: none; border-radius: 0.375rem; cursor: pointer;">
+            Reload
+          </button>
+        </div>
+      </div>
+    `;
   }
-});
+}
 
-// Performance monitoring
-const loadStart = performance.now();
-
-createRoot(document.getElementById("root")!).render(
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <App />
-    </ThemeProvider>
-  </QueryClientProvider>
-);
+// Initialize the app
+initializeApp();
