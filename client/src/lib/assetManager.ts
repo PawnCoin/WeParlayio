@@ -1,93 +1,99 @@
-
-// Asset Manager Utility
-// Centralized management for team logos and sport icons
-
-import { getTeamLogoPath } from '@/assets/teams/team-logos';
-import { getSportIconPath } from '@/assets/sports/sports-icons';
-import { getTeamLogo } from './teamLogos'; // Fallback to existing system
+// Asset management utilities for WeParlay
+// Handles dynamic loading and caching of sports and team assets
 
 export class AssetManager {
-  /**
-   * Get team logo with fallback strategy
-   * 1. Try local assets first
-   * 2. Fallback to existing teamLogos.ts (ESPN CDN)
-   * 3. Default sport icon if team not found
-   */
-  static getTeamLogo(teamName: string, league: string = 'nba'): string {
-    try {
-      // Try local assets first
-      const localPath = getTeamLogoPath(teamName, league);
-      if (localPath && !localPath.includes('undefined')) {
-        return localPath;
-      }
-    } catch (error) {
-      console.warn(`Local asset not found for ${teamName} in ${league}`);
-    }
+  private static iconCache = new Map<string, string>();
+  private static logoCache = new Map<string, string>();
 
-    // Fallback to existing ESPN CDN system
-    try {
-      const espnLogo = getTeamLogo(teamName, league.toUpperCase());
-      if (espnLogo) {
-        return espnLogo;
-      }
-    } catch (error) {
-      console.warn(`ESPN CDN logo not found for ${teamName}`);
-    }
-
-    // Final fallback to sport icon
-    return AssetManager.getSportIcon(league);
-  }
-
-  /**
-   * Get sport icon with fallback
-   */
+  // Get sport icon with fallback
   static getSportIcon(sportKey: string): string {
-    try {
-      return getSportIconPath(sportKey.toLowerCase());
-    } catch (error) {
-      // Default basketball icon as ultimate fallback
-      return '/src/assets/sports/basketball.svg';
+    if (this.iconCache.has(sportKey)) {
+      return this.iconCache.get(sportKey)!;
     }
+
+    // Try different file extensions
+    const extensions = ['.svg', '.png', '.jpg'];
+    const basePath = `/src/assets/sports/${sportKey.toLowerCase().replace(/\s+/g, '-')}`;
+
+    for (const ext of extensions) {
+      const iconPath = `${basePath}${ext}`;
+      this.iconCache.set(sportKey, iconPath);
+      return iconPath;
+    }
+
+    // Fallback to generic sport icon
+    const fallbackPath = '/src/assets/sports/basketball.svg';
+    this.iconCache.set(sportKey, fallbackPath);
+    return fallbackPath;
   }
 
-  /**
-   * Preload critical assets for better performance
-   */
-  static preloadCriticalAssets(teams: string[], leagues: string[]) {
-    const criticalAssets: string[] = [];
-    
-    // Add team logos
-    teams.forEach(team => {
-      leagues.forEach(league => {
-        criticalAssets.push(this.getTeamLogo(team, league));
+  // Get team logo with fallback
+  static getTeamLogo(teamName: string, league: string = 'nba'): string {
+    const cacheKey = `${league}-${teamName}`;
+    if (this.logoCache.has(cacheKey)) {
+      return this.logoCache.get(cacheKey)!;
+    }
+
+    // Try different file extensions
+    const extensions = ['.svg', '.png', '.jpg'];
+    const basePath = `/src/assets/teams/${league.toLowerCase()}/${teamName.toLowerCase().replace(/\s+/g, '-')}`;
+
+    for (const ext of extensions) {
+      const logoPath = `${basePath}${ext}`;
+      this.logoCache.set(cacheKey, logoPath);
+      return logoPath;
+    }
+
+    // Fallback to generic team logo
+    const fallbackPath = '/src/assets/teams/default-team.svg';
+    this.logoCache.set(cacheKey, fallbackPath);
+    return fallbackPath;
+  }
+
+  // Preload assets for better performance
+  static async preloadAssets(assets: string[]): Promise<void> {
+    const promises = assets.map(asset => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(asset);
+        img.onerror = () => reject(new Error(`Failed to load: ${asset}`));
+        img.src = asset;
       });
     });
 
-    // Add sport icons
-    leagues.forEach(league => {
-      criticalAssets.push(this.getSportIcon(league));
-    });
-
-    // Preload images
-    criticalAssets.forEach(src => {
-      if (src && src.startsWith('/src/assets/')) {
-        const img = new Image();
-        img.src = src;
-      }
-    });
+    try {
+      await Promise.all(promises);
+      console.log('✅ Assets preloaded successfully');
+    } catch (error) {
+      console.warn('⚠️ Some assets failed to preload:', error);
+    }
   }
 
-  /**
-   * Check if asset exists locally
-   */
-  static async assetExists(path: string): Promise<boolean> {
+  // Check if asset exists
+  static async checkAssetExists(url: string): Promise<boolean> {
     try {
-      const response = await fetch(path, { method: 'HEAD' });
+      const response = await fetch(url, { method: 'HEAD' });
       return response.ok;
     } catch {
       return false;
     }
   }
-}
 
-export default AssetManager;
+  // Get available sports icons
+  static getAvailableSports(): string[] {
+    return [
+      'basketball', 'football', 'baseball', 'hockey', 'soccer',
+      'tennis', 'golf', 'boxing', 'mma', 'cricket', 'rugby',
+      'formula1', 'nascar', 'esports'
+    ];
+  }
+
+  // Get available leagues
+  static getAvailableLeagues(): string[] {
+    return [
+      'nba', 'nfl', 'mlb', 'nhl', 'mls', 'premier-league',
+      'la-liga', 'serie-a', 'bundesliga', 'ligue-1', 'ncaa',
+      'wnba', 'ufc', 'boxing', 'nascar', 'tennis', 'esports'
+    ];
+  }
+}

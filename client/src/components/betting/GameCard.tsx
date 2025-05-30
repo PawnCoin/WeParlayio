@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { ChevronRight, Plus } from "lucide-react";
 import { useBetSlip } from "@/contexts/BetSlipContext";
 import AdvancedBettingOptions from "./AdvancedBettingOptions";
+import { getTeamLogoPath } from "@/assets/teams/team-logos";
+import { getSportIconPath } from "@/assets/sports/sports-icons";
 
 interface GameCardProps {
   game: {
@@ -93,7 +95,16 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
       <CardHeader className="bg-gray-50 dark:bg-gray-800 p-4 flex flex-col sm:flex-row items-center justify-between">
         <div className="flex items-center mb-2 sm:mb-0">
           <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white mr-2">
-            <i className="fas fa-basketball-ball text-sm"></i>
+            <img 
+              src={getSportIconPath(game.sportName.toLowerCase().replace(/\s+/g, '_'))} 
+              alt={game.sportName} 
+              className="w-5 h-5 object-contain filter brightness-0 invert"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+              }}
+            />
+            <i className="fas fa-basketball-ball text-sm hidden"></i>
           </div>
           <div>
             <h3 className="font-medium">{game.sportName} - Game Lines</h3>
@@ -130,7 +141,14 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
           {/* Team Info */}
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <img className="w-12 h-12 mr-3 object-contain" src="https://images.unsplash.com/photo-1608245449230-4ac19066d2d0?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150" alt={`${game.homeTeam.name} logo`} />
+              <img 
+                className="w-12 h-12 mr-3 object-contain" 
+                src={getTeamLogoPath(game.homeTeam.name, game.sportName.toLowerCase().replace(/\s+/g, '_'))} 
+                alt={`${game.homeTeam.name} logo`}
+                onError={(e) => {
+                  e.currentTarget.src = "https://images.unsplash.com/photo-1608245449230-4ac19066d2d0?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150";
+                }}
+              />
               <div>
                 <div className="font-semibold">{game.homeTeam.name}</div>
                 <div className="text-sm text-gray-500 dark:text-gray-400">{game.homeTeam.record}, {game.homeTeam.location}</div>
@@ -157,7 +175,14 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
                 <div className="font-semibold">{game.awayTeam.name}</div>
                 <div className="text-sm text-gray-500 dark:text-gray-400">{game.awayTeam.record}, {game.awayTeam.location}</div>
               </div>
-              <img className="w-12 h-12 object-contain" src="https://images.unsplash.com/photo-1590227632180-80a3bf110871?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150" alt={`${game.awayTeam.name} logo`} />
+              <img 
+                className="w-12 h-12 object-contain" 
+                src={getTeamLogoPath(game.awayTeam.name, game.sportName.toLowerCase().replace(/\s+/g, '_'))} 
+                alt={`${game.awayTeam.name} logo`}
+                onError={(e) => {
+                  e.currentTarget.src = "https://images.unsplash.com/photo-1590227632180-80a3bf110871?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150";
+                }}
+              />
             </div>
           </div>
         </div>

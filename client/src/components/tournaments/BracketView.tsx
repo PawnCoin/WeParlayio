@@ -17,12 +17,12 @@ interface BracketViewProps {
 const BracketView: React.FC<BracketViewProps> = ({ tournamentId }) => {
   const { toast } = useToast();
   const [bracketData, setBracketData] = useState<any | null>(null);
-  
+
   const { data: tournament, isLoading } = useQuery({
     queryKey: [`/api/tournaments/${tournamentId}`],
     queryFn: () => sportsBetAPI.getTournament(tournamentId),
   });
-  
+
   useEffect(() => {
     // Set a default bracket structure initially
     const defaultBracketStructure = {
@@ -90,12 +90,12 @@ const BracketView: React.FC<BracketViewProps> = ({ tournamentId }) => {
       ],
       champion: { id: 1, name: "Boston Celtics" }
     };
-    
+
     // Initialize bracket data with defaults first to ensure we have data even before API responds
     if (!bracketData) {
       setBracketData(defaultBracketStructure);
     }
-    
+
     // Update with actual tournament data if available
     if (tournament && tournament.bracketData && Object.keys(tournament.bracketData).length > 0) {
       setBracketData(tournament.bracketData);
@@ -104,14 +104,14 @@ const BracketView: React.FC<BracketViewProps> = ({ tournamentId }) => {
       setBracketData(defaultBracketStructure);
     }
   }, [tournament, bracketData]);
-  
+
   const handleCreatePool = () => {
     toast({
       title: "Bracket Pool Created",
       description: "Your bracket pool has been created successfully.",
     });
   };
-  
+
   const handleShareBracket = () => {
     // In a real app, this would generate a shareable link or display a share dialog
     toast({
@@ -119,7 +119,7 @@ const BracketView: React.FC<BracketViewProps> = ({ tournamentId }) => {
       description: "Link to this bracket has been copied to clipboard",
     });
   };
-  
+
   const renderMatch = (match: any, roundIndex: number) => {
     return (
       <div key={match.id} className="tournament-bracket-item bg-white dark:bg-neutral-dark border border-gray-200 dark:border-gray-700 rounded-md p-2 mb-4 relative">
@@ -148,7 +148,7 @@ const BracketView: React.FC<BracketViewProps> = ({ tournamentId }) => {
       </div>
     );
   };
-  
+
   if (isLoading || !bracketData) {
     return (
       <Card>
@@ -156,11 +156,23 @@ const BracketView: React.FC<BracketViewProps> = ({ tournamentId }) => {
           <div className="flex justify-between mb-4">
             <Skeleton className="h-10 w-[180px]" />
             <div className="flex gap-2">
+              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white mr-2">
+                <img 
+                  src={getSportIconPath('basketball')} 
+                  alt="Basketball" 
+                  className="w-5 h-5 object-contain filter brightness-0 invert"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+                <i className="fas fa-basketball-ball text-sm hidden"></i>
+              </div>
               <Skeleton className="h-10 w-36" />
               <Skeleton className="h-10 w-24" />
             </div>
           </div>
-          
+
           <div className="overflow-x-auto">
             <div className="min-w-[900px] h-[400px] relative">
               <div className="grid grid-cols-4 gap-4">
@@ -178,7 +190,7 @@ const BracketView: React.FC<BracketViewProps> = ({ tournamentId }) => {
       </Card>
     );
   }
-  
+
   return (
     <Card>
       <CardContent className="p-4">
@@ -196,6 +208,18 @@ const BracketView: React.FC<BracketViewProps> = ({ tournamentId }) => {
             </Select>
           </div>
           <div className="flex gap-2">
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white mr-2">
+              <img 
+                src={getSportIconPath('basketball')} 
+                alt="Basketball" 
+                className="w-5 h-5 object-contain filter brightness-0 invert"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                }}
+              />
+              <i className="fas fa-basketball-ball text-sm hidden"></i>
+            </div>
             <Button onClick={handleCreatePool} className="flex items-center gap-2">
               <Play className="h-4 w-4" /> Create Bracket Pool
             </Button>
@@ -204,7 +228,7 @@ const BracketView: React.FC<BracketViewProps> = ({ tournamentId }) => {
             </Button>
           </div>
         </div>
-        
+
         {/* Tournament Bracket Visualization */}
         <div className="overflow-x-auto custom-scrollbar">
           <div className="min-w-[900px] h-[400px] relative">
@@ -221,7 +245,7 @@ const BracketView: React.FC<BracketViewProps> = ({ tournamentId }) => {
                   }`}
                 >
                   {round.matches.map((match: any) => renderMatch(match, roundIndex))}
-                  
+
                   {/* Championship circle for the final round */}
                   {roundIndex === 3 && bracketData.champion && (
                     <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mt-4">
@@ -233,25 +257,25 @@ const BracketView: React.FC<BracketViewProps> = ({ tournamentId }) => {
                   )}
                 </div>
               ))}
-              
+
               {/* Connecting Lines - These would be more dynamic in a real app */}
               <div className="tournament-bracket-line absolute" style={{ top: '50px', left: '200px', width: '50px', height: '2px', backgroundColor: '#e5e7eb' }}></div>
               <div className="tournament-bracket-line absolute" style={{ top: '50px', left: '200px', width: '2px', height: '100px', backgroundColor: '#e5e7eb' }}></div>
               <div className="tournament-bracket-line absolute" style={{ top: '150px', left: '200px', width: '50px', height: '2px', backgroundColor: '#e5e7eb' }}></div>
-              
+
               <div className="tournament-bracket-line absolute" style={{ top: '250px', left: '200px', width: '50px', height: '2px', backgroundColor: '#e5e7eb' }}></div>
               <div className="tournament-bracket-line absolute" style={{ top: '250px', left: '200px', width: '2px', height: '100px', backgroundColor: '#e5e7eb' }}></div>
               <div className="tournament-bracket-line absolute" style={{ top: '350px', left: '200px', width: '50px', height: '2px', backgroundColor: '#e5e7eb' }}></div>
-              
+
               <div className="tournament-bracket-line absolute" style={{ top: '100px', left: '450px', width: '50px', height: '2px', backgroundColor: '#e5e7eb' }}></div>
               <div className="tournament-bracket-line absolute" style={{ top: '100px', left: '450px', width: '2px', height: '200px', backgroundColor: '#e5e7eb' }}></div>
               <div className="tournament-bracket-line absolute" style={{ top: '300px', left: '450px', width: '50px', height: '2px', backgroundColor: '#e5e7eb' }}></div>
-              
+
               <div className="tournament-bracket-line absolute" style={{ top: '200px', left: '680px', width: '70px', height: '2px', backgroundColor: '#e5e7eb' }}></div>
             </div>
           </div>
         </div>
-        
+
         <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
           <h3 className="font-medium mb-2">Bracket Betting</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
