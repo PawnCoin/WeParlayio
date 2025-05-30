@@ -33,10 +33,6 @@ window.addEventListener('unhandledrejection', (event) => {
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import ThemeProvider from "./lib/ThemeProvider";
-import { BettingProvider } from "./contexts/BettingContext";
-import { TeamThemeProvider } from "./contexts/TeamThemeContext";
-import { OnboardingProvider } from "./contexts/OnboardingContext";
-import { errorReporting } from "./utils/errorReporting";
 
 // Performance monitoring
 const loadStart = performance.now();
