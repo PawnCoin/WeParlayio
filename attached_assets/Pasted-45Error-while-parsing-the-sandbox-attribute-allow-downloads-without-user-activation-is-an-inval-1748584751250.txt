@@ -1,0 +1,462 @@
+45Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.Understand this error
+framework-c95d40f4340f18cd.js:1 Unrecognized feature: 'ambient-light-sensor'.
+_ @ framework-c95d40f4340f18cd.js:1Understand this warning
+framework-c95d40f4340f18cd.js:1 Unrecognized feature: 'battery'.
+_ @ framework-c95d40f4340f18cd.js:1Understand this warning
+framework-c95d40f4340f18cd.js:1 Unrecognized feature: 'execution-while-not-rendered'.
+_ @ framework-c95d40f4340f18cd.js:1Understand this warning
+framework-c95d40f4340f18cd.js:1 Unrecognized feature: 'execution-while-out-of-viewport'.
+_ @ framework-c95d40f4340f18cd.js:1Understand this warning
+framework-c95d40f4340f18cd.js:1 Unrecognized feature: 'layout-animations'.
+_ @ framework-c95d40f4340f18cd.js:1Understand this warning
+framework-c95d40f4340f18cd.js:1 Unrecognized feature: 'legacy-image-formats'.
+_ @ framework-c95d40f4340f18cd.js:1Understand this warning
+framework-c95d40f4340f18cd.js:1 Unrecognized feature: 'navigation-override'.
+_ @ framework-c95d40f4340f18cd.js:1Understand this warning
+framework-c95d40f4340f18cd.js:1 Unrecognized feature: 'oversized-images'.
+_ @ framework-c95d40f4340f18cd.js:1Understand this warning
+framework-c95d40f4340f18cd.js:1 Unrecognized feature: 'publickey-credentials'.
+_ @ framework-c95d40f4340f18cd.js:1Understand this warning
+framework-c95d40f4340f18cd.js:1 Unrecognized feature: 'speaker-selection'.
+_ @ framework-c95d40f4340f18cd.js:1Understand this warning
+framework-c95d40f4340f18cd.js:1 Unrecognized feature: 'unoptimized-images'.
+_ @ framework-c95d40f4340f18cd.js:1Understand this warning
+framework-c95d40f4340f18cd.js:1 Unrecognized feature: 'unsized-media'.
+_ @ framework-c95d40f4340f18cd.js:1Understand this warning
+framework-c95d40f4340f18cd.js:1 Unrecognized feature: 'pointer-lock'.
+_ @ framework-c95d40f4340f18cd.js:1Understand this warning
+framework-c95d40f4340f18cd.js:1 Allow attribute will take precedence over 'allowfullscreen'.
+_ @ framework-c95d40f4340f18cd.js:1Understand this warning
+framework-c95d40f4340f18cd.js:1 Allow attribute will take precedence over 'allowpaymentrequest'.
+_ @ framework-c95d40f4340f18cd.js:1Understand this warning
+framework-c95d40f4340f18cd.js:1 Unable to preventDefault inside passive event listener invocation.
+preventDefault @ framework-c95d40f4340f18cd.js:1Understand this error
+framework-c95d40f4340f18cd.js:1 Unable to preventDefault inside passive event listener invocation.
+preventDefault @ framework-c95d40f4340f18cd.js:1Understand this error
+framework-c95d40f4340f18cd.js:1 Unable to preventDefault inside passive event listener invocation.
+preventDefault @ framework-c95d40f4340f18cd.js:1Understand this error
+WeParlayio:1 Access to fetch at 'https://sp.replit.com/v1/m' from origin 'https://replit.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.Understand this error
+sp.replit.com/v1/m:1 
+            
+            
+           Failed to load resource: net::ERR_FAILEDUnderstand this error
+_app-b9a3c203101b776e.js:38 Error sending segment performance metrics TypeError: Failed to fetch
+    at _app-b9a3c203101b776e.js:38:9046
+    at o (sdk.min.js:1:23763)
+    at t.<anonymous> (remote-metrics.ts:138:12)
+    at tslib.es6.js:103:23
+    at Object.next (tslib.es6.js:108:37)
+    at tslib.es6.js:80:8
+    at new Promise (<anonymous>)
+    at u (tslib.es6.js:72:27)
+    at i.148.t.send (sdk.min.js:1:22021)
+    at t.<anonymous> (remote-metrics.ts:125:16)
+    at tslib.es6.js:103:23
+    at Object.next (tslib.es6.js:108:37)
+    at tslib.es6.js:80:8
+    at new Promise (<anonymous>)
+    at u (tslib.es6.js:72:27)
+    at t.flush (sdk.min.js:1:21754)
+    at l (remote-metrics.ts:83:14)
+    at r (_app-b9a3c203101b776e.js:38:2959)
+(anonymous) @ _app-b9a3c203101b776e.js:38Understand this error
+stallwart.build.js:1 stallwart: failed ping 1
+framework-c95d40f4340f18cd.js:1 Unable to preventDefault inside passive event listener invocation.
+preventDefault @ framework-c95d40f4340f18cd.js:1Understand this error
+framework-c95d40f4340f18cd.js:1 Unable to preventDefault inside passive event listener invocation.
+preventDefault @ framework-c95d40f4340f18cd.js:1Understand this error
+framework-c95d40f4340f18cd.js:1 Unable to preventDefault inside passive event listener invocation.
+preventDefault @ framework-c95d40f4340f18cd.js:1Understand this error
+framework-c95d40f4340f18cd.js:1 Unable to preventDefault inside passive event listener invocation.
+preventDefault @ framework-c95d40f4340f18cd.js:1Understand this error
+framework-c95d40f4340f18cd.js:1 Unable to preventDefault inside passive event listener invocation.
+preventDefault @ framework-c95d40f4340f18cd.js:1Understand this error
+framework-c95d40f4340f18cd.js:1 Unable to preventDefault inside passive event listener invocation.
+preventDefault @ framework-c95d40f4340f18cd.js:1Understand this error
+2stallwart.build.js:1 stallwart: failed ping 1
+_app-b9a3c203101b776e.js:38 task queue exceeded allotted deadline by 51ms
+(anonymous) @ _app-b9a3c203101b776e.js:38Understand this warning
+stallwart.build.js:1 stallwart: failed ping 1
+stallwart.build.js:1 stallwart: failed ping 2
+stallwart.build.js:1 stallwart: failed ping 3
+stallwart.build.js:1 stallwart: failed ping 4
+stallwart.build.js:1 stallwart: failed ping 5
+stallwart.build.js:1 stallwart: session stalled
+events.launchdarkly.com/events/diagnostic/62b35a865152ab14c5942820:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+stallwart.build.js:1 
+            
+            
+           Uncaught (in promise) TypeError: Failed to fetch
+    at d (stallwart.build.js:1:505)
+    at g (stallwart.build.js:1:945)
+    at stallwart.build.js:1:1215Understand this error
+/data/repls/f7097b10-74b9-45ad-9152-e5c7329e5010/get_connection_metadata:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+graphql:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+graphql:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Afetch%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Aadc417b9&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=dc7e458e-b389-4565-b739-734c8371feca:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Afetch%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Aadc417b9&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=34856285-7a79-4766-ada9-862d282f7723:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+_app-b9a3c203101b776e.js:9 WebSocket connection to 'wss://replit.com/graphql_subscriptions' failed: 
+(anonymous) @ _app-b9a3c203101b776e.js:9Understand this error
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Afetch%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Aadc417b9&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=da8cc67d-b2f5-4820-8876-cb74cbfe3fbb:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Axhr%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Aadc417b9&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=637f1c59-210f-4339-90f1-357945565633:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+events.launchdarkly.com/events/diagnostic/62b35a865152ab14c5942820:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Axhr%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Aadc417b9&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=09ee7102-4eec-499e-b11c-51ec6b33b3e1:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Axhr%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Aadc417b9&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=496eb5b0-254b-4b82-845f-ffea610b19f3:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+r.stripe.com/b:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+r.stripe.com/b:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+raw.githubusercontent.com/MetaMask/eth-phishing-detect/master/src/config.json:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+raw.githubusercontent.com/phantom-labs/blocklist/master/blocklist.yaml:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+raw.githubusercontent.com/MetaMask/eth-phishing-detect/master/src/config.json:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+raw.githubusercontent.com/MetaMask/eth-phishing-detect/master/src/config.json:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+raw.githubusercontent.com/MetaMask/eth-phishing-detect/master/src/config.json:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+raw.githubusercontent.com/phantom-labs/blocklist/master/blocklist.yaml:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+raw.githubusercontent.com/phantom-labs/blocklist/master/blocklist.yaml:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+raw.githubusercontent.com/MetaMask/eth-phishing-detect/master/src/config.json:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+raw.githubusercontent.com/phantom-labs/blocklist/master/blocklist.yaml:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+raw.githubusercontent.com/MetaMask/eth-phishing-detect/master/src/config.json:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+raw.githubusercontent.com/MetaMask/eth-phishing-detect/master/src/config.json:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+raw.githubusercontent.com/MetaMask/eth-phishing-detect/master/src/config.json:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+raw.githubusercontent.com/MetaMask/eth-phishing-detect/master/src/config.json:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+raw.githubusercontent.com/phantom-labs/blocklist/master/blocklist.yaml:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+raw.githubusercontent.com/phantom-labs/blocklist/master/blocklist.yaml:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+raw.githubusercontent.com/phantom-labs/blocklist/master/blocklist.yaml:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+raw.githubusercontent.com/phantom-labs/blocklist/master/blocklist.yaml:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+raw.githubusercontent.com/phantom-labs/blocklist/master/blocklist.yaml:1 
+            
+            
+           Failed to load resource: net::ERR_INTERNET_DISCONNECTEDUnderstand this error
+framework-c95d40f4340f18cd.js:1 Unable to preventDefault inside passive event listener invocation.
+preventDefault @ framework-c95d40f4340f18cd.js:1Understand this error
+framework-c95d40f4340f18cd.js:1 Unable to preventDefault inside passive event listener invocation.
+preventDefault @ framework-c95d40f4340f18cd.js:1Understand this error
+framework-c95d40f4340f18cd.js:1 Unable to preventDefault inside passive event listener invocation.
+preventDefault @ framework-c95d40f4340f18cd.js:1Understand this error
+framework-c95d40f4340f18cd.js:1 Unable to preventDefault inside passive event listener invocation.
+preventDefault @ framework-c95d40f4340f18cd.js:1Understand this error
+framework-c95d40f4340f18cd.js:1 Unable to preventDefault inside passive event listener invocation.
+preventDefault @ framework-c95d40f4340f18cd.js:1Understand this error
+13_app-b9a3c203101b776e.js:38 WARN: A component changed from uncontrolled to controlled.
+(anonymous) @ _app-b9a3c203101b776e.js:38Understand this warning
+_app-b9a3c203101b776e.js:38 WARN: A component changed from controlled to uncontrolled.
+(anonymous) @ _app-b9a3c203101b776e.js:38Understand this warning
+2_app-b9a3c203101b776e.js:38 WARN: A component changed from uncontrolled to controlled.
+(anonymous) @ _app-b9a3c203101b776e.js:38Understand this warning
+_app-b9a3c203101b776e.js:38 WARN: A component changed from controlled to uncontrolled.
+(anonymous) @ _app-b9a3c203101b776e.js:38Understand this warning
+_app-b9a3c203101b776e.js:38 WARN: A component changed from uncontrolled to controlled.
+(anonymous) @ _app-b9a3c203101b776e.js:38Understand this warning
+framework-c95d40f4340f18cd.js:1 Unable to preventDefault inside passive event listener invocation.
+preventDefault @ framework-c95d40f4340f18cd.js:1Understand this error
+framework-c95d40f4340f18cd.js:1 Unable to preventDefault inside passive event listener invocation.
+preventDefault @ framework-c95d40f4340f18cd.js:1Understand this error
+framework-c95d40f4340f18cd.js:1 Unable to preventDefault inside passive event listener invocation.
+preventDefault @ framework-c95d40f4340f18cd.js:1Understand this error
+framework-c95d40f4340f18cd.js:1 Unable to preventDefault inside passive event listener invocation.
+preventDefault @ framework-c95d40f4340f18cd.js:1Understand this error
+_app-b9a3c203101b776e.js:38 onClick is deprecated, please use onPress
+(anonymous) @ _app-b9a3c203101b776e.js:38Understand this warning
+3_app-b9a3c203101b776e.js:38 Measure loop restarted more than 5 times
+(anonymous) @ _app-b9a3c203101b776e.js:38Understand this warning
+lockdown-install.js:1 SES_UNCAUGHT_EXCEPTION: Error: Premature close
+(anonymous) @ lockdown-install.js:1Understand this error
+inpage.js:1 MetaMask: Lost connection to "MetaMask RpcProvider".
+Error: MetaMask: Disconnected from MetaMask background. Page reload required.
+    at o.<anonymous> (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:1:40776)
+    at i (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:1:144458)
+    at o.emit (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:1:144998)
+    at chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:1:14729
+    at u.write [as _write] (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:1:14752)
+    at A (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:31295)
+    at chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:34395
+    at M.write (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:34422)
+    at o.f (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:22173)
+    at a.emit (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:10:33054)
+    at I (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:16981)
+    at A (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:16811)
+    at M.push (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:17595)
+    at c._write (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:1:17057)
+    at A (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:31295)
+    at chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:34395
+    at M.write (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:34422)
+    at d.f (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:22173)
+    at a.emit (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:10:33054)
+    at I (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:16981)
+    at A (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:16811)
+    at M.push (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:17595)
+    at d._onData (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:1:18465)
+    at d._onMessage (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:1:26088)
+_handleStreamDisconnect @ inpage.js:1Understand this warning
+inpage.js:1 a: MetaMask: Disconnected from MetaMask background. Page reload required.
+    at f._handleDisconnect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:1:29744)
+    at f._handleDisconnect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:1:37318)
+    at f._handleStreamDisconnect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:1:41230)
+    at chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:46309
+    at chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:45876
+    at o.<anonymous> (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:46038)
+    at o.<anonymous> (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:44050)
+    at o.h (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:44375)
+    at a.emit (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:10:33111)
+    at i (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:42443)
+    at r (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:42289)
+    at m.run (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:9708)
+    at p (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:9195)
+_handleDisconnect @ inpage.js:1Understand this error
+lockdown-install.js:1 SES_UNCAUGHT_EXCEPTION: Error: Premature close
+(anonymous) @ lockdown-install.js:1Understand this error
+data:image/svg+xml;…:1 
+            
+            
+           Failed to load resource: net::ERR_INVALID_URLUnderstand this error
+data:image/svg+xml;…:1 
+            
+            
+           Failed to load resource: net::ERR_INVALID_URLUnderstand this error
+framework-c95d40f4340f18cd.js:1 Unable to preventDefault inside passive event listener invocation.
+preventDefault @ framework-c95d40f4340f18cd.js:1Understand this error
+framework-c95d40f4340f18cd.js:1 Unable to preventDefault inside passive event listener invocation.
+preventDefault @ framework-c95d40f4340f18cd.js:1Understand this error
+framework-c95d40f4340f18cd.js:1 Unable to preventDefault inside passive event listener invocation.
+preventDefault @ framework-c95d40f4340f18cd.js:1Understand this error
+data:image/svg+xml;…:1 
+            
+            
+           Failed to load resource: net::ERR_INVALID_URLUnderstand this error
+data:image/svg+xml;…:1 
+            
+            
+           Failed to load resource: net::ERR_INVALID_URLUnderstand this error
+data:image/svg+xml;…:1 
+            
+            
+           Failed to load resource: net::ERR_INVALID_URLUnderstand this error
+data:image/svg+xml;…:1 
+            
+            
+           Failed to load resource: net::ERR_INVALID_URLUnderstand this error
+data:image/svg+xml;…:1 
+            
+            
+           Failed to load resource: net::ERR_INVALID_URLUnderstand this error
+data:image/svg+xml;…:1 
+            
+            
+           Failed to load resource: net::ERR_INVALID_URLUnderstand this error
+data:image/svg+xml;…:1 
+            
+            
+           Failed to load resource: net::ERR_INVALID_URLUnderstand this error
+data:image/svg+xml;…:1 
+            
+            
+           Failed to load resource: net::ERR_INVALID_URLUnderstand this error
+data:image/svg+xml;…:1 
+            
+            
+           Failed to load resource: net::ERR_INVALID_URLUnderstand this error
+data:image/svg+xml;…:1 
+            
+            
+           Failed to load resource: net::ERR_INVALID_URLUnderstand this error
+data:image/svg+xml;…:1 
+            
+            
+           Failed to load resource: net::ERR_INVALID_URLUnderstand this error
+data:image/svg+xml;…:1 
+            
+            
+           Failed to load resource: net::ERR_INVALID_URLUnderstand this error
+data:image/svg+xml;…:1 
+            
+            
+           Failed to load resource: net::ERR_INVALID_URLUnderstand this error
+data:image/svg+xml;…:1 
+            
+            
+           Failed to load resource: net::ERR_INVALID_URLUnderstand this error
+data:image/svg+xml;…:1 
+            
+            
+           Failed to load resource: net::ERR_INVALID_URLUnderstand this error
+data:image/svg+xml;…:1 
+            
+            
+           Failed to load resource: net::ERR_INVALID_URLUnderstand this error
+data:image/svg+xml;…:1 
+            
+            
+           Failed to load resource: net::ERR_INVALID_URLUnderstand this error
+data:image/svg+xml;…:1 
+            
+            
+           Failed to load resource: net::ERR_INVALID_URLUnderstand this error
+data:image/svg+xml;…:1 
+            
+            
+           Failed to load resource: net::ERR_INVALID_URLUnderstand this error
+data:image/svg+xml;…:1 
+            
+            
+           Failed to load resource: net::ERR_INVALID_URLUnderstand this error
+data:image/svg+xml;…:1 
+            
+            
+           Failed to load resource: net::ERR_INVALID_URLUnderstand this error
+f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar57n%3A:32 Unrecognized feature: 'ambient-light-sensor'.Understand this warning
+f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar57n%3A:32 Unrecognized feature: 'battery'.Understand this warning
+f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar57n%3A:32 Unrecognized feature: 'execution-while-not-rendered'.Understand this warning
+f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar57n%3A:32 Unrecognized feature: 'execution-while-out-of-viewport'.Understand this warning
+f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar57n%3A:32 Unrecognized feature: 'layout-animations'.Understand this warning
+f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar57n%3A:32 Unrecognized feature: 'legacy-image-formats'.Understand this warning
+f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar57n%3A:32 Unrecognized feature: 'navigation-override'.Understand this warning
+f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar57n%3A:32 Unrecognized feature: 'oversized-images'.Understand this warning
+f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar57n%3A:32 Unrecognized feature: 'publickey-credentials'.Understand this warning
+f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar57n%3A:32 Unrecognized feature: 'speaker-selection'.Understand this warning
+f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar57n%3A:32 Unrecognized feature: 'unoptimized-images'.Understand this warning
+f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar57n%3A:32 Unrecognized feature: 'unsized-media'.Understand this warning
+f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar57n%3A:32 Allow attribute will take precedence over 'allowfullscreen'.Understand this warning
+f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar57n%3A:32 Allow attribute will take precedence over 'allowpaymentrequest'.Understand this warning
+data:image/svg+xml;…:1 
+            
+            
+           Failed to load resource: net::ERR_INVALID_URLUnderstand this error
+ WebSocket connection to 'wss://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/ws' failed: WebSocket is closed before the connection is established.
+(anonymous) @ f7097b10-74b9-45ad-9…useWebSocket.ts:132Understand this warning
+ WebSocket connection to 'wss://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/ws' failed: WebSocket is closed before the connection is established.
+(anonymous) @ f7097b10-74b9-45ad-9…useWebSocket.ts:132Understand this warning
+f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/api/tournaments/1:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 (Not Found)Understand this error
+a.espncdn.com/i/teamlogos/nba/500/philadelphia76ers.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+a.espncdn.com/i/teamlogos/nba/500/milwaukeebucks.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+a.espncdn.com/i/teamlogos/nba/500/newyork%20knicks.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+a.espncdn.com/i/teamlogos/nba/500/westernchampion.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+a.espncdn.com/i/teamlogos/nba/500/brooklynnets.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+a.espncdn.com/i/teamlogos/nba/500/miamiheat.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+a.espncdn.com/i/teamlogos/nba/500/bostonceltics.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+a.espncdn.com/i/teamlogos/nba/500/clevelandcavaliers.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+a.espncdn.com/i/teamlogos/nba/500/atlantahawks.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+data:image/svg+xml;…:1 
+            
+            
+           Failed to load resource: net::ERR_INVALID_URLUnderstand this error
+ WebSocket connection to 'wss://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev:24678/?token=KN4Zt634KOhs' failed: 
+t @ f7097b10-74b9-45ad-9…da/3.2.3/eruda.js:2Understand this error
+_app-b9a3c203101b776e.js:38 Invalid href 'https://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev//betting-challenges' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
