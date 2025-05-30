@@ -1,3 +1,6 @@
+Adding the betting-challenges route and its corresponding component import.
+```
+```replit_final_file
 import React from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -76,6 +79,7 @@ import ThemeColorManager from "@/pages/ThemeColorManager";
 import LiveBettingRealFixed from "@/pages/LiveBettingReal-fixed";
 import SignUpEnhanced from "@/pages/SignUpEnhanced";
 import WalletManagementEnhanced from "@/pages/WalletManagementEnhanced";
+import BettingChallenges from './components/betting/BettingChallenges';
 
 // Import admin components
 import AdminBypass from "@/pages/AdminBypass";
@@ -141,11 +145,10 @@ function Router() {
       <Route path="/unified-sports" component={UnifiedSports} />
 
       {/* Gaming & Esports */}
-      <Route path="/gaming" component={GamingIntegration} />
-      <Route path="/unified-gaming" component={UnifiedGaming} />
-      <Route path="/video-gaming" component={VideoGaming} />
-      <Route path="/esports" component={EsportsHub} />
-      <Route path="/esports-hub" component={EsportsHub} />
+      <Route path="/gaming" component={UnifiedGaming} />
+      <Route path="/betting-challenges" component={BettingChallenges} />
+      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin-login" component={AdminLogin} />
 
       {/* Fantasy Sports */}
       <Route path="/fantasy" component={FantasySportsEnhanced} />
