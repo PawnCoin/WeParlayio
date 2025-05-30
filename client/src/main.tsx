@@ -21,8 +21,9 @@ window.addEventListener('error', (event) => {
     return;
   }
   
-  // Handle WordPress-related import errors
-
+  // Handle module import errors gracefully
+  if (event.error?.message?.includes('wordpressSync') || 
+      event.error?.message?.includes('initWordPressSync')) {
     console.warn('WordPress reference removed - continuing without it');
     event.preventDefault();
     return;
@@ -42,15 +43,16 @@ window.addEventListener('unhandledrejection', (event) => {
       reason.includes('NetworkError') ||
       reason.includes('1006') ||
 
-      reason.includes('WordPress')
+      reason.includes('wordpressSync') ||
+      reason.includes('initWordPressSync')
     ) ||
     (reason.message && typeof reason.message === 'string' && (
       reason.message.includes('WebSocket') ||
       reason.message.includes('Failed to fetch') ||
       reason.message.includes('NetworkError') ||
       reason.message.includes('1006') ||
-
-      reason.message.includes('WordPress')
+      reason.message.includes('wordpressSync') ||
+      reason.message.includes('initWordPressSync')
     ))
   );
 
