@@ -12,7 +12,7 @@ build = ["npm", "run", "build"]
 run = ["npm", "run", "start"]
 
 [workflows]
-runButton = "WeParlay Quick Fix"
+runButton = "WeParlay Clean Start"
 
 [[workflows.workflow]]
 name = "Project"
