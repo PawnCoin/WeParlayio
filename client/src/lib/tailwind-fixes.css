@@ -1,12 +1,15 @@
-/* Fixes for Tailwind CSS classes */
+/* Comprehensive dark mode fixes - Remove all white backgrounds */
 
-/* Fix for bg-white - use dark mode background color */
-.bg-white {
+/* Global dark background enforcement */
+.dark,
+.dark body,
+.dark .bg-white,
+.dark .bg-background,
+.dark .bg-card {
   background-color: #0f172a !important;
 }
 
-/* Dark mode overrides for ALL white backgrounds */
-.dark .bg-white,
+/* Remove all light backgrounds in dark mode */
 .dark .bg-gray-50,
 .dark .bg-slate-50,
 .dark .bg-zinc-50,
@@ -16,11 +19,33 @@
 .dark .bg-slate-100,
 .dark .bg-zinc-100,
 .dark .bg-neutral-100,
-.dark .bg-stone-100 {
+.dark .bg-stone-100,
+.dark .bg-gray-200,
+.dark .bg-slate-200,
+.dark .bg-zinc-200 {
   background-color: #0f172a !important;
 }
 
-/* Override inline styles with white backgrounds */
+/* Force white text for all content */
+.dark,
+.dark *:not(.text-gray-400):not(.text-gray-500):not(.text-gray-600):not(.text-slate-400):not(.text-slate-500):not(.text-slate-600):not(.text-muted-foreground):not(.text-muted):not(.text-secondary) {
+  color: white !important;
+}
+
+/* Preserve greyish text colors for secondary content */
+.dark .text-gray-400,
+.dark .text-gray-500,
+.dark .text-gray-600,
+.dark .text-slate-400,
+.dark .text-slate-500,
+.dark .text-slate-600,
+.dark .text-muted-foreground,
+.dark .text-muted,
+.dark .text-secondary {
+  color: #94a3b8 !important;
+}
+
+/* Override any inline white backgrounds */
 .dark [style*="background-color: white"],
 .dark [style*="background-color: #ffffff"],
 .dark [style*="background-color: #FFFFFF"],
@@ -34,27 +59,26 @@
   background-color: #0f172a !important;
 }
 
-/* Force all white backgrounds in dark mode */
-.dark .tournament-bracket-item {
+/* Ensure proper component styling */
+.dark .card,
+.dark .tournament-bracket-item,
+.dark [data-radix-collection-item] {
   background-color: #0f172a !important;
   border-color: #334155 !important;
 }
 
-.dark .card {
-  background-color: #0f172a !important;
-}
-
-.dark .text-foreground {
+/* Button styling preservation */
+.dark button:not([class*="bg-primary"]):not([class*="bg-secondary"]) {
+  background-color: #334155 !important;
+  border-color: #475569 !important;
   color: white !important;
 }
 
-/* Additional dark mode overrides */
-.dark .bg-background {
-  background-color: #0f172a !important;
-}
-
-.dark .bg-card {
-  background-color: #0f172a !important;
+/* Primary button preservation */
+.dark .btn-primary,
+.dark [class*="bg-primary"] {
+  background-color: #3b82f6 !important;
+  color: white !important;
 }
 
 /* Fix any remaining white elements */
