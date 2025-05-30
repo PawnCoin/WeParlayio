@@ -107,31 +107,8 @@ export class OddsApiService {
   }
 
   private getMockOddsData(sport?: string): any {
-    return [
-      {
-        id: `mock_${sport || 'general'}_${Date.now()}`,
-        sport_key: sport || 'general',
-        sport_title: `${sport || 'General'} - Mock Data`,
-        commence_time: new Date(Date.now() + 3600000).toISOString(),
-        home_team: 'Team A',
-        away_team: 'Team B',
-        bookmakers: [
-          {
-            key: 'weparlay',
-            title: 'WeParlay Mock',
-            markets: [
-              {
-                key: 'h2h',
-                outcomes: [
-                  { name: 'Team A', price: 1.90 },
-                  { name: 'Team B', price: 1.95 }
-                ]
-              }
-            ]
-          }
-        ]
-      }
-    ];
+    // No mock data - return empty array only
+    return [];
   }
 
   async getSports(): Promise<any> {

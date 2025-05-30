@@ -94,26 +94,7 @@ router.get('/live-ticker', async (req, res) => {
   }
 });
 
-// Get real-time odds updates
-router.get('/live-updates', async (req, res) => {
-  try {
-    // This endpoint provides incremental updates
-    const updates = await fetchOddsUpdates();
-
-    res.json({ 
-      success: true, 
-      updates,
-      timestamp: new Date().toISOString()
-    });
-
-  } catch (error) {
-    console.error('Error fetching odds updates:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to fetch odds updates' 
-    });
-  }
-});
+// Removed duplicate /live-updates route - handled in main routes.ts
 
 // WebSocket endpoint for real-time updates
 router.post('/subscribe', async (req, res) => {
