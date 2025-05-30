@@ -1,48 +1,11 @@
-/* COMPREHENSIVE DARK MODE FIXES */
+/* Fixes for Tailwind CSS classes */
 
 /* Fix for bg-white - use dark mode background color */
 .bg-white {
   background-color: #0f172a !important;
 }
 
-/* FORCE ALL TEXT TO WHITE IN DARK MODE */
-.dark {
-  color: #ffffff !important;
-}
-
-.dark *,
-.dark h1,
-.dark h2, 
-.dark h3,
-.dark h4,
-.dark h5,
-.dark h6,
-.dark p,
-.dark span,
-.dark div,
-.dark a,
-.dark button,
-.dark input,
-.dark textarea,
-.dark label {
-  color: #ffffff !important;
-}
-
-/* Keep specific grey text as intended */
-.dark .text-gray-400,
-.dark .text-gray-500,
-.dark .text-gray-600,
-.dark .text-slate-400,
-.dark .text-slate-500,
-.dark .text-slate-600,
-.dark .text-muted-foreground,
-.dark .text-secondary,
-.dark [class*="text-gray-"],
-.dark [class*="text-slate-"] {
-  color: #94a3b8 !important;
-}
-
-/* Dark mode overrides for ALL white/light backgrounds */
+/* Dark mode overrides for ALL white backgrounds */
 .dark .bg-white,
 .dark .bg-gray-50,
 .dark .bg-slate-50,
@@ -53,17 +16,8 @@
 .dark .bg-slate-100,
 .dark .bg-zinc-100,
 .dark .bg-neutral-100,
-.dark .bg-stone-100,
-.dark .bg-gradient-to-r,
-.dark .bg-gradient-to-l,
-.dark .bg-gradient-to-t,
-.dark .bg-gradient-to-b,
-.dark .bg-gradient-to-br,
-.dark .bg-gradient-to-bl,
-.dark .bg-gradient-to-tr,
-.dark .bg-gradient-to-tl {
+.dark .bg-stone-100 {
   background-color: #0f172a !important;
-  background-image: none !important;
 }
 
 /* Override inline styles with white backgrounds */
@@ -78,7 +32,6 @@
 .dark [style*="background: #fff"],
 .dark [style*="background: #FFF"] {
   background-color: #0f172a !important;
-  background-image: none !important;
 }
 
 /* Force all white backgrounds in dark mode */
@@ -107,28 +60,6 @@
 /* Fix any remaining white elements */
 .dark div[class*="bg-white"],
 .dark span[class*="bg-white"],
-.dark section[class*="bg-white"],
-.dark article[class*="bg-white"],
-.dark main[class*="bg-white"] {
+.dark section[class*="bg-white"] {
   background-color: #0f172a !important;
-}
-
-/* Eliminate gradient backgrounds with light colors */
-.dark [class*="from-gray"],
-.dark [class*="from-white"],
-.dark [class*="to-gray"], 
-.dark [class*="to-white"],
-.dark [class*="via-gray"],
-.dark [class*="via-white"],
-.dark [class*="from-purple-50"],
-.dark [class*="from-blue-50"],
-.dark [class*="from-green-50"],
-.dark [class*="to-purple-50"],
-.dark [class*="to-blue-50"],
-.dark [class*="to-green-50"],
-.dark [class*="via-purple-50"],
-.dark [class*="via-blue-50"],
-.dark [class*="via-green-50"] {
-  background-color: #0f172a !important;
-  background-image: none !important;
 }

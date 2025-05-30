@@ -70,31 +70,7 @@
   --chart-5: #9ca3af;
 }
 
-/* FORCE ALL TEXT TO WHITE IN DARK MODE (except grey text) */
-.dark {
-  color: #ffffff !important;
-}
-
-.dark * {
-  color: #ffffff !important;
-}
-
-/* Keep grey/greyish text as intended */
-.dark .text-gray-400,
-.dark .text-gray-500,
-.dark .text-gray-600,
-.dark .text-slate-400,
-.dark .text-slate-500,
-.dark .text-slate-600,
-.dark .text-muted-foreground,
-.dark .text-secondary,
-.dark [class*="text-gray"],
-.dark [class*="text-slate"] {
-  color: #94a3b8 !important;
-}
-
 /* Additional dark mode overrides to eliminate ALL white backgrounds */
-.dark .bg-white,
 .dark .bg-gray-50,
 .dark .bg-slate-50,
 .dark .bg-zinc-50,
@@ -104,13 +80,8 @@
 .dark .bg-slate-100,
 .dark .bg-zinc-100,
 .dark .bg-neutral-100,
-.dark .bg-stone-100,
-.dark .bg-gradient-to-r,
-.dark .bg-gradient-to-l,
-.dark .bg-gradient-to-t,
-.dark .bg-gradient-to-b {
+.dark .bg-stone-100 {
   background-color: #0f172a !important;
-  background-image: none !important;
 }
 
 /* Force tournament bracket items */
@@ -120,15 +91,8 @@
 }
 
 /* Override any component with white background */
-.dark [class*="bg-white"],
-.dark [style*="background-color: white"],
-.dark [style*="background-color: #ffffff"],
-.dark [style*="background-color: #fff"],
-.dark [style*="background: white"],
-.dark [style*="background: #ffffff"],
-.dark [style*="background: #fff"] {
+.dark [class*="bg-white"] {
   background-color: #0f172a !important;
-  background-image: none !important;
 }
 
 /* Ensure all cards use dark background */
@@ -136,19 +100,6 @@
 .dark [data-radix-collection-item] {
   background-color: #0f172a !important;
 }
-
-/* Force all gradients to dark background */
-.dark [class*="from-gray"],
-.dark [class*="from-white"],
-.dark [class*="to-gray"], 
-.dark [class*="to-white"],
-.dark [class*="via-gray"],
-.dark [class*="via-white"] {
-  background-color: #0f172a !important;
-  background-image: none !important;
-}
-
-/* Specific EsportsHub overrides - cleaned up */
 
 * {
   border-color: var(--border);

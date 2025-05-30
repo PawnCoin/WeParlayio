@@ -393,7 +393,7 @@ const EsportsHub: React.FC = () => {
         </div>
 
         {/* Live Stats Dashboard */}
-        <Card className="border-purple-200 dark:border-slate-600 bg-card dark:bg-slate-800">
+        <Card className="border-purple-200 bg-gradient-to-r from-purple-50 via-blue-50 to-green-50">
           <CardContent className="p-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <div className="text-center">
@@ -451,7 +451,7 @@ const EsportsHub: React.FC = () => {
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -20 }}
-                          className="border rounded-xl p-6 space-y-4 bg-card dark:bg-slate-800 hover:shadow-lg transition-all border-slate-200 dark:border-slate-600"
+                          className="border rounded-xl p-6 space-y-4 bg-gradient-to-r from-gray-50 to-white hover:shadow-lg transition-all"
                         >
                           <div className="flex items-center justify-between">
                             <div>
@@ -734,7 +734,7 @@ const EsportsHub: React.FC = () => {
                     {liveBets.slice(-8).map(bet => (
                       <motion.div 
                         key={bet.id} 
-                        className="text-xs p-3 bg-card dark:bg-slate-800 border rounded-lg border-slate-200 dark:border-slate-600"
+                        className="text-xs p-3 bg-gradient-to-r from-gray-50 to-white border rounded-lg"
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                       >
@@ -779,8 +779,8 @@ const EsportsHub: React.FC = () => {
                       key={msg.id} 
                       className={`p-2 rounded ${
                         msg.type === 'win' 
-                          ? 'bg-green-900/20 dark:bg-green-900/30 border border-green-600 dark:border-green-500' 
-                          : 'bg-slate-100 dark:bg-slate-800'
+                          ? 'bg-green-50 border border-green-200' 
+                          : 'bg-gray-50'
                       }`}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -831,7 +831,7 @@ const EsportsHub: React.FC = () => {
                 ].map((winner, index) => (
                   <motion.div 
                     key={index} 
-                    className="flex items-center justify-between p-2 bg-gradient-to-r from-yellow-900/20 to-orange-900/20 dark:from-yellow-900/30 dark:to-orange-900/30 rounded border border-yellow-200 dark:border-yellow-600"
+                    className="flex items-center justify-between p-2 bg-gradient-to-r from-yellow-50 to-orange-50 rounded border"
                     whileHover={{ scale: 1.02 }}
                   >
                     <div className="flex items-center gap-2">
