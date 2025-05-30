@@ -15,8 +15,15 @@ import {
   Target,
   Zap,
   Star,
-  Crown
+  Crown,
+  Settings as SettingsIcon,
+  Palette
 } from 'lucide-react';
+import UserProfile from '@/components/user/UserProfile';
+import TeamThemeSelector from '@/components/settings/TeamThemeSelector';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 
 interface UserProfilePageProps {
   params: { userId: string };
@@ -145,7 +152,7 @@ const UserProfilePage: React.FC<UserProfilePageProps> = () => {
 
       {/* User Details Tabs */}
       <Tabs defaultValue="activity" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="activity">
             <TrendingUp className="h-4 w-4 mr-2" />
             Activity
@@ -161,6 +168,14 @@ const UserProfilePage: React.FC<UserProfilePageProps> = () => {
           <TabsTrigger value="stats">
             <Zap className="h-4 w-4 mr-2" />
             Statistics
+          </TabsTrigger>
+          <TabsTrigger value="settings">
+            <Users className="h-4 w-4 mr-2" />
+            Settings
+          </TabsTrigger>
+          <TabsTrigger value="themes">
+            <Star className="h-4 w-4 mr-2" />
+            Themes
           </TabsTrigger>
         </TabsList>
 
@@ -306,6 +321,234 @@ const UserProfilePage: React.FC<UserProfilePageProps> = () => {
                     {user.emailVerified ? 'Verified' : 'Unverified'}
                   </Badge>
                 </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="settings" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Profile Settings</CardTitle>
+                <CardDescription>Manage your personal information and account details</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <UserProfile user={user} />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Notification Settings</CardTitle>
+                <CardDescription>Manage your notification preferences</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Email Notifications</Label>
+                    <p className="text-sm text-muted-foreground">Receive bet updates via email</p>
+                  </div>
+                  <Switch />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Push Notifications</Label>
+                    <p className="text-sm text-muted-foreground">Receive live bet notifications</p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>SMS Notifications</Label>
+                    <p className="text-sm text-muted-foreground">Receive SMS for important updates</p>
+                  </div>
+                  <Switch />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Security Settings</CardTitle>
+                <CardDescription>Manage your account security preferences</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Two-Factor Authentication</Label>
+                    <p className="text-sm text-muted-foreground">Add extra security to your account</p>
+                  </div>
+                  <Switch />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Login Alerts</Label>
+                    <p className="text-sm text-muted-foreground">Get notified of new login attempts</p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Biometric Login</Label>
+                    <p className="text-sm text-muted-foreground">Use fingerprint or face ID</p>
+                  </div>
+                  <Switch />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Privacy Settings</CardTitle>
+                <CardDescription>Control your privacy and data sharing</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Public Profile</Label>
+                    <p className="text-sm text-muted-foreground">Make your profile visible to others</p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Share Betting Activity</Label>
+                    <p className="text-sm text-muted-foreground">Let others see your public bets</p>
+                  </div>
+                  <Switch />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Analytics Tracking</Label>
+                    <p className="text-sm text-muted-foreground">Help improve WeParlay with usage data</p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="themes" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Display Preferences</CardTitle>
+                <CardDescription>Adjust how WeParlay looks and feels</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Dark Mode</Label>
+                    <p className="text-sm text-muted-foreground">Switch between light and dark themes</p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>High Contrast</Label>
+                    <p className="text-sm text-muted-foreground">Increase contrast for better readability</p>
+                  </div>
+                  <Switch />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Reduce Motion</Label>
+                    <p className="text-sm text-muted-foreground">Minimize animations and transitions</p>
+                  </div>
+                  <Switch />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Large Text</Label>
+                    <p className="text-sm text-muted-foreground">Increase text size for better readability</p>
+                  </div>
+                  <Switch />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Team Themes</CardTitle>
+                <CardDescription>Customize your WeParlay experience with team colors</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <TeamThemeSelector />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Betting Interface</CardTitle>
+                <CardDescription>Configure your betting experience</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Floating Bet Slip</Label>
+                    <p className="text-sm text-muted-foreground">Keep bet slip visible while browsing</p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Auto-hide Empty Slip</Label>
+                    <p className="text-sm text-muted-foreground">Hide bet slip when no bets are added</p>
+                  </div>
+                  <Switch />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Quick Bet Amounts</Label>
+                    <p className="text-sm text-muted-foreground">Show quick bet amount buttons</p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Sound Effects</Label>
+                    <p className="text-sm text-muted-foreground">Play sounds for bet confirmations</p>
+                  </div>
+                  <Switch />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Color Preview</CardTitle>
+                <CardDescription>Preview your current theme colors</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex items-center p-3 rounded-md bg-primary text-primary-foreground">
+                    <div className="w-4 h-4 rounded-full bg-primary mr-2"></div>
+                    <span>Primary</span>
+                  </div>
+                  <div className="flex items-center p-3 rounded-md bg-secondary text-secondary-foreground">
+                    <div className="w-4 h-4 rounded-full bg-secondary mr-2"></div>
+                    <span>Secondary</span>
+                  </div>
+                  <div className="flex items-center p-3 rounded-md bg-accent text-accent-foreground">
+                    <div className="w-4 h-4 rounded-full bg-accent mr-2"></div>
+                    <span>Accent</span>
+                  </div>
+                  <div className="flex items-center p-3 rounded-md bg-muted text-muted-foreground">
+                    <div className="w-4 h-4 rounded-full bg-muted mr-2"></div>
+                    <span>Muted</span>
+                  </div>
+                </div>
+                <Button className="w-full mt-4">
+                  Save Theme Preferences
+                </Button>
               </CardContent>
             </Card>
           </div>
