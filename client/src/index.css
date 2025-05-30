@@ -84,20 +84,14 @@
   background-color: #0f172a !important;
 }
 
-/* Force tournament bracket items */
-.dark .tournament-bracket-item {
-  background-color: #0f172a !important;
-  border-color: #334155 !important;
-}
-
-/* Override any component with white background */
-.dark [class*="bg-white"] {
+/* Override any component with white background - but exclude esports hub */
+.dark [class*="bg-white"]:not(.esports-hub *):not(.esports-hub) {
   background-color: #0f172a !important;
 }
 
-/* Ensure all cards use dark background */
-.dark .card,
-.dark [data-radix-collection-item] {
+/* Ensure all cards use dark background - but exclude esports hub */
+.dark .card:not(.esports-hub *):not(.esports-hub),
+.dark [data-radix-collection-item]:not(.esports-hub *):not(.esports-hub) {
   background-color: #0f172a !important;
 }
 
