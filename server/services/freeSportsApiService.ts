@@ -333,3 +333,35 @@ export class FreeSportsApiService {
 }
 
 export const freeSportsApiService = new FreeSportsApiService();
+
+// Enhanced service with better error handling and more data sources
+export class EnhancedFreeSportsService extends FreeSportsApiService {
+  async getComprehensiveOdds(): Promise<any[]> {
+    const allOdds = [];
+    
+    try {
+      // Get data from all free sources
+      const [nflOdds, nbaOdds, mlbOdds, nhlOdds, soccerOdds] = await Promise.allSettled([
+        this.getNFLOdds(),
+        this.getNBAOdds(), 
+        this.getMLBOdds(),
+        this.getNHLOdds(),
+        this.getSoccerOdds()
+      ]);
+
+      if (nflOdds.status === 'fulfilled') allOdds.push(...nflOdds.value);
+      if (nbaOdds.status === 'fulfilled') allOdds.push(...nbaOdds.value);
+      if (mlbOdds.status === 'fulfilled') allOdds.push(...mlbOdds.value);
+      if (nhlOdds.status === 'fulfilled') allOdds.push(...nhlOdds.value);
+      if (soccerOdds.status === 'fulfilled') allOdds.push(...soccerOdds.value);
+
+      console.log(`✅ Enhanced Free API: ${allOdds.length} total events from backup sources`);
+      return allOdds;
+    } catch (error) {
+      console.error('Enhanced free sports API error:', error);
+      return [];
+    }
+  }
+}
+
+export const enhancedFreeSportsService = new EnhancedFreeSportsService();

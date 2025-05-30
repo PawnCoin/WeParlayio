@@ -113,6 +113,9 @@ router.get('/live-ticker', async (req, res) => {
       }
     }
 
+    // Skip The Odds API (quota exhausted) - use backup sources only
+    console.log('Using backup APIs (ESPN, RapidAPI) - The Odds API quota exhausted');
+
     // Update cache
     oddsCache = allOdds;
     lastUpdate = now;

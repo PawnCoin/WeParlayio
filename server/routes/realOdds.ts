@@ -1,4 +1,3 @@
-
 // Multi-API failover system with ESPN logos and comprehensive data
 import { Request, Response } from 'express';
 import { apiResilienceManager } from '../services/apiResilienceManager';
@@ -54,7 +53,7 @@ async function fetchESPNDataWithLogos() {
       { key: 'basketball/mens-college-basketball', name: 'NCAA Basketball', season: '2025' }
     ];
     const allEvents: any[] = [];
-    
+
     for (const sport of sportsToFetch) {
       try {
         const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport.key}/scoreboard`);
@@ -65,7 +64,7 @@ async function fetchESPNDataWithLogos() {
               const competition = event.competitions?.[0];
               const homeTeam = competition?.competitors?.find((c: any) => c.homeAway === 'home');
               const awayTeam = competition?.competitors?.find((c: any) => c.homeAway === 'away');
-              
+
               if (homeTeam && awayTeam) {
                 allEvents.push({
                   id: `espn-${event.id}`,
@@ -114,7 +113,7 @@ async function fetchESPNDataWithLogos() {
 function generateRealisticOdds() {
   const types = ['favorite', 'underdog', 'even'];
   const type = types[Math.floor(Math.random() * types.length)];
-  
+
   switch (type) {
     case 'favorite':
       return -Math.floor(Math.random() * 300 + 110); // -110 to -410
@@ -136,11 +135,11 @@ function generateTotal() {
 export async function getRealOddsData(req: Request, res: Response) {
   try {
     console.log('🚀 Initiating resilient API data fetching...');
-    
+
     // Check system status first
     const systemStatus = apiResilienceManager.getSystemStatus();
     console.log(`📊 System Status: Emergency Mode: ${systemStatus.emergencyMode}`);
-    
+
     let apiResults = {
       theOdds: [],
       rapidApi: [],
@@ -152,22 +151,16 @@ export async function getRealOddsData(req: Request, res: Response) {
       }
     };
 
+    // Skip The Odds API (quota exhausted)
+    console.log('⚠️ The Odds API quota exhausted - using backup sources only');
+    apiResults.apiStatus.theOddsApi = 'quota_exhausted';
+    apiResults.theOdds = [];
+
     // Attempt to fetch from all APIs with proper error handling
-    const [theOddsResult, rapidApiResult, espnResult] = await Promise.allSettled([
-      fetchTheOddsAPIWithResilience(),
+    const [rapidApiResult, espnResult] = await Promise.allSettled([
       fetchRapidAPIWithResilience(),
       fetchESPNDataWithLogos()
     ]);
-
-    // Process The Odds API result
-    if (theOddsResult.status === 'fulfilled' && theOddsResult.value && !theOddsResult.value.fallback) {
-      apiResults.theOdds = Array.isArray(theOddsResult.value) ? theOddsResult.value.slice(0, 10) : [];
-      apiResults.apiStatus.theOddsApi = 'active';
-      console.log(`✅ The Odds API: ${apiResults.theOdds.length} events retrieved`);
-    } else {
-      apiResults.apiStatus.theOddsApi = 'fallback';
-      console.log('⚠️ The Odds API: Using fallback data');
-    }
 
     // Process RapidAPI result
     if (rapidApiResult.status === 'fulfilled' && rapidApiResult.value && !rapidApiResult.value.fallback) {
@@ -179,39 +172,24 @@ export async function getRealOddsData(req: Request, res: Response) {
       console.log('⚠️ RapidAPI: Using fallback data');
     }
 
-    // Process ESPN result
-    if (espnResult.status === 'fulfilled' && espnResult.value) {
-      apiResults.espn = espnResult.value;
-      apiResults.apiStatus.espn = 'active';
-      console.log(`✅ ESPN API: ${apiResults.espn.length} events retrieved`);
-    } else {
+    // Get comprehensive data from enhanced free sports service
+    let freeApiResults = [];
+    try {
+      const { enhancedFreeSportsService } = await import('../services/freeSportsApiService');
+      freeApiResults = await enhancedFreeSportsService.getComprehensiveOdds();
+
+      if (freeApiResults.length > 0) {
+        apiResults.espn = freeApiResults;
+        apiResults.apiStatus.espn = 'active';
+        console.log(`📺 Enhanced Free APIs: Retrieved ${freeApiResults.length} events from multiple sources`);
+      }
+    } catch (freeApiError) {
+      console.log('❌ Enhanced Free API failed:', freeApiError);
       apiResults.apiStatus.espn = 'failed';
-      console.log('❌ ESPN API: Failed to retrieve data');
     }
 
     // Transform and combine all data
     const allRealOdds = [];
-
-    // Add The Odds API data
-    apiResults.theOdds.forEach((event: any, index: number) => {
-      const homeOutcome = event.bookmakers?.[0]?.markets?.[0]?.outcomes?.find((o: any) => o.name === event.home_team);
-      const awayOutcome = event.bookmakers?.[0]?.markets?.[0]?.outcomes?.find((o: any) => o.name === event.away_team);
-      
-      allRealOdds.push({
-        id: `odds-api-${event.id || index}`,
-        sport_key: event.sport_key,
-        sport_title: event.sport_title,
-        commence_time: event.commence_time,
-        home_team: event.home_team,
-        away_team: event.away_team,
-        home_odds: homeOutcome?.price || -110,
-        away_odds: awayOutcome?.price || -110,
-        bookmaker: event.bookmakers?.[0]?.title || 'Live Sportsbook',
-        source: 'TheOddsAPI',
-        api_status: apiResults.apiStatus.theOddsApi,
-        last_update: new Date().toISOString()
-      });
-    });
 
     // Add RapidAPI data
     apiResults.rapidApi.forEach((item: any, index: number) => {
@@ -236,7 +214,7 @@ export async function getRealOddsData(req: Request, res: Response) {
     // Determine overall system status
     const activeApis = Object.values(apiResults.apiStatus).filter(status => status === 'active').length;
     const totalApis = Object.keys(apiResults.apiStatus).length;
-    
+
     let overallStatus = 'healthy';
     if (activeApis === 0) {
       overallStatus = 'emergency';
@@ -271,10 +249,10 @@ export async function getRealOddsData(req: Request, res: Response) {
 
   } catch (error: any) {
     console.error('❌ Critical error in odds aggregation:', error);
-    
+
     // Emergency fallback - return cached data from resilience manager
     const emergencyData = await apiResilienceManager.makeResilientCall('emergency_fallback');
-    
+
     res.status(200).json({
       success: true,
       data: emergencyData.data || [],
