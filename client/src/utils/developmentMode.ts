@@ -18,3 +18,8 @@ export const shouldReportErrors = () => {
   // Only report errors in production
   return isProduction();
 };
+
+export const shouldUseWebSocket = () => {
+  // Disable WebSocket in development to prevent "upgrade required" errors
+  return isProduction() && !window.location.hostname.includes('replit.dev');
+};

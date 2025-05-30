@@ -17,6 +17,8 @@ interface UseWebSocketOptions {
   onError?: (error: Event) => void;
 }
 
+type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error' | 'disabled';
+
 export const useWebSocket = (options: UseWebSocketOptions = {}) => {
   const {
     url = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`,
@@ -163,9 +165,14 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
       };
 
       ws.onerror = (error) => {
-        clearTimeout(connectionTimeout);
-        isConnectingRef.current = false;
         console.error('❌ WebSocket error:', error);
+
+        // Handle "upgrade required" errors specifically
+        if (error.toString().includes('upgrade') || error.toString().includes('426')) {
+          console.log('🔄 WebSocket upgrade required - switching to polling mode');
+          return;
+        }
+
         onError?.(error);
         setIsConnected(false);
       };
