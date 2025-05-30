@@ -639,7 +639,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
               ? "bg-primary text-white" 
               : "hover:bg-gray-100 dark:hover:bg-gray-800"
           }`}>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 mr-3">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 mr-3">
               <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3" />
             </svg>
             <span>Login</span>
@@ -647,29 +647,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
           </div>
         </Link>
 
-        <Link href="/settings">
-          <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer mb-2 ${
-            location === '/settings' 
-              ? "bg-primary text-white" 
-              : "hover:bg-gray-100 dark:hover:bg-gray-800"
-          }`}>
-            <Settings className="h-5 w-5 mr-3" />
-            <span>Settings</span>
-            <ChevronRight className="h-4 w-4 ml-auto" />
-          </div>
-        </Link>
-
-        <Link href="/theme-manager">
-          <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer mb-2 ${
-            location === '/theme-manager' 
-              ? "bg-primary text-white" 
-              : "hover:bg-gray-100 dark:hover:bg-gray-800"
-          }`}>
-            <Settings className="h-5 w-5 mr-3" />
-            <span>Theme Settings</span>
-            <ChevronRight className="h-4 w-4 ml-auto" />
-          </div>
-        </Link>
+        
 
         <div className="flex items-center justify-between mt-3">
           <p className="text-sm">Dark Mode</p>
