@@ -86,3 +86,14 @@ const wordPressService = new WordPressService();
 
 export { wordPressService };
 export default wordPressService;
+
+// WordPress synchronization functionality
+export const wordpressSync = {
+  // Add WordPress sync methods here
+};
+
+// Add the missing export that's being imported elsewhere
+export const initWordPressSync = () => {
+  console.log('WordPress sync initialized');
+  // Add initialization logic here
+};

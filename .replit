@@ -12,7 +12,7 @@ build = ["npm", "run", "build"]
 run = ["npm", "run", "start"]
 
 [workflows]
-runButton = "WeParlay Complete Fix"
+runButton = "WeParlay Fixed Development"
 
 [[workflows.workflow]]
 name = "Project"
@@ -131,6 +131,14 @@ args = "npm run dev"
 name = "WeParlay Fixed Development"
 author = 42612790
 mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "rm -rf node_modules/.vite"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "rm -rf dist"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
