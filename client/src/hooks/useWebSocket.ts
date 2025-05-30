@@ -208,12 +208,16 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
   }, []);
 
   useEffect(() => {
-    // Only connect WebSocket in production or when explicitly needed
-    if (window.location.hostname !== 'localhost' && !window.location.hostname.includes('replit.dev')) {
-      connect();
-    } else {
+    // Completely disable WebSocket in development environments
+    if (window.location.hostname === 'localhost' || 
+        window.location.hostname.includes('replit.dev') || 
+        import.meta.env.DEV) {
       console.log('🔌 WebSocket disabled in development environment');
+      return;
     }
+
+    // Only connect in production
+    connect();
 
     return () => {
       disconnect(); // Clean up on unmount

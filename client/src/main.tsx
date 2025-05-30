@@ -17,7 +17,9 @@ window.addEventListener('unhandledrejection', (event) => {
       reason.includes('vite') ||
       reason.includes('HMR') ||
       reason.includes('connecting...') ||
-      reason.includes('failed to connect to websocket')
+      reason.includes('failed to connect to websocket') ||
+      reason.includes('upgrade required') ||
+      reason.includes('426')
     ) ||
     (reason && reason.message && typeof reason.message === 'string' && (
       reason.message.includes('WebSocket') ||
