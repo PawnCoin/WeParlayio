@@ -3,9 +3,9 @@
 
 ## 🔴 CRITICAL - Backend Infrastructure (Fix Immediately)
 
-
-
-
+### 1. WordPress Sync Functions
+- **File**: `client/src/lib/wordpressSync.ts`
+- **Issue**: `applyWordPressConfig` called globally but may have connection issues
 - **Priority**: CRITICAL - Affects theme integration
 - **Status**: ⚠️ Needs verification
 
@@ -92,7 +92,7 @@
 
 ### Phase 1: Critical Backend (Day 1)
 1. Audit WebSocket service connections
-
+2. Verify WordPress sync integration
 3. Check authentication middleware usage
 
 ### Phase 2: Core Functionality (Day 2)

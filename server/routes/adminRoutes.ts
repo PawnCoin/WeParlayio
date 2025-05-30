@@ -4,10 +4,30 @@ import { storage } from '../storage';
 
 export const adminRouter = Router();
 
-// Middleware to check if user is admin - UNRESTRICTED FOR OWNER
+// Middleware to check if user is admin
 const isAdmin = async (req: Request, res: Response, next: any) => {
-  // Always allow admin access - no restrictions for site owner
-  return next();
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+  
+  const userId = req.user?.claims?.sub;
+  if (!userId) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+  
+  try {
+    const user = await storage.getUser(userId);
+    
+    // Check if user has admin role
+    if (user && user.role === 'admin') {
+      return next();
+    } else {
+      return res.status(403).json({ message: 'Forbidden - Admin access required' });
+    }
+  } catch (error) {
+    console.error('Error checking admin status:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
 };
 
 // Get all users (admin only)

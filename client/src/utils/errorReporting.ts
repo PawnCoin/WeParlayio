@@ -111,10 +111,7 @@ class ErrorReportingService {
              !message.includes('cors') && 
              !message.includes('metamask') &&
              !message.includes('unrecognized feature') &&
-             !message.includes('invalid sandbox flag') &&
-             !message.includes('wordpress') &&
-             !message.includes('wordpresssync') &&
-             !message.includes('does not provide an export named');
+             !message.includes('invalid sandbox flag');
     });
 
     if (filteredErrors.length === 0) {

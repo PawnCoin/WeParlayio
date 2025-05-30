@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  Home, User, Wallet, Gamepad2, TrendingUp, 
+  Home, User, Wallet, GameController2, TrendingUp, 
   Settings, Shield, Trophy, MessageSquare, CreditCard,
   Search, ExternalLink, Zap, Smartphone, Crown,
   BarChart3, Users, Calendar, Gamepad, Monitor
@@ -42,7 +42,7 @@ const SiteNavigation: React.FC = () => {
     },
     gaming: {
       title: "Gaming & Entertainment",
-      icon: <Gamepad2 className="h-5 w-5" />,
+      icon: <GameController2 className="h-5 w-5" />,
       pages: [
         { name: "Video Gaming", path: "/video-gaming", description: "Video game betting", status: "live" },
         { name: "Gaming Integration", path: "/gaming-integration", description: "Cross-platform gaming", status: "live" },

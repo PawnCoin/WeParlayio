@@ -32,34 +32,7 @@ export const restrictedAuthMiddleware = (req: Request, res: Response, next: Next
       lastName: 'User',
       balance: 1000,
       weplayTokenBalance: 10000,
-      tier: 'bronze',
-      role: 'user'
-    };
-  }
-
-  // Check if user has admin token or is admin
-  const adminToken = req.headers.authorization;
-  const isAdminBypass = req.headers['x-admin-bypass'] === 'true';
-  const hasAdminAccess = req.user?.role === 'admin' || 
-                        req.user?.email === 'support@weparlay.io' ||
-                        adminToken?.includes('weparlay-admin') ||
-                        isAdminBypass;
-
-  if (hasAdminAccess) {
-    // Grant unlimited admin privileges
-    req.user = {
-      ...req.user,
-      id: 'admin-owner',
-      email: 'support@weparlay.io',
-      firstName: 'WeParlay',
-      lastName: 'Admin',
-      role: 'admin',
-      tier: 'platinum',
-      balance: 1000000,
-      weplayTokenBalance: 1000000,
-      isAdmin: true,
-      adminLevel: 'owner',
-      permissions: ['all']
+      tier: 'bronze'
     };
   }
 

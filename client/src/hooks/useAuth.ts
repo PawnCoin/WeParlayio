@@ -39,7 +39,7 @@ export function useAuth() {
     setIsLoading(true);
 
     try {
-      // Standard authentication
+      // In production, this would make an API call to authenticate with the WordPress site
 
       if (walletAddress) {
         // For now we just create a temporary user object for demonstration
@@ -63,8 +63,8 @@ export function useAuth() {
           description: `Welcome to WeParlay! Your wallet is now connected.`,
         });
       } else {
-        // Handle login error
-        throw new Error('No wallet connected');
+        // Redirect to WordPress login
+        window.location.href = 'https://weparlay.io/login';
         return;
       }
     } catch (err: any) {
@@ -94,21 +94,16 @@ export function useAuth() {
 
   const isAuthenticated = !!user;
 
-  // Ensure authentication is properly initialized with admin privileges
+  // Ensure authentication is properly initialized
   React.useEffect(() => {
     if (user && !user.id) {
       // Initialize user with demo data if needed
       setUser({
         ...user,
-        id: user.id || 'admin-owner-' + Date.now(),
-        username: user.username || 'WeParlay_Admin',
-        balance: user.balance || 1000000,
-        weplayTokenBalance: user.weplayTokenBalance || 1000000,
-        role: 'admin',
-        tier: 'platinum',
-        isAdmin: true,
-        adminLevel: 'owner',
-        permissions: ['all']
+        id: user.id || 'demo-user-' + Date.now(),
+        username: user.username || 'demo_user',
+        balance: user.balance || 1000,
+        weplayTokenBalance: user.weplayTokenBalance || 10000
       });
     }
   }, [user]);

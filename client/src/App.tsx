@@ -78,12 +78,6 @@ import SignUpEnhanced from "@/pages/SignUpEnhanced";
 import WalletManagementEnhanced from "@/pages/WalletManagementEnhanced";
 import BettingChallenges from './components/betting/BettingChallenges';
 import SiteNavigation from './pages/SiteNavigation';
-import PageStatusChecker from './pages/PageStatusChecker';
-
-// Import missing components for 404 fixes
-import LiveBettingReal from "@/pages/LiveBettingReal";
-import FantasySports from "@/pages/FantasySports";
-import SignUp from "@/pages/SignUp";
 
 // Import admin components
 import AdminBypass from "@/pages/AdminBypass";
@@ -227,19 +221,6 @@ function Router() {
       <Route path="/signup" component={SignUpEnhanced} />
       <Route path="/signup-enhanced" component={SignUpEnhanced} />
 
-      {/* Missing Routes - Critical Fixes */}
-      <Route path="/live-betting-enhanced" component={LiveBettingEnhanced} />
-      <Route path="/esports-hub" component={EsportsHub} />
-      <Route path="/video-gaming" component={VideoGaming} />
-      <Route path="/gaming-integration" component={GamingIntegration} />
-      <Route path="/unified-gaming" component={UnifiedGaming} />
-      <Route path="/fantasy-sports-enhanced" component={FantasySportsEnhanced} />
-      <Route path="/head-to-head-betting" component={HeadToHeadBetting} />
-      <Route path="/user-directory" component={UserDirectory} />
-      <Route path="/social-media-dashboard" component={SocialMediaDashboard} />
-      <Route path="/sms-challenge" component={SmsChallenge} />
-      <Route path="/crypto-information" component={CryptoInformation} />
-
       {/* Admin Routes */}
       <Route path="/admin" component={(props) => <AdminRoute component={AdminDashboard} {...props} />} />
       <Route path="/admin-dashboard" component={(props) => <AdminRoute component={AdminDashboard} {...props} />} />
@@ -248,10 +229,6 @@ function Router() {
 
       {/* Default route */}
       <Route path="/" component={Home} />
-      <Route path="/site-navigation" component={SiteNavigation} />
-      <Route path="/page-status-checker" component={PageStatusChecker} />
-
-      {/* Catch-all route for 404 - must be last */}
       <Route component={NotFound} />
     </Switch>
   );
@@ -283,8 +260,6 @@ function AppContent() {
   );
 }
 
-import { WordPressProvider } from './contexts/WordPressContext';
-
 function App() {
   // Initialize Google Analytics when app loads
   React.useEffect(() => {
@@ -305,9 +280,7 @@ function App() {
             <TeamThemeProvider>
               <BetSlipProvider>
                 <BettingProvider>
-                  <WordPressProvider>
-                    <AppContent />
-                  </WordPressProvider>
+                  <AppContent />
                 </BettingProvider>
               </BetSlipProvider>
             </TeamThemeProvider>

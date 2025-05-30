@@ -1,143 +1,22 @@
+/**
+ * Removed WordPress sync functionality
+ * This file is now a placeholder to prevent import errors
+ */
 
-
-
-// WordPress Sync Service
-export interface WordPressPost {
-  id: number;
-  title: string;
-  content: string;
-  excerpt: string;
-  slug: string;
-  date: string;
-  author: string;
-  categories: string[];
-  tags: string[];
-  featured_image?: string;
+// Empty placeholder functions to maintain imports
+export function initWordPressSync() {
+  console.log('WordPress sync disabled - app is not WordPress-based');
 }
 
-export interface WordPressBettingTip {
-  id: number;
-  title: string;
-  content: string;
-  sport: string;
-  confidence: number;
-  author: string;
-  date: string;
+export function getDesignConfig() {
+  return null;
 }
 
-class WordPressService {
-  private baseUrl: string;
-
-  constructor(baseUrl: string = 'https://weparlay.io/wp-json/wp/v2') {
-    this.baseUrl = baseUrl;
-  }
-
-  async getPosts(): Promise<WordPressPost[]> {
-    try {
-      const response = await fetch(`${this.baseUrl}/posts`);
-      if (!response.ok) return [];
-      const posts = await response.json();
-      return posts.map(this.transformPost);
-    } catch (error) {
-      console.error('WordPress posts fetch error:', error);
-      return [];
-    }
-  }
-
-  async getBettingTips(): Promise<WordPressBettingTip[]> {
-    try {
-      const response = await fetch(`${this.baseUrl}/betting-tips`);
-      if (!response.ok) return [];
-      const tips = await response.json();
-      return tips.map(this.transformBettingTip);
-    } catch (error) {
-      console.error('WordPress betting tips fetch error:', error);
-      return [];
-    }
-  }
-
-  private transformPost(post: any): WordPressPost {
-    return {
-      id: post.id,
-      title: post.title?.rendered || '',
-      content: post.content?.rendered || '',
-      excerpt: post.excerpt?.rendered || '',
-      slug: post.slug || '',
-      date: post.date || '',
-      author: post.author || '',
-      categories: post.categories || [],
-      tags: post.tags || [],
-      featured_image: post.featured_media || undefined
-    };
-  }
-
-  private transformBettingTip(tip: any): WordPressBettingTip {
-    return {
-      id: tip.id,
-      title: tip.title?.rendered || '',
-      content: tip.content?.rendered || '',
-      sport: tip.acf?.sport || 'general',
-      confidence: tip.acf?.confidence || 50,
-      author: tip.author || '',
-      date: tip.date || ''
-    };
-  }
-}
-
-// Create and export the service instance
-export const wordPressService = new WordPressService();
-
-// WordPress synchronization functionality
-export const wordpressSync = {
-  async syncPosts(): Promise<void> {
-    try {
-      const posts = await wordPressService.getPosts();
-      console.log(`Synced ${posts.length} WordPress posts`);
-    } catch (error) {
-      console.error('WordPress posts sync failed:', error);
-    }
-  },
-
-  async syncBettingTips(): Promise<void> {
-    try {
-      const tips = await wordPressService.getBettingTips();
-      console.log(`Synced ${tips.length} betting tips`);
-    } catch (error) {
-      console.error('WordPress betting tips sync failed:', error);
-    }
-  },
-
-  async fullSync(): Promise<void> {
-    console.log('Starting full WordPress sync...');
-    await Promise.all([
-      this.syncPosts(),
-      this.syncBettingTips()
-    ]);
-    console.log('WordPress sync completed');
-  }
+export const applyWordPressConfig = () => {
+  console.log('WordPress config disabled - app is not WordPress-based');
 };
 
-// Initialize WordPress sync function
-export const initWordPressSync = async () => {
-  console.log('WordPress sync initialized');
-  
-  try {
-    await wordPressService.getPosts();
-    console.log('WordPress connection established');
-    
-    setInterval(() => {
-      wordpressSync.fullSync();
-    }, 30 * 60 * 1000);
-    
-    await wordpressSync.fullSync();
-    
-  } catch (error) {
-    console.warn('WordPress connection failed, running in offline mode:', error);
-  }
+export default {
+  initWordPressSync,
+  getDesignConfig
 };
-
-// Named exports
-export { wordPressService, wordpressSync, initWordPressSync };
-
-// Default export
-export default wordPressService;

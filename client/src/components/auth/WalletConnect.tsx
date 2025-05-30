@@ -118,7 +118,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect }) => {
 
           <TabsContent value="social" className="space-y-4 py-4">
             <div className="space-y-2">
-              
+              {/* WordPress login removed - app is not WordPress-based */}
 
               <Button 
                 variant="outline" 
