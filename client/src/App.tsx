@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -145,6 +144,8 @@ function Router() {
       {/* Gaming & Esports */}
       <Route path="/gaming" component={UnifiedGaming} />
       <Route path="/betting-challenges" component={BettingChallenges} />
+       {/* Add /betting-challenge route for evaluation */}
+        <Route path="/betting-challenge" component={BettingChallenges} />
 
       {/* Fantasy Sports */}
       <Route path="/fantasy" component={FantasySportsEnhanced} />
