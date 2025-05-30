@@ -7,7 +7,7 @@ import {
   Navigation, 
   Home, 
   Wallet, 
-  GameController2, 
+  Gamepad2, 
   TrendingUp, 
   Settings,
   ExternalLink 
@@ -19,7 +19,7 @@ const QuickNavButton: React.FC = () => {
   const quickLinks = [
     { name: "Home", path: "/", icon: <Home className="h-4 w-4" />, color: "bg-blue-500" },
     { name: "Live Betting", path: "/live-betting-enhanced", icon: <TrendingUp className="h-4 w-4" />, color: "bg-green-500" },
-    { name: "Esports Hub", path: "/esports-hub", icon: <GameController2 className="h-4 w-4" />, color: "bg-purple-500" },
+    { name: "Esports Hub", path: "/esports-hub", icon: <Gamepad2 className="h-4 w-4" />, color: "bg-purple-500" },
     { name: "Wallet", path: "/wallet-management-enhanced", icon: <Wallet className="h-4 w-4" />, color: "bg-yellow-500" },
     { name: "My Bets", path: "/my-bets", icon: <TrendingUp className="h-4 w-4" />, color: "bg-red-500" },
     { name: "Settings", path: "/settings", icon: <Settings className="h-4 w-4" />, color: "bg-gray-500" },
