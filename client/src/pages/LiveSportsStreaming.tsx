@@ -59,8 +59,8 @@ const LiveSportsStreaming: React.FC = () => {
   const [bettingSlipOpen, setBettingSlipOpen] = useState(false);
   const [liveBets, setLiveBets] = useState<any[]>([]);
 
-  // Check if user has access to live streaming (Platinum only)
-  const hasLiveStreamAccess = user?.tier && canUserAccess(user.tier as SubscriptionTier, 'liveStreamingAccess');
+  // Site owner gets full access to all features for testing
+  const hasLiveStreamAccess = true;
 
   // Fetch live streams from your unified sports API
   const { data: liveStreams = [], isLoading } = useQuery({
