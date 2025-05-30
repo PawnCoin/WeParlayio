@@ -33,7 +33,7 @@ export function TopNavigation() {
   const [location] = useLocation();
 
   return (
-    <header className="bg-background border-b border-border sticky top-0 z-50">
+    <header className="bg-background border-b border-border sticky top-0 z-50 relative">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}

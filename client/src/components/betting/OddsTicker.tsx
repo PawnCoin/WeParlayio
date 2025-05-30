@@ -162,13 +162,13 @@ const OddsTicker: React.FC = () => {
     return (
       <footer className="bg-background dark:bg-background py-1 overflow-hidden relative border-t border-border">
         {/* Connection status indicator */}
-        <div className="absolute top-0 left-0 z-10 bg-background dark:bg-background px-2 h-full flex items-center">
+        <div className="absolute top-0 left-0 z-41 bg-background dark:bg-background px-2 h-full flex items-center">
           <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" 
                title="Connecting to live odds feeds..." />
         </div>
 
         {/* Pause/Play control */}
-        <div className="flex items-center absolute top-0 right-0 z-10 bg-background dark:bg-background px-2 h-full">
+        <div className="flex items-center absolute top-0 right-0 z-41 bg-background dark:bg-background px-2 h-full">
           <button 
             onClick={() => setIsPaused(!isPaused)}
             className="text-white p-1 hover:bg-gray-700 rounded transition-colors"
@@ -213,15 +213,15 @@ const OddsTicker: React.FC = () => {
   }
 
   return (
-    <footer className="bg-background dark:bg-background py-1 overflow-hidden relative border-t border-border">
+    <footer className="bg-background dark:bg-background py-1 overflow-hidden relative border-t border-border z-40">
       {/* Connection status indicator */}
-      <div className="absolute top-0 left-0 z-10 bg-background dark:bg-background px-2 h-full flex items-center">
+      <div className="absolute top-0 left-0 z-41 bg-background dark:bg-background px-2 h-full flex items-center">
         <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-yellow-500'}`} 
              title={isConnected ? 'Live updates active' : 'Using fallback updates'} />
       </div>
 
       {/* Pause/Play control */}
-      <div className="flex items-center absolute top-0 right-0 z-10 bg-background dark:bg-background px-2 h-full">
+      <div className="flex items-center absolute top-0 right-0 z-41 bg-background dark:bg-background px-2 h-full">
         <button 
           onClick={() => setIsPaused(!isPaused)}
           className="text-white p-1 hover:bg-gray-700 rounded transition-colors"
