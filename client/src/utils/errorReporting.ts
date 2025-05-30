@@ -1,4 +1,3 @@
-
 export interface ErrorReport {
   message: string;
   stack?: string;
@@ -91,7 +90,7 @@ class ErrorReportingService {
     };
 
     this.errorQueue.push(completeError);
-    
+
     // Debounce error reporting
     if (!this.isReporting) {
       this.isReporting = true;
@@ -131,7 +130,7 @@ class ErrorReportingService {
         },
         body: JSON.stringify({ errors })
       });
-      
+
       console.log(`📊 Reported ${errors.length} errors to monitoring service`);
     } catch (reportingError) {
       console.error('Failed to report errors:', reportingError);
@@ -162,3 +161,22 @@ export const reportError = (error: Error | string, context?: Record<string, any>
     context
   });
 };
+      // Advanced error context
+      const errorContext = {
+        stack: error.stack || 'No stack trace available',
+        message: error.message || 'Unknown error',
+        timestamp: new Date().toISOString(),
+        url: window.location.href,
+        userAgent: navigator.userAgent,
+        viewport: `${window.innerWidth}x${window.innerHeight}`,
+        // Add more context as needed
+      };
+
+      // Store locally for retry mechanism
+      try {
+        const errors = JSON.parse(localStorage.getItem('weparlay_errors') || '[]');
+        errors.push(errorContext);
+        localStorage.setItem('weparlay_errors', JSON.stringify(errors.slice(-50))); // Keep last 50
+      } catch (storageError) {
+        console.warn('Failed to store error in localStorage:', storageError);
+      }

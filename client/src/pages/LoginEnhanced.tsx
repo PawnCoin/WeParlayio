@@ -147,9 +147,9 @@ const LoginEnhanced: React.FC = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="login-username">Username or Email</Label>
+                  <Label htmlFor="enhanced-login-username">Username or Email</Label>
                   <Input
-                    id="login-username"
+                    id="enhanced-login-username"
                     placeholder="Enter your username or email"
                     value={loginData.username}
                     onChange={(e) => setLoginData({...loginData, username: e.target.value})}
@@ -157,9 +157,9 @@ const LoginEnhanced: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="login-password">Password</Label>
+                  <Label htmlFor="enhanced-login-password">Password</Label>
                   <Input
-                    id="login-password"
+                    id="enhanced-login-password"
                     type="password"
                     placeholder="Enter your password"
                     value={loginData.password}
@@ -215,9 +215,9 @@ const LoginEnhanced: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="quick-email-input">Email Address</Label>
+                  <Label htmlFor="enhanced-quick-email-input">Email Address</Label>
                   <Input
-                    id="quick-email-input"
+                    id="enhanced-quick-email-input"
                     type="email"
                     placeholder="your@email.com"
                     value={quickEmail}

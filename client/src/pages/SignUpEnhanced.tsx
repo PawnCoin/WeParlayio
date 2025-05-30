@@ -184,9 +184,9 @@ const SignUpEnhanced: React.FC = () => {
           {step === 1 && (
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="username">Username *</Label>
+                <Label htmlFor="signup-username">Username *</Label>
                 <Input
-                  id="username"
+                  id="signup-username"
                   placeholder="Choose a username"
                   value={formData.username}
                   onChange={(e) => handleInputChange('username', e.target.value)}
@@ -195,9 +195,9 @@ const SignUpEnhanced: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email *</Label>
+                <Label htmlFor="signup-email">Email *</Label>
                 <Input
-                  id="email"
+                  id="signup-email"
                   type="email"
                   placeholder="your@email.com"
                   value={formData.email}
@@ -207,9 +207,9 @@ const SignUpEnhanced: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password *</Label>
+                <Label htmlFor="signup-password">Password *</Label>
                 <Input
-                  id="password"
+                  id="signup-password"
                   type="password"
                   placeholder="Minimum 8 characters"
                   value={formData.password}
@@ -219,9 +219,9 @@ const SignUpEnhanced: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password *</Label>
+                <Label htmlFor="signup-confirm-password">Confirm Password *</Label>
                 <Input
-                  id="confirmPassword"
+                  id="signup-confirm-password"
                   type="password"
                   placeholder="Confirm your password"
                   value={formData.confirmPassword}
@@ -236,9 +236,9 @@ const SignUpEnhanced: React.FC = () => {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name *</Label>
+                  <Label htmlFor="signup-first-name">First Name *</Label>
                   <Input
-                    id="firstName"
+                    id="signup-first-name"
                     placeholder="John"
                     value={formData.firstName}
                     onChange={(e) => handleInputChange('firstName', e.target.value)}
@@ -246,9 +246,9 @@ const SignUpEnhanced: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name *</Label>
+                  <Label htmlFor="signup-last-name">Last Name *</Label>
                   <Input
-                    id="lastName"
+                    id="signup-last-name"
                     placeholder="Doe"
                     value={formData.lastName}
                     onChange={(e) => handleInputChange('lastName', e.target.value)}
@@ -258,9 +258,9 @@ const SignUpEnhanced: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="dateOfBirth">Date of Birth * (Must be 18+)</Label>
+                <Label htmlFor="signup-date-of-birth">Date of Birth * (Must be 18+)</Label>
                 <Input
-                  id="dateOfBirth"
+                  id="signup-date-of-birth"
                   type="date"
                   value={formData.dateOfBirth}
                   onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
@@ -269,9 +269,9 @@ const SignUpEnhanced: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number (Optional)</Label>
+                <Label htmlFor="signup-phone">Phone Number (Optional)</Label>
                 <Input
-                  id="phone"
+                  id="signup-phone"
                   placeholder="+1 (555) 123-4567"
                   value={formData.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
@@ -285,35 +285,35 @@ const SignUpEnhanced: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex items-start space-x-2">
                   <Checkbox
-                    id="agreeToTerms"
+                    id="signup-agree-to-terms"
                     checked={formData.agreeToTerms}
                     onCheckedChange={(checked) => handleInputChange('agreeToTerms', checked)}
                     required
                   />
-                  <Label htmlFor="agreeToTerms" className="text-sm leading-relaxed cursor-pointer">
+                  <Label htmlFor="signup-agree-to-terms" className="text-sm leading-relaxed cursor-pointer">
                     I agree to the <a href="/terms" className="text-blue-600 hover:underline">Terms of Service</a> *
                   </Label>
                 </div>
 
                 <div className="flex items-start space-x-2">
                   <Checkbox
-                    id="agreeToPrivacy"
+                    id="signup-agree-to-privacy"
                     checked={formData.agreeToPrivacy}
                     onCheckedChange={(checked) => handleInputChange('agreeToPrivacy', checked)}
                     required
                   />
-                  <Label htmlFor="agreeToPrivacy" className="text-sm leading-relaxed cursor-pointer">
+                  <Label htmlFor="signup-agree-to-privacy" className="text-sm leading-relaxed cursor-pointer">
                     I agree to the <a href="/privacy" className="text-blue-600 hover:underline">Privacy Policy</a> *
                   </Label>
                 </div>
 
                 <div className="flex items-start space-x-2">
                   <Checkbox
-                    id="allowMarketing"
+                    id="signup-allow-marketing"
                     checked={formData.allowMarketing}
                     onCheckedChange={(checked) => handleInputChange('allowMarketing', checked)}
                   />
-                  <Label htmlFor="allowMarketing" className="text-sm leading-relaxed cursor-pointer">
+                  <Label htmlFor="signup-allow-marketing" className="text-sm leading-relaxed cursor-pointer">
                     I want to receive promotional emails and updates
                   </Label>
                 </div>

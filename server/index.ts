@@ -119,3 +119,22 @@ app.use((req, res, next) => {
     console.error('🚨 Failed to initialize WebSocket service:', error);
   }
 })();
+
+// Security middleware
+import helmet from 'helmet';
+
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:"],
+      scriptSrc: ["'self'", "https://www.googletagmanager.com"],
+      connectSrc: ["'self'", "wss:", "https:"],
+      frameSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+    },
+  },
+}));

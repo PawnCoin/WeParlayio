@@ -35,10 +35,10 @@ export const initGA = () => {
 // Track page views - useful for single-page applications
 export const trackPageView = (url: string) => {
   if (typeof window === 'undefined' || !window.gtag) return;
-  
+
   const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID;
   if (!measurementId) return;
-  
+
   window.gtag('config', measurementId, {
     page_path: url
   });
@@ -52,7 +52,7 @@ export const trackEvent = (
   value?: number
 ) => {
   if (typeof window === 'undefined' || !window.gtag) return;
-  
+
   window.gtag('event', action, {
     event_category: category,
     event_label: label,
@@ -79,4 +79,21 @@ export const trackSocialShare = (platform: string, content: string) => {
 
 export const trackWalletConnection = (walletType: string) => {
   trackEvent('wallet_connected', 'crypto', walletType);
+};
+
+// Track custom events with enhanced context
+export const trackEvent2 = (eventName: string, properties?: Record<string, any>) => {
+  const enhancedProperties = {
+    ...properties,
+    timestamp: Date.now(),
+    url: window.location.href,
+    userAgent: navigator.userAgent,
+  };
+
+  // Custom event tracking logic here
+  if (window.gtag && typeof window.gtag === 'function') {
+    window.gtag('event', eventName, enhancedProperties);
+  }
+
+  console.log('📊 Event tracked:', eventName, enhancedProperties);
 };

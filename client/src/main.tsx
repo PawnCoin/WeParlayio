@@ -7,19 +7,27 @@ import "./index.css";
 window.addEventListener('unhandledrejection', (event) => {
   console.error('Unhandled promise rejection:', event.reason);
 
-  // Handle WebSocket and other non-critical errors
-  if (event.reason && (
-    typeof event.reason === 'object' && 
-    Object.keys(event.reason).length === 0 || // Empty object rejections
-    (event.reason.message && (
-      event.reason.message.includes('WebSocket') ||
-      event.reason.message.includes('Failed to fetch') ||
-      event.reason.message.includes('NetworkError') ||
-      event.reason.message.includes('1006')
+  // Check if it's a network-related error that we can safely ignore
+  const reason = event.reason;
+  const isNetworkError = reason && (
+    typeof reason === 'string' && (
+      reason.includes('WebSocket') ||
+      reason.includes('Failed to fetch') ||
+      reason.includes('NetworkError') ||
+      reason.includes('1006')
+    ) ||
+    (reason.message && typeof reason.message === 'string' && (
+      reason.message.includes('WebSocket') ||
+      reason.message.includes('Failed to fetch') ||
+      reason.message.includes('NetworkError') ||
+      reason.message.includes('1006')
     ))
-  )) {
-    console.warn('Non-critical promise rejection handled:', event.reason);
-    event.preventDefault();
+  );
+
+  if (isNetworkError) {
+    console.warn('Non-critical promise rejection handled:', reason);
+    event.preventDefault(); // Prevent the unhandled rejection from being logged
+    return;
   }
 });
 import { QueryClientProvider } from "@tanstack/react-query";
