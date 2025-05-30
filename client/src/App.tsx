@@ -283,6 +283,8 @@ function AppContent() {
   );
 }
 
+import { WordPressProvider } from './contexts/WordPressContext';
+
 function App() {
   // Initialize Google Analytics when app loads
   React.useEffect(() => {
@@ -303,7 +305,9 @@ function App() {
             <TeamThemeProvider>
               <BetSlipProvider>
                 <BettingProvider>
-                  <AppContent />
+                  <WordPressProvider>
+                    <AppContent />
+                  </WordPressProvider>
                 </BettingProvider>
               </BetSlipProvider>
             </TeamThemeProvider>

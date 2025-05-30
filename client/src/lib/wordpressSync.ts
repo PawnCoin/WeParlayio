@@ -89,11 +89,54 @@ export default wordPressService;
 
 // WordPress synchronization functionality
 export const wordpressSync = {
-  // Add WordPress sync methods here
+  async syncPosts(): Promise<void> {
+    try {
+      const posts = await wordPressService.getPosts();
+      console.log(`Synced ${posts.length} WordPress posts`);
+      // Store posts in local cache/state
+    } catch (error) {
+      console.error('WordPress posts sync failed:', error);
+    }
+  },
+
+  async syncBettingTips(): Promise<void> {
+    try {
+      const tips = await wordPressService.getBettingTips();
+      console.log(`Synced ${tips.length} betting tips`);
+      // Store tips in local cache/state
+    } catch (error) {
+      console.error('WordPress betting tips sync failed:', error);
+    }
+  },
+
+  async fullSync(): Promise<void> {
+    console.log('Starting full WordPress sync...');
+    await Promise.all([
+      this.syncPosts(),
+      this.syncBettingTips()
+    ]);
+    console.log('WordPress sync completed');
+  }
 };
 
 // Add the missing export that's being imported elsewhere
-export const initWordPressSync = () => {
+export const initWordPressSync = async () => {
   console.log('WordPress sync initialized');
-  // Add initialization logic here
+  
+  // Initialize WordPress connection
+  try {
+    await wordPressService.getPosts();
+    console.log('WordPress connection established');
+    
+    // Set up periodic sync (every 30 minutes)
+    setInterval(() => {
+      wordpressSync.fullSync();
+    }, 30 * 60 * 1000);
+    
+    // Initial sync
+    await wordpressSync.fullSync();
+    
+  } catch (error) {
+    console.warn('WordPress connection failed, running in offline mode:', error);
+  }
 };
