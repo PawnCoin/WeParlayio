@@ -5,20 +5,6 @@
   background-color: #0f172a !important;
 }
 
-/* Dark mode overrides for all white backgrounds */
-.dark .bg-white {
-  background-color: #0f172a !important;
-}
-
-.dark [style*="background-color: white"],
-.dark [style*="background-color: #ffffff"],
-.dark [style*="background-color: #FFFFFF"],
-.dark [style*="background: white"],
-.dark [style*="background: #ffffff"],
-.dark [style*="background: #FFFFFF"] {
-  background-color: #0f172a !important;
-}
-
 /* Additional Tailwind fixes can be added below */
 .text-card-foreground {
   color: black !important;
@@ -36,18 +22,4 @@
 
 .dark .text-foreground {
   color: white !important;
-}
-
-/* Override any hardcoded white backgrounds in dark mode */
-.dark * {
-  background-color: inherit;
-}
-
-.dark .bg-white,
-.dark .bg-gray-50,
-.dark .bg-slate-50,
-.dark .bg-zinc-50,
-.dark .bg-neutral-50,
-.dark .bg-stone-50 {
-  background-color: #0f172a !important;
 }
