@@ -210,3 +210,9 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
     send,
   };
 };
+const getWebSocketUrl = () => {
+  // For Replit environment, use the current domain with wss protocol
+  const host = window.location.host;
+  // Always use wss for Replit deployments
+  return `wss://${host}/ws`;
+};
