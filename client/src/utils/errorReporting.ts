@@ -153,19 +153,24 @@ class ErrorReportingService {
     this.errorQueue = [];
 
     try {
-      await fetch('/api/errors/report', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ errors })
-      });
+      // Only attempt to report if we're not in development mode
+      if (window.location.hostname !== 'localhost' && !window.location.hostname.includes('replit.dev')) {
+        await fetch('/api/errors/report', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ errors })
+        });
+      }
 
       console.log(`📊 Reported ${errors.length} errors to monitoring service`);
     } catch (reportingError) {
       console.error('Failed to report errors:', reportingError);
-      // Put errors back in queue for retry
-      this.errorQueue.unshift(...errors);
+      // Put errors back in queue for retry only if not a network error
+      if (!reportingError.message?.includes('fetch')) {
+        this.errorQueue.unshift(...errors);
+      }
     }
   }
 

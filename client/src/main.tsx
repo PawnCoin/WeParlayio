@@ -5,8 +5,6 @@ import "./index.css";
 
 // Handle unhandled promise rejections
 window.addEventListener('unhandledrejection', (event) => {
-  console.error('Unhandled promise rejection:', event.reason);
-
   // Check if it's a network-related error that we can safely ignore
   const reason = event.reason;
   const isNetworkError = reason && (
@@ -15,22 +13,28 @@ window.addEventListener('unhandledrejection', (event) => {
       reason.includes('Failed to fetch') ||
       reason.includes('NetworkError') ||
       reason.includes('1006') ||
-      reason.includes('WebSocket closed without opened')
+      reason.includes('WebSocket closed without opened') ||
+      reason.includes('vite') ||
+      reason.includes('HMR')
     ) ||
     (reason && reason.message && typeof reason.message === 'string' && (
       reason.message.includes('WebSocket') ||
       reason.message.includes('Failed to fetch') ||
       reason.message.includes('NetworkError') ||
       reason.message.includes('1006') ||
-      reason.message.includes('WebSocket closed without opened')
+      reason.message.includes('WebSocket closed without opened') ||
+      reason.message.includes('vite') ||
+      reason.message.includes('HMR')
     ))
   );
 
   if (isNetworkError) {
-    console.log('Non-critical promise rejection handled:', reason);
     event.preventDefault(); // Prevent the error from being logged as unhandled
     return;
   }
+
+  // Only log actual application errors
+  console.error('Unhandled promise rejection:', event.reason);
 
   if (isNetworkError) {
     console.warn('Non-critical promise rejection handled:', reason);
