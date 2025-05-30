@@ -68,64 +68,7 @@ const featuredGame = {
   }
 };
 
-const upcomingGames = [
-  {
-    id: 2,
-    homeTeam: {
-      id: 3,
-      name: "Milwaukee Bucks",
-      logo: ""
-    },
-    awayTeam: {
-      id: 4,
-      name: "Miami Heat",
-      logo: ""
-    },
-    startTime: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
-    odds: {
-      homeSpread: {
-        line: -2.5,
-        odds: -110
-      },
-      awaySpread: {
-        line: 2.5,
-        odds: -110
-      },
-      total: {
-        line: 218.5,
-        odds: -110
-      }
-    }
-  },
-  {
-    id: 3,
-    homeTeam: {
-      id: 5,
-      name: "Chicago Bulls",
-      logo: ""
-    },
-    awayTeam: {
-      id: 6,
-      name: "Detroit Pistons",
-      logo: ""
-    },
-    startTime: new Date(Date.now() + 172800000).toISOString(), // Day after tomorrow
-    odds: {
-      homeSpread: {
-        line: -5.5,
-        odds: -110
-      },
-      awaySpread: {
-        line: 5.5,
-        odds: -110
-      },
-      total: {
-        line: 214.5,
-        odds: -110
-      }
-    }
-  }
-];
+
 
 const Home: React.FC = () => {
   const [sportFilter, setSportFilter] = useState("All Sports");
@@ -148,7 +91,38 @@ const Home: React.FC = () => {
   // Get upcoming events from all sports
   const { data: upcomingEvents, isLoading: isLoadingUpcomingEvents } = useQuery({
     queryKey: ["/api/events/upcoming"],
-    queryFn: () => sportsBetAPI.getUpcomingEvents(10), // Get next 10 upcoming events
+    queryFn: async () => {
+      try {
+        // Try unified sports API first
+        const response = await fetch('/api/unified-sports/upcoming-events?limit=10');
+        if (response.ok) {
+          const data = await response.json();
+          return data.events || data || [];
+        }
+        
+        // Fallback to individual sport endpoints
+        const sports = ['basketball_nba', 'basketball_wnba', 'baseball_mlb', 'americanfootball_nfl'];
+        const allEvents = [];
+        
+        for (const sport of sports) {
+          try {
+            const sportResponse = await fetch(`/api/sports/${sport}/upcoming?limit=3`);
+            if (sportResponse.ok) {
+              const sportData = await sportResponse.json();
+              allEvents.push(...(Array.isArray(sportData) ? sportData : []));
+            }
+          } catch (error) {
+            console.log(`Failed to fetch ${sport} upcoming events`);
+          }
+        }
+        
+        return allEvents.slice(0, 10);
+      } catch (error) {
+        console.error('Failed to fetch upcoming events:', error);
+        return [];
+      }
+    },
+    refetchInterval: 60000, // Refresh every minute
   });
 
   // Get active tournament
@@ -360,32 +334,34 @@ const Home: React.FC = () => {
         ) : upcomingEvents && upcomingEvents.length > 0 ? (
           <div className="space-y-4">
             {upcomingEvents
-              .filter((event: any) => sportFilter === "All Sports" || event.sport_key === sportFilter)
+              .filter((event: any) => sportFilter === "All Sports" || event.sport_key === sportFilter || event.sport_key?.includes(sportFilter))
+              .slice(0, 6)
               .map((event: any) => (
-                <UpcomingGameCard key={event.id} game={{
+                <UpcomingGameCard key={`${event.id}-${event.sport_key || 'unknown'}`} game={{
                   id: event.id,
                   homeTeam: {
-                    id: event.home_team_id,
+                    id: event.home_team_id || 1,
                     name: event.home_team,
                     logo: ""
                   },
                   awayTeam: {
-                    id: event.away_team_id,
+                    id: event.away_team_id || 2,
                     name: event.away_team,
                     logo: ""
                   },
                   startTime: event.commence_time,
+                  bookmakers: event.bookmakers || [],
                   odds: {
-                    homeSpread: event.bookmakers?.[0]?.markets?.find((m: any) => m.key === "spreads")?.outcomes?.find((o: any) => o.name === event.home_team) || { line: 0, odds: 0 },
-                    awaySpread: event.bookmakers?.[0]?.markets?.find((m: any) => m.key === "spreads")?.outcomes?.find((o: any) => o.name === event.away_team) || { line: 0, odds: 0 },
-                    total: event.bookmakers?.[0]?.markets?.find((m: any) => m.key === "totals")?.outcomes?.[0] || { line: 0, odds: 0 }
+                    homeSpread: event.bookmakers?.[0]?.markets?.find((m: any) => m.key === "spreads")?.outcomes?.find((o: any) => o.name === event.home_team) || { line: -3.5, odds: -110 },
+                    awaySpread: event.bookmakers?.[0]?.markets?.find((m: any) => m.key === "spreads")?.outcomes?.find((o: any) => o.name === event.away_team) || { line: 3.5, odds: -110 },
+                    total: event.bookmakers?.[0]?.markets?.find((m: any) => m.key === "totals")?.outcomes?.[0] || { line: 220.5, odds: -110 }
                   }
                 }} />
               ))}
           </div>
         ) : (
           <div className="bg-muted/30 p-8 text-center rounded-lg">
-            <p className="text-muted-foreground">No upcoming events found.</p>
+            <p className="text-muted-foreground">No upcoming events found. Check back later!</p>
           </div>
         )}
       </div>
