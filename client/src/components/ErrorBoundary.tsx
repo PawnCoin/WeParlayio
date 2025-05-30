@@ -25,6 +25,14 @@ class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
+    
+    // Handle WordPress-related errors gracefully
+
+      console.warn('WordPress-related error handled - site continues without WordPress features');
+      // Don't set error state for WordPress errors, just continue
+      return;
+    }
+    
     this.setState({ error, errorInfo });
   }
 
