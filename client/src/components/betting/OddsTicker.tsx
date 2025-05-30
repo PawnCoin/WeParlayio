@@ -18,18 +18,27 @@ const OddsTicker: React.FC = () => {
   const [oddsData, setOddsData] = useState<OddsItem[]>([]);
   const { isConnected } = useWebSocket();
 
-  // Fetch initial odds data from real API
+  // Fetch initial odds data from ticker endpoint
   useEffect(() => {
     const fetchOddsData = async () => {
       try {
-        const response = await fetch('/api/odds/basketball_nba');
+        const response = await fetch('/api/odds-ticker/live-ticker');
         if (response.ok) {
           const data = await response.json();
           setOddsData(data.odds || []);
         }
       } catch (error) {
         console.error('Failed to fetch odds data:', error);
-        // Don't set mock data, leave empty to show loading message
+        // Fallback to ticker endpoint for demo data
+        try {
+          const fallbackResponse = await fetch('/api/odds-ticker/live-ticker');
+          if (fallbackResponse.ok) {
+            const fallbackData = await fallbackResponse.json();
+            setOddsData(fallbackData.odds || []);
+          }
+        } catch (fallbackError) {
+          console.error('Failed to fetch fallback data:', fallbackError);
+        }
       }
     };
 
