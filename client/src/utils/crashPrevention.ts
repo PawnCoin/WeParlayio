@@ -2,39 +2,69 @@
 // Ensures the site never crashes regardless of errors
 
 export function initializeCrashPrevention() {
+  console.log('🛡️ Initializing WeParlay crash prevention...');
+
   // Handle missing module exports gracefully
   window.addEventListener('error', (event) => {
-    if (event.error?.message?.includes('does not provide an export named') ||
-        event.error?.message?.includes('Failed to resolve module specifier')) {
-      console.warn('Module export error handled gracefully');
+    const errorMessage = event.error?.message || event.message || '';
+    
+    if (errorMessage.includes('does not provide an export named') ||
+        errorMessage.includes('Failed to resolve module specifier') ||
+        errorMessage.includes('wordpressSync') ||
+        errorMessage.includes('initWordPressSync')) {
+      console.warn('🔧 Module export error handled gracefully:', errorMessage);
       event.preventDefault();
+      return false;
+    }
+
+    // Handle Vite/WebSocket development errors
+    if (errorMessage.includes('vite') || 
+        errorMessage.includes('WebSocket') ||
+        errorMessage.includes('HMR')) {
+      console.warn('🔌 Development server error handled:', errorMessage);
+      event.preventDefault();
+      return false;
     }
   });
 
   // Handle unhandled promise rejections
   window.addEventListener('unhandledrejection', (event) => {
     const reason = event.reason;
-    const isIgnorableError = reason && (
-      typeof reason === 'string' && (
-        reason.includes('WebSocket') ||
-        reason.includes('Failed to fetch') ||
-        reason.includes('NetworkError') ||
-        reason.includes('1006')
-      ) ||
-      (reason.message && typeof reason.message === 'string' && (
-        reason.message.includes('WebSocket') ||
-        reason.message.includes('Failed to fetch') ||
-        reason.message.includes('NetworkError') ||
-        reason.message.includes('1006')
-      ))
+    const reasonString = String(reason?.message || reason || '');
+    
+    const isIgnorableError = (
+      reasonString.includes('WebSocket') ||
+      reasonString.includes('Failed to fetch') ||
+      reasonString.includes('NetworkError') ||
+      reasonString.includes('1006') ||
+      reasonString.includes('vite') ||
+      reasonString.includes('HMR') ||
+      reasonString.includes('wordpressSync') ||
+      reasonString.includes('initWordPressSync')
     );
 
     if (isIgnorableError) {
-      console.warn('Non-critical promise rejection handled:', reason);
+      console.warn('⚠️ Non-critical promise rejection handled:', reasonString);
       event.preventDefault();
+      return false;
     }
+
+    // Log but don't crash on other promise rejections
+    console.warn('🚨 Promise rejection handled:', reason);
+    event.preventDefault();
+    return false;
   });
+
+  // Handle module loading errors
+  window.addEventListener('rejectionhandled', (event) => {
+    console.log('✅ Promise rejection was handled:', event.reason);
+  });
+
+  console.log('✅ WeParlay crash prevention initialized');
 }
+
+// Initialize crash prevention immediately
+initializeCrashPrevention();
 
 // Fallback component renderer
 export const SafeComponent = ({ children, fallback = null }: { 

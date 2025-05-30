@@ -9,6 +9,7 @@ import { TeamThemeProvider } from './contexts/TeamThemeContext';
 import { CurrencyModeProvider } from './contexts/CurrencyModeContext';
 import { BetSlipProvider } from './contexts/BetSlipContext';
 import { OnboardingProvider } from './contexts/OnboardingContext';
+import { initializeCrashPrevention } from './utils/crashPrevention';
 
 // Create QueryClient for data fetching
 const queryClient = new QueryClient({
@@ -25,6 +26,9 @@ const queryClient = new QueryClient({
 // Initialize WeParlay platform
 function initializeWeParlay() {
   console.log('🎯 WeParlay Platform Initializing...');
+
+  // Initialize crash prevention first
+  initializeCrashPrevention();
 
   // Platform health check
   const platformStatus = {
