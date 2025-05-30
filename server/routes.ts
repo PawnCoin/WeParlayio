@@ -3097,13 +3097,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ===== Odds API Integration with Backup Services =====
+  // ===== Odds API Integration with Multiple Sources =====
   app.get("/api/odds/:sportKey", async (req, res) => {
     try {
       const sportKey = req.params.sportKey;
+      const region = (req.query.region as string) || "us";
+      const markets = (req.query.markets as string) || "h2h,spreads,totals";
+      
+      // Try your new Odds API key first (should work now)
+      try {
+        const odds = await oddsApiService.getOdds(sportKey, region, markets);
+        if (odds && odds.length > 0) {
+          return res.json(odds);
+        }
+      } catch (oddsApiError) {
+        console.log('Odds API unavailable, trying backup services');
+      }
+
       let oddsData = [];
 
-      // Try ESPN API first for NFL/NBA (free, unlimited)
+      // Backup: Try ESPN API for NFL/NBA (free, unlimited)
       if (sportKey === 'americanfootball_nfl') {
         try {
           const espnResponse = await fetch('http://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard');
@@ -3170,42 +3183,118 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Try RapidAPI for soccer if available
-      if (sportKey.includes('soccer') && process.env.RAPIDAPI_KEY) {
+      // Try RapidAPI for multiple sports
+      if (process.env.RAPIDAPI_KEY) {
         try {
-          const rapidResponse = await fetch('https://api-football-v1.p.rapidapi.com/v3/fixtures?live=all', {
-            headers: {
-              'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
-              'X-RapidAPI-Host': 'api-football-v1.p.rapidapi.com'
-            }
-          });
-          if (rapidResponse.ok) {
-            const rapidData = await rapidResponse.json();
-            if (rapidData.response && rapidData.response.length > 0) {
-              oddsData = rapidData.response.slice(0, 10).map((match: any) => ({
-                id: match.fixture.id,
-                sport_key: sportKey,
-                sport_title: 'Soccer',
-                commence_time: match.fixture.date,
-                home_team: match.teams.home.name,
-                away_team: match.teams.away.name,
-                bookmakers: [{
-                  key: 'rapidapi',
-                  title: 'RapidAPI',
-                  markets: [{
-                    key: 'h2h',
-                    outcomes: [
-                      { name: match.teams.home.name, price: 1.90 },
-                      { name: match.teams.away.name, price: 1.90 }
-                    ]
+          let rapidResponse;
+          let rapidData;
+
+          // Soccer/Football
+          if (sportKey.includes('soccer') || sportKey.includes('football')) {
+            rapidResponse = await fetch('https://api-football-v1.p.rapidapi.com/v3/fixtures?live=all', {
+              headers: {
+                'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
+                'X-RapidAPI-Host': 'api-football-v1.p.rapidapi.com'
+              }
+            });
+            if (rapidResponse.ok) {
+              rapidData = await rapidResponse.json();
+              if (rapidData.response && rapidData.response.length > 0) {
+                oddsData = rapidData.response.slice(0, 10).map((match: any) => ({
+                  id: match.fixture.id,
+                  sport_key: sportKey,
+                  sport_title: 'Soccer',
+                  commence_time: match.fixture.date,
+                  home_team: match.teams.home.name,
+                  away_team: match.teams.away.name,
+                  bookmakers: [{
+                    key: 'rapidapi',
+                    title: 'RapidAPI Football',
+                    markets: [{
+                      key: 'h2h',
+                      outcomes: [
+                        { name: match.teams.home.name, price: 1.90 },
+                        { name: match.teams.away.name, price: 1.90 }
+                      ]
+                    }]
                   }]
-                }]
-              }));
-              return res.json(oddsData);
+                }));
+                return res.json(oddsData);
+              }
+            }
+          }
+
+          // Basketball (NBA alternative via RapidAPI)
+          if (sportKey.includes('basketball')) {
+            rapidResponse = await fetch('https://api-nba-v1.p.rapidapi.com/games?live=all', {
+              headers: {
+                'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
+                'X-RapidAPI-Host': 'api-nba-v1.p.rapidapi.com'
+              }
+            });
+            if (rapidResponse.ok) {
+              rapidData = await rapidResponse.json();
+              if (rapidData.response && rapidData.response.length > 0) {
+                oddsData = rapidData.response.slice(0, 10).map((game: any) => ({
+                  id: game.id,
+                  sport_key: sportKey,
+                  sport_title: 'NBA',
+                  commence_time: game.date.start,
+                  home_team: game.teams.home.name,
+                  away_team: game.teams.visitors.name,
+                  bookmakers: [{
+                    key: 'rapidapi',
+                    title: 'RapidAPI NBA',
+                    markets: [{
+                      key: 'h2h',
+                      outcomes: [
+                        { name: game.teams.home.name, price: 1.85 },
+                        { name: game.teams.visitors.name, price: 1.95 }
+                      ]
+                    }]
+                  }]
+                }));
+                return res.json(oddsData);
+              }
+            }
+          }
+
+          // Tennis via RapidAPI
+          if (sportKey.includes('tennis')) {
+            rapidResponse = await fetch('https://tennis-live-data.p.rapidapi.com/matches/live', {
+              headers: {
+                'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
+                'X-RapidAPI-Host': 'tennis-live-data.p.rapidapi.com'
+              }
+            });
+            if (rapidResponse.ok) {
+              rapidData = await rapidResponse.json();
+              if (rapidData.results && rapidData.results.length > 0) {
+                oddsData = rapidData.results.slice(0, 10).map((match: any) => ({
+                  id: match.id,
+                  sport_key: sportKey,
+                  sport_title: 'Tennis',
+                  commence_time: match.event_date,
+                  home_team: match.home_player,
+                  away_team: match.away_player,
+                  bookmakers: [{
+                    key: 'rapidapi',
+                    title: 'RapidAPI Tennis',
+                    markets: [{
+                      key: 'h2h',
+                      outcomes: [
+                        { name: match.home_player, price: 1.75 },
+                        { name: match.away_player, price: 2.05 }
+                      ]
+                    }]
+                  }]
+                }));
+                return res.json(oddsData);
+              }
             }
           }
         } catch (rapidError) {
-          console.log('RapidAPI unavailable');
+          console.log('RapidAPI sports services unavailable');
         }
       }
 
