@@ -10,6 +10,25 @@ import { initializeCrashPrevention } from "./utils/crashPrevention";
 // Initialize crash prevention immediately
 initializeCrashPrevention();
 
+// Override dynamic imports to prevent WordPress module loading
+const originalImport = window.import || ((specifier: string) => import(specifier));
+(window as any).import = async (specifier: string) => {
+  if (specifier.includes('wordpressSync') || specifier.includes('WordPress')) {
+    console.warn(`Blocked import of ${specifier} - WordPress features disabled`);
+    return { 
+      default: () => null, 
+      initWordPressSync: () => Promise.resolve(),
+      wordpressSync: () => Promise.resolve()
+    };
+  }
+  try {
+    return await originalImport(specifier);
+  } catch (error) {
+    console.warn(`Failed to import ${specifier}, using fallback`);
+    return { default: () => null };
+  }
+};
+
 // Comprehensive error handling to prevent site crashes
 window.addEventListener('error', (event) => {
   console.error('Global error caught:', event.error);
