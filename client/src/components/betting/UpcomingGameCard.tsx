@@ -195,7 +195,7 @@ const UpcomingGameCard: React.FC<UpcomingGameCardProps> = ({ game }) => {
           </div>
         )}
         
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center"></div_CONTENT>
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
           <div className="col-span-2 flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <img className="w-10 h-10 object-contain" src="https://images.unsplash.com/photo-1608245449230-4ac19066d2d0?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150" alt={`${game.homeTeam.name} logo`} />
