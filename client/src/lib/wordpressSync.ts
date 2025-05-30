@@ -1,4 +1,5 @@
 
+
 // WordPress Sync Service
 export interface WordPressPost {
   id: number;
@@ -82,16 +83,15 @@ class WordPressService {
   }
 }
 
-// Create and export the service instance
-export const wordPressService = new WordPressService();
+// Create service instance
+const wordPressService = new WordPressService();
 
 // WordPress synchronization functionality
-export const wordpressSync = {
+const wordpressSync = {
   async syncPosts(): Promise<void> {
     try {
       const posts = await wordPressService.getPosts();
       console.log(`Synced ${posts.length} WordPress posts`);
-      // Store posts in local cache/state
     } catch (error) {
       console.error('WordPress posts sync failed:', error);
     }
@@ -101,7 +101,6 @@ export const wordpressSync = {
     try {
       const tips = await wordPressService.getBettingTips();
       console.log(`Synced ${tips.length} betting tips`);
-      // Store tips in local cache/state
     } catch (error) {
       console.error('WordPress betting tips sync failed:', error);
     }
@@ -117,21 +116,18 @@ export const wordpressSync = {
   }
 };
 
-// Add the missing export that's being imported elsewhere
-export const initWordPressSync = async () => {
+// Initialize WordPress sync
+const initWordPressSync = async () => {
   console.log('WordPress sync initialized');
   
-  // Initialize WordPress connection
   try {
     await wordPressService.getPosts();
     console.log('WordPress connection established');
     
-    // Set up periodic sync (every 30 minutes)
     setInterval(() => {
       wordpressSync.fullSync();
     }, 30 * 60 * 1000);
     
-    // Initial sync
     await wordpressSync.fullSync();
     
   } catch (error) {
@@ -139,5 +135,6 @@ export const initWordPressSync = async () => {
   }
 };
 
-// Export default
+// Export all the functions and objects that are being imported
+export { wordPressService, wordpressSync, initWordPressSync };
 export default wordPressService;
