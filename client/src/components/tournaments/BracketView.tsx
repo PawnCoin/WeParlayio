@@ -122,10 +122,19 @@ const BracketView: React.FC<BracketViewProps> = ({ tournamentId }) => {
 
   const renderMatch = (match: any, roundIndex: number) => {
     return (
-      <div key={match.id} className="tournament-bracket-item bg-white dark:bg-neutral-dark border border-gray-200 dark:border-gray-700 rounded-md p-2 mb-4 relative">
+      <div key={match.id} className="tournament-bracket-item bg-card dark:bg-card border border-gray-200 dark:border-gray-700 rounded-md p-2 mb-4 relative">
         <div className="flex justify-between items-center mb-2">
           <div className="flex items-center">
-            <span className={`w-5 h-5 ${match.team1.winner === true ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'} rounded-full flex items-center justify-center text-xs mr-2`}>
+            <img 
+              src={`https://a.espncdn.com/i/teamlogos/nba/500/${match.team1.name.toLowerCase().replace(' ', '')}.png`}
+              alt={match.team1.name}
+              className="w-6 h-6 object-contain mr-2"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+              }}
+            />
+            <span className={`w-5 h-5 ${match.team1.winner === true ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'} rounded-full flex items-center justify-center text-xs mr-2 hidden`}>
               {match.team1.seed || '-'}
             </span>
             <span className={`text-sm ${match.team1.winner === true ? 'font-medium' : ''}`}>
@@ -136,7 +145,16 @@ const BracketView: React.FC<BracketViewProps> = ({ tournamentId }) => {
         </div>
         <div className="flex justify-between items-center">
           <div className="flex items-center">
-            <span className={`w-5 h-5 ${match.team2.winner === true ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'} rounded-full flex items-center justify-center text-xs mr-2`}>
+            <img 
+              src={`https://a.espncdn.com/i/teamlogos/nba/500/${match.team2.name.toLowerCase().replace(' ', '')}.png`}
+              alt={match.team2.name}
+              className="w-6 h-6 object-contain mr-2"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+              }}
+            />
+            <span className={`w-5 h-5 ${match.team2.winner === true ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'} rounded-full flex items-center justify-center text-xs mr-2 hidden`}>
               {match.team2.seed || '-'}
             </span>
             <span className={`text-sm ${match.team2.winner === true ? 'font-medium' : ''}`}>

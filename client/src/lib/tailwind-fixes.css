@@ -5,21 +5,61 @@
   background-color: #0f172a !important;
 }
 
-/* Additional Tailwind fixes can be added below */
-.text-card-foreground {
-  color: black !important;
+/* Dark mode overrides for ALL white backgrounds */
+.dark .bg-white,
+.dark .bg-gray-50,
+.dark .bg-slate-50,
+.dark .bg-zinc-50,
+.dark .bg-neutral-50,
+.dark .bg-stone-50,
+.dark .bg-gray-100,
+.dark .bg-slate-100,
+.dark .bg-zinc-100,
+.dark .bg-neutral-100,
+.dark .bg-stone-100 {
+  background-color: #0f172a !important;
 }
 
-/* Dark mode overrides */
-.dark .text-card-foreground {
-  color: white !important;
+/* Override inline styles with white backgrounds */
+.dark [style*="background-color: white"],
+.dark [style*="background-color: #ffffff"],
+.dark [style*="background-color: #FFFFFF"],
+.dark [style*="background-color: #fff"],
+.dark [style*="background-color: #FFF"],
+.dark [style*="background: white"],
+.dark [style*="background: #ffffff"],
+.dark [style*="background: #FFFFFF"],
+.dark [style*="background: #fff"],
+.dark [style*="background: #FFF"] {
+  background-color: #0f172a !important;
 }
 
-/* Force text to be visible in light mode */
-.text-foreground {
-  color: black !important;
+/* Force all white backgrounds in dark mode */
+.dark .tournament-bracket-item {
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+}
+
+.dark .card {
+  background-color: #0f172a !important;
 }
 
 .dark .text-foreground {
   color: white !important;
+}
+
+/* Additional dark mode overrides */
+.dark .bg-background {
+  background-color: #0f172a !important;
+}
+
+.dark .bg-card {
+  background-color: #0f172a !important;
+}
+
+/* Fix any remaining white elements */
+.dark div[class*="bg-white"],
+.dark span[class*="bg-white"],
+.dark section[class*="bg-white"] {
+  background-color: #0f172a !important;
 }

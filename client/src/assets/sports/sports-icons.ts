@@ -85,11 +85,11 @@ export const sportsIconPaths = {
   
   // College Sports
   ncaa: '/src/assets/sports/ncaa-logo.svg',
-  ncaaf: '/src/assets/sports/ncaa-football.svg',
-  ncaab: '/src/assets/sports/ncaa-basketball.svg',
+  'ncaa-football': '/src/assets/sports/ncaa-football.svg',
+  'ncaa-basketball': '/src/assets/sports/ncaa-basketball.svg',
   
   // Women's Sports
-  wnba: '/src/assets/sports/wnba-logo.svg',
+  'women-basketball': '/src/assets/sports/wnba-logo.svg',
   
   // International Sports
   cricket: '/src/assets/sports/cricket.svg',

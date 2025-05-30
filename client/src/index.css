@@ -46,20 +46,20 @@
   /* Professional Dark Mode Colors */
   --background: #0f172a;
   --foreground: #f8fafc;
-  --card: #1e293b;
+  --card: #0f172a;
   --card-foreground: #f1f5f9;
   --primary: #3b82f6;
-  --primary-foreground: #ffffff;
-  --secondary: #334155;
+  --primary-foreground: #0f172a;
+  --secondary: #0f172a;
   --secondary-foreground: #f1f5f9;
-  --muted: #334155;
+  --muted: #0f172a;
   --muted-foreground: #94a3b8;
-  --accent: #475569;
+  --accent: #0f172a;
   --accent-foreground: #f1f5f9;
   --destructive: #ef4444;
   --destructive-foreground: #0f172a;
   --border: #334155;
-  --input: #334155;
+  --input: #0f172a;
   --ring: #3b82f6;
 
   /* Dark mode chart colors */
@@ -68,6 +68,37 @@
   --chart-3: #f87171;
   --chart-4: #facc15;
   --chart-5: #9ca3af;
+}
+
+/* Additional dark mode overrides to eliminate ALL white backgrounds */
+.dark .bg-gray-50,
+.dark .bg-slate-50,
+.dark .bg-zinc-50,
+.dark .bg-neutral-50,
+.dark .bg-stone-50,
+.dark .bg-gray-100,
+.dark .bg-slate-100,
+.dark .bg-zinc-100,
+.dark .bg-neutral-100,
+.dark .bg-stone-100 {
+  background-color: #0f172a !important;
+}
+
+/* Force tournament bracket items */
+.dark .tournament-bracket-item {
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+}
+
+/* Override any component with white background */
+.dark [class*="bg-white"] {
+  background-color: #0f172a !important;
+}
+
+/* Ensure all cards use dark background */
+.dark .card,
+.dark [data-radix-collection-item] {
+  background-color: #0f172a !important;
 }
 
 * {
