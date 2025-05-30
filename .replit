@@ -12,7 +12,7 @@ build = ["npm", "run", "build"]
 run = ["npm", "run", "start"]
 
 [workflows]
-runButton = "Start WeParlay"
+runButton = "WeParlay Development Server"
 
 [[workflows.workflow]]
 name = "Project"
@@ -34,6 +34,19 @@ waitForPort = 5000
 
 [[workflows.workflow]]
 name = "Start WeParlay"
+author = 42612790
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm install"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+
+[[workflows.workflow]]
+name = "WeParlay Development Server"
 author = 42612790
 mode = "sequential"
 

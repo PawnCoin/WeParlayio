@@ -1,6 +1,24 @@
+
 /**
- * Removed WordPress sync functionality
- * This file is now a placeholder to prevent import errors
+ * WordPress sync functionality placeholder
  */
 
-// Empty placeholder functions to maintain imports
+// Export required functions to prevent import errors
+export const initWordPressSync = () => {
+  console.log('WordPress sync initialized (placeholder)');
+};
+
+export const syncUserData = () => {
+  console.log('User data sync (placeholder)');
+};
+
+export const applyWordPressConfig = () => {
+  console.log('WordPress config applied (placeholder)');
+};
+
+// Default export for compatibility
+export default {
+  initWordPressSync,
+  syncUserData,
+  applyWordPressConfig
+};

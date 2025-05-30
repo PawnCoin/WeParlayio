@@ -306,4 +306,26 @@ export const initializeWebSocketService = (server: Server): void => {
   console.log('🔌 Initializing WebSocket service...');
 }
 
+export const setupWebSocket = (server: any) => {
+  const wss = new WebSocketServer({ 
+    server,
+    path: '/ws',
+    clientTracking: true,
+    perMessageDeflate: false
+  });
+
+  wss.on('connection', ws => {
+    console.log('WebSocket connected');
+    ws.on('message', message => {
+      console.log(`Received message: ${message}`);
+      ws.send(`Hello! Message received: ${message}`);
+    });
+    ws.on('close', () => {
+      console.log('WebSocket disconnected');
+    });
+  });
+
+  console.log('WebSocket server started');
+};
+
 export { websocketService as default };

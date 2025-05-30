@@ -109,7 +109,43 @@ const PageStatusChecker: React.FC = () => {
     const startTime = Date.now();
     
     try {
-      // Create an iframe to test if the page loads without errors
+      // Use fetch to check if the page exists and loads properly
+      const response = await fetch(page.path, {
+        method: 'HEAD',
+        credentials: 'same-origin'
+      });
+      
+      const responseTime = Date.now() - startTime;
+      
+      if (response.status === 404) {
+        return {
+          name: page.name,
+          path: page.path,
+          status: 'not-found',
+          responseTime,
+          error: 'Page returns 404 - route missing or component not found'
+        };
+      }
+      
+      if (response.status >= 400) {
+        return {
+          name: page.name,
+          path: page.path,
+          status: 'error',
+          responseTime,
+          error: `HTTP ${response.status} - ${response.statusText}`
+        };
+      }
+      
+      return {
+        name: page.name,
+        path: page.path,
+        status: 'success',
+        responseTime
+      };
+      
+    } catch (error) {
+      // Fallback to iframe method for more detailed checking
       return new Promise<PageStatus>((resolve) => {
         const iframe = document.createElement('iframe');
         iframe.style.display = 'none';
