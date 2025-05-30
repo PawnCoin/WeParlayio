@@ -214,7 +214,7 @@ const OddsTicker: React.FC = () => {
             }
           }
           .animate-ticker {
-            animation: ticker 30s linear infinite;
+            animation: ticker 20s linear infinite;
           }
         `}</style>
       </footer>
@@ -286,7 +286,7 @@ const OddsTicker: React.FC = () => {
           }
         }
         .animate-ticker {
-          animation: ticker 120s linear infinite;
+          animation: ticker 80s linear infinite;
         }
       `}</style>
     </footer>
