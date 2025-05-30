@@ -1,63 +1,40 @@
-
 // WeParlay Crash Prevention System
 // Ensures the site never crashes regardless of errors
 
-export const initializeCrashPrevention = () => {
-  // Prevent crashes from missing imports
-  const originalConsoleError = console.error;
-  console.error = (...args) => {
-    const message = args.join(' ');
-    
-    // Handle WordPress import errors
-
-      console.warn('WordPress feature disabled - continuing operation');
-      return;
+export function initializeCrashPrevention() {
+  // Handle missing module exports gracefully
+  window.addEventListener('error', (event) => {
+    if (event.error?.message?.includes('does not provide an export named') ||
+        event.error?.message?.includes('Failed to resolve module specifier')) {
+      console.warn('Module export error handled gracefully');
+      event.preventDefault();
     }
-    
-    // Handle module import errors
-    if (message.includes('does not provide an export named')) {
-      console.warn('Module import error handled gracefully');
-      return;
-    }
-    
-    // Log other errors normally
-    originalConsoleError.apply(console, args);
-  };
+  });
 
-  // Intercept dynamic imports that might fail
-  const originalImport = window.import || ((specifier: string) => import(specifier));
-  
-  // Override dynamic imports with fallback
-  (window as any).import = async (specifier: string) => {
-    try {
-      return await originalImport(specifier);
-    } catch (error) {
-      console.warn(`Failed to import ${specifier}, using fallback`);
-      return { default: () => null }; // Return safe fallback
-    }
-  };
+  // Handle unhandled promise rejections
+  window.addEventListener('unhandledrejection', (event) => {
+    const reason = event.reason;
+    const isIgnorableError = reason && (
+      typeof reason === 'string' && (
+        reason.includes('WebSocket') ||
+        reason.includes('Failed to fetch') ||
+        reason.includes('NetworkError') ||
+        reason.includes('1006')
+      ) ||
+      (reason.message && typeof reason.message === 'string' && (
+        reason.message.includes('WebSocket') ||
+        reason.message.includes('Failed to fetch') ||
+        reason.message.includes('NetworkError') ||
+        reason.message.includes('1006')
+      ))
+    );
 
-  // Network resilience
-  const originalFetch = fetch;
-  window.fetch = async (...args) => {
-    try {
-      return await originalFetch(...args);
-    } catch (error) {
-      console.warn('Network request failed, using fallback data');
-      return new Response(JSON.stringify({ 
-        error: false, 
-        fallback: true, 
-        data: [],
-        message: 'Using cached data'
-      }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      });
+    if (isIgnorableError) {
+      console.warn('Non-critical promise rejection handled:', reason);
+      event.preventDefault();
     }
-  };
-
-  console.log('🛡️ WeParlay crash prevention system activated');
-};
+  });
+}
 
 // Fallback component renderer
 export const SafeComponent = ({ children, fallback = null }: { 

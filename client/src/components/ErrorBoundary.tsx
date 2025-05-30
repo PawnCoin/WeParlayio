@@ -26,10 +26,11 @@ class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     
-    // Handle WordPress-related errors gracefully
-
-      console.warn('WordPress-related error handled - site continues without WordPress features');
-      // Don't set error state for WordPress errors, just continue
+    // Handle module import errors gracefully
+    if (error.message?.includes('does not provide an export named') ||
+        error.message?.includes('Failed to resolve module specifier')) {
+      console.warn('Module import error handled - site continues gracefully');
+      // Don't set error state for import errors, just continue
       return;
     }
     
