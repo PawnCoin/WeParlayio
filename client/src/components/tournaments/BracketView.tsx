@@ -255,21 +255,22 @@ const BracketView: React.FC<BracketViewProps> = ({ tournamentId }) => {
               {/* Render each round */}
               {bracketData.rounds.map((round: any, roundIndex: number) => (
                 <div 
-                  key={roundIndex} 
+                  key={`round-${roundIndex}-${round.name}`} 
                   className={`flex flex-col justify-around ${
                     roundIndex === 1 ? "pt-10 pb-10" :
                     roundIndex === 2 ? "justify-center" :
                     roundIndex === 3 ? "justify-center items-center" : ""
                   }`}
                 >
-                  {round.matches.map((match: any) => renderMatch(match, roundIndex))}
+                  <h4 className="text-xs font-medium text-center mb-2 text-muted-foreground">{round.name}</h4>
+                  {round.matches.map((match: any, matchIndex: number) => renderMatch(match, roundIndex))}
 
                   {/* Championship circle for the final round */}
                   {roundIndex === 3 && bracketData.champion && (
-                    <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mt-4">
+                    <div className="w-20 h-20 bg-primary/10 border border-primary/20 rounded-full flex items-center justify-center mt-4">
                       <div className="text-center">
-                        <div className="text-xs text-gray-500 dark:text-gray-400">Champion</div>
-                        <div className="font-bold text-primary">{bracketData.champion.name}</div>
+                        <div className="text-xs text-muted-foreground">Champion</div>
+                        <div className="font-bold text-primary text-xs">{bracketData.champion.name}</div>
                       </div>
                     </div>
                   )}
