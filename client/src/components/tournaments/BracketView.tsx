@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Trophy, Play, Share2 } from "lucide-react";
+import { getTeamLogoPath } from "@/assets/teams/team-logos";
+import { getSportIconPath } from "@/assets/sports/sports-icons";
 
 interface BracketViewProps {
   tournamentId: number;
