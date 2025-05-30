@@ -2736,55 +2736,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // CRITICAL: WeParlay Cash conversion to real money
-  app.post('/api/users/convert-weparlay-cash', isAuthenticated, async (req, res) => {
-    try {
-      const userId = req.user?.claims?.sub;
-      const { amount } = req.body;
-
-      if (!amount || amount <= 0) {
-        return res.status(400).json({ message: 'Invalid conversion amount' });
-      }
-
-      const user = await storage.getUser(userId);
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-
-      // Check if user has enough WeParlay Cash
-      const weplayCashBalance = user.weplayTokenBalance || 0;
-      if (weplayCashBalance < amount) {
-        return res.status(400).json({ message: 'Insufficient WeParlay Cash balance' });
-      }
-
-      // Convert at 10:1 ratio (10 WeParlay Cash = $1 USD)
-      const conversionRate = 0.1;
-      const realMoneyAmount = amount * conversionRate;
-
-      // Deduct WeParlay Cash and add real money
-      await storage.updateUserWeplayTokenBalance(userId, -amount);
-      await storage.updateUserBalance(userId, realMoneyAmount);
-
-      // Create transaction record
-      await storage.createTransaction({
-        userId,
-        type: 'weparlay_cash_conversion',
-        amount: realMoneyAmount,
-        currency: 'USD',
-        status: 'completed',
-        description: `Converted ${amount} WeParlay Cash to $${realMoneyAmount.toFixed(2)}`
-      });
-
-      res.json({ 
-        success: true, 
-        convertedAmount: realMoneyAmount,
-        message: `Successfully converted ${amount} WeParlay Cash to $${realMoneyAmount.toFixed(2)}`
-      });
-    } catch (error) {
-      console.error('Error converting WeParlay Cash:', error);
-      res.status(500).json({ message: 'Failed to convert WeParlay Cash' });
-    }
-  });
+  // WeParlay Cash conversion to real money has been removed
+  // WeParlay Cash is now purely virtual currency for practice betting
 
   // MASSIVE SPORTS COVERAGE: 110+ Sports from Multiple APIs
   

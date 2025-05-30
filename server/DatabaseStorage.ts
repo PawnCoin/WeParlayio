@@ -533,44 +533,8 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async convertRealToWeParlayCash(userId: string, realAmount: number): Promise<any> {
-    const user = await this.getUser(userId);
-    if (!user) {
-      throw new Error('User not found');
-    }
-    
-    if ((user.balance || 0) < realAmount) {
-      throw new Error('Insufficient real money balance');
-    }
-    
-    // Convert at 1:1 ratio - real money to WeParlay Cash (one way only)
-    const weparlayCashAmount = realAmount;
-    
-    // Update balances
-    await this.updateUserBalance(userId, -realAmount);
-    await this.updateUserWeplayTokenBalance(userId, weparlayCashAmount);
-    
-    // Create transaction record
-    await this.createTransaction({
-      userId: userId,
-      type: 'currency_conversion',
-      amount: realAmount,
-      currency: 'USD_to_WeParlayCash',
-      status: 'completed',
-      method: 'internal_conversion',
-      description: `Converted $${realAmount} to ${weparlayCashAmount} WeParlay Cash (virtual currency)`,
-      timestamp: new Date()
-    });
-    
-    return {
-      success: true,
-      realAmount: -realAmount,
-      weparlayCashAmount: weparlayCashAmount,
-      newRealBalance: user.balance - realAmount,
-      newWeParlayCashBalance: (user.weplayTokenBalance || 0) + weparlayCashAmount,
-      note: 'WeParlay Cash cannot be converted back to real money'
-    };
-  }
+  // WeParlay Cash conversion methods have been removed
+  // WeParlay Cash is now purely virtual currency for practice betting
 
   async redeemWeParlayCashRewards(userId: string, amount: number, reason: string = 'Reward redemption'): Promise<any> {
     await this.updateUserWeplayTokenBalance(userId, amount);

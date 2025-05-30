@@ -282,8 +282,9 @@ const WeParlayCashSystem: React.FC = () => {
             </span>
           </CardTitle>
           <CardDescription className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            Virtual currency for practice betting and tournaments
+            Virtual currency for practice betting - cannot be converted to real money
           </CardDescription>
+        </CardHeader>
         </CardHeader>
         
         <CardContent className="pt-2">

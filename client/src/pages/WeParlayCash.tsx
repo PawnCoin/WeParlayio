@@ -22,7 +22,6 @@ import { useToast } from '@/hooks/use-toast';
 
 const WeParlayCash: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
-  const [convertAmount, setConvertAmount] = useState('');
   const { toast } = useToast();
 
   const { data: cashBalance } = useQuery({
@@ -30,46 +29,7 @@ const WeParlayCash: React.FC = () => {
     enabled: isAuthenticated,
   });
 
-  const handleConvertCash = async () => {
-    if (!convertAmount || parseFloat(convertAmount) <= 0) {
-      toast({
-        title: "Invalid Amount",
-        description: "Please enter a valid amount to convert",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/users/convert-weparlay-cash', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: parseFloat(convertAmount) })
-      });
-
-      const result = await response.json();
-      
-      if (result.success) {
-        toast({
-          title: "Conversion Successful!",
-          description: result.message,
-        });
-        setConvertAmount('');
-      } else {
-        toast({
-          title: "Conversion Failed",
-          description: result.message,
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to convert WeParlay Cash",
-        variant: "destructive"
-      });
-    }
-  };
+  
 
   const handleEarnCash = async (method: string, amount: number) => {
     try {
@@ -161,49 +121,18 @@ const WeParlayCash: React.FC = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600">Conversion Rate</p>
-                <p className="text-2xl font-bold">10:1</p>
-                <p className="text-xs text-gray-500">10 WPC = $1 USD</p>
+                <p className="text-gray-600">Virtual Currency</p>
+                <p className="text-2xl font-bold">Practice Only</p>
+                <p className="text-xs text-gray-500">Cannot be converted to real money</p>
               </div>
-              <ArrowRightLeft className="h-8 w-8 text-purple-500" />
+              <Zap className="h-8 w-8 text-purple-500" />
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Convert to Real Money */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <ArrowRightLeft className="h-5 w-5 mr-2" />
-              Convert to Real Money
-            </CardTitle>
-            <CardDescription>
-              Convert your WeParlay Cash to real money (10 WPC = $1 USD)
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex space-x-2">
-              <Input 
-                placeholder="Amount of WPC to convert"
-                value={convertAmount}
-                onChange={(e) => setConvertAmount(e.target.value)}
-                type="number"
-              />
-              <Button onClick={handleConvertCash}>
-                Convert
-              </Button>
-            </div>
-            {convertAmount && (
-              <p className="text-sm text-gray-600">
-                You'll receive: ${(parseFloat(convertAmount) * 0.1).toFixed(2)} USD
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
         {/* Earn WeParlay Cash */}
         <Card>
           <CardHeader>
@@ -273,9 +202,9 @@ const WeParlayCash: React.FC = () => {
             </div>
             
             <div className="text-center p-4 border rounded-lg">
-              <ArrowRightLeft className="h-8 w-8 mx-auto mb-2 text-purple-500" />
-              <h3 className="font-semibold mb-1">Convert to Cash</h3>
-              <p className="text-sm text-gray-600">Turn virtual wins into real money</p>
+              <Gift className="h-8 w-8 mx-auto mb-2 text-purple-500" />
+              <h3 className="font-semibold mb-1">Earn Rewards</h3>
+              <p className="text-sm text-gray-600">Unlock achievements and bonus WPC</p>
             </div>
           </div>
         </CardContent>
@@ -315,8 +244,8 @@ const WeParlayCash: React.FC = () => {
             <div className="flex items-start space-x-3">
               <Badge className="bg-blue-500">4</Badge>
               <div>
-                <h4 className="font-semibold">Convert to Real Money</h4>
-                <p className="text-sm text-gray-600">Exchange your WPC for real money when you're ready</p>
+                <h4 className="font-semibold">Transition to Real Betting</h4>
+                <p className="text-sm text-gray-600">Apply your learned skills to real money betting when ready</p>
               </div>
             </div>
           </div>
