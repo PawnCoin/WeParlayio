@@ -1,3 +1,4 @@
+
 // WordPress Sync Service
 export interface WordPressPost {
   id: number;
@@ -82,10 +83,7 @@ class WordPressService {
 }
 
 // Create and export the service instance
-const wordPressService = new WordPressService();
-
-export { wordPressService };
-export default wordPressService;
+export const wordPressService = new WordPressService();
 
 // WordPress synchronization functionality
 export const wordpressSync = {
@@ -141,9 +139,5 @@ export const initWordPressSync = async () => {
   }
 };
 
-// Export default as the main service
-export default {
-  wordPressService,
-  wordpressSync,
-  initWordPressSync
-};
+// Export default
+export default wordPressService;
