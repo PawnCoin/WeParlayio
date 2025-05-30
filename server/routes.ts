@@ -2331,19 +2331,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const token = req.headers.authorization?.replace('Bearer ', '');
       
-      if (!token || !token.startsWith('admin-token-')) {
+      if (!token) {
         return res.status(401).json({ 
           isAdmin: false, 
-          message: 'No valid admin token' 
+          message: 'No token provided' 
         });
       }
+
+      // Check if it's an admin token
+      if (token.startsWith('admin-token-')) {
+        return res.json({
+          isAdmin: true,
+          username: 'WeParlay',
+          tier: 'platinum',
+          role: 'admin'
+        });
+      }
+
+      // For regular JWT tokens, decode and check user
+      try {
+        const jwt = await import('jsonwebtoken');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'weparlay-secret-key') as any;
+        
+        if (decoded.isAdmin || decoded.role === 'admin') {
+          return res.json({
+            isAdmin: true,
+            username: decoded.username || 'Admin',
+            tier: 'platinum',
+            role: 'admin'
+          });
+        }
+      } catch (jwtError) {
+        console.log('JWT verification failed:', jwtError);
+      }
       
-      // Return admin status for valid tokens
       return res.json({
-        isAdmin: true,
-        username: 'WeParlay',
-        tier: 'platinum',
-        role: 'admin'
+        isAdmin: false,
+        message: 'Not an admin user'
       });
     } catch (error) {
       console.error('Admin status check error:', error);

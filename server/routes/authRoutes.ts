@@ -258,6 +258,9 @@ router.post('/admin-login', async (req, res) => {
       });
     }
 
+    // Get or create admin user
+    let adminUser = await storage.getUserByEmail?.(adminCred.email);
+    
     // Create admin user if doesn't exist
     if (!adminUser) {
       // Hash the password for storage
