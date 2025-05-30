@@ -39,7 +39,7 @@ export function useAuth() {
     setIsLoading(true);
 
     try {
-      // In production, this would make an API call to authenticate with the WordPress site
+      // Standard authentication without WordPress
 
       if (walletAddress) {
         // For now we just create a temporary user object for demonstration
