@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { Clock, Wifi, WifiOff } from "lucide-react";
 
 interface UpcomingGameCardProps {
   game: {
@@ -48,6 +50,55 @@ interface UpcomingGameCardProps {
 
 const UpcomingGameCard: React.FC<UpcomingGameCardProps> = ({ game }) => {
   const { toast } = useToast();
+  const [liveScores, setLiveScores] = useState({
+    homeScore: 0,
+    awayScore: 0,
+    quarter: '',
+    timeRemaining: '',
+    isLive: false
+  });
+  const [isConnected, setIsConnected] = useState(true);
+  
+  // Check if game is live (within 4 hours of start time)
+  const isGameLive = () => {
+    const now = new Date();
+    const gameTime = new Date(game.startTime);
+    const timeDiff = now.getTime() - gameTime.getTime();
+    const hoursDiff = timeDiff / (1000 * 3600);
+    return hoursDiff >= 0 && hoursDiff <= 4; // Game started and within 4 hours
+  };
+  
+  // Fetch live scores
+  const fetchLiveScores = async () => {
+    if (!isGameLive()) return;
+    
+    try {
+      const response = await fetch(`/api/live-scores/${game.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setLiveScores({
+          homeScore: data.homeScore || 0,
+          awayScore: data.awayScore || 0,
+          quarter: data.quarter || '',
+          timeRemaining: data.timeRemaining || '',
+          isLive: data.isLive || false
+        });
+        setIsConnected(true);
+      }
+    } catch (error) {
+      console.log('Live scores unavailable');
+      setIsConnected(false);
+    }
+  };
+  
+  // Set up polling for live games
+  useEffect(() => {
+    if (isGameLive()) {
+      fetchLiveScores();
+      const interval = setInterval(fetchLiveScores, 30000); // Update every 30 seconds
+      return () => clearInterval(interval);
+    }
+  }, [game.id, game.startTime]);
   
   const handleAddToBetSlip = (selection: string, odds: number) => {
     // Add to localStorage betslip for persistence
@@ -59,7 +110,9 @@ const UpcomingGameCard: React.FC<UpcomingGameCardProps> = ({ game }) => {
       odds,
       stake: 0,
       teams: `${game.awayTeam.name} @ ${game.homeTeam.name}`,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      isLive: liveScores.isLive,
+      currentScore: liveScores.isLive ? `${liveScores.awayScore}-${liveScores.homeScore}` : null
     };
     
     // Check if bet already exists
@@ -72,8 +125,8 @@ const UpcomingGameCard: React.FC<UpcomingGameCardProps> = ({ game }) => {
       localStorage.setItem('betSlip', JSON.stringify(existingBets));
       
       toast({
-        title: "Added to Bet Slip",
-        description: `${selection} at ${odds > 0 ? '+' : ''}${odds}`,
+        title: liveScores.isLive ? "Live Bet Added!" : "Added to Bet Slip",
+        description: `${selection} at ${odds > 0 ? '+' : ''}${odds}${liveScores.isLive ? ' (Live Game)' : ''}`,
         duration: 3000,
       });
     } else {
@@ -105,9 +158,44 @@ const UpcomingGameCard: React.FC<UpcomingGameCardProps> = ({ game }) => {
   };
 
   return (
-    <Card className="mb-4">
+    <Card className="mb-4 relative">
+      {liveScores.isLive && (
+        <div className="absolute top-2 right-2 flex items-center gap-2">
+          <Badge variant="destructive" className="animate-pulse">
+            <span className="w-2 h-2 bg-white rounded-full mr-1"></span>
+            LIVE
+          </Badge>
+          {isConnected ? (
+            <Wifi className="h-4 w-4 text-green-500" />
+          ) : (
+            <WifiOff className="h-4 w-4 text-red-500" />
+          )}
+        </div>
+      )}
+      
       <CardContent className="p-4">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
+        {liveScores.isLive && (
+          <div className="mb-3 text-center border-b pb-2">
+            <div className="flex justify-center items-center gap-4 text-lg font-bold">
+              <span className="text-blue-600">{game.awayTeam.name.split(' ').pop()}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">{liveScores.awayScore}</span>
+                <span className="text-gray-400">-</span>
+                <span className="text-2xl">{liveScores.homeScore}</span>
+              </div>
+              <span className="text-green-600">{game.homeTeam.name.split(' ').pop()}</span>
+            </div>
+            {liveScores.quarter && (
+              <div className="flex justify-center items-center gap-2 text-sm text-gray-500 mt-1">
+                <Clock className="h-3 w-3" />
+                <span>{liveScores.quarter}</span>
+                {liveScores.timeRemaining && <span>• {liveScores.timeRemaining}</span>}
+              </div>
+            )}
+          </div>
+        )}
+        
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center"></div_CONTENT>
           <div className="col-span-2 flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <img className="w-10 h-10 object-contain" src="https://images.unsplash.com/photo-1608245449230-4ac19066d2d0?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150" alt={`${game.homeTeam.name} logo`} />
