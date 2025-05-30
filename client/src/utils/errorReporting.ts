@@ -184,3 +184,37 @@ export const reportError = (error: Error | string, context?: Record<string, any>
       } catch (storageError) {
         console.warn('Failed to store error in localStorage:', storageError);
       }
+export const errorReporting = {
+  reportError: (error: Error | string, context?: string) => {
+    try {
+      const errorData = {
+        message: typeof error === 'string' ? error : error.message,
+        stack: typeof error === 'object' ? error.stack : undefined,
+        context,
+        timestamp: new Date().toISOString(),
+        url: window.location.href,
+        userAgent: navigator.userAgent
+      };
+
+      console.error('📊 Reported error to monitoring service:', errorData);
+
+      // In production, send to your error tracking service
+      if (import.meta.env.PROD) {
+        // Send to monitoring service (Sentry, LogRocket, etc.)
+      }
+    } catch (reportingError) {
+      console.error('Failed to report error:', reportingError);
+    }
+  }
+};
+
+// Export a safe error reporter that won't throw
+export const safeErrorReporting = {
+  reportError: (error: Error | string, context?: string) => {
+    try {
+      errorReporting.reportError(error, context);
+    } catch (e) {
+      console.error('Error reporting failed:', e);
+    }
+  }
+};

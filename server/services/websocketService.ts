@@ -56,7 +56,7 @@ class WebSocketService {
   private setupWebSocketServer(): void {
     if (!this.wss) return;
 
-    this.wss.on('connection', (ws: WebSocket, request) => {
+    this.wss.on('connection', (ws: WebSocket, request: any) => {
       const clientId = this.generateClientId();
       const client: ConnectedClient = {
         ws,
@@ -64,20 +64,31 @@ class WebSocketService {
         lastPing: Date.now(),
         id: clientId
       };
-
       this.clients.set(clientId, client);
+
       console.log(`🔌 Client ${clientId} connected. Total clients: ${this.clients.size}`);
 
-      // Set up proper WebSocket state
-      (ws as any).isAlive = true;
-
-      // Handle ping/pong for connection health
-      ws.on('pong', () => {
-        (ws as any).isAlive = true;
-        client.lastPing = Date.now();
+      // Configure WebSocket
+      ws.on('open', () => {
+        console.log(`✅ WebSocket opened for client ${clientId}`);
       });
 
-      // Handle incoming messages
+      // Send welcome message after connection is fully established
+      setTimeout(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({
+            type: 'connection',
+            data: { 
+              status: 'connected', 
+              clientId,
+              serverTime: Date.now(),
+              features: ['live-odds', 'bet-updates', 'notifications']
+            },
+            timestamp: Date.now()
+          }));
+        }
+      }, 100);
+
       ws.on('message', (data: Buffer) => {
         try {
           const message: WebSocketMessage = JSON.parse(data.toString());
@@ -92,28 +103,27 @@ class WebSocketService {
         }
       });
 
-      // Handle client disconnect
       ws.on('close', (code, reason) => {
         console.log(`🔌 Client ${clientId} disconnected with code ${code}: ${reason}`);
         this.handleDisconnect(clientId);
       });
 
-      // Handle errors
       ws.on('error', (error) => {
         console.error(`❌ WebSocket error for client ${clientId}:`, error);
         this.handleDisconnect(clientId);
       });
 
-      // Send welcome message with proper connection info
-      this.sendToClient(clientId, {
-        type: 'connection',
-        data: { 
-          status: 'connected', 
-          clientId,
-          serverTime: Date.now(),
-          features: ['live-odds', 'bet-updates', 'notifications']
-        },
-        timestamp: Date.now()
+      // Send periodic ping to keep connection alive
+      const pingInterval = setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.ping();
+        } else {
+          clearInterval(pingInterval);
+        }
+      }, 30000);
+
+      ws.on('pong', () => {
+        console.log(`💓 Pong received from client ${clientId}`);
       });
     });
 

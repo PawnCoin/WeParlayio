@@ -220,7 +220,7 @@ const getWebSocketUrl = () => {
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
     return `ws://localhost:5000/ws`;
   }
-  
+
   // For Replit environment, use the current domain with wss protocol
   const host = window.location.host;
   return `wss://${host}/ws`;

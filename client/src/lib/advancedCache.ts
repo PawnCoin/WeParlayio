@@ -1,4 +1,3 @@
-
 // Advanced Caching System for WeParlay
 // Final 2% completion - Performance optimization
 
@@ -10,7 +9,7 @@ export class AdvancedCacheManager {
     accessCount: number;
     lastAccessed: number;
   }>();
-  
+
   private memoryThreshold = 50; // MB
   private compressionEnabled = true;
 
@@ -24,7 +23,7 @@ export class AdvancedCacheManager {
     try {
       const compressed = this.compressionEnabled ? this.compress(data) : data;
       const ttlAdjusted = this.adjustTTLByPriority(ttl, priority);
-      
+
       this.cache.set(key, {
         data: compressed,
         timestamp: Date.now(),
@@ -52,7 +51,7 @@ export class AdvancedCacheManager {
     // Update access statistics
     item.accessCount++;
     item.lastAccessed = Date.now();
-    
+
     return this.compressionEnabled ? this.decompress(item.data) : item.data;
   }
 
@@ -150,3 +149,40 @@ export class AdvancedCacheManager {
 }
 
 export const advancedCache = new AdvancedCacheManager();
+
+class AdvancedCache {
+  private cache = new Map<string, CacheEntry>();
+  private maxSize = 1000;
+  private defaultTTL = 5 * 60 * 1000; // 5 minutes
+  private cleanupInterval: NodeJS.Timeout;
+
+  constructor() {
+    // Cleanup expired entries every minute
+    this.cleanupInterval = setInterval(() => {
+      this.cleanup();
+    }, 60000);
+  }
+
+  set(key: string, value: any, ttl?: number): void {
+    const expiresAt = Date.now() + (ttl || this.defaultTTL);
+
+    // Remove oldest entries if cache is full
+    if (this.cache.size >= this.maxSize) {
+      const oldestKey = this.cache.keys().next().value;
+      if (oldestKey) {
+        this.cache.delete(oldestKey);
+      }
+    }
+
+    this.cache.set(key, { value, expiresAt });
+  }
+
+  private cleanup(): void {
+    const now = Date.now();
+    for (const [key, entry] of this.cache.entries()) {
+      if (entry.expiresAt < now) {
+        this.cache.delete(key);
+      }
+    }
+  }
+}
