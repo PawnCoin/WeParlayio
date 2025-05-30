@@ -10,53 +10,13 @@ import { initializeCrashPrevention } from "./utils/crashPrevention";
 // Initialize crash prevention immediately
 initializeCrashPrevention();
 
-// Override dynamic imports to prevent WordPress module loading
-const originalImport = window.import || ((specifier: string) => import(specifier));
-(window as any).import = async (specifier: string) => {
-  if (specifier.includes('wordpressSync') || specifier.includes('WordPress') || specifier.includes('/src/lib/wordpressSync')) {
-    console.warn(`Blocked import of ${specifier} - WordPress features disabled`);
-    return { 
-      default: () => Promise.resolve(), 
-      initWordPressSync: () => Promise.resolve(),
-      wordpressSync: () => Promise.resolve()
-    };
-  }
-  try {
-    return await originalImport(specifier);
-  } catch (error) {
-    console.warn(`Failed to import ${specifier}, using fallback`);
-    return { 
-      default: () => Promise.resolve(),
-      initWordPressSync: () => Promise.resolve(),
-      wordpressSync: () => Promise.resolve()
-    };
-  }
-};
-
-// Additional protection - override module resolution
-const originalRequire = (window as any).require;
-if (originalRequire) {
-  (window as any).require = (module: string) => {
-    if (module.includes('wordpressSync') || module.includes('WordPress')) {
-      return { 
-        initWordPressSync: () => Promise.resolve(),
-        wordpressSync: () => Promise.resolve(),
-        default: () => Promise.resolve()
-      };
-    }
-    return originalRequire(module);
-  };
-}
-
 // Comprehensive error handling to prevent site crashes
 window.addEventListener('error', (event) => {
   console.error('Global error caught:', event.error);
-  
-  // Prevent crashes from missing modules or WordPress references
+
+  // Prevent crashes from missing modules
   if (event.error?.message?.includes('does not provide an export named') ||
-      event.error?.message?.includes('wordpressSync') || 
-      event.error?.message?.includes('initWordPressSync') ||
-      event.error?.message?.includes('/src/lib/wordpressSync.ts')) {
+      event.error?.message?.includes('Failed to resolve module specifier')) {
     console.warn('Module import error handled gracefully - continuing without problematic module');
     event.preventDefault();
     return;
@@ -67,26 +27,20 @@ window.addEventListener('error', (event) => {
 window.addEventListener('unhandledrejection', (event) => {
   console.error('Unhandled promise rejection:', event.reason);
 
-  // Check if it's a network-related error or WordPress reference that we can safely ignore
+  // Check if it's a network-related error that we can safely ignore
   const reason = event.reason;
   const isIgnorableError = reason && (
     typeof reason === 'string' && (
       reason.includes('WebSocket') ||
       reason.includes('Failed to fetch') ||
       reason.includes('NetworkError') ||
-      reason.includes('1006') ||
-      reason.includes('wordpressSync') ||
-      reason.includes('initWordPressSync') ||
-      reason.includes('/src/lib/wordpressSync.ts')
+      reason.includes('1006')
     ) ||
     (reason.message && typeof reason.message === 'string' && (
       reason.message.includes('WebSocket') ||
       reason.message.includes('Failed to fetch') ||
       reason.message.includes('NetworkError') ||
-      reason.message.includes('1006') ||
-      reason.message.includes('wordpressSync') ||
-      reason.message.includes('initWordPressSync') ||
-      reason.message.includes('/src/lib/wordpressSync.ts')
+      reason.message.includes('1006')
     ))
   );
 

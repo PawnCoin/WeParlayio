@@ -12,7 +12,7 @@ build = ["npm", "run", "build"]
 run = ["npm", "run", "start"]
 
 [workflows]
-runButton = "WeParlay Fixed Start"
+runButton = "WeParlay Clean Start"
 
 [[workflows.workflow]]
 name = "Project"
@@ -73,6 +73,19 @@ args = "npm run dev"
 
 [[workflows.workflow]]
 name = "WeParlay Fixed Start"
+author = 42612790
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm install --silent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+
+[[workflows.workflow]]
+name = "WeParlay Clean Start"
 author = 42612790
 mode = "sequential"
 
