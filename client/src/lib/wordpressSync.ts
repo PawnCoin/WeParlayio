@@ -140,3 +140,10 @@ export const initWordPressSync = async () => {
     console.warn('WordPress connection failed, running in offline mode:', error);
   }
 };
+
+// Export default as the main service
+export default {
+  wordPressService,
+  wordpressSync,
+  initWordPressSync
+};
