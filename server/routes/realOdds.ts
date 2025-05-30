@@ -1,5 +1,7 @@
+
 // Multi-API failover system with ESPN logos and comprehensive data
 import { Request, Response } from 'express';
+import { apiResilienceManager } from '../services/apiResilienceManager';
 
 // API priority order for failover
 const API_PRIORITY = [
@@ -24,47 +26,21 @@ async function fetchWithRetry(url: string, options: any, retries = 3): Promise<a
   throw new Error('Max retries exceeded');
 }
 
-async function fetchTheOddsAPI() {
-  if (!process.env.THE_ODDS_API_KEY) return [];
-  try {
-    const data = await fetchWithRetry(
-      `https://api.the-odds-api.com/v4/sports/upcoming/odds/?apiKey=${process.env.THE_ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=draftkings,fanduel,betmgm`,
-      {}
-    );
-    console.log(`📊 TheOddsAPI: Retrieved ${data.length} live events`);
-    return data;
-  } catch (error) {
-    console.log('⚠️ TheOddsAPI: Rate limit or connection issue, trying backup');
-    return [];
-  }
+async function fetchTheOddsAPIWithResilience() {
+  return await apiResilienceManager.makeResilientCall('the_odds_api', {
+    method: 'GET',
+    headers: { 'Accept': 'application/json' }
+  });
 }
 
-async function fetchRapidAPI() {
-  if (!process.env.RAPIDAPI_KEY) return [];
-  
-  const rapidApiEndpoints = [
-    'https://odds-api1.p.rapidapi.com/odds',
-    'https://api-american-football.p.rapidapi.com/games',
-    'https://api-basketball.p.rapidapi.com/games',
-    'https://api-baseball.p.rapidapi.com/games'
-  ];
-  
-  for (const endpoint of rapidApiEndpoints) {
-    try {
-      const data = await fetchWithRetry(endpoint, {
-        headers: {
-          'X-RapidAPI-Key': process.env.RAPIDAPI_KEY!,
-          'X-RapidAPI-Host': endpoint.split('/')[2]
-        }
-      });
-      console.log(`🎯 RapidAPI (${endpoint}): Retrieved live odds data`);
-      return Array.isArray(data) ? data : Object.values(data);
-    } catch (error) {
-      console.log(`⚠️ RapidAPI endpoint ${endpoint} failed, trying next...`);
-      continue;
+async function fetchRapidAPIWithResilience() {
+  return await apiResilienceManager.makeResilientCall('rapid_api_sports', {
+    method: 'GET',
+    headers: {
+      'X-RapidAPI-Key': process.env.RAPIDAPI_KEY || '',
+      'Accept': 'application/json'
     }
-  }
-  return [];
+  });
 }
 
 async function fetchESPNDataWithLogos() {
@@ -114,7 +90,9 @@ async function fetchESPNDataWithLogos() {
                   source: 'ESPN API',
                   last_update: new Date().toISOString(),
                   game_time: new Date(event.date).toLocaleTimeString(),
-                  broadcast: competition?.broadcasts?.[0]?.names?.[0] || null
+                  broadcast: competition?.broadcasts?.[0]?.names?.[0] || null,
+                  is_live: event.status?.type?.state === 'in',
+                  api_status: 'active'
                 });
               }
             });
@@ -157,21 +135,69 @@ function generateTotal() {
 
 export async function getRealOddsData(req: Request, res: Response) {
   try {
-    console.log('🚀 Fetching real-time odds from ALL APIs...');
+    console.log('🚀 Initiating resilient API data fetching...');
     
-    // Fetch from all APIs simultaneously
-    const [theOddsData, rapidApiData, espnData] = await Promise.all([
-      fetchTheOddsAPI(),
-      fetchRapidAPI(),
+    // Check system status first
+    const systemStatus = apiResilienceManager.getSystemStatus();
+    console.log(`📊 System Status: Emergency Mode: ${systemStatus.emergencyMode}`);
+    
+    let apiResults = {
+      theOdds: [],
+      rapidApi: [],
+      espn: [],
+      apiStatus: {
+        theOddsApi: 'loading',
+        rapidApi: 'loading',
+        espn: 'loading'
+      }
+    };
+
+    // Attempt to fetch from all APIs with proper error handling
+    const [theOddsResult, rapidApiResult, espnResult] = await Promise.allSettled([
+      fetchTheOddsAPIWithResilience(),
+      fetchRapidAPIWithResilience(),
       fetchESPNDataWithLogos()
     ]);
 
-    // Transform TheOddsAPI data
-    const transformedTheOdds = theOddsData.slice(0, 10).map((event: any, index: number) => {
+    // Process The Odds API result
+    if (theOddsResult.status === 'fulfilled' && theOddsResult.value && !theOddsResult.value.fallback) {
+      apiResults.theOdds = Array.isArray(theOddsResult.value) ? theOddsResult.value.slice(0, 10) : [];
+      apiResults.apiStatus.theOddsApi = 'active';
+      console.log(`✅ The Odds API: ${apiResults.theOdds.length} events retrieved`);
+    } else {
+      apiResults.apiStatus.theOddsApi = 'fallback';
+      console.log('⚠️ The Odds API: Using fallback data');
+    }
+
+    // Process RapidAPI result
+    if (rapidApiResult.status === 'fulfilled' && rapidApiResult.value && !rapidApiResult.value.fallback) {
+      apiResults.rapidApi = Array.isArray(rapidApiResult.value) ? rapidApiResult.value.slice(0, 10) : [];
+      apiResults.apiStatus.rapidApi = 'active';
+      console.log(`✅ RapidAPI: ${apiResults.rapidApi.length} events retrieved`);
+    } else {
+      apiResults.apiStatus.rapidApi = 'fallback';
+      console.log('⚠️ RapidAPI: Using fallback data');
+    }
+
+    // Process ESPN result
+    if (espnResult.status === 'fulfilled' && espnResult.value) {
+      apiResults.espn = espnResult.value;
+      apiResults.apiStatus.espn = 'active';
+      console.log(`✅ ESPN API: ${apiResults.espn.length} events retrieved`);
+    } else {
+      apiResults.apiStatus.espn = 'failed';
+      console.log('❌ ESPN API: Failed to retrieve data');
+    }
+
+    // Transform and combine all data
+    const allRealOdds = [];
+
+    // Add The Odds API data
+    apiResults.theOdds.forEach((event: any, index: number) => {
       const homeOutcome = event.bookmakers?.[0]?.markets?.[0]?.outcomes?.find((o: any) => o.name === event.home_team);
       const awayOutcome = event.bookmakers?.[0]?.markets?.[0]?.outcomes?.find((o: any) => o.name === event.away_team);
       
-      return {
+      allRealOdds.push({
         id: `odds-api-${event.id || index}`,
         sport_key: event.sport_key,
         sport_title: event.sport_title,
@@ -182,57 +208,90 @@ export async function getRealOddsData(req: Request, res: Response) {
         away_odds: awayOutcome?.price || -110,
         bookmaker: event.bookmakers?.[0]?.title || 'Live Sportsbook',
         source: 'TheOddsAPI',
+        api_status: apiResults.apiStatus.theOddsApi,
         last_update: new Date().toISOString()
-      };
+      });
     });
 
-    // Transform RapidAPI data
-    const transformedRapidApi = rapidApiData.slice(0, 10).map((item: any, index: number) => ({
-      id: `rapid-${index}`,
-      sport_key: item.sport || 'general',
-      sport_title: item.league || item.sport_title || 'Live Sports',
-      commence_time: item.commence_time || new Date().toISOString(),
-      home_team: item.home_team || item.teams?.home || 'Home Team',
-      away_team: item.away_team || item.teams?.away || 'Away Team',
-      home_odds: item.home_odds || item.odds?.home || (-100 - Math.floor(Math.random() * 200)),
-      away_odds: item.away_odds || item.odds?.away || (-100 - Math.floor(Math.random() * 200)),
-      source: 'RapidAPI',
-      last_update: new Date().toISOString()
-    }));
-
-    // Combine all real data
-    const allRealOdds = [
-      ...transformedTheOdds,
-      ...transformedRapidApi,
-      ...espnData
-    ];
-
-    console.log(`✅ LIVE ODDS AGGREGATED: ${allRealOdds.length} real betting opportunities`);
-    console.log(`   - TheOddsAPI: ${transformedTheOdds.length} events`);
-    console.log(`   - RapidAPI: ${transformedRapidApi.length} events`);
-    console.log(`   - ESPN: ${espnData.length} events`);
-
-    // Always return ESPN data even if other APIs fail
-    if (allRealOdds.length === 0 && espnData.length === 0) {
-      console.log('🔑 API Status Check Required');
-      return res.status(503).json({ 
-        error: 'API connection needed',
-        message: 'To display live betting odds, please verify your API keys are properly configured in the environment settings.'
+    // Add RapidAPI data
+    apiResults.rapidApi.forEach((item: any, index: number) => {
+      allRealOdds.push({
+        id: `rapid-${index}`,
+        sport_key: item.sport || 'general',
+        sport_title: item.league || item.sport_title || 'Live Sports',
+        commence_time: item.commence_time || new Date().toISOString(),
+        home_team: item.home_team || item.teams?.home || 'Home Team',
+        away_team: item.away_team || item.teams?.away || 'Away Team',
+        home_odds: item.home_odds || item.odds?.home || (-100 - Math.floor(Math.random() * 200)),
+        away_odds: item.away_odds || item.odds?.away || (-100 - Math.floor(Math.random() * 200)),
+        source: 'RapidAPI',
+        api_status: apiResults.apiStatus.rapidApi,
+        last_update: new Date().toISOString()
       });
-    }
+    });
+
+    // Add ESPN data (always reliable)
+    allRealOdds.push(...apiResults.espn);
+
+    // Determine overall system status
+    const activeApis = Object.values(apiResults.apiStatus).filter(status => status === 'active').length;
+    const totalApis = Object.keys(apiResults.apiStatus).length;
     
-    // If paid APIs fail but ESPN works, use ESPN data
-    if (transformedTheOdds.length === 0 && transformedRapidApi.length === 0 && espnData.length > 0) {
-      console.log('📺 Using ESPN data as primary source');
+    let overallStatus = 'healthy';
+    if (activeApis === 0) {
+      overallStatus = 'emergency';
+    } else if (activeApis < totalApis * 0.5) {
+      overallStatus = 'degraded';
     }
 
-    res.json(allRealOdds);
+    console.log(`✅ ODDS AGGREGATION COMPLETE: ${allRealOdds.length} total events from ${activeApis}/${totalApis} APIs`);
+    console.log(`   - TheOddsAPI: ${apiResults.apiStatus.theOddsApi}`);
+    console.log(`   - RapidAPI: ${apiResults.apiStatus.rapidApi}`);
+    console.log(`   - ESPN: ${apiResults.apiStatus.espn}`);
+
+    // Return comprehensive response with status information
+    res.json({
+      success: true,
+      data: allRealOdds,
+      meta: {
+        totalEvents: allRealOdds.length,
+        systemStatus: overallStatus,
+        apiStatus: apiResults.apiStatus,
+        activeApis,
+        totalApis,
+        emergencyMode: systemStatus.emergencyMode,
+        lastUpdate: new Date().toISOString(),
+        message: overallStatus === 'emergency' 
+          ? 'Using cached/fallback data - all primary APIs unavailable'
+          : overallStatus === 'degraded'
+          ? 'Some APIs unavailable - using available sources and fallback data'
+          : 'All systems operational'
+      }
+    });
 
   } catch (error: any) {
-    console.error('❌ Real odds aggregation error:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch real odds data',
-      message: 'Unable to connect to sports betting APIs. Please verify your API keys.'
+    console.error('❌ Critical error in odds aggregation:', error);
+    
+    // Emergency fallback - return cached data from resilience manager
+    const emergencyData = await apiResilienceManager.makeResilientCall('emergency_fallback');
+    
+    res.status(200).json({
+      success: true,
+      data: emergencyData.data || [],
+      meta: {
+        totalEvents: emergencyData.data?.length || 0,
+        systemStatus: 'emergency',
+        apiStatus: {
+          theOddsApi: 'failed',
+          rapidApi: 'failed',
+          espn: 'failed'
+        },
+        activeApis: 0,
+        totalApis: 3,
+        emergencyMode: true,
+        lastUpdate: new Date().toISOString(),
+        message: 'Emergency mode: Using cached data - all APIs temporarily unavailable'
+      }
     });
   }
 }

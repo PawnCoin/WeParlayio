@@ -25,7 +25,45 @@ class APIResilienceManager {
 
   constructor() {
     this.initializeFallbackData();
+    this.registerDefaultEndpoints();
     this.startHealthCheck();
+  }
+
+  private registerDefaultEndpoints() {
+    // Register The Odds API
+    if (process.env.THE_ODDS_API_KEY) {
+      this.registerEndpoint(
+        'the_odds_api',
+        `https://api.the-odds-api.com/v4/sports/upcoming/odds/?apiKey=${process.env.THE_ODDS_API_KEY}&regions=us&markets=h2h`,
+        this.longTermCache.get('fallback_nfl_games') || []
+      );
+    }
+
+    // Register RapidAPI Sports
+    if (process.env.RAPIDAPI_KEY) {
+      this.registerEndpoint(
+        'rapid_api_sports',
+        'https://odds-api1.p.rapidapi.com/odds',
+        this.longTermCache.get('fallback_nba_games') || []
+      );
+    }
+
+    // Register ESPN as always available (no key needed)
+    this.registerEndpoint(
+      'espn_api',
+      'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard',
+      this.longTermCache.get('fallback_nfl_games') || []
+    );
+
+    // Register emergency fallback
+    this.registerEndpoint(
+      'emergency_fallback',
+      'internal://fallback',
+      {
+        data: this.longTermCache.get('fallback_nfl_games') || [],
+        message: 'Using emergency cached data'
+      }
+    );
   }
 
   private initializeFallbackData() {

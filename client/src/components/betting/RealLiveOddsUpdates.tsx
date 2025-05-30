@@ -26,6 +26,8 @@ export default function RealLiveOddsUpdates() {
   const [oddsUpdates, setOddsUpdates] = useState<RealOddsUpdate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  const [systemStatus, setSystemStatus] = useState<any>({});
+  const [apiSwitching, setApiSwitching] = useState(false);
 
   // Fetch real live odds updates from our API
   useEffect(() => {
@@ -33,24 +35,35 @@ export default function RealLiveOddsUpdates() {
       try {
         setIsLoading(true);
         const response = await fetch('/api/real-odds');
-        const realOdds = await response.json();
+        const result = await response.json();
         
-        if (realOdds && realOdds.length > 0) {
-          const realUpdates = realOdds.map((odds: any, index: number) => ({
+        if (result.success && result.data) {
+          // Update system status
+          setSystemStatus(result.meta || {});
+          
+          // Check if APIs are switching
+          if (result.meta?.systemStatus === 'degraded') {
+            setApiSwitching(true);
+            setTimeout(() => setApiSwitching(false), 3000);
+          }
+          
+          const realUpdates = result.data.map((odds: any, index: number) => ({
             id: odds.id || `odds-${index}`,
             homeTeam: odds.home_team || 'Home Team',
             awayTeam: odds.away_team || 'Away Team',
             market: odds.bookmakers?.[0]?.markets?.[0]?.key || 'h2h',
-            oldOdds: odds.bookmakers?.[0]?.markets?.[0]?.outcomes?.[0]?.price || 0,
-            newOdds: odds.bookmakers?.[0]?.markets?.[0]?.outcomes?.[1]?.price || 0,
+            oldOdds: odds.home_odds || odds.bookmakers?.[0]?.markets?.[0]?.outcomes?.[0]?.price || 0,
+            newOdds: odds.away_odds || odds.bookmakers?.[0]?.markets?.[0]?.outcomes?.[1]?.price || 0,
             timestamp: new Date(odds.commence_time || Date.now()),
-            source: odds.source || 'RapidAPI'
+            source: odds.source || 'API',
+            apiStatus: odds.api_status || 'active'
           }));
           setOddsUpdates(realUpdates.slice(0, 15));
           setLastUpdate(new Date());
         }
       } catch (error) {
         console.error('Error fetching real odds updates:', error);
+        setSystemStatus({ systemStatus: 'error', message: 'Connection failed' });
       } finally {
         setIsLoading(false);
       }
@@ -159,16 +172,44 @@ export default function RealLiveOddsUpdates() {
           })
         )}
         
-        <div className="bg-blue-50 p-3 rounded-lg">
+        <div className={`p-3 rounded-lg ${
+          systemStatus.systemStatus === 'emergency' ? 'bg-red-50' :
+          systemStatus.systemStatus === 'degraded' ? 'bg-yellow-50' :
+          'bg-blue-50'
+        }`}>
           <div className="flex items-center gap-2 text-sm">
-            <Zap className="h-4 w-4 text-blue-600" />
-            <span className="font-medium text-blue-900">
-              Live Data from ESPN & RapidAPI
+            <Zap className={`h-4 w-4 ${
+              systemStatus.systemStatus === 'emergency' ? 'text-red-600' :
+              systemStatus.systemStatus === 'degraded' ? 'text-yellow-600' :
+              'text-blue-600'
+            }`} />
+            <span className={`font-medium ${
+              systemStatus.systemStatus === 'emergency' ? 'text-red-900' :
+              systemStatus.systemStatus === 'degraded' ? 'text-yellow-900' :
+              'text-blue-900'
+            }`}>
+              {apiSwitching ? 'Switching APIs...' : 
+               systemStatus.systemStatus === 'emergency' ? 'Emergency Mode - Cached Data' :
+               systemStatus.systemStatus === 'degraded' ? 'Some APIs Down - Auto-Switching' :
+               'Live Data from Multiple APIs'}
             </span>
           </div>
-          <p className="text-xs text-blue-700 mt-1">
-            Updates every 8 seconds • {oddsUpdates.length} active markets
+          <p className={`text-xs mt-1 ${
+            systemStatus.systemStatus === 'emergency' ? 'text-red-700' :
+            systemStatus.systemStatus === 'degraded' ? 'text-yellow-700' :
+            'text-blue-700'
+          }`}>
+            {systemStatus.message || `Updates every 8 seconds • ${oddsUpdates.length} active markets`}
+            {systemStatus.activeApis !== undefined && (
+              <span className="ml-2">• {systemStatus.activeApis}/{systemStatus.totalApis} APIs active</span>
+            )}
           </p>
+          {apiSwitching && (
+            <div className="flex items-center gap-2 mt-2">
+              <RefreshCw className="h-3 w-3 animate-spin text-yellow-600" />
+              <span className="text-xs text-yellow-700">Automatically switching to backup APIs...</span>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
