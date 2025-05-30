@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import Sidebar from "./Sidebar";
+import QuickNavButton from './QuickNavButton';
 import Footer from "./Footer";
 import SystemStatusIndicator from '../SystemStatusIndicator';
 import UnifiedBetSlip from "../betting/UnifiedBetSlip";
@@ -369,8 +370,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       {/* Footer */}
       <Footer />
       <SystemStatusIndicator />
+      <QuickNavButton />
     </div>
   );
-}
+};
 
 export default MainLayout;

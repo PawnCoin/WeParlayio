@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
+import WalletSecurityWrapper from './WalletSecurityWrapper';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
@@ -102,7 +103,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect, onDisconnect }
 
     try {
       let info: WalletInfo;
-      
+
       if (wallet.networkType === 'ethereum') {
         info = await connectEthereumWallet();
       } else if (wallet.networkType === 'solana') {
@@ -113,7 +114,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect, onDisconnect }
 
       setWalletInfo(info);
       setIsDialogOpen(false);
-      
+
       toast({
         title: "Wallet Connected",
         description: `Successfully connected to ${wallet.name} on ${info.networkName}`,
@@ -125,7 +126,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect, onDisconnect }
     } catch (error) {
       console.error("Error connecting wallet:", error);
       const errorMessage = error instanceof Error ? error.message : "Failed to connect wallet";
-      
+
       toast({
         title: "Connection Failed",
         description: errorMessage,
@@ -143,16 +144,16 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect, onDisconnect }
       if (selectedWallet === WalletType.PHANTOM && window.solana) {
         await window.solana.disconnect();
       }
-      
+
       // Reset states
       setWalletInfo(null);
       setSelectedWallet(null);
-      
+
       toast({
         title: "Wallet Disconnected",
         description: "Your wallet has been disconnected.",
       });
-      
+
       if (onDisconnect) {
         onDisconnect();
       }
@@ -167,7 +168,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect, onDisconnect }
   };
 
   return (
-    <>
+    <WalletSecurityWrapper>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
           <Button 
@@ -185,7 +186,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect, onDisconnect }
               Select a wallet to connect to WeParlay. You'll be able to deposit, place bets, and withdraw using your crypto wallet.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="grid grid-cols-2 gap-4 py-4">
             {supportedWallets.map(wallet => (
               <Card 
@@ -216,7 +217,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect, onDisconnect }
               </Card>
             ))}
           </div>
-          
+
           <DialogFooter className="flex flex-col sm:flex-row sm:justify-between">
             <p className="text-xs text-muted-foreground mb-4 sm:mb-0">
               By connecting your wallet, you agree to our Terms of Service and Privacy Policy.
@@ -232,7 +233,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect, onDisconnect }
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
       {walletInfo && (
         <Card className="mt-4 bg-card text-card-foreground">
           <CardHeader className="py-3">
@@ -278,7 +279,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onConnect, onDisconnect }
           </CardContent>
         </Card>
       )}
-    </>
+    </WalletSecurityWrapper>
   );
 };
 

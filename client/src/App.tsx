@@ -77,6 +77,7 @@ import LiveBettingRealFixed from "@/pages/LiveBettingReal-fixed";
 import SignUpEnhanced from "@/pages/SignUpEnhanced";
 import WalletManagementEnhanced from "@/pages/WalletManagementEnhanced";
 import BettingChallenges from './components/betting/BettingChallenges';
+import SiteNavigation from './pages/SiteNavigation';
 
 // Import admin components
 import AdminBypass from "@/pages/AdminBypass";

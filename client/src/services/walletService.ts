@@ -62,6 +62,22 @@ export const isTrustWalletAvailable = (): boolean => {
 // Connect to MetaMask or other Ethereum wallets
 export const connectEthereumWallet = async (walletType: WalletType): Promise<WalletConnectionResult> => {
   try {
+    // Production security check - verify we're in a secure context
+    if (typeof window === 'undefined') {
+      return {
+        status: ConnectionStatus.ERROR,
+        error: 'Wallet connection not available in server environment'
+      };
+    }
+
+    // Verify HTTPS in production
+    if (process.env.NODE_ENV === 'production' && !window.location.protocol.includes('https')) {
+      return {
+        status: ConnectionStatus.ERROR,
+        error: 'Wallet connections require a secure HTTPS connection'
+      };
+    }
+
     // Check if wallet is available
     if (!isMetaMaskAvailable() && walletType === WalletType.METAMASK) {
       return {
@@ -97,8 +113,24 @@ export const connectEthereumWallet = async (walletType: WalletType): Promise<Wal
     // Get the first account
     const address = accounts[0];
     
+    // Production safety: Validate address format
+    if (!address || !address.match(/^0x[a-fA-F0-9]{40}$/)) {
+      return {
+        status: ConnectionStatus.ERROR,
+        error: 'Invalid wallet address format received'
+      };
+    }
+    
     // Get the chain ID
     const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+    
+    // Production safety: Validate chain ID
+    if (!chainId || typeof chainId !== 'string') {
+      return {
+        status: ConnectionStatus.ERROR,
+        error: 'Unable to verify blockchain network'
+      };
+    }
     
     // Get the actual network name based on chain ID
     let network;
