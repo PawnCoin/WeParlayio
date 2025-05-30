@@ -76,7 +76,6 @@ import ThemeColorManager from "@/pages/ThemeColorManager";
 import LiveBettingRealFixed from "@/pages/LiveBettingReal-fixed";
 import SignUpEnhanced from "@/pages/SignUpEnhanced";
 import WalletManagementEnhanced from "@/pages/WalletManagementEnhanced";
-import EsportsHub from "./pages/EsportsHub";
 import BettingChallenges from './components/betting/BettingChallenges';
 import SiteNavigation from './pages/SiteNavigation';
 import PageStatusChecker from './pages/PageStatusChecker';
@@ -234,6 +233,8 @@ function Router() {
       <Route path="/" component={Home} />
        <Route path="/site-navigation" component={SiteNavigation} />
             <Route path="/page-status-checker" component={PageStatusChecker} />
+            <Route path="/profile" component={UserProfilePage} />
+            <Route path="/user/:userId" component={UserProfilePage} />
       <Route component={NotFound} />
     </Switch>
   );
