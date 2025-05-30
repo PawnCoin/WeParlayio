@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -107,7 +107,7 @@ const UserProfilePage: React.FC<UserProfilePageProps> = () => {
                 {user.username?.charAt(0)?.toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
-            
+
             <div className="flex-1 text-center md:text-left">
               <h1 className="text-3xl font-bold mb-2">{user.username}</h1>
               <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-4">
@@ -122,7 +122,7 @@ const UserProfilePage: React.FC<UserProfilePageProps> = () => {
                   </Badge>
                 )}
               </div>
-              
+
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                 <div>
                   <div className="text-2xl font-bold text-primary">{userStats?.totalBets || 0}</div>
@@ -445,7 +445,7 @@ const UserProfilePage: React.FC<UserProfilePageProps> = () => {
                   </div>
                   <Switch defaultChecked />
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div>
                     <Label>High Contrast</Label>
@@ -453,7 +453,7 @@ const UserProfilePage: React.FC<UserProfilePageProps> = () => {
                   </div>
                   <Switch />
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div>
                     <Label>Reduce Motion</Label>
@@ -495,7 +495,7 @@ const UserProfilePage: React.FC<UserProfilePageProps> = () => {
                   </div>
                   <Switch defaultChecked />
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div>
                     <Label>Auto-hide Empty Slip</Label>
@@ -503,7 +503,7 @@ const UserProfilePage: React.FC<UserProfilePageProps> = () => {
                   </div>
                   <Switch />
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div>
                     <Label>Quick Bet Amounts</Label>
