@@ -13,10 +13,10 @@ initializeCrashPrevention();
 // Override dynamic imports to prevent WordPress module loading
 const originalImport = window.import || ((specifier: string) => import(specifier));
 (window as any).import = async (specifier: string) => {
-  if (specifier.includes('wordpressSync') || specifier.includes('WordPress')) {
+  if (specifier.includes('wordpressSync') || specifier.includes('WordPress') || specifier.includes('/src/lib/wordpressSync')) {
     console.warn(`Blocked import of ${specifier} - WordPress features disabled`);
     return { 
-      default: () => null, 
+      default: () => Promise.resolve(), 
       initWordPressSync: () => Promise.resolve(),
       wordpressSync: () => Promise.resolve()
     };
@@ -25,9 +25,28 @@ const originalImport = window.import || ((specifier: string) => import(specifier
     return await originalImport(specifier);
   } catch (error) {
     console.warn(`Failed to import ${specifier}, using fallback`);
-    return { default: () => null };
+    return { 
+      default: () => Promise.resolve(),
+      initWordPressSync: () => Promise.resolve(),
+      wordpressSync: () => Promise.resolve()
+    };
   }
 };
+
+// Additional protection - override module resolution
+const originalRequire = (window as any).require;
+if (originalRequire) {
+  (window as any).require = (module: string) => {
+    if (module.includes('wordpressSync') || module.includes('WordPress')) {
+      return { 
+        initWordPressSync: () => Promise.resolve(),
+        wordpressSync: () => Promise.resolve(),
+        default: () => Promise.resolve()
+      };
+    }
+    return originalRequire(module);
+  };
+}
 
 // Comprehensive error handling to prevent site crashes
 window.addEventListener('error', (event) => {
