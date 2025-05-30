@@ -105,18 +105,16 @@ app.use((req, res, next) => {
     log(`🚀 WeParlay server running on HTTP at 0.0.0.0:${port}`);
   });
 
-  // Initialize WebSocket service after server is created
-  try {
-    initializeWebSocketService(httpServer);
-    log(`🔌 WebSocket service initialized on same port ${port}`);
-
-    // Test WebSocket server status
-    setTimeout(() => {
-      const stats = websocketService.getStats();
-      console.log('📊 WebSocket stats:', stats);
-    }, 1000);
-  } catch (error) {
-    console.error('🚨 Failed to initialize WebSocket service:', error);
+  // Skip WebSocket initialization in development to avoid port conflicts
+  if (process.env.NODE_ENV === 'production') {
+    try {
+      initializeWebSocketService(httpServer);
+      log(`🔌 WebSocket service initialized on same port ${port}`);
+    } catch (error) {
+      console.error('🚨 Failed to initialize WebSocket service:', error);
+    }
+  } else {
+    console.log('🔌 WebSocket disabled in development environment');
   }
 })();
 
