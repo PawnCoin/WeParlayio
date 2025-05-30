@@ -7,7 +7,7 @@ export function initializeCrashPrevention() {
   // Handle missing module exports gracefully
   window.addEventListener('error', (event) => {
     const errorMessage = event.error?.message || event.message || '';
-    
+
     if (errorMessage.includes('does not provide an export named') ||
         errorMessage.includes('Failed to resolve module specifier') ||
         errorMessage.includes('wordpressSync') ||
@@ -31,7 +31,7 @@ export function initializeCrashPrevention() {
   window.addEventListener('unhandledrejection', (event) => {
     const reason = event.reason;
     const reasonString = String(reason?.message || reason || '');
-    
+
     const isIgnorableError = (
       reasonString.includes('WebSocket') ||
       reasonString.includes('Failed to fetch') ||
