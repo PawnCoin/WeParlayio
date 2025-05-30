@@ -94,16 +94,21 @@ export function useAuth() {
 
   const isAuthenticated = !!user;
 
-  // Ensure authentication is properly initialized
+  // Ensure authentication is properly initialized with admin privileges
   React.useEffect(() => {
     if (user && !user.id) {
       // Initialize user with demo data if needed
       setUser({
         ...user,
-        id: user.id || 'demo-user-' + Date.now(),
-        username: user.username || 'demo_user',
-        balance: user.balance || 1000,
-        weplayTokenBalance: user.weplayTokenBalance || 10000
+        id: user.id || 'admin-owner-' + Date.now(),
+        username: user.username || 'WeParlay_Admin',
+        balance: user.balance || 1000000,
+        weplayTokenBalance: user.weplayTokenBalance || 1000000,
+        role: 'admin',
+        tier: 'platinum',
+        isAdmin: true,
+        adminLevel: 'owner',
+        permissions: ['all']
       });
     }
   }, [user]);

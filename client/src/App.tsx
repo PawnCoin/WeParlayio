@@ -78,6 +78,7 @@ import SignUpEnhanced from "@/pages/SignUpEnhanced";
 import WalletManagementEnhanced from "@/pages/WalletManagementEnhanced";
 import BettingChallenges from './components/betting/BettingChallenges';
 import SiteNavigation from './pages/SiteNavigation';
+import PageStatusChecker from './pages/PageStatusChecker';
 
 // Import admin components
 import AdminBypass from "@/pages/AdminBypass";
@@ -229,6 +230,8 @@ function Router() {
 
       {/* Default route */}
       <Route path="/" component={Home} />
+       <Route path="/site-navigation" component={SiteNavigation} />
+            <Route path="/page-status-checker" component={PageStatusChecker} />
       <Route component={NotFound} />
     </Switch>
   );

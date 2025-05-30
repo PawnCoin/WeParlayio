@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +17,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useBetting } from "@/contexts/BettingContext";
 import WalletConnect from "@/components/auth/WalletConnect";
 import { motion, AnimatePresence } from "framer-motion";
+import CryptoWalletDetails from '@/components/wallet/CryptoWalletDetails';
 
 interface WalletData {
   id: string;
@@ -445,6 +445,10 @@ const WalletManagementEnhanced: React.FC = () => {
           </Card>
         </TabsContent>
 
+        <TabsContent value="details">
+          <CryptoWalletDetails />
+        </TabsContent>
+
         <TabsContent value="cards" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card>
@@ -463,7 +467,7 @@ const WalletManagementEnhanced: React.FC = () => {
                     <span>12/26</span>
                   </div>
                 </div>
-                
+
                 <Button className="w-full">
                   <Plus className="h-4 w-4 mr-2" />
                   Add New Card
@@ -513,7 +517,7 @@ const WalletManagementEnhanced: React.FC = () => {
                   Mobile payments offer instant deposits with lower fees
                 </AlertDescription>
               </Alert>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-3">
                   {[
@@ -555,6 +559,9 @@ const WalletManagementEnhanced: React.FC = () => {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="deposit">
+</TabsContent>
 
         <TabsContent value="transactions" className="space-y-4">
           <Card>
