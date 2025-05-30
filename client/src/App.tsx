@@ -230,8 +230,10 @@ function Router() {
 
       {/* Default route */}
       <Route path="/" component={Home} />
-       <Route path="/site-navigation" component={SiteNavigation} />
-            <Route path="/page-status-checker" component={PageStatusChecker} />
+      <Route path="/site-navigation" component={SiteNavigation} />
+      <Route path="/page-status-checker" component={PageStatusChecker} />
+      
+      {/* Catch-all route for 404 - must be last */}
       <Route component={NotFound} />
     </Switch>
   );
