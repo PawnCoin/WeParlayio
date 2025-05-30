@@ -4,7 +4,7 @@
 ## 🔴 CRITICAL - Backend Infrastructure (Fix Immediately)
 
 ### 1. WordPress Sync Functions
-- **File**: `client/src/lib/wordpressSync.ts`
+
 - **Issue**: `applyWordPressConfig` called globally but may have connection issues
 - **Priority**: CRITICAL - Affects theme integration
 - **Status**: ⚠️ Needs verification
