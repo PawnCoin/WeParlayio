@@ -2326,6 +2326,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin status check endpoint
+  app.get('/api/user/admin-status', async (req, res) => {
+    try {
+      const token = req.headers.authorization?.replace('Bearer ', '');
+      
+      if (!token || !token.startsWith('admin-token-')) {
+        return res.status(401).json({ 
+          isAdmin: false, 
+          message: 'No valid admin token' 
+        });
+      }
+      
+      // Return admin status for valid tokens
+      return res.json({
+        isAdmin: true,
+        username: 'WeParlay',
+        tier: 'platinum',
+        role: 'admin'
+      });
+    } catch (error) {
+      console.error('Admin status check error:', error);
+      res.status(500).json({ 
+        isAdmin: false, 
+        message: 'Failed to check admin status' 
+      });
+    }
+  });
+
   // CRITICAL: Admin dashboard and financial reporting
   app.get('/api/admin/financial-summary', isAuthenticated, async (req, res) => {
     try {
@@ -4068,13 +4096,18 @@ Join us: WeParlay.io 🎯
     try {
       const { email, password } = req.body;
       
-      // Check admin credentials
-      if (email === 'support@weparlay.io' && password === 'baysides3') {
+      // Normalize email for comparison
+      const normalizedEmail = email?.toLowerCase();
+      
+      // Check admin credentials - use correct password format
+      if (normalizedEmail === 'support@weparlay.io' && password === 'Baysides3!') {
         const adminUser = {
           id: 'admin-weparlay',
           email: 'support@weparlay.io',
           role: 'admin',
-          name: 'WeParlay Administrator'
+          name: 'WeParlay Administrator',
+          tier: 'platinum',
+          isAdmin: true
         };
         
         return res.json({
@@ -4087,7 +4120,7 @@ Join us: WeParlay.io 🎯
       
       return res.status(401).json({
         success: false,
-        message: 'Invalid admin credentials'
+        message: 'Invalid admin credentials - Use support@weparlay.io with Baysides3!'
       });
     } catch (error) {
       console.error('Admin login error:', error);

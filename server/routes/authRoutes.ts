@@ -228,46 +228,33 @@ router.post('/admin-login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Define valid admin credentials
+    // Define valid admin credentials - use consistent casing
     const validAdminCredentials = [
       { email: 'support@weparlay.io', password: 'Baysides3!' },
-      { email: 'admin@weparlay.io', password: 'admin' },
-      { email: 'weparlay@admin.com', password: 'admin123' }
+      { email: 'admin@weparlay.io', password: 'Baysides3!' },
+      { email: 'weparlay@admin.com', password: 'Baysides3!' }
     ];
     
+    // Normalize email to lowercase for comparison
+    const normalizedEmail = email.toLowerCase();
+    
     // Check if this is a valid admin email
-    const adminCred = validAdminCredentials.find(cred => cred.email === email);
+    const adminCred = validAdminCredentials.find(cred => cred.email.toLowerCase() === normalizedEmail);
     
     if (!adminCred) {
       return res.status(401).json({ 
         success: false,
-        message: 'Invalid admin credentials' 
+        message: 'Invalid admin email address' 
       });
     }
 
-    // Get admin user from database if exists
-    let adminUser = await storage.getUserByEmail?.(email);
-    
-    let isValidPassword = false;
-    
-    if (adminUser && adminUser.password) {
-      // If user exists and has a password, check if password is hashed or plain text
-      if (adminUser.password.startsWith('$2b$')) {
-        // Password is hashed, use bcrypt to compare
-        isValidPassword = await bcrypt.compare(password, adminUser.password);
-      } else {
-        // Password is plain text, direct comparison
-        isValidPassword = adminUser.password === password;
-      }
-    } else {
-      // User doesn't exist or has no password, check against valid credentials
-      isValidPassword = adminCred.password === password;
-    }
+    // Direct password comparison for admin login
+    const isValidPassword = password === adminCred.password;
 
     if (!isValidPassword) {
       return res.status(401).json({ 
         success: false,
-        message: 'Invalid admin credentials' 
+        message: 'Invalid admin password' 
       });
     }
 
