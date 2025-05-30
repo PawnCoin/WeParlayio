@@ -46,20 +46,20 @@
   /* Professional Dark Mode Colors */
   --background: #0f172a;
   --foreground: #f8fafc;
-  --card: #1e293b;
+  --card: #0f172a;
   --card-foreground: #f1f5f9;
   --primary: #3b82f6;
-  --primary-foreground: #ffffff;
-  --secondary: #334155;
+  --primary-foreground: #0f172a;
+  --secondary: #0f172a;
   --secondary-foreground: #f1f5f9;
-  --muted: #334155;
+  --muted: #0f172a;
   --muted-foreground: #94a3b8;
-  --accent: #475569;
+  --accent: #0f172a;
   --accent-foreground: #f1f5f9;
   --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
+  --destructive-foreground: #0f172a;
   --border: #334155;
-  --input: #334155;
+  --input: #0f172a;
   --ring: #3b82f6;
 
   /* Dark mode chart colors */
