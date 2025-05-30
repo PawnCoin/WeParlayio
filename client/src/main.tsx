@@ -5,6 +5,10 @@ import App from './App.tsx'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from '@/components/ui/toaster'
+import { initializeCrashPrevention } from './utils/crashPrevention';
+
+// Initialize crash prevention first
+initializeCrashPrevention();
 
 const queryClient = new QueryClient({
   defaultOptions: {

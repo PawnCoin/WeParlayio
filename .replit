@@ -12,7 +12,7 @@ build = ["npm", "run", "build"]
 run = ["npm", "run", "start"]
 
 [workflows]
-runButton = "WeParlay Fixed"
+runButton = "WeParlay Site Recovery"
 
 [[workflows.workflow]]
 name = "Project"
@@ -165,6 +165,15 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm install"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+
+[[workflows.workflow]]
+name = "WeParlay Site Recovery"
+author = 42612790
+mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
