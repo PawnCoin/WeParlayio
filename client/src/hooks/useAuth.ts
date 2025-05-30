@@ -39,7 +39,7 @@ export function useAuth() {
     setIsLoading(true);
 
     try {
-      // Standard authentication without WordPress
+      // Standard authentication
 
       if (walletAddress) {
         // For now we just create a temporary user object for demonstration
