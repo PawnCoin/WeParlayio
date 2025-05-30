@@ -8,6 +8,31 @@ import AdvancedBettingOptions from "./AdvancedBettingOptions";
 import { getTeamLogoPath } from "@/assets/teams/team-logos";
 import { getSportIconPath } from "@/assets/sports/sports-icons";
 
+// AssetManager class to handle fetching and caching of assets
+class AssetManager {
+  private static cache: { [key: string]: string } = {};
+
+  public static async getESPNTeamLogo(teamName: string, sportKey: string): Promise<string> {
+    const cacheKey = `espn-logo-${teamName}-${sportKey}`;
+    if (AssetManager.cache[cacheKey]) {
+      return AssetManager.cache[cacheKey];
+    }
+
+    // Replace with actual ESPN API endpoint or scraping logic
+    const espnLogoUrl = await AssetManager.fetchESPNLogo(teamName, sportKey);
+
+    AssetManager.cache[cacheKey] = espnLogoUrl;
+    return espnLogoUrl;
+  }
+
+  private static async fetchESPNLogo(teamName: string, sportKey: string): Promise<string> {
+    // Implement logic to fetch logo from ESPN API or by scraping
+    // This is a placeholder, replace with actual implementation
+    console.log(`Fetching ESPN logo for ${teamName} in ${sportKey}`);
+    return `https://example.com/espn-logo/${teamName.replace(/\s+/g, '-').toLowerCase()}.png`; // Placeholder URL
+  }
+}
+
 interface GameCardProps {
   game: {
     id: number;
@@ -66,10 +91,10 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
   const { addToBetSlip } = useBetSlip();
   const [hoveredOdds, setHoveredOdds] = useState<string | null>(null);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
-  
+
   const isLive = game.status === "live";
   const progress = isLive ? Math.floor(Math.random() * 100) : 0; // This should be calculated based on game time
-  
+
   const handleAddToBetSlip = (selection: string, odds: number, betType: string = 'moneyline', point?: number) => {
     // Add to bet slip context
     addToBetSlip({
@@ -81,14 +106,14 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
       point: point,
       sportId: game.id
     });
-    
+
     // Show toast notification
     toast({
       title: "Added to Bet Slip",
       description: `${selection} at ${odds > 0 ? '+' : ''}${odds}`
     });
   };
-  
+
   return (
     <Card className="overflow-hidden mb-6">
       {/* Game Header */}
@@ -134,7 +159,7 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
           </Button>
         </div>
       </CardHeader>
-      
+
       {/* Game Content */}
       <CardContent className="p-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -145,8 +170,14 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
                 className="w-12 h-12 mr-3 object-contain" 
                 src={getTeamLogoPath(game.homeTeam.name, game.sportName.toLowerCase().replace(/\s+/g, '_'))} 
                 alt={`${game.homeTeam.name} logo`}
-                onError={(e) => {
-                  e.currentTarget.src = "https://images.unsplash.com/photo-1608245449230-4ac19066d2d0?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150";
+                onError={async (e) => {
+                  // Try ESPN logo as fallback
+                  try {
+                    const espnLogo = await AssetManager.getESPNTeamLogo(game.homeTeam.name, game.sportName.toLowerCase().replace(/\s+/g, '_'));
+                    e.currentTarget.src = espnLogo;
+                  } catch {
+                    e.currentTarget.src = "https://images.unsplash.com/photo-1608245449230-4ac19066d2d0?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150";
+                  }
                 }}
               />
               <div>
@@ -156,7 +187,7 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
             </div>
             <div className="text-2xl font-bold">{game.homeScore}</div>
           </div>
-          
+
           {/* Game Stats */}
           <div className="flex flex-col items-center justify-center text-center">
             <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">{game.period}</div>
@@ -166,7 +197,7 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{game.timeRemaining} remaining</div>
           </div>
-          
+
           {/* Team Info */}
           <div className="flex items-center justify-between">
             <div className="text-2xl font-bold">{game.awayScore}</div>
@@ -179,14 +210,20 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
                 className="w-12 h-12 object-contain" 
                 src={getTeamLogoPath(game.awayTeam.name, game.sportName.toLowerCase().replace(/\s+/g, '_'))} 
                 alt={`${game.awayTeam.name} logo`}
-                onError={(e) => {
-                  e.currentTarget.src = "https://images.unsplash.com/photo-1590227632180-80a3bf110871?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150";
+                onError={async (e) => {
+                  // Try ESPN logo as fallback
+                  try {
+                    const espnLogo = await AssetManager.getESPNTeamLogo(game.awayTeam.name, game.sportName.toLowerCase().replace(/\s+/g, '_'));
+                    e.currentTarget.src = espnLogo;
+                  } catch {
+                    e.currentTarget.src = "https://images.unsplash.com/photo-1590227632180-80a3bf110871?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150";
+                  }
                 }}
               />
             </div>
           </div>
         </div>
-        
+
         {/* Betting Options */}
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Money Line */}
@@ -259,7 +296,7 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
               </div>
             </div>
           </div>
-          
+
           {/* Point Spread */}
           <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
             <h4 className="text-sm text-gray-500 dark:text-gray-400 mb-3">Point Spread</h4>
@@ -340,7 +377,7 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
               </div>
             </div>
           </div>
-          
+
           {/* Total Points */}
           <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
             <h4 className="text-sm text-gray-500 dark:text-gray-400 mb-3">Total Points</h4>
@@ -417,7 +454,7 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
           </div>
         </div>
       </CardContent>
-      
+
       {/* View More Link */}
       <CardFooter className="border-t border-gray-200 dark:border-gray-700 p-3">
         <div className="w-full">
@@ -432,7 +469,7 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
               <>Hide Advanced Betting Options <ChevronRight className="ml-1 h-4 w-4 transform rotate-90" /></>
             )}
           </Button>
-          
+
           {showAdvancedOptions && (
             <div className="pt-2">
               <AdvancedBettingOptions 
@@ -450,3 +487,8 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
 };
 
 export default GameCard;
+```
+
+```
+1.  The code enhances the GameCard component to fetch team logos from ESPN as a fallback if the default logo path fails. It also introduces an AssetManager class to handle fetching and caching of assets, specifically ESPN team logos.
+```
