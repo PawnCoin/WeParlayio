@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import BetConfetti from "@/components/betting/BetConfetti";
@@ -22,7 +23,8 @@ import {
   ArrowRight, ChevronRight, Trophy, BadgePercent, 
   Bookmark, CalendarClock, Gauge, Lock, ArrowUpRight, Sparkles,
   Lightbulb, BarChart3, RotateCw, CircleDollarSign, Gem, UserCog, 
-  Bolt
+  Bolt, Info, X, Phone, MessageCircle, Mail, Shield, TrendingUp,
+  Headphones, Globe, Smartphone, CreditCard, Settings
 } from "lucide-react";
 
 interface VipTier {
@@ -74,6 +76,272 @@ const VipFeatures: React.FC = () => {
     vipSince: 'March 12, 2025',
   });
   
+  // Comprehensive tier data from the guide
+  const tierDetailsData = {
+    wood: {
+      name: 'Wood Tier',
+      price: 'FREE',
+      period: 'Always Free',
+      color: 'bg-amber-800',
+      description: 'Perfect for new users and casual bettors who want to explore WeParlay',
+      maxBetAmount: 50,
+      maxOpenBets: 3,
+      oddsBoost: '0%',
+      weeklyBonus: 100,
+      withdrawalDiscount: '0%',
+      maxInvites: 5,
+      supportLevel: 'Standard',
+      features: {
+        betting: {
+          headToHeadRealMoney: true,
+          headToHeadVirtual: true,
+          parlayCash: false,
+          parlayVirtual: true,
+          tournamentParticipation: false,
+          betProtection: false
+        },
+        content: {
+          liveOddsAccess: 'Basic',
+          statsAccess: 'Basic',
+          advancedStatsAccess: false,
+          predictionEngineAccess: false,
+          liveStreamingAccess: false
+        },
+        social: {
+          createGroups: false,
+          joinGroups: true,
+          customGamertag: false,
+          customBets: false,
+          smsNotifications: false
+        },
+        premium: {
+          premiumSuggestions: '0/month',
+          voiceBetting: false,
+          fantasyTeamSync: false,
+          yahooFantasyIntegration: false
+        },
+        socialIntegration: {
+          facebook: false,
+          twitter: false,
+          instagram: false,
+          linkedin: false,
+          youtube: false
+        }
+      }
+    },
+    bronze: {
+      name: 'Bronze Tier',
+      price: '$9.99',
+      period: 'per month',
+      color: 'bg-amber-700',
+      description: 'Enhanced features for regular bettors who want more betting options',
+      maxBetAmount: 200,
+      maxOpenBets: 5,
+      oddsBoost: '2.5%',
+      weeklyBonus: 250,
+      withdrawalDiscount: '5%',
+      maxInvites: 10,
+      supportLevel: 'Standard',
+      features: {
+        betting: {
+          headToHeadRealMoney: true,
+          headToHeadVirtual: true,
+          parlayCash: true,
+          parlayVirtual: true,
+          tournamentParticipation: true,
+          betProtection: false
+        },
+        content: {
+          liveOddsAccess: 'Enhanced',
+          statsAccess: 'Enhanced',
+          advancedStatsAccess: false,
+          predictionEngineAccess: false,
+          liveStreamingAccess: false
+        },
+        social: {
+          createGroups: true,
+          joinGroups: true,
+          customGamertag: true,
+          customBets: true,
+          smsNotifications: false
+        },
+        premium: {
+          premiumSuggestions: '10/month',
+          voiceBetting: '5/day',
+          fantasyTeamSync: false,
+          yahooFantasyIntegration: false
+        },
+        socialIntegration: {
+          facebook: 'Basic Share',
+          twitter: 'Basic Share',
+          instagram: false,
+          linkedin: false,
+          youtube: false
+        }
+      }
+    },
+    silver: {
+      name: 'Silver Tier',
+      price: '$19.99',
+      period: 'per month',
+      color: 'bg-gray-400',
+      description: 'Advanced features for serious bettors who want enhanced analytics',
+      maxBetAmount: 500,
+      maxOpenBets: 10,
+      oddsBoost: '3.5%',
+      weeklyBonus: 500,
+      withdrawalDiscount: '10%',
+      maxInvites: 20,
+      supportLevel: 'Priority Email',
+      features: {
+        betting: {
+          headToHeadRealMoney: true,
+          headToHeadVirtual: true,
+          parlayCash: true,
+          parlayVirtual: true,
+          tournamentParticipation: true,
+          betProtection: false
+        },
+        content: {
+          liveOddsAccess: 'Premium',
+          statsAccess: 'Premium',
+          advancedStatsAccess: true,
+          predictionEngineAccess: false,
+          liveStreamingAccess: false
+        },
+        social: {
+          createGroups: true,
+          joinGroups: true,
+          customGamertag: true,
+          customBets: true,
+          smsNotifications: true
+        },
+        premium: {
+          premiumSuggestions: '30/month',
+          voiceBetting: '20/day',
+          fantasyTeamSync: 'Basic Sync',
+          yahooFantasyIntegration: false
+        },
+        socialIntegration: {
+          facebook: 'Basic Share',
+          twitter: 'Full Integration',
+          instagram: 'Basic Share',
+          linkedin: false,
+          youtube: false
+        }
+      }
+    },
+    gold: {
+      name: 'Gold Tier',
+      price: '$49.99',
+      period: 'per month',
+      color: 'bg-amber-500',
+      description: 'Professional features for serious bettors and enthusiasts',
+      maxBetAmount: 1000,
+      maxOpenBets: 15,
+      oddsBoost: '5%',
+      weeklyBonus: 1000,
+      withdrawalDiscount: '20%',
+      maxInvites: 50,
+      supportLevel: 'Live Chat',
+      features: {
+        betting: {
+          headToHeadRealMoney: true,
+          headToHeadVirtual: true,
+          parlayCash: true,
+          parlayVirtual: true,
+          tournamentParticipation: 'VIP Tournaments',
+          betProtection: true
+        },
+        content: {
+          liveOddsAccess: 'Professional',
+          statsAccess: 'Professional',
+          advancedStatsAccess: true,
+          predictionEngineAccess: true,
+          liveStreamingAccess: false
+        },
+        social: {
+          createGroups: true,
+          joinGroups: true,
+          customGamertag: true,
+          customBets: true,
+          smsNotifications: true
+        },
+        premium: {
+          premiumSuggestions: 'Unlimited',
+          voiceBetting: 'Unlimited',
+          fantasyTeamSync: 'Full Sync',
+          yahooFantasyIntegration: 'Full Integration'
+        },
+        socialIntegration: {
+          facebook: 'Full Integration',
+          twitter: 'Automated Posts',
+          instagram: 'Story Templates',
+          linkedin: 'Basic Share',
+          youtube: 'Video Sharing'
+        }
+      }
+    },
+    platinum: {
+      name: 'Platinum Tier',
+      price: '$99.99',
+      period: 'per month',
+      color: 'bg-blue-400',
+      description: 'Ultimate features for high-stakes professional bettors',
+      maxBetAmount: 2500,
+      maxOpenBets: 30,
+      oddsBoost: '7.5%',
+      weeklyBonus: 2500,
+      withdrawalDiscount: '50%',
+      maxInvites: 100,
+      supportLevel: 'Phone + Dedicated Agent',
+      features: {
+        betting: {
+          headToHeadRealMoney: true,
+          headToHeadVirtual: true,
+          parlayCash: true,
+          parlayVirtual: true,
+          tournamentParticipation: 'Platinum Exclusive',
+          betProtection: 'Enhanced'
+        },
+        content: {
+          liveOddsAccess: 'Platinum Exclusive',
+          statsAccess: 'Platinum Exclusive',
+          advancedStatsAccess: 'Enhanced',
+          predictionEngineAccess: 'Advanced',
+          liveStreamingAccess: true
+        },
+        social: {
+          createGroups: true,
+          joinGroups: true,
+          customGamertag: true,
+          customBets: true,
+          smsNotifications: true
+        },
+        premium: {
+          premiumSuggestions: 'Unlimited + Exclusive',
+          voiceBetting: 'Priority Processing',
+          fantasyTeamSync: 'Auto-Sync',
+          yahooFantasyIntegration: 'Auto-Bet'
+        },
+        socialIntegration: {
+          facebook: 'App Integration',
+          twitter: 'API Access',
+          instagram: 'API Access',
+          linkedin: 'Full Integration',
+          youtube: 'Live Streaming'
+        },
+        exclusive: {
+          personalAccountManager: true,
+          vipConciergeServices: true,
+          customBettingBuilder: true,
+          exclusiveEvents: true,
+          apiAccess: true
+        }
+      }
+    }
+  };
+
   const tiers: VipTier[] = [
     {
       id: 'bronze',
@@ -82,9 +350,10 @@ const VipFeatures: React.FC = () => {
       color: 'bg-amber-700',
       minPoints: 0,
       benefits: [
-        '5% Boost on Parlay Bets',
-        'Exclusive Weekly Promotions',
-        'Birthday Bonus'
+        '2.5% Odds Boost',
+        'Parlay Cash Betting',
+        'Tournament Access',
+        'Custom Gamertag'
       ],
       isActive: vipData.currentTier === 'bronze',
     },
@@ -95,10 +364,10 @@ const VipFeatures: React.FC = () => {
       color: 'bg-gray-400',
       minPoints: 2500,
       benefits: [
-        '10% Boost on Parlay Bets',
-        'Early Access to New Features',
-        'Reduced Minimum Bet Requirements',
-        'Monthly Loyalty Reward'
+        '3.5% Odds Boost',
+        'Advanced Analytics',
+        'SMS Notifications',
+        'Priority Support'
       ],
       isActive: vipData.currentTier === 'silver',
     },
@@ -109,11 +378,10 @@ const VipFeatures: React.FC = () => {
       color: 'bg-amber-500',
       minPoints: 5000,
       benefits: [
-        '15% Boost on Parlay Bets',
-        'Custom Betting Options',
-        'Priority Customer Support',
-        'Weekly Free Bet',
-        'Exclusive Tournaments'
+        '5% Odds Boost',
+        'Bet Protection',
+        'Yahoo Fantasy Sync',
+        'Live Chat Support'
       ],
       isActive: vipData.currentTier === 'gold',
     },
@@ -124,12 +392,10 @@ const VipFeatures: React.FC = () => {
       color: 'bg-blue-400',
       minPoints: 10000,
       benefits: [
-        '20% Boost on All Bets',
-        'VIP Personal Account Manager',
-        'Exclusive VIP Events',
-        'Maximum Deposit Limit Increase',
-        'Customized Betting Experience',
-        'Profit Boost Tokens'
+        '7.5% Odds Boost',
+        'Dedicated Manager',
+        'Live Streaming',
+        'API Access'
       ],
       isActive: vipData.currentTier === 'platinum',
     },
@@ -143,10 +409,7 @@ const VipFeatures: React.FC = () => {
         '25% Boost on All Bets',
         'Diamond-Exclusive Bets',
         'Bespoke Betting Service',
-        'Concierge Service',
-        'VIP Travel Benefits',
-        'Custom Bet Building',
-        'Exclusive Prediction Data'
+        'Concierge Service'
       ],
       isActive: vipData.currentTier === 'diamond',
     }
@@ -367,6 +630,385 @@ const VipFeatures: React.FC = () => {
     }
     return 100;
   };
+
+  // Tier Detail Modal Component
+  const TierDetailModal: React.FC<{ tierId: string; tierData: any }> = ({ tierId, tierData }) => {
+    const renderFeatureIcon = (available: boolean | string) => {
+      if (typeof available === 'boolean') {
+        return available ? (
+          <Check className="h-4 w-4 text-green-500" />
+        ) : (
+          <X className="h-4 w-4 text-red-500" />
+        );
+      }
+      return <Check className="h-4 w-4 text-green-500" />;
+    };
+
+    return (
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="w-full mt-2"
+          >
+            <Info className="h-4 w-4 mr-2" />
+            View Details
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle className="flex items-center text-2xl">
+              <div className={`p-2 rounded-lg ${tierData.color} text-white mr-3`}>
+                {tiers.find(t => t.id === tierId)?.icon}
+              </div>
+              {tierData.name}
+            </DialogTitle>
+            <DialogDescription>
+              <div className="flex items-center justify-between">
+                <span>{tierData.description}</span>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-primary">{tierData.price}</div>
+                  <div className="text-sm text-muted-foreground">{tierData.period}</div>
+                </div>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          
+          <ScrollArea className="h-[70vh] pr-4">
+            <div className="space-y-6">
+              {/* Key Metrics */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Card className="p-4">
+                  <div className="text-center">
+                    <DollarSign className="h-6 w-6 mx-auto mb-2 text-green-500" />
+                    <div className="text-2xl font-bold">${tierData.maxBetAmount}</div>
+                    <div className="text-sm text-muted-foreground">Max Bet</div>
+                  </div>
+                </Card>
+                <Card className="p-4">
+                  <div className="text-center">
+                    <TrendingUp className="h-6 w-6 mx-auto mb-2 text-blue-500" />
+                    <div className="text-2xl font-bold">{tierData.oddsBoost}</div>
+                    <div className="text-sm text-muted-foreground">Odds Boost</div>
+                  </div>
+                </Card>
+                <Card className="p-4">
+                  <div className="text-center">
+                    <Gift className="h-6 w-6 mx-auto mb-2 text-purple-500" />
+                    <div className="text-2xl font-bold">{tierData.weeklyBonus}</div>
+                    <div className="text-sm text-muted-foreground">Weekly Bonus</div>
+                  </div>
+                </Card>
+                <Card className="p-4">
+                  <div className="text-center">
+                    <Users className="h-6 w-6 mx-auto mb-2 text-orange-500" />
+                    <div className="text-2xl font-bold">{tierData.maxInvites}</div>
+                    <div className="text-sm text-muted-foreground">Max Invites</div>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Betting Features */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Zap className="h-5 w-5 mr-2 text-yellow-500" />
+                    Betting Features
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center justify-between">
+                      <span>Head-to-Head Real Money</span>
+                      {renderFeatureIcon(tierData.features.betting.headToHeadRealMoney)}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Head-to-Head Virtual</span>
+                      {renderFeatureIcon(tierData.features.betting.headToHeadVirtual)}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Parlay Cash</span>
+                      {renderFeatureIcon(tierData.features.betting.parlayCash)}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Tournament Participation</span>
+                      {renderFeatureIcon(tierData.features.betting.tournamentParticipation)}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Bet Protection</span>
+                      {renderFeatureIcon(tierData.features.betting.betProtection)}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Max Open Bets</span>
+                      <Badge variant="outline">{tierData.maxOpenBets}</Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Content Access */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <BarChart3 className="h-5 w-5 mr-2 text-blue-500" />
+                    Content & Data Access
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center justify-between">
+                      <span>Live Odds Access</span>
+                      <Badge variant="outline">{tierData.features.content.liveOddsAccess}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Stats Access</span>
+                      <Badge variant="outline">{tierData.features.content.statsAccess}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Advanced Stats</span>
+                      {renderFeatureIcon(tierData.features.content.advancedStatsAccess)}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Prediction Engine</span>
+                      {renderFeatureIcon(tierData.features.content.predictionEngineAccess)}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Live Streaming</span>
+                      {renderFeatureIcon(tierData.features.content.liveStreamingAccess)}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Social Features */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Users className="h-5 w-5 mr-2 text-green-500" />
+                    Social Features
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center justify-between">
+                      <span>Create Groups</span>
+                      {renderFeatureIcon(tierData.features.social.createGroups)}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Join Groups</span>
+                      {renderFeatureIcon(tierData.features.social.joinGroups)}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Custom Gamertag</span>
+                      {renderFeatureIcon(tierData.features.social.customGamertag)}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Custom Bets</span>
+                      {renderFeatureIcon(tierData.features.social.customBets)}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>SMS Notifications</span>
+                      {renderFeatureIcon(tierData.features.social.smsNotifications)}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Premium Features */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Crown className="h-5 w-5 mr-2 text-purple-500" />
+                    Premium Features
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center justify-between">
+                      <span>Premium Suggestions</span>
+                      <Badge variant="outline">{tierData.features.premium.premiumSuggestions}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Voice Betting</span>
+                      <Badge variant="outline">{tierData.features.premium.voiceBetting}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Fantasy Team Sync</span>
+                      <Badge variant="outline">{tierData.features.premium.fantasyTeamSync || 'No'}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Yahoo Fantasy Integration</span>
+                      <Badge variant="outline">{tierData.features.premium.yahooFantasyIntegration || 'No'}</Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Social Media Integration */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Globe className="h-5 w-5 mr-2 text-indigo-500" />
+                    Social Media Integration
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center justify-between">
+                      <span>Facebook</span>
+                      <Badge variant="outline">{tierData.features.socialIntegration.facebook || 'No'}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Twitter</span>
+                      <Badge variant="outline">{tierData.features.socialIntegration.twitter || 'No'}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Instagram</span>
+                      <Badge variant="outline">{tierData.features.socialIntegration.instagram || 'No'}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>LinkedIn</span>
+                      <Badge variant="outline">{tierData.features.socialIntegration.linkedin || 'No'}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>YouTube</span>
+                      <Badge variant="outline">{tierData.features.socialIntegration.youtube || 'No'}</Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Platinum Exclusive Features */}
+              {tierId === 'platinum' && tierData.features.exclusive && (
+                <Card className="border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/20">
+                  <CardHeader>
+                    <CardTitle className="flex items-center text-blue-700 dark:text-blue-300">
+                      <Gem className="h-5 w-5 mr-2" />
+                      Platinum Exclusive Features
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 gap-3">
+                      <div className="flex items-center">
+                        <UserCog className="h-4 w-4 mr-3 text-blue-500" />
+                        <span>Dedicated Personal Account Manager</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Settings className="h-4 w-4 mr-3 text-blue-500" />
+                        <span>VIP Concierge Services</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Lightbulb className="h-4 w-4 mr-3 text-blue-500" />
+                        <span>Custom Betting Builder</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Trophy className="h-4 w-4 mr-3 text-blue-500" />
+                        <span>Exclusive Events & Promotions</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Globe className="h-4 w-4 mr-3 text-blue-500" />
+                        <span>API Access for Integration</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Support Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Headphones className="h-5 w-5 mr-2 text-emerald-500" />
+                    Customer Support
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">Support Level</span>
+                      <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">
+                        {tierData.supportLevel}
+                      </Badge>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                      {tierData.supportLevel.includes('Standard') && (
+                        <div className="flex items-center">
+                          <Mail className="h-4 w-4 mr-2 text-gray-500" />
+                          <span className="text-sm">Email Support</span>
+                        </div>
+                      )}
+                      {tierData.supportLevel.includes('Email') && (
+                        <div className="flex items-center">
+                          <Clock className="h-4 w-4 mr-2 text-blue-500" />
+                          <span className="text-sm">Priority Queue</span>
+                        </div>
+                      )}
+                      {tierData.supportLevel.includes('Chat') && (
+                        <div className="flex items-center">
+                          <MessageCircle className="h-4 w-4 mr-2 text-green-500" />
+                          <span className="text-sm">Live Chat</span>
+                        </div>
+                      )}
+                      {tierData.supportLevel.includes('Phone') && (
+                        <div className="flex items-center">
+                          <Phone className="h-4 w-4 mr-2 text-purple-500" />
+                          <span className="text-sm">Phone Support</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Financial Benefits */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <CreditCard className="h-5 w-5 mr-2 text-green-500" />
+                    Financial Benefits
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="text-center p-4 border rounded-lg">
+                      <div className="text-2xl font-bold text-green-600">{tierData.weeklyBonus}</div>
+                      <div className="text-sm text-muted-foreground">WeParlay Cash Weekly</div>
+                    </div>
+                    <div className="text-center p-4 border rounded-lg">
+                      <div className="text-2xl font-bold text-blue-600">{tierData.withdrawalDiscount}</div>
+                      <div className="text-sm text-muted-foreground">Withdrawal Fee Discount</div>
+                    </div>
+                    <div className="text-center p-4 border rounded-lg">
+                      <div className="text-2xl font-bold text-purple-600">{tierData.oddsBoost}</div>
+                      <div className="text-sm text-muted-foreground">Odds Boost</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Upgrade Button */}
+              <div className="flex justify-center pt-6">
+                <Button 
+                  size="lg" 
+                  className={`px-8 ${tierData.color} hover:opacity-90 text-white`}
+                  onClick={() => {
+                    toast({
+                      title: `Upgrade to ${tierData.name}`,
+                      description: "Redirecting to upgrade page...",
+                    });
+                  }}
+                >
+                  Upgrade to {tierData.name} - {tierData.price}/{tierData.period}
+                </Button>
+              </div>
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+    );
+  };
   
   if (!isAuthenticated) {
     return (
@@ -404,7 +1046,44 @@ const VipFeatures: React.FC = () => {
           </Card>
           
           <div className="grid md:grid-cols-3 gap-6">
-            {tiers.slice(0, 3).map((tier) => (
+            {/* Wood Tier for non-authenticated users */}
+            <Card className="overflow-hidden border-amber-200 dark:border-amber-800">
+              <CardHeader className="bg-amber-800 text-white">
+                <div className="flex justify-center">
+                  <Trophy className="h-6 w-6" />
+                </div>
+                <CardTitle className="text-center">Wood Tier (FREE)</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-4">
+                <p className="font-medium mb-2">Features:</p>
+                <ul className="space-y-1">
+                  <li className="flex items-start">
+                    <Check className="h-4 w-4 mr-2 mt-1 text-green-500" />
+                    <span className="text-sm">$50 Max Bet</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="h-4 w-4 mr-2 mt-1 text-green-500" />
+                    <span className="text-sm">Basic Live Odds</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="h-4 w-4 mr-2 mt-1 text-green-500" />
+                    <span className="text-sm">Join Groups</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="h-4 w-4 mr-2 mt-1 text-green-500" />
+                    <span className="text-sm">100 Weekly Bonus</span>
+                  </li>
+                </ul>
+                <div className="mt-4">
+                  <TierDetailModal 
+                    tierId="wood" 
+                    tierData={tierDetailsData.wood} 
+                  />
+                </div>
+              </CardContent>
+            </Card>
+            
+            {tiers.slice(0, 2).map((tier) => (
               <Card key={tier.id} className="overflow-hidden">
                 <CardHeader className={`${tier.color} text-white`}>
                   <div className="flex justify-center">
@@ -422,6 +1101,12 @@ const VipFeatures: React.FC = () => {
                       </li>
                     ))}
                   </ul>
+                  <div className="mt-4">
+                    <TierDetailModal 
+                      tierId={tier.id} 
+                      tierData={tierDetailsData[tier.id as keyof typeof tierDetailsData]} 
+                    />
+                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -966,7 +1651,7 @@ const VipFeatures: React.FC = () => {
                     ))}
                   </ul>
                 </CardContent>
-                <CardFooter>
+                <CardFooter className="flex flex-col space-y-2">
                   {tier.isActive ? (
                     <Badge className="w-full justify-center text-center py-1 bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-100 hover:bg-amber-100 hover:text-amber-800">
                       Current Tier
@@ -979,6 +1664,14 @@ const VipFeatures: React.FC = () => {
                     <Badge className="w-full justify-center text-center py-1 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 hover:bg-gray-100 hover:text-gray-800">
                       {tier.minPoints - vipData.points} points needed
                     </Badge>
+                  )}
+                  
+                  {/* Add detailed modal for each tier */}
+                  {tierDetailsData[tier.id as keyof typeof tierDetailsData] && (
+                    <TierDetailModal 
+                      tierId={tier.id} 
+                      tierData={tierDetailsData[tier.id as keyof typeof tierDetailsData]} 
+                    />
                   )}
                 </CardFooter>
               </Card>
