@@ -1,6 +1,4 @@
-Adding the betting-challenges route and its corresponding component import.
-```
-```replit_final_file
+
 import React from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -147,8 +145,6 @@ function Router() {
       {/* Gaming & Esports */}
       <Route path="/gaming" component={UnifiedGaming} />
       <Route path="/betting-challenges" component={BettingChallenges} />
-      <Route path="/admin" component={AdminDashboard} />
-      <Route path="/admin-login" component={AdminLogin} />
 
       {/* Fantasy Sports */}
       <Route path="/fantasy" component={FantasySportsEnhanced} />
