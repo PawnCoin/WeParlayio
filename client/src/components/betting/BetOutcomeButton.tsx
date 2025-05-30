@@ -77,8 +77,22 @@ const BetOutcomeButton: React.FC<BetOutcomeButtonProps> = ({
         key={`${eventId}-${betType.toLowerCase()}-${outcomeName}`}
         variant={selected ? "default" : "outline"} 
         size="sm" 
-        className={`w-full text-xs ${selected ? 'bg-green-700 text-white' : 'bg-background text-foreground'}`}
-        onClick={() => onSelect(eventId, homeTeam, awayTeam, betType, outcomeName, outcomePrice)}
+        className={`w-full text-xs transition-all duration-200 ${
+          selected 
+            ? 'bg-green-700 text-white shadow-lg ring-2 ring-green-500' 
+            : 'bg-background text-foreground hover:bg-green-100 dark:hover:bg-green-900'
+        }`}
+        onClick={() => {
+          onSelect(eventId, homeTeam, awayTeam, betType, outcomeName, outcomePrice);
+          // Provide immediate visual feedback
+          const button = document.activeElement as HTMLElement;
+          if (button) {
+            button.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+              button.style.transform = 'scale(1)';
+            }, 150);
+          }
+        }}
       >
         <OddsDisplay americanOdds={outcomePrice} format={oddsFormat} />
       </Button>

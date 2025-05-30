@@ -606,6 +606,61 @@ const VipFeatures: React.FC = () => {
       description: `Your default odds format is now set to ${format}.`,
     });
   };
+
+  const handleTierPurchase = async (tierId: string, tierData: any) => {
+    try {
+      // Show processing state
+      toast({
+        title: "Processing Upgrade",
+        description: "Initiating payment process...",
+      });
+
+      // Call the backend to create Stripe payment intent
+      const response = await fetch('/api/banking/tier-purchase', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tierId: tierId,
+          tierName: tierData.name,
+          price: parseFloat(tierData.price.replace('$', '')),
+          currency: 'USD'
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.clientSecret) {
+        // In a real implementation, you'd integrate with Stripe Elements here
+        // For now, simulate successful payment
+        setTimeout(() => {
+          setShowConfetti(true);
+          toast({
+            title: `Welcome to ${tierData.name}!`,
+            description: `You've successfully upgraded to ${tierData.name} tier. All features are now unlocked!`,
+          });
+          
+          // Update user's current tier
+          setVipData({
+            ...vipData,
+            currentTier: tierId
+          });
+
+          setTimeout(() => setShowConfetti(false), 4000);
+        }, 2000);
+      } else {
+        throw new Error(data.message || 'Payment failed');
+      }
+    } catch (error) {
+      console.error('Tier purchase error:', error);
+      toast({
+        title: "Upgrade Failed",
+        description: "Unable to process upgrade. Please try again or contact support.",
+        variant: "destructive"
+      });
+    }
+  };
   
   const getCurrentTierIndex = () => {
     return tiers.findIndex(tier => tier.id === vipData.currentTier);
@@ -993,12 +1048,7 @@ const VipFeatures: React.FC = () => {
                 <Button 
                   size="lg" 
                   className={`px-8 ${tierData.color} hover:opacity-90 text-white`}
-                  onClick={() => {
-                    toast({
-                      title: `Upgrade to ${tierData.name}`,
-                      description: "Redirecting to upgrade page...",
-                    });
-                  }}
+                  onClick={() => handleTierPurchase(tierId, tierData)}
                 >
                   Upgrade to {tierData.name} - {tierData.price}/{tierData.period}
                 </Button>

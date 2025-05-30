@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
- 
+
 import CurrencyDisplay from "@/components/betting/CurrencyDisplay";
 import { Shield, Trash2, Settings, X, Bitcoin, Wallet, Clock, DollarSign, Plus, Coins } from "lucide-react";
 import { useBetting } from "@/contexts/BettingContext";
@@ -59,7 +59,9 @@ const BettingSlip: React.FC = () => {
   const { toast } = useToast();
   const [wagerAmount, setWagerAmount] = useState("50.00");
   const { betItems, removeBet, clearBets, selectedCurrency, setSelectedCurrency } = useBetting();
-  
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingStatus, setProcessingStatus] = useState<string>('');
+
   const [cryptoWallets, setCryptoWallets] = useState<CryptoWallet[]>([
     {
       id: "metamask",
@@ -86,10 +88,10 @@ const BettingSlip: React.FC = () => {
       connected: false
     }
   ]);
-  
+
   // State for wallet connection modal
   const [showWalletModal, setShowWalletModal] = useState(false);
-  
+
   // Currency options for betting - WeParlay Cash featured prominently
   const currencyOptions = [
     { 
@@ -123,9 +125,9 @@ const BettingSlip: React.FC = () => {
       description: "Cryptocurrency betting"
     }
   ];
-  
+
   const isEmpty = betItems.length === 0;
-  
+
   const totalOdds = betItems.reduce((acc, item) => {
     // Convert American odds to decimal
     let decimalOdds;
@@ -136,19 +138,19 @@ const BettingSlip: React.FC = () => {
     }
     return acc * decimalOdds;
   }, 1);
-  
+
   // Convert back to American odds
   const displayOdds = totalOdds > 2 
     ? `+${Math.round((totalOdds - 1) * 100)}`
     : `-${Math.round(100 / (totalOdds - 1))}`;
-  
+
   const potentialPayout = parseFloat(wagerAmount) * totalOdds;
   const profit = potentialPayout - parseFloat(wagerAmount);
-  
+
   const handleRemoveBet = (id: string) => {
     removeBet(id);
   };
-  
+
   const handleWagerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     // Only allow numeric input with up to 2 decimal places
@@ -156,11 +158,11 @@ const BettingSlip: React.FC = () => {
       setWagerAmount(value);
     }
   };
-  
+
   const handleQuickAmount = (amount: number) => {
     setWagerAmount(amount.toFixed(2));
   };
-  
+
   // Connect a wallet using real blockchain connections
   const connectWallet = async (walletId: string) => {
     if (!isAuthenticated) {
@@ -171,25 +173,25 @@ const BettingSlip: React.FC = () => {
       });
       return;
     }
-    
+
     try {
       // Determine which wallet provider to use
       let walletAddress: string;
       let walletProvider: string;
-      
+
       if (walletId === 'metamask' || walletId === 'coinbase' || walletId === 'trust') {
         // Request Ethereum wallet access
         if (!window.ethereum) {
           throw new Error(`${walletId.charAt(0).toUpperCase() + walletId.slice(1)} is not installed`);
         }
-        
+
         // Request accounts
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        
+
         if (!accounts || accounts.length === 0) {
           throw new Error('No accounts found in wallet');
         }
-        
+
         walletAddress = accounts[0];
         walletProvider = walletId;
       } 
@@ -198,7 +200,7 @@ const BettingSlip: React.FC = () => {
         if (!window.solana || !window.solana.isPhantom) {
           throw new Error('Phantom wallet is not installed');
         }
-        
+
         // Connect to Phantom
         const { publicKey } = await window.solana.connect();
         walletAddress = publicKey.toString();
@@ -207,7 +209,7 @@ const BettingSlip: React.FC = () => {
       else {
         throw new Error(`Unsupported wallet: ${walletId}`);
       }
-      
+
       // Update state with real wallet connection
       setCryptoWallets(prev => 
         prev.map(wallet => 
@@ -216,7 +218,7 @@ const BettingSlip: React.FC = () => {
             : wallet
         )
       );
-      
+
       toast({
         title: "Wallet Connected",
         description: `Successfully connected to ${walletId.charAt(0).toUpperCase() + walletId.slice(1)}`,
@@ -239,10 +241,10 @@ const BettingSlip: React.FC = () => {
       if (walletId === 'phantom' && window.solana?.isPhantom) {
         await window.solana.disconnect();
       }
-      
+
       // For Ethereum wallets, we don't need to explicitly disconnect
       // as they handle their own connection state
-      
+
       // Update local state
       setCryptoWallets(prev => 
         prev.map(wallet => 
@@ -251,7 +253,7 @@ const BettingSlip: React.FC = () => {
             : wallet
         )
       );
-      
+
       toast({
         title: "Wallet Disconnected",
         description: `Successfully disconnected from ${walletId.charAt(0).toUpperCase() + walletId.slice(1)}`,
@@ -259,7 +261,7 @@ const BettingSlip: React.FC = () => {
     } catch (error) {
       console.error("Error disconnecting wallet:", error);
       const errorMessage = error instanceof Error ? error.message : "Failed to disconnect wallet";
-      
+
       toast({
         title: "Disconnection Error",
         description: errorMessage,
@@ -291,7 +293,7 @@ const BettingSlip: React.FC = () => {
       });
       return;
     }
-    
+
     if (isEmpty) {
       toast({
         title: "No Bets Selected",
@@ -300,7 +302,7 @@ const BettingSlip: React.FC = () => {
       });
       return;
     }
-    
+
     const amount = parseFloat(wagerAmount);
     if (isNaN(amount) || amount <= 0) {
       toast({
@@ -310,7 +312,7 @@ const BettingSlip: React.FC = () => {
       });
       return;
     }
-    
+
     // Check if crypto wallet is connected for crypto bets
     if (selectedCurrency !== 'USD' && isCryptoWalletConnected) {
       // Show wallet connect modal for cryptocurrency payments
@@ -322,7 +324,7 @@ const BettingSlip: React.FC = () => {
       });
       return;
     }
-    
+
     // For USD bets, check balance
     const userBalance = user?.balance ?? 0;
     if (selectedCurrency === 'USD' && user && amount > userBalance) {
@@ -333,7 +335,10 @@ const BettingSlip: React.FC = () => {
       });
       return;
     }
-    
+
+    setIsProcessing(true);
+    setProcessingStatus('Validating bet...');
+
     try {
       // Actually place the bet with the API
       const betData = {
@@ -354,13 +359,13 @@ const BettingSlip: React.FC = () => {
       };
 
       const response = await apiRequest('POST', '/api/bets/place', betData);
-      
+
       if (response.ok) {
         toast({
           title: "Bet Placed Successfully!",
           description: `Your ${selectedCurrency} bet for ${getCurrencySymbol(selectedCurrency)}${amount.toFixed(2)} has been placed`,
         });
-        
+
         // Clear betting slip after successful placement
         clearBets();
         setWagerAmount("50.00");
@@ -374,6 +379,9 @@ const BettingSlip: React.FC = () => {
         description: "Failed to place your bet. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setIsProcessing(false);
+      setProcessingStatus('');
     }
   };
 
@@ -439,7 +447,7 @@ const BettingSlip: React.FC = () => {
           </DropdownMenu>
         </div>
       </div>
-      
+
       {/* Enhanced Currency Mode Selector with Clear Visual Indicators */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
@@ -452,7 +460,7 @@ const BettingSlip: React.FC = () => {
             {selectedCurrency === 'WEPARLAY' ? '🎮 Virtual Mode' : '💰 Real Money'}
           </div>
         </div>
-        
+
         <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
           <SelectTrigger className={`w-full border-2 ${
             selectedCurrency === 'WEPARLAY' 
@@ -496,7 +504,7 @@ const BettingSlip: React.FC = () => {
             ))}
           </SelectContent>
         </Select>
-        
+
         {/* Mode Description - Clean and Simple */}
         <div className="mt-2 p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border-l-4 border-l-blue-500 dark:border-l-blue-400">
           <p className="text-xs text-gray-600 dark:text-gray-400">
@@ -507,7 +515,7 @@ const BettingSlip: React.FC = () => {
           </p>
         </div>
       </div>
-      
+
       {/* Tab Navigation */}
       <Tabs defaultValue="single">
         <TabsList className="grid w-full grid-cols-3 mb-4">
@@ -515,7 +523,7 @@ const BettingSlip: React.FC = () => {
           <TabsTrigger value="parlay">Parlay</TabsTrigger>
           <TabsTrigger value="teaser">Teaser</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="single">
           {isEmpty ? (
             <div className="text-center py-10">
@@ -553,7 +561,7 @@ const BettingSlip: React.FC = () => {
                   </div>
                 ))}
               </div>
-              
+
               {/* Balance Display */}
               <div className="mb-3 p-3 rounded-lg border-2 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between">
@@ -624,7 +632,7 @@ const BettingSlip: React.FC = () => {
                     </Button>
                   </div>
                 </div>
-                
+
                 {/* Crypto wallet warning */}
                 {selectedCurrency !== 'USD' && !cryptoWallets.some(w => w.connected) && (
                   <div className="mt-2 text-xs text-amber-500 flex items-center">
@@ -636,7 +644,7 @@ const BettingSlip: React.FC = () => {
                     </span>
                   </div>
                 )}
-                
+
                 {/* Connected wallet info */}
                 {selectedCurrency !== 'USD' && cryptoWallets.some(w => w.connected) && (
                   <div className="mt-2 text-xs text-green-500 flex items-center">
@@ -647,7 +655,7 @@ const BettingSlip: React.FC = () => {
                   </div>
                 )}
               </div>
-              
+
               {/* Quick Amounts */}
               <div className="flex space-x-2 mb-4">
                 <Button 
@@ -679,7 +687,7 @@ const BettingSlip: React.FC = () => {
                   {getCurrencySymbol(selectedCurrency)}100
                 </Button>
               </div>
-              
+
               {/* Bet Summary */}
               <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 mb-4">
                 <div className="flex justify-between mb-2">
@@ -695,7 +703,7 @@ const BettingSlip: React.FC = () => {
                   <span className="font-medium text-secondary">{getCurrencySymbol(selectedCurrency)}{profit.toFixed(2)}</span>
                 </div>
               </div>
-              
+
               {/* Enhanced Place Bet Button with Clear Mode Indicators */}
               <Button 
                 className={`w-full py-4 rounded-md font-bold text-lg flex items-center justify-center transition-all ${
@@ -742,7 +750,7 @@ const BettingSlip: React.FC = () => {
                   </div>
                 </div>
               </Button>
-              
+
               {/* Wallet Connection Prompt */}
               {selectedCurrency !== 'USD' && isCryptoWalletConnected && (
                 <div className="mt-2 p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded text-xs text-amber-700 dark:text-amber-400">
@@ -755,11 +763,11 @@ const BettingSlip: React.FC = () => {
                   </div>
                 </div>
               )}
-              
+
             </>
           )}
         </TabsContent>
-        
+
         <TabsContent value="parlay">
           <div className="text-center py-10">
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
@@ -767,7 +775,7 @@ const BettingSlip: React.FC = () => {
             </p>
           </div>
         </TabsContent>
-        
+
         <TabsContent value="teaser">
           <div className="text-center py-10">
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
@@ -776,7 +784,7 @@ const BettingSlip: React.FC = () => {
           </div>
         </TabsContent>
       </Tabs>
-      
+
       {/* Responsible Gaming */}
       <div className="mt-4 text-center">
         <p className="text-xs text-gray-500 dark:text-gray-400">

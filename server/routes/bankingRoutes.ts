@@ -414,6 +414,81 @@ router.post('/settle-bet/:betId', isAuthenticated, async (req: any, res) => {
   }
 });
 
+// Tier purchase endpoint
+router.post('/tier-purchase', isAuthenticated, async (req: any, res) => {
+  try {
+    const userId = req.user.claims.sub;
+    const { tierId, tierName, price, currency } = req.body;
+
+    // Validate tier purchase
+    if (!tierId || !tierName || !price) {
+      return res.status(400).json({ 
+        message: 'Invalid tier purchase request' 
+      });
+    }
+
+    const user = await storage.getUser(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Create Stripe payment intent for tier upgrade
+    let paymentIntent;
+    try {
+      paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(price * 100), // Convert to cents
+        currency: currency.toLowerCase(),
+        customer: user.stripeCustomerId || undefined,
+        metadata: {
+          userId: userId,
+          type: 'tier_upgrade',
+          tierId: tierId,
+          tierName: tierName
+        },
+        description: `Upgrade to ${tierName} tier`,
+        automatic_payment_methods: {
+          enabled: true,
+        },
+      });
+    } catch (stripeError) {
+      console.error('Stripe error:', stripeError);
+      return res.status(400).json({ 
+        message: 'Payment processing failed. Please try again.' 
+      });
+    }
+
+    // Create transaction record
+    const transaction = await storage.createTransaction({
+      userId: userId,
+      type: 'tier_upgrade',
+      amount: price,
+      currency: currency,
+      status: 'pending',
+      method: 'stripe',
+      stripePaymentIntentId: paymentIntent.id,
+      description: `Upgrade to ${tierName} tier`,
+      timestamp: new Date()
+    });
+
+    // If successful, update user tier (simulate for demo)
+    if (paymentIntent.status === 'succeeded') {
+      await storage.updateUserTier(userId, tierId);
+      await storage.updateTransactionStatus(transaction.id, 'completed');
+    }
+
+    res.json({
+      success: true,
+      clientSecret: paymentIntent.client_secret,
+      transactionId: transaction.id,
+      message: `${tierName} tier upgrade initiated successfully`
+    });
+
+  } catch (error) {
+    console.error('Tier purchase error:', error);
+    res.status(500).json({ message: 'Tier upgrade failed. Please try again.' });
+  }
+});
+
 // Webhook to handle Stripe payment confirmations
 router.post('/stripe-webhook', async (req, res) => {
   const sig = req.headers['stripe-signature'] as string;
