@@ -81,13 +81,8 @@ class WordPressService {
   }
 }
 
-// Export the service instance
-export const wordPressService = new WordPressService();
+// Create and export the service instance
+const wordPressService = new WordPressService();
 
-// Initialize function for backwards compatibility
-export const initWordPressSync = () => {
-  console.log('WordPress sync service initialized');
-  return wordPressService;
-};
-
+export { wordPressService };
 export default wordPressService;
