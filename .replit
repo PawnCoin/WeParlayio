@@ -12,7 +12,7 @@ build = ["npm", "run", "build"]
 run = ["npm", "run", "start"]
 
 [workflows]
-runButton = "WeParlay Clean Start"
+runButton = "WeParlay Platform Start"
 
 [[workflows.workflow]]
 name = "Project"
@@ -109,6 +109,19 @@ args = "rm -rf node_modules/.vite"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm install --silent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+
+[[workflows.workflow]]
+name = "WeParlay Platform Start"
+author = 42612790
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm install"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
