@@ -1,6 +1,9 @@
 // Asset management utilities for WeParlay
 // Handles dynamic loading and caching of sports and team assets
 
+import { ESPNAssetService } from './espnAssetService';
+import { UniversalTeamService } from './universalTeamService';
+
 export class AssetManager {
   private static iconCache = new Map<string, string>();
   private static logoCache = new Map<string, string>();
@@ -66,10 +69,10 @@ export class AssetManager {
     try {
       const teamMappings = this.TEAM_ID_MAPPINGS[league.toLowerCase()];
       const teamId = teamMappings?.[teamName];
-      
+
       if (teamId && this.ESPN_TEAM_LOGOS[league.toLowerCase() as keyof typeof this.ESPN_TEAM_LOGOS]) {
         const logoUrl = this.ESPN_TEAM_LOGOS[league.toLowerCase() as keyof typeof this.ESPN_TEAM_LOGOS](teamId);
-        
+
         // Verify the image exists
         const exists = await this.checkImageExists(logoUrl);
         if (exists) {
@@ -102,7 +105,7 @@ export class AssetManager {
     try {
       // ESPN player headshot URLs
       const playerImageUrl = `https://a.espncdn.com/i/headshots/${sport}/players/full/${playerId}.png`;
-      
+
       const exists = await this.checkImageExists(playerImageUrl);
       if (exists) {
         this.playerCache.set(cacheKey, playerImageUrl);
@@ -170,55 +173,32 @@ export class AssetManager {
     }
   }
 
-  // Get sport icon with ESPN fallback
+  // Get sport icon using ESPN service
   static getSportIcon(sportKey: string): string {
-    // First try ESPN
-    const espnIcon = this.getESPNSportIcon(sportKey);
-    if (espnIcon !== this.getSportIcon(sportKey)) {
-      return espnIcon;
-    }
-
     if (this.iconCache.has(sportKey)) {
       return this.iconCache.get(sportKey)!;
     }
 
-    // Try different file extensions
-    const extensions = ['.svg', '.png', '.jpg'];
-    const basePath = `/src/assets/sports/${sportKey.toLowerCase().replace(/\s+/g, '-')}`;
-
-    for (const ext of extensions) {
-      const iconPath = `${basePath}${ext}`;
-      this.iconCache.set(sportKey, iconPath);
-      return iconPath;
-    }
-
-    // Fallback to generic sport icon
-    const fallbackPath = '/src/assets/sports/basketball.svg';
-    this.iconCache.set(sportKey, fallbackPath);
-    return fallbackPath;
+    const iconPath = ESPNAssetService.getSportIcon(sportKey);
+    this.iconCache.set(sportKey, iconPath);
+    return iconPath;
   }
 
-  // Get team logo with ESPN fallback
+  // Get team logo using Universal Team Service
   static getTeamLogo(teamName: string, league: string = 'nba'): string {
     const cacheKey = `${league}-${teamName}`;
     if (this.logoCache.has(cacheKey)) {
       return this.logoCache.get(cacheKey)!;
     }
 
-    // Try different file extensions
-    const extensions = ['.svg', '.png', '.jpg'];
-    const basePath = `/src/assets/teams/${league.toLowerCase()}/${teamName.toLowerCase().replace(/\s+/g, '-')}`;
+    const logoPath = UniversalTeamService.getTeamLogo(teamName, league);
+    this.logoCache.set(cacheKey, logoPath);
+    return logoPath;
+  }
 
-    for (const ext of extensions) {
-      const logoPath = `${basePath}${ext}`;
-      this.logoCache.set(cacheKey, logoPath);
-      return logoPath;
-    }
-
-    // Fallback to generic team logo
-    const fallbackPath = '/src/assets/teams/default-team.svg';
-    this.logoCache.set(cacheKey, fallbackPath);
-    return fallbackPath;
+  // Get player photo
+  static getPlayerPhoto(playerId: string, sport: string): string {
+    return UniversalTeamService.getPlayerPhoto(playerId, sport);
   }
 
   // Preload assets for better performance
