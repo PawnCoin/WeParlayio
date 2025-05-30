@@ -57,12 +57,12 @@ export function TopNavigation() {
                   <Button 
                     variant={isActive ? "default" : "ghost"} 
                     size="sm"
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 border border-gray-700/30 hover:border-gray-600/50 transition-all duration-200 rounded-md px-3 py-1.5"
                   >
                     <Icon className="h-4 w-4" />
                     {item.label}
                     {item.badge && (
-                      <Badge variant="secondary" className="ml-1 text-xs">
+                      <Badge variant="secondary" className="ml-1 text-xs border border-gray-600/40 rounded-sm">
                         {item.badge}
                       </Badge>
                     )}
@@ -74,7 +74,7 @@ export function TopNavigation() {
 
           {/* Mobile Menu Button - for smaller screens */}
           <div className="md:hidden">
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" className="border border-gray-700/30 hover:border-gray-600/50 transition-all duration-200 rounded-md">
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
@@ -94,12 +94,12 @@ export function TopNavigation() {
                   <Button 
                     variant={isActive ? "default" : "ghost"} 
                     size="sm"
-                    className="flex flex-col items-center gap-1 h-auto py-2"
+                    className="flex flex-col items-center gap-1 h-auto py-2 border border-gray-700/30 hover:border-gray-600/50 transition-all duration-200 rounded-md"
                   >
                     <Icon className="h-4 w-4" />
                     <span className="text-xs">{item.label}</span>
                     {item.badge && (
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary" className="text-xs border border-gray-600/40 rounded-sm">
                         {item.badge}
                       </Badge>
                     )}
