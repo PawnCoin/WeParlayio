@@ -1,7 +1,7 @@
 import { storage } from "../storage";
 
 interface SocialPost {
-  platform: 'twitter' | 'instagram' | 'facebook' | 'reddit';
+  platform: 'twitter' | 'instagram' | 'facebook' | 'reddit' | 'tiktok' | 'snapchat';
   content: string;
   hashtags: string[];
   imageUrl?: string;
@@ -218,6 +218,63 @@ export class SocialMediaBotsService {
     }
   }
 
+  // Post to TikTok
+  async postToTikTok(content: string, videoUrl?: string): Promise<boolean> {
+    try {
+      if (!process.env.TIKTOK_ACCESS_TOKEN) {
+        console.log('TikTok API not configured - running in simulation mode');
+        return true;
+      }
+
+      const response = await fetch(`https://open-api.tiktok.com/share/video/upload/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.TIKTOK_ACCESS_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          video_url: videoUrl || this.generateBetSlipVideo(),
+          text: content.substring(0, 150), // TikTok character limit
+          hashtags: ['#WeParlay', '#SportsBetting', '#Crypto']
+        })
+      });
+
+      return response.ok;
+    } catch (error) {
+      console.error('TikTok posting error:', error);
+      return false;
+    }
+  }
+
+  // Post to Snapchat
+  async postToSnapchat(content: string, imageUrl?: string): Promise<boolean> {
+    try {
+      if (!process.env.SNAPCHAT_ACCESS_TOKEN) {
+        console.log('Snapchat API not configured - running in simulation mode');
+        return true;
+      }
+
+      const response = await fetch(`https://adsapi.snapchat.com/v1/creatives`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.SNAPCHAT_ACCESS_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          media_url: imageUrl || this.generateBetSlipImage(),
+          headline: content.substring(0, 34), // Snapchat headline limit
+          call_to_action: 'LEARN_MORE',
+          web_view_url: 'https://weparlay.io'
+        })
+      });
+
+      return response.ok;
+    } catch (error) {
+      console.error('Snapchat posting error:', error);
+      return false;
+    }
+  }
+
   // Generate realistic team names
   private getRandomTeam(sport: string): string {
     const teams = {
@@ -235,6 +292,12 @@ export class SocialMediaBotsService {
   private generateBetSlipImage(): string {
     // Return URL to dynamically generated bet slip image
     return `https://weparlay.io/api/generate-bet-slip?amount=${Math.floor(Math.random() * 500 + 50)}&sport=NFL`;
+  }
+
+  // Generate bet slip videos for TikTok
+  private generateBetSlipVideo(): string {
+    // Return URL to dynamically generated bet slip video
+    return `https://weparlay.io/api/generate-bet-video?amount=${Math.floor(Math.random() * 500 + 50)}&sport=NFL`;
   }
 
   // Schedule automated posting
@@ -265,6 +328,10 @@ export class SocialMediaBotsService {
         return await this.postToFacebook(post.content);
       case 'reddit':
         return await this.postToReddit(post.content);
+      case 'tiktok':
+        return await this.postToTikTok(post.content);
+      case 'snapchat':
+        return await this.postToSnapchat(post.content);
       default:
         return false;
     }
