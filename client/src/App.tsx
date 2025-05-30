@@ -65,6 +65,17 @@ import { initGA } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
 import OnboardingDemo from "@/pages/OnboardingDemo";
 import UnifiedGaming from "@/pages/UnifiedGaming";
+import UnifiedSports from "@/pages/UnifiedSports";
+import ComprehensiveBetting from "@/pages/ComprehensiveBetting";
+import Odds from "@/pages/Odds";
+import Parlays from "@/pages/Parlays";
+import BettingAcademy from "@/pages/BettingAcademy";
+import LiveHeatmap from "@/pages/LiveHeatmap";
+import ErrorBoundary from "./components/ErrorBoundary";
+import ThemeColorManager from "@/pages/ThemeColorManager";
+import LiveBettingRealFixed from "@/pages/LiveBettingReal-fixed";
+import SignUpEnhanced from "@/pages/SignUpEnhanced";
+import WalletManagementEnhanced from "@/pages/WalletManagementEnhanced";
 import EsportsHub from "./pages/EsportsHub";
 import BettingChallenges from './components/betting/BettingChallenges';
 import SiteNavigation from './pages/SiteNavigation';
@@ -135,6 +146,7 @@ function Router() {
 
       {/* Gaming & Esports */}
       <Route path="/gaming" component={UnifiedGaming} />
+      <Route path="/esports-hub" component={EsportsHub} />
       <Route path="/betting-challenges" component={BettingChallenges} />
        {/* Add /betting-challenge route for evaluation */}
         <Route path="/betting-challenge" component={BettingChallenges} />
