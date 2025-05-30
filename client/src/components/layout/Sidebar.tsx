@@ -427,8 +427,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
           ) : (
             // Organized sports dropdown categories
             <>
-              {/* Basketball Category */}
-              <details className="group">
+              {/* Basketball Category - In Season */}
+              <details className="group" open>
                 <summary className="flex items-center py-2 px-3 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 list-none">
                   {getSportIcon('basketball_nba')}
                   <span className="flex-1 text-sm font-medium ml-3">Basketball</span>
@@ -438,19 +438,13 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                   <Link href="/sports/basketball_nba">
                     <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
                       <span>NBA</span>
-                      <span className="ml-auto text-green-600">LIVE</span>
+                      <span className="ml-auto text-red-600 font-bold">PLAYOFFS</span>
                     </div>
                   </Link>
                   <Link href="/sports/basketball_wnba">
                     <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
                       <span>WNBA</span>
-                      <span className="ml-auto text-blue-600">Tue 4PM</span>
-                    </div>
-                  </Link>
-                  <Link href="/sports/basketball_ncaab">
-                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
-                      <span>NCAA Men</span>
-                      <span className="ml-auto text-green-600">LIVE</span>
+                      <span className="ml-auto text-green-600">Season</span>
                     </div>
                   </Link>
                 </div>
@@ -640,14 +634,14 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
               : "hover:bg-gray-100 dark:hover:bg-gray-800"
           }`}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 mr-3">
-              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3" />
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 1 2 2h-4M10 17l5-5-5-5M13.8 12H3" />
             </svg>
             <span>Login</span>
             <ChevronRight className="h-4 w-4 ml-auto" />
           </div>
         </Link>
 
-        
+
 
         <div className="flex items-center justify-between mt-3">
           <p className="text-sm">Dark Mode</p>

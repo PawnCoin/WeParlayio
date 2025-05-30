@@ -969,18 +969,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { sportKey } = req.params;
       
-      // Map to proper ESPN sport IDs for upcoming games
+      // Map to proper ESPN sport IDs for in-season sports only
       const sportMapping: { [key: string]: string } = {
         'basketball_nba': 'nba',
-        'americanfootball_nfl': 'nfl', 
-        'baseball_mlb': 'mlb',
-        'icehockey_nhl': 'nhl',
-        'soccer_epl': 'eng.1',
         'basketball_wnba': 'wnba',
+        'baseball_mlb': 'mlb',
+        'soccer_epl': 'eng.1',
+        'soccer_mls': 'usa.1',
         'tennis_wta': 'tennis',
         'tennis_atp': 'tennis',
-        'mma_ufc': 'mma',
-        'boxing_main': 'boxing'
+        'golf_pga': 'golf'
       };
       
       const espnSport = sportMapping[sportKey];

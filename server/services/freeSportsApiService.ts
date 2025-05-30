@@ -1,4 +1,3 @@
-
 export class FreeSportsApiService {
   private lastRequest: number = 0;
   private minInterval: number = 1000; // 1 second between requests
@@ -17,11 +16,11 @@ export class FreeSportsApiService {
 
   async getNFLOdds(): Promise<any[]> {
     await this.rateLimit();
-    
+
     try {
       const response = await fetch('http://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard');
       if (!response.ok) throw new Error(`ESPN API error: ${response.status}`);
-      
+
       const data = await response.json();
       return this.formatESPNData(data, 'NFL');
     } catch (error) {
@@ -32,11 +31,11 @@ export class FreeSportsApiService {
 
   async getNBAOdds(): Promise<any[]> {
     await this.rateLimit();
-    
+
     try {
       const response = await fetch('http://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard');
       if (!response.ok) throw new Error(`ESPN NBA API error: ${response.status}`);
-      
+
       const data = await response.json();
       return this.formatESPNData(data, 'NBA');
     } catch (error) {
@@ -47,11 +46,11 @@ export class FreeSportsApiService {
 
   async getMLBOdds(): Promise<any[]> {
     await this.rateLimit();
-    
+
     try {
       const response = await fetch('http://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard');
       if (!response.ok) throw new Error(`ESPN MLB API error: ${response.status}`);
-      
+
       const data = await response.json();
       return this.formatESPNData(data, 'MLB');
     } catch (error) {
@@ -62,11 +61,11 @@ export class FreeSportsApiService {
 
   async getNHLOdds(): Promise<any[]> {
     await this.rateLimit();
-    
+
     try {
       const response = await fetch('http://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard');
       if (!response.ok) throw new Error(`ESPN NHL API error: ${response.status}`);
-      
+
       const data = await response.json();
       return this.formatESPNData(data, 'NHL');
     } catch (error) {
@@ -91,7 +90,7 @@ export class FreeSportsApiService {
             'X-Auth-Token': process.env.FOOTBALL_DATA_API_KEY || 'demo_key'
           }
         });
-        
+
         if (response.ok) {
           const data = await response.json();
           return this.formatFootballData(data);
@@ -103,6 +102,33 @@ export class FreeSportsApiService {
 
     return this.generateFallbackSoccer();
   }
+
+    async getWNBAOdds(): Promise<any[]> {
+        await this.rateLimit();
+
+        try {
+            const response = await fetch('http://site.api.espn.com/apis/site/v2/sports/basketball/wnba/scoreboard');
+            if (!response.ok) throw new Error(`ESPN WNBA API error: ${response.status}`);
+
+            const data = await response.json();
+            return this.formatESPNData(data, 'WNBA');
+        } catch (error) {
+            console.warn('ESPN WNBA API failed:', error);
+            return this.generateFallbackWNBA();
+        }
+    }
+
+    async getTennisOdds(): Promise<any[]> {
+        // Placeholder for Tennis API
+        console.warn('Tennis API not implemented, using fallback data.');
+        return this.generateFallbackTennis();
+    }
+
+    async getGolfOdds(): Promise<any[]> {
+        // Placeholder for Golf API
+        console.warn('Golf API not implemented, using fallback data.');
+        return this.generateFallbackGolf();
+    }
 
   private formatESPNData(data: any, sport: string): any[] {
     if (!data.events || data.events.length === 0) return [];
@@ -306,23 +332,112 @@ export class FreeSportsApiService {
     }));
   }
 
+    private generateFallbackWNBA(): any[] {
+        const teams = [
+            ['Las Vegas Aces', 'New York Liberty'],
+            ['Connecticut Sun', 'Washington Mystics'],
+            ['Phoenix Mercury', 'Seattle Storm'],
+            ['Chicago Sky', 'Minnesota Lynx'],
+            ['Atlanta Dream', 'Dallas Wings']
+        ];
+
+        return teams.map((matchup, index) => ({
+            id: `fallback-wnba-${index}`,
+            sport_title: 'WNBA',
+            commence_time: new Date(Date.now() + (index + 1) * 3600000).toISOString(),
+            home_team: matchup[0],
+            away_team: matchup[1],
+            bookmakers: [{
+                key: 'weparlay_demo',
+                title: 'WeParlay Demo',
+                markets: [{
+                    key: 'h2h',
+                    outcomes: [
+                        { name: matchup[0], price: +(1.75 + Math.random() * 0.5).toFixed(2) },
+                        { name: matchup[1], price: +(1.75 + Math.random() * 0.5).toFixed(2) }
+                    ]
+                }]
+            }]
+        }));
+    }
+
+    private generateFallbackTennis(): any[] {
+        const matches = [
+            ['Novak Djokovic', 'Carlos Alcaraz'],
+            ['Iga Swiatek', 'Aryna Sabalenka'],
+            ['Daniil Medvedev', 'Jannik Sinner'],
+            ['Elena Rybakina', 'Jessica Pegula'],
+            ['Rafael Nadal', 'Roger Federer'] // For the memories
+        ];
+
+        return matches.map((matchup, index) => ({
+            id: `fallback-tennis-${index}`,
+            sport_title: 'Tennis',
+            commence_time: new Date(Date.now() + (index + 1) * 3600000).toISOString(),
+            home_team: matchup[0],
+            away_team: matchup[1],
+            bookmakers: [{
+                key: 'weparlay_demo',
+                title: 'WeParlay Demo',
+                markets: [{
+                    key: 'h2h',
+                    outcomes: [
+                        { name: matchup[0], price: +(1.75 + Math.random() * 0.5).toFixed(2) },
+                        { name: matchup[1], price: +(1.75 + Math.random() * 0.5).toFixed(2) }
+                    ]
+                }]
+            }]
+        }));
+    }
+
+    private generateFallbackGolf(): any[] {
+        const tournaments = [
+            ['Scottie Scheffler', 'Jon Rahm'],
+            ['Rory McIlroy', 'Viktor Hovland'],
+            ['Patrick Cantlay', 'Xander Schauffele'],
+            ['Cameron Smith', 'Justin Thomas'],
+            ['Collin Morikawa', 'Jordan Spieth']
+        ];
+
+        return tournaments.map((matchup, index) => ({
+            id: `fallback-golf-${index}`,
+            sport_title: 'Golf',
+            commence_time: new Date(Date.now() + (index + 1) * 3600000).toISOString(),
+            home_team: matchup[0],
+            away_team: matchup[1],  //Simulating head-to-head matchups
+            bookmakers: [{
+                key: 'weparlay_demo',
+                title: 'WeParlay Demo',
+                markets: [{
+                    key: 'h2h',
+                    outcomes: [
+                        { name: matchup[0], price: +(1.75 + Math.random() * 0.5).toFixed(2) },
+                        { name: matchup[1], price: +(1.75 + Math.random() * 0.5).toFixed(2) }
+                    ]
+                }]
+            }]
+        }));
+    }
+
   async getAllSportsOdds(): Promise<any[]> {
     const allOdds = [];
-    
+
     try {
-      const [nflOdds, nbaOdds, mlbOdds, nhlOdds, soccerOdds] = await Promise.allSettled([
-        this.getNFLOdds(),
+      const [nbaOdds, wnbaOdds, mlbOdds, soccerOdds, tennisOdds, golfOdds] = await Promise.allSettled([
         this.getNBAOdds(),
+        this.getWNBAOdds(),
         this.getMLBOdds(),
-        this.getNHLOdds(),
-        this.getSoccerOdds()
+        this.getSoccerOdds(),
+        this.getTennisOdds(),
+        this.getGolfOdds()
       ]);
 
-      if (nflOdds.status === 'fulfilled') allOdds.push(...nflOdds.value);
       if (nbaOdds.status === 'fulfilled') allOdds.push(...nbaOdds.value);
+      if (wnbaOdds.status === 'fulfilled') allOdds.push(...wnbaOdds.value);
       if (mlbOdds.status === 'fulfilled') allOdds.push(...mlbOdds.value);
-      if (nhlOdds.status === 'fulfilled') allOdds.push(...nhlOdds.value);
       if (soccerOdds.status === 'fulfilled') allOdds.push(...soccerOdds.value);
+      if (tennisOdds.status === 'fulfilled') allOdds.push(...tennisOdds.value);
+      if (golfOdds.status === 'fulfilled') allOdds.push(...golfOdds.value);
 
       return allOdds;
     } catch (error) {
@@ -338,22 +453,24 @@ export const freeSportsApiService = new FreeSportsApiService();
 export class EnhancedFreeSportsService extends FreeSportsApiService {
   async getComprehensiveOdds(): Promise<any[]> {
     const allOdds = [];
-    
+
     try {
       // Get data from all free sources
-      const [nflOdds, nbaOdds, mlbOdds, nhlOdds, soccerOdds] = await Promise.allSettled([
-        this.getNFLOdds(),
-        this.getNBAOdds(), 
+      const [nbaOdds, wnbaOdds, mlbOdds, soccerOdds, tennisOdds, golfOdds] = await Promise.allSettled([
+        this.getNBAOdds(),
+        this.getWNBAOdds(),
         this.getMLBOdds(),
-        this.getNHLOdds(),
-        this.getSoccerOdds()
+        this.getSoccerOdds(),
+        this.getTennisOdds(),
+        this.getGolfOdds()
       ]);
 
-      if (nflOdds.status === 'fulfilled') allOdds.push(...nflOdds.value);
       if (nbaOdds.status === 'fulfilled') allOdds.push(...nbaOdds.value);
+      if (wnbaOdds.status === 'fulfilled') allOdds.push(...wnbaOdds.value);
       if (mlbOdds.status === 'fulfilled') allOdds.push(...mlbOdds.value);
-      if (nhlOdds.status === 'fulfilled') allOdds.push(...nhlOdds.value);
       if (soccerOdds.status === 'fulfilled') allOdds.push(...soccerOdds.value);
+      if (tennisOdds.status === 'fulfilled') allOdds.push(...tennisOdds.value);
+      if (golfOdds.status === 'fulfilled') allOdds.push(...golfOdds.value);
 
       console.log(`✅ Enhanced Free API: ${allOdds.length} total events from backup sources`);
       return allOdds;

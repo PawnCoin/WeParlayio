@@ -44,23 +44,37 @@ async function fetchRapidAPIWithResilience() {
 
 async function fetchESPNDataWithLogos() {
   try {
+    // Focus on current in-season sports: NBA Playoffs, WNBA, MLB, Soccer, Tennis, Golf
     const sportsToFetch = [
-      { key: 'football/nfl', name: 'NFL', season: '2024' },
-      { key: 'basketball/nba', name: 'NBA', season: '2025' },
-      { key: 'baseball/mlb', name: 'MLB', season: '2024' },
-      { key: 'hockey/nhl', name: 'NHL', season: '2025' },
-      { key: 'soccer/usa.1', name: 'MLS', season: '2024' },
-      { key: 'basketball/mens-college-basketball', name: 'NCAA Basketball', season: '2025' }
+      { key: 'basketball/nba', name: 'NBA Playoffs', season: '2025', priority: 1 },
+      { key: 'basketball/wnba', name: 'WNBA', season: '2025', priority: 2 },
+      { key: 'baseball/mlb', name: 'MLB', season: '2025', priority: 3 },
+      { key: 'soccer/usa.1', name: 'MLS', season: '2025', priority: 4 },
+      { key: 'soccer/eng.1', name: 'Premier League', season: '2025', priority: 5 },
+      { key: 'tennis/mens', name: 'ATP Tennis', season: '2025', priority: 6 },
+      { key: 'tennis/womens', name: 'WTA Tennis', season: '2025', priority: 7 },
+      { key: 'golf/pga', name: 'PGA Tour', season: '2025', priority: 8 }
     ];
     const allEvents: any[] = [];
 
     for (const sport of sportsToFetch) {
       try {
-        const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport.key}/scoreboard`);
+        // Use appropriate ESPN API endpoints for each sport
+        let apiUrl = `https://site.api.espn.com/apis/site/v2/sports/${sport.key}/scoreboard`;
+        
+        // Special handling for tennis and golf
+        if (sport.key.includes('tennis')) {
+          apiUrl = `https://site.api.espn.com/apis/site/v2/sports/tennis/scoreboard`;
+        } else if (sport.key.includes('golf')) {
+          apiUrl = `https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard`;
+        }
+        
+        const response = await fetch(apiUrl);
         if (response.ok) {
           const data = await response.json();
           if (data.events && data.events.length > 0) {
-            data.events.slice(0, 12).forEach((event: any) => {
+            // Prioritize current season events and limit to 8 per sport
+            data.events.slice(0, 8).forEach((event: any) => {
               const competition = event.competitions?.[0];
               const homeTeam = competition?.competitors?.find((c: any) => c.homeAway === 'home');
               const awayTeam = competition?.competitors?.find((c: any) => c.homeAway === 'away');
