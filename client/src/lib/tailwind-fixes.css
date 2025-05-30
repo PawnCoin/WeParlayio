@@ -1,8 +1,8 @@
 /* Fixes for Tailwind CSS classes */
 
-/* Fix for bg-white */
+/* Fix for bg-white - use dark mode background color */
 .bg-white {
-  background-color: white !important;
+  background-color: #0f172a !important;
 }
 
 /* Additional Tailwind fixes can be added below */
