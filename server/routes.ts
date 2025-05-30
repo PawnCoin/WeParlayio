@@ -3104,24 +3104,155 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // For demo purposes we'll return mock data when no upcoming events are in the DB
       if (upcomingEvents.length === 0) {
-        // Create mock upcoming data from all sports
-        const mockUpcomingEvents = [];
-        for (const sportKey in additionalSportsData) {
-          const sportEvents = additionalSportsData[sportKey] || [];
-          // Get a few upcoming events
-          const upcomingSportEvents = sportEvents.slice(0, 3).map((event: any) => {
-            // Set commence_time to future dates
-            const futureDate = new Date();
-            futureDate.setHours(futureDate.getHours() + Math.floor(Math.random() * 48) + 1);
-            
-            return {
-              ...event,
-              commence_time: futureDate.toISOString(),
-              sport_key: sportKey
-            };
-          });
-          mockUpcomingEvents.push(...upcomingSportEvents);
-        }
+        // Create realistic upcoming events for in-season sports
+        const mockUpcomingEvents = [
+          // NBA Playoffs
+          {
+            id: "nba-1",
+            home_team: "Boston Celtics",
+            away_team: "Miami Heat",
+            home_team_id: 1,
+            away_team_id: 2,
+            commence_time: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours from now
+            sport_key: "basketball_nba",
+            sport_title: "NBA",
+            bookmakers: [{
+              key: "draftkings",
+              title: "DraftKings",
+              markets: [{
+                key: "spreads",
+                outcomes: [
+                  { name: "Boston Celtics", price: -110, point: -3.5 },
+                  { name: "Miami Heat", price: -110, point: 3.5 }
+                ]
+              }, {
+                key: "totals", 
+                outcomes: [
+                  { name: "Over", price: -110, point: 218.5 },
+                  { name: "Under", price: -110, point: 218.5 }
+                ]
+              }]
+            }]
+          },
+          // WNBA
+          {
+            id: "wnba-1",
+            home_team: "Las Vegas Aces",
+            away_team: "New York Liberty", 
+            home_team_id: 3,
+            away_team_id: 4,
+            commence_time: new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString(), // 6 hours from now
+            sport_key: "basketball_wnba",
+            sport_title: "WNBA",
+            bookmakers: [{
+              key: "fanduel",
+              title: "FanDuel",
+              markets: [{
+                key: "spreads",
+                outcomes: [
+                  { name: "Las Vegas Aces", price: -110, point: -5.5 },
+                  { name: "New York Liberty", price: -110, point: 5.5 }
+                ]
+              }]
+            }]
+          },
+          // MLB
+          {
+            id: "mlb-1",
+            home_team: "New York Yankees",
+            away_team: "Boston Red Sox",
+            home_team_id: 5,
+            away_team_id: 6,
+            commence_time: new Date(Date.now() + 18 * 60 * 60 * 1000).toISOString(), // Tomorrow evening
+            sport_key: "baseball_mlb",
+            sport_title: "MLB",
+            bookmakers: [{
+              key: "betmgm",
+              title: "BetMGM",
+              markets: [{
+                key: "h2h",
+                outcomes: [
+                  { name: "New York Yankees", price: -150 },
+                  { name: "Boston Red Sox", price: 130 }
+                ]
+              }, {
+                key: "totals",
+                outcomes: [
+                  { name: "Over", price: -110, point: 9.5 },
+                  { name: "Under", price: -110, point: 9.5 }
+                ]
+              }]
+            }]
+          },
+          // Soccer - Premier League
+          {
+            id: "soccer-1",
+            home_team: "Manchester City",
+            away_team: "Arsenal",
+            home_team_id: 7,
+            away_team_id: 8,
+            commence_time: new Date(Date.now() + 30 * 60 * 60 * 1000).toISOString(), // Day after tomorrow
+            sport_key: "soccer_epl",
+            sport_title: "Premier League",
+            bookmakers: [{
+              key: "bet365",
+              title: "Bet365",
+              markets: [{
+                key: "h2h",
+                outcomes: [
+                  { name: "Manchester City", price: -120 },
+                  { name: "Arsenal", price: 320 },
+                  { name: "Draw", price: 250 }
+                ]
+              }]
+            }]
+          },
+          // Tennis
+          {
+            id: "tennis-1",
+            home_team: "Novak Djokovic",
+            away_team: "Carlos Alcaraz",
+            home_team_id: 9,
+            away_team_id: 10,
+            commence_time: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(), // Tomorrow afternoon
+            sport_key: "tennis_atp",
+            sport_title: "ATP Tennis",
+            bookmakers: [{
+              key: "caesars",
+              title: "Caesars",
+              markets: [{
+                key: "h2h",
+                outcomes: [
+                  { name: "Novak Djokovic", price: -110 },
+                  { name: "Carlos Alcaraz", price: -110 }
+                ]
+              }]
+            }]
+          },
+          // Golf
+          {
+            id: "golf-1",
+            home_team: "Scottie Scheffler",
+            away_team: "Field",
+            home_team_id: 11,
+            away_team_id: 12,
+            commence_time: new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString(), // 3 days from now
+            sport_key: "golf_pga_championship",
+            sport_title: "PGA Tour",
+            bookmakers: [{
+              key: "pointsbet",
+              title: "PointsBet",
+              markets: [{
+                key: "outrights",
+                outcomes: [
+                  { name: "Scottie Scheffler", price: 450 },
+                  { name: "Rory McIlroy", price: 800 },
+                  { name: "Jon Rahm", price: 1200 }
+                ]
+              }]
+            }]
+          }
+        ];
         
         // Sort by start time and limit
         const sortedEvents = mockUpcomingEvents

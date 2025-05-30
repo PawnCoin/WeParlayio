@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface UpcomingGameCardProps {
   game: {
-    id: number;
+    id: number | string;
     homeTeam: {
       id: number;
       name: string;
@@ -17,16 +17,28 @@ interface UpcomingGameCardProps {
       logo: string;
     };
     startTime: string;
-    odds: {
-      homeSpread: {
+    bookmakers?: Array<{
+      key: string;
+      title: string;
+      markets: Array<{
+        key: string;
+        outcomes: Array<{
+          name: string;
+          price: number;
+          point?: number;
+        }>;
+      }>;
+    }>;
+    odds?: {
+      homeSpread?: {
         line: number;
         odds: number;
       };
-      awaySpread: {
+      awaySpread?: {
         line: number;
         odds: number;
       };
-      total: {
+      total?: {
         line: number;
         odds: number;
       };
@@ -38,10 +50,40 @@ const UpcomingGameCard: React.FC<UpcomingGameCardProps> = ({ game }) => {
   const { toast } = useToast();
   
   const handleAddToBetSlip = (selection: string, odds: number) => {
-    toast({
-      title: "Added to Bet Slip",
-      description: `${selection} at ${odds > 0 ? '+' : ''}${odds}`
-    });
+    // Add to localStorage betslip for persistence
+    const existingBets = JSON.parse(localStorage.getItem('betSlip') || '[]');
+    const newBet = {
+      id: Date.now().toString(),
+      gameId: game.id,
+      selection,
+      odds,
+      stake: 0,
+      teams: `${game.awayTeam.name} @ ${game.homeTeam.name}`,
+      timestamp: new Date().toISOString()
+    };
+    
+    // Check if bet already exists
+    const existingBet = existingBets.find((bet: any) => 
+      bet.gameId === game.id && bet.selection === selection
+    );
+    
+    if (!existingBet) {
+      existingBets.push(newBet);
+      localStorage.setItem('betSlip', JSON.stringify(existingBets));
+      
+      toast({
+        title: "Added to Bet Slip",
+        description: `${selection} at ${odds > 0 ? '+' : ''}${odds}`,
+        duration: 3000,
+      });
+    } else {
+      toast({
+        title: "Already in Bet Slip",
+        description: `${selection} is already added`,
+        variant: "destructive",
+        duration: 2000,
+      });
+    }
   };
   
   const formatDate = (dateString: string) => {
@@ -89,52 +131,137 @@ const UpcomingGameCard: React.FC<UpcomingGameCardProps> = ({ game }) => {
         </div>
         
         <div className="mt-4 md:mt-2 border-t border-gray-200 dark:border-gray-700 pt-4 grid grid-cols-3 gap-2">
+          {/* Home Team Spread/Moneyline */}
           <Button 
             variant="outline" 
-            className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 py-2 px-3 rounded-md text-xs flex justify-between items-center"
-            onClick={() => game.homeTeam?.name && game.odds?.homeSpread?.line !== undefined ? 
-              handleAddToBetSlip(`${game.homeTeam.name} ${game.odds.homeSpread.line} (Spread)`, game.odds.homeSpread.odds) : 
-              handleAddToBetSlip(`Home Team (Spread)`, -110)}
+            className="bg-gray-100 dark:bg-gray-800 hover:bg-green-100 dark:hover:bg-green-900 hover:border-green-300 py-2 px-3 rounded-md text-xs flex justify-between items-center transition-colors"
+            onClick={() => {
+              // Try to get spread first, then moneyline
+              const spreadMarket = game.bookmakers?.[0]?.markets?.find((m: any) => m.key === 'spreads');
+              const moneylineMarket = game.bookmakers?.[0]?.markets?.find((m: any) => m.key === 'h2h');
+              
+              if (spreadMarket) {
+                const homeSpread = spreadMarket.outcomes?.find((o: any) => o.name === game.homeTeam.name);
+                if (homeSpread) {
+                  handleAddToBetSlip(`${game.homeTeam.name} ${homeSpread.point} (Spread)`, homeSpread.price);
+                  return;
+                }
+              }
+              
+              if (moneylineMarket) {
+                const homeMoneyline = moneylineMarket.outcomes?.find((o: any) => o.name === game.homeTeam.name);
+                if (homeMoneyline) {
+                  handleAddToBetSlip(`${game.homeTeam.name} (Moneyline)`, homeMoneyline.price);
+                  return;
+                }
+              }
+              
+              // Fallback
+              handleAddToBetSlip(`${game.homeTeam.name} (Spread)`, -110);
+            }}
           >
-            <span>
-              {game.homeTeam.name ? game.homeTeam.name.split(' ').pop() : 'Home'} 
-              {game.odds?.homeSpread?.line !== undefined ? game.odds.homeSpread.line : ''}
+            <span className="truncate">
+              {game.homeTeam.name ? game.homeTeam.name.split(' ').pop() : 'Home'}
+              {(() => {
+                const spreadMarket = game.bookmakers?.[0]?.markets?.find((m: any) => m.key === 'spreads');
+                const homeSpread = spreadMarket?.outcomes?.find((o: any) => o.name === game.homeTeam.name);
+                return homeSpread?.point ? ` ${homeSpread.point}` : '';
+              })()}
             </span>
-            <span className="font-medium">
-              {game.odds?.homeSpread?.odds !== undefined ? 
-                (game.odds.homeSpread.odds > 0 ? `+${game.odds.homeSpread.odds}` : game.odds.homeSpread.odds) 
-                : 'N/A'}
+            <span className="font-medium text-green-600">
+              {(() => {
+                const spreadMarket = game.bookmakers?.[0]?.markets?.find((m: any) => m.key === 'spreads');
+                const moneylineMarket = game.bookmakers?.[0]?.markets?.find((m: any) => m.key === 'h2h');
+                
+                const homeSpread = spreadMarket?.outcomes?.find((o: any) => o.name === game.homeTeam.name);
+                const homeMoneyline = moneylineMarket?.outcomes?.find((o: any) => o.name === game.homeTeam.name);
+                
+                const odds = homeSpread?.price || homeMoneyline?.price;
+                return odds ? (odds > 0 ? `+${odds}` : odds) : 'N/A';
+              })()}
             </span>
           </Button>
+
+          {/* Away Team Spread/Moneyline */}
           <Button 
             variant="outline" 
-            className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 py-2 px-3 rounded-md text-xs flex justify-between items-center"
-            onClick={() => game.awayTeam?.name && game.odds?.awaySpread?.line !== undefined ? 
-              handleAddToBetSlip(`${game.awayTeam.name} ${game.odds.awaySpread.line} (Spread)`, game.odds.awaySpread.odds) : 
-              handleAddToBetSlip(`Away Team (Spread)`, -110)}
+            className="bg-gray-100 dark:bg-gray-800 hover:bg-blue-100 dark:hover:bg-blue-900 hover:border-blue-300 py-2 px-3 rounded-md text-xs flex justify-between items-center transition-colors"
+            onClick={() => {
+              // Try to get spread first, then moneyline
+              const spreadMarket = game.bookmakers?.[0]?.markets?.find((m: any) => m.key === 'spreads');
+              const moneylineMarket = game.bookmakers?.[0]?.markets?.find((m: any) => m.key === 'h2h');
+              
+              if (spreadMarket) {
+                const awaySpread = spreadMarket.outcomes?.find((o: any) => o.name === game.awayTeam.name);
+                if (awaySpread) {
+                  handleAddToBetSlip(`${game.awayTeam.name} ${awaySpread.point} (Spread)`, awaySpread.price);
+                  return;
+                }
+              }
+              
+              if (moneylineMarket) {
+                const awayMoneyline = moneylineMarket.outcomes?.find((o: any) => o.name === game.awayTeam.name);
+                if (awayMoneyline) {
+                  handleAddToBetSlip(`${game.awayTeam.name} (Moneyline)`, awayMoneyline.price);
+                  return;
+                }
+              }
+              
+              // Fallback
+              handleAddToBetSlip(`${game.awayTeam.name} (Spread)`, -110);
+            }}
           >
-            <span>
-              {game.awayTeam.name ? game.awayTeam.name.split(' ').pop() : 'Away'} 
-              {game.odds?.awaySpread?.line !== undefined ? game.odds.awaySpread.line : ''}
+            <span className="truncate">
+              {game.awayTeam.name ? game.awayTeam.name.split(' ').pop() : 'Away'}
+              {(() => {
+                const spreadMarket = game.bookmakers?.[0]?.markets?.find((m: any) => m.key === 'spreads');
+                const awaySpread = spreadMarket?.outcomes?.find((o: any) => o.name === game.awayTeam.name);
+                return awaySpread?.point ? ` ${awaySpread.point}` : '';
+              })()}
             </span>
-            <span className="font-medium">
-              {game.odds?.awaySpread?.odds !== undefined ? 
-                (game.odds.awaySpread.odds > 0 ? `+${game.odds.awaySpread.odds}` : game.odds.awaySpread.odds) 
-                : 'N/A'}
+            <span className="font-medium text-blue-600">
+              {(() => {
+                const spreadMarket = game.bookmakers?.[0]?.markets?.find((m: any) => m.key === 'spreads');
+                const moneylineMarket = game.bookmakers?.[0]?.markets?.find((m: any) => m.key === 'h2h');
+                
+                const awaySpread = spreadMarket?.outcomes?.find((o: any) => o.name === game.awayTeam.name);
+                const awayMoneyline = moneylineMarket?.outcomes?.find((o: any) => o.name === game.awayTeam.name);
+                
+                const odds = awaySpread?.price || awayMoneyline?.price;
+                return odds ? (odds > 0 ? `+${odds}` : odds) : 'N/A';
+              })()}
             </span>
           </Button>
+
+          {/* Total Over/Under */}
           <Button 
             variant="outline" 
-            className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 py-2 px-3 rounded-md text-xs flex justify-between items-center"
-            onClick={() => game.odds?.total?.line !== undefined ? 
-              handleAddToBetSlip(`O/U ${game.odds.total.line} (Total)`, game.odds.total.odds) : 
-              handleAddToBetSlip(`O/U (Total)`, -110)}
+            className="bg-gray-100 dark:bg-gray-800 hover:bg-purple-100 dark:hover:bg-purple-900 hover:border-purple-300 py-2 px-3 rounded-md text-xs flex justify-between items-center transition-colors"
+            onClick={() => {
+              const totalsMarket = game.bookmakers?.[0]?.markets?.find((m: any) => m.key === 'totals');
+              const overOutcome = totalsMarket?.outcomes?.find((o: any) => o.name === 'Over');
+              
+              if (overOutcome) {
+                handleAddToBetSlip(`O/U ${overOutcome.point} (Over)`, overOutcome.price);
+              } else {
+                handleAddToBetSlip(`O/U (Total)`, -110);
+              }
+            }}
           >
-            <span>O/U {game.odds?.total?.line || 'N/A'}</span>
-            <span className="font-medium">
-              {game.odds?.total?.odds !== undefined ? 
-                (game.odds.total.odds > 0 ? `+${game.odds.total.odds}` : game.odds.total.odds) 
-                : 'N/A'}
+            <span>
+              O/U {(() => {
+                const totalsMarket = game.bookmakers?.[0]?.markets?.find((m: any) => m.key === 'totals');
+                const overOutcome = totalsMarket?.outcomes?.find((o: any) => o.name === 'Over');
+                return overOutcome?.point || 'N/A';
+              })()}
+            </span>
+            <span className="font-medium text-purple-600">
+              {(() => {
+                const totalsMarket = game.bookmakers?.[0]?.markets?.find((m: any) => m.key === 'totals');
+                const overOutcome = totalsMarket?.outcomes?.find((o: any) => o.name === 'Over');
+                const odds = overOutcome?.price;
+                return odds ? (odds > 0 ? `+${odds}` : odds) : 'N/A';
+              })()}
             </span>
           </Button>
         </div>
