@@ -136,5 +136,8 @@ export const initWordPressSync = async () => {
   }
 };
 
+// Named exports
+export { wordPressService, wordpressSync, initWordPressSync };
+
 // Default export
 export default wordPressService;
