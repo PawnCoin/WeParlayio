@@ -331,7 +331,7 @@ const EsportsHub: React.FC = () => {
   const totalViewers = mockLiveMatches.reduce((sum, match) => sum + match.viewers, 0);
 
   return (
-    <div className="esports-hub container mx-auto px-4 py-6">
+    <div className="container mx-auto px-4 py-6">
       {/* Live Stream Modal */}
       {isLiveStreamOpen && selectedMatch && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">

@@ -70,29 +70,10 @@
   --chart-5: #9ca3af;
 }
 
-/* Additional dark mode overrides to eliminate ALL white backgrounds */
+/* Clean dark mode overrides - minimal and safe */
 .dark .bg-gray-50,
-.dark .bg-slate-50,
-.dark .bg-zinc-50,
-.dark .bg-neutral-50,
-.dark .bg-stone-50,
-.dark .bg-gray-100,
-.dark .bg-slate-100,
-.dark .bg-zinc-100,
-.dark .bg-neutral-100,
-.dark .bg-stone-100 {
-  background-color: #0f172a !important;
-}
-
-/* Override any component with white background - but exclude esports hub */
-.dark [class*="bg-white"]:not(.esports-hub *):not(.esports-hub) {
-  background-color: #0f172a !important;
-}
-
-/* Ensure all cards use dark background - but exclude esports hub */
-.dark .card:not(.esports-hub *):not(.esports-hub),
-.dark [data-radix-collection-item]:not(.esports-hub *):not(.esports-hub) {
-  background-color: #0f172a !important;
+.dark .bg-slate-50 {
+  background-color: #0f172a;
 }
 
 * {
