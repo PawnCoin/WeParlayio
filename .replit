@@ -43,6 +43,10 @@ args = "npm install"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
+args = "cd server && npm run build || echo \"No server build step needed\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
 args = "npm run dev"
 
 [[ports]]

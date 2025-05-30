@@ -283,6 +283,10 @@ class WebSocketService {
     };
   }
 
+  public isInitialized(): boolean {
+    return this.isInitialized;
+  }
+
   public close(): void {
     console.log('🔌 Closing WebSocket server...');
 
