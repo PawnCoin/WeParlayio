@@ -1,141 +1,187 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { useToast } from './use-toast';
+
+interface WebSocketMessage {
+  type: string;
+  data: any;
+  timestamp: number;
+}
 
 interface UseWebSocketOptions {
   url?: string;
-  onMessage?: (data: any) => void;
-  onError?: (error: Event) => void;
-  onConnect?: () => void;
-  onDisconnect?: () => void;
   reconnectAttempts?: number;
   reconnectInterval?: number;
-  autoConnect?: boolean;
+  onMessage?: (message: WebSocketMessage) => void;
+  onConnect?: () => void;
+  onDisconnect?: () => void;
+  onError?: (error: Event) => void;
 }
 
 export const useWebSocket = (options: UseWebSocketOptions = {}) => {
   const {
-    url,
+    url = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`,
+    reconnectAttempts = 5,
+    reconnectInterval = 5000,
     onMessage,
-    onError,
     onConnect,
     onDisconnect,
-    reconnectAttempts = 3,
-    reconnectInterval = 5000,
-    autoConnect = false
+    onError
   } = options;
 
-  const [isConnected, setIsConnected] = useState(false);
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [reconnectCount, setReconnectCount] = useState(0);
-
+  const { toast } = useToast();
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const connectionAttemptRef = useRef<boolean>(false);
+  const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [reconnectCount, setReconnectCount] = useState(0);
+  const [lastReconnectAttempt, setLastReconnectAttempt] = useState(0);
+  const isConnectingRef = useRef(false);
 
-  const getWebSocketUrl = () => {
-    if (url) return url;
-
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = window.location.host;
-    return `${protocol}//${host}/ws`;
-  };
-
-  const connect = () => {
-    if (connectionAttemptRef.current || isConnected) {
+  const connect = useCallback(() => {
+    // Prevent multiple simultaneous connection attempts
+    if (isConnectingRef.current || (wsRef.current && wsRef.current.readyState === WebSocket.CONNECTING)) {
       console.log('⏳ Connection attempt already in progress');
       return;
     }
 
-    // Don't attempt connection in development unless explicitly requested
-    if (process.env.NODE_ENV === 'development' && !autoConnect) {
-      console.log('🚫 WebSocket connection skipped in development mode');
+    // Rate limiting: don't reconnect more than once per 3 seconds
+    const now = Date.now();
+    if (now - lastReconnectAttempt < 3000) {
+      console.log('⏳ Rate limiting WebSocket connection attempts');
+      setTimeout(() => {
+        connect();
+      }, 3000 - (now - lastReconnectAttempt));
       return;
     }
+    setLastReconnectAttempt(now);
+    isConnectingRef.current = true;
 
-    connectionAttemptRef.current = true;
-    setIsConnecting(true);
-    setError(null);
-
-    const wsUrl = getWebSocketUrl();
+    console.log('🔌 Connecting to WebSocket:', url);
 
     try {
-      console.log('🔌 Connecting to WebSocket:', wsUrl);
+      // Close existing connection if any
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
 
-      wsRef.current = new WebSocket(wsUrl);
+      const ws = new WebSocket(url);
+      wsRef.current = ws;
 
+      // Connection timeout
       const connectionTimeout = setTimeout(() => {
-        if (wsRef.current && wsRef.current.readyState === WebSocket.CONNECTING) {
-          console.log('⏱️ WebSocket connection timeout');
-          wsRef.current.close();
+        if (ws.readyState === WebSocket.CONNECTING) {
+          console.log('⏰ WebSocket connection timeout');
+          ws.close();
         }
-      }, 10000); // 10 second timeout
+      }, 10000);
 
-      wsRef.current.onopen = () => {
+      ws.onopen = () => {
         clearTimeout(connectionTimeout);
+        isConnectingRef.current = false;
         console.log('✅ WebSocket connected successfully');
         setIsConnected(true);
-        setIsConnecting(false);
         setReconnectCount(0);
-        setError(null);
-        connectionAttemptRef.current = false;
+
+        // Start heartbeat
+        heartbeatIntervalRef.current = setInterval(() => {
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'ping', timestamp: Date.now() }));
+          }
+        }, 30000);
+
         onConnect?.();
       };
 
-      wsRef.current.onmessage = (event) => {
+      ws.onmessage = (event) => {
         try {
-          const data = JSON.parse(event.data);
-          onMessage?.(data);
+          const message: WebSocketMessage = JSON.parse(event.data);
+
+          // Handle pong response
+          if (message.type === 'pong') {
+            return;
+          }
+
+          onMessage?.(message);
         } catch (error) {
-          console.error('❌ Failed to parse WebSocket message:', error);
+          console.error('❌ Error parsing WebSocket message:', error);
         }
       };
 
-      wsRef.current.onclose = (event) => {
+      ws.onclose = (event) => {
         clearTimeout(connectionTimeout);
+        isConnectingRef.current = false;
+
+        if (heartbeatIntervalRef.current) {
+          clearInterval(heartbeatIntervalRef.current);
+          heartbeatIntervalRef.current = null;
+        }
+
         console.log('🔌 WebSocket closed:', event.code, event.reason || 'No reason provided');
+
+        // Report WebSocket errors for monitoring
+        if (event.code !== 1000) { // 1000 = normal closure
+          try {
+            import('../utils/errorReporting').then(({ reportError }) => {
+              reportError(`WebSocket connection closed unexpectedly`, {
+                code: event.code,
+                reason: event.reason || 'No reason provided',
+                url: url
+              });
+            }).catch((importError) => {
+              console.warn('Failed to import error reporting:', importError);
+            });
+          } catch (e) {
+            console.warn('Failed to report WebSocket error:', e);
+          }
+        }
+
         setIsConnected(false);
-        setIsConnecting(false);
-        connectionAttemptRef.current = false;
+        wsRef.current = null;
         onDisconnect?.();
 
-        // Only attempt to reconnect in production and if not manually closed
-        if (process.env.NODE_ENV === 'production' && event.code !== 1000 && reconnectCount < reconnectAttempts) {
-          console.log(`🔄 Reconnecting... Attempt ${reconnectCount + 1}/${reconnectAttempts}`);
-          setReconnectCount(prev => prev + 1);
+        // Only attempt to reconnect if it wasn't a clean close (code 1000)
+        if (event.code !== 1000 && reconnectCount < reconnectAttempts) {
+          const newCount = reconnectCount + 1;
+          setReconnectCount(newCount);
+          console.log(`🔄 Reconnecting... Attempt ${newCount}/${reconnectAttempts}`);
 
-          if (reconnectTimeoutRef.current) {
-            clearTimeout(reconnectTimeoutRef.current);
-          }
+          // Exponential backoff with jitter
+          const delay = Math.min(reconnectInterval * Math.pow(1.5, newCount - 1), 30000) + Math.random() * 1000;
 
           reconnectTimeoutRef.current = setTimeout(() => {
             connect();
-          }, reconnectInterval);
+          }, delay);
         } else if (reconnectCount >= reconnectAttempts) {
           console.log('❌ Max reconnection attempts reached');
-          setError('Connection failed after multiple attempts');
+          toast({
+            title: "Connection Lost",
+            description: "Unable to maintain connection to live updates. Please refresh the page.",
+            variant: "destructive"
+          });
         }
       };
 
-      wsRef.current.onerror = (error) => {
+      ws.onerror = (error) => {
         clearTimeout(connectionTimeout);
-        console.log('❌ WebSocket error:', error);
-        setError('WebSocket connection error');
-        setIsConnecting(false);
-        connectionAttemptRef.current = false;
+        isConnectingRef.current = false;
+        console.error('❌ WebSocket error:', error);
         onError?.(error);
+        setIsConnected(false);
       };
 
     } catch (error) {
+      isConnectingRef.current = false;
       console.error('❌ Failed to create WebSocket connection:', error);
-      setError('Failed to create WebSocket connection');
-      setIsConnecting(false);
-      connectionAttemptRef.current = false;
     }
-  };
+  }, [url, reconnectCount, reconnectAttempts, reconnectInterval, onConnect, onMessage, onDisconnect, onError, toast, lastReconnectAttempt]);
 
-  const disconnect = () => {
+  const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
+    }
+    if (heartbeatIntervalRef.current) {
+      clearInterval(heartbeatIntervalRef.current);
     }
 
     if (wsRef.current) {
@@ -144,42 +190,38 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
     }
 
     setIsConnected(false);
-    setIsConnecting(false);
-    connectionAttemptRef.current = false;
-    setReconnectCount(0);
-  };
+  }, []);
 
-  const sendMessage = (data: any) => {
-    if (wsRef.current && isConnected) {
-      try {
-        wsRef.current.send(JSON.stringify(data));
-        return true;
-      } catch (error) {
-        console.error('❌ Failed to send WebSocket message:', error);
-        return false;
-      }
+  const send = useCallback((data: any) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify(data));
+      return true;
     }
     return false;
-  };
+  }, []);
 
   useEffect(() => {
-    // Only auto-connect if explicitly requested or in production
-    if (autoConnect || process.env.NODE_ENV === 'production') {
-      connect();
-    }
+    connect(); // Automatically connect on component mount
 
     return () => {
-      disconnect();
+      disconnect(); // Clean up on unmount
     };
-  }, [autoConnect]);
+  }, [connect, disconnect]);
 
   return {
     isConnected,
-    isConnecting,
-    error,
-    reconnectCount,
     connect,
     disconnect,
-    sendMessage
+    send,
   };
+};
+const getWebSocketUrl = () => {
+  // For development, connect to the server's WebSocket endpoint
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return `ws://localhost:5000/ws`;
+  }
+
+  // For Replit environment, use the current domain with wss protocol
+  const host = window.location.host;
+  return `wss://${host}/ws`;
 };

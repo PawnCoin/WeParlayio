@@ -1,7 +1,6 @@
 import React from 'react';
 import { useParams } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -32,14 +31,12 @@ interface UserProfilePageProps {
 
 const UserProfilePage: React.FC<UserProfilePageProps> = () => {
   const params = useParams();
-  const { user: currentUser, isAuthenticated } = useAuth();
-  const userId = (params as any).userId || currentUser?.id;
+  const userId = (params as any).userId;
 
-  // Fetch user details - use current user if no userId in params
+  // Fetch user details
   const { data: user, isLoading } = useQuery({
     queryKey: [`/api/users/${userId}`],
-    enabled: !!userId,
-    initialData: !userId || userId === currentUser?.id ? currentUser : undefined
+    enabled: !!userId
   });
 
   // Fetch user betting history
@@ -53,23 +50,6 @@ const UserProfilePage: React.FC<UserProfilePageProps> = () => {
     queryKey: [`/api/users/${userId}/stats`],
     enabled: !!userId
   });
-
-  if (!isAuthenticated && !userId) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center h-64">
-            <Users className="h-16 w-16 text-gray-400 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-600 mb-2">Please Log In</h3>
-            <p className="text-gray-500 mb-4">You need to log in to view your profile.</p>
-            <Button onClick={() => window.location.href = '/login'}>
-              Go to Login
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   if (isLoading) {
     return (

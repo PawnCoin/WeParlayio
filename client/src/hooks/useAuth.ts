@@ -113,28 +113,6 @@ export function useAuth() {
     }
   }, [user]);
 
-  // Auto-login demo user for new users (development only)
-  React.useEffect(() => {
-    if (!user && !isLoading) {
-      const demoUser = {
-        id: 'demo-user-' + Date.now(),
-        username: 'Demo_Player',
-        email: 'demo@weparlay.io',
-        firstName: 'Demo',
-        lastName: 'Player',
-        balance: 1000,
-        weplayTokenBalance: 500,
-        tier: 'bronze',
-        isAdmin: false,
-        status: 'active',
-        emailVerified: true,
-        createdAt: new Date().toISOString()
-      };
-      setUser(demoUser);
-      localStorage.setItem('weparlay_user', JSON.stringify(demoUser));
-    }
-  }, [user, isLoading]);
-
   return {
     user,
     isLoading,
