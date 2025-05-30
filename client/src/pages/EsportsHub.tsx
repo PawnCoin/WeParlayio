@@ -28,9 +28,10 @@ import {
   Wifi
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import { useAuth } from '@/hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
-import { reportError } from '@/utils/errorReporting';
+// import { reportError } from '@/utils/errorReporting';
 
 interface LiveMatch {
   id: string;
@@ -332,7 +333,7 @@ const EsportsHub: React.FC = () => {
 
   return (
     <ErrorBoundary>
-    <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-6">
       {/* Live Stream Modal */}
       {isLiveStreamOpen && selectedMatch && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
@@ -850,7 +851,7 @@ const EsportsHub: React.FC = () => {
           </Card>
         </div>
       </div>
-    </div>
+      </div>
     </ErrorBoundary>
   );
 };
