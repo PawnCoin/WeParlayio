@@ -37,7 +37,8 @@ class WebSocketService {
         host: '0.0.0.0',
         perMessageDeflate: false,
         clientTracking: true,
-        maxPayload: 16 * 1024 * 1024 // 16MB
+        maxPayload: 16 * 1024 * 1024, // 16MB
+        skipUTF8Validation: true
       });
 
       this.setupWebSocketServer();

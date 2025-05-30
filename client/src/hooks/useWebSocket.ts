@@ -48,6 +48,9 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
     const now = Date.now();
     if (now - lastReconnectAttempt < 3000) {
       console.log('⏳ Rate limiting WebSocket connection attempts');
+      setTimeout(() => {
+        connect();
+      }, 3000 - (now - lastReconnectAttempt));
       return;
     }
     setLastReconnectAttempt(now);
@@ -122,9 +125,11 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
             import('../utils/errorReporting').then(({ reportError }) => {
               reportError(`WebSocket connection closed unexpectedly`, {
                 code: event.code,
-                reason: event.reason,
+                reason: event.reason || 'No reason provided',
                 url: url
               });
+            }).catch((importError) => {
+              console.warn('Failed to import error reporting:', importError);
             });
           } catch (e) {
             console.warn('Failed to report WebSocket error:', e);

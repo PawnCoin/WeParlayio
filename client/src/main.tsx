@@ -14,15 +14,23 @@ window.addEventListener('unhandledrejection', (event) => {
       reason.includes('WebSocket') ||
       reason.includes('Failed to fetch') ||
       reason.includes('NetworkError') ||
-      reason.includes('1006')
+      reason.includes('1006') ||
+      reason.includes('WebSocket closed without opened')
     ) ||
-    (reason.message && typeof reason.message === 'string' && (
+    (reason && reason.message && typeof reason.message === 'string' && (
       reason.message.includes('WebSocket') ||
       reason.message.includes('Failed to fetch') ||
       reason.message.includes('NetworkError') ||
-      reason.message.includes('1006')
+      reason.message.includes('1006') ||
+      reason.message.includes('WebSocket closed without opened')
     ))
   );
+
+  if (isNetworkError) {
+    console.log('Non-critical promise rejection handled:', reason);
+    event.preventDefault(); // Prevent the error from being logged as unhandled
+    return;
+  }
 
   if (isNetworkError) {
     console.warn('Non-critical promise rejection handled:', reason);

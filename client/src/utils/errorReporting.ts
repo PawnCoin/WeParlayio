@@ -105,13 +105,17 @@ class ErrorReportingService {
     if (this.errorQueue.length === 0) return;
 
     // Filter out known benign errors
-    const filteredErrors = this.errorQueue.filter(error => {
-      const message = error.message.toLowerCase();
+    const filteredErrors = this.errorQueue.filter(errorItem => {
+      const message = (errorItem.message || '').toLowerCase();
       return !message.includes('websocket') && 
              !message.includes('cors') && 
              !message.includes('metamask') &&
              !message.includes('unrecognized feature') &&
-             !message.includes('invalid sandbox flag');
+             !message.includes('invalid sandbox flag') &&
+             !message.includes('websocket closed without opened') &&
+             !message.includes('failed to connect to websocket') &&
+             !message.includes('vite') &&
+             !message.includes('1006');
     });
 
     if (filteredErrors.length === 0) {
