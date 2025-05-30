@@ -14,7 +14,8 @@ window.addEventListener('unhandledrejection', (event) => {
     (event.reason.message && (
       event.reason.message.includes('WebSocket') ||
       event.reason.message.includes('Failed to fetch') ||
-      event.reason.message.includes('NetworkError')
+      event.reason.message.includes('NetworkError') ||
+      event.reason.message.includes('1006')
     ))
   )) {
     console.warn('Non-critical promise rejection handled:', event.reason);

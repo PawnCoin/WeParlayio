@@ -297,11 +297,13 @@ class WebSocketService {
 
 export const websocketService = new WebSocketService();
 
-export function initializeWebSocketService(server: Server) {
-  websocketService.initialize(server);
+export const initializeWebSocketService = (server: Server): void => {
+  if (websocketService.isInitialized()) {
+    console.log('⚠️ WebSocket service already initialized');
+    return;
+  }
 
-  process.on('SIGTERM', () => websocketService.close());
-  process.on('SIGINT', () => websocketService.close());
+  console.log('🔌 Initializing WebSocket service...');
 }
 
 export { websocketService as default };
