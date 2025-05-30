@@ -1,8 +1,5 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { rapidApiOddsService } from '../services/rapidApiOddsService';
-import { theOddsApiService } from '../services/theOddsApiService';
-import { websocketService } from '../services/websocketService';
 
 const router = Router();
 
