@@ -16,7 +16,7 @@ import {
   Zap,
   Star,
   Crown,
-  Settings as SettingsIcon,
+  SettingsIcon,
   Palette
 } from 'lucide-react';
 import UserProfile from '@/components/user/UserProfile';

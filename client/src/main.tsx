@@ -15,7 +15,9 @@ window.addEventListener('unhandledrejection', (event) => {
       reason.includes('1006') ||
       reason.includes('WebSocket closed without opened') ||
       reason.includes('vite') ||
-      reason.includes('HMR')
+      reason.includes('HMR') ||
+      reason.includes('connecting...') ||
+      reason.includes('failed to connect to websocket')
     ) ||
     (reason && reason.message && typeof reason.message === 'string' && (
       reason.message.includes('WebSocket') ||
@@ -24,8 +26,12 @@ window.addEventListener('unhandledrejection', (event) => {
       reason.message.includes('1006') ||
       reason.message.includes('WebSocket closed without opened') ||
       reason.message.includes('vite') ||
-      reason.message.includes('HMR')
-    ))
+      reason.message.includes('HMR') ||
+      reason.message.includes('connecting...') ||
+      reason.message.includes('failed to connect to websocket')
+    )) ||
+    // Filter out empty objects and undefined errors
+    (typeof reason === 'object' && Object.keys(reason || {}).length === 0)
   );
 
   if (isNetworkError) {

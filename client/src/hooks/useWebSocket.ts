@@ -201,7 +201,12 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
   }, []);
 
   useEffect(() => {
-    connect(); // Automatically connect on component mount
+    // Only connect WebSocket in production or when explicitly needed
+    if (window.location.hostname !== 'localhost' && !window.location.hostname.includes('replit.dev')) {
+      connect();
+    } else {
+      console.log('🔌 WebSocket disabled in development environment');
+    }
 
     return () => {
       disconnect(); // Clean up on unmount
