@@ -55,8 +55,8 @@ const VipSmsChallenge: React.FC<VipSmsChallengeProps> = ({
   const [marketingConsent, setMarketingConsent] = useState(false);
   const [showConsentModal, setShowConsentModal] = useState(false);
 
-  // Check if user is VIP
-  const isVip = user?.subscriptionTier === 'gold' || user?.subscriptionTier === 'platinum';
+  // Check if user is VIP (using tier field from user schema)
+  const isVip = user?.tier === 'gold' || user?.tier === 'platinum';
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({

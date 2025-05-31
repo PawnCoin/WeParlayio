@@ -37,11 +37,13 @@ export class WeParLayPerformance {
   static clearCache(pattern?: string): void {
     if (pattern) {
       const regex = new RegExp(pattern);
-      for (const [key] of this.cache) {
+      const keysToDelete: string[] = [];
+      this.cache.forEach((_, key) => {
         if (regex.test(key)) {
-          this.cache.delete(key);
+          keysToDelete.push(key);
         }
-      }
+      });
+      keysToDelete.forEach(key => this.cache.delete(key));
     } else {
       this.cache.clear();
     }

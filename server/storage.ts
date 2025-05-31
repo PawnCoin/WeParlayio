@@ -65,8 +65,8 @@ export class MemStorage implements IStorage {
 
   constructor() {
     // Initialize with basic sports data
-    this.createSport({ name: "Football", key: "americanfootball_nfl", active: true, eventCount: 0 });
-    this.createSport({ name: "Basketball", key: "basketball_nba", active: true, eventCount: 0 });
+    this.createSport({ name: "Football", key: "americanfootball_nfl", isActive: true, eventCount: 0 });
+    this.createSport({ name: "Basketball", key: "basketball_nba", isActive: true, eventCount: 0 });
   }
 
   async getUser(id: string): Promise<User | undefined> {
