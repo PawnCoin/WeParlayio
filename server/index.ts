@@ -3,6 +3,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { createSSLServer, getSSLConfig } from "./ssl";
 import { initializeWebSocketService, websocketService } from './services/websocketService.js';
+import { crashRecoveryService } from './services/crashRecoveryService';
 import notificationRoutes from './routes/notificationRoutes';
 import websocketPollingRoutes from './routes/websocketPollingRoutes';
 import apiMonitoringRoutes from './routes/apiMonitoringRoutes';
@@ -103,6 +104,10 @@ app.use((req, res, next) => {
 
   const httpServer = server.listen(port, "0.0.0.0", () => {
     log(`🚀 WeParlay server running on HTTP at 0.0.0.0:${port}`);
+    
+    // Start crash recovery monitoring after server is running
+    crashRecoveryService.startMonitoring();
+    log(`🔧 Automated crash recovery system activated`);
   });
 
   // Skip WebSocket initialization in development to avoid port conflicts

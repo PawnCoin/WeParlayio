@@ -522,6 +522,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch betting challenges" });
     }
   });
+
+  // Crash Recovery System Endpoints
+  app.get('/api/system/crash-recovery/status', async (req, res) => {
+    try {
+      const { crashRecoveryService } = await import('./services/crashRecoveryService');
+      const metrics = crashRecoveryService.getMetrics();
+      const healthStatus = await crashRecoveryService.getHealthStatus();
+      
+      res.json({
+        success: true,
+        metrics,
+        healthStatus,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error fetching crash recovery status:', error);
+      res.status(500).json({ message: 'Failed to fetch crash recovery status' });
+    }
+  });
+
+  app.post('/api/system/crash-recovery/restart', async (req, res) => {
+    try {
+      const { crashRecoveryService } = await import('./services/crashRecoveryService');
+      crashRecoveryService.stopMonitoring();
+      
+      // Small delay to ensure cleanup
+      setTimeout(() => {
+        crashRecoveryService.startMonitoring();
+      }, 1000);
+      
+      res.json({
+        success: true,
+        message: 'Crash recovery system restarted successfully'
+      });
+    } catch (error) {
+      console.error('Error restarting crash recovery:', error);
+      res.status(500).json({ message: 'Failed to restart crash recovery system' });
+    }
+  });
   
   // Get a specific challenge by UUID
   app.get('/api/challenges/:uuid', async (req, res) => {

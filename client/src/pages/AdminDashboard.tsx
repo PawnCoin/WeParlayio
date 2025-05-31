@@ -10,6 +10,7 @@ import { Crown, Shield, Users, TrendingUp, DollarSign, Settings, BarChart3 } fro
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import CrashRecoveryMonitor from "@/components/CrashRecoveryMonitor";
 
 export default function AdminDashboard() {
   const { toast } = useToast();
@@ -239,6 +240,11 @@ export default function AdminDashboard() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Crash Recovery System */}
+          <div className="lg:col-span-2 xl:col-span-3">
+            <CrashRecoveryMonitor />
+          </div>
 
           {/* Quick Actions */}
           <Card className="bg-slate-800 border-slate-700 lg:col-span-2 xl:col-span-3">
