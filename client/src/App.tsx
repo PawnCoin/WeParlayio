@@ -86,11 +86,6 @@ import PageStatusChecker from './pages/PageStatusChecker';
 import AdminBypass from "@/pages/AdminBypass";
 import LiveBettingEnhanced from "@/pages/BettingExperience";
 
-// Simple admin route - just render the component
-const AdminRoute = ({ component: Component, ...rest }: any) => {
-  return <Component {...rest} />;
-};
-
 function Router() {
   // Track page views when routes change
   useAnalytics();
@@ -196,10 +191,10 @@ function Router() {
       <Route path="/signup" component={SignUpEnhanced} />
       <Route path="/signup-enhanced" component={SignUpEnhanced} />
 
-      {/* Admin Routes */}
-      <Route path="/admin" component={(props) => <AdminRoute component={AdminDashboard} {...props} />} />
-      <Route path="/admin/social-media-dashboard" component={(props) => <AdminRoute component={SocialMediaDashboard} {...props} />} />
-      <Route path="/admin-dashboard" component={(props) => <AdminRoute component={AdminDashboard} {...props} />} />
+      {/* Admin Routes - Direct access without authentication */}
+      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin/social-media-dashboard" component={SocialMediaDashboard} />
+      <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin-bypass" component={AdminBypass} />
 
