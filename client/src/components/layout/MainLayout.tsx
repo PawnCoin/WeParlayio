@@ -89,7 +89,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     { href: "/tournaments", label: "Tournaments" },
     { href: "/video-gaming", label: "Gaming" },
     { href: "/trivia", label: "Trivia" },
-    { href: "/results", label: "Results" }
+    { href: "/results", label: "Results" },
+    { href: "/social-betting", label: "Social" }
   ];
 
   return (
