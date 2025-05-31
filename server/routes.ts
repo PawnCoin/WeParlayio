@@ -5789,20 +5789,57 @@ Join us: WeParlay.io 🎯
     }
   });
 
-  app.get('/api/rapidapi/basketball', async (req, res) => {
+  // Enhanced upcoming events endpoint with authentic data sources
+  app.get('/api/unified-sports/upcoming-events', async (req, res) => {
     try {
-      const rapidApiIntegration = await import('./services/rapidApiIntegrationService');
-      const basketballData = await rapidApiIntegration.rapidApiIntegration.getBasketballData();
+      const events = [];
+      
+      // Try RapidAPI Basketball data first
+      const rapidApiKey = process.env.RAPIDAPI_KEY;
+      if (rapidApiKey) {
+        try {
+          const response = await fetch(`https://api-basketball.p.rapidapi.com/games?league=nba&season=2024`, {
+            headers: {
+              'X-RapidAPI-Key': rapidApiKey,
+              'X-RapidAPI-Host': 'api-basketball.p.rapidapi.com'
+            }
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            const games = data.response || [];
+            
+            games.forEach(game => {
+              if (game.teams && game.date) {
+                events.push({
+                  id: `nba-${game.id}`,
+                  sport: 'Basketball',
+                  league: 'NBA',
+                  homeTeam: game.teams.home?.name || 'Home Team',
+                  awayTeam: game.teams.away?.name || 'Away Team',
+                  startTime: game.date,
+                  status: game.status?.short || 'scheduled',
+                  source: 'API-BASKETBALL'
+                });
+              }
+            });
+          }
+        } catch (apiError) {
+          console.error('API-BASKETBALL error:', apiError);
+        }
+      }
+
       res.json({
         success: true,
-        data: basketballData,
-        source: 'API-BASKETBALL'
+        events,
+        count: events.length,
+        sources: events.length > 0 ? ['API-BASKETBALL'] : ['fallback']
       });
     } catch (error) {
-      console.error('RapidAPI basketball error:', error);
+      console.error('Unified sports events error:', error);
       res.status(500).json({ 
         success: false,
-        message: 'Failed to fetch basketball data',
+        message: 'Failed to fetch sports events',
         error: error.message 
       });
     }
