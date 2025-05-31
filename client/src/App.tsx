@@ -98,7 +98,7 @@ const AdminRoute = ({ component: Component, ...rest }: any) => {
     if (window.location.hostname === 'localhost' ||
         window.location.hostname.includes('replit.dev') ||
         import.meta.env.DEV) {
-      
+
       setIsAuthorized(true);
       localStorage.setItem('weparlay-admin-access', 'true');
       localStorage.setItem('weparlay-admin-expiry', (Date.now() + 24 * 60 * 60 * 1000).toString());
@@ -117,7 +117,7 @@ const AdminRoute = ({ component: Component, ...rest }: any) => {
         user?.adminLevel === 'owner' ||
         (hasAdminAccess && adminExpiry && parseInt(adminExpiry) > Date.now()) || 
         adminToken) {
-      
+
       setIsAuthorized(true);
       localStorage.setItem('weparlay-admin-access', 'true');
       localStorage.setItem('weparlay-admin-expiry', (Date.now() + 24 * 60 * 60 * 1000).toString());

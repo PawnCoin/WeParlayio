@@ -24,6 +24,7 @@ export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   // Always force admin access - this is YOUR site!
   useEffect(() => {
@@ -56,9 +57,6 @@ export function useAuth() {
     
     // Store the admin user
     localStorage.setItem('weparlay_user', JSON.stringify(siteOwnerUser));
-  }, []);
-
-    // This code block is removed - admin access is now handled above
   }, []);
 
   const login = async (walletAddress?: string, walletType?: string) => {

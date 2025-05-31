@@ -42,3 +42,50 @@ const SocialShareButton: React.FC<SocialShareButtonProps> = ({
 };
 
 export default SocialShareButton;
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Share2 } from 'lucide-react';
+
+interface SocialShareButtonProps {
+  url?: string;
+  text?: string;
+  className?: string;
+}
+
+const SocialShareButton: React.FC<SocialShareButtonProps> = ({ 
+  url = window.location.href, 
+  text = "Check this out!", 
+  className = "" 
+}) => {
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'WeParlay',
+          text: text,
+          url: url,
+        });
+      } catch (err) {
+        console.log('Error sharing:', err);
+      }
+    } else {
+      // Fallback for browsers that don't support Web Share API
+      const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+      window.open(shareUrl, '_blank');
+    }
+  };
+
+  return (
+    <Button
+      onClick={handleShare}
+      variant="outline"
+      size="sm"
+      className={`flex items-center gap-2 ${className}`}
+    >
+      <Share2 className="h-4 w-4" />
+      Share
+    </Button>
+  );
+};
+
+export default SocialShareButton;
