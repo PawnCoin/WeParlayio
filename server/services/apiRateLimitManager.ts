@@ -1,4 +1,3 @@
-
 // API Rate Limit Manager - Prevents running out of API calls
 import NodeCache from 'node-cache';
 
@@ -11,7 +10,11 @@ interface APILimits {
   };
 }
 
-class APIRateLimitManager {
+export class APIRateLimitManager {
+  private static instance: APIRateLimitManager;
+  private requestCounts: Map<string, number> = new Map();
+  private resetTimers: Map<string, NodeJS.Timeout> = new Map();
+  private pendingRequests: Map<string, Promise<any>> = new Map();
   private cache = new NodeCache({ stdTTL: 86400 }); // 24 hour cache
   private limits: APILimits = {};
 
@@ -69,11 +72,11 @@ class APIRateLimitManager {
 
     // Check if we're under limit
     const canMake = limit.currentCount < limit.dailyLimit;
-    
+
     if (!canMake) {
       console.warn(`🚨 API limit reached for ${apiName}. ${limit.currentCount}/${limit.dailyLimit} calls used.`);
     }
-    
+
     return canMake;
   }
 
@@ -81,7 +84,7 @@ class APIRateLimitManager {
     const limit = this.limits[apiName];
     if (limit) {
       limit.currentCount++;
-      
+
       // Cache the updated count
       this.cache.set(`api_count_${apiName}`, limit.currentCount);
     }
@@ -106,7 +109,7 @@ class APIRateLimitManager {
       if (await this.canMakeRequest(api)) {
         const remaining = await this.getRemainingCalls(api);
         const priority = this.limits[api]?.priority || 5;
-        
+
         availableAPIs.push({
           name: api,
           remaining,
@@ -123,14 +126,14 @@ class APIRateLimitManager {
 
     // Sort by score (best first)
     availableAPIs.sort((a, b) => b.score - a.score);
-    
+
     return availableAPIs[0].name;
   }
 
   // Emergency fallback when all APIs are exhausted
   async getEmergencyFallbackData(dataType: string): Promise<any> {
     console.log(`🆘 Emergency fallback activated for ${dataType}`);
-    
+
     const fallbackData = {
       'esports_matches': [
         {
@@ -162,16 +165,16 @@ class APIRateLimitManager {
   // Warning system when approaching limits
   async checkAPIHealth(): Promise<string[]> {
     const warnings = [];
-    
+
     for (const [apiName, limit] of Object.entries(this.limits)) {
       const remaining = limit.dailyLimit - limit.currentCount;
       const percentRemaining = (remaining / limit.dailyLimit) * 100;
-      
+
       if (percentRemaining < 10) {
         warnings.push(`${apiName}: Only ${remaining} calls remaining (${percentRemaining.toFixed(1)}%)`);
       }
     }
-    
+
     return warnings;
   }
 }

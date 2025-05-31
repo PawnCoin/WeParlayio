@@ -370,7 +370,7 @@ export default function AdminDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>Platform Settings</CardTitle>
-                <CardDescription>Configure platform-wide settings and preferences</CardDescription>
+                <CardDescription>Configure platform-wide settings and preferences</CardHeader>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
