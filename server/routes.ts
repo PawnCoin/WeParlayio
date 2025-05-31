@@ -472,6 +472,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
         notificationPhone,
         customMessage,
         status: 'pending',
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
+      });
+
+      console.log('Challenge created successfully:', challenge);
+
+      // Send response with challenge details
+      res.status(201).json({
+        success: true,
+        challengeUuid: challenge.challengeUuid,
+        message: 'Challenge created successfully',
+        challenge: {
+          id: challenge.id,
+          uuid: challenge.challengeUuid,
+          eventName: challenge.eventName,
+          amount: challenge.amount,
+          currency: challenge.currency,
+          isVirtual: challenge.isVirtual,
+          status: challenge.status,
+          expiresAt: challenge.expiresAt
+        }
+      });
+
+    } catch (error: any) {
+      console.error('Error creating betting challenge:', error);
+      res.status(500).json({ 
+        success: false,
+        message: error.message || 'Internal server error while creating challenge' 
+      });
+    }
+  });ssage,
+        status: 'pending',
         expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000) // 48 hours from now
       });
       

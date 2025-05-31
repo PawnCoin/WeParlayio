@@ -110,7 +110,7 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
     try {
       // Create real challenge in database
       const challengeData = {
-        eventId: values.eventId,
+        eventId: values.eventId ? parseInt(values.eventId) : null,
         eventName: values.challengeType === 'sports' ? 
           activeEvents.find(e => e.id === values.eventId)?.name || 'Sports Event' : 
           'Custom Bet',
@@ -118,11 +118,10 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
         currency: values.currencyType === 'real' ? 'USD' : 'WeParlay Cash',
         isVirtual: values.currencyType === 'virtual',
         pick: values.challengeType === 'sports' ? 'Team Selection' : values.customBet,
+        oppositePick: values.challengeType === 'sports' ? 'Opponent Team Selection' : 'Opposite of custom bet',
         customMessage: values.notes || '',
-        inviteMethod: values.contactMethod,
-        friendEmail: values.contactMethod === 'email' ? values.contactValue : '',
-        friendPhone: values.contactMethod === 'phone' ? values.contactValue : '',
-        friendUsername: values.contactMethod === 'username' ? values.contactValue : '',
+        notificationEmail: values.contactMethod === 'email' ? values.contactValue : null,
+        notificationPhone: values.contactMethod === 'phone' ? values.contactValue : null,
         expiresAt: new Date(values.expiryDate).toISOString()
       };
 
