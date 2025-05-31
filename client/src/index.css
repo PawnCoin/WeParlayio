@@ -120,7 +120,7 @@ html:not(.dark) .mobile-nav * {
   color: white !important;
 }
 
-/* Sidebar text - ensure high contrast in light mode */
+/* Sidebar text - ensure readable contrast in light mode */
 html:not(.dark) nav a,
 html:not(.dark) nav button,
 html:not(.dark) nav span,
@@ -129,15 +129,27 @@ html:not(.dark) .sidebar-content *,
 html:not(.dark) [role="navigation"] *,
 html:not(.dark) .navigation-item *,
 html:not(.dark) .nav-link * {
-  color: #1f2937 !important; /* Dark gray for excellent contrast */
+  color: #374151 !important; /* Medium gray for good readability */
 }
 
-/* Sidebar headings */
+/* Sidebar headings - make them more readable */
 html:not(.dark) .sidebar h2,
 html:not(.dark) .sidebar h3,
 html:not(.dark) .sidebar .font-semibold,
 html:not(.dark) .sidebar .text-lg {
-  color: #111827 !important; /* Very dark for headings */
+  color: #1f2937 !important; /* Dark but readable */
+}
+
+/* Navigation item text should be readable */
+html:not(.dark) .sidebar nav li,
+html:not(.dark) .sidebar nav li span,
+html:not(.dark) .sidebar nav li div {
+  color: #4b5563 !important; /* Readable gray */
+}
+
+/* Main navigation section title */
+html:not(.dark) .sidebar .text-xs.uppercase {
+  color: #6b7280 !important; /* Lighter gray for section titles */
 }
 
 /* Active/hover states in sidebar */
@@ -150,14 +162,14 @@ html:not(.dark) .sidebar .text-primary {
 /* Ensure icons and buttons in sidebar are visible */
 html:not(.dark) .sidebar svg,
 html:not(.dark) .sidebar .icon {
-  color: #374151 !important;
+  color: #6b7280 !important; /* Lighter gray for icons */
 }
 
 /* Badge and tag text in sidebar */
 html:not(.dark) .sidebar .badge,
 html:not(.dark) .sidebar .tag,
 html:not(.dark) .sidebar .label {
-  color: #1f2937 !important;
+  color: #374151 !important;
 }
 
 /* Business proposal modal - white text on colored backgrounds */
