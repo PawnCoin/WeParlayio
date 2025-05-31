@@ -84,6 +84,7 @@ import PageStatusChecker from './pages/PageStatusChecker';
 
 // Import admin components
 import AdminBypass from "@/pages/AdminBypass";
+import OwnerAccess from "@/pages/OwnerAccess";
 import LiveBettingEnhanced from "@/pages/BettingExperience";
 
 function Router() {
@@ -197,6 +198,7 @@ function Router() {
       <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin-bypass" component={AdminBypass} />
+      <Route path="/owner-access" component={OwnerAccess} />
 
       {/* Default route */}
       <Route path="/" component={Home} />
