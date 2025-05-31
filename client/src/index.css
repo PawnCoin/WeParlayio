@@ -100,6 +100,38 @@ html:not(.dark) .header-dark-bg div {
   color: white !important;
 }
 
+/* Business proposal modal - white text on colored backgrounds */
+html:not(.dark) .bg-gradient-to-r *,
+html:not(.dark) .bg-gradient-to-br *,
+html:not(.dark) .bg-gradient-to-bl *,
+html:not(.dark) .bg-gradient-to-tr *,
+html:not(.dark) .bg-gradient-to-tl *,
+html:not(.dark) .bg-gradient-to-b *,
+html:not(.dark) .bg-gradient-to-t *,
+html:not(.dark) .bg-purple-600 *,
+html:not(.dark) .bg-purple-700 *,
+html:not(.dark) .bg-indigo-600 *,
+html:not(.dark) .bg-indigo-700 *,
+html:not(.dark) .text-purple-100,
+html:not(.dark) .text-indigo-100,
+html:not(.dark) .text-white {
+  color: white !important;
+}
+
+/* Business proposal specific elements */
+html:not(.dark) [class*="business-proposal"] *,
+html:not(.dark) [class*="partner-benefits"] *,
+html:not(.dark) [class*="premium-showcase"] *,
+html:not(.dark) [class*="vip-tier"] * {
+  color: white !important;
+}
+
+/* Gradient backgrounds should have white text */
+html:not(.dark) [style*="background: linear-gradient"] *,
+html:not(.dark) [style*="background-image: linear-gradient"] * {
+  color: white !important;
+}
+
 /* Ensure high contrast for accessibility */
 .weparlay-professional {
   --text-primary: rgb(15 23 42); /* Very dark for max contrast */
