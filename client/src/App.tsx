@@ -121,6 +121,7 @@ function Router() {
 
       {/* Gaming & Esports */}
       <Route path="/gaming" component={UnifiedGaming} />
+      <Route path="/gaming-integration" component={GamingIntegration} />
       <Route path="/esports-hub" component={EsportsHub} />
       <Route path="/betting-challenges" component={BettingChallenges} />
        {/* Add /betting-challenge route for evaluation */}

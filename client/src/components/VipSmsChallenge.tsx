@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -189,12 +189,12 @@ const VipSmsChallenge: React.FC<VipSmsChallengeProps> = ({
           </CardTitle>
           {isVip && <Badge className="bg-yellow-500 text-white">VIP</Badge>}
         </div>
-        <CardDescription>
+        <div className="text-sm text-muted-foreground">
           {isVip 
             ? "Send instant SMS + email challenges to your friends"
             : "Send email challenges (upgrade to VIP for SMS notifications)"
           }
-        </CardDescription>
+        </div>
       </CardHeader>
 
       <CardContent className="space-y-4">
