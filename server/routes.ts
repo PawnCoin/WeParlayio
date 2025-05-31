@@ -530,10 +530,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const metrics = crashRecoveryService.getMetrics();
       const healthStatus = await crashRecoveryService.getHealthStatus();
       
+      // Add memory usage info
+      const memUsage = process.memoryUsage();
+      const memUsagePercent = (memUsage.heapUsed / memUsage.heapTotal) * 100;
+      
       res.json({
         success: true,
         metrics,
         healthStatus,
+        memoryUsage: {
+          used: memUsage.heapUsed,
+          total: memUsage.heapTotal,
+          percentage: memUsagePercent,
+          external: memUsage.external,
+          rss: memUsage.rss
+        },
         timestamp: new Date().toISOString()
       });
     } catch (error) {

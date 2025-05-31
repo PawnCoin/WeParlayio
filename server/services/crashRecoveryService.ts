@@ -76,6 +76,16 @@ export class CrashRecoveryService {
         const memUsage = process.memoryUsage();
         const memUsagePercent = (memUsage.heapUsed / memUsage.heapTotal) * 100;
         
+        if (memUsagePercent > 98) {
+          console.error(`EMERGENCY: Memory usage at ${memUsagePercent.toFixed(2)}% - initiating emergency restart`);
+          // Emergency restart to prevent complete crash
+          setTimeout(() => {
+            console.log('🚨 Emergency restart initiated due to critical memory usage');
+            process.exit(1);
+          }, 2000);
+          return false;
+        }
+        
         if (memUsagePercent > 95) {
           console.warn(`Critical memory usage detected: ${memUsagePercent.toFixed(2)}%`);
           return false;
@@ -206,6 +216,19 @@ export class CrashRecoveryService {
         if (global.gc) {
           global.gc();
           console.log('✅ Garbage collection completed');
+        }
+        
+        // Clear any cached data that might be consuming memory
+        try {
+          // Clear require cache for non-essential modules
+          Object.keys(require.cache).forEach(key => {
+            if (key.includes('node_modules') && !key.includes('express')) {
+              delete require.cache[key];
+            }
+          });
+          console.log('✅ Module cache cleaned');
+        } catch (error) {
+          console.error('Memory cleanup error:', error);
         }
         break;
 

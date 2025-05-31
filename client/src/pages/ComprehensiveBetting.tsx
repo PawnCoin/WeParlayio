@@ -48,23 +48,23 @@ export default function ComprehensiveBetting() {
   // Fetch real sports data using working APIs only
   const { data: sports, refetch: refetchSports } = useQuery({
     queryKey: ["/api/sports"],
-    refetchInterval: 300000,
+    refetchInterval: 600000, // Reduced from 5 minutes to 10 minutes
   });
 
   const { data: oddsData, refetch: refetchOdds } = useQuery({
     queryKey: ["/api/odds"],
-    refetchInterval: 30000,
+    refetchInterval: 120000, // Reduced from 30 seconds to 2 minutes
   });
 
   // Fetch live events data
   const { data: liveEvents, refetch: refetchLive } = useQuery({
     queryKey: ["/api/events/live"],
-    refetchInterval: 5000,
+    refetchInterval: 60000, // Reduced from 5 seconds to 1 minute
   });
 
   const { data: upcomingEvents, refetch: refetchUpcoming } = useQuery({
     queryKey: ["/api/events/upcoming"],
-    refetchInterval: 30000,
+    refetchInterval: 300000, // Reduced from 30 seconds to 5 minutes
   });
 
   // Filter sports based on search
