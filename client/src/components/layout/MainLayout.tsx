@@ -119,8 +119,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   </div>
                 </Link>
               ))}
-
-              
             </div>
 
             {/* Mobile Navigation */}

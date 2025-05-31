@@ -6,11 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Users, Trophy, Share2, MessageSquare, Globe, Activity, UserPlus, Heart } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import BettingChallenge from '@/components/social/BettingChallenge';
-import SocialShareButton from '@/components/SocialShareButton';
+import SocialShareOptions from '@/components/SocialShareButton';
 
 const SocialBetting: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("challenges");
-  
+
   // Mock user data - this would come from auth context in a real app
   const currentUser = {
     id: 'u1',
@@ -20,7 +20,7 @@ const SocialBetting: React.FC = () => {
     groups: 3,
     followers: 24
   };
-  
+
   // Mock feed data
   const socialFeed = [
     {
@@ -54,7 +54,7 @@ const SocialBetting: React.FC = () => {
       comments: 15
     }
   ];
-  
+
   // Mock friend activity
   const friendActivity = [
     {
@@ -79,7 +79,7 @@ const SocialBetting: React.FC = () => {
       timestamp: '4 hours ago'
     }
   ];
-  
+
   // Mock groups
   const bettingGroups = [
     {
@@ -109,7 +109,7 @@ const SocialBetting: React.FC = () => {
     <div className="p-4 container max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold mb-1 text-foreground">Social Betting</h1>
       <p className="text-muted-foreground mb-4">Connect, challenge, and share with friends</p>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main content area */}
         <div className="lg:col-span-2">
@@ -128,7 +128,7 @@ const SocialBetting: React.FC = () => {
                 Groups
               </TabsTrigger>
             </TabsList>
-            
+
             {/* Challenges Tab */}
             <TabsContent value="challenges" className="mt-4">
               <BettingChallenge 
@@ -137,7 +137,7 @@ const SocialBetting: React.FC = () => {
                 userAvatar={currentUser.avatar}
               />
             </TabsContent>
-            
+
             {/* Feed Tab */}
             <TabsContent value="feed" className="mt-4 space-y-4">
               <Card>
@@ -165,7 +165,7 @@ const SocialBetting: React.FC = () => {
                           {post.type === 'prediction' && 'Prediction'}
                         </Badge>
                       </div>
-                      
+
                       <div className="mt-3">
                         <p className="text-sm">{post.content}</p>
                         <div className="flex justify-between items-center mt-3">
@@ -179,7 +179,7 @@ const SocialBetting: React.FC = () => {
                               {post.comments}
                             </Button>
                           </div>
-                          <SocialShareButton
+                          <SocialShareOptions
                             type={post.type === 'win' ? 'win' : post.type === 'share' ? 'challenge' : 'prediction'}
                             content={post.content}
                             user={{ name: post.user.name }}
@@ -191,7 +191,7 @@ const SocialBetting: React.FC = () => {
                 </CardContent>
               </Card>
             </TabsContent>
-            
+
             {/* Groups Tab */}
             <TabsContent value="groups" className="mt-4">
               <Card>
@@ -232,7 +232,7 @@ const SocialBetting: React.FC = () => {
             </TabsContent>
           </Tabs>
         </div>
-        
+
         {/* Sidebar */}
         <div className="space-y-6">
           {/* User profile card */}
@@ -262,7 +262,7 @@ const SocialBetting: React.FC = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           {/* Friend activity */}
           <Card>
             <CardHeader className="pb-3">
@@ -286,7 +286,7 @@ const SocialBetting: React.FC = () => {
               ))}
             </CardContent>
           </Card>
-          
+
           {/* Find friends */}
           <Card>
             <CardHeader className="pb-3">
