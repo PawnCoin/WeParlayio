@@ -50,8 +50,8 @@ export default function SocialMediaDashboard() {
   const [showApiKeys, setShowApiKeys] = useState(false);
   const [globalSimulationMode, setGlobalSimulationMode] = useState(true);
 
-  // Admin check - only allow access to admins
-  const isAdmin = user?.isAdmin || user?.tier === 'admin' || user?.email === 'support@weparlay.io';
+  // Admin check - allow access to admins and site owner
+  const isAdmin = user?.isAdmin || user?.tier === 'admin' || user?.email === 'support@weparlay.io' || user?.role === 'admin';
 
   // API Key states for real posting
   const [apiKeys, setApiKeys] = useState({
@@ -64,11 +64,16 @@ export default function SocialMediaDashboard() {
   });
 
   // Fetch bot status
-  const { data: botStatus, isLoading } = useQuery({
+  const { data: botStatus, isLoading, error } = useQuery({
     queryKey: ['/api/marketing/bot-status'],
     refetchInterval: 30000,
-    enabled: isAdmin
+    enabled: isAdmin,
+    retry: 3
   });
+
+  // Handle bot status data
+  const botsData = botStatus?.bots || [];
+  const totalBots = botStatus?.totalBots || 0;
 
   // Activate all bots
   const activateBots = useMutation({

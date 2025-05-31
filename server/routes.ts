@@ -4245,6 +4245,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Marketing Bot Status Endpoint
+  app.get('/api/marketing/bot-status', async (req, res) => {
+    try {
+      const { liveMarketingBots } = await import('./services/liveMarketingBots');
+      const botStatus = liveMarketingBots.getBotStatus();
+      
+      res.json({
+        success: true,
+        totalBots: botStatus.length,
+        bots: botStatus.map(bot => ({
+          name: bot.name,
+          personality: bot.personality,
+          platforms: bot.platforms,
+          profileImage: bot.profileImage,
+          bio: bot.bio,
+          postingInterval: bot.postingInterval,
+          lastPost: bot.lastPost,
+          nextPost: bot.nextPost,
+          isActive: true
+        }))
+      });
+    } catch (error) {
+      console.error('Error getting bot status:', error);
+      res.status(500).json({ success: false, message: 'Failed to get bot status' });
+    }
+  });
+
+  // Trigger manual bot post
+  app.post('/api/marketing/trigger-post', async (req, res) => {
+    try {
+      const { botName } = req.body;
+      const { liveMarketingBots } = await import('./services/liveMarketingBots');
+      
+      const results = await liveMarketingBots.triggerLivePost(botName);
+      
+      res.json({
+        success: true,
+        message: 'Bot post triggered successfully',
+        results
+      });
+    } catch (error) {
+      console.error('Error triggering bot post:', error);
+      res.status(500).json({ success: false, message: 'Failed to trigger bot post' });
+    }
+  });
+
+  // Initialize bot systems manually
+  app.post('/api/admin/initialize-bots', async (req, res) => {
+    try {
+      console.log('🤖 Manual bot initialization requested...');
+      
+      const { botUserService } = await import('./services/botUserService');
+      const { liveMarketingBots } = await import('./services/liveMarketingBots');
+      
+      // Create bot users
+      await botUserService.populatePlatformData();
+      
+      // Start marketing bots
+      await liveMarketingBots.startLivePosting();
+      
+      res.json({
+        success: true,
+        message: 'Bot systems initialized successfully',
+        timestamp: new Date()
+      });
+    } catch (error) {
+      console.error('Error initializing bots:', error);
+      res.status(500).json({ success: false, message: 'Failed to initialize bots' });
+    }
+  });
+
   // Social Media Bot Integration - Auto-post community highlights (OWNER ONLY)
   app.post('/api/community/auto-share', async (req, res) => {
     try {

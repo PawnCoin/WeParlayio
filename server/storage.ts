@@ -842,6 +842,7 @@ export class MemStorage implements IStorage {
   }
 
   async getFantasyTeam(id: number): Promise<FantasyTeam | undefined> {
+    ```
     return this.fantasyTeams.get(id);
   }
 

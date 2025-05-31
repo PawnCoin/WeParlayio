@@ -18,6 +18,7 @@ adminRouter.get('/users', isAuthenticated, isAdmin, async (req: Request, res: Re
     // Filter out sensitive information
     const filteredUsers = users.map(user => ({
       id: user.id,
+      username: user.username || user.email?.split('@')[0] || 'Anonymous',
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
@@ -25,9 +26,11 @@ adminRouter.get('/users', isAuthenticated, isAdmin, async (req: Request, res: Re
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       balance: user.balance || 0,
+      weparlayCash: user.weparlayCash || 0,
+      tier: user.subscriptionTier || 'bronze',
       status: user.status || 'active',
-      betsCount: user.betsCount || 0,
-      winsCount: user.winsCount || 0,
+      totalBets: user.totalBets || 0,
+      totalWins: user.wins || 0,
     }));
 
     res.json(filteredUsers);
