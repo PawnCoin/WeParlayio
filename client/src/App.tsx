@@ -66,6 +66,7 @@ import Odds from "@/pages/Odds";
 import Parlays from "@/pages/Parlays";
 import BettingAcademy from "@/pages/BettingAcademy";
 import LiveHeatmap from "@/pages/LiveHeatmap";
+import LiveBettingEnhanced from "@/pages/LiveBettingEnhanced";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ThemeColorManager from "@/pages/ThemeColorManager";
 import SignUpEnhanced from "@/pages/SignUpEnhanced";
@@ -100,6 +101,7 @@ function Router() {
       <Route path="/comprehensive-betting" component={ComprehensiveBetting} />
       <Route path="/odds" component={Odds} />
       <Route path="/live-betting" component={BettingExperience} />
+      <Route path="/live-betting-enhanced" component={LiveBettingEnhanced} />
       <Route path="/live-heatmap" component={LiveHeatmap} />
       <Route path="/live-streaming" component={LiveSportsStreaming} />
       <Route path="/my-bets" component={MyBets} />
