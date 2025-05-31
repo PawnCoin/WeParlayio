@@ -45,26 +45,38 @@ export default function ComprehensiveBetting() {
   const { addToBetSlip } = useBetting();
   const { user, isAuthenticated } = useAuth();
 
-  // Fetch real sports data using working APIs only
-  const { data: sports, refetch: refetchSports } = useQuery({
+  // Fetch real sports data using working APIs only with error handling
+  const { data: sports, refetch: refetchSports, error: sportsError } = useQuery({
     queryKey: ["/api/sports"],
     refetchInterval: 300000,
+    retry: 3,
+    retryDelay: 1000,
+    onError: (error) => console.log('Sports API error (handled):', error),
   });
 
-  const { data: oddsData, refetch: refetchOdds } = useQuery({
+  const { data: oddsData, refetch: refetchOdds, error: oddsError } = useQuery({
     queryKey: ["/api/odds"],
     refetchInterval: 30000,
+    retry: 2,
+    retryDelay: 2000,
+    onError: (error) => console.log('Odds API error (handled):', error),
   });
 
-  // Fetch live events data
-  const { data: liveEvents, refetch: refetchLive } = useQuery({
+  // Fetch live events data with error handling
+  const { data: liveEvents, refetch: refetchLive, error: liveError } = useQuery({
     queryKey: ["/api/events/live"],
     refetchInterval: 5000,
+    retry: 1,
+    retryDelay: 3000,
+    onError: (error) => console.log('Live events error (handled):', error),
   });
 
-  const { data: upcomingEvents, refetch: refetchUpcoming } = useQuery({
+  const { data: upcomingEvents, refetch: refetchUpcoming, error: upcomingError } = useQuery({
     queryKey: ["/api/events/upcoming"],
     refetchInterval: 30000,
+    retry: 2,
+    retryDelay: 2000,
+    onError: (error) => console.log('Upcoming events error (handled):', error),
   });
 
   // Filter sports based on search
