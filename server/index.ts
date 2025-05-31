@@ -104,9 +104,18 @@ app.use((req, res, next) => {
 
   const httpServer = server.listen(port, "0.0.0.0", () => {
     log(`🚀 WeParlay server running on HTTP at 0.0.0.0:${port}`);
-    
-    // Start crash recovery monitoring after server is running
+    console.log('🔧 Starting automated crash recovery monitoring...');
     crashRecoveryService.startMonitoring();
+
+    // Initialize bot users for platform demo data
+    try {
+      const { SimpleBotService } = await import('./services/simpleBotService');
+      const botService = new SimpleBotService();
+      await botService.createBasicBotUsers();
+      console.log('✅ Bot users initialized for platform demo');
+    } catch (error) {
+      console.error('⚠️ Failed to initialize bot users:', error);
+    }
     log(`🔧 Automated crash recovery system activated`);
   });
 
