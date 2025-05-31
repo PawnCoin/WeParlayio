@@ -25,6 +25,7 @@ const navigationItems = [
   { path: '/fantasy', label: 'Fantasy', icon: Medal },
   { path: '/gaming', label: 'Gaming', icon: Gamepad2 },
   { path: '/social', label: 'Social', icon: Users },
+  { path: '/social-betting', label: 'Social Betting', icon: Users },
   { path: '/betting-challenges', label: 'Challenges', icon: DollarSign },
   { path: '/admin', label: 'Admin', icon: Settings }
 ];
