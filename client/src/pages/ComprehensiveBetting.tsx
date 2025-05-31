@@ -45,26 +45,50 @@ export default function ComprehensiveBetting() {
   const { addToBetSlip } = useBetting();
   const { user, isAuthenticated } = useAuth();
 
+  // Memory-aware API polling with adaptive intervals
+  const [pollingEnabled, setPollingEnabled] = useState(true);
+  
+  // Check browser memory and adjust polling
+  useEffect(() => {
+    const checkMemory = () => {
+      if ('memory' in performance) {
+        const memInfo = (performance as any).memory;
+        const memUsagePercent = (memInfo.usedJSHeapSize / memInfo.jsHeapSizeLimit) * 100;
+        
+        if (memUsagePercent > 85) {
+          console.warn(`🚫 Client polling disabled: ${memUsagePercent.toFixed(2)}% memory usage`);
+          setPollingEnabled(false);
+        } else if (memUsagePercent < 70 && !pollingEnabled) {
+          console.log(`✅ Client polling re-enabled: ${memUsagePercent.toFixed(2)}% memory usage`);
+          setPollingEnabled(true);
+        }
+      }
+    };
+    
+    const memoryInterval = setInterval(checkMemory, 15000);
+    return () => clearInterval(memoryInterval);
+  }, [pollingEnabled]);
+
   // Fetch real sports data using working APIs only
   const { data: sports, refetch: refetchSports } = useQuery({
     queryKey: ["/api/sports"],
-    refetchInterval: 600000, // Reduced from 5 minutes to 10 minutes
+    refetchInterval: pollingEnabled ? 600000 : false, // 10 minutes or disabled
   });
 
   const { data: oddsData, refetch: refetchOdds } = useQuery({
     queryKey: ["/api/odds"],
-    refetchInterval: 120000, // Reduced from 30 seconds to 2 minutes
+    refetchInterval: pollingEnabled ? 300000 : false, // 5 minutes or disabled
   });
 
   // Fetch live events data
   const { data: liveEvents, refetch: refetchLive } = useQuery({
     queryKey: ["/api/events/live"],
-    refetchInterval: 60000, // Reduced from 5 seconds to 1 minute
+    refetchInterval: pollingEnabled ? 120000 : false, // 2 minutes or disabled
   });
 
   const { data: upcomingEvents, refetch: refetchUpcoming } = useQuery({
     queryKey: ["/api/events/upcoming"],
-    refetchInterval: 300000, // Reduced from 30 seconds to 5 minutes
+    refetchInterval: pollingEnabled ? 600000 : false, // 10 minutes or disabled
   });
 
   // Filter sports based on search

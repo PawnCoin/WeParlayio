@@ -105,6 +105,34 @@ app.use((req, res, next) => {
   const httpServer = server.listen(port, "0.0.0.0", () => {
     log(`🚀 WeParlay server running on HTTP at 0.0.0.0:${port}`);
     console.log('🔧 Starting automated crash recovery monitoring...');
+
+    // AGGRESSIVE MEMORY MANAGEMENT SETUP
+    if (global.gc) {
+      // Run garbage collection every 30 seconds
+      setInterval(() => {
+        const before = process.memoryUsage().heapUsed;
+        global.gc();
+        const after = process.memoryUsage().heapUsed;
+        const freed = (before - after) / 1024 / 1024;
+        if (freed > 1) {
+          console.log(`🧹 GC freed ${freed.toFixed(2)} MB`);
+        }
+      }, 30000);
+
+      console.log('✅ Automatic garbage collection enabled');
+    } else {
+      console.warn('⚠️ Garbage collection not available - consider running with --expose-gc');
+    }
+
+    // Set aggressive memory limits
+    process.on('warning', (warning) => {
+      if (warning.name === 'MaxListenersExceededWarning') {
+        console.warn('⚠️ Too many listeners - cleaning up');
+        process.removeAllListeners();
+      }
+    });
+
+    // Start crash recovery monitoring
     crashRecoveryService.startMonitoring();
 
     // Initialize bot users for platform demo data

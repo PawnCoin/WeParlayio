@@ -2908,9 +2908,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get unified odds from all API sources (RapidAPI + SportsGameOdds + The Odds API)
+  // Get unified odds from all API sources with memory throttling
   app.get('/api/odds/unified', async (req, res) => {
     try {
+      // Memory check before expensive API calls
+      const memUsage = process.memoryUsage();
+      const memUsagePercent = (memUsage.heapUsed / memUsage.heapTotal) * 100;
+      
+      if (memUsagePercent > 88) {
+        console.warn(`🚫 Odds API throttled: ${memUsagePercent.toFixed(2)}% memory usage`);
+        return res.json({ 
+          odds: [], 
+          message: 'Odds API temporarily throttled',
+          retry_after: 30
+        });
+      }
+      
       const { sport } = req.query;
       const unifiedOdds = await unifiedSportsApi.getUnifiedOdds(sport as string);
       res.json(unifiedOdds);
@@ -2920,9 +2933,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get live events from all API sources
+  // Get live events from all API sources with memory throttling
   app.get('/api/events/unified-live', async (req, res) => {
     try {
+      // Check memory before expensive operations
+      const memUsage = process.memoryUsage();
+      const memUsagePercent = (memUsage.heapUsed / memUsage.heapTotal) * 100;
+      
+      if (memUsagePercent > 90) {
+        console.warn(`🚫 API throttled due to high memory: ${memUsagePercent.toFixed(2)}%`);
+        return res.json({ 
+          live_events: [], 
+          message: 'API temporarily throttled due to high memory usage',
+          memory_usage: memUsagePercent.toFixed(2) + '%'
+        });
+      }
+      
       const unifiedLiveEvents = await unifiedSportsApi.getUnifiedLiveEvents();
       res.json(unifiedLiveEvents);
     } catch (error) {

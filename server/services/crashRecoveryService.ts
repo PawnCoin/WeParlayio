@@ -76,24 +76,54 @@ export class CrashRecoveryService {
         const memUsage = process.memoryUsage();
         const memUsagePercent = (memUsage.heapUsed / memUsage.heapTotal) * 100;
         
-        if (memUsagePercent > 98) {
-          console.error(`EMERGENCY: Memory usage at ${memUsagePercent.toFixed(2)}% - initiating emergency restart`);
-          // Emergency restart to prevent complete crash
-          setTimeout(() => {
-            console.log('🚨 Emergency restart initiated due to critical memory usage');
-            process.exit(1);
-          }, 2000);
-          return false;
-        }
-        
+        // AGGRESSIVE MEMORY MANAGEMENT
         if (memUsagePercent > 95) {
-          console.warn(`Critical memory usage detected: ${memUsagePercent.toFixed(2)}%`);
+          console.error(`🚨 CRITICAL MEMORY: ${memUsagePercent.toFixed(2)}% - EMERGENCY ACTIONS`);
+          
+          // Immediate aggressive cleanup
+          if (global.gc) {
+            global.gc();
+            global.gc(); // Force twice
+          }
+          
+          // Clear all caches and intervals
+          try {
+            // Kill all non-essential intervals
+            const highestTimeoutId = setTimeout(() => {}, 0);
+            for (let i = 1; i < highestTimeoutId; i++) {
+              clearTimeout(i);
+              clearInterval(i);
+            }
+            
+            // Clear require cache for non-core modules
+            Object.keys(require.cache).forEach(key => {
+              if (!key.includes('express') && !key.includes('db') && !key.includes('storage')) {
+                delete require.cache[key];
+              }
+            });
+            
+            console.log('🧹 Emergency cleanup completed');
+          } catch (error) {
+            console.error('Emergency cleanup error:', error);
+          }
+          
+          // If still over 97%, emergency restart
+          const postCleanupUsage = process.memoryUsage();
+          const postCleanupPercent = (postCleanupUsage.heapUsed / postCleanupUsage.heapTotal) * 100;
+          
+          if (postCleanupPercent > 97) {
+            console.error(`💀 MEMORY STILL CRITICAL: ${postCleanupPercent.toFixed(2)}% - RESTARTING NOW`);
+            setTimeout(() => {
+              process.exit(1);
+            }, 1000);
+            return false;
+          }
+          
           return false;
         }
         
         if (memUsagePercent > 85) {
-          console.log(`Memory usage warning: ${memUsagePercent.toFixed(2)}%`);
-          // Force garbage collection if available to prevent critical levels
+          console.warn(`⚠️ High memory usage: ${memUsagePercent.toFixed(2)}% - preventive cleanup`);
           if (global.gc) {
             global.gc();
           }
