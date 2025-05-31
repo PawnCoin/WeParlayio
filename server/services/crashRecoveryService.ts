@@ -76,10 +76,19 @@ export class CrashRecoveryService {
         const memUsage = process.memoryUsage();
         const memUsagePercent = (memUsage.heapUsed / memUsage.heapTotal) * 100;
         
-        if (memUsagePercent > 90) {
-          console.warn(`High memory usage detected: ${memUsagePercent.toFixed(2)}%`);
+        if (memUsagePercent > 95) {
+          console.warn(`Critical memory usage detected: ${memUsagePercent.toFixed(2)}%`);
           return false;
         }
+        
+        if (memUsagePercent > 85) {
+          console.log(`Memory usage warning: ${memUsagePercent.toFixed(2)}%`);
+          // Force garbage collection if available to prevent critical levels
+          if (global.gc) {
+            global.gc();
+          }
+        }
+        
         return true;
       }
     });

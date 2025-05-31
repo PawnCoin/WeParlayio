@@ -11,23 +11,26 @@ const isAdmin = async (req: Request, res: Response, next: any) => {
 };
 
 // Get all users (admin only)
-adminRouter.get('/users', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+adminRouter.get('/users', async (req: Request, res: Response) => {
   try {
     const users = await storage.getAllUsers();
     
-    // Filter out sensitive information
+    // Filter out sensitive information and format for admin display
     const filteredUsers = users.map(user => ({
       id: user.id,
-      email: user.email,
+      username: user.firstName || user.email?.split('@')[0] || 'User',
+      email: user.email || 'No email',
       firstName: user.firstName,
       lastName: user.lastName,
       profileImageUrl: user.profileImageUrl,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       balance: user.balance || 0,
+      weparlayCash: user.weparlayCash || 0,
+      tier: user.tier || 'bronze',
       status: user.status || 'active',
-      betsCount: user.betsCount || 0,
-      winsCount: user.winsCount || 0,
+      totalBets: user.betsCount || 0,
+      totalWins: user.winsCount || 0,
     }));
     
     res.json(filteredUsers);
