@@ -14,33 +14,26 @@ import { Label } from '@/components/ui/label';
 const TeamThemeSelector: React.FC = () => {
   const { selectedTeam, setSelectedTeam, availableTeams } = useTeamTheme();
 
-  // Define team lists for each league
-  const nbaTeams = [
-    'Boston Celtics', 'Los Angeles Lakers', 'Golden State Warriors', 
-    'Miami Heat', 'Chicago Bulls', 'Brooklyn Nets', 'Milwaukee Bucks', 
-    'New York Knicks', 'Philadelphia 76ers', 'Dallas Mavericks'
-  ];
+  // Group teams by leagues
+  const nbaTeams = availableTeams.filter(team => 
+    ['Lakers', 'Warriors', 'Celtics', 'Heat', 'Bulls', 'Bucks', 'Nets', 'Knicks'].includes(team)
+  );
   
-  const nflTeams = [
-    'Kansas City Chiefs', 'Dallas Cowboys', 'New England Patriots',
-    'Green Bay Packers', 'Philadelphia Eagles', 'Pittsburgh Steelers',
-    'San Francisco 49ers', 'Buffalo Bills'
-  ];
+  const nflTeams = availableTeams.filter(team => 
+    ['Chiefs', 'Eagles', 'Cowboys', 'Patriots', 'Packers', 'Steelers'].includes(team)
+  );
   
-  const mlbTeams = [
-    'New York Yankees', 'Los Angeles Dodgers', 'Boston Red Sox',
-    'Chicago Cubs', 'San Francisco Giants', 'Houston Astros'
-  ];
+  const mlbTeams = availableTeams.filter(team => 
+    ['Yankees', 'Dodgers', 'Red Sox', 'Cubs', 'Giants'].includes(team)
+  );
   
-  const nhlTeams = [
-    'Toronto Maple Leafs', 'Montreal Canadiens', 'Boston Bruins',
-    'Chicago Blackhawks', 'New York Rangers', 'Vegas Golden Knights'
-  ];
+  const nhlTeams = availableTeams.filter(team => 
+    ['Maple Leafs', 'Canadiens', 'Bruins', 'Blackhawks', 'Rangers'].includes(team)
+  );
   
-  const soccerTeams = [
-    'Barcelona', 'Real Madrid', 'Manchester United', 
-    'Liverpool', 'Chelsea', 'Arsenal'
-  ];
+  const soccerTeams = availableTeams.filter(team => 
+    ['Barcelona', 'Real Madrid', 'Manchester United', 'Liverpool', 'Chelsea'].includes(team)
+  );
   
   const otherTeams = availableTeams.filter(team => 
     team === 'default'
@@ -72,35 +65,35 @@ const TeamThemeSelector: React.FC = () => {
             </SelectGroup>
             
             <SelectGroup>
-              <SelectLabel>NBA Teams</SelectLabel>
+              <SelectLabel>NBA</SelectLabel>
               {nbaTeams.map(team => (
                 <SelectItem key={team} value={team}>{team}</SelectItem>
               ))}
             </SelectGroup>
             
             <SelectGroup>
-              <SelectLabel>NFL Teams</SelectLabel>
+              <SelectLabel>NFL</SelectLabel>
               {nflTeams.map(team => (
                 <SelectItem key={team} value={team}>{team}</SelectItem>
               ))}
             </SelectGroup>
             
             <SelectGroup>
-              <SelectLabel>MLB Teams</SelectLabel>
+              <SelectLabel>MLB</SelectLabel>
               {mlbTeams.map(team => (
                 <SelectItem key={team} value={team}>{team}</SelectItem>
               ))}
             </SelectGroup>
             
             <SelectGroup>
-              <SelectLabel>NHL Teams</SelectLabel>
+              <SelectLabel>NHL</SelectLabel>
               {nhlTeams.map(team => (
                 <SelectItem key={team} value={team}>{team}</SelectItem>
               ))}
             </SelectGroup>
             
             <SelectGroup>
-              <SelectLabel>Soccer Teams</SelectLabel>
+              <SelectLabel>Soccer</SelectLabel>
               {soccerTeams.map(team => (
                 <SelectItem key={team} value={team}>{team}</SelectItem>
               ))}

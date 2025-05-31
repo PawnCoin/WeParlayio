@@ -97,54 +97,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             previousOdds: (event.bookmakers?.[0]?.markets?.[0]?.outcomes?.[0]?.price || (1.85 + index * 0.05)) - 0.05,
             timestamp: new Date().toISOString(),
             eventId: event.id,
-
-
-  // EMERGENCY MEMORY CHECK MIDDLEWARE - BLOCK ALL REQUESTS IF MEMORY TOO HIGH
-  app.use((req, res, next) => {
-    if (req.path.startsWith('/api/') && req.path !== '/api/system/memory-status') {
-      const memUsage = process.memoryUsage();
-      const memUsagePercent = (memUsage.heapUsed / memUsage.heapTotal) * 100;
-      
-      if (memUsagePercent > 75) {
-        console.warn(`🚫 API BLOCKED: ${req.path} - Memory at ${memUsagePercent.toFixed(2)}%`);
-        return res.status(503).json({
-          error: 'Service temporarily unavailable due to high memory usage',
-          memory_percent: memUsagePercent.toFixed(2),
-          message: 'Please try again in a few moments'
-        });
-      }
-    }
-    next();
-  });
-
-  // REAL-TIME MEMORY MONITORING - Check server health
-  app.get('/api/system/memory-status', async (req, res) => {
-    try {
-      const memUsage = process.memoryUsage();
-      const memUsagePercent = (memUsage.heapUsed / memUsage.heapTotal) * 100;
-      
-      const status = {
-        memory: {
-          used: Math.round(memUsage.heapUsed / 1024 / 1024),
-          total: Math.round(memUsage.heapTotal / 1024 / 1024),
-          percentage: parseFloat(memUsagePercent.toFixed(2)),
-          external: Math.round(memUsage.external / 1024 / 1024),
-          rss: Math.round(memUsage.rss / 1024 / 1024)
-        },
-        status: memUsagePercent > 75 ? 'CRITICAL' : memUsagePercent > 65 ? 'WARNING' : 'HEALTHY',
-        uptime: Math.round(process.uptime()),
-        timestamp: new Date().toISOString(),
-        crash_risk: memUsagePercent > 70 ? 'HIGH' : memUsagePercent > 60 ? 'MEDIUM' : 'LOW',
-        protection_level: 'MAXIMUM - NO CRASHES ALLOWED'
-      };
-      
-      res.json(status);
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get memory status' });
-    }
-  });
-
-
             bookmaker: event.bookmakers?.[0]?.title || 'Free API'
           }));
           tickerOdds.push(...formattedOdds);
@@ -520,34 +472,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         notificationPhone,
         customMessage,
         status: 'pending',
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
+        expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000) // 48 hours from now
       });
-
-      console.log('Challenge created successfully:', challenge);
-
-      // Send response with challenge details
-      res.status(201).json({
-        success: true,
-        challengeUuid: challenge.challengeUuid,
-        message: 'Challenge created successfully',
-        challenge: {
-          id: challenge.id,
-          uuid: challenge.challengeUuid,
-          eventName: challenge.eventName,
-          amount: challenge.amount,
-          currency: challenge.currency,
-          isVirtual: challenge.isVirtual,
-          status: challenge.status,
-          expiresAt: challenge.expiresAt
-        }
+      
+      // If recipient email/phone was provided, send notification
+      if (notificationEmail || notificationPhone) {
+        // Import the notification service dynamically
+        const { notificationService } = await import('./services/notificationService');
+        
+        await notificationService.sendBettingChallenge(
+          challenge.id.toString(),
+          userId,
+          undefined,
+          notificationEmail,
+          notificationPhone
+        );
+      }
+      
+      res.status(201).json({ 
+        message: "Challenge created successfully", 
+        challenge,
+        challengeUrl: `${req.protocol}://${req.get('host')}/challenges/${challenge.challengeUuid}`
       });
-
-    } catch (error: any) {
-      console.error('Error creating betting challenge:', error);
-      res.status(500).json({ 
-        success: false,
-        message: error.message || 'Internal server error while creating challenge' 
-      });
+    } catch (error) {
+      console.error("Error creating betting challenge:", error);
+      res.status(500).json({ message: "Failed to create betting challenge" });
     }
   });
   
@@ -568,56 +517,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching betting challenges:", error);
       res.status(500).json({ message: "Failed to fetch betting challenges" });
-    }
-  });
-
-  // Crash Recovery System Endpoints
-  app.get('/api/system/crash-recovery/status', async (req, res) => {
-    try {
-      const { crashRecoveryService } = await import('./services/crashRecoveryService');
-      const metrics = crashRecoveryService.getMetrics();
-      const healthStatus = await crashRecoveryService.getHealthStatus();
-      
-      // Add memory usage info
-      const memUsage = process.memoryUsage();
-      const memUsagePercent = (memUsage.heapUsed / memUsage.heapTotal) * 100;
-      
-      res.json({
-        success: true,
-        metrics,
-        healthStatus,
-        memoryUsage: {
-          used: memUsage.heapUsed,
-          total: memUsage.heapTotal,
-          percentage: memUsagePercent,
-          external: memUsage.external,
-          rss: memUsage.rss
-        },
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error('Error fetching crash recovery status:', error);
-      res.status(500).json({ message: 'Failed to fetch crash recovery status' });
-    }
-  });
-
-  app.post('/api/system/crash-recovery/restart', async (req, res) => {
-    try {
-      const { crashRecoveryService } = await import('./services/crashRecoveryService');
-      crashRecoveryService.stopMonitoring();
-      
-      // Small delay to ensure cleanup
-      setTimeout(() => {
-        crashRecoveryService.startMonitoring();
-      }, 1000);
-      
-      res.json({
-        success: true,
-        message: 'Crash recovery system restarted successfully'
-      });
-    } catch (error) {
-      console.error('Error restarting crash recovery:', error);
-      res.status(500).json({ message: 'Failed to restart crash recovery system' });
     }
   });
   
@@ -2956,42 +2855,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // MEMORY-SAFE odds endpoint with aggressive throttling
+  // Get unified odds from all API sources (RapidAPI + SportsGameOdds + The Odds API)
   app.get('/api/odds/unified', async (req, res) => {
     try {
-      // STRICT memory check before ANY expensive operations
-      const memUsage = process.memoryUsage();
-      const memUsagePercent = (memUsage.heapUsed / memUsage.heapTotal) * 100;
-      
-      if (memUsagePercent > 80) {
-        console.warn(`🚫 API BLOCKED: ${memUsagePercent.toFixed(2)}% memory - PREVENTING CRASH`);
-        return res.json({ 
-          odds: [], 
-          message: 'API temporarily disabled to prevent server crash',
-          memory_usage: memUsagePercent.toFixed(2) + '%',
-          retry_after: 60
-        });
-      }
-      
-      // Force garbage collection before expensive operation
-      if (global.gc) {
-        global.gc();
-      }
-      
       const { sport } = req.query;
       const unifiedOdds = await unifiedSportsApi.getUnifiedOdds(sport as string);
-      
-      // Memory check after operation
-      const postMemUsage = process.memoryUsage();
-      const postMemPercent = (postMemUsage.heapUsed / postMemUsage.heapTotal) * 100;
-      
-      if (postMemPercent > 85) {
-        console.warn(`⚠️ Memory spike after API call: ${postMemPercent.toFixed(2)}%`);
-        if (global.gc) {
-          global.gc();
-        }
-      }
-      
       res.json(unifiedOdds);
     } catch (error) {
       console.error('Error fetching unified odds:', error);
@@ -2999,22 +2867,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get live events from all API sources with memory throttling
+  // Get live events from all API sources
   app.get('/api/events/unified-live', async (req, res) => {
     try {
-      // Check memory before expensive operations
-      const memUsage = process.memoryUsage();
-      const memUsagePercent = (memUsage.heapUsed / memUsage.heapTotal) * 100;
-      
-      if (memUsagePercent > 90) {
-        console.warn(`🚫 API throttled due to high memory: ${memUsagePercent.toFixed(2)}%`);
-        return res.json({ 
-          live_events: [], 
-          message: 'API temporarily throttled due to high memory usage',
-          memory_usage: memUsagePercent.toFixed(2) + '%'
-        });
-      }
-      
       const unifiedLiveEvents = await unifiedSportsApi.getUnifiedLiveEvents();
       res.json(unifiedLiveEvents);
     } catch (error) {

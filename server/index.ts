@@ -3,7 +3,6 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { createSSLServer, getSSLConfig } from "./ssl";
 import { initializeWebSocketService, websocketService } from './services/websocketService.js';
-import { crashRecoveryService } from './services/crashRecoveryService';
 import notificationRoutes from './routes/notificationRoutes';
 import websocketPollingRoutes from './routes/websocketPollingRoutes';
 import apiMonitoringRoutes from './routes/apiMonitoringRoutes';
@@ -84,8 +83,8 @@ app.use((req, res, next) => {
   // Get SSL configuration
   const sslConfig = getSSLConfig();
 
-  // Use port 5000 for both development and production
-  const port = 5000;
+  // Use port 5000 for production, 5173 for development
+  const port = app.get("env") === "development" ? 5000 : 5000;
 
   // Create appropriate server based on configuration
   let server;
@@ -104,117 +103,6 @@ app.use((req, res, next) => {
 
   const httpServer = server.listen(port, "0.0.0.0", () => {
     log(`🚀 WeParlay server running on HTTP at 0.0.0.0:${port}`);
-    console.log('🔧 Starting automated crash recovery monitoring...');
-
-    // ULTIMATE CRASH PREVENTION SYSTEM - NO MORE CRASHES!
-    if (global.gc) {
-      console.log('🛡️ ACTIVATING ULTIMATE CRASH PREVENTION SYSTEM');
-      
-      // SUPER AGGRESSIVE monitoring every 5 seconds
-      setInterval(() => {
-        const memUsage = process.memoryUsage();
-        const memPercent = (memUsage.heapUsed / memUsage.heapTotal) * 100;
-        
-        // EMERGENCY RESTART at 85% to prevent ANY crashes
-        if (memPercent > 85) {
-          console.error(`🚨 EMERGENCY RESTART: ${memPercent.toFixed(2)}% memory - PREVENTING CRASH NOW!`);
-          
-          // Clear ALL intervals and timeouts
-          const highestTimeoutId = setTimeout(() => {}, 0);
-          for (let i = 1; i < highestTimeoutId; i++) {
-            clearTimeout(i);
-            clearInterval(i);
-          }
-          
-          // Force immediate restart
-          setTimeout(() => {
-            process.exit(1);
-          }, 100);
-          return;
-        }
-        
-        // AGGRESSIVE cleanup at 75%
-        if (memPercent > 75) {
-          console.warn(`⚠️ AGGRESSIVE CLEANUP: ${memPercent.toFixed(2)}% memory`);
-          
-          // Force multiple garbage collections
-          for (let i = 0; i < 5; i++) {
-            global.gc();
-          }
-          
-          // Clear require cache of non-essential modules
-          Object.keys(require.cache).forEach(key => {
-            if (!key.includes('express') && !key.includes('storage') && !key.includes('routes')) {
-              try {
-                delete require.cache[key];
-              } catch (e) {
-                // Ignore errors
-              }
-            }
-          });
-          
-          const afterCleanup = process.memoryUsage();
-          const newPercent = (afterCleanup.heapUsed / afterCleanup.heapTotal) * 100;
-          console.log(`🧹 Memory cleaned: ${memPercent.toFixed(2)}% → ${newPercent.toFixed(2)}%`);
-        }
-        
-        // Preventive cleanup at 65%
-        if (memPercent > 65) {
-          global.gc();
-        }
-        
-        // Log memory status every minute
-        if (Date.now() % 60000 < 5000) {
-          console.log(`📊 Memory status: ${memPercent.toFixed(2)}% used (${Math.round(memUsage.heapUsed / 1024 / 1024)}MB)`);
-        }
-        
-      }, 5000); // Check every 5 seconds for maximum protection
-
-      console.log('✅ ULTIMATE crash prevention system ACTIVE - NO MORE CRASHES!');
-    } else {
-      console.error('❌ Garbage collection not available - enabling fallback protection');
-      
-      // Fallback protection without GC
-      setInterval(() => {
-        const memUsage = process.memoryUsage();
-        const memPercent = (memUsage.heapUsed / memUsage.heapTotal) * 100;
-        
-        if (memPercent > 80) {
-          console.error(`🚨 FALLBACK RESTART: ${memPercent.toFixed(2)}% memory - restarting to prevent crash`);
-          process.exit(1);
-        }
-      }, 3000);
-    }
-
-    // Set memory limits and warnings
-    process.on('warning', (warning) => {
-      if (warning.name === 'MaxListenersExceededWarning') {
-        console.warn('⚠️ Memory leak detected - cleaning up listeners');
-        process.removeAllListeners();
-      }
-    });
-
-    // Set aggressive memory limits
-    process.on('warning', (warning) => {
-      if (warning.name === 'MaxListenersExceededWarning') {
-        console.warn('⚠️ Too many listeners - cleaning up');
-        process.removeAllListeners();
-      }
-    });
-
-    // Start crash recovery monitoring
-    crashRecoveryService.startMonitoring();
-
-    // Initialize bot users for platform demo data
-    try {
-      const { SimpleBotService } = await import('./services/simpleBotService');
-      const botService = new SimpleBotService();
-      await botService.createBasicBotUsers();
-      console.log('✅ Bot users initialized for platform demo');
-    } catch (error) {
-      console.error('⚠️ Failed to initialize bot users:', error);
-    }
-    log(`🔧 Automated crash recovery system activated`);
   });
 
   // Skip WebSocket initialization in development to avoid port conflicts

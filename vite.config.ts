@@ -21,17 +21,9 @@ export default defineConfig({
   server: {
     host: "0.0.0.0",
     port: 5173,
-    proxy: {
-      '/api': {
-        target: 'http://0.0.0.0:5000',
-        changeOrigin: true,
-        secure: false
-      }
-    },
     hmr: {
       port: 5173,
       host: "0.0.0.0",
-      clientPort: 443,
       clientPort: process.env.REPL_SLUG ? 443 : 5173
     },
     watch: {
