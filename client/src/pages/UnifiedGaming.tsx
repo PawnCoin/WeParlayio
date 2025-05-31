@@ -11,45 +11,13 @@ import { useQuery } from "@tanstack/react-query";
 import { useBetting } from "@/contexts/BettingContext";
 import { 
   Gamepad2, Monitor, Trophy, Zap, Users, TrendingUp, 
-  BarChart2, Settings, Sparkles, Play, Tv, Video,
+  BarChart2, Settings, Sparkles, Play, Tv,
   Target, DollarSign, Wifi, Radio, Sword, Crown,
-  Clock, Eye, MessageCircle, ThumbsUp, Share2, Star
+  Clock, Eye, MessageCircle, Star
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-// Gaming API Integration Functions
-const fetchGamingMatches = async () => {
-  try {
-    const response = await fetch('/api/gaming/matches');
-    if (!response.ok) throw new Error('Failed to fetch gaming matches');
-    return await response.json();
-  } catch (error) {
-    console.error('Gaming API error:', error);
-    return [];
-  }
-};
-
-const fetchEsportsOdds = async () => {
-  try {
-    const response = await fetch('/api/gaming/esports-odds');
-    if (!response.ok) throw new Error('Failed to fetch esports odds');
-    return await response.json();
-  } catch (error) {
-    console.error('Esports odds API error:', error);
-    return [];
-  }
-};
-
-const fetchPlayerStats = async (playerId: string) => {
-  try {
-    const response = await fetch(`/api/gaming/player-stats/${playerId}`);
-    if (!response.ok) throw new Error('Failed to fetch player stats');
-    return await response.json();
-  } catch (error) {
-    console.error('Player stats API error:', error);
-    return null;
-  }
-};
+// Gaming API Integration Functions (using live endpoints)
 
 export default function UnifiedGaming() {
   const { toast } = useToast();
