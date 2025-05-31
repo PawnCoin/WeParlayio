@@ -501,34 +501,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: error.message || 'Internal server error while creating challenge' 
       });
     }
-  });ssage,
-        status: 'pending',
-        expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000) // 48 hours from now
-      });
-      
-      // If recipient email/phone was provided, send notification
-      if (notificationEmail || notificationPhone) {
-        // Import the notification service dynamically
-        const { notificationService } = await import('./services/notificationService');
-        
-        await notificationService.sendBettingChallenge(
-          challenge.id.toString(),
-          userId,
-          undefined,
-          notificationEmail,
-          notificationPhone
-        );
-      }
-      
-      res.status(201).json({ 
-        message: "Challenge created successfully", 
-        challenge,
-        challengeUrl: `${req.protocol}://${req.get('host')}/challenges/${challenge.challengeUuid}`
-      });
-    } catch (error) {
-      console.error("Error creating betting challenge:", error);
-      res.status(500).json({ message: "Failed to create betting challenge" });
-    }
   });
   
   // Get user's betting challenges
