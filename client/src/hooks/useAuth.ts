@@ -20,14 +20,11 @@ interface User {
   adminLevel?: string | null;
 }
 
-export const useAuth = () => {
+export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Emergency admin bypass - temporary fix
-  const emergencyAdminEmails = ['support@weparlay.io', 'admin@weparlay.io', 'owner@weparlay.io'];
-  const isEmergencyAdmin = user?.email && emergencyAdminEmails.includes(user.email.toLowerCase());
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   // Always force admin access - this is YOUR site!
   useEffect(() => {
@@ -57,7 +54,7 @@ export const useAuth = () => {
     setUser(siteOwnerUser);
     setIsAuthenticated(true);
     setIsLoading(false);
-
+    
     // Store the admin user
     localStorage.setItem('weparlay_user', JSON.stringify(siteOwnerUser));
   }, []);
