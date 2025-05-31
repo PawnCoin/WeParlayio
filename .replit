@@ -12,7 +12,7 @@ build = ["npm", "run", "build"]
 run = ["npm", "run", "start"]
 
 [workflows]
-runButton = "WeParlay Dev Server"
+runButton = "WeParlay Dev Server Clean"
 
 [[workflows.workflow]]
 name = "Project"
@@ -49,6 +49,23 @@ args = "npm run dev"
 name = "WeParlay Dev Server"
 author = 42612790
 mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm install"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+
+[[workflows.workflow]]
+name = "WeParlay Dev Server Clean"
+author = 42612790
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pkill -f \"node.*dev\" || true"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
