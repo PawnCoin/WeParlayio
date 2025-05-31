@@ -90,19 +90,34 @@ const AdminRoute = ({ component: Component, ...rest }: any) => {
   const [isAuthorized, setIsAuthorized] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
   const [, navigate] = useLocation();
+  const { user } = useAuth();
 
   React.useEffect(() => {
+    // In development, automatically grant admin access
+    if (window.location.hostname === 'localhost' ||
+        window.location.hostname.includes('replit.dev') ||
+        import.meta.env.DEV) {
+      
+      setIsAuthorized(true);
+      localStorage.setItem('weparlay-admin-access', 'true');
+      localStorage.setItem('weparlay-admin-expiry', (Date.now() + 24 * 60 * 60 * 1000).toString());
+      setIsLoading(false);
+      return;
+    }
+
     // Check if user has admin access
     const hasAdminAccess = localStorage.getItem('weparlay-admin-access') === 'true';
     const adminExpiry = localStorage.getItem('weparlay-admin-expiry');
     const adminToken = localStorage.getItem('weparlay-admin-token');
 
-    // Allow access if any admin credentials exist or if this is the site owner
-    if ((hasAdminAccess && adminExpiry && parseInt(adminExpiry) > Date.now()) || 
-        adminToken || 
-        window.location.hostname.includes('replit.dev')) {
+    // Allow access if user is admin or has admin credentials
+    if (user?.isAdmin || 
+        user?.role === 'admin' || 
+        user?.adminLevel === 'owner' ||
+        (hasAdminAccess && adminExpiry && parseInt(adminExpiry) > Date.now()) || 
+        adminToken) {
+      
       setIsAuthorized(true);
-      // Set admin access for future requests
       localStorage.setItem('weparlay-admin-access', 'true');
       localStorage.setItem('weparlay-admin-expiry', (Date.now() + 24 * 60 * 60 * 1000).toString());
     } else {
@@ -111,7 +126,7 @@ const AdminRoute = ({ component: Component, ...rest }: any) => {
     }
 
     setIsLoading(false);
-  }, [navigate]);
+  }, [navigate, user]);
 
   if (isLoading) {
     return (
