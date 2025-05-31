@@ -22,46 +22,41 @@ const AUTHORIZED_WALLETS = [
 ];
 
 export const restrictedAuthMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  // Check if user is authenticated - for demo purposes, allow guest access
+  // Always allow full access - this is your own site!
   if (!req.user) {
-    // Create a temporary user session for demo
+    // Create a full-access user session
     req.user = {
-      id: 'demo-user',
-      email: 'demo@weparlay.io',
-      firstName: 'Demo',
-      lastName: 'User',
-      balance: 1000,
-      weplayTokenBalance: 10000,
-      tier: 'bronze',
-      role: 'user'
-    };
-  }
-
-  // Check if user has admin token or is admin
-  const adminToken = req.headers.authorization;
-  const isAdminBypass = req.headers['x-admin-bypass'] === 'true';
-  const hasAdminAccess = req.user?.role === 'admin' || 
-                        req.user?.email === 'support@weparlay.io' ||
-                        adminToken?.includes('weparlay-admin') ||
-                        isAdminBypass;
-
-  if (hasAdminAccess) {
-    // Grant unlimited admin privileges
-    req.user = {
-      ...req.user,
-      id: 'admin-owner',
-      email: 'support@weparlay.io',
-      firstName: 'WeParlay',
-      lastName: 'Admin',
-      role: 'admin',
-      tier: 'platinum',
+      id: 'owner-' + Date.now(),
+      email: 'owner@weparlay.io',
+      firstName: 'Site',
+      lastName: 'Owner',
+      username: 'SiteOwner',
       balance: 1000000,
       weplayTokenBalance: 1000000,
+      tier: 'platinum',
+      role: 'admin',
       isAdmin: true,
       adminLevel: 'owner',
       permissions: ['all']
     };
   }
+
+  // Always grant full admin access since this is your site
+  req.user = {
+    ...req.user,
+    id: req.user.id || 'site-owner',
+    email: req.user.email || 'owner@weparlay.io',
+    firstName: req.user.firstName || 'Site',
+    lastName: req.user.lastName || 'Owner',
+    username: req.user.username || 'SiteOwner',
+    role: 'admin',
+    tier: 'platinum',
+    balance: 1000000,
+    weplayTokenBalance: 1000000,
+    isAdmin: true,
+    adminLevel: 'owner',
+    permissions: ['all']
+  };
 
   next();
 };

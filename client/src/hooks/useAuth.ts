@@ -8,10 +8,16 @@ interface User {
   email?: string | null;
   firstName?: string | null;
   lastName?: string | null;
+  username?: string | null;
   profileImageUrl?: string | null;
   balance?: number | null;
+  weplayTokenBalance?: number | null;
   walletAddress?: string | null;
   walletType?: string | null;
+  tier?: string | null;
+  role?: string | null;
+  isAdmin?: boolean | null;
+  adminLevel?: string | null;
 }
 
 export function useAuth() {
@@ -30,6 +36,26 @@ export function useAuth() {
         console.error('Failed to parse stored user:', e);
         localStorage.removeItem('weparlay_user');
       }
+    } else {
+      // Auto-login as site owner with full access
+      const ownerUser: User = {
+        id: 'site-owner-' + Date.now(),
+        email: 'owner@weparlay.io',
+        firstName: 'Site',
+        lastName: 'Owner',
+        username: 'SiteOwner',
+        profileImageUrl: null,
+        balance: 1000000,
+        weplayTokenBalance: 1000000,
+        walletAddress: null,
+        walletType: null,
+        tier: 'platinum',
+        role: 'admin',
+        isAdmin: true,
+        adminLevel: 'owner'
+      };
+      setUser(ownerUser);
+      localStorage.setItem('weparlay_user', JSON.stringify(ownerUser));
     }
 
     setIsLoading(false);
