@@ -73,6 +73,7 @@ import WalletManagementEnhanced from "@/pages/WalletManagementEnhanced";
 import BettingChallenges from './components/betting/BettingChallenges';
 import SiteNavigation from './pages/SiteNavigation';
 import PageStatusChecker from './pages/PageStatusChecker';
+import AdminDashboard from "@/pages/AdminDashboard";
 
 // Import admin components
 import AdminBypass from "@/pages/AdminBypass";
