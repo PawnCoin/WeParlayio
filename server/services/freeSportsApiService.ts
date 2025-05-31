@@ -119,77 +119,103 @@ export class FreeSportsApiService {
     }
 
     async getTennisOdds(): Promise<any[]> {
-        await this.rateLimit();
+        try {
+            await this.rateLimit();
 
-        // Try multiple tennis data sources
-        const tennisSources = [
-            'https://api.sportradar.us/tennis/trial/v2/en/tournaments.json',
-            'https://tennis-live-data.p.rapidapi.com/matches/live'
-        ];
-
-        for (const source of tennisSources) {
-            try {
-                const headers: any = {
-                    'Accept': 'application/json'
-                };
-
-                // Add specific headers for different APIs
-                if (source.includes('rapidapi.com')) {
-                    headers['X-RapidAPI-Key'] = process.env.RAPIDAPI_KEY || 'demo_key';
-                    headers['X-RapidAPI-Host'] = 'tennis-live-data.p.rapidapi.com';
-                }
-
-                const response = await fetch(source, { headers });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    return this.formatTennisData(data);
-                }
-            } catch (error) {
-                console.warn(`Tennis API ${source} failed:`, error);
+            // Skip external API calls in development, use fallback data
+            if (!process.env.RAPIDAPI_KEY || process.env.RAPIDAPI_KEY === 'demo_key') {
+                console.log('Tennis API not implemented, using fallback data.');
+                return this.generateFallbackTennis();
             }
-        }
 
-        console.warn('All Tennis APIs failed, using fallback data.');
-        return this.generateFallbackTennis();
+            // Try multiple tennis data sources with timeout
+            const tennisSources = [
+                'https://tennis-live-data.p.rapidapi.com/matches/live'
+            ];
+
+            for (const source of tennisSources) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+
+                    const headers: any = {
+                        'Accept': 'application/json',
+                        'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
+                        'X-RapidAPI-Host': 'tennis-live-data.p.rapidapi.com'
+                    };
+
+                    const response = await fetch(source, { 
+                        headers,
+                        signal: controller.signal
+                    });
+                    
+                    clearTimeout(timeoutId);
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        return this.formatTennisData(data);
+                    }
+                } catch (error) {
+                    console.warn(`Tennis API ${source} failed:`, error);
+                }
+            }
+
+            console.log('Tennis API not implemented, using fallback data.');
+            return this.generateFallbackTennis();
+        } catch (error) {
+            console.warn('Tennis API error:', error);
+            return this.generateFallbackTennis();
+        }
     }
 
     async getGolfOdds(): Promise<any[]> {
-        await this.rateLimit();
+        try {
+            await this.rateLimit();
 
-        // Try multiple golf data sources
-        const golfSources = [
-            'https://api.sportsdata.io/golf/v2/json/Tournaments',
-            'https://golf-leaderboard-data.p.rapidapi.com/leaderboard'
-        ];
-
-        for (const source of golfSources) {
-            try {
-                const headers: any = {
-                    'Accept': 'application/json'
-                };
-
-                // Add specific headers for different APIs
-                if (source.includes('rapidapi.com')) {
-                    headers['X-RapidAPI-Key'] = process.env.RAPIDAPI_KEY || 'demo_key';
-                    headers['X-RapidAPI-Host'] = 'golf-leaderboard-data.p.rapidapi.com';
-                } else if (source.includes('sportsdata.io')) {
-                    headers['Ocp-Apim-Subscription-Key'] = process.env.SPORTSDATA_API_KEY || 'demo_key';
-                }
-
-                const response = await fetch(source, { headers });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    return this.formatGolfData(data);
-                }
-            } catch (error) {
-                console.warn(`Golf API ${source} failed:`, error);
+            // Skip external API calls in development, use fallback data
+            if (!process.env.RAPIDAPI_KEY || process.env.RAPIDAPI_KEY === 'demo_key') {
+                console.log('Golf API not implemented, using fallback data.');
+                return this.generateFallbackGolf();
             }
-        }
 
-        console.warn('All Golf APIs failed, using fallback data.');
-        return this.generateFallbackGolf();
+            // Try golf data sources with timeout
+            const golfSources = [
+                'https://golf-leaderboard-data.p.rapidapi.com/leaderboard'
+            ];
+
+            for (const source of golfSources) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+
+                    const headers: any = {
+                        'Accept': 'application/json',
+                        'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
+                        'X-RapidAPI-Host': 'golf-leaderboard-data.p.rapidapi.com'
+                    };
+
+                    const response = await fetch(source, { 
+                        headers,
+                        signal: controller.signal
+                    });
+                    
+                    clearTimeout(timeoutId);
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        return this.formatGolfData(data);
+                    }
+                } catch (error) {
+                    console.warn(`Golf API ${source} failed:`, error);
+                }
+            }
+
+            console.log('Golf API not implemented, using fallback data.');
+            return this.generateFallbackGolf();
+        } catch (error) {
+            console.warn('Golf API error:', error);
+            return this.generateFallbackGolf();
+        }
     }
 
   private formatESPNData(data: any, sport: string): any[] {
@@ -592,26 +618,46 @@ export class FreeSportsApiService {
     const allOdds = [];
 
     try {
+      // Use Promise.allSettled to handle individual failures gracefully
       const [nbaOdds, wnbaOdds, mlbOdds, soccerOdds, tennisOdds, golfOdds] = await Promise.allSettled([
-        this.getNBAOdds(),
-        this.getWNBAOdds(),
-        this.getMLBOdds(),
-        this.getSoccerOdds(),
-        this.getTennisOdds(),
-        this.getGolfOdds()
+        this.getNBAOdds().catch(err => { console.warn('NBA API failed:', err); return []; }),
+        this.getWNBAOdds().catch(err => { console.warn('WNBA API failed:', err); return []; }),
+        this.getMLBOdds().catch(err => { console.warn('MLB API failed:', err); return []; }),
+        this.getSoccerOdds().catch(err => { console.warn('Soccer API failed:', err); return []; }),
+        this.getTennisOdds().catch(err => { console.warn('Tennis API failed:', err); return []; }),
+        this.getGolfOdds().catch(err => { console.warn('Golf API failed:', err); return []; })
       ]);
 
-      if (nbaOdds.status === 'fulfilled') allOdds.push(...nbaOdds.value);
-      if (wnbaOdds.status === 'fulfilled') allOdds.push(...wnbaOdds.value);
-      if (mlbOdds.status === 'fulfilled') allOdds.push(...mlbOdds.value);
-      if (soccerOdds.status === 'fulfilled') allOdds.push(...soccerOdds.value);
-      if (tennisOdds.status === 'fulfilled') allOdds.push(...tennisOdds.value);
-      if (golfOdds.status === 'fulfilled') allOdds.push(...golfOdds.value);
+      // Safely add fulfilled results
+      if (nbaOdds.status === 'fulfilled' && Array.isArray(nbaOdds.value)) {
+        allOdds.push(...nbaOdds.value);
+      }
+      if (wnbaOdds.status === 'fulfilled' && Array.isArray(wnbaOdds.value)) {
+        allOdds.push(...wnbaOdds.value);
+      }
+      if (mlbOdds.status === 'fulfilled' && Array.isArray(mlbOdds.value)) {
+        allOdds.push(...mlbOdds.value);
+      }
+      if (soccerOdds.status === 'fulfilled' && Array.isArray(soccerOdds.value)) {
+        allOdds.push(...soccerOdds.value);
+      }
+      if (tennisOdds.status === 'fulfilled' && Array.isArray(tennisOdds.value)) {
+        allOdds.push(...tennisOdds.value);
+      }
+      if (golfOdds.status === 'fulfilled' && Array.isArray(golfOdds.value)) {
+        allOdds.push(...golfOdds.value);
+      }
 
+      console.log(`✅ FreeSportsAPI: ${allOdds.length} total events from all sources`);
       return allOdds;
     } catch (error) {
       console.error('Error fetching all sports odds:', error);
-      return [];
+      // Return fallback data if everything fails
+      return [
+        ...this.generateFallbackNBA().slice(0, 2),
+        ...this.generateFallbackNFL().slice(0, 2),
+        ...this.generateFallbackMLB().slice(0, 2)
+      ];
     }
   }
 }
