@@ -27,6 +27,33 @@ export function useAuth() {
   const { toast } = useToast();
 
   useEffect(() => {
+    // In development, automatically provide full admin access
+    if (window.location.hostname === 'localhost' ||
+        window.location.hostname.includes('replit.dev') ||
+        import.meta.env.DEV) {
+
+      const devUser: User = {
+        id: 'dev-admin-001',
+        email: 'dev@weparlay.io',
+        firstName: 'Dev',
+        lastName: 'Admin',
+        username: 'DevAdmin',
+        profileImageUrl: null,
+        balance: 1000000,
+        weplayTokenBalance: 1000000,
+        walletAddress: null,
+        walletType: null,
+        tier: 'platinum',
+        role: 'admin',
+        isAdmin: true,
+        adminLevel: 'owner'
+      };
+
+      setUser(devUser);
+      setIsLoading(false);
+      return;
+    }
+
     // Check if we have a user in localStorage (for development purposes)
     const storedUser = localStorage.getItem('weparlay_user');
     if (storedUser) {
