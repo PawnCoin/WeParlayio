@@ -90,7 +90,7 @@ import ManageUsers from "@/pages/admin/ManageUsers";
 import FinancialOverview from "@/pages/admin/FinancialOverview";
 import Analytics from "@/pages/admin/Analytics";
 import PlatformSettings from "@/pages/admin/PlatformSettings";
-import VisualComponentEditorPage from "@/pages/admin/VisualComponentEditor";
+import VisualComponentEditorPage from "./pages/admin/VisualComponentEditor";
 
 function Router() {
   // Track page views when routes change
