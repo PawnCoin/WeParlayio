@@ -203,9 +203,7 @@ function Router() {
       <Route path="/admin/financial-overview" component={FinancialOverview} />
       <Route path="/admin/analytics" component={Analytics} />
       <Route path="/admin/platform-settings" component={PlatformSettings} />
-      <Route path="/admin/visual-component-editor">
-          <VisualComponentEditorPage />
-        </Route>
+      <Route path="/admin/visual-component-editor" component={VisualComponentEditorPage} />
       <Route path="/admin/social-media-dashboard" component={SocialMediaDashboard} />
       <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/force-admin" component={AdminDashboard} />
