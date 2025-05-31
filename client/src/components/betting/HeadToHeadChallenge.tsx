@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { apiRequest } from '@/lib/queryClient';
 import SocialShareOptions from '@/components/betting/SocialShareOptions';
 import { 
   DollarSign,
@@ -109,16 +110,20 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
     try {
       // Create real challenge in database
       const challengeData = {
-        eventName: values.eventSelection,
-        amount: parseFloat(values.betAmount),
-        currency: 'USD',
-        isVirtual: values.betType === 'virtual',
-        pick: values.yourPick,
-        customMessage: values.message,
-        inviteMethod: values.inviteMethod,
-        friendEmail: values.friendEmail,
-        friendPhone: values.friendPhone,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
+        eventId: values.eventId,
+        eventName: values.challengeType === 'sports' ? 
+          activeEvents.find(e => e.id === values.eventId)?.name || 'Sports Event' : 
+          'Custom Bet',
+        amount: parseFloat(values.amount),
+        currency: values.currencyType === 'real' ? 'USD' : 'WeParlay Cash',
+        isVirtual: values.currencyType === 'virtual',
+        pick: values.challengeType === 'sports' ? 'Team Selection' : values.customBet,
+        customMessage: values.notes || '',
+        inviteMethod: values.contactMethod,
+        friendEmail: values.contactMethod === 'email' ? values.contactValue : '',
+        friendPhone: values.contactMethod === 'phone' ? values.contactValue : '',
+        friendUsername: values.contactMethod === 'username' ? values.contactValue : '',
+        expiresAt: new Date(values.expiryDate).toISOString()
       };
 
       const response = await apiRequest('POST', '/api/challenges', challengeData);
