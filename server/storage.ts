@@ -41,6 +41,18 @@ export interface IStorage {
   getFinancialSummary(): Promise<any>;
   createBettingChallenge(challenge: InsertBettingChallenge): Promise<BettingChallenge>;
   getBettingChallengeByUuid(uuid: string): Promise<BettingChallenge | undefined>;
+  
+  // Critical missing methods that routes require
+  getLiveEvents(): Promise<Event[]>;
+  getTournament(id: number): Promise<Tournament | undefined>;
+  getUpcomingEvents(limit?: number): Promise<Event[]>;
+  updateUserPreferences(userId: string, preferences: any): Promise<User>;
+  updateUserGamertag(userId: string, gamertag: string): Promise<User>;
+  getUserByGamertag(gamertag: string): Promise<User | undefined>;
+  createSupportTicket(ticket: InsertSupportTicket): Promise<SupportTicket>;
+  getSupportTicketByNumber(ticketNumber: string): Promise<SupportTicket | undefined>;
+  getTicketMessages(ticketId: number): Promise<SupportTicketMessage[]>;
+  addTicketMessage(message: InsertSupportTicketMessage): Promise<SupportTicketMessage>;
 }
 
 // Simple memory storage implementation
@@ -154,6 +166,78 @@ export class MemStorage implements IStorage {
 
   async getBettingChallengeByUuid(uuid: string): Promise<BettingChallenge | undefined> {
     return this.challenges.get(uuid);
+  }
+
+  // Missing methods that routes require
+  async getLiveEvents(): Promise<Event[]> {
+    return Array.from(this.events.values()).filter(event => event.status === 'live');
+  }
+
+  async getTournament(id: number): Promise<Tournament | undefined> {
+    return undefined; // No tournaments in simplified storage
+  }
+
+  async getUpcomingEvents(limit?: number): Promise<Event[]> {
+    const now = new Date();
+    const upcoming = Array.from(this.events.values())
+      .filter(event => new Date(event.startTime) > now)
+      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+    
+    return limit ? upcoming.slice(0, limit) : upcoming;
+  }
+
+  async updateUserPreferences(userId: string, preferences: any): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error('User not found');
+    
+    const updatedUser = { ...user, preferences };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+
+  async updateUserGamertag(userId: string, gamertag: string): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error('User not found');
+    
+    const updatedUser = { ...user, gamertag };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+
+  async getUserByGamertag(gamertag: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.gamertag === gamertag);
+  }
+
+  async createSupportTicket(ticket: InsertSupportTicket): Promise<SupportTicket> {
+    const id = this.nextId++;
+    const newTicket: SupportTicket = { 
+      ...ticket, 
+      id,
+      ticketNumber: `TICKET-${id.toString().padStart(6, '0')}`,
+      status: 'open',
+      priority: 'medium',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    } as SupportTicket;
+    return newTicket;
+  }
+
+  async getSupportTicketByNumber(ticketNumber: string): Promise<SupportTicket | undefined> {
+    return undefined; // Simplified implementation
+  }
+
+  async getTicketMessages(ticketId: number): Promise<SupportTicketMessage[]> {
+    return []; // Simplified implementation
+  }
+
+  async addTicketMessage(message: InsertSupportTicketMessage): Promise<SupportTicketMessage> {
+    const id = this.nextId++;
+    const newMessage: SupportTicketMessage = { 
+      ...message, 
+      id,
+      createdAt: new Date()
+    } as SupportTicketMessage;
+    return newMessage;
   }
 }
 
