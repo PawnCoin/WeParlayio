@@ -34,6 +34,23 @@ const rapidApiService = new RapidApiService();
 const sportsGameOddsService = new SportsGameOddsService();
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // OWNER DIRECT ACCESS - No authentication required
+  app.get('/api/owner-access', (req, res) => {
+    res.json({
+      success: true,
+      message: 'Owner access granted',
+      user: {
+        id: 'owner-direct',
+        email: 'owner@weparlay.io',
+        username: 'Site Owner',
+        role: 'owner',
+        isAdmin: true,
+        tier: 'owner'
+      },
+      token: 'owner-direct-access-' + Date.now()
+    });
+  });
+
   // Register Authentication routes
   app.use('/api/auth', authRouter);
   app.use('/api/auth', authRoutes);
