@@ -45,29 +45,58 @@
   --ring: 59 130 246;
 }
 
-/* Light Mode Text Contrast Enforcement */
+/* Light Mode Text Contrast - Prevent white on white, allow white on colors */
 html:not(.dark) {
-  color: rgb(15 23 42) !important; /* Force dark text in light mode */
+  color: rgb(15 23 42) !important; /* Default dark text */
 }
 
+/* Default all elements to dark text in light mode */
 html:not(.dark) * {
-  color: rgb(15 23 42) !important; /* Force all text to be dark */
+  color: rgb(15 23 42) !important;
 }
 
-html:not(.dark) .text-white,
-html:not(.dark) .text-gray-100,
-html:not(.dark) .text-slate-100 {
-  color: rgb(15 23 42) !important; /* Override white text classes */
-}
-
-/* Only allow white text on colored backgrounds */
+/* ALLOW white text ONLY on colored/dark backgrounds */
+html:not(.dark) .bg-black *,
+html:not(.dark) .bg-gray-800 *,
+html:not(.dark) .bg-gray-900 *,
 html:not(.dark) .bg-primary *,
 html:not(.dark) .bg-blue-500 *,
 html:not(.dark) .bg-blue-600 *,
+html:not(.dark) .bg-blue-700 *,
 html:not(.dark) .bg-green-500 *,
 html:not(.dark) .bg-green-600 *,
+html:not(.dark) .bg-green-700 *,
 html:not(.dark) .bg-red-500 *,
+html:not(.dark) .bg-red-600 *,
+html:not(.dark) .bg-orange-500 *,
+html:not(.dark) .bg-orange-600 *,
 html:not(.dark) .bg-destructive * {
+  color: white !important;
+}
+
+/* Header/Navigation specific - allow white text on black header */
+html:not(.dark) header *,
+html:not(.dark) .bg-black * {
+  color: white !important;
+}
+
+/* Button states - white text on colored buttons */
+html:not(.dark) button.bg-primary *,
+html:not(.dark) button.bg-blue-500 *,
+html:not(.dark) button.bg-blue-600 *,
+html:not(.dark) button.bg-green-500 *,
+html:not(.dark) button.bg-green-600 * {
+  color: white !important;
+}
+
+/* Header specific styling - ensure white text on dark header */
+html:not(.dark) .header-dark-bg,
+html:not(.dark) .header-dark-bg *,
+html:not(.dark) .header-dark-bg .text-white,
+html:not(.dark) .header-dark-bg button,
+html:not(.dark) .header-dark-bg a,
+html:not(.dark) .header-dark-bg span,
+html:not(.dark) .header-dark-bg div {
   color: white !important;
 }
 

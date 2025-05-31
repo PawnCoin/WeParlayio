@@ -96,7 +96,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <div className="flex flex-col h-screen">
       {/* Header */}
-      <header className="bg-black shadow-md px-4 text-white">
+      <header className="bg-black shadow-md px-4 text-white header-dark-bg">
         <div className="container mx-auto">
           <div className="flex items-center justify-between h-16">
             {/* Logo - Enhanced with tagline and hover effects */}
