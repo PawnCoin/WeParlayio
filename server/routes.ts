@@ -12,6 +12,7 @@ import { UnifiedSportsApiService } from "./services/unifiedSportsApiService";
 import { RapidApiService } from "./services/rapidApiService";
 import { SportsGameOddsService } from "./services/sportsGameOddsService";
 import { freeApiService } from "./services/freeApiService";
+import { espnApiService } from "./services/espnApiService";
 import { yahooRouter } from "./routes/yahooRoutes";
 import { feeRouter } from "./routes/feeRoutes";
 import { adminRouter } from "./routes/adminRoutes";
@@ -5563,6 +5564,69 @@ Join us: WeParlay.io 🎯
         upcomingEvents: 6,
         lastUpdated: new Date().toISOString()
       });
+    }
+  });
+
+  // ESPN API endpoints for team logos and player headshots
+  app.get('/api/espn/teams/:sport', async (req, res) => {
+    try {
+      const { sport } = req.params;
+      const teams = await espnApiService.getTeamsBySport(sport);
+      res.json(teams);
+    } catch (error) {
+      console.error('Error fetching ESPN teams:', error);
+      res.status(500).json({ message: 'Failed to fetch teams' });
+    }
+  });
+
+  app.get('/api/espn/teams/all', async (req, res) => {
+    try {
+      const allTeams = await espnApiService.getAllTeams();
+      res.json(allTeams);
+    } catch (error) {
+      console.error('Error fetching all ESPN teams:', error);
+      res.status(500).json({ message: 'Failed to fetch all teams' });
+    }
+  });
+
+  app.get('/api/espn/roster/:sport/:teamId', async (req, res) => {
+    try {
+      const { sport, teamId } = req.params;
+      let roster = [];
+      
+      if (sport.toLowerCase() === 'nfl' || sport.toLowerCase() === 'football') {
+        roster = await espnApiService.getNFLRoster(teamId);
+      } else if (sport.toLowerCase() === 'nba' || sport.toLowerCase() === 'basketball') {
+        roster = await espnApiService.getNBARoster(teamId);
+      }
+      
+      res.json(roster);
+    } catch (error) {
+      console.error('Error fetching ESPN roster:', error);
+      res.status(500).json({ message: 'Failed to fetch roster' });
+    }
+  });
+
+  app.get('/api/espn/trending/:sport', async (req, res) => {
+    try {
+      const { sport } = req.params;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const players = await espnApiService.getTrendingPlayers(sport, limit);
+      res.json(players);
+    } catch (error) {
+      console.error('Error fetching trending players:', error);
+      res.status(500).json({ message: 'Failed to fetch trending players' });
+    }
+  });
+
+  app.get('/api/espn/game/:sport/:gameId', async (req, res) => {
+    try {
+      const { sport, gameId } = req.params;
+      const game = await espnApiService.getGameWithLogos(sport, gameId);
+      res.json(game || {});
+    } catch (error) {
+      console.error('Error fetching game data:', error);
+      res.status(500).json({ message: 'Failed to fetch game data' });
     }
   });
 
