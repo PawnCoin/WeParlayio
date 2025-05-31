@@ -166,7 +166,6 @@ function Router() {
       <Route path="/tournament/:id" component={Tournaments} />
 
       {/* Social Features */}
-      <Route path="/social" component={Social} />
       <Route path="/social-betting" component={SocialBetting} />
       <Route path="/head-to-head" component={HeadToHeadBetting} />
 
