@@ -22,9 +22,21 @@ interface User {
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
+
+  // Auto-grant admin access in development
+  useEffect(() => {
+    if (window.location.hostname === 'localhost' || 
+        window.location.hostname.includes('replit.dev') || 
+        import.meta.env.DEV) {
+
+      // Set admin credentials in localStorage
+      localStorage.setItem('weparlay-admin-access', 'true');
+      localStorage.setItem('weparlay-admin-expiry', (Date.now() + 24 * 60 * 60 * 1000).toString());
+      localStorage.setItem('weparlay-admin-token', 'dev-admin-token');
+    }
+  }, []);
 
   useEffect(() => {
     // In development, automatically provide full admin access
