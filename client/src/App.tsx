@@ -86,6 +86,10 @@ import PageStatusChecker from './pages/PageStatusChecker';
 import AdminBypass from "@/pages/AdminBypass";
 import OwnerAccess from "@/pages/OwnerAccess";
 import LiveBettingEnhanced from "@/pages/BettingExperience";
+import ManageUsers from "@/pages/admin/ManageUsers";
+import FinancialOverview from "@/pages/admin/FinancialOverview";
+import Analytics from "@/pages/admin/Analytics";
+import PlatformSettings from "@/pages/admin/PlatformSettings";
 
 function Router() {
   // Track page views when routes change
@@ -194,6 +198,10 @@ function Router() {
 
       {/* Admin Routes - Direct access without authentication */}
       <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin/manage-users" component={ManageUsers} />
+      <Route path="/admin/financial-overview" component={FinancialOverview} />
+      <Route path="/admin/analytics" component={Analytics} />
+      <Route path="/admin/platform-settings" component={PlatformSettings} />
       <Route path="/admin/social-media-dashboard" component={SocialMediaDashboard} />
       <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/force-admin" component={AdminDashboard} />
