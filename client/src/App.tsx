@@ -7,16 +7,13 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
-import LiveBettingReal from "@/pages/LiveBettingReal";
-import FantasySports from "@/pages/FantasySports";
 import Tournaments from "@/pages/Tournaments";
 import Results from "@/pages/Results";
 import Social from "@/pages/Social";
 import SocialBetting from "@/pages/SocialBetting";
 import Settings from "@/pages/Settings";
-import SecuritySettings from "@/pages/SecuritySettings"; // Advanced security & wallet management
-import HeadToHeadBetting from "@/pages/HeadToHeadBetting"; // Head-to-head real money betting
-import SignUp from "@/pages/SignUp";
+import SecuritySettings from "@/pages/SecuritySettings";
+import HeadToHeadBetting from "@/pages/HeadToHeadBetting";
 import LoginEnhanced from "@/pages/LoginEnhanced";
 import AuthTestDemo from "@/pages/AuthTestDemo";
 import UserDirectory from "@/pages/UserDirectory";
@@ -74,10 +71,8 @@ import BettingAcademy from "@/pages/BettingAcademy";
 import LiveHeatmap from "@/pages/LiveHeatmap";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ThemeColorManager from "@/pages/ThemeColorManager";
-import LiveBettingRealFixed from "@/pages/LiveBettingReal-fixed";
 import SignUpEnhanced from "@/pages/SignUpEnhanced";
 import WalletManagementEnhanced from "@/pages/WalletManagementEnhanced";
-import EsportsHub from "./pages/EsportsHub";
 import BettingChallenges from './components/betting/BettingChallenges';
 import SiteNavigation from './pages/SiteNavigation';
 import PageStatusChecker from './pages/PageStatusChecker';
@@ -107,8 +102,7 @@ function Router() {
       <Route path="/betting-manager" component={BettingManager} />
       <Route path="/comprehensive-betting" component={ComprehensiveBetting} />
       <Route path="/odds" component={Odds} />
-      <Route path="/live-betting" component={LiveBettingEnhanced} />
-      <Route path="/live-betting-real-fixed" component={LiveBettingRealFixed} />
+      <Route path="/live-betting" component={BettingExperience} />
       <Route path="/live-heatmap" component={LiveHeatmap} />
       <Route path="/live-streaming" component={LiveSportsStreaming} />
       <Route path="/my-bets" component={MyBets} />

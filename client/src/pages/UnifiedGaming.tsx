@@ -814,8 +814,7 @@ export default function UnifiedGaming() {
                 <div className="p-4 border rounded-lg bg-orange-50">
                   <div className="flex justify-between items-center mb-2">
                     <span className="font-medium">PlayStation</span>
-                    <Badge# Applying GRID API integration with gaming routes and services.
-variant="secondary">Online</Badge>
+                    <Badge variant="secondary">Online</Badge>
                   </div>
                   <p className="text-sm text-gray-600">Playing: FIFA 24</p>
                   <p className="text-sm text-gray-600">Score: 2-1 (75th min)</p>
