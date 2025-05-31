@@ -119,16 +119,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 </Link>
               ))}
 
-              {/* Business Proposal Button */}
-              <Button
-                onClick={() => setIsBusinessProposalOpen(true)}
-                variant="ghost"
-                size="sm"
-                className="text-white hover:text-yellow-400 transition-colors border border-yellow-400/20 hover:border-yellow-400 px-3 py-1 rounded-full"
-              >
-                <Briefcase className="h-4 w-4 mr-1" />
-                <span className="text-xs font-semibold">Partners</span>
-              </Button>
+              
             </div>
 
             {/* Mobile Navigation */}
