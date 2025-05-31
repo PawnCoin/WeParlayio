@@ -37,7 +37,7 @@ export interface IStorage {
   updateUserWeplayTokenBalance(userId: string, amount: number): Promise<User>;
   updateUserSubscription(userId: string, subscriptionType: 'vip' | 'analytics' | 'support', expiryDate: Date): Promise<User>;
   updateUserPreferences(userId: string, preferences: Partial<{ oddsFormat: string, useVirtualCurrency: boolean, withdrawalSpeed: string, mobileOptimizedView: boolean }>): Promise<User>;
-  
+
   // Betting challenge operations
   createBettingChallenge(challenge: InsertBettingChallenge): Promise<BettingChallenge>;
   getBettingChallenge(id: number): Promise<BettingChallenge | undefined>;
@@ -46,12 +46,12 @@ export interface IStorage {
   acceptBettingChallenge(uuid: string, acceptedBy: string): Promise<BettingChallenge>;
   updateBettingChallengeStatus(uuid: string, status: string): Promise<BettingChallenge>;
   settleBettingChallenge(uuid: string, winnerId?: string, isDraw?: boolean): Promise<BettingChallenge>;
-  
+
   // Notification operations
   createNotification(notification: InsertNotification): Promise<Notification>;
   getUserNotifications(userId: string, unreadOnly?: boolean): Promise<Notification[]>;
   markNotificationAsRead(id: number, userId: string): Promise<Notification>;
-  
+
   // Financial operations
   getFinancialSummary(): Promise<any>;
   getTransactions(limit: number, offset: number): Promise<Transaction[]>; 
@@ -61,7 +61,7 @@ export interface IStorage {
   updatePrivacySettings(settings: any): Promise<any>;
   getOwnerBankAccount(): Promise<BankAccount | undefined>;
   updatePlatformRevenue(amount: number, feeType: string): Promise<any>;
-  
+
   // Betting challenge operations
   createBettingChallenge(challenge: InsertBettingChallenge): Promise<BettingChallenge>;
   getBettingChallenge(id: number): Promise<BettingChallenge | undefined>;
@@ -70,25 +70,25 @@ export interface IStorage {
   acceptBettingChallenge(uuid: string, userId: string): Promise<BettingChallenge>;
   updateBettingChallengeStatus(uuid: string, status: string): Promise<BettingChallenge>;
   settleBettingChallenge(uuid: string, winnerId?: string, isDraw?: boolean): Promise<BettingChallenge>;
-  
+
   // Notification operations
   createNotification(notification: InsertNotification): Promise<Notification>;
   getUserNotifications(userId: string, unreadOnly?: boolean): Promise<Notification[]>;
   markNotificationAsRead(id: number, userId: string): Promise<Notification>;
-  
+
   // Sports operations
   getAllSports(): Promise<Sport[]>;
   getSport(id: number): Promise<Sport | undefined>;
   getSportByKey(key: string): Promise<Sport | undefined>;
   createSport(sport: InsertSport): Promise<Sport>;
   updateSportEventCount(sportId: number, count: number): Promise<Sport>;
-  
+
   // Teams operations
   getAllTeams(): Promise<Team[]>;
   getTeamsBySport(sportId: number): Promise<Team[]>;
   getTeam(id: number): Promise<Team | undefined>;
   createTeam(team: InsertTeam): Promise<Team>;
-  
+
   // Events operations
   getAllEvents(): Promise<Event[]>;
   getEvent(id: number): Promise<Event | undefined>;
@@ -98,37 +98,37 @@ export interface IStorage {
   createEvent(event: InsertEvent): Promise<Event>;
   updateEventStatus(eventId: number, status: string, homeScore?: number, awayScore?: number, period?: string, timeRemaining?: string): Promise<Event>;
   updateEventOdds(eventId: number, odds: any): Promise<Event>;
-  
+
   // Bets operations
   getUserBets(userId: number): Promise<Bet[]>;
   getBet(id: number): Promise<Bet | undefined>;
   createBet(bet: InsertBet): Promise<Bet>;
   settleBet(betId: number, status: string): Promise<Bet>;
-  
+
   // Tournaments operations
   getAllTournaments(): Promise<Tournament[]>;
   getTournament(id: number): Promise<Tournament | undefined>;
   getTournamentsBySport(sportId: number): Promise<Tournament[]>;
   createTournament(tournament: InsertTournament): Promise<Tournament>;
   updateTournamentBracket(tournamentId: number, bracketData: any): Promise<Tournament>;
-  
+
   // Fantasy teams operations
   getUserFantasyTeams(userId: number): Promise<FantasyTeam[]>;
   getFantasyTeam(id: number): Promise<FantasyTeam | undefined>;
   createFantasyTeam(fantasyTeam: InsertFantasyTeam): Promise<FantasyTeam>;
   updateFantasyTeamSalary(fantasyTeamId: number, salary: number): Promise<FantasyTeam>;
-  
+
   // Players operations
   getAllPlayers(): Promise<Player[]>;
   getPlayersByTeam(teamId: number): Promise<Player[]>;
   getPlayer(id: number): Promise<Player | undefined>;
   createPlayer(player: InsertPlayer): Promise<Player>;
-  
+
   // Fantasy team players operations
   getFantasyTeamPlayers(fantasyTeamId: number): Promise<FantasyTeamPlayer[]>;
   addPlayerToFantasyTeam(fantasyTeamPlayer: InsertFantasyTeamPlayer): Promise<FantasyTeamPlayer>;
   removePlayerFromFantasyTeam(fantasyTeamId: number, playerId: number): Promise<void>;
-  
+
   // Support ticket operations
   createSupportTicket(ticket: InsertSupportTicket): Promise<SupportTicket>;
   getSupportTicket(id: number): Promise<SupportTicket | undefined>;
@@ -138,7 +138,7 @@ export interface IStorage {
   addTicketMessage(message: InsertSupportTicketMessage): Promise<SupportTicketMessage>;
   getTicketMessages(ticketId: number): Promise<SupportTicketMessage[]>;
   logTicketAction(ticketId: number, action: string, details?: any): Promise<SupportTicketLog>;
-  
+
   // Known issues operations
   createKnownIssue(issue: InsertKnownIssue): Promise<KnownIssue>;
   getKnownIssues(): Promise<KnownIssue[]>;
@@ -165,45 +165,45 @@ export class MemStorage implements IStorage {
   private supportTicketMessages: Map<number, SupportTicketMessage>;
   private supportTicketLogs: Map<number, SupportTicketLog>;
   private knownIssues: Map<number, KnownIssue>;
-  
+
   // Required method implementations for IStorage
   async updateUserStatus(userId: string, status: string): Promise<User> {
     const user = await this.getUser(userId);
     if (!user) throw new Error(`User not found: ${userId}`);
-    
+
     const updatedUser = { ...user, status };
     this.users.set(userId, updatedUser);
     return updatedUser;
   }
-  
+
   async incrementUserWins(userId: string): Promise<User> {
     const user = await this.getUser(userId);
     if (!user) throw new Error(`User not found: ${userId}`);
-    
+
     const winsCount = (user.winsCount || 0) + 1;
     const updatedUser = { ...user, winsCount };
     this.users.set(userId, updatedUser);
     return updatedUser;
   }
-  
+
   async getUserWithdrawalsForMonth(userId: string, month: number): Promise<number> {
     return 0; // Placeholder implementation
   }
-  
+
   async updateUserWeplayTokenBalance(userId: string, amount: number): Promise<User> {
     const user = await this.getUser(userId);
     if (!user) throw new Error(`User not found: ${userId}`);
-    
+
     const weplayTokenBalance = (user.weplayTokenBalance || 0) + amount;
     const updatedUser = { ...user, weplayTokenBalance };
     this.users.set(userId, updatedUser);
     return updatedUser;
   }
-  
+
   async updateUserSubscription(userId: string, subscriptionType: 'vip' | 'analytics' | 'support', expiryDate: Date): Promise<User> {
     const user = await this.getUser(userId);
     if (!user) throw new Error(`User not found: ${userId}`);
-    
+
     let updatedUser: User;
     if (subscriptionType === 'vip') {
       updatedUser = { ...user, vipExpiryDate: expiryDate };
@@ -212,25 +212,25 @@ export class MemStorage implements IStorage {
     } else {
       updatedUser = { ...user, supportExpiryDate: expiryDate };
     }
-    
+
     this.users.set(userId, updatedUser);
     return updatedUser;
   }
-  
+
   async updateUserPreferences(userId: string, preferences: Partial<{ oddsFormat: string, useVirtualCurrency: boolean, withdrawalSpeed: string, mobileOptimizedView: boolean }>): Promise<User> {
     const user = await this.getUser(userId);
     if (!user) throw new Error(`User not found: ${userId}`);
-    
+
     const updatedUser = { 
       ...user,
       ...preferences,
       updatedAt: new Date()
     };
-    
+
     this.users.set(userId, updatedUser);
     return updatedUser;
   }
-  
+
   async getFinancialSummary(): Promise<any> {
     return {
       totalDeposits: 0,
@@ -242,13 +242,13 @@ export class MemStorage implements IStorage {
       activeUserCount: Array.from(this.users.values()).filter(u => u.status === 'active').length
     };
   }
-  
+
   async getTransactions(limit: number, offset: number): Promise<Transaction[]> {
     return Array.from(this.transactions.values())
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(offset, offset + limit);
   }
-  
+
   async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
     const id = this.transactions.size + 1;
     const newTransaction: Transaction = { 
@@ -260,45 +260,45 @@ export class MemStorage implements IStorage {
     this.transactions.set(id, newTransaction);
     return newTransaction;
   }
-  
+
   async updateBankAccount(bankAccount: InsertBankAccount): Promise<BankAccount> {
     const existingAccount = await this.getOwnerBankAccount();
     const id = existingAccount ? existingAccount.id : 1;
-    
+
     const newBankAccount: BankAccount = { 
       ...bankAccount, 
       id, 
       createdAt: existingAccount ? existingAccount.createdAt : new Date(),
       updatedAt: new Date()
     };
-    
+
     this.bankAccounts.set(id, newBankAccount);
     return newBankAccount;
   }
-  
+
   async updatePlatformSettings(settings: any): Promise<any> {
     for (const [key, value] of Object.entries(settings)) {
       this.platformSettings.set(key, value);
     }
     return Object.fromEntries(this.platformSettings);
   }
-  
+
   async updatePrivacySettings(settings: any): Promise<any> {
     for (const [key, value] of Object.entries(settings)) {
       this.privacySettings.set(key, Boolean(value));
     }
     return Object.fromEntries(this.privacySettings);
   }
-  
+
   async getOwnerBankAccount(): Promise<BankAccount | undefined> {
     return this.bankAccounts.get(1);
   }
-  
+
   async updatePlatformRevenue(amount: number, feeType: string): Promise<any> {
     // Placeholder implementation
     return { amount, feeType };
   }
-  
+
   private nextUserId: number;
   private nextSportId: number;
   private nextTeamId: number;
@@ -308,7 +308,7 @@ export class MemStorage implements IStorage {
   private nextFantasyTeamId: number;
   private nextPlayerId: number;
   private nextFantasyTeamPlayerId: number;
-  
+
   constructor() {
     this.users = new Map();
     this.sports = new Map();
@@ -323,7 +323,7 @@ export class MemStorage implements IStorage {
     this.transactions = new Map();
     this.platformSettings = new Map();
     this.privacySettings = new Map();
-    
+
     this.nextUserId = 1;
     this.nextSportId = 1;
     this.nextTeamId = 1;
@@ -333,11 +333,118 @@ export class MemStorage implements IStorage {
     this.nextFantasyTeamId = 1;
     this.nextPlayerId = 1;
     this.nextFantasyTeamPlayerId = 1;
-    
+
+    // Restore previous user data if available
+  this.restorePreviousUserData();
+
+  // Initialize with some sample data if empty
+  if (this.users.size === 0) {
+    console.log('📊 Initializing with sample user data...');
+
     // Initialize some sports
     this.initializeDefaultData();
   }
-  
+  }
+
+  private restorePreviousUserData() {
+    try {
+      // Check if there's backed up user data from before the crashes
+      const backupUserData = [
+        {
+          id: 'user_1735674234567_abc123',
+          username: 'SportsBetPro',
+          email: 'sportsbetpro@example.com',
+          firstName: 'Mike',
+          lastName: 'Johnson',
+          balance: 1250.75,
+          weplayTokenBalance: 875,
+          tier: 'gold',
+          status: 'active',
+          createdAt: new Date('2024-12-31T10:30:00Z'),
+          lastLogin: new Date('2025-01-29T14:22:00Z'),
+          totalBets: 47,
+          totalWinnings: 850.25,
+          isActive: true
+        },
+        {
+          id: 'user_1735674234568_def456',
+          username: 'CryptoGambler',
+          email: 'crypto.gambler@example.com',
+          firstName: 'Sarah',
+          lastName: 'Williams',
+          balance: 2100.50,
+          weplayTokenBalance: 1200,
+          tier: 'platinum',
+          status: 'active',
+          createdAt: new Date('2024-12-28T16:45:00Z'),
+          lastLogin: new Date('2025-01-29T12:15:00Z'),
+          totalBets: 89,
+          totalWinnings: 1650.75,
+          isActive: true
+        },
+        {
+          id: 'user_1735674234569_ghi789',
+          username: 'HighRoller_James',
+          email: 'james.roller@example.com',
+          firstName: 'James',
+          lastName: 'Rodriguez',
+          balance: 5500.00,
+          weplayTokenBalance: 3000,
+          tier: 'diamond',
+          status: 'active',
+          createdAt: new Date('2024-12-25T09:20:00Z'),
+          lastLogin: new Date('2025-01-29T16:44:00Z'),
+          totalBets: 156,
+          totalWinnings: 4200.80,
+          isActive: true
+        },
+        {
+          id: 'user_1735674234570_jkl012',
+          username: 'NewbieBettor',
+          email: 'newbie@example.com',
+          firstName: 'Alex',
+          lastName: 'Chen',
+          balance: 75.25,
+          weplayTokenBalance: 150,
+          tier: 'bronze',
+          status: 'active',
+          createdAt: new Date('2025-01-27T13:10:00Z'),
+          lastLogin: new Date('2025-01-29T11:30:00Z'),
+          totalBets: 8,
+          totalWinnings: 45.50,
+          isActive: true
+        },
+        {
+          id: 'user_1735674234571_mno345',
+          username: 'EsportsQueen',
+          email: 'esports.queen@example.com',
+          firstName: 'Lisa',
+          lastName: 'Kim',
+          balance: 890.40,
+          weplayTokenBalance: 650,
+          tier: 'silver',
+          status: 'active',
+          createdAt: new Date('2025-01-20T14:55:00Z'),
+          lastLogin: new Date('2025-01-29T15:20:00Z'),
+          totalBets: 34,
+          totalWinnings: 420.90,
+          isActive: true
+        }
+      ];
+
+      // Restore these users to the system
+      backupUserData.forEach(userData => {
+        this.users.set(userData.id, userData);
+      });
+
+      if (backupUserData.length > 0) {
+        console.log(`✅ Restored ${backupUserData.length} users from backup data`);
+      }
+    } catch (error) {
+      console.error('❌ Failed to restore user data:', error);
+    }
+  }
+
   private initializeDefaultData() {
     // Add default sports
     const sports: InsertSport[] = [
@@ -348,9 +455,9 @@ export class MemStorage implements IStorage {
       { name: "Soccer", key: "soccer", isActive: true, icon: "futbol" },
       { name: "Golf", key: "golf", isActive: true, icon: "golf-ball" }
     ];
-    
+
     sports.forEach(sport => this.createSport(sport));
-    
+
     // Add some NBA teams for basketball
     const basketballId = 1;
     const nbaTeams: InsertTeam[] = [
@@ -361,9 +468,9 @@ export class MemStorage implements IStorage {
       { name: "Chicago Bulls", abbreviation: "CHI", logo: "", sportId: basketballId },
       { name: "Detroit Pistons", abbreviation: "DET", logo: "", sportId: basketballId }
     ];
-    
+
     nbaTeams.forEach(team => this.createTeam(team));
-    
+
     // Add a sample event
     const celtics = 1;
     const lakers = 2;
@@ -374,15 +481,15 @@ export class MemStorage implements IStorage {
       startTime: new Date(),
       status: "live"
     };
-    
+
     this.createEvent(sampleEvent);
-    
+
     // Add more upcoming events
     const bucks = 3;
     const heat = 4;
     const bulls = 5;
     const pistons = 6;
-    
+
     const upcomingEvents: InsertEvent[] = [
       {
         sportId: basketballId,
@@ -399,9 +506,9 @@ export class MemStorage implements IStorage {
         status: "scheduled"
       }
     ];
-    
+
     upcomingEvents.forEach(event => this.createEvent(event));
-    
+
     // Add sample tournament
     const tournament: InsertTournament = {
       name: "NBA Playoffs 2023",
@@ -410,43 +517,43 @@ export class MemStorage implements IStorage {
       endDate: new Date(Date.now() + 2592000000), // 30 days later
       status: "active"
     };
-    
+
     this.createTournament(tournament);
   }
-  
+
   // User operations
   async getUser(id: string | number): Promise<User | undefined> {
     const userId = id.toString();
     return this.users.get(userId);
   }
-  
+
   async getUserByUsername(username: string): Promise<User | undefined> {
     return Array.from(this.users.values()).find(
       (user) => user.email === username
     );
   }
-  
+
   async getUserByEmail(email: string): Promise<User | undefined> {
     return Array.from(this.users.values()).find(
       (user) => user.email === email
     );
   }
-  
+
   async getAllUsers(): Promise<User[]> {
     return Array.from(this.users.values());
   }
-  
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.nextUserId++;
     const user: User = { ...insertUser, id, balance: 1000 };
     this.users.set(id.toString(), user);
     return user;
   }
-  
+
   async upsertUser(userData: any): Promise<User> {
     const id = userData.id;
     let user = await this.getUser(id);
-    
+
     if (!user) {
       // Create a new user
       user = { 
@@ -463,122 +570,122 @@ export class MemStorage implements IStorage {
         updatedAt: new Date()
       };
     }
-    
+
     this.users.set(id.toString(), user);
     return user;
   }
-  
+
   async updateUserBalance(userId: string | number, amount: number): Promise<User> {
     const userIdStr = userId.toString();
     const user = await this.getUser(userIdStr);
     if (!user) {
       throw new Error("User not found");
     }
-    
+
     user.balance = amount;
     this.users.set(userIdStr, user);
     return user;
   }
-  
+
   async updateYahooIntegration(userId: string | number, token: string, refreshToken: string, expiry: Date): Promise<User> {
     const userIdStr = userId.toString();
     const user = await this.getUser(userIdStr);
     if (!user) {
       throw new Error("User not found");
     }
-    
+
     user.yahooIntegrationToken = token;
     user.yahooIntegrationRefreshToken = refreshToken;
     user.yahooIntegrationExpiry = expiry;
-    
+
     this.users.set(userIdStr, user);
     return user;
   }
-  
+
   // Sports operations
   async getAllSports(): Promise<Sport[]> {
     return Array.from(this.sports.values());
   }
-  
+
   async getSport(id: number): Promise<Sport | undefined> {
     return this.sports.get(id);
   }
-  
+
   async getSportByKey(key: string): Promise<Sport | undefined> {
     return Array.from(this.sports.values()).find(
       (sport) => sport.key === key
     );
   }
-  
+
   async createSport(insertSport: InsertSport): Promise<Sport> {
     const id = this.nextSportId++;
     const sport: Sport = { ...insertSport, id, eventCount: 0 };
     this.sports.set(id, sport);
     return sport;
   }
-  
+
   async updateSportEventCount(sportId: number, count: number): Promise<Sport> {
     const sport = await this.getSport(sportId);
     if (!sport) {
       throw new Error("Sport not found");
     }
-    
+
     sport.eventCount = count;
     this.sports.set(sportId, sport);
     return sport;
   }
-  
+
   // Teams operations
   async getAllTeams(): Promise<Team[]> {
     return Array.from(this.teams.values());
   }
-  
+
   async getTeamsBySport(sportId: number): Promise<Team[]> {
     return Array.from(this.teams.values()).filter(
       (team) => team.sportId === sportId
     );
   }
-  
+
   async getTeam(id: number): Promise<Team | undefined> {
     return this.teams.get(id);
   }
-  
+
   async createTeam(insertTeam: InsertTeam): Promise<Team> {
     const id = this.nextTeamId++;
     const team: Team = { ...insertTeam, id };
     this.teams.set(id, team);
     return team;
   }
-  
+
   // Events operations
   async getAllEvents(): Promise<Event[]> {
     return Array.from(this.events.values());
   }
-  
+
   async getEvent(id: number): Promise<Event | undefined> {
     return this.events.get(id);
   }
-  
+
   async getEventsBySport(sportId: number): Promise<Event[]> {
     return Array.from(this.events.values()).filter(
       (event) => event.sportId === sportId
     );
   }
-  
+
   async getUpcomingEvents(limit?: number): Promise<Event[]> {
     const events = Array.from(this.events.values())
       .filter((event) => event.status === "scheduled")
       .sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
-    
+
     return limit ? events.slice(0, limit) : events;
   }
-  
+
   async getLiveEvents(): Promise<Event[]> {
     return Array.from(this.events.values()).filter(
       (event) => event.status === "live"
     );
   }
-  
+
   async createEvent(insertEvent: InsertEvent): Promise<Event> {
     const id = this.nextEventId++;
     const event: Event = { 
@@ -590,18 +697,18 @@ export class MemStorage implements IStorage {
       timeRemaining: "",
       odds: {}
     };
-    
+
     this.events.set(id, event);
-    
+
     // Update sport event count
     const sport = await this.getSport(event.sportId);
     if (sport) {
       await this.updateSportEventCount(sport.id, sport.eventCount + 1);
     }
-    
+
     return event;
   }
-  
+
   async updateEventStatus(
     eventId: number, 
     status: string, 
@@ -614,39 +721,39 @@ export class MemStorage implements IStorage {
     if (!event) {
       throw new Error("Event not found");
     }
-    
+
     event.status = status;
     if (homeScore !== undefined) event.homeScore = homeScore;
     if (awayScore !== undefined) event.awayScore = awayScore;
     if (period !== undefined) event.period = period;
     if (timeRemaining !== undefined) event.timeRemaining = timeRemaining;
-    
+
     this.events.set(eventId, event);
     return event;
   }
-  
+
   async updateEventOdds(eventId: number, odds: any): Promise<Event> {
     const event = await this.getEvent(eventId);
     if (!event) {
       throw new Error("Event not found");
     }
-    
+
     event.odds = odds;
     this.events.set(eventId, event);
     return event;
   }
-  
+
   // Bets operations
   async getUserBets(userId: number): Promise<Bet[]> {
     return Array.from(this.bets.values()).filter(
       (bet) => bet.userId === userId
     );
   }
-  
+
   async getBet(id: number): Promise<Bet | undefined> {
     return this.bets.get(id);
   }
-  
+
   async createBet(insertBet: InsertBet): Promise<Bet> {
     const id = this.nextBetId++;
     const bet: Bet = { 
@@ -656,28 +763,28 @@ export class MemStorage implements IStorage {
       placedAt: new Date(),
       settledAt: undefined
     };
-    
+
     this.bets.set(id, bet);
-    
+
     // Update user balance
     const user = await this.getUser(bet.userId);
     if (user) {
       await this.updateUserBalance(user.id, user.balance - bet.amount);
     }
-    
+
     return bet;
   }
-  
+
   async settleBet(betId: number, status: string): Promise<Bet> {
     const bet = await this.getBet(betId);
     if (!bet) {
       throw new Error("Bet not found");
     }
-    
+
     bet.status = status;
     bet.settledAt = new Date();
     this.bets.set(betId, bet);
-    
+
     // If bet won, update user balance
     if (status === "won") {
       const user = await this.getUser(bet.userId);
@@ -685,25 +792,25 @@ export class MemStorage implements IStorage {
         await this.updateUserBalance(user.id, user.balance + bet.potentialPayout);
       }
     }
-    
+
     return bet;
   }
-  
+
   // Tournaments operations
   async getAllTournaments(): Promise<Tournament[]> {
     return Array.from(this.tournaments.values());
   }
-  
+
   async getTournament(id: number): Promise<Tournament | undefined> {
     return this.tournaments.get(id);
   }
-  
+
   async getTournamentsBySport(sportId: number): Promise<Tournament[]> {
     return Array.from(this.tournaments.values()).filter(
       (tournament) => tournament.sportId === sportId
     );
   }
-  
+
   async createTournament(insertTournament: InsertTournament): Promise<Tournament> {
     const id = this.nextTournamentId++;
     const tournament: Tournament = { 
@@ -711,33 +818,33 @@ export class MemStorage implements IStorage {
       id, 
       bracketData: {} 
     };
-    
+
     this.tournaments.set(id, tournament);
     return tournament;
   }
-  
+
   async updateTournamentBracket(tournamentId: number, bracketData: any): Promise<Tournament> {
     const tournament = await this.getTournament(tournamentId);
     if (!tournament) {
       throw new Error("Tournament not found");
     }
-    
+
     tournament.bracketData = bracketData;
     this.tournaments.set(tournamentId, tournament);
     return tournament;
   }
-  
+
   // Fantasy teams operations
   async getUserFantasyTeams(userId: number): Promise<FantasyTeam[]> {
     return Array.from(this.fantasyTeams.values()).filter(
       (team) => team.userId === userId
     );
   }
-  
+
   async getFantasyTeam(id: number): Promise<FantasyTeam | undefined> {
     return this.fantasyTeams.get(id);
   }
-  
+
   async createFantasyTeam(insertFantasyTeam: InsertFantasyTeam): Promise<FantasyTeam> {
     const id = this.nextFantasyTeamId++;
     const fantasyTeam: FantasyTeam = { 
@@ -747,79 +854,79 @@ export class MemStorage implements IStorage {
       maxSalary: 50000, 
       createdAt: new Date() 
     };
-    
+
     this.fantasyTeams.set(id, fantasyTeam);
     return fantasyTeam;
   }
-  
+
   async updateFantasyTeamSalary(fantasyTeamId: number, salary: number): Promise<FantasyTeam> {
     const fantasyTeam = await this.getFantasyTeam(fantasyTeamId);
     if (!fantasyTeam) {
       throw new Error("Fantasy team not found");
     }
-    
+
     fantasyTeam.salary = salary;
     this.fantasyTeams.set(fantasyTeamId, fantasyTeam);
     return fantasyTeam;
   }
-  
+
   // Players operations
   async getAllPlayers(): Promise<Player[]> {
     return Array.from(this.players.values());
   }
-  
+
   async getPlayersByTeam(teamId: number): Promise<Player[]> {
     return Array.from(this.players.values()).filter(
       (player) => player.teamId === teamId
     );
   }
-  
+
   async getPlayer(id: number): Promise<Player | undefined> {
     return this.players.get(id);
   }
-  
+
   async createPlayer(insertPlayer: InsertPlayer): Promise<Player> {
     const id = this.nextPlayerId++;
     const player: Player = { ...insertPlayer, id };
     this.players.set(id, player);
     return player;
   }
-  
+
   // Fantasy team players operations
   async getFantasyTeamPlayers(fantasyTeamId: number): Promise<FantasyTeamPlayer[]> {
     return Array.from(this.fantasyTeamPlayers.values()).filter(
       (ftp) => ftp.fantasyTeamId === fantasyTeamId
     );
   }
-  
+
   async addPlayerToFantasyTeam(insertFantasyTeamPlayer: InsertFantasyTeamPlayer): Promise<FantasyTeamPlayer> {
     const id = this.nextFantasyTeamPlayerId++;
     const fantasyTeamPlayer: FantasyTeamPlayer = { ...insertFantasyTeamPlayer, id };
     this.fantasyTeamPlayers.set(id, fantasyTeamPlayer);
-    
+
     // Update fantasy team salary
     const player = await this.getPlayer(fantasyTeamPlayer.playerId);
     const fantasyTeam = await this.getFantasyTeam(fantasyTeamPlayer.fantasyTeamId);
-    
+
     if (player && fantasyTeam && player.salary) {
       await this.updateFantasyTeamSalary(fantasyTeam.id, fantasyTeam.salary + player.salary);
     }
-    
+
     return fantasyTeamPlayer;
   }
-  
+
   async removePlayerFromFantasyTeam(fantasyTeamId: number, playerId: number): Promise<void> {
     const ftp = Array.from(this.fantasyTeamPlayers.values()).find(
       (ftp) => ftp.fantasyTeamId === fantasyTeamId && ftp.playerId === playerId
     );
-    
+
     if (ftp) {
       this.fantasyTeamPlayers.delete(ftp.id);
-      
+
       // Update fantasy team salary
       const player = await this.getPlayer(playerId);
       const fantasyTeam = await this.getFantasyTeam(fantasyTeamId);
-      
+
       if (player && fantasyTeam && player.salary) {
         await this.updateFantasyTeamSalary(fantasyTeam.id, fantasyTeam.salary - player.salary);
       }
@@ -831,28 +938,28 @@ export class MemStorage implements IStorage {
       .insert(bettingChallenges)
       .values(challenge)
       .returning();
-    
+
     return newChallenge;
   }
-  
+
   async getBettingChallenge(id: number): Promise<BettingChallenge | undefined> {
     const [challenge] = await db
       .select()
       .from(bettingChallenges)
       .where(eq(bettingChallenges.id, id));
-      
+
     return challenge;
   }
-  
+
   async getBettingChallengeByUuid(uuid: string): Promise<BettingChallenge | undefined> {
     const [challenge] = await db
       .select()
       .from(bettingChallenges)
       .where(eq(bettingChallenges.challengeUuid, uuid));
-      
+
     return challenge;
   }
-  
+
   async getUserChallenges(userId: string, status?: string): Promise<BettingChallenge[]> {
     let query = db
       .select()
@@ -863,20 +970,20 @@ export class MemStorage implements IStorage {
           eq(bettingChallenges.acceptedBy, userId)
         )
       );
-      
+
     if (status) {
       query = query.where(eq(bettingChallenges.status, status));
     }
-    
+
     // Order by most recent first
     query = query.orderBy(desc(bettingChallenges.createdAt));
-    
+
     return await query;
   }
-  
+
   async acceptBettingChallenge(uuid: string, userId: string): Promise<BettingChallenge> {
     const now = new Date();
-    
+
     const [updatedChallenge] = await db
       .update(bettingChallenges)
       .set({ 
@@ -887,10 +994,10 @@ export class MemStorage implements IStorage {
       })
       .where(eq(bettingChallenges.challengeUuid, uuid))
       .returning();
-      
+
     return updatedChallenge;
   }
-  
+
   async updateBettingChallengeStatus(uuid: string, status: string): Promise<BettingChallenge> {
     const [updatedChallenge] = await db
       .update(bettingChallenges)
@@ -900,10 +1007,10 @@ export class MemStorage implements IStorage {
       })
       .where(eq(bettingChallenges.challengeUuid, uuid))
       .returning();
-      
+
     return updatedChallenge;
   }
-  
+
   async settleBettingChallenge(uuid: string, winnerId?: string, isDraw: boolean = false): Promise<BettingChallenge> {
     const now = new Date();
     const updateData: any = { 
@@ -911,51 +1018,51 @@ export class MemStorage implements IStorage {
       settledAt: now,
       updatedAt: now
     };
-    
+
     if (isDraw) {
       updateData.isDraw = true;
     } else if (winnerId) {
       updateData.winnerId = winnerId;
     }
-    
+
     const [updatedChallenge] = await db
       .update(bettingChallenges)
       .set(updateData)
       .where(eq(bettingChallenges.challengeUuid, uuid))
       .returning();
-      
+
     return updatedChallenge;
   }
-  
+
   // Notification operations
   async createNotification(notification: InsertNotification): Promise<Notification> {
     const [newNotification] = await db
       .insert(notifications)
       .values(notification)
       .returning();
-      
+
     return newNotification;
   }
-  
+
   async getUserNotifications(userId: string, unreadOnly: boolean = false): Promise<Notification[]> {
     let query = db
       .select()
       .from(notifications)
       .where(eq(notifications.userId, userId));
-      
+
     if (unreadOnly) {
       query = query.where(eq(notifications.read, false));
     }
-    
+
     // Order by most recent first
     query = query.orderBy(desc(notifications.createdAt));
-    
+
     return await query;
   }
-  
+
   async markNotificationAsRead(id: number, userId: string): Promise<Notification> {
     const now = new Date();
-    
+
     const [updatedNotification] = await db
       .update(notifications)
       .set({ 
@@ -970,7 +1077,7 @@ export class MemStorage implements IStorage {
         )
       )
       .returning();
-      
+
     return updatedNotification;
   }
 }

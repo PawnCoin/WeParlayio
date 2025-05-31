@@ -14,7 +14,7 @@ const isAdmin = async (req: Request, res: Response, next: any) => {
 adminRouter.get('/users', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
   try {
     const users = await storage.getAllUsers();
-    
+
     // Filter out sensitive information
     const filteredUsers = users.map(user => ({
       id: user.id,
@@ -29,7 +29,7 @@ adminRouter.get('/users', isAuthenticated, isAdmin, async (req: Request, res: Re
       betsCount: user.betsCount || 0,
       winsCount: user.winsCount || 0,
     }));
-    
+
     res.json(filteredUsers);
   } catch (error) {
     console.error('Error getting users:', error);
@@ -41,11 +41,11 @@ adminRouter.get('/users', isAuthenticated, isAdmin, async (req: Request, res: Re
 adminRouter.get('/users/:id', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
   try {
     const user = await storage.getUser(req.params.id);
-    
+
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    
+
     res.json(user);
   } catch (error) {
     console.error('Error getting user:', error);
@@ -57,17 +57,17 @@ adminRouter.get('/users/:id', isAuthenticated, isAdmin, async (req: Request, res
 adminRouter.patch('/users/:id/status', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
   try {
     const { status } = req.body;
-    
+
     if (!['active', 'suspended', 'inactive'].includes(status)) {
       return res.status(400).json({ message: 'Invalid status value' });
     }
-    
+
     const user = await storage.updateUserStatus(req.params.id, status);
-    
+
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    
+
     res.json(user);
   } catch (error) {
     console.error('Error updating user status:', error);
@@ -79,7 +79,7 @@ adminRouter.patch('/users/:id/status', isAuthenticated, isAdmin, async (req: Req
 adminRouter.get('/financial-summary', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
   try {
     const summary = await storage.getFinancialSummary();
-    
+
     // Ensure we return proper zero values for a new platform
     const formattedSummary = {
       totalRevenue: (summary.totalRevenue || 0).toString(),
@@ -103,7 +103,7 @@ adminRouter.get('/financial-summary', isAuthenticated, isAdmin, async (req: Requ
         "Other": "0"
       }
     };
-    
+
     res.json(formattedSummary);
   } catch (error) {
     console.error('Error getting financial summary:', error);
@@ -115,12 +115,12 @@ adminRouter.get('/financial-summary', isAuthenticated, isAdmin, async (req: Requ
 adminRouter.get('/transactions', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
   try {
     const { limit = 20, offset = 0 } = req.query;
-    
+
     const transactions = await storage.getTransactions(
       Number(limit), 
       Number(offset)
     );
-    
+
     res.json(transactions);
   } catch (error) {
     console.error('Error getting transactions:', error);
@@ -132,15 +132,15 @@ adminRouter.get('/transactions', isAuthenticated, isAdmin, async (req: Request, 
 adminRouter.post('/bank-account', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
   try {
     const { accountName, bankName, accountNumber, routingNumber } = req.body;
-    
+
     // Validate input
     if (!accountName || !bankName || !accountNumber || !routingNumber) {
       return res.status(400).json({ message: 'All bank account fields are required' });
     }
-    
+
     // Get user ID from authenticated request
     const userId = (req.user as any).claims?.sub || 'admin-owner';
-    
+
     const bankAccount = await storage.updateBankAccount({
       userId,
       accountName,
@@ -149,7 +149,7 @@ adminRouter.post('/bank-account', isAuthenticated, isAdmin, async (req: Request,
       routingNumber,
       isDefault: true
     });
-    
+
     res.json(bankAccount);
   } catch (error) {
     console.error('Error updating bank account:', error);
@@ -161,7 +161,7 @@ adminRouter.post('/bank-account', isAuthenticated, isAdmin, async (req: Request,
 adminRouter.get('/bank-account', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
   try {
     const bankAccount = await storage.getOwnerBankAccount();
-    
+
     // If no bank account exists yet, return an empty object with proper structure
     if (!bankAccount) {
       return res.json({
@@ -176,7 +176,7 @@ adminRouter.get('/bank-account', isAuthenticated, isAdmin, async (req: Request, 
         updatedAt: new Date()
       });
     }
-    
+
     // Mask sensitive data for security
     const maskedAccount = {
       ...bankAccount,
@@ -185,7 +185,7 @@ adminRouter.get('/bank-account', isAuthenticated, isAdmin, async (req: Request, 
       routingNumber: bankAccount.routingNumber ? 
         '*'.repeat(bankAccount.routingNumber.length - 4) + bankAccount.routingNumber.slice(-4) : ''
     };
-    
+
     res.json(maskedAccount);
   } catch (error) {
     console.error('Error fetching bank account:', error);
@@ -197,12 +197,12 @@ adminRouter.get('/bank-account', isAuthenticated, isAdmin, async (req: Request, 
 adminRouter.post('/platform-settings', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
   try {
     const { registrationStatus, verificationLevel, commission, minBet, maxWithdrawal } = req.body;
-    
+
     // Validate input
     if (!registrationStatus || !verificationLevel || !commission || !minBet || !maxWithdrawal) {
       return res.status(400).json({ message: 'All platform settings fields are required' });
     }
-    
+
     const settings = await storage.updatePlatformSettings({
       registrationStatus,
       verificationLevel,
@@ -210,7 +210,7 @@ adminRouter.post('/platform-settings', isAuthenticated, isAdmin, async (req: Req
       minBet,
       maxWithdrawal
     });
-    
+
     res.json(settings);
   } catch (error) {
     console.error('Error updating platform settings:', error);
@@ -222,20 +222,20 @@ adminRouter.post('/platform-settings', isAuthenticated, isAdmin, async (req: Req
 adminRouter.post('/privacy-settings', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
   try {
     const { publicProfiles, bettingHistory, winStatistics, leagueRankings } = req.body;
-    
+
     // Validate input
     if (publicProfiles === undefined || bettingHistory === undefined || 
         winStatistics === undefined || leagueRankings === undefined) {
       return res.status(400).json({ message: 'All privacy settings fields are required' });
     }
-    
+
     const settings = await storage.updatePrivacySettings({
       publicProfiles,
       bettingHistory,
       winStatistics,
       leagueRankings
     });
-    
+
     res.json(settings);
   } catch (error) {
     console.error('Error updating privacy settings:', error);
