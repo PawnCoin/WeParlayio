@@ -501,10 +501,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: error.message || 'Internal server error while creating challenge' 
       });
     }
-  });ssage,
-        status: 'pending',
-        expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000) // 48 hours from now
-      });
+  });
       
       // If recipient email/phone was provided, send notification
       if (notificationEmail || notificationPhone) {
