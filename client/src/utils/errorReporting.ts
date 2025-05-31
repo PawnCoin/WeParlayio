@@ -1,4 +1,3 @@
-
 interface ErrorReport {
   message: string;
   timestamp: string;
@@ -133,14 +132,19 @@ class ErrorReportingService {
     // Filter out known benign errors
     const filteredErrors = this.errorQueue.filter(errorItem => {
       const message = (errorItem.message || '').toLowerCase();
-      return !message.includes('websocket') && 
-             !message.includes('cors') && 
+      // Filter out only truly non-critical errors
+  if (
+    message.includes('ResizeObserver') ||
+    message.includes('Non-Error promise rejection')
+  ) {
+    return false; // Don't report these errors
+  }
+      return !message.includes('cors') && 
              !message.includes('metamask') &&
              !message.includes('unrecognized feature') &&
              !message.includes('invalid sandbox flag') &&
              !message.includes('websocket closed without opened') &&
              !message.includes('failed to connect to websocket') &&
-             !message.includes('vite') &&
              !message.includes('1006');
     });
 
