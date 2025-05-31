@@ -73,12 +73,14 @@ export default function AdminDashboard() {
         )}
 
         <Tabs value={activeSection} onValueChange={setActiveSection} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="finances">Finances</TabsTrigger>
             <TabsTrigger value="content">Content</TabsTrigger>
             <TabsTrigger value="system">System</TabsTrigger>
+            <TabsTrigger value="social">Social</TabsTrigger>
+            <TabsTrigger value="testing">Testing</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
@@ -249,6 +251,118 @@ export default function AdminDashboard() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Social Tab */}
+          <TabsContent value="social" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Globe className="h-5 w-5" />
+                    Social Media Management
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Button className="w-full justify-start" variant="outline" 
+                    onClick={() => window.open('/admin/social-media-dashboard', '_blank')}>
+                    <Globe className="h-4 w-4 mr-2" />
+                    Social Media Dashboard
+                  </Button>
+                  <Button className="w-full justify-start" variant="outline"
+                    onClick={() => window.open('/social-bots', '_blank')}>
+                    <Activity className="h-4 w-4 mr-2" />
+                    Social Media Bots
+                  </Button>
+                  <Button className="w-full justify-start" variant="outline"
+                    onClick={() => window.open('/email-monitoring', '_blank')}>
+                    <Mail className="h-4 w-4 mr-2" />
+                    Email Monitoring
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    Community Management
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Button className="w-full justify-start" variant="outline"
+                    onClick={() => window.open('/site-navigation', '_blank')}>
+                    <Settings className="h-4 w-4 mr-2" />
+                    Site Navigation
+                  </Button>
+                  <Button className="w-full justify-start" variant="outline"
+                    onClick={() => window.open('/page-status-checker', '_blank')}>
+                    <Eye className="h-4 w-4 mr-2" />
+                    Page Status Checker
+                  </Button>
+                  <Button className="w-full justify-start" variant="outline"
+                    onClick={() => window.open('/weparlay-cash', '_blank')}>
+                    <DollarSign className="h-4 w-4 mr-2" />
+                    WeParlay Cash
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Testing Tab */}
+          <TabsContent value="testing" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="h-5 w-5" />
+                    Authentication Testing
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Button className="w-full justify-start" variant="outline"
+                    onClick={() => window.open('/auth-test-demo', '_blank')}>
+                    <Lock className="h-4 w-4 mr-2" />
+                    Auth Test Demo
+                  </Button>
+                  <Button className="w-full justify-start" variant="outline"
+                    onClick={() => window.open('/notifications-test', '_blank')}>
+                    <Bell className="h-4 w-4 mr-2" />
+                    Notifications Test
+                  </Button>
+                  <Button className="w-full justify-start" variant="outline"
+                    onClick={() => window.open('/payment-demo', '_blank')}>
+                    <DollarSign className="h-4 w-4 mr-2" />
+                    Payment Demo
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5" />
+                    Security Testing
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Button className="w-full justify-start" variant="outline"
+                    onClick={() => window.open('/security-info', '_blank')}>
+                    <FileText className="h-4 w-4 mr-2" />
+                    Security Info
+                  </Button>
+                  <Button className="w-full justify-start" variant="outline"
+                    onClick={() => window.open('/security-settings', '_blank')}>
+                    <Settings className="h-4 w-4 mr-2" />
+                    Security Settings
+                  </Button>
+                  <div className="text-sm text-slate-600">
+                    Test security features and monitor system integrity
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* Settings Tab */}
