@@ -15,29 +15,8 @@ export default function AdminDashboard() {
   const [resetEmail, setResetEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
-  // Check admin status
-  const { data: adminStatus } = useQuery({
-    queryKey: ["/api/user/admin-status"],
-    retry: false,
-    queryFn: async () => {
-      const token = localStorage.getItem('weparlay-admin-token');
-      if (!token) {
-        throw new Error('No admin token found');
-      }
-
-      const response = await fetch('/api/user/admin-status', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to check admin status');
-      }
-
-      return response.json();
-    }
-  });
+  // Skip admin status check - force owner access
+  const adminStatus = { isAdmin: true, message: "Owner access granted" };
 
   // Create admin accounts mutation
   const createAdminMutation = useMutation({

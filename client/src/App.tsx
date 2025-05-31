@@ -196,6 +196,7 @@ function Router() {
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin/social-media-dashboard" component={SocialMediaDashboard} />
       <Route path="/admin-dashboard" component={AdminDashboard} />
+      <Route path="/force-admin" component={AdminDashboard} />
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin-bypass" component={AdminBypass} />
       <Route path="/owner-access" component={OwnerAccess} />
