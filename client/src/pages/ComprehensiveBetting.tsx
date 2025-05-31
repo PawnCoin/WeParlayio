@@ -199,7 +199,7 @@ export default function ComprehensiveBetting() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header Section */}
         <div className="text-center space-y-4">
@@ -227,7 +227,7 @@ export default function ComprehensiveBetting() {
         </div>
 
         {/* Real-time Status Bar */}
-        <Card className="border-green-200 bg-gradient-to-r from-green-50 to-blue-50">
+        <Card className="border-green-700 bg-gradient-to-r from-slate-800 to-slate-700">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -263,7 +263,7 @@ export default function ComprehensiveBetting() {
         </Card>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-5 bg-slate-800 border-slate-700">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Globe className="h-4 w-4" />
               Overview
@@ -290,45 +290,45 @@ export default function ComprehensiveBetting() {
           <TabsContent value="overview">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Quick Stats with functional buttons */}
-              <Card className="border-blue-200 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setActiveTab("sports")}>
+              <Card className="border-blue-700 bg-slate-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setActiveTab("sports")}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Available Sports</CardTitle>
-                  <Trophy className="h-4 w-4 text-blue-600" />
+                  <CardTitle className="text-sm font-medium text-slate-200">Available Sports</CardTitle>
+                  <Trophy className="h-4 w-4 text-blue-400" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-blue-600">{sports?.length || 0}</div>
-                  <p className="text-xs text-gray-500">Click to view all sports</p>
+                  <div className="text-2xl font-bold text-blue-400">{sports?.length || 0}</div>
+                  <p className="text-xs text-slate-400">Click to view all sports</p>
                 </CardContent>
               </Card>
 
-              <Card className="border-green-200 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setActiveTab("live")}>
+              <Card className="border-green-700 bg-slate-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setActiveTab("live")}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Live Events</CardTitle>
-                  <Activity className="h-4 w-4 text-green-600" />
+                  <CardTitle className="text-sm font-medium text-slate-200">Live Events</CardTitle>
+                  <Activity className="h-4 w-4 text-green-400" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-green-600">{liveEvents?.length || 0}</div>
-                  <p className="text-xs text-gray-500">Click to view live events</p>
+                  <div className="text-2xl font-bold text-green-400">{liveEvents?.length || 0}</div>
+                  <p className="text-xs text-slate-400">Click to view live events</p>
                 </CardContent>
               </Card>
 
-              <Card className="border-orange-200 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleNavigateToAnalytics}>
+              <Card className="border-orange-700 bg-slate-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleNavigateToAnalytics}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Upcoming Events</CardTitle>
-                  <Clock className="h-4 w-4 text-orange-600" />
+                  <CardTitle className="text-sm font-medium text-slate-200">Upcoming Events</CardTitle>
+                  <Clock className="h-4 w-4 text-orange-400" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-orange-600">{upcomingEvents?.length || 0}</div>
-                  <p className="text-xs text-gray-500">Click for analytics</p>
+                  <div className="text-2xl font-bold text-orange-400">{upcomingEvents?.length || 0}</div>
+                  <p className="text-xs text-slate-400">Click for analytics</p>
                 </CardContent>
               </Card>
             </div>
 
             {/* Featured Sports with functional buttons */}
-            <Card className="mt-6">
+            <Card className="mt-6 bg-slate-800 border-slate-700">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Star className="h-5 w-5 text-yellow-500" />
+                <CardTitle className="flex items-center gap-2 text-slate-200">
+                  <Star className="h-5 w-5 text-yellow-400" />
                   Featured Sports
                 </CardTitle>
               </CardHeader>
@@ -338,10 +338,10 @@ export default function ComprehensiveBetting() {
                     <Button
                       key={sport.id}
                       variant="outline"
-                      className="h-20 flex flex-col items-center justify-center gap-2 hover:bg-blue-50 border-blue-200 transition-all duration-200"
+                      className="h-20 flex flex-col items-center justify-center gap-2 hover:bg-slate-700 border-slate-600 bg-slate-800 text-slate-200 transition-all duration-200"
                       onClick={() => handleSportSelect(sport.key)}
                     >
-                      <Trophy className="h-6 w-6 text-blue-600" />
+                      <Trophy className="h-6 w-6 text-blue-400" />
                       <span className="text-sm font-medium">{sport.name}</span>
                     </Button>
                   ))}
@@ -381,10 +381,10 @@ export default function ComprehensiveBetting() {
 
           {/* Live Events Tab with functional buttons */}
           <TabsContent value="live">
-            <Card>
+            <Card className="bg-slate-800 border-slate-700">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5 text-red-500" />
+                <CardTitle className="flex items-center gap-2 text-slate-200">
+                  <Activity className="h-5 w-5 text-red-400" />
                   Live Events ({liveEvents?.length || 0})
                 </CardTitle>
               </CardHeader>
@@ -452,10 +452,10 @@ export default function ComprehensiveBetting() {
 
           {/* All Sports Tab with functional buttons */}
           <TabsContent value="sports">
-            <Card>
+            <Card className="bg-slate-800 border-slate-700">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Trophy className="h-5 w-5 text-blue-500" />
+                <CardTitle className="flex items-center gap-2 text-slate-200">
+                  <Trophy className="h-5 w-5 text-blue-400" />
                   All Available Sports ({filteredSports.length})
                 </CardTitle>
               </CardHeader>
@@ -504,10 +504,10 @@ export default function ComprehensiveBetting() {
 
           {/* Gaming & Esports Tab with functional buttons */}
           <TabsContent value="gaming">
-            <Card>
+            <Card className="bg-slate-800 border-slate-700">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Gamepad2 className="h-5 w-5 text-purple-500" />
+                <CardTitle className="flex items-center gap-2 text-slate-200">
+                  <Gamepad2 className="h-5 w-5 text-purple-400" />
                   Gaming & Esports
                 </CardTitle>
               </CardHeader>
@@ -568,10 +568,10 @@ export default function ComprehensiveBetting() {
 
           {/* Analytics Tab with functional buttons */}
           <TabsContent value="analytics">
-            <Card>
+            <Card className="bg-slate-800 border-slate-700">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5 text-green-500" />
+                <CardTitle className="flex items-center gap-2 text-slate-200">
+                  <BarChart3 className="h-5 w-5 text-green-400" />
                   Betting Analytics & Tools
                 </CardTitle>
               </CardHeader>
