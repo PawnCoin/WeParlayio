@@ -174,15 +174,7 @@ export class AssetManager {
   }
 
   // Get sport icon using ESPN service
-  static getSportIcon(sportKey: string): string {
-    if (this.iconCache.has(sportKey)) {
-      return this.iconCache.get(sportKey)!;
-    }
 
-    const iconPath = ESPNAssetService.getSportIcon(sportKey);
-    this.iconCache.set(sportKey, iconPath);
-    return iconPath;
-  }
 
   // Get team logo using Universal Team Service
   static getTeamLogo(teamName: string, league: string = 'nba'): string {
@@ -338,26 +330,5 @@ export class AssetManager {
     return colorSchemes[normalizedLeague] || colorSchemes.default;
   }
 
-  // Get sport icon
-  static getSportIcon(sport: string): string {
-    const sportIcons: Record<string, string> = {
-      'nba': '🏀',
-      'nfl': '🏈', 
-      'mlb': '⚾',
-      'nhl': '🏒',
-      'soccer': '⚽',
-      'mls': '⚽',
-      'premier-league': '⚽',
-      'ncaa': '🏀',
-      'esports': '🎮',
-      'ufc': '🥊',
-      'boxing': '🥊',
-      'tennis': '🎾',
-      'golf': '⛳',
-      'nascar': '🏎️'
-    };
 
-    const normalizedSport = sport.toLowerCase().replace(/\s+/g, '-');
-    return sportIcons[normalizedSport] || '⚽';
-  }
 }
