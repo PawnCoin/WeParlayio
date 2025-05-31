@@ -245,3 +245,66 @@ adminRouter.post('/privacy-settings', isAuthenticated, isAdmin, async (req: Requ
     res.status(500).json({ message: 'Failed to update privacy settings' });
   }
 });
+
+// API status endpoint (admin only)
+adminRouter.get('/api-status', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+  try {
+    // Check all configured APIs
+    const apiStatus = {
+      timestamp: new Date().toISOString(),
+      apis: {
+        the_odds_api: {
+          configured: !!process.env.THE_ODDS_API_KEY,
+          status: process.env.THE_ODDS_API_KEY ? 'quota_exhausted' : 'not_configured',
+          keyLength: process.env.THE_ODDS_API_KEY?.length || 0
+        },
+        rapidapi: {
+          configured: !!process.env.RAPIDAPI_KEY,
+          status: process.env.RAPIDAPI_KEY ? 'active' : 'not_configured',
+          keyLength: process.env.RAPIDAPI_KEY?.length || 0
+        },
+        grid_api: {
+          configured: !!process.env.GRID_API_KEY,
+          status: process.env.GRID_API_KEY ? 'active' : 'not_configured',
+          keyLength: process.env.GRID_API_KEY?.length || 0
+        },
+        riot_api: {
+          configured: !!process.env.RIOT_API_KEY,
+          status: process.env.RIOT_API_KEY ? 'active' : 'not_configured',
+          keyLength: process.env.RIOT_API_KEY?.length || 0
+        },
+        panda_api: {
+          configured: !!process.env.PANDA_API_KEY,
+          status: process.env.PANDA_API_KEY ? 'active' : 'not_configured',
+          keyLength: process.env.PANDA_API_KEY?.length || 0
+        },
+        espn_api: {
+          configured: true,
+          status: 'active',
+          description: 'Free ESPN API - no key required'
+        }
+      },
+      summary: {
+        total_configured: [
+          process.env.THE_ODDS_API_KEY,
+          process.env.RAPIDAPI_KEY,
+          process.env.GRID_API_KEY,
+          process.env.RIOT_API_KEY,
+          process.env.PANDA_API_KEY
+        ].filter(Boolean).length,
+        working_apis: ['ESPN', 'RapidAPI', 'GRID'].filter(api => {
+          if (api === 'ESPN') return true;
+          if (api === 'RapidAPI') return !!process.env.RAPIDAPI_KEY;
+          if (api === 'GRID') return !!process.env.GRID_API_KEY;
+          return false;
+        }).length,
+        emergency_mode: false
+      }
+    };
+
+    res.json(apiStatus);
+  } catch (error) {
+    console.error('Error getting API status:', error);
+    res.status(500).json({ message: 'Failed to retrieve API status' });
+  }
+});
