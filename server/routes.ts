@@ -5693,6 +5693,117 @@ Join us: WeParlay.io 🎯
     }
   });
 
+  // Active RapidAPI Basketball Data (API-BASKETBALL subscription)
+  app.get('/api/rapidapi/basketball', async (req, res) => {
+    try {
+      const rapidApiKey = process.env.RAPIDAPI_KEY;
+      if (!rapidApiKey) {
+        return res.status(500).json({ success: false, message: 'RapidAPI key not configured' });
+      }
+
+      const league = req.query.league || 'nba';
+      const season = req.query.season || '2024';
+      
+      const response = await fetch(`https://api-basketball.p.rapidapi.com/games?league=${league}&season=${season}`, {
+        headers: {
+          'X-RapidAPI-Key': rapidApiKey,
+          'X-RapidAPI-Host': 'api-basketball.p.rapidapi.com'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Basketball API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      res.json({
+        success: true,
+        data: data.response || [],
+        source: 'API-BASKETBALL',
+        league,
+        season,
+        count: data.response?.length || 0
+      });
+    } catch (error) {
+      console.error('Basketball API error:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'Failed to fetch basketball data',
+        error: error.message 
+      });
+    }
+  });
+
+  // Active Pinnacle Odds Data (Premium odds subscription)
+  app.get('/api/rapidapi/pinnacle-odds', async (req, res) => {
+    try {
+      const rapidApiKey = process.env.RAPIDAPI_KEY;
+      if (!rapidApiKey) {
+        return res.status(500).json({ success: false, message: 'RapidAPI key not configured' });
+      }
+
+      const response = await fetch('https://pinnacle-odds.p.rapidapi.com/kit/v1/markets', {
+        headers: {
+          'X-RapidAPI-Key': rapidApiKey,
+          'X-RapidAPI-Host': 'pinnacle-odds.p.rapidapi.com'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Pinnacle API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      res.json({
+        success: true,
+        data: data || [],
+        source: 'PINNACLE-ODDS',
+        count: Array.isArray(data) ? data.length : 0
+      });
+    } catch (error) {
+      console.error('Pinnacle API error:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'Failed to fetch Pinnacle odds',
+        error: error.message 
+      });
+    }
+  });
+
+  app.get('/api/rapidapi/test-subscriptions', async (req, res) => {
+    try {
+      const rapidApiIntegration = await import('./services/rapidApiIntegrationService');
+      const results = await rapidApiIntegration.rapidApiIntegration.testAllSubscriptions();
+      res.json(results);
+    } catch (error) {
+      console.error('RapidAPI subscription test error:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'Failed to test RapidAPI subscriptions',
+        error: error.message 
+      });
+    }
+  });
+
+  app.get('/api/rapidapi/basketball', async (req, res) => {
+    try {
+      const rapidApiIntegration = await import('./services/rapidApiIntegrationService');
+      const basketballData = await rapidApiIntegration.rapidApiIntegration.getBasketballData();
+      res.json({
+        success: true,
+        data: basketballData,
+        source: 'API-BASKETBALL'
+      });
+    } catch (error) {
+      console.error('RapidAPI basketball error:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'Failed to fetch basketball data',
+        error: error.message 
+      });
+    }
+  });
+
   // API diagnostic endpoint
   app.get('/api/test/apis', async (req, res) => {
     const results = {
