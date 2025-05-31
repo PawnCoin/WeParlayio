@@ -112,9 +112,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 <Link key={link.href} href={link.href}>
                   <div className={`${
                     location === link.href
-                      ? "text-green-500 border-b-2 border-green-500"
-                      : "text-white hover:text-green-500 transition-colors"
-                  } font-medium cursor-pointer py-2 px-1 text-sm`}>
+                      ? "text-green-400 border-b-2 border-green-400 font-semibold"
+                      : "text-white hover:text-green-300 transition-colors duration-200"
+                  } font-medium cursor-pointer py-2 px-3 text-sm rounded-t-md hover:bg-black/20`}>
                     {link.label}
                   </div>
                 </Link>
@@ -122,16 +122,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             </div>
 
             {/* Mobile Navigation */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-black border-t border-orange-800 z-50">
+            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-black border-t border-green-800 z-50">
               <div className="grid grid-cols-4 px-2 py-2">
                 {navLinks.slice(0, 4).map((link) => (
                   <div 
                     key={link.href}
                     className={`${
                       location === link.href
-                        ? "text-green-500"
-                        : "text-white"
-                    } flex flex-col items-center py-2 px-1 text-xs font-medium cursor-pointer`}
+                        ? "text-green-400 bg-green-900/20"
+                        : "text-white hover:text-green-300 hover:bg-green-900/10"
+                    } flex flex-col items-center py-2 px-1 text-xs font-medium cursor-pointer rounded-md transition-colors duration-200`}
                     onClick={() => window.location.href = link.href}
                   >
                     <div className="w-6 h-6 mb-1 flex items-center justify-center">

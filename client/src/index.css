@@ -100,6 +100,26 @@ html:not(.dark) .header-dark-bg div {
   color: white !important;
 }
 
+/* Navigation specific - ensure proper contrast */
+html:not(.dark) header nav a,
+html:not(.dark) header nav div,
+html:not(.dark) header nav span {
+  color: white !important;
+}
+
+/* Active navigation states */
+html:not(.dark) header nav .text-green-400,
+html:not(.dark) header nav .text-green-300,
+html:not(.dark) header nav .text-green-500 {
+  color: #4ade80 !important; /* Force green color for active/hover states */
+}
+
+/* Mobile navigation */
+html:not(.dark) .md\:hidden .bg-black *,
+html:not(.dark) .mobile-nav * {
+  color: white !important;
+}
+
 /* Business proposal modal - white text on colored backgrounds */
 html:not(.dark) .bg-gradient-to-r *,
 html:not(.dark) .bg-gradient-to-br *,
