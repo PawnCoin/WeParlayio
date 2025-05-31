@@ -78,7 +78,7 @@ export default function ComprehensiveBetting() {
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
               WeParlay Betting Dashboard
             </h1>
-            <Sparkles className="h-8 w-8 text-purple-500" />
+            <Sparkles className="h-8 w-8 text-blue-500" />
           </div>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Your comprehensive sports betting command center with real-time data from top global sources
