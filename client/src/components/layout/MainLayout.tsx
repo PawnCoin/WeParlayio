@@ -6,7 +6,7 @@ import Footer from "./Footer";
 import SystemStatusIndicator from '../SystemStatusIndicator';
 import UnifiedBetSlip from "../betting/UnifiedBetSlip";
 import BetNotifications from "../notifications/BetNotifications";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth.ts";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import CurrencyModeToggle from "@/components/shared/CurrencyModeToggle";

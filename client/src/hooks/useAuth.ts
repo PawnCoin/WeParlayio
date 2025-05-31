@@ -157,7 +157,10 @@ export function useAuth() {
     await login(address, type);
   };
 
-  const isAuthenticated = !!user;
+  // Set authentication state
+  useEffect(() => {
+    setIsAuthenticated(!!user);
+  }, [user]);
 
   // Ensure authentication is properly initialized with admin privileges
   React.useEffect(() => {
@@ -181,7 +184,7 @@ export function useAuth() {
   return {
     user,
     isLoading,
-    error,
+    error: null,
     isAuthenticated,
     login,
     logout,

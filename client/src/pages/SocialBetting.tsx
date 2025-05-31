@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Users, Trophy, Share2, MessageSquare, Globe, Activity, UserPlus, Heart } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import BettingChallenge from '@/components/social/BettingChallenge';
-import SocialShareOptions from '@/components/SocialShareButton';
+import SocialShareButton from '@/components/SocialShareButton';
 
 const SocialBetting: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("challenges");
@@ -179,7 +179,7 @@ const SocialBetting: React.FC = () => {
                               {post.comments}
                             </Button>
                           </div>
-                          <SocialShareOptions
+                          <SocialShareButton
                             type={post.type === 'win' ? 'win' : post.type === 'share' ? 'challenge' : 'prediction'}
                             content={post.content}
                             user={{ name: post.user.name }}
