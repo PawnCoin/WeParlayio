@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Users, Trophy, Share2, MessageSquare, Globe, Activity, UserPlus, Heart } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import BettingChallenge from '@/components/social/BettingChallenge';
+import SocialShareButton from '@/components/SocialShareButton';
 
 const SocialBetting: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("challenges");
