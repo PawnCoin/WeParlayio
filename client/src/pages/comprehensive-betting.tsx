@@ -125,13 +125,13 @@ const ComprehensiveBetting = () => {
                   <span className="text-white font-semibold text-lg">LIVE DATA ACTIVE</span>
                 </div>
                 <div className="flex gap-4">
-                  <Badge variant="secondary" className="bg-blue-800 text-white border-blue-600">
+                  <Badge variant="secondary" className="bg-slate-800 text-white border-slate-600">
                     {stats?.totalSports || 113} Sports Available
                   </Badge>
-                  <Badge variant="secondary" className="bg-blue-800 text-white border-blue-600">
+                  <Badge variant="secondary" className="bg-slate-800 text-white border-slate-600">
                     {stats?.liveEvents || 0} Live Events
                   </Badge>
-                  <Badge variant="secondary" className="bg-blue-800 text-white border-blue-600">
+                  <Badge variant="secondary" className="bg-slate-800 text-white border-slate-600">
                     {stats?.upcomingEvents || 6} Upcoming
                   </Badge>
                 </div>
@@ -252,7 +252,7 @@ const ComprehensiveBetting = () => {
                 <Button 
                   variant="secondary" 
                   size="sm" 
-                  className="bg-slate-600 hover:bg-slate-500 text-white border-slate-500 px-4 py-2 rounded-md flex items-center gap-2"
+                  className="bg-slate-700 hover:bg-slate-600 text-white border-slate-600 px-4 py-2 rounded-md flex items-center gap-2"
                   onClick={() => handleSportClick(sport.key)}
                 >
                   View <ChevronRight className="w-4 h-4" />
@@ -265,19 +265,19 @@ const ComprehensiveBetting = () => {
         {/* Additional Navigation */}
         <div className="mt-8 flex gap-4 justify-center">
           <Link href="/live-betting">
-            <Button className="bg-green-600 hover:bg-green-700 text-white">
+            <Button className="bg-green-600 hover:bg-green-700 text-white border-none">
               <Activity className="w-4 h-4 mr-2" />
               Live Betting
             </Button>
           </Link>
           <Link href="/tournaments">
-            <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-700">
+            <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-700 bg-slate-800">
               <Trophy className="w-4 h-4 mr-2" />
               Tournaments
             </Button>
           </Link>
           <Link href="/esports-hub">
-            <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-700">
+            <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-700 bg-slate-800">
               <Gamepad2 className="w-4 h-4 mr-2" />
               Esports Hub
             </Button>
