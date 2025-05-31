@@ -23,6 +23,7 @@ import unifiedSportsRoutes from "./routes/unifiedSportsRoutes";
 import { bankingRouter } from "./routes/bankingRoutes";
 import websocketPollingRoutes from "./routes/websocketPollingRoutes";
 import oddsTickerRouter from "./routes/oddsTickerRoutes";
+import { apiTestRouter } from "./routes/apiTestRoutes";
 
 // Export the routes so they can be imported by index.ts
 export { notificationRoutes, websocketPollingRoutes };
@@ -5628,6 +5629,99 @@ Join us: WeParlay.io 🎯
       console.error('Error fetching game data:', error);
       res.status(500).json({ message: 'Failed to fetch game data' });
     }
+  });
+
+  // ESPN team logos and roster endpoints (needed for TeamLogo and PlayerHeadshot components)
+  app.get('/api/espn/teams/:sport', async (req, res) => {
+    try {
+      const { sport } = req.params;
+      let espnSport = sport;
+      
+      // Map sport names to ESPN API format
+      if (sport === 'basketball_nba') espnSport = 'basketball/nba';
+      if (sport === 'americanfootball_nfl') espnSport = 'football/nfl';
+      if (sport === 'baseball_mlb') espnSport = 'baseball/mlb';
+      if (sport === 'hockey_nhl') espnSport = 'hockey/nhl';
+      
+      const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${espnSport}/teams`);
+      const data = await response.json();
+      
+      const teams = data.sports?.[0]?.leagues?.[0]?.teams?.map((team: any) => ({
+        id: team.team.id,
+        name: team.team.displayName,
+        abbreviation: team.team.abbreviation,
+        logo: team.team.logos?.[0]?.href,
+        color: team.team.color,
+        alternateColor: team.team.alternateColor
+      })) || [];
+      
+      res.json(teams);
+    } catch (error) {
+      console.error('ESPN teams API error:', error);
+      res.status(500).json({ error: 'Failed to fetch ESPN teams data' });
+    }
+  });
+
+  app.get('/api/espn/roster/:sport/:teamId', async (req, res) => {
+    try {
+      const { sport, teamId } = req.params;
+      let espnSport = sport;
+      
+      // Map sport names to ESPN API format
+      if (sport === 'basketball_nba') espnSport = 'basketball/nba';
+      if (sport === 'americanfootball_nfl') espnSport = 'football/nfl';
+      if (sport === 'baseball_mlb') espnSport = 'baseball/mlb';
+      if (sport === 'hockey_nhl') espnSport = 'hockey/nhl';
+      
+      const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${espnSport}/teams/${teamId}/roster`);
+      const data = await response.json();
+      
+      const roster = data.athletes?.map((athlete: any) => ({
+        id: athlete.id,
+        name: athlete.displayName,
+        position: athlete.position?.abbreviation,
+        jersey: athlete.jersey,
+        headshot: athlete.headshot?.href,
+        age: athlete.age,
+        experience: athlete.experience?.years
+      })) || [];
+      
+      res.json(roster);
+    } catch (error) {
+      console.error('ESPN roster API error:', error);
+      res.status(500).json({ error: 'Failed to fetch ESPN roster data' });
+    }
+  });
+
+  // API diagnostic endpoint
+  app.get('/api/test/apis', async (req, res) => {
+    const results = {
+      timestamp: new Date().toISOString(),
+      apis: {}
+    };
+
+    // Test ESPN (free API)
+    try {
+      const espnTest = await fetch('https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams');
+      const espnData = await espnTest.json();
+      results.apis.espn = {
+        status: espnTest.ok ? 'WORKING' : 'FAILED',
+        teams_found: espnData.sports?.[0]?.leagues?.[0]?.teams?.length || 0
+      };
+    } catch (error) {
+      results.apis.espn = { status: 'ERROR', message: error.message };
+    }
+
+    // Check your configured APIs
+    results.apis.configured = {
+      odds_api: !!process.env.THE_ODDS_API_KEY ? 'CONFIGURED' : 'MISSING',
+      grid_api: !!process.env.GRID_API_KEY ? 'CONFIGURED' : 'MISSING',
+      rapidapi: !!process.env.RAPIDAPI_KEY ? 'CONFIGURED' : 'MISSING',
+      riot: !!process.env.RIOT_API_KEY ? 'CONFIGURED' : 'MISSING',
+      panda: !!process.env.PANDA_API_KEY ? 'CONFIGURED' : 'MISSING'
+    };
+
+    res.json(results);
   });
 
   const httpServer = createServer(app);
