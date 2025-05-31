@@ -136,19 +136,19 @@ export function generateProfessionalPalette(primaryColor: string, isDarkMode: bo
   } else {
     return {
       background: "#ffffff",
-      foreground: "#1a1a1a",
-      card: "#f8fafc",
+      foreground: "#0f172a", // Much darker for better contrast
+      card: "#ffffff",
       cardForeground: "#1e293b", 
-      primary: primaryL > 0.6 ? adjustBrightness(primaryColor, -40) : primaryColor,
+      primary: "#0ea5e9", // Fixed WeParlay blue
       primaryForeground: "#ffffff",
-      secondary: "#f1f5f9",
-      secondaryForeground: "#334155",
+      secondary: "#f8fafc", // Clean light background
+      secondaryForeground: "#374151", // Darker secondary text
       muted: "#f1f5f9",
-      mutedForeground: "#64748b",
-      accent: "#e2e8f0", 
-      accentForeground: "#1e293b",
-      border: "#e2e8f0",
-      input: "#e2e8f0",
+      mutedForeground: "#6b7280", // Better contrast gray
+      accent: "#10b981", // WeParlay green
+      accentForeground: "#ffffff",
+      border: "#e5e7eb", // Softer, more professional border
+      input: "#f9fafb", // Light input background
     };
   }
 }
