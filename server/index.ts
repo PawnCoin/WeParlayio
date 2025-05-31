@@ -83,8 +83,8 @@ app.use((req, res, next) => {
   // Get SSL configuration
   const sslConfig = getSSLConfig();
 
-  // Use port 5000 for production, 5173 for development
-  const port = app.get("env") === "development" ? 5000 : 5000;
+  // Use port 5000 for both development and production
+  const port = 5000;
 
   // Create appropriate server based on configuration
   let server;
