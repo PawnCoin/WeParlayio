@@ -81,6 +81,7 @@ import EsportsHub from "./pages/EsportsHub";
 import BettingChallenges from './components/betting/BettingChallenges';
 import SiteNavigation from './pages/SiteNavigation';
 import PageStatusChecker from './pages/PageStatusChecker';
+import { lazy } from 'react';
 
 // Import admin components
 import AdminBypass from "@/pages/AdminBypass";
@@ -202,6 +203,7 @@ function Router() {
       <Route path="/admin/financial-overview" component={FinancialOverview} />
       <Route path="/admin/analytics" component={Analytics} />
       <Route path="/admin/platform-settings" component={PlatformSettings} />
+      <Route path="/admin/visual-component-editor" component={lazy(() => import("./pages/admin/VisualComponentEditor"))} />
       <Route path="/admin/social-media-dashboard" component={SocialMediaDashboard} />
       <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/force-admin" component={AdminDashboard} />

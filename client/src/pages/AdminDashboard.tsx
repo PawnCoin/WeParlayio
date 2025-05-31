@@ -277,6 +277,12 @@ export default function AdminDashboard() {
                     <span>Platform Settings</span>
                   </Button>
                 </Link>
+                <Link href="/admin/visual-component-editor" className="w-full">
+                  <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2 bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:text-white w-full">
+                    <Crown className="w-6 h-6 text-purple-400" />
+                    <span>Component Editor</span>
+                  </Button>
+                </Link>
               </div>
             </CardContent>
           </Card>
