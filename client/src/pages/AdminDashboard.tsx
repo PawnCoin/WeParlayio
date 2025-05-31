@@ -109,7 +109,7 @@ export default function AdminDashboard() {
               <Crown className="w-4 h-4 mr-2" />
               SITE OWNER
             </Badge>
-            <Badge variant="default" className="bg-purple-500 text-white px-4 py-2">
+            <Badge variant="default" className="bg-blue-500 text-white px-4 py-2">
               <Shield className="w-4 h-4 mr-2" />
               {adminStatus?.tier?.toUpperCase()} TIER
             </Badge>
