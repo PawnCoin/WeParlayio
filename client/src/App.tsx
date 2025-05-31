@@ -110,6 +110,7 @@ function Router() {
 
       {/* Sports Pages */}
       <Route path="/sport/:sportKey" component={SportPage} />
+      <Route path="/sports/:sportKey" component={SportPage} />
       <Route path="/unified-sports" component={UnifiedSports} />
 
       {/* Gaming & Esports */}
