@@ -194,6 +194,36 @@ const EsportsHub: React.FC = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
+                  <Gamepad2 className="h-5 w-5" />
+                  Personal Gaming
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => window.location.href = '/unified-gaming'}
+                >
+                  <Target className="h-4 w-4 mr-2" />
+                  Gaming Hub
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => window.location.href = '/video-gaming'}
+                >
+                  <Trophy className="h-4 w-4 mr-2" />
+                  Video Gaming Bets
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  Bet on your own gameplay and achievements
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
                   <Users className="h-5 w-5" />
                   Top Viewers
                 </CardTitle>

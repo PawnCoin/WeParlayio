@@ -398,6 +398,15 @@ export default function UnifiedGaming() {
               <Wifi className="h-3 w-3" />
               Live Results
             </Badge>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => window.location.href = '/esports-hub'}
+              className="ml-2"
+            >
+              <Trophy className="h-4 w-4 mr-1" />
+              Watch Esports
+            </Button>
           </div>
           <p className="text-muted-foreground">
             Complete gaming integration, live streaming bets, and esports tournaments
