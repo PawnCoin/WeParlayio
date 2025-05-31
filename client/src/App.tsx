@@ -81,7 +81,6 @@ import EsportsHub from "./pages/EsportsHub";
 import BettingChallenges from './components/betting/BettingChallenges';
 import SiteNavigation from './pages/SiteNavigation';
 import PageStatusChecker from './pages/PageStatusChecker';
-import { lazy } from 'react';
 
 // Import admin components
 import AdminBypass from "@/pages/AdminBypass";
@@ -91,6 +90,7 @@ import ManageUsers from "@/pages/admin/ManageUsers";
 import FinancialOverview from "@/pages/admin/FinancialOverview";
 import Analytics from "@/pages/admin/Analytics";
 import PlatformSettings from "@/pages/admin/PlatformSettings";
+import VisualComponentEditorPage from "./pages/admin/VisualComponentEditor";
 
 function Router() {
   // Track page views when routes change
@@ -203,7 +203,7 @@ function Router() {
       <Route path="/admin/financial-overview" component={FinancialOverview} />
       <Route path="/admin/analytics" component={Analytics} />
       <Route path="/admin/platform-settings" component={PlatformSettings} />
-      <Route path="/admin/visual-component-editor" component={lazy(() => import("./pages/admin/VisualComponentEditor"))} />
+      <Route path="/admin/visual-component-editor" component={VisualComponentEditorPage} />
       <Route path="/admin/social-media-dashboard" component={SocialMediaDashboard} />
       <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/force-admin" component={AdminDashboard} />

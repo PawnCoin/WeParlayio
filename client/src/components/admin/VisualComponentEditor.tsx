@@ -1,126 +1,136 @@
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
-import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 import { 
+  Settings, 
   Eye, 
   Code, 
-  Palette, 
-  Settings, 
   Save, 
   RefreshCw, 
-  Copy,
+  Zap, 
+  Target,
   Download,
-  Upload,
-  Zap,
-  Target
+  Upload
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 
-// Import components to edit
-import { BetButton } from "@/components/betting/BetButton";
-import TeamLogo from "@/components/betting/TeamLogo";
-import { MoneylineButton } from "@/components/betting/MoneylineButton";
-import Logo from "@/components/WeParlay/Logo";
+// Sample Button Component for demo
+const SampleButton = ({ 
+  text = "Click Me", 
+  variant = "default",
+  size = "medium",
+  color = "#3b82f6",
+  disabled = false 
+}) => {
+  const sizeClasses = {
+    small: "px-2 py-1 text-sm",
+    medium: "px-4 py-2",
+    large: "px-6 py-3 text-lg"
+  };
 
-interface ComponentConfig {
-  id: string;
-  name: string;
-  component: React.ComponentType<any>;
-  defaultProps: Record<string, any>;
-  propTypes: Record<string, {
-    type: 'string' | 'number' | 'boolean' | 'select' | 'color' | 'range';
-    options?: string[] | number[];
-    min?: number;
-    max?: number;
-    step?: number;
-  }>;
-}
+  return (
+    <button
+      disabled={disabled}
+      className={`rounded font-medium transition-colors ${sizeClasses[size]} ${
+        disabled 
+          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+          : variant === "outline"
+          ? "border-2 bg-transparent hover:bg-gray-100"
+          : "text-white hover:opacity-90"
+      }`}
+      style={{
+        backgroundColor: disabled ? undefined : (variant === "outline" ? "transparent" : color),
+        borderColor: variant === "outline" ? color : "transparent",
+        color: variant === "outline" ? color : (disabled ? undefined : "white")
+      }}
+    >
+      {text}
+    </button>
+  );
+};
 
-const AVAILABLE_COMPONENTS: ComponentConfig[] = [
+// Sample Card Component for demo
+const SampleCard = ({
+  title = "Card Title",
+  content = "This is sample card content",
+  backgroundColor = "#ffffff",
+  borderColor = "#e5e7eb",
+  padding = "medium"
+}) => {
+  const paddingClasses = {
+    small: "p-3",
+    medium: "p-6",
+    large: "p-8"
+  };
+
+  return (
+    <div
+      className={`rounded-lg border ${paddingClasses[padding]} shadow-sm`}
+      style={{ backgroundColor, borderColor }}
+    >
+      <h3 className="text-lg font-semibold mb-2">{title}</h3>
+      <p className="text-gray-600">{content}</p>
+    </div>
+  );
+};
+
+// Available components configuration
+const AVAILABLE_COMPONENTS = [
   {
-    id: 'logo',
-    name: 'WeParlay Logo',
-    component: Logo,
+    id: "button",
+    name: "Button",
+    component: SampleButton,
     defaultProps: {
-      size: 'md',
-      withTagline: true,
-      className: ''
+      text: "Click Me",
+      variant: "default",
+      size: "medium",
+      color: "#3b82f6",
+      disabled: false
     },
     propTypes: {
-      size: { type: 'select', options: ['sm', 'md', 'lg', 'xl'] },
-      withTagline: { type: 'boolean' },
-      className: { type: 'string' }
+      text: { type: "string" },
+      variant: { type: "select", options: ["default", "outline"] },
+      size: { type: "select", options: ["small", "medium", "large"] },
+      color: { type: "color" },
+      disabled: { type: "boolean" }
     }
   },
   {
-    id: 'betButton',
-    name: 'Bet Button',
-    component: BetButton,
+    id: "card",
+    name: "Card",
+    component: SampleCard,
     defaultProps: {
-      text: 'Place Bet',
-      variant: 'default',
-      size: 'default',
-      disabled: false,
-      loading: false
+      title: "Card Title",
+      content: "This is sample card content",
+      backgroundColor: "#ffffff",
+      borderColor: "#e5e7eb",
+      padding: "medium"
     },
     propTypes: {
-      text: { type: 'string' },
-      variant: { type: 'select', options: ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'] },
-      size: { type: 'select', options: ['default', 'sm', 'lg', 'icon'] },
-      disabled: { type: 'boolean' },
-      loading: { type: 'boolean' }
-    }
-  },
-  {
-    id: 'moneylineButton',
-    name: 'Moneyline Button',
-    component: MoneylineButton,
-    defaultProps: {
-      team: 'Lakers',
-      odds: -110,
-      isSelected: false,
-      size: 'default'
-    },
-    propTypes: {
-      team: { type: 'string' },
-      odds: { type: 'number' },
-      isSelected: { type: 'boolean' },
-      size: { type: 'select', options: ['sm', 'default', 'lg'] }
-    }
-  },
-  {
-    id: 'teamLogo',
-    name: 'Team Logo',
-    component: TeamLogo,
-    defaultProps: {
-      team: 'Lakers',
-      size: 40,
-      className: ''
-    },
-    propTypes: {
-      team: { type: 'select', options: ['Lakers', 'Warriors', 'Celtics', 'Heat', 'Nuggets', 'Suns'] },
-      size: { type: 'range', min: 20, max: 100, step: 5 },
-      className: { type: 'string' }
+      title: { type: "string" },
+      content: { type: "string" },
+      backgroundColor: { type: "color" },
+      borderColor: { type: "color" },
+      padding: { type: "select", options: ["small", "medium", "large"] }
     }
   }
 ];
 
 export default function VisualComponentEditor() {
   const { toast } = useToast();
-  const [selectedComponent, setSelectedComponent] = useState<ComponentConfig | null>(AVAILABLE_COMPONENTS[0]);
-  const [componentProps, setComponentProps] = useState<Record<string, any>>({});
-  const [previewMode, setPreviewMode] = useState<'preview' | 'code'>('preview');
-  const [savedConfigs, setSavedConfigs] = useState<Record<string, any>>({});
+  const [selectedComponent, setSelectedComponent] = useState(AVAILABLE_COMPONENTS[0]);
+  const [componentProps, setComponentProps] = useState({});
+  const [previewMode, setPreviewMode] = useState("preview");
+  const [savedConfigs, setSavedConfigs] = useState({});
 
   useEffect(() => {
     if (selectedComponent) {
@@ -128,150 +138,142 @@ export default function VisualComponentEditor() {
     }
   }, [selectedComponent]);
 
-  const handlePropChange = (propName: string, value: any) => {
+  const handlePropChange = (propName, value) => {
     setComponentProps(prev => ({
       ...prev,
       [propName]: value
     }));
   };
 
-  const renderPropEditor = (propName: string, propConfig: any, currentValue: any) => {
+  const renderPropEditor = (propName, propConfig, currentValue) => {
     const { type, options, min, max, step } = propConfig;
 
     switch (type) {
-      case 'string':
+      case "string":
         return (
           <Input
-            value={currentValue || ''}
+            value={currentValue || ""}
             onChange={(e) => handlePropChange(propName, e.target.value)}
             placeholder={`Enter ${propName}`}
           />
         );
-      
-      case 'number':
-        return (
-          <Input
-            type="number"
-            value={currentValue || 0}
-            onChange={(e) => handlePropChange(propName, parseInt(e.target.value))}
-          />
-        );
-      
-      case 'boolean':
+
+      case "boolean":
         return (
           <Switch
             checked={currentValue || false}
             onCheckedChange={(checked) => handlePropChange(propName, checked)}
           />
         );
-      
-      case 'select':
+
+      case "number":
         return (
-          <Select value={currentValue} onValueChange={(value) => handlePropChange(propName, value)}>
+          <div className="space-y-2">
+            <Input
+              type="number"
+              value={currentValue || 0}
+              onChange={(e) => handlePropChange(propName, Number(e.target.value))}
+              min={min}
+              max={max}
+              step={step}
+            />
+            {min !== undefined && max !== undefined && (
+              <Slider
+                value={[currentValue || 0]}
+                onValueChange={([value]) => handlePropChange(propName, value)}
+                min={min}
+                max={max}
+                step={step}
+              />
+            )}
+          </div>
+        );
+
+      case "color":
+        return (
+          <div className="flex items-center space-x-2">
+            <Input
+              type="color"
+              value={currentValue || "#000000"}
+              onChange={(e) => handlePropChange(propName, e.target.value)}
+              className="w-12 h-8 p-1 border rounded"
+            />
+            <Input
+              value={currentValue || ""}
+              onChange={(e) => handlePropChange(propName, e.target.value)}
+              placeholder="#000000"
+            />
+          </div>
+        );
+
+      case "select":
+        return (
+          <Select
+            value={currentValue || options[0]}
+            onValueChange={(value) => handlePropChange(propName, value)}
+          >
             <SelectTrigger>
-              <SelectValue placeholder={`Select ${propName}`} />
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {options?.map((option) => (
-                <SelectItem key={option} value={option.toString()}>
+              {options.map((option) => (
+                <SelectItem key={option} value={option}>
                   {option}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         );
-      
-      case 'range':
-        return (
-          <div className="space-y-2">
-            <Slider
-              value={[currentValue || min || 0]}
-              onValueChange={([value]) => handlePropChange(propName, value)}
-              min={min}
-              max={max}
-              step={step}
-              className="w-full"
-            />
-            <div className="text-sm text-muted-foreground text-center">
-              {currentValue} ({min} - {max})
-            </div>
-          </div>
-        );
-      
-      case 'color':
-        return (
-          <Input
-            type="color"
-            value={currentValue || '#000000'}
-            onChange={(e) => handlePropChange(propName, e.target.value)}
-          />
-        );
-      
+
       default:
         return (
           <Input
-            value={currentValue || ''}
+            value={currentValue || ""}
             onChange={(e) => handlePropChange(propName, e.target.value)}
           />
         );
     }
   };
 
-  const generateComponentCode = () => {
-    if (!selectedComponent) return '';
-    
+  const generateCode = () => {
     const propsString = Object.entries(componentProps)
       .map(([key, value]) => {
-        if (typeof value === 'string') {
+        if (typeof value === "string") {
           return `${key}="${value}"`;
-        } else if (typeof value === 'boolean') {
-          return value ? key : `${key}={false}`;
+        } else if (typeof value === "boolean") {
+          return value ? key : "";
         } else {
           return `${key}={${JSON.stringify(value)}}`;
         }
       })
-      .join('\n  ');
+      .filter(Boolean)
+      .join(" ");
 
-    return `<${selectedComponent.name.replace(/\s+/g, '')}
-  ${propsString}
-/>`;
+    return `<${selectedComponent.name} ${propsString} />`;
   };
 
   const saveConfiguration = () => {
-    if (!selectedComponent) return;
-    
     const configName = `${selectedComponent.name}_${Date.now()}`;
     setSavedConfigs(prev => ({
       ...prev,
       [configName]: {
-        component: selectedComponent.id,
-        props: componentProps,
-        savedAt: new Date().toISOString()
+        component: selectedComponent,
+        props: componentProps
       }
     }));
-    
+
     toast({
       title: "Configuration Saved",
-      description: `${selectedComponent.name} configuration saved as ${configName}`,
-    });
-  };
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(generateComponentCode());
-    toast({
-      title: "Code Copied",
-      description: "Component code copied to clipboard",
+      description: `Saved as ${configName}`,
     });
   };
 
   const resetToDefaults = () => {
-    if (selectedComponent) {
-      setComponentProps(selectedComponent.defaultProps);
-      toast({
-        title: "Reset Complete",
-        description: "Component props reset to defaults",
-      });
-    }
+    setComponentProps(selectedComponent.defaultProps);
+    toast({
+      title: "Reset to Defaults",
+      description: "Component props have been reset to default values",
+    });
   };
 
   if (!selectedComponent) {
@@ -366,7 +368,7 @@ export default function VisualComponentEditor() {
                 <Eye className="w-5 h-5" />
                 Live Preview
               </CardTitle>
-              <Tabs value={previewMode} onValueChange={(value) => setPreviewMode(value as 'preview' | 'code')}>
+              <Tabs value={previewMode} onValueChange={setPreviewMode}>
                 <TabsList>
                   <TabsTrigger value="preview" className="flex items-center gap-1">
                     <Eye className="w-4 h-4" />
@@ -381,7 +383,7 @@ export default function VisualComponentEditor() {
             </div>
           </CardHeader>
           <CardContent>
-            {previewMode === 'preview' ? (
+            {previewMode === "preview" ? (
               <div className="min-h-[400px] bg-slate-900 rounded-lg p-8 flex items-center justify-center">
                 <div className="bg-white p-6 rounded-lg shadow-lg">
                   <ComponentToRender {...componentProps} />
@@ -391,16 +393,24 @@ export default function VisualComponentEditor() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h4 className="font-medium text-white">Generated Code</h4>
-                  <Button onClick={copyToClipboard} size="sm" variant="outline">
-                    <Copy className="w-4 h-4 mr-2" />
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      navigator.clipboard.writeText(generateCode());
+                      toast({
+                        title: "Code Copied",
+                        description: "Component code copied to clipboard",
+                      });
+                    }}
+                  >
                     Copy Code
                   </Button>
                 </div>
-                <Textarea
-                  value={generateComponentCode()}
-                  readOnly
-                  className="min-h-[350px] font-mono text-sm bg-slate-900 border-slate-600"
-                />
+                <div className="bg-slate-900 rounded-lg p-4">
+                  <pre className="text-green-400 text-sm overflow-x-auto">
+                    <code>{generateCode()}</code>
+                  </pre>
+                </div>
               </div>
             )}
           </CardContent>
@@ -412,32 +422,23 @@ export default function VisualComponentEditor() {
         <Card className="bg-slate-800 border-slate-700">
           <CardHeader>
             <CardTitle className="text-white">Saved Configurations</CardTitle>
-            <CardDescription className="text-slate-400">
-              Previously saved component configurations
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Object.entries(savedConfigs).map(([name, config]) => (
-                <Card key={name} className="bg-slate-700 border-slate-600">
+              {Object.entries(savedConfigs).map(([configName, config]) => (
+                <Card key={configName} className="bg-slate-700 border-slate-600">
                   <CardContent className="p-4">
-                    <div className="space-y-2">
-                      <h5 className="font-medium text-white">{name}</h5>
-                      <p className="text-sm text-slate-400">
-                        Component: {AVAILABLE_COMPONENTS.find(c => c.id === config.component)?.name}
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        Saved: {new Date(config.savedAt).toLocaleDateString()}
-                      </p>
-                      <Button 
-                        size="sm" 
-                        className="w-full"
+                    <h5 className="font-medium text-white mb-2">{configName}</h5>
+                    <p className="text-slate-300 text-sm mb-3">
+                      {config.component.name} Component
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
                         onClick={() => {
-                          const component = AVAILABLE_COMPONENTS.find(c => c.id === config.component);
-                          if (component) {
-                            setSelectedComponent(component);
-                            setComponentProps(config.props);
-                          }
+                          setSelectedComponent(config.component);
+                          setComponentProps(config.props);
                         }}
                       >
                         Load Config
