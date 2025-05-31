@@ -12,7 +12,8 @@ import {
   Medal,
   Gamepad2,
   Settings,
-  DollarSign
+  DollarSign,
+  Users
 } from 'lucide-react';
 
 const navigationItems = [
@@ -23,6 +24,7 @@ const navigationItems = [
   { path: '/tournaments', label: 'Tournaments', icon: Trophy },
   { path: '/fantasy', label: 'Fantasy', icon: Medal },
   { path: '/gaming', label: 'Gaming', icon: Gamepad2 },
+  { path: '/social', label: 'Social', icon: Users },
   { path: '/betting-challenges', label: 'Challenges', icon: DollarSign },
   { path: '/admin', label: 'Admin', icon: Settings }
 ];
