@@ -28,7 +28,7 @@ import BettingDashboard from "@/pages/BettingDashboard"; // Professional sports 
 import MobileLogin from "@/pages/MobileLogin"; // Login page with social login options
 import EnhancedFeatures from "@/pages/EnhancedFeatures"; // Advanced features page
 import ThemeSettingsPage from "@/pages/ThemeSettingsPage"; // Theme settings page
-import AdminDashboard from "@/pages/AdminDashboard"; // Admin dashboard for platform owner
+// Removed duplicate AdminDashboard import
 import AdminLogin from "@/pages/AdminLogin"; // Admin login page
 import NotificationTest from "@/pages/NotificationTest"; // Email and SMS testing
 import PrivacyPolicy from "@/pages/PrivacyPolicy"; // Privacy policy page for social login requirements
