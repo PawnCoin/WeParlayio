@@ -213,38 +213,50 @@ const ComprehensiveBetting = () => {
           </Card>
         </div>
 
-        {/* Featured Sports Grid - Exact Design Match */}
+        {/* Featured Sports Grid - Exact Match to Screenshots */}
         <div className="space-y-6">
           <h2 className="flex items-center gap-2 text-white text-xl font-semibold">
             <Sparkles className="w-5 h-5 text-yellow-400" />
             Featured Sports
           </h2>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredSports.map((sport) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {filteredSports.slice(0, 8).map((sport, index) => (
               <div 
-                key={sport.key} 
-                className="bg-slate-800 border border-slate-600 rounded-lg p-6 relative hover:bg-slate-750 transition-colors"
+                key={`featured-sport-${sport.key}-${index}`} 
+                className="bg-slate-700 border border-slate-600 rounded-lg p-6 flex flex-col items-center justify-center text-center hover:bg-slate-600 transition-colors cursor-pointer"
+                onClick={() => handleSportClick(sport.key)}
               >
-                <div className="flex flex-col h-full">
-                  <div className="flex-1">
-                    <h3 className="text-white text-lg font-semibold mb-1">
-                      {sport.displayName}
-                    </h3>
-                    <p className="text-slate-400 text-sm mb-4">{sport.key}</p>
-                  </div>
-                  
-                  <div className="flex justify-end">
-                    <Button 
-                      variant="secondary" 
-                      size="sm" 
-                      className="bg-slate-600 hover:bg-slate-500 text-white border-slate-500 px-4 py-2 rounded-md"
-                      onClick={() => handleSportClick(sport.key)}
-                    >
-                      View <ChevronRight className="w-4 h-4 ml-1" />
-                    </Button>
-                  </div>
+                <Trophy className="w-8 h-8 text-slate-300 mb-3" />
+                <h3 className="text-white text-lg font-semibold">
+                  {sport.displayName}
+                </h3>
+              </div>
+            ))}
+          </div>
+          
+          {/* Additional Sports with View Buttons - Matching Screenshot Design */}
+          <div className="space-y-3 mt-8">
+            {filteredSports.slice(8).map((sport, index) => (
+              <div 
+                key={`additional-sport-${sport.key}-${index}`} 
+                className="bg-slate-800 border border-slate-600 rounded-lg p-4 flex items-center justify-between hover:bg-slate-750 transition-colors"
+              >
+                <div>
+                  <h3 className="text-white text-lg font-semibold mb-1">
+                    {sport.displayName}
+                  </h3>
+                  <p className="text-slate-400 text-sm">{sport.key}</p>
                 </div>
+                
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  className="bg-slate-600 hover:bg-slate-500 text-white border-slate-500 px-4 py-2 rounded-md flex items-center gap-2"
+                  onClick={() => handleSportClick(sport.key)}
+                >
+                  View <ChevronRight className="w-4 h-4" />
+                </Button>
               </div>
             ))}
           </div>
