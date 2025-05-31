@@ -173,6 +173,47 @@ export class AssetManager {
     }
   }
 
+  // Get all available sports from ESPN
+  static async getAvailableSportsFromESPN(): Promise<any> {
+    try {
+      const response = await fetch('/api/espn/sports');
+      if (response.ok) {
+        return await response.json();
+      }
+    } catch (error) {
+      console.warn('Failed to fetch ESPN sports:', error);
+    }
+    return null;
+  }
+
+  // Get teams for any sport from ESPN
+  static async getTeamsFromESPN(sport: string): Promise<any[]> {
+    try {
+      const response = await fetch(`/api/espn/teams/${sport}`);
+      if (response.ok) {
+        const data = await response.json();
+        return data.teams || [];
+      }
+    } catch (error) {
+      console.warn(`Failed to fetch ESPN teams for ${sport}:`, error);
+    }
+    return [];
+  }
+
+  // Search teams across all sports
+  static async searchTeamsAcrossAllSports(query: string): Promise<any[]> {
+    try {
+      const response = await fetch(`/api/espn/search/${encodeURIComponent(query)}`);
+      if (response.ok) {
+        const data = await response.json();
+        return data.results || [];
+      }
+    } catch (error) {
+      console.warn(`Failed to search teams with query '${query}':`, error);
+    }
+    return [];
+  }
+
   // Get sport icon using ESPN service
 
 

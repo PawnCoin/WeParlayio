@@ -5631,6 +5631,10 @@ Join us: WeParlay.io 🎯
     }
   });
 
+  // ESPN All Sports Routes - Comprehensive ESPN API access
+  const espnAllSportsRoutes = (await import('./routes/espnAllSportsRoutes')).default;
+  app.use('/api/espn', espnAllSportsRoutes);
+
   // ESPN team logos and roster endpoints (needed for TeamLogo and PlayerHeadshot components)
   app.get('/api/espn/teams/:sport', async (req, res) => {
     try {
