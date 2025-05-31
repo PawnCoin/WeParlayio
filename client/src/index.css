@@ -4,12 +4,18 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Force dark background everywhere */
+html, body, #root {
+  background-color: #0f172a !important;
+  color: #f1f5f9 !important;
+}
+
 :root {
-  /* Professional Light Mode Colors */
-  --background: #ffffff;
-  --foreground: #1a1a1a;
-  --card: #f8fafc;
-  --card-foreground: #1e293b;
+  /* Dark Mode Colors for WeParlay */
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --card: #1e293b;
+  --card-foreground: #f1f5f9;
   --primary: #2563eb;
   --primary-foreground: #ffffff;
   --secondary: #f1f5f9;
