@@ -17,7 +17,6 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { apiRequest } from '@/lib/queryClient';
 import SocialShareOptions from '@/components/betting/SocialShareOptions';
 import { 
   DollarSign,
@@ -97,7 +96,7 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
       expiryDate: new Date(Date.now() + 86400000).toISOString().split('T')[0], // Tomorrow
       notes: '',
       termsAccepted: false,
-      currencyType: 'virtual', // Default to WeParlay Cash for head-to-head bets
+      currencyType: 'real', // Default to real money for head-to-head bets
     },
   });
 
@@ -110,19 +109,16 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
     try {
       // Create real challenge in database
       const challengeData = {
-        eventId: values.eventId ? parseInt(values.eventId) : null,
-        eventName: values.challengeType === 'sports' ? 
-          activeEvents.find(e => e.id === values.eventId)?.name || 'Sports Event' : 
-          'Custom Bet',
-        amount: parseFloat(values.amount),
-        currency: values.currencyType === 'real' ? 'USD' : 'WeParlay Cash',
-        isVirtual: values.currencyType === 'virtual',
-        pick: values.challengeType === 'sports' ? 'Team Selection' : values.customBet,
-        oppositePick: values.challengeType === 'sports' ? 'Opponent Team Selection' : 'Opposite of custom bet',
-        customMessage: values.notes || '',
-        notificationEmail: values.contactMethod === 'email' ? values.contactValue : null,
-        notificationPhone: values.contactMethod === 'phone' ? values.contactValue : null,
-        expiresAt: new Date(values.expiryDate).toISOString()
+        eventName: values.eventSelection,
+        amount: parseFloat(values.betAmount),
+        currency: 'USD',
+        isVirtual: values.betType === 'virtual',
+        pick: values.yourPick,
+        customMessage: values.message,
+        inviteMethod: values.inviteMethod,
+        friendEmail: values.friendEmail,
+        friendPhone: values.friendPhone,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
       };
 
       const response = await apiRequest('POST', '/api/challenges', challengeData);
@@ -266,16 +262,10 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
                 name="amount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>
-                      Bet Amount ({form.watch('currencyType') === 'real' ? 'USD' : 'WeParlay Cash'})
-                    </FormLabel>
+                    <FormLabel>Bet Amount (USD)</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        {form.watch('currencyType') === 'real' ? (
-                          <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        ) : (
-                          <div className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500 font-bold text-sm">W</div>
-                        )}
+                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input 
                           placeholder="0.00" 
                           className="pl-9" 
@@ -312,17 +302,17 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
                           </Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="virtual" id="h2h-currency-virtual" />
-                          <Label htmlFor="h2h-currency-virtual" className="flex items-center cursor-pointer">
+                          <RadioGroupItem value="virtual" id="h2h-currency-virtual" disabled />
+                          <Label htmlFor="h2h-currency-virtual" className="flex items-center cursor-pointer text-muted-foreground">
                             <div className="h-4 w-4 mr-1 text-blue-500 font-bold">W</div>
                             WeParlay Cash
-                            <Badge variant="outline" className="ml-2 text-xs">Virtual Currency</Badge>
+                            <Badge variant="outline" className="ml-2 text-xs">Head-to-Head Only</Badge>
                           </Label>
                         </div>
                       </RadioGroup>
                     </FormControl>
                     <FormDescription>
-                      Choose between real money or WeParlay Cash for your head-to-head challenge
+                      Head-to-head bets currently only support real money
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -571,12 +561,12 @@ const HeadToHeadChallenge: React.FC<HeadToHeadChallengeProps> = ({
               )}
             />
 
-            <Alert variant="default" className="bg-blue-50 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200 border-blue-200 dark:border-blue-800">
+            <Alert variant="default" className="bg-amber-50 text-amber-800 dark:bg-amber-900/20 dark:text-amber-200 border-amber-200 dark:border-amber-800">
               <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Currency Options</AlertTitle>
+              <AlertTitle>Important Notice</AlertTitle>
               <AlertDescription>
-                Head-to-head bets support both real money and WeParlay Cash. 
-                Choose your preferred currency type above.
+                Head-to-head bets are currently the only bet type that accepts real money. 
+                All other bet types use WeParlay Cash until further notice.
               </AlertDescription>
             </Alert>
 

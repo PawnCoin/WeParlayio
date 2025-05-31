@@ -1051,23 +1051,16 @@ export class DatabaseStorage implements IStorage {
   // ==================== Betting Challenge Operations ====================
   
   async createBettingChallenge(challenge: InsertBettingChallenge): Promise<BettingChallenge> {
-    try {
-      const [newChallenge] = await db
-        .insert(bettingChallenges)
-        .values({
-          ...challenge,
-          status: challenge.status || 'pending',
-          currency: challenge.currency || (challenge.isVirtual ? 'WeParlay Cash' : 'USD'),
-          createdAt: new Date(),
-          updatedAt: new Date()
-        })
-        .returning();
-      
-      return newChallenge;
-    } catch (error: any) {
-      console.error('Database error creating betting challenge:', error);
-      throw new Error(`Failed to create betting challenge: ${error.message}`);
-    }
+    const [newChallenge] = await db
+      .insert(bettingChallenges)
+      .values({
+        ...challenge,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      .returning();
+    
+    return newChallenge;
   }
   
   async getBettingChallenge(id: number): Promise<BettingChallenge | undefined> {

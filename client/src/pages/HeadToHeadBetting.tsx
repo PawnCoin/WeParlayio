@@ -238,12 +238,12 @@ const HeadToHeadBetting: React.FC = () => {
         )}
       </div>
       
-      {/* Currency Options Notice */}
-      <Alert variant="default" className="bg-blue-50 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200 border-blue-200 dark:border-blue-800">
+      {/* Real Money Notice */}
+      <Alert variant="default" className="bg-amber-50 text-amber-800 dark:bg-amber-900/20 dark:text-amber-200 border-amber-200 dark:border-amber-800">
         <AlertTriangle className="h-4 w-4" />
-        <AlertTitle>Currency Options Available</AlertTitle>
+        <AlertTitle>Real Money Betting Notice</AlertTitle>
         <AlertDescription>
-          Head-to-head challenges now support both real money and WeParlay Cash. Choose your preferred currency when creating a challenge.
+          Head-to-head challenges are currently the only bet type that accepts real money. All other betting options use WeParlay Cash until further notice.
         </AlertDescription>
       </Alert>
       

@@ -103,12 +103,6 @@ app.use((req, res, next) => {
 
   const httpServer = server.listen(port, "0.0.0.0", () => {
     log(`🚀 WeParlay server running on HTTP at 0.0.0.0:${port}`);
-  }).on('error', (error) => {
-    console.error('❌ Server failed to start:', error);
-    if (error.code === 'EADDRINUSE') {
-      console.log('🔄 Port 5000 is already in use. Trying to kill existing process...');
-      process.exit(1);
-    }
   });
 
   // Skip WebSocket initialization in development to avoid port conflicts
@@ -120,7 +114,7 @@ app.use((req, res, next) => {
       console.error('🚨 Failed to initialize WebSocket service:', error);
     }
   } else {
-    log('🔌 WebSocket disabled in development environment');
+    console.log('🔌 WebSocket disabled in development environment');
   }
 })();
 
