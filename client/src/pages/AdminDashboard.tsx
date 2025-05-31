@@ -24,17 +24,17 @@ export default function AdminDashboard() {
       if (!token) {
         throw new Error('No admin token found');
       }
-      
+
       const response = await fetch('/api/user/admin-status', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to check admin status');
       }
-      
+
       return response.json();
     }
   });

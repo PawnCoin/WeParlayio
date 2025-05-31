@@ -217,7 +217,6 @@ function Router() {
       <Route path="/community" component={UserDirectory} />
       <Route path="/users" component={UserDirectory} />
       <Route path="/social-bots" component={(props) => <AdminRoute component={SocialMediaBots} {...props} />} />
-      <Route path="/social-media-dashboard" component={(props) => <AdminRoute component={SocialMediaDashboard} {...props} />} />
       <Route path="/email-monitoring" component={(props) => <AdminRoute component={EmailMonitoring} {...props} />} />
 
       {/* Authentication Routes */}
@@ -226,6 +225,7 @@ function Router() {
 
       {/* Admin Routes */}
       <Route path="/admin" component={(props) => <AdminRoute component={AdminDashboard} {...props} />} />
+      <Route path="/admin/social-media-dashboard" component={(props) => <AdminRoute component={SocialMediaDashboard} {...props} />} />
       <Route path="/admin-dashboard" component={(props) => <AdminRoute component={AdminDashboard} {...props} />} />
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin-bypass" component={AdminBypass} />

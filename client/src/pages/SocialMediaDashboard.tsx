@@ -212,9 +212,15 @@ export default function SocialMediaDashboard() {
     }
   ];
 
-  const getTimeUntilNextPost = (nextPost: Date) => {
+  const getTimeUntilNextPost = (nextPost: Date | string) => {
     const now = new Date();
-    const diff = nextPost.getTime() - now.getTime();
+    const nextPostDate = typeof nextPost === 'string' ? new Date(nextPost) : nextPost;
+    
+    if (!nextPostDate || isNaN(nextPostDate.getTime())) {
+      return 'Unknown';
+    }
+    
+    const diff = nextPostDate.getTime() - now.getTime();
     if (diff <= 0) return 'Ready to post';
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(minutes / 60);
