@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Crown, Shield, Users, TrendingUp, DollarSign, Settings } from "lucide-react";
+import { Crown, Shield, Users, TrendingUp, DollarSign, Settings, BarChart3 } from "lucide-react";
+import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -252,22 +253,30 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2 bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:text-white">
-                  <Users className="w-6 h-6 text-blue-400" />
-                  <span>Manage Users</span>
-                </Button>
-                <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2 bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:text-white">
-                  <DollarSign className="w-6 h-6 text-green-400" />
-                  <span>Financial Overview</span>
-                </Button>
-                <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2 bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:text-white">
-                  <TrendingUp className="w-6 h-6 text-blue-400" />
-                  <span>Analytics</span>
-                </Button>
-                <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2 bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:text-white">
-                  <Settings className="w-6 h-6 text-slate-400" />
-                  <span>Platform Settings</span>
-                </Button>
+                <Link href="/admin/manage-users" className="w-full">
+                  <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2 bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:text-white w-full">
+                    <Users className="w-6 h-6 text-blue-400" />
+                    <span>Manage Users</span>
+                  </Button>
+                </Link>
+                <Link href="/admin/financial-overview" className="w-full">
+                  <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2 bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:text-white w-full">
+                    <DollarSign className="w-6 h-6 text-green-400" />
+                    <span>Financial Overview</span>
+                  </Button>
+                </Link>
+                <Link href="/admin/analytics" className="w-full">
+                  <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2 bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:text-white w-full">
+                    <BarChart3 className="w-6 h-6 text-blue-400" />
+                    <span>Analytics</span>
+                  </Button>
+                </Link>
+                <Link href="/admin/platform-settings" className="w-full">
+                  <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2 bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:text-white w-full">
+                    <Settings className="w-6 h-6 text-slate-400" />
+                    <span>Platform Settings</span>
+                  </Button>
+                </Link>
               </div>
             </CardContent>
           </Card>
