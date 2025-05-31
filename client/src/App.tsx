@@ -3,7 +3,6 @@ import { Switch, Route, useLocation } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
-import { useAuth } from "@/hooks/useAuth";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
@@ -87,58 +86,9 @@ import PageStatusChecker from './pages/PageStatusChecker';
 import AdminBypass from "@/pages/AdminBypass";
 import LiveBettingEnhanced from "@/pages/BettingExperience";
 
-// Admin route guard component
+// Simple admin route - just render the component
 const AdminRoute = ({ component: Component, ...rest }: any) => {
-  const [isAuthorized, setIsAuthorized] = React.useState(false);
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [, navigate] = useLocation();
-  const { user } = useAuth();
-
-  React.useEffect(() => {
-    // In development, automatically grant admin access
-    if (window.location.hostname === 'localhost' ||
-        window.location.hostname.includes('replit.dev') ||
-        import.meta.env.DEV) {
-
-      setIsAuthorized(true);
-      localStorage.setItem('weparlay-admin-access', 'true');
-      localStorage.setItem('weparlay-admin-expiry', (Date.now() + 24 * 60 * 60 * 1000).toString());
-      setIsLoading(false);
-      return;
-    }
-
-    // Check if user has admin access
-    const hasAdminAccess = localStorage.getItem('weparlay-admin-access') === 'true';
-    const adminExpiry = localStorage.getItem('weparlay-admin-expiry');
-    const adminToken = localStorage.getItem('weparlay-admin-token');
-
-    // Allow access if user is admin or has admin credentials
-    if (user?.isAdmin || 
-        user?.role === 'admin' || 
-        user?.adminLevel === 'owner' ||
-        (hasAdminAccess && adminExpiry && parseInt(adminExpiry) > Date.now()) || 
-        adminToken) {
-
-      setIsAuthorized(true);
-      localStorage.setItem('weparlay-admin-access', 'true');
-      localStorage.setItem('weparlay-admin-expiry', (Date.now() + 24 * 60 * 60 * 1000).toString());
-    } else {
-      // Redirect to admin bypass page
-      navigate('/admin-bypass');
-    }
-
-    setIsLoading(false);
-  }, [navigate, user]);
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  return isAuthorized ? <Component {...rest} /> : null;
+  return <Component {...rest} />;
 };
 
 function Router() {
