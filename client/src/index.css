@@ -1,4 +1,39 @@
 
+/* Font Awesome replacement icons using CSS */
+.fa, .fas, .far, .fab, .fal, .fad {
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Common icon replacements */
+.fa-home::before { content: "🏠"; }
+.fa-user::before { content: "👤"; }
+.fa-cog::before { content: "⚙️"; }
+.fa-search::before { content: "🔍"; }
+.fa-bell::before { content: "🔔"; }
+.fa-wallet::before { content: "💰"; }
+.fa-chart-line::before { content: "📈"; }
+.fa-trophy::before { content: "🏆"; }
+.fa-star::before { content: "⭐"; }
+.fa-heart::before { content: "❤️"; }
+.fa-share::before { content: "📤"; }
+.fa-download::before { content: "⬇️"; }
+.fa-upload::before { content: "⬆️"; }
+.fa-play::before { content: "▶️"; }
+.fa-pause::before { content: "⏸️"; }
+.fa-stop::before { content: "⏹️"; }
+.fa-times::before { content: "❌"; }
+.fa-check::before { content: "✅"; }
+.fa-plus::before { content: "➕"; }
+.fa-minus::before { content: "➖"; }
+
+
+
 /* Professional WeParlay Light Mode Colors - High Contrast */
 :root {
   --background: 255 255 255; /* Pure white background */
@@ -217,7 +252,6 @@ html:not(.dark) [style*="background-image: linear-gradient"] * {
 
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

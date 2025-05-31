@@ -21,15 +21,16 @@ export const initGA = () => {
   script1.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
   document.head.appendChild(script1);
 
-  // Initialize gtag
-  const script2 = document.createElement('script');
-  script2.innerHTML = `
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', '${measurementId}');
-  `;
-  document.head.appendChild(script2);
+  // Use window function instead of inline script
+  (window as any).dataLayer = (window as any).dataLayer || [];
+  function gtag(...args: any[]): void {
+    (window as any).dataLayer.push(args);
+  }
+  gtag('js', new Date());
+  gtag('config', measurementId);
+
+  // Make gtag globally available
+  (window as any).gtag = gtag;
 };
 
 // Track page views - useful for single-page applications
