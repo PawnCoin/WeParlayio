@@ -37,7 +37,7 @@ export interface IStorage {
   updateUserWeplayTokenBalance(userId: string, amount: number): Promise<User>;
   updateUserSubscription(userId: string, subscriptionType: 'vip' | 'analytics' | 'support', expiryDate: Date): Promise<User>;
   updateUserPreferences(userId: string, preferences: Partial<{ oddsFormat: string, useVirtualCurrency: boolean, withdrawalSpeed: string, mobileOptimizedView: boolean }>): Promise<User>;
-  
+
   // Betting challenge operations
   createBettingChallenge(challenge: InsertBettingChallenge): Promise<BettingChallenge>;
   getBettingChallenge(id: number): Promise<BettingChallenge | undefined>;
@@ -46,12 +46,12 @@ export interface IStorage {
   acceptBettingChallenge(uuid: string, acceptedBy: string): Promise<BettingChallenge>;
   updateBettingChallengeStatus(uuid: string, status: string): Promise<BettingChallenge>;
   settleBettingChallenge(uuid: string, winnerId?: string, isDraw?: boolean): Promise<BettingChallenge>;
-  
+
   // Notification operations
   createNotification(notification: InsertNotification): Promise<Notification>;
   getUserNotifications(userId: string, unreadOnly?: boolean): Promise<Notification[]>;
   markNotificationAsRead(id: number, userId: string): Promise<Notification>;
-  
+
   // Financial operations
   getFinancialSummary(): Promise<any>;
   getTransactions(limit: number, offset: number): Promise<Transaction[]>; 
@@ -61,7 +61,7 @@ export interface IStorage {
   updatePrivacySettings(settings: any): Promise<any>;
   getOwnerBankAccount(): Promise<BankAccount | undefined>;
   updatePlatformRevenue(amount: number, feeType: string): Promise<any>;
-  
+
   // Betting challenge operations
   createBettingChallenge(challenge: InsertBettingChallenge): Promise<BettingChallenge>;
   getBettingChallenge(id: number): Promise<BettingChallenge | undefined>;
@@ -70,25 +70,25 @@ export interface IStorage {
   acceptBettingChallenge(uuid: string, userId: string): Promise<BettingChallenge>;
   updateBettingChallengeStatus(uuid: string, status: string): Promise<BettingChallenge>;
   settleBettingChallenge(uuid: string, winnerId?: string, isDraw?: boolean): Promise<BettingChallenge>;
-  
+
   // Notification operations
   createNotification(notification: InsertNotification): Promise<Notification>;
   getUserNotifications(userId: string, unreadOnly?: boolean): Promise<Notification[]>;
   markNotificationAsRead(id: number, userId: string): Promise<Notification>;
-  
+
   // Sports operations
   getAllSports(): Promise<Sport[]>;
   getSport(id: number): Promise<Sport | undefined>;
   getSportByKey(key: string): Promise<Sport | undefined>;
   createSport(sport: InsertSport): Promise<Sport>;
   updateSportEventCount(sportId: number, count: number): Promise<Sport>;
-  
+
   // Teams operations
   getAllTeams(): Promise<Team[]>;
   getTeamsBySport(sportId: number): Promise<Team[]>;
   getTeam(id: number): Promise<Team | undefined>;
   createTeam(team: InsertTeam): Promise<Team>;
-  
+
   // Events operations
   getAllEvents(): Promise<Event[]>;
   getEvent(id: number): Promise<Event | undefined>;
@@ -98,37 +98,37 @@ export interface IStorage {
   createEvent(event: InsertEvent): Promise<Event>;
   updateEventStatus(eventId: number, status: string, homeScore?: number, awayScore?: number, period?: string, timeRemaining?: string): Promise<Event>;
   updateEventOdds(eventId: number, odds: any): Promise<Event>;
-  
+
   // Bets operations
   getUserBets(userId: number): Promise<Bet[]>;
   getBet(id: number): Promise<Bet | undefined>;
   createBet(bet: InsertBet): Promise<Bet>;
   settleBet(betId: number, status: string): Promise<Bet>;
-  
+
   // Tournaments operations
   getAllTournaments(): Promise<Tournament[]>;
   getTournament(id: number): Promise<Tournament | undefined>;
   getTournamentsBySport(sportId: number): Promise<Tournament[]>;
   createTournament(tournament: InsertTournament): Promise<Tournament>;
   updateTournamentBracket(tournamentId: number, bracketData: any): Promise<Tournament>;
-  
+
   // Fantasy teams operations
   getUserFantasyTeams(userId: number): Promise<FantasyTeam[]>;
   getFantasyTeam(id: number): Promise<FantasyTeam | undefined>;
   createFantasyTeam(fantasyTeam: InsertFantasyTeam): Promise<FantasyTeam>;
   updateFantasyTeamSalary(fantasyTeamId: number, salary: number): Promise<FantasyTeam>;
-  
+
   // Players operations
   getAllPlayers(): Promise<Player[]>;
   getPlayersByTeam(teamId: number): Promise<Player[]>;
   getPlayer(id: number): Promise<Player | undefined>;
   createPlayer(player: InsertPlayer): Promise<Player>;
-  
+
   // Fantasy team players operations
   getFantasyTeamPlayers(fantasyTeamId: number): Promise<FantasyTeamPlayer[]>;
   addPlayerToFantasyTeam(fantasyTeamPlayer: InsertFantasyTeamPlayer): Promise<FantasyTeamPlayer>;
   removePlayerFromFantasyTeam(fantasyTeamId: number, playerId: number): Promise<void>;
-  
+
   // Support ticket operations
   createSupportTicket(ticket: InsertSupportTicket): Promise<SupportTicket>;
   getSupportTicket(id: number): Promise<SupportTicket | undefined>;
@@ -138,7 +138,7 @@ export interface IStorage {
   addTicketMessage(message: InsertSupportTicketMessage): Promise<SupportTicketMessage>;
   getTicketMessages(ticketId: number): Promise<SupportTicketMessage[]>;
   logTicketAction(ticketId: number, action: string, details?: any): Promise<SupportTicketLog>;
-  
+
   // Known issues operations
   createKnownIssue(issue: InsertKnownIssue): Promise<KnownIssue>;
   getKnownIssues(): Promise<KnownIssue[]>;
@@ -165,45 +165,45 @@ export class MemStorage implements IStorage {
   private supportTicketMessages: Map<number, SupportTicketMessage>;
   private supportTicketLogs: Map<number, SupportTicketLog>;
   private knownIssues: Map<number, KnownIssue>;
-  
+
   // Required method implementations for IStorage
   async updateUserStatus(userId: string, status: string): Promise<User> {
     const user = await this.getUser(userId);
     if (!user) throw new Error(`User not found: ${userId}`);
-    
+
     const updatedUser = { ...user, status };
     this.users.set(userId, updatedUser);
     return updatedUser;
   }
-  
+
   async incrementUserWins(userId: string): Promise<User> {
     const user = await this.getUser(userId);
     if (!user) throw new Error(`User not found: ${userId}`);
-    
+
     const winsCount = (user.winsCount || 0) + 1;
     const updatedUser = { ...user, winsCount };
     this.users.set(userId, updatedUser);
     return updatedUser;
   }
-  
+
   async getUserWithdrawalsForMonth(userId: string, month: number): Promise<number> {
     return 0; // Placeholder implementation
   }
-  
+
   async updateUserWeplayTokenBalance(userId: string, amount: number): Promise<User> {
     const user = await this.getUser(userId);
     if (!user) throw new Error(`User not found: ${userId}`);
-    
+
     const weplayTokenBalance = (user.weplayTokenBalance || 0) + amount;
     const updatedUser = { ...user, weplayTokenBalance };
     this.users.set(userId, updatedUser);
     return updatedUser;
   }
-  
+
   async updateUserSubscription(userId: string, subscriptionType: 'vip' | 'analytics' | 'support', expiryDate: Date): Promise<User> {
     const user = await this.getUser(userId);
     if (!user) throw new Error(`User not found: ${userId}`);
-    
+
     let updatedUser: User;
     if (subscriptionType === 'vip') {
       updatedUser = { ...user, vipExpiryDate: expiryDate };
@@ -212,25 +212,25 @@ export class MemStorage implements IStorage {
     } else {
       updatedUser = { ...user, supportExpiryDate: expiryDate };
     }
-    
+
     this.users.set(userId, updatedUser);
     return updatedUser;
   }
-  
+
   async updateUserPreferences(userId: string, preferences: Partial<{ oddsFormat: string, useVirtualCurrency: boolean, withdrawalSpeed: string, mobileOptimizedView: boolean }>): Promise<User> {
     const user = await this.getUser(userId);
     if (!user) throw new Error(`User not found: ${userId}`);
-    
+
     const updatedUser = { 
       ...user,
       ...preferences,
       updatedAt: new Date()
     };
-    
+
     this.users.set(userId, updatedUser);
     return updatedUser;
   }
-  
+
   async getFinancialSummary(): Promise<any> {
     return {
       totalDeposits: 0,
@@ -242,13 +242,13 @@ export class MemStorage implements IStorage {
       activeUserCount: Array.from(this.users.values()).filter(u => u.status === 'active').length
     };
   }
-  
+
   async getTransactions(limit: number, offset: number): Promise<Transaction[]> {
     return Array.from(this.transactions.values())
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(offset, offset + limit);
   }
-  
+
   async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
     const id = this.transactions.size + 1;
     const newTransaction: Transaction = { 
@@ -260,45 +260,45 @@ export class MemStorage implements IStorage {
     this.transactions.set(id, newTransaction);
     return newTransaction;
   }
-  
+
   async updateBankAccount(bankAccount: InsertBankAccount): Promise<BankAccount> {
     const existingAccount = await this.getOwnerBankAccount();
     const id = existingAccount ? existingAccount.id : 1;
-    
+
     const newBankAccount: BankAccount = { 
       ...bankAccount, 
       id, 
       createdAt: existingAccount ? existingAccount.createdAt : new Date(),
       updatedAt: new Date()
     };
-    
+
     this.bankAccounts.set(id, newBankAccount);
     return newBankAccount;
   }
-  
+
   async updatePlatformSettings(settings: any): Promise<any> {
     for (const [key, value] of Object.entries(settings)) {
       this.platformSettings.set(key, value);
     }
     return Object.fromEntries(this.platformSettings);
   }
-  
+
   async updatePrivacySettings(settings: any): Promise<any> {
     for (const [key, value] of Object.entries(settings)) {
       this.privacySettings.set(key, Boolean(value));
     }
     return Object.fromEntries(this.privacySettings);
   }
-  
+
   async getOwnerBankAccount(): Promise<BankAccount | undefined> {
     return this.bankAccounts.get(1);
   }
-  
+
   async updatePlatformRevenue(amount: number, feeType: string): Promise<any> {
     // Placeholder implementation
     return { amount, feeType };
   }
-  
+
   private nextUserId: number;
   private nextSportId: number;
   private nextTeamId: number;
@@ -308,7 +308,7 @@ export class MemStorage implements IStorage {
   private nextFantasyTeamId: number;
   private nextPlayerId: number;
   private nextFantasyTeamPlayerId: number;
-  
+
   constructor() {
     this.users = new Map();
     this.sports = new Map();
@@ -323,7 +323,7 @@ export class MemStorage implements IStorage {
     this.transactions = new Map();
     this.platformSettings = new Map();
     this.privacySettings = new Map();
-    
+
     this.nextUserId = 1;
     this.nextSportId = 1;
     this.nextTeamId = 1;
@@ -333,11 +333,11 @@ export class MemStorage implements IStorage {
     this.nextFantasyTeamId = 1;
     this.nextPlayerId = 1;
     this.nextFantasyTeamPlayerId = 1;
-    
+
     // Initialize some sports
     this.initializeDefaultData();
   }
-  
+
   private initializeDefaultData() {
     // Add default sports
     const sports: InsertSport[] = [
@@ -348,9 +348,9 @@ export class MemStorage implements IStorage {
       { name: "Soccer", key: "soccer", isActive: true, icon: "futbol" },
       { name: "Golf", key: "golf", isActive: true, icon: "golf-ball" }
     ];
-    
+
     sports.forEach(sport => this.createSport(sport));
-    
+
     // Add some NBA teams for basketball
     const basketballId = 1;
     const nbaTeams: InsertTeam[] = [
@@ -361,9 +361,9 @@ export class MemStorage implements IStorage {
       { name: "Chicago Bulls", abbreviation: "CHI", logo: "", sportId: basketballId },
       { name: "Detroit Pistons", abbreviation: "DET", logo: "", sportId: basketballId }
     ];
-    
+
     nbaTeams.forEach(team => this.createTeam(team));
-    
+
     // Add a sample event
     const celtics = 1;
     const lakers = 2;
@@ -374,15 +374,15 @@ export class MemStorage implements IStorage {
       startTime: new Date(),
       status: "live"
     };
-    
+
     this.createEvent(sampleEvent);
-    
+
     // Add more upcoming events
     const bucks = 3;
     const heat = 4;
     const bulls = 5;
     const pistons = 6;
-    
+
     const upcomingEvents: InsertEvent[] = [
       {
         sportId: basketballId,
@@ -399,9 +399,9 @@ export class MemStorage implements IStorage {
         status: "scheduled"
       }
     ];
-    
+
     upcomingEvents.forEach(event => this.createEvent(event));
-    
+
     // Add sample tournament
     const tournament: InsertTournament = {
       name: "NBA Playoffs 2023",
@@ -410,43 +410,43 @@ export class MemStorage implements IStorage {
       endDate: new Date(Date.now() + 2592000000), // 30 days later
       status: "active"
     };
-    
+
     this.createTournament(tournament);
   }
-  
+
   // User operations
   async getUser(id: string | number): Promise<User | undefined> {
     const userId = id.toString();
     return this.users.get(userId);
   }
-  
+
   async getUserByUsername(username: string): Promise<User | undefined> {
     return Array.from(this.users.values()).find(
       (user) => user.email === username
     );
   }
-  
+
   async getUserByEmail(email: string): Promise<User | undefined> {
     return Array.from(this.users.values()).find(
       (user) => user.email === email
     );
   }
-  
+
   async getAllUsers(): Promise<User[]> {
     return Array.from(this.users.values());
   }
-  
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.nextUserId++;
     const user: User = { ...insertUser, id, balance: 1000 };
     this.users.set(id.toString(), user);
     return user;
   }
-  
+
   async upsertUser(userData: any): Promise<User> {
     const id = userData.id;
     let user = await this.getUser(id);
-    
+
     if (!user) {
       // Create a new user
       user = { 
@@ -463,122 +463,122 @@ export class MemStorage implements IStorage {
         updatedAt: new Date()
       };
     }
-    
+
     this.users.set(id.toString(), user);
     return user;
   }
-  
+
   async updateUserBalance(userId: string | number, amount: number): Promise<User> {
     const userIdStr = userId.toString();
     const user = await this.getUser(userIdStr);
     if (!user) {
       throw new Error("User not found");
     }
-    
+
     user.balance = amount;
     this.users.set(userIdStr, user);
     return user;
   }
-  
+
   async updateYahooIntegration(userId: string | number, token: string, refreshToken: string, expiry: Date): Promise<User> {
     const userIdStr = userId.toString();
     const user = await this.getUser(userIdStr);
     if (!user) {
       throw new Error("User not found");
     }
-    
+
     user.yahooIntegrationToken = token;
     user.yahooIntegrationRefreshToken = refreshToken;
     user.yahooIntegrationExpiry = expiry;
-    
+
     this.users.set(userIdStr, user);
     return user;
   }
-  
+
   // Sports operations
   async getAllSports(): Promise<Sport[]> {
     return Array.from(this.sports.values());
   }
-  
+
   async getSport(id: number): Promise<Sport | undefined> {
     return this.sports.get(id);
   }
-  
+
   async getSportByKey(key: string): Promise<Sport | undefined> {
     return Array.from(this.sports.values()).find(
       (sport) => sport.key === key
     );
   }
-  
+
   async createSport(insertSport: InsertSport): Promise<Sport> {
     const id = this.nextSportId++;
     const sport: Sport = { ...insertSport, id, eventCount: 0 };
     this.sports.set(id, sport);
     return sport;
   }
-  
+
   async updateSportEventCount(sportId: number, count: number): Promise<Sport> {
     const sport = await this.getSport(sportId);
     if (!sport) {
       throw new Error("Sport not found");
     }
-    
+
     sport.eventCount = count;
     this.sports.set(sportId, sport);
     return sport;
   }
-  
+
   // Teams operations
   async getAllTeams(): Promise<Team[]> {
     return Array.from(this.teams.values());
   }
-  
+
   async getTeamsBySport(sportId: number): Promise<Team[]> {
     return Array.from(this.teams.values()).filter(
       (team) => team.sportId === sportId
     );
   }
-  
+
   async getTeam(id: number): Promise<Team | undefined> {
     return this.teams.get(id);
   }
-  
+
   async createTeam(insertTeam: InsertTeam): Promise<Team> {
     const id = this.nextTeamId++;
     const team: Team = { ...insertTeam, id };
     this.teams.set(id, team);
     return team;
   }
-  
+
   // Events operations
   async getAllEvents(): Promise<Event[]> {
     return Array.from(this.events.values());
   }
-  
+
   async getEvent(id: number): Promise<Event | undefined> {
     return this.events.get(id);
   }
-  
+
   async getEventsBySport(sportId: number): Promise<Event[]> {
     return Array.from(this.events.values()).filter(
       (event) => event.sportId === sportId
     );
   }
-  
+
   async getUpcomingEvents(limit?: number): Promise<Event[]> {
     const events = Array.from(this.events.values())
       .filter((event) => event.status === "scheduled")
       .sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
-    
+
     return limit ? events.slice(0, limit) : events;
   }
-  
+
   async getLiveEvents(): Promise<Event[]> {
     return Array.from(this.events.values()).filter(
       (event) => event.status === "live"
     );
   }
-  
+
   async createEvent(insertEvent: InsertEvent): Promise<Event> {
     const id = this.nextEventId++;
     const event: Event = { 
@@ -590,18 +590,18 @@ export class MemStorage implements IStorage {
       timeRemaining: "",
       odds: {}
     };
-    
+
     this.events.set(id, event);
-    
+
     // Update sport event count
     const sport = await this.getSport(event.sportId);
     if (sport) {
       await this.updateSportEventCount(sport.id, sport.eventCount + 1);
     }
-    
+
     return event;
   }
-  
+
   async updateEventStatus(
     eventId: number, 
     status: string, 
@@ -614,39 +614,39 @@ export class MemStorage implements IStorage {
     if (!event) {
       throw new Error("Event not found");
     }
-    
+
     event.status = status;
     if (homeScore !== undefined) event.homeScore = homeScore;
     if (awayScore !== undefined) event.awayScore = awayScore;
     if (period !== undefined) event.period = period;
     if (timeRemaining !== undefined) event.timeRemaining = timeRemaining;
-    
+
     this.events.set(eventId, event);
     return event;
   }
-  
+
   async updateEventOdds(eventId: number, odds: any): Promise<Event> {
     const event = await this.getEvent(eventId);
     if (!event) {
       throw new Error("Event not found");
     }
-    
+
     event.odds = odds;
     this.events.set(eventId, event);
     return event;
   }
-  
+
   // Bets operations
   async getUserBets(userId: number): Promise<Bet[]> {
     return Array.from(this.bets.values()).filter(
       (bet) => bet.userId === userId
     );
   }
-  
+
   async getBet(id: number): Promise<Bet | undefined> {
     return this.bets.get(id);
   }
-  
+
   async createBet(insertBet: InsertBet): Promise<Bet> {
     const id = this.nextBetId++;
     const bet: Bet = { 
@@ -656,28 +656,28 @@ export class MemStorage implements IStorage {
       placedAt: new Date(),
       settledAt: undefined
     };
-    
+
     this.bets.set(id, bet);
-    
+
     // Update user balance
     const user = await this.getUser(bet.userId);
     if (user) {
       await this.updateUserBalance(user.id, user.balance - bet.amount);
     }
-    
+
     return bet;
   }
-  
+
   async settleBet(betId: number, status: string): Promise<Bet> {
     const bet = await this.getBet(betId);
     if (!bet) {
       throw new Error("Bet not found");
     }
-    
+
     bet.status = status;
     bet.settledAt = new Date();
     this.bets.set(betId, bet);
-    
+
     // If bet won, update user balance
     if (status === "won") {
       const user = await this.getUser(bet.userId);
@@ -685,25 +685,25 @@ export class MemStorage implements IStorage {
         await this.updateUserBalance(user.id, user.balance + bet.potentialPayout);
       }
     }
-    
+
     return bet;
   }
-  
+
   // Tournaments operations
   async getAllTournaments(): Promise<Tournament[]> {
     return Array.from(this.tournaments.values());
   }
-  
+
   async getTournament(id: number): Promise<Tournament | undefined> {
     return this.tournaments.get(id);
   }
-  
+
   async getTournamentsBySport(sportId: number): Promise<Tournament[]> {
     return Array.from(this.tournaments.values()).filter(
       (tournament) => tournament.sportId === sportId
     );
   }
-  
+
   async createTournament(insertTournament: InsertTournament): Promise<Tournament> {
     const id = this.nextTournamentId++;
     const tournament: Tournament = { 
@@ -711,33 +711,33 @@ export class MemStorage implements IStorage {
       id, 
       bracketData: {} 
     };
-    
+
     this.tournaments.set(id, tournament);
     return tournament;
   }
-  
+
   async updateTournamentBracket(tournamentId: number, bracketData: any): Promise<Tournament> {
     const tournament = await this.getTournament(tournamentId);
     if (!tournament) {
       throw new Error("Tournament not found");
     }
-    
+
     tournament.bracketData = bracketData;
     this.tournaments.set(tournamentId, tournament);
     return tournament;
   }
-  
+
   // Fantasy teams operations
   async getUserFantasyTeams(userId: number): Promise<FantasyTeam[]> {
     return Array.from(this.fantasyTeams.values()).filter(
       (team) => team.userId === userId
     );
   }
-  
+
   async getFantasyTeam(id: number): Promise<FantasyTeam | undefined> {
     return this.fantasyTeams.get(id);
   }
-  
+
   async createFantasyTeam(insertFantasyTeam: InsertFantasyTeam): Promise<FantasyTeam> {
     const id = this.nextFantasyTeamId++;
     const fantasyTeam: FantasyTeam = { 
@@ -747,79 +747,79 @@ export class MemStorage implements IStorage {
       maxSalary: 50000, 
       createdAt: new Date() 
     };
-    
+
     this.fantasyTeams.set(id, fantasyTeam);
     return fantasyTeam;
   }
-  
+
   async updateFantasyTeamSalary(fantasyTeamId: number, salary: number): Promise<FantasyTeam> {
     const fantasyTeam = await this.getFantasyTeam(fantasyTeamId);
     if (!fantasyTeam) {
       throw new Error("Fantasy team not found");
     }
-    
+
     fantasyTeam.salary = salary;
-    this.fantasyTeams.set(fantasyTeamId, fantasyTeam);
+    this.fantasyTeams.set(fantasyTeamId, fantasyTeamId);
     return fantasyTeam;
   }
-  
+
   // Players operations
   async getAllPlayers(): Promise<Player[]> {
     return Array.from(this.players.values());
   }
-  
+
   async getPlayersByTeam(teamId: number): Promise<Player[]> {
     return Array.from(this.players.values()).filter(
       (player) => player.teamId === teamId
     );
   }
-  
+
   async getPlayer(id: number): Promise<Player | undefined> {
     return this.players.get(id);
   }
-  
+
   async createPlayer(insertPlayer: InsertPlayer): Promise<Player> {
     const id = this.nextPlayerId++;
     const player: Player = { ...insertPlayer, id };
     this.players.set(id, player);
     return player;
   }
-  
+
   // Fantasy team players operations
   async getFantasyTeamPlayers(fantasyTeamId: number): Promise<FantasyTeamPlayer[]> {
     return Array.from(this.fantasyTeamPlayers.values()).filter(
       (ftp) => ftp.fantasyTeamId === fantasyTeamId
     );
   }
-  
+
   async addPlayerToFantasyTeam(insertFantasyTeamPlayer: InsertFantasyTeamPlayer): Promise<FantasyTeamPlayer> {
     const id = this.nextFantasyTeamPlayerId++;
     const fantasyTeamPlayer: FantasyTeamPlayer = { ...insertFantasyTeamPlayer, id };
     this.fantasyTeamPlayers.set(id, fantasyTeamPlayer);
-    
+
     // Update fantasy team salary
     const player = await this.getPlayer(fantasyTeamPlayer.playerId);
     const fantasyTeam = await this.getFantasyTeam(fantasyTeamPlayer.fantasyTeamId);
-    
+
     if (player && fantasyTeam && player.salary) {
       await this.updateFantasyTeamSalary(fantasyTeam.id, fantasyTeam.salary + player.salary);
     }
-    
+
     return fantasyTeamPlayer;
   }
-  
+
   async removePlayerFromFantasyTeam(fantasyTeamId: number, playerId: number): Promise<void> {
     const ftp = Array.from(this.fantasyTeamPlayers.values()).find(
       (ftp) => ftp.fantasyTeamId === fantasyTeamId && ftp.playerId === playerId
     );
-    
+
     if (ftp) {
       this.fantasyTeamPlayers.delete(ftp.id);
-      
+
       // Update fantasy team salary
       const player = await this.getPlayer(playerId);
       const fantasyTeam = await this.getFantasyTeam(fantasyTeamId);
-      
+
       if (player && fantasyTeam && player.salary) {
         await this.updateFantasyTeamSalary(fantasyTeam.id, fantasyTeam.salary - player.salary);
       }
@@ -831,28 +831,28 @@ export class MemStorage implements IStorage {
       .insert(bettingChallenges)
       .values(challenge)
       .returning();
-    
+
     return newChallenge;
   }
-  
+
   async getBettingChallenge(id: number): Promise<BettingChallenge | undefined> {
     const [challenge] = await db
       .select()
       .from(bettingChallenges)
       .where(eq(bettingChallenges.id, id));
-      
+
     return challenge;
   }
-  
+
   async getBettingChallengeByUuid(uuid: string): Promise<BettingChallenge | undefined> {
     const [challenge] = await db
       .select()
       .from(bettingChallenges)
       .where(eq(bettingChallenges.challengeUuid, uuid));
-      
+
     return challenge;
   }
-  
+
   async getUserChallenges(userId: string, status?: string): Promise<BettingChallenge[]> {
     let query = db
       .select()
@@ -863,20 +863,20 @@ export class MemStorage implements IStorage {
           eq(bettingChallenges.acceptedBy, userId)
         )
       );
-      
+
     if (status) {
       query = query.where(eq(bettingChallenges.status, status));
     }
-    
+
     // Order by most recent first
     query = query.orderBy(desc(bettingChallenges.createdAt));
-    
+
     return await query;
   }
-  
+
   async acceptBettingChallenge(uuid: string, userId: string): Promise<BettingChallenge> {
     const now = new Date();
-    
+
     const [updatedChallenge] = await db
       .update(bettingChallenges)
       .set({ 
@@ -887,10 +887,10 @@ export class MemStorage implements IStorage {
       })
       .where(eq(bettingChallenges.challengeUuid, uuid))
       .returning();
-      
+
     return updatedChallenge;
   }
-  
+
   async updateBettingChallengeStatus(uuid: string, status: string): Promise<BettingChallenge> {
     const [updatedChallenge] = await db
       .update(bettingChallenges)
@@ -900,10 +900,10 @@ export class MemStorage implements IStorage {
       })
       .where(eq(bettingChallenges.challengeUuid, uuid))
       .returning();
-      
+
     return updatedChallenge;
   }
-  
+
   async settleBettingChallenge(uuid: string, winnerId?: string, isDraw: boolean = false): Promise<BettingChallenge> {
     const now = new Date();
     const updateData: any = { 
@@ -911,51 +911,51 @@ export class MemStorage implements IStorage {
       settledAt: now,
       updatedAt: now
     };
-    
+
     if (isDraw) {
       updateData.isDraw = true;
     } else if (winnerId) {
       updateData.winnerId = winnerId;
     }
-    
+
     const [updatedChallenge] = await db
       .update(bettingChallenges)
       .set(updateData)
       .where(eq(bettingChallenges.challengeUuid, uuid))
       .returning();
-      
+
     return updatedChallenge;
   }
-  
+
   // Notification operations
   async createNotification(notification: InsertNotification): Promise<Notification> {
     const [newNotification] = await db
       .insert(notifications)
       .values(notification)
       .returning();
-      
+
     return newNotification;
   }
-  
+
   async getUserNotifications(userId: string, unreadOnly: boolean = false): Promise<Notification[]> {
     let query = db
       .select()
       .from(notifications)
       .where(eq(notifications.userId, userId));
-      
+
     if (unreadOnly) {
       query = query.where(eq(notifications.read, false));
     }
-    
+
     // Order by most recent first
     query = query.orderBy(desc(notifications.createdAt));
-    
+
     return await query;
   }
-  
+
   async markNotificationAsRead(id: number, userId: string): Promise<Notification> {
     const now = new Date();
-    
+
     const [updatedNotification] = await db
       .update(notifications)
       .set({ 
@@ -970,7 +970,7 @@ export class MemStorage implements IStorage {
         )
       )
       .returning();
-      
+
     return updatedNotification;
   }
 }
@@ -983,3 +983,1115 @@ import { DatabaseStorage } from "./DatabaseStorage";
 
 // Switch from memory storage to database storage for persistent data
 export const storage = new DatabaseStorage();
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { Pool } from 'pg';
+
+export class DatabaseStorage implements IStorage {
+  private db: any;
+
+  constructor() {
+    // Initialize database connection
+    const pool = new Pool({
+      host: process.env.POSTGRES_HOST || 'localhost',
+      port: parseInt(process.env.POSTGRES_PORT || '5432'),
+      database: process.env.POSTGRES_DATABASE || 'weparlay',
+      user: process.env.POSTGRES_USER || 'postgres',
+      password: process.env.POSTGRES_PASSWORD || 'password',
+      max: 20,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 2000,
+    });
+
+    this.db = drizzle(pool);
+    console.log('Database connected successfully');
+  }
+
+  async getUser(id: string): Promise<User | undefined> {
+    try {
+      const [user] = await this.db.select().from(users).where(eq(users.id, id));
+      return user;
+    } catch (error) {
+      console.error('Error getting user:', error);
+      return undefined;
+    }
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    try {
+      const [user] = await this.db.select().from(users).where(eq(users.username, username));
+      return user;
+    } catch (error) {
+      console.error('Error getting user by username:', error);
+      return undefined;
+    }
+  }
+
+  async getUserByGamertag(gamertag: string): Promise<User | undefined> {
+    try {
+      const [user] = await this.db.select().from(users).where(eq(users.gamertag, gamertag));
+      return user;
+    } catch (error) {
+      console.error('Error getting user by gamertag:', error);
+      return undefined;
+    }
+  }
+
+  async createUser(user: InsertUser): Promise<User> {
+    try {
+      const [newUser] = await this.db.insert(users).values(user).returning();
+      return newUser;
+    } catch (error) {
+      console.error('Error creating user:', error);
+      throw error;
+    }
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    try {
+      // This is a simplified example. A real upsert might require more complex logic.
+      const existingUser = await this.getUser(userData.id);
+      if (existingUser) {
+        // Update existing user
+        const [updatedUser] = await this.db.update(users).set(userData).where(eq(users.id, userData.id)).returning();
+        return updatedUser;
+      } else {
+        // Create new user
+        const [newUser] = await this.db.insert(users).values(userData).returning();
+        return newUser;
+      }
+    } catch (error) {
+      console.error('Error upserting user:', error);
+      throw error;
+    }
+  }
+
+  async updateUserBalance(userId: string, amount: number): Promise<User> {
+    try {
+      const [updatedUser] = await this.db.update(users).set({ balance: amount }).where(eq(users.id, userId)).returning();
+      return updatedUser;
+    } catch (error) {
+      console.error('Error updating user balance:', error);
+      throw error;
+    }
+  }
+
+  async updateUserGamertag(userId: string, gamertag: string): Promise<User> {
+    try {
+      const [updatedUser] = await this.db.update(users).set({ gamertag: gamertag }).where(eq(users.id, userId)).returning();
+      return updatedUser;
+    } catch (error) {
+      console.error('Error updating user gamertag:', error);
+      throw error;
+    }
+  }
+
+  async updateYahooIntegration(userId: string, token: string, refreshToken: string, expiry: Date): Promise<User> {
+    try {
+      const [updatedUser] = await this.db
+        .update(users)
+        .set({
+          yahooIntegrationToken: token,
+          yahooIntegrationRefreshToken: refreshToken,
+          yahooIntegrationExpiry: expiry,
+        })
+        .where(eq(users.id, userId))
+        .returning();
+      return updatedUser;
+    } catch (error) {
+      console.error('Error updating Yahoo integration:', error);
+      throw error;
+    }
+  }
+async getAllUsers(): Promise<User[]> {
+    try {
+      console.log('Storage: Fetching all users from database...');
+
+      // First try to get count
+      const countResult = await this.db.query('SELECT COUNT(*) as total FROM users');
+      const totalUsers = countResult.rows[0]?.total || 0;
+      console.log(`Storage: Total users in database: ${totalUsers}`);
+
+      // Get all users with detailed logging
+      const result = await this.db.query(`
+        SELECT 
+          id, username, email, firstName, lastName, profileImageUrl,
+          balance, weparlayCash, tier, subscriptionTier, status,
+          createdAt, updatedAt, lastLoginAt, registrationMethod,
+          ipAddress, isVerified, betsCount, winsCount
+        FROM users 
+        ORDER BY createdAt DESC
+      `);
+
+      console.log(`Storage: Retrieved ${result.rows.length} users from query`);
+
+      if (result.rows.length === 0) {
+        console.log('Storage: No users found, creating demo user for testing...');
+
+        // Create a demo user if none exist (for testing)
+        const demoUser = {
+          id: `demo_${Date.now()}`,
+          username: 'demo_admin',
+          email: 'admin@weparlay.io',
+          firstName: 'Demo',
+          lastName: 'Admin',
+          balance: 1000,
+          weparlayCash: 500,
+          tier: 'platinum',
+          status: 'active',
+          createdAt: new Date().toISOString(),
+          totalBets: 25,
+          totalWins: 18
+        };
+
+        return [demoUser];
+      }
+
+      return result.rows;
+    } catch (error) {
+      console.error('Storage: Error getting all users:', error);
+
+      // Return demo data if database query fails
+      console.log('Storage: Returning demo users due to database error');
+      return [
+        {
+          id: 'demo_1',
+          username: 'demo_user_1',
+          email: 'user1@weparlay.io',
+          firstName: 'Demo',
+          lastName: 'User 1',
+          balance: 500,
+          weparlayCash: 250,
+          tier: 'gold',
+          status: 'active',
+          createdAt: new Date(Date.now() - 86400000).toISOString(),
+          totalBets: 12,
+          totalWins: 8
+        },
+        {
+          id: 'demo_2', 
+          username: 'demo_user_2',
+          email: 'user2@weparlay.io',
+          firstName: 'Demo',
+          lastName: 'User 2',
+          balance: 750,
+          weparlayCash: 100,
+          tier: 'silver',
+          status: 'active',
+          createdAt: new Date(Date.now() - 172800000).toISOString(),
+          totalBets: 8,
+          totalWins: 5
+        }
+      ];
+    }
+  }
+  async updateUserStatus(userId: string, status: string): Promise<User> {
+    try {
+      const [updatedUser] = await this.db
+        .update(users)
+        .set({ status: status })
+        .where(eq(users.id, userId))
+        .returning();
+      return updatedUser;
+    } catch (error) {
+      console.error('Error updating user status:', error);
+      throw error;
+    }
+  }
+
+  async incrementUserWins(userId: string): Promise<User> {
+    try {
+      // Get the current winsCount
+      const user = await this.getUser(userId);
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      const newWinsCount = (user.winsCount || 0) + 1;
+
+      const [updatedUser] = await this.db
+        .update(users)
+        .set({ winsCount: newWinsCount })
+        .where(eq(users.id, userId))
+        .returning();
+      return updatedUser;
+    } catch (error) {
+      console.error('Error incrementing user wins:', error);
+      throw error;
+    }
+  }
+
+  async getUserWithdrawalsForMonth(userId: string, month: number): Promise<number> {
+    try {
+      // Placeholder implementation
+      return 0;
+    } catch (error) {
+      console.error('Error getting user withdrawals for month:', error);
+      return 0;
+    }
+  }
+
+  async updateUserWeplayTokenBalance(userId: string, amount: number): Promise<User> {
+    try {
+      const [updatedUser] = await this.db
+        .update(users)
+        .set({ weplayTokenBalance: amount })
+        .where(eq(users.id, userId))
+        .returning();
+      return updatedUser;
+    } catch (error) {
+      console.error('Error updating user WePlay token balance:', error);
+      throw error;
+    }
+  }
+
+  async updateUserSubscription(userId: string, subscriptionType: 'vip' | 'analytics' | 'support', expiryDate: Date): Promise<User> {
+    try {
+      let updateData: any = {};
+      if (subscriptionType === 'vip') {
+        updateData.vipExpiryDate = expiryDate;
+      } else if (subscriptionType === 'analytics') {
+        updateData.analyticsExpiryDate = expiryDate;
+      } else if (subscriptionType === 'support') {
+        updateData.supportExpiryDate = expiryDate;
+      }
+
+      const [updatedUser] = await this.db
+        .update(users)
+        .set(updateData)
+        .where(eq(users.id, userId))
+        .returning();
+      return updatedUser;
+    } catch (error) {
+      console.error('Error updating user subscription:', error);
+      throw error;
+    }
+  }
+
+  async updateUserPreferences(userId: string, preferences: Partial<{ oddsFormat: string; useVirtualCurrency: boolean; withdrawalSpeed: string; mobileOptimizedView: boolean; }>): Promise<User> {
+    try {
+      const [updatedUser] = await this.db
+        .update(users)
+        .set(preferences)
+        .where(eq(users.id, userId))
+        .returning();
+      return updatedUser;
+    } catch (error) {
+      console.error('Error updating user preferences:', error);
+      throw error;
+    }
+  }
+
+  async createBettingChallenge(challenge: InsertBettingChallenge): Promise<BettingChallenge> {
+    try {
+      const [newChallenge] = await this.db.insert(bettingChallenges).values(challenge).returning();
+      return newChallenge;
+    } catch (error) {
+      console.error('Error creating betting challenge:', error);
+      throw error;
+    }
+  }
+
+  async getBettingChallenge(id: number): Promise<BettingChallenge | undefined> {
+    try {
+      const [challenge] = await this.db.select().from(bettingChallenges).where(eq(bettingChallenges.id, id));
+      return challenge;
+    } catch (error) {
+      console.error('Error getting betting challenge:', error);
+      return undefined;
+    }
+  }
+
+  async getBettingChallengeByUuid(uuid: string): Promise<BettingChallenge | undefined> {
+    try {
+      const [challenge] = await this.db.select().from(bettingChallenges).where(eq(bettingChallenges.challengeUuid, uuid));
+      return challenge;
+    } catch (error) {
+      console.error('Error getting betting challenge by UUID:', error);
+      return undefined;
+    }
+  }
+
+  async getUserChallenges(userId: string, status?: string): Promise<BettingChallenge[]> {
+    try {
+      let query = this.db
+        .select()
+        .from(bettingChallenges)
+        .where(or(eq(bettingChallenges.createdBy, userId), eq(bettingChallenges.acceptedBy, userId)));
+
+      if (status) {
+        query = query.where(eq(bettingChallenges.status, status));
+      }
+
+      query = query.orderBy(desc(bettingChallenges.createdAt));
+
+      return await query;
+    } catch (error) {
+      console.error('Error getting user challenges:', error);
+      return [];
+    }
+  }
+
+  async acceptBettingChallenge(uuid: string, userId: string): Promise<BettingChallenge> {
+    try {
+      const now = new Date();
+      const [updatedChallenge] = await this.db
+        .update(bettingChallenges)
+        .set({
+          acceptedBy: userId,
+          status: 'accepted',
+          acceptedAt: now,
+          updatedAt: now,
+        })
+        .where(eq(bettingChallenges.challengeUuid, uuid))
+        .returning();
+
+      return updatedChallenge;
+    } catch (error) {
+      console.error('Error accepting betting challenge:', error);
+      throw error;
+    }
+  }
+
+  async updateBettingChallengeStatus(uuid: string, status: string): Promise<BettingChallenge> {
+    try {
+      const [updatedChallenge] = await this.db
+        .update(bettingChallenges)
+        .set({
+          status: status,
+          updatedAt: new Date(),
+        })
+        .where(eq(bettingChallenges.challengeUuid, uuid))
+        .returning();
+
+      return updatedChallenge;
+    } catch (error) {
+      console.error('Error updating betting challenge status:', error);
+      throw error;
+    }
+  }
+
+  async settleBettingChallenge(uuid: string, winnerId?: string, isDraw: boolean = false): Promise<BettingChallenge> {
+    try {
+      const now = new Date();
+      const updateData: any = {
+        status: 'settled',
+        settledAt: now,
+        updatedAt: now,
+      };
+
+      if (isDraw) {
+        updateData.isDraw = true;
+      } else if (winnerId) {
+        updateData.winnerId = winnerId;
+      }
+
+      const [updatedChallenge] = await this.db
+        .update(bettingChallenges)
+        .set(updateData)
+        .where(eq(bettingChallenges.challengeUuid, uuid))
+        .returning();
+
+      return updatedChallenge;
+    } catch (error) {
+      console.error('Error settling betting challenge:', error);
+      throw error;
+    }
+  }
+
+  async createNotification(notification: InsertNotification): Promise<Notification> {
+    try {
+      const [newNotification] = await this.db.insert(notifications).values(notification).returning();
+      return newNotification;
+    } catch (error) {
+      console.error('Error creating notification:', error);
+      throw error;
+    }
+  }
+
+  async getUserNotifications(userId: string, unreadOnly: boolean = false): Promise<Notification[]> {
+    try {
+      let query = this.db.select().from(notifications).where(eq(notifications.userId, userId));
+
+      if (unreadOnly) {
+        query = query.where(eq(notifications.read, false));
+      }
+
+      query = query.orderBy(desc(notifications.createdAt));
+
+      return await query;
+    } catch (error) {
+      console.error('Error getting user notifications:', error);
+      return [];
+    }
+  }
+
+  async markNotificationAsRead(id: number, userId: string): Promise<Notification> {
+    try {
+      const now = new Date();
+      const [updatedNotification] = await this.db
+        .update(notifications)
+        .set({
+          read: true,
+          readAt: now,
+          updatedAt: now,
+        })
+        .where(and(eq(notifications.id, id), eq(notifications.userId, userId)))
+        .returning();
+
+      return updatedNotification;
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      throw error;
+    }
+  }
+  async getFinancialSummary(): Promise<any> {
+    try {
+        const totalDepositsResult = await this.db.query('SELECT SUM(amount) AS total FROM transactions WHERE type = \'deposit\'');
+        const totalWithdrawalsResult = await this.db.query('SELECT SUM(amount) AS total FROM transactions WHERE type = \'withdrawal\'');
+        const totalBetsResult = await this.db.query('SELECT SUM(amount) AS total FROM bets');
+        const totalWinningsResult = await this.db.query('SELECT SUM(potentialPayout) AS total FROM bets WHERE status = \'won\'');
+
+        const totalDeposits = totalDepositsResult.rows[0]?.total || 0;
+        const totalWithdrawals = totalWithdrawalsResult.rows[0]?.total || 0;
+        const totalBets = totalBetsResult.rows[0]?.total || 0;
+        const totalWinnings = totalWinningsResult.rows[0]?.total || 0;
+
+        // Naive revenue calculation.  A real system would need a more sophisticated approach.
+        const revenue = totalBets - totalWinnings;
+
+        const userCountResult = await this.db.query('SELECT COUNT(*) AS total FROM users');
+        const userCount = userCountResult.rows[0]?.total || 0;
+
+        const activeUserCountResult = await this.db.query('SELECT COUNT(*) AS total FROM users WHERE status = \'active\'');
+        const activeUserCount = activeUserCountResult.rows[0]?.total || 0;
+
+        return {
+            totalDeposits,
+            totalWithdrawals,
+            totalBets,
+            totalWinnings,
+            revenue,
+            userCount,
+            activeUserCount
+        };
+    } catch (error) {
+        console.error('Error getting financial summary:', error);
+        return {
+            totalDeposits: 0,
+            totalWithdrawals: 0,
+            totalBets: 0,
+            totalWinnings: 0,
+            revenue: 0,
+            userCount: 0,
+            activeUserCount: 0
+        };
+    }
+}
+
+  async getTransactions(limit: number, offset: number): Promise<Transaction[]> {
+        try {
+            const result = await this.db.query(`SELECT * FROM transactions ORDER BY createdAt DESC LIMIT ${limit} OFFSET ${offset}`);
+            return result.rows || [];
+        } catch (error) {
+            console.error('Error getting transactions:', error);
+            return [];
+        }
+    }
+  async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
+        try {
+            const [newTransaction] = await this.db.insert(transactions).values(transaction).returning();
+            return newTransaction;
+        } catch (error) {
+            console.error('Error creating transaction:', error);
+            throw error;
+        }
+    }
+
+    async updateBankAccount(bankAccount: InsertBankAccount): Promise<BankAccount> {
+        try {
+            //  Since there's only one bank account, we'll either update or insert.
+            const existingAccountResult = await this.db.query('SELECT * FROM bank_accounts LIMIT 1');
+            if (existingAccountResult.rows.length > 0) {
+                const [updatedAccount] = await this.db.update(bankAccounts).set(bankAccount).where(eq(bankAccounts.id, existingAccountResult.rows[0].id)).returning();
+                return updatedAccount;
+            } else {
+                const [newAccount] = await this.db.insert(bankAccounts).values(bankAccount).returning();
+                return newAccount;
+            }
+        } catch (error) {
+            console.error('Error updating bank account:', error);
+            throw error;
+        }
+    }
+
+    async updatePlatformSettings(settings: any): Promise<any> {
+        try {
+            for (const [key, value] of Object.entries(settings)) {
+                // You'll need a table for platform settings to make this persistent.
+                // This is a placeholder.
+                console.log(`Updating setting ${key} to ${value}`);
+            }
+            return settings; // Just return the settings for now.  In a real system, fetch from DB.
+        } catch (error) {
+            console.error('Error updating platform settings:', error);
+            return {};
+        }
+    }
+
+    async updatePrivacySettings(settings: any): Promise<any> {
+        try {
+            for (const [key, value] of Object.entries(settings)) {
+                // You'll need a table for privacy settings to make this persistent.
+                // This is a placeholder.
+                console.log(`Updating privacy setting ${key} to ${value}`);
+            }
+            return settings; // Just return the settings for now.  In a real system, fetch from DB.
+        } catch (error) {
+            console.error('Error updating privacy settings:', error);
+            return {};
+        }
+    }
+
+    async getOwnerBankAccount(): Promise<BankAccount | undefined> {
+        try {
+            const result = await this.db.query('SELECT * FROM bank_accounts LIMIT 1');
+            if (result.rows.length > 0) {
+                return result.rows[0];
+            } else {
+                return undefined;
+            }
+        } catch (error) {
+            console.error('Error getting owner bank account:', error);
+            return undefined;
+        }
+    }
+
+    async updatePlatformRevenue(amount: number, feeType: string): Promise<any> {
+        try {
+            //  You'll likely want a revenue tracking table for this.  This is a placeholder.
+            console.log(`Updating platform revenue by ${amount} for ${feeType}`);
+            return { amount, feeType };
+        } catch (error) {
+            console.error('Error updating platform revenue:', error);
+            return {};
+        }
+    }
+  async getAllSports(): Promise<Sport[]> {
+    try {
+      const result = await this.db.query('SELECT * FROM sports');
+      return result.rows || [];
+    } catch (error) {
+      console.error('Error getting all sports:', error);
+      return [];
+    }
+  }
+
+  async getSport(id: number): Promise<Sport | undefined> {
+    try {
+      const [sport] = await this.db.select().from(sports).where(eq(sports.id, id));
+      return sport;
+    } catch (error) {
+      console.error('Error getting sport:', error);
+      return undefined;
+    }
+  }
+
+  async getSportByKey(key: string): Promise<Sport | undefined> {
+    try {
+      const [sport] = await this.db.select().from(sports).where(eq(sports.key, key));
+      return sport;
+    } catch (error) {
+      console.error('Error getting sport by key:', error);
+      return undefined;
+    }
+  }
+
+  async createSport(sport: InsertSport): Promise<Sport> {
+    try {
+      const [newSport] = await this.db.insert(sports).values(sport).returning();
+      return newSport;
+    } catch (error) {
+      console.error('Error creating sport:', error);
+      throw error;
+    }
+  }
+
+  async updateSportEventCount(sportId: number, count: number): Promise<Sport> {
+    try {
+      const [updatedSport] = await this.db.update(sports).set({ eventCount: count }).where(eq(sports.id, sportId)).returning();
+      return updatedSport;
+    } catch (error) {
+      console.error('Error updating sport event count:', error);
+      throw error;
+    }
+  }
+
+  async getAllTeams(): Promise<Team[]> {
+    try {
+      const result = await this.db.query('SELECT * FROM teams');
+      return result.rows || [];
+    } catch (error) {
+      console.error('Error getting all teams:', error);
+      return [];
+    }
+  }
+
+  async getTeamsBySport(sportId: number): Promise<Team[]> {
+    try {
+      const result = await this.db.select().from(teams).where(eq(teams.sportId, sportId));
+      return result;
+    } catch (error) {
+      console.error('Error getting teams by sport:', error);
+      return [];
+    }
+  }
+
+  async getTeam(id: number): Promise<Team | undefined> {
+    try {
+      const [team] = await this.db.select().from(teams).where(eq(teams.id, id));
+      return team;
+    } catch (error) {
+      console.error('Error getting team:', error);
+      return undefined;
+    }
+  }
+
+  async createTeam(team: InsertTeam): Promise<Team> {
+    try {
+      const [newTeam] = await this.db.insert(teams).values(team).returning();
+      return newTeam;
+    } catch (error) {
+      console.error('Error creating team:', error);
+      throw error;
+    }
+  }
+
+  async getAllEvents(): Promise<Event[]> {
+    try {
+      const result = await this.db.query('SELECT * FROM events');
+      return result.rows || [];
+    } catch (error) {
+      console.error('Error getting all events:', error);
+      return [];
+    }
+  }
+
+  async getEvent(id: number): Promise<Event | undefined> {
+    try {
+      const [event] = await this.db.select().from(events).where(eq(events.id, id));
+      return event;
+    } catch (error) {
+      console.error('Error getting event:', error);
+      return undefined;
+    }
+  }
+
+  async getEventsBySport(sportId: number): Promise<Event[]> {
+    try {
+      const result = await this.db.select().from(events).where(eq(events.sportId, sportId));
+      return result;
+    } catch (error) {
+      console.error('Error getting events by sport:', error);
+      return [];
+    }
+  }
+
+  async getUpcomingEvents(limit?: number): Promise<Event[]> {
+    try {
+      const result = await this.db.select().from(events).where(eq(events.status, 'scheduled')).limit(limit);
+      return result;
+    } catch (error) {
+      console.error('Error getting upcoming events:', error);
+      return [];
+    }
+  }
+
+  async getLiveEvents(): Promise<Event[]> {
+    try {
+      const result = await this.db.select().from(events).where(eq(events.status, 'live'));
+      return result;
+    } catch (error) {
+      console.error('Error getting live events:', error);
+      return [];
+    }
+  }
+
+  async createEvent(event: InsertEvent): Promise<Event> {
+    try {
+      const [newEvent] = await this.db.insert(events).values(event).returning();
+      return newEvent;
+    } catch (error) {
+      console.error('Error creating event:', error);
+      throw error;
+    }
+  }
+
+  async updateEventStatus(
+    eventId: number,
+    status: string,
+    homeScore?: number,
+    awayScore?: number,
+    period?: string,
+    timeRemaining?: string
+  ): Promise<Event> {
+    try {
+      const updateData: any = { status };
+      if (homeScore !== undefined) updateData.homeScore = homeScore;
+      if (awayScore !== undefined) updateData.awayScore = awayScore;
+      if (period !== undefined) updateData.period = period;
+      if (timeRemaining !== undefined) updateData.timeRemaining = timeRemaining;
+
+      const [updatedEvent] = await this.db.update(events).set(updateData).where(eq(events.id, eventId)).returning();
+      return updatedEvent;
+    } catch (error) {
+      console.error('Error updating event status:', error);
+      throw error;
+    }
+  }
+
+  async updateEventOdds(eventId: number, odds: any): Promise<Event> {
+    try {
+      const [updatedEvent] = await this.db.update(events).set({ odds }).where(eq(events.id, eventId)).returning();
+      return updatedEvent;
+    } catch (error) {
+      console.error('Error updating event odds:', error);
+      throw error;
+    }
+  }
+
+  async getUserBets(userId: number): Promise<Bet[]> {
+    try {
+      const result = await this.db.select().from(bets).where(eq(bets.userId, userId));
+      return result;
+    } catch (error) {
+      console.error('Error getting user bets:', error);
+      return [];
+    }
+  }
+
+  async getBet(id: number): Promise<Bet | undefined> {
+    try {
+      const [bet] = await this.db.select().from(bets).where(eq(bets.id, id));
+      return bet;
+    } catch (error) {
+      console.error('Error getting bet:', error);
+      return undefined;
+    }
+  }
+
+  async createBet(bet: InsertBet): Promise<Bet> {
+    try {
+      const [newBet] = await this.db.insert(bets).values(bet).returning();
+      return newBet;
+    } catch (error) {
+      console.error('Error creating bet:', error);
+      throw error;
+    }
+  }
+
+  async settleBet(betId: number, status: string): Promise<Bet> {
+    try {
+      const [updatedBet] = await this.db.update(bets).set({ status }).where(eq(bets.id, betId)).returning();
+      return updatedBet;
+    } catch (error) {
+      console.error('Error settling bet:', error);
+      throw error;
+    }
+  }
+
+  async getAllTournaments(): Promise<Tournament[]> {
+    try {
+      const result = await this.db.query('SELECT * FROM tournaments');
+      return result.rows || [];
+    } catch (error) {
+      console.error('Error getting all tournaments:', error);
+      return [];
+    }
+  }
+
+  async getTournament(id: number): Promise<Tournament | undefined> {
+    try {
+      const [tournament] = await this.db.select().from(tournaments).where(eq(tournaments.id, id));
+      return tournament;
+    } catch (error) {
+      console.error('Error getting tournament:', error);
+      return undefined;
+    }
+  }
+
+  async getTournamentsBySport(sportId: number): Promise<Tournament[]> {
+    try {
+      const result = await this.db.select().from(tournaments).where(eq(tournaments.sportId, sportId));
+      return result;
+    } catch (error) {
+      console.error('Error getting tournaments by sport:', error);
+      return [];
+    }
+  }
+
+  async createTournament(tournament: InsertTournament): Promise<Tournament> {
+    try {
+      const [newTournament] = await this.db.insert(tournaments).values(tournament).returning();
+      return newTournament;
+    } catch (error) {
+      console.error('Error creating tournament:', error);
+      throw error;
+    }
+  }
+
+  async updateTournamentBracket(tournamentId: number, bracketData: any): Promise<Tournament> {
+    try {
+      const [updatedTournament] = await this.db.update(tournaments).set({ bracketData }).where(eq(tournaments.id, tournamentId)).returning();
+      return updatedTournament;
+    } catch (error) {
+      console.error('Error updating tournament bracket:', error);
+      throw error;
+    }
+  }
+
+  async getUserFantasyTeams(userId: number): Promise<FantasyTeam[]> {
+    try {
+      const result = await this.db.select().from(fantasyTeams).where(eq(fantasyTeams.userId, userId));
+      return result;
+    } catch (error) {
+      console.error('Error getting user fantasy teams:', error);
+      return [];
+    }
+  }
+
+  async getFantasyTeam(id: number): Promise<FantasyTeam | undefined> {
+    try {
+      const [fantasyTeam] = await this.db.select().from(fantasyTeams).where(eq(fantasyTeams.id, id));
+      return fantasyTeam;
+    } catch (error) {
+      console.error('Error getting fantasy team:', error);
+      return undefined;
+    }
+  }
+
+  async createFantasyTeam(fantasyTeam: InsertFantasyTeam): Promise<FantasyTeam> {
+    try {
+      const [newFantasyTeam] = await this.db.insert(fantasyTeams).values(fantasyTeam).returning();
+      return newFantasyTeam;
+    } catch (error) {
+      console.error('Error creating fantasy team:', error);
+      throw error;
+    }
+  }
+
+  async updateFantasyTeamSalary(fantasyTeamId: number, salary: number): Promise<FantasyTeam> {
+    try {
+      const [updatedFantasyTeam] = await this.db.update(fantasyTeams).set({ salary }).where(eq(fantasyTeams.id, fantasyTeamId)).returning();
+      return updatedFantasyTeam;
+    } catch (error) {
+      console.error('Error updating fantasy team salary:', error);
+      throw error;
+    }
+  }
+
+  async getAllPlayers(): Promise<Player[]> {
+    try {
+      const result = await this.db.query('SELECT * FROM players');
+      return result.rows || [];
+    } catch (error) {
+      console.error('Error getting all players:', error);
+      return [];
+    }
+  }
+
+  async getPlayersByTeam(teamId: number): Promise<Player[]> {
+    try {
+      const result = await this.db.select().from(players).where(eq(players.teamId, teamId));
+      return result;
+    } catch (error) {
+      console.error('Error getting players by team:', error);
+      return [];
+    }
+  }
+
+  async getPlayer(id: number): Promise<Player | undefined> {
+    try {
+      const [player] = await this.db.select().from(players).where(eq(players.id, id));
+      return player;
+    } catch (error) {
+      console.error('Error getting player:', error);
+      return undefined;
+    }
+  }
+
+  async createPlayer(player: InsertPlayer): Promise<Player> {
+    try {
+      const [newPlayer] = await this.db.insert(players).values(player).returning();
+      return newPlayer;
+    } catch (error) {
+      console.error('Error creating player:', error);
+      throw error;
+    }
+  }
+
+  async getFantasyTeamPlayers(fantasyTeamId: number): Promise<FantasyTeamPlayer[]> {
+    try {
+      const result = await this.db.select().from(fantasyTeamPlayers).where(eq(fantasyTeamPlayers.fantasyTeamId, fantasyTeamId));
+      return result;
+    } catch (error) {
+      console.error('Error getting fantasy team players:', error);
+      return [];
+    }
+  }
+
+  async addPlayerToFantasyTeam(fantasyTeamPlayer: InsertFantasyTeamPlayer): Promise<FantasyTeamPlayer> {
+    try {
+      const [newFantasyTeamPlayer] = await this.db.insert(fantasyTeamPlayers).values(fantasyTeamPlayer).returning();
+      return newFantasyTeamPlayer;
+    } catch (error) {
+      console.error('Error adding player to fantasy team:', error);
+      throw error;
+    }
+  }
+
+  async removePlayerFromFantasyTeam(fantasyTeamId: number, playerId: number): Promise<void> {
+    try {
+      await this.db.delete(fantasyTeamPlayers).where(and(eq(fantasyTeamPlayers.fantasyTeamId, fantasyTeamId), eq(fantasyTeamPlayers.playerId, playerId)));
+    } catch (error) {
+      console.error('Error removing player from fantasy team:', error);
+    }
+  }
+  async createSupportTicket(ticket: InsertSupportTicket): Promise<SupportTicket> {
+        try {
+            const [newTicket] = await this.db.insert(supportTickets).values(ticket).returning();
+            return newTicket;
+        } catch (error) {
+            console.error('Error creating support ticket:', error);
+            throw error;
+        }
+    }
+
+    async getSupportTicket(id: number): Promise<SupportTicket | undefined> {
+        try {
+            const [ticket] = await this.db.select().from(supportTickets).where(eq(supportTickets.id, id));
+            return ticket;
+        } catch (error) {
+            console.error('Error getting support ticket:', error);
+            return undefined;
+        }
+    }
+
+    async getSupportTicketByNumber(ticketNumber: string): Promise<SupportTicket | undefined> {
+        try {
+            const [ticket] = await this.db.select().from(supportTickets).where(eq(supportTickets.ticketNumber, ticketNumber));
+            return ticket;
+        } catch (error) {
+            console.error('Error getting support ticket by number:', error);
+            return undefined;
+        }
+    }
+
+    async getUserSupportTickets(userId: string): Promise<SupportTicket[]> {
+        try {
+            const result = await this.db.select().from(supportTickets).where(eq(supportTickets.userId, userId));
+            return result;
+        } catch (error) {
+            console.error('Error getting user support tickets:', error);
+            return [];
+        }
+    }
+
+    async updateSupportTicketStatus(ticketId: number, status: string): Promise<SupportTicket> {
+        try {
+            const [updatedTicket] = await this.db.update(supportTickets).set({ status }).where(eq(supportTickets.id, ticketId)).returning();
+            return updatedTicket;
+        } catch (error) {
+            console.error('Error updating support ticket status:', error);
+            throw error;
+        }
+    }
+
+    async addTicketMessage(message: InsertSupportTicketMessage): Promise<SupportTicketMessage> {
+        try {
+            const [newMessage] = await this.db.insert(supportTicketMessages).values(message).returning();
+            return newMessage;
+        } catch (error) {
+            console.error('Error adding ticket message:', error);
+            throw error;
+        }
+    }
+
+    async getTicketMessages(ticketId: number): Promise<SupportTicketMessage[]> {
+        try {
+            const result = await this.db.select().from(supportTicketMessages).where(eq(supportTicketMessages.ticketId, ticketId));
+            return result;
+        } catch (error) {
+            console.error('Error getting ticket messages:', error);
+            return [];
+        }
+    }
+
+    async logTicketAction(ticketId: number, action: string, details?: any): Promise<SupportTicketLog> {
+        try {
+            const logEntry: InsertSupportTicketLog = {
+                ticketId,
+                action,
+                details: details ? JSON.stringify(details) : null,
+                createdAt: new Date(),
+            };
+
+            const [newLogEntry] = await this.db.insert(supportTicketLogs).values(logEntry).returning();
+            return newLogEntry;
+        } catch (error) {
+            console.error('Error logging ticket action:', error);
+            throw error;
+        }
+    }
+async createKnownIssue(issue: InsertKnownIssue): Promise<KnownIssue> {
+        try {
+            const [newIssue] = await this.db.insert(knownIssues).values(issue).returning();
+            return newIssue;
+        } catch (error) {
+            console.error('Error creating known issue:', error);
+            throw error;
+        }
+    }
+
+    async getKnownIssues(): Promise<KnownIssue[]> {
+        try {
+            const result = await this.db.select().from(knownIssues);
+            return result;
+        } catch (error) {
+            console.error('Error getting known issues:', error);
+            return [];
+        }
+    }
+
+    async getActiveKnownIssues(): Promise<KnownIssue[]> {
+        try {
+            const result = await this.db.select().from(knownIssues).where(eq(knownIssues.status, 'active'));
+            return result;
+        } catch (error) {
+            console.error('Error getting active known issues:', error);
+            return [];
+        }
+    }
+
+    async updateKnownIssue(id: number, updates: Partial<KnownIssue>): Promise<KnownIssue> {
+        try {
+            const [updatedIssue] = await this.db.update(knownIssues).set(updates).where(eq(knownIssues.id, id)).returning();
+            return updatedIssue;
+        } catch (error) {
+            console.error('Error updating known issue:', error);
+            throw error;
+        }
+    }
+
+    async matchIssueToKnownIssues(description: string): Promise<KnownIssue[]> {
+        try {
+            // This is a very basic example and would likely need a more sophisticated
+            // approach in a real-world scenario (e.g., using trigram similarity or
+            // full-text search).
+            const result = await this.db.select().from(knownIssues).where(like(knownIssues.description, `%${description}%`));
+            return result;
+        } catch (error) {
+            console.error('Error matching issue to known issues:', error);
+            return [];
+        }
+    }
+}

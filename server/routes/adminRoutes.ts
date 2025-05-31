@@ -13,30 +13,46 @@ const isAdmin = async (req: Request, res: Response, next: any) => {
 // Get all users (admin only)
 adminRouter.get('/users', async (req: Request, res: Response) => {
   try {
+    console.log('Admin: Fetching all users...');
     const users = await storage.getAllUsers();
+    console.log(`Admin: Found ${users.length} users in database`);
     
-    // Filter out sensitive information and format for admin display
-    const filteredUsers = users.map(user => ({
-      id: user.id,
-      username: user.firstName || user.email?.split('@')[0] || 'User',
-      email: user.email || 'No email',
-      firstName: user.firstName,
-      lastName: user.lastName,
-      profileImageUrl: user.profileImageUrl,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-      balance: user.balance || 0,
-      weparlayCash: user.weparlayCash || 0,
-      tier: user.tier || 'bronze',
-      status: user.status || 'active',
-      totalBets: user.betsCount || 0,
-      totalWins: user.winsCount || 0,
-    }));
+    // Format for admin display with all necessary fields
+    const formattedUsers = users.map(user => {
+      const formattedUser = {
+        id: user.id || 'unknown',
+        username: user.username || user.firstName || user.email?.split('@')[0] || 'Unknown User',
+        email: user.email || 'No email provided',
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        profileImageUrl: user.profileImageUrl || null,
+        createdAt: user.createdAt || new Date().toISOString(),
+        updatedAt: user.updatedAt || new Date().toISOString(),
+        balance: parseFloat(user.balance?.toString() || '0'),
+        weparlayCash: parseInt(user.weparlayCash?.toString() || '0'),
+        tier: user.tier || user.subscriptionTier || 'bronze',
+        status: user.status || 'active',
+        totalBets: parseInt(user.betsCount?.toString() || '0'),
+        totalWins: parseInt(user.winsCount?.toString() || '0'),
+        // Additional admin fields
+        lastLoginAt: user.lastLoginAt || null,
+        registrationMethod: user.registrationMethod || 'direct',
+        ipAddress: user.ipAddress || 'Unknown',
+        isVerified: user.isVerified || false
+      };
+      
+      console.log(`Admin: Formatted user ${formattedUser.username} (${formattedUser.id})`);
+      return formattedUser;
+    });
     
-    res.json(filteredUsers);
+    console.log(`Admin: Returning ${formattedUsers.length} formatted users`);
+    res.json(formattedUsers);
   } catch (error) {
-    console.error('Error getting users:', error);
-    res.status(500).json({ message: 'Failed to retrieve users' });
+    console.error('Admin: Error getting users:', error);
+    res.status(500).json({ 
+      message: 'Failed to retrieve users',
+      error: error.message 
+    });
   }
 });
 

@@ -33,12 +33,16 @@ export default function ManageUsers() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   // Fetch all users
-  const { data: users, isLoading } = useQuery({
+  const { data: users, isLoading, error } = useQuery({
     queryKey: ["/api/admin/users"],
     queryFn: async () => {
+      console.log('Frontend: Fetching users from admin API...');
       const response = await apiRequest("GET", "/api/admin/users");
+      console.log('Frontend: Received users data:', response);
       return response as User[];
-    }
+    },
+    refetchInterval: 30000, // Refresh every 30 seconds
+    staleTime: 10000 // Consider data stale after 10 seconds
   });
 
   // Update user mutation
@@ -91,10 +95,21 @@ export default function ManageUsers() {
     }
   });
 
-  const filteredUsers = users?.filter(user =>
-    user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  const filteredUsers = users?.filter(user => {
+    if (!searchTerm) return true;
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      user.username?.toLowerCase().includes(searchLower) ||
+      user.email?.toLowerCase().includes(searchLower) ||
+      user.firstName?.toLowerCase().includes(searchLower) ||
+      user.lastName?.toLowerCase().includes(searchLower)
+    );
+  }) || [];
+
+  // Debug logging
+  console.log('ManageUsers: Total users:', users?.length || 0);
+  console.log('ManageUsers: Filtered users:', filteredUsers.length);
+  console.log('ManageUsers: Search term:', searchTerm);
 
   const getTierColor = (tier: string) => {
     switch (tier?.toLowerCase()) {
@@ -157,6 +172,20 @@ export default function ManageUsers() {
           {isLoading ? (
             <div className="flex items-center justify-center p-8">
               <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+              <span className="ml-2">Loading users...</span>
+            </div>
+          ) : error ? (
+            <div className="text-center p-8">
+              <p className="text-red-600">Error loading users: {error.message}</p>
+              <Button onClick={() => window.location.reload()} className="mt-4">
+                Retry
+              </Button>
+            </div>
+          ) : !users || users.length === 0 ? (
+            <div className="text-center p-8">
+              <Users className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-600 mb-2">No users found</h3>
+              <p className="text-gray-500">No registered users in the system yet.</p>
             </div>
           ) : (
             <Table>
