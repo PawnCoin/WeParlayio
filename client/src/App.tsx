@@ -184,8 +184,8 @@ function Router() {
       <Route path="/auth-test-demo" component={AuthTestDemo} />
       <Route path="/community" component={UserDirectory} />
       <Route path="/users" component={UserDirectory} />
-      <Route path="/social-bots" component={(props) => <AdminRoute component={SocialMediaBots} {...props} />} />
-      <Route path="/email-monitoring" component={(props) => <AdminRoute component={EmailMonitoring} {...props} />} />
+      <Route path="/social-bots" component={SocialMediaBots} />
+      <Route path="/email-monitoring" component={EmailMonitoring} />
 
       {/* Authentication Routes */}
       <Route path="/signup" component={SignUpEnhanced} />
