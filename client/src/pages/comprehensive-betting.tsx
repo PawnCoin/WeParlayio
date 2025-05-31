@@ -125,13 +125,13 @@ const ComprehensiveBetting = () => {
                   <span className="text-white font-semibold text-lg">LIVE DATA ACTIVE</span>
                 </div>
                 <div className="flex gap-4">
-                  <Badge variant="secondary" className="bg-blue-800 text-white border-blue-600">
+                  <Badge variant="secondary" className="bg-slate-900 text-white border-slate-700">
                     {stats?.totalSports || 113} Sports Available
                   </Badge>
-                  <Badge variant="secondary" className="bg-blue-800 text-white border-blue-600">
+                  <Badge variant="secondary" className="bg-slate-900 text-white border-slate-700">
                     {stats?.liveEvents || 0} Live Events
                   </Badge>
-                  <Badge variant="secondary" className="bg-blue-800 text-white border-blue-600">
+                  <Badge variant="secondary" className="bg-slate-900 text-white border-slate-700">
                     {stats?.upcomingEvents || 6} Upcoming
                   </Badge>
                 </div>
@@ -219,7 +219,7 @@ const ComprehensiveBetting = () => {
             <Sparkles className="w-5 h-5 text-yellow-400" />
             Featured Sports
           </h2>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {filteredSports.slice(0, 8).map((sport, index) => (
               <div 
@@ -234,7 +234,7 @@ const ComprehensiveBetting = () => {
               </div>
             ))}
           </div>
-          
+
           {/* Additional Sports with View Buttons - Matching Screenshot Design */}
           <div className="space-y-3 mt-8">
             {filteredSports.slice(8).map((sport, index) => (
@@ -248,11 +248,11 @@ const ComprehensiveBetting = () => {
                   </h3>
                   <p className="text-slate-400 text-sm">{sport.key}</p>
                 </div>
-                
+
                 <Button 
                   variant="secondary" 
                   size="sm" 
-                  className="bg-slate-600 hover:bg-slate-500 text-white border-slate-500 px-4 py-2 rounded-md flex items-center gap-2"
+                  className="bg-slate-800 hover:bg-slate-700 text-white border-slate-700 px-4 py-2 rounded-md flex items-center gap-2"
                   onClick={() => handleSportClick(sport.key)}
                 >
                   View <ChevronRight className="w-4 h-4" />
@@ -271,13 +271,13 @@ const ComprehensiveBetting = () => {
             </Button>
           </Link>
           <Link href="/tournaments">
-            <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-700">
+            <Button variant="outline" className="border-slate-700 text-slate-300 hover:bg-slate-800 bg-slate-900">
               <Trophy className="w-4 h-4 mr-2" />
               Tournaments
             </Button>
           </Link>
           <Link href="/esports-hub">
-            <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-700">
+            <Button variant="outline" className="border-slate-700 text-slate-300 hover:bg-slate-800 bg-slate-900">
               <Gamepad2 className="w-4 h-4 mr-2" />
               Esports Hub
             </Button>

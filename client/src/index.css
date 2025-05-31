@@ -77,18 +77,76 @@ html, body, #root {
   --chart-5: #9ca3af;
 }
 
-/* Remove ALL white backgrounds in dark mode */
+/* Comprehensive dark mode fixes - Remove all white backgrounds */
+
+/* Global dark background enforcement */
+.dark,
+.dark body,
+.dark .bg-white,
+.dark .bg-background,
+.dark .bg-card {
+  background-color: #0f172a !important;
+}
+
+/* Remove ALL possible white backgrounds */
 .dark .bg-white,
 .dark .bg-gray-50,
-.dark .bg-slate-50,
-.dark .bg-zinc-50,
-.dark .bg-neutral-50,
-.dark .bg-stone-50,
 .dark .bg-gray-100,
+.dark .bg-slate-50,
 .dark .bg-slate-100,
+.dark .bg-zinc-50,
 .dark .bg-zinc-100,
+.dark .bg-neutral-50,
 .dark .bg-neutral-100,
-.dark .bg-stone-100 {
+.dark .bg-stone-50,
+.dark .bg-stone-100,
+.dark [style*="background-color: white"],
+.dark [style*="background-color: #ffffff"],
+.dark [style*="background-color: #FFFFFF"],
+.dark [style*="background-color: #fff"],
+.dark [style*="background-color: #FFF"],
+.dark [style*="background-color: #f8f9fa"],
+.dark [style*="background-color: #f1f3f4"],
+.dark [style*="background-color: #f5f5f5"] {
+  background-color: #0f172a !important;
+}
+
+/* Comprehensive betting page specific overrides */
+.dark [class*="comprehensive-betting"] .bg-white,
+.dark [class*="comprehensive-betting"] .bg-gray-50,
+.dark [class*="comprehensive-betting"] .bg-slate-50 {
+  background-color: #0f172a !important;
+}
+
+/* Button and card component overrides */
+.dark .bg-secondary {
+  background-color: #1e293b !important;
+}
+
+.dark .border-secondary {
+  border-color: #334155 !important;
+}
+
+/* Input field overrides */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+
+/* Badge and component overrides */
+.dark .badge,
+.dark [class*="badge"] {
+  background-color: #1e293b !important;
+}
+
+/* Force all containers to dark */
+.dark .container,
+.dark .card,
+.dark .panel,
+.dark [class*="bg-"] {
   background-color: #0f172a !important;
 }
 
@@ -118,12 +176,7 @@ html, body, #root {
 .dark [style*="background-color: #ffffff"],
 .dark [style*="background-color: #FFFFFF"],
 .dark [style*="background-color: #fff"],
-.dark [style*="background-color: #FFF"],
-.dark [style*="background: white"],
-.dark [style*="background: #ffffff"],
-.dark [style*="background: #FFFFFF"],
-.dark [style*="background: #fff"],
-.dark [style*="background: #FFF"] {
+.dark [style*="background-color: #FFF"] {
   background-color: #0f172a !important;
 }
 
