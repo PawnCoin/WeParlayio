@@ -77,34 +77,19 @@ html, body, #root {
   --chart-5: #9ca3af;
 }
 
-/* Comprehensive dark mode fixes - Remove all white backgrounds */
-
-/* Global dark background enforcement */
-.dark,
-.dark body,
+/* Remove ALL white backgrounds in dark mode */
 .dark .bg-white,
-.dark .bg-background,
-.dark .bg-card {
+.dark .bg-gray-50,
+.dark .bg-slate-50,
+.dark .bg-zinc-50,
+.dark .bg-neutral-50,
+.dark .bg-stone-50,
+.dark .bg-gray-100,
+.dark .bg-slate-100,
+.dark .bg-zinc-100,
+.dark .bg-neutral-100,
+.dark .bg-stone-100 {
   background-color: #0f172a !important;
-}
-
-/* Comprehensive betting page specific fixes */
-.dark .bg-white,
-.dark [style*="background-color: white"],
-.dark [style*="background-color: #ffffff"],
-.dark [style*="background-color: #FFFFFF"],
-.dark [style*="background-color: #fff"],
-.dark [style*="background-color: #FFF"] {
-  background-color: #0f172a !important;
-}
-
-/* Button and card component overrides */
-.dark .bg-secondary {
-  background-color: #1e293b !important;
-}
-
-.dark .border-secondary {
-  border-color: #334155 !important;
 }
 
 /* Force white text for numbers and letters (except grey/greyish) */
