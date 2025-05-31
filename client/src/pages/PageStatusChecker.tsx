@@ -108,46 +108,110 @@ const PageStatusChecker: React.FC = () => {
     const startTime = Date.now();
     
     try {
-      // Try to fetch the page to check if it exists
-      const response = await fetch(page.path, { 
-        method: 'HEAD',
-        mode: 'no-cors' // To avoid CORS issues
+      // Create a temporary iframe to test if the page loads without CORS issues
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.style.position = 'absolute';
+      iframe.style.left = '-9999px';
+      
+      const promise = new Promise<PageStatus>((resolve) => {
+        const timeout = setTimeout(() => {
+          document.body.removeChild(iframe);
+          resolve({
+            name: page.name,
+            path: page.path,
+            status: 'error',
+            responseTime: Date.now() - startTime,
+            error: 'Timeout'
+          });
+        }, 5000);
+
+        iframe.onload = () => {
+          clearTimeout(timeout);
+          try {
+            // Check if iframe content indicates an error page
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+            const responseTime = Date.now() - startTime;
+            
+            if (iframeDoc) {
+              const bodyText = iframeDoc.body?.textContent || '';
+              const title = iframeDoc.title || '';
+              
+              // Check for React error boundaries or 404 indicators
+              if (bodyText.includes('Something went wrong') || 
+                  bodyText.includes('Error occurred') ||
+                  bodyText.includes('Page not found') ||
+                  bodyText.includes('404') ||
+                  title.includes('404') ||
+                  title.includes('Error')) {
+                document.body.removeChild(iframe);
+                resolve({
+                  name: page.name,
+                  path: page.path,
+                  status: 'not-found',
+                  responseTime,
+                  error: '404 Not Found'
+                });
+                return;
+              }
+              
+              // Check for AdminDashboard errors specifically
+              if (bodyText.includes('AdminDashboard') && bodyText.includes('error')) {
+                document.body.removeChild(iframe);
+                resolve({
+                  name: page.name,
+                  path: page.path,
+                  status: 'error',
+                  responseTime,
+                  error: 'Component Error'
+                });
+                return;
+              }
+            }
+            
+            document.body.removeChild(iframe);
+            resolve({
+              name: page.name,
+              path: page.path,
+              status: 'success',
+              responseTime
+            });
+          } catch (e) {
+            document.body.removeChild(iframe);
+            resolve({
+              name: page.name,
+              path: page.path,
+              status: 'success', // Cross-origin, but likely working
+              responseTime: Date.now() - startTime
+            });
+          }
+        };
+
+        iframe.onerror = () => {
+          clearTimeout(timeout);
+          document.body.removeChild(iframe);
+          resolve({
+            name: page.name,
+            path: page.path,
+            status: 'error',
+            responseTime: Date.now() - startTime,
+            error: 'Failed to load'
+          });
+        };
       });
+
+      document.body.appendChild(iframe);
+      iframe.src = page.path;
       
-      const responseTime = Date.now() - startTime;
+      return await promise;
       
-      if (response.ok || response.status === 0) { // status 0 for no-cors
-        return {
-          name: page.name,
-          path: page.path,
-          status: 'success',
-          responseTime
-        };
-      } else if (response.status === 404) {
-        return {
-          name: page.name,
-          path: page.path,
-          status: 'not-found',
-          responseTime,
-          error: '404 Not Found'
-        };
-      } else {
-        return {
-          name: page.name,
-          path: page.path,
-          status: 'error',
-          responseTime,
-          error: `HTTP ${response.status}`
-        };
-      }
     } catch (error) {
-      // For client-side routing, we'll assume the page exists if it's in our routes
-      // This is a simplified check since we can't do proper HTTP requests from the frontend
       return {
         name: page.name,
         path: page.path,
-        status: 'success', // Assume success for React routes
-        responseTime: Date.now() - startTime
+        status: 'error',
+        responseTime: Date.now() - startTime,
+        error: error instanceof Error ? error.message : 'Unknown error'
       };
     }
   };
@@ -162,9 +226,9 @@ const PageStatusChecker: React.FC = () => {
 
     const results: PageStatus[] = [];
     
-    // Check pages in batches to avoid overwhelming the browser
-    for (let i = 0; i < allPages.length; i += 5) {
-      const batch = allPages.slice(i, i + 5);
+    // Check pages in smaller batches to be more thorough
+    for (let i = 0; i < allPages.length; i += 3) {
+      const batch = allPages.slice(i, i + 3);
       const batchPromises = batch.map(checkPageStatus);
       const batchResults = await Promise.all(batchPromises);
       
@@ -175,16 +239,42 @@ const PageStatusChecker: React.FC = () => {
         status: 'checking' as const 
       }))]);
       
-      // Small delay between batches
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Longer delay between batches for more accurate results
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
     
     setPageStatuses(results);
     setIsChecking(false);
   };
 
-  useEffect(() => {
+  // Fetch accurate page statuses from server
+  const fetchServerPageStatuses = async () => {
+    try {
+      const response = await fetch('/api/page-status/all-page-statuses');
+      const data = await response.json();
+      
+      if (data.success) {
+        const serverStatuses: PageStatus[] = data.pages.map((page: any) => ({
+          name: allPages.find(p => p.path === page.path)?.name || page.path,
+          path: page.path,
+          status: page.status === 'error' ? 'error' : page.status === 'not-found' ? 'not-found' : 'success',
+          error: page.status !== 'success' ? page.message : undefined,
+          responseTime: 0
+        }));
+        
+        setPageStatuses(serverStatuses);
+        return;
+      }
+    } catch (error) {
+      console.error('Failed to fetch server page statuses:', error);
+    }
+    
+    // Fallback to client-side checking
     checkAllPages();
+  };
+
+  useEffect(() => {
+    fetchServerPageStatuses();
   }, []);
 
   const getStatusIcon = (status: PageStatus['status']) => {
