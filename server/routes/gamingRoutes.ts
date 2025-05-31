@@ -5,6 +5,7 @@ import { unifiedGamingAPI } from '../services/unifiedGamingAPI';
 import { psnProfilesScraper } from '../services/psnProfilesScraper';
 import { leaguepediaAPI } from '../services/leaguepediaAPI';
 import { fetchLiveGamingMatches, fetchEsportsOdds, fetchPlayerStatistics, fetchTournamentData } from '../services/gamingAPIService';
+import { GridApiService } from '../services/gridApiService';
 
 const router = Router();
 
@@ -214,31 +215,95 @@ router.get('/leaderboard', async (req, res) => {
   }
 });
 
-// Get gaming matches endpoint
+// Get gaming matches endpoint - now powered by GRID API
 router.get('/matches', async (req, res) => {
   try {
-    const matches = await fetchLiveGamingMatches();
-    res.json(matches);
-  } catch (error) {
-    console.error('Gaming matches API error:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch gaming matches',
-      fallback: []
+    const gridApi = new GridApiService();
+    
+    // Get live matches from GRID API first
+    const [liveMatches, upcomingMatches, allSeries] = await Promise.all([
+      gridApi.getLiveMatches(),
+      gridApi.getUpcomingMatches(),
+      gridApi.getAllSeries(50)
+    ]);
+
+    // Combine all gaming data
+    const combinedMatches = [
+      ...liveMatches.map(match => ({ ...match, source: 'grid_live' })),
+      ...upcomingMatches.slice(0, 20).map(match => ({ ...match, source: 'grid_upcoming' })),
+      ...allSeries.slice(0, 10).map(series => ({ ...series, source: 'grid_series' }))
+    ];
+
+    res.json({
+      success: true,
+      total_matches: combinedMatches.length,
+      live_count: liveMatches.length,
+      upcoming_count: upcomingMatches.length,
+      series_count: allSeries.length,
+      matches: combinedMatches,
+      powered_by: 'GRID API',
+      last_updated: new Date().toISOString()
     });
+  } catch (error) {
+    console.error('GRID Gaming matches API error:', error);
+    
+    // Fallback to original gaming service
+    try {
+      const fallbackMatches = await fetchLiveGamingMatches();
+      res.json({
+        success: true,
+        matches: fallbackMatches,
+        source: 'fallback',
+        message: 'Using fallback gaming data'
+      });
+    } catch (fallbackError) {
+      res.status(500).json({ 
+        error: 'Failed to fetch gaming matches from all sources',
+        fallback: []
+      });
+    }
   }
 });
 
-// Get esports odds endpoint  
+// Get esports odds endpoint - now powered by GRID API
 router.get('/esports-odds', async (req, res) => {
   try {
-    const odds = await fetchEsportsOdds();
-    res.json(odds);
-  } catch (error) {
-    console.error('Esports odds API error:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch esports odds',
-      fallback: []
+    const gridApi = new GridApiService();
+    
+    // Get comprehensive odds data from GRID API
+    const [liveOdds, marketData, trendingMarkets] = await Promise.all([
+      gridApi.getLiveOdds(),
+      gridApi.getMarketData('general'),
+      gridApi.getTrendingMarkets()
+    ]);
+
+    res.json({
+      success: true,
+      live_odds: liveOdds,
+      market_data: marketData,
+      trending_markets: trendingMarkets,
+      total_markets: liveOdds.length + marketData.length,
+      powered_by: 'GRID API',
+      last_updated: new Date().toISOString()
     });
+  } catch (error) {
+    console.error('GRID Esports odds API error:', error);
+    
+    // Fallback to original odds service
+    try {
+      const fallbackOdds = await fetchEsportsOdds();
+      res.json({
+        success: true,
+        odds: fallbackOdds,
+        source: 'fallback',
+        message: 'Using fallback odds data'
+      });
+    } catch (fallbackError) {
+      res.status(500).json({ 
+        error: 'Failed to fetch esports odds from all sources',
+        fallback: []
+      });
+    }
   }
 });
 
@@ -271,17 +336,53 @@ router.get('/trending-players', async (req, res) => {
   }
 });
 
-// Get tournament data endpoint
+// Get tournament data endpoint - now powered by GRID API
 router.get('/tournaments', async (req, res) => {
   try {
-    const tournaments = await fetchTournamentData();
-    res.json(tournaments);
-  } catch (error) {
-    console.error('Tournament data API error:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch tournament data',
-      fallback: []
+    const gridApi = new GridApiService();
+    const { game } = req.query;
+    
+    // Get comprehensive tournament and sports data
+    const [sports, upcomingMatches, sportsCoverage] = await Promise.all([
+      gridApi.getSports(),
+      gridApi.getUpcomingMatches(14), // Next 2 weeks
+      gridApi.getSportsCoverage()
+    ]);
+
+    // Filter by specific game if requested
+    let filteredMatches = upcomingMatches;
+    if (game && typeof game === 'string') {
+      filteredMatches = await gridApi.getMatchesBySport(game);
+    }
+
+    res.json({
+      success: true,
+      sports_available: sports,
+      upcoming_tournaments: filteredMatches,
+      coverage_summary: sportsCoverage,
+      filter_applied: game || 'all',
+      powered_by: 'GRID API',
+      total_tournaments: filteredMatches.length,
+      last_updated: new Date().toISOString()
     });
+  } catch (error) {
+    console.error('GRID Tournament data API error:', error);
+    
+    // Fallback to original tournament service
+    try {
+      const fallbackTournaments = await fetchTournamentData();
+      res.json({
+        success: true,
+        tournaments: fallbackTournaments,
+        source: 'fallback',
+        message: 'Using fallback tournament data'
+      });
+    } catch (fallbackError) {
+      res.status(500).json({ 
+        error: 'Failed to fetch tournament data from all sources',
+        fallback: []
+      });
+    }
   }
 });
 
@@ -502,16 +603,129 @@ router.get('/leaguepedia/predictions/:team1/:team2', async (req, res) => {
   }
 });
 
+// Get GRID API sports data
+router.get('/grid/sports', async (req, res) => {
+  try {
+    const gridApi = new GridApiService();
+    const sports = await gridApi.getSports();
+    res.json({
+      success: true,
+      sports,
+      total_sports: sports.length,
+      powered_by: 'GRID API'
+    });
+  } catch (error) {
+    console.error('GRID Sports API error:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch GRID sports data',
+      fallback: []
+    });
+  }
+});
+
+// Get GRID API live matches
+router.get('/grid/live', async (req, res) => {
+  try {
+    const gridApi = new GridApiService();
+    const liveMatches = await gridApi.getLiveMatches();
+    res.json({
+      success: true,
+      live_matches: liveMatches,
+      total_live: liveMatches.length,
+      powered_by: 'GRID API'
+    });
+  } catch (error) {
+    console.error('GRID Live matches API error:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch GRID live matches',
+      fallback: []
+    });
+  }
+});
+
+// Get GRID API matches by game
+router.get('/grid/matches/:gameSlug', async (req, res) => {
+  try {
+    const gridApi = new GridApiService();
+    const { gameSlug } = req.params;
+    const matches = await gridApi.getMatchesBySport(gameSlug);
+    res.json({
+      success: true,
+      game: gameSlug,
+      matches,
+      total_matches: matches.length,
+      powered_by: 'GRID API'
+    });
+  } catch (error) {
+    console.error(`GRID matches API error for ${req.params.gameSlug}:`, error);
+    res.status(500).json({ 
+      error: `Failed to fetch GRID matches for ${req.params.gameSlug}`,
+      fallback: []
+    });
+  }
+});
+
+// Get GRID API team statistics
+router.get('/grid/team/:teamId/stats', async (req, res) => {
+  try {
+    const gridApi = new GridApiService();
+    const { teamId } = req.params;
+    const stats = await gridApi.getTeamStats(teamId);
+    res.json({
+      success: true,
+      team_id: teamId,
+      stats,
+      powered_by: 'GRID API'
+    });
+  } catch (error) {
+    console.error(`GRID team stats API error for ${req.params.teamId}:`, error);
+    res.status(500).json({ 
+      error: `Failed to fetch GRID team stats for ${req.params.teamId}`,
+      fallback: {}
+    });
+  }
+});
+
+// Get GRID API comprehensive coverage
+router.get('/grid/coverage', async (req, res) => {
+  try {
+    const gridApi = new GridApiService();
+    const coverage = await gridApi.getSportsCoverage();
+    res.json({
+      success: true,
+      coverage,
+      powered_by: 'GRID API'
+    });
+  } catch (error) {
+    console.error('GRID coverage API error:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch GRID coverage data',
+      fallback: {}
+    });
+  }
+});
+
 // Check API configuration status
 router.get('/api-status', async (req, res) => {
   try {
     const basicStatus = gamingAPIService.getConfiguredAPIs();
     const unifiedStatus = unifiedGamingAPI.getAPIStatus();
+    
+    // Check GRID API status
+    const gridApi = new GridApiService();
+    const gridStatus = {
+      configured: !!process.env.GRID_API_KEY,
+      api_key_present: !!process.env.GRID_API_KEY,
+      endpoint: 'https://api-op.grid.gg/central-data/graphql',
+      description: 'Premium esports data with 74,000+ series'
+    };
 
     res.json({
       basic_apis: basicStatus,
       unified_apis: unifiedStatus,
-      message: 'Complete gaming API configuration status'
+      grid_api: gridStatus,
+      primary_gaming_source: 'GRID API',
+      message: 'Complete gaming API configuration status with GRID integration'
     });
   } catch (error) {
     console.error('API status error:', error);
