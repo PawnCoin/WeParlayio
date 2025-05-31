@@ -341,7 +341,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         {/* Content Area */}
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
           {/* Main Content Column */}
-          <div className="flex-1 overflow-y-auto p-2 md:p-4 pb-24 md:pb-4 custom-scrollbar bg-background text-foreground">
+          <div className="flex-1 overflow-y-auto p-2 md:p-4 pb-24 md:pb-4 custom-scrollbar bg-background text-foreground light-mode-text-contrast">
             {children}
           </div>
 

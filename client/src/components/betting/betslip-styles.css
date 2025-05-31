@@ -7,22 +7,41 @@ html:not(.dark) body .bet-selection {
 }
 
 html:not(.dark) body .pick-text {
-  color: #000000 !important;
+  color: #0f172a !important; /* Very dark for maximum contrast */
+  font-weight: 600 !important;
 }
 
 html:not(.dark) body .team-text {
-  color: #333333 !important;
+  color: #0f172a !important; /* Very dark for maximum contrast */
+  font-weight: 500 !important;
 }
 
 html:not(.dark) body .bet-type-text {
-  color: #000000 !important;
+  color: #0f172a !important; /* Very dark for maximum contrast */
   font-weight: 600 !important;
 }
 
 html:not(.dark) body .odds-badge {
   background-color: #f1f5f9 !important;
-  color: #000000 !important;
+  color: #0f172a !important; /* Very dark text */
   border-color: #e2e8f0 !important;
+  font-weight: 600 !important;
+}
+
+/* Force all betting slip text to be dark in light mode */
+html:not(.dark) .bet-slip-container *,
+html:not(.dark) .betting-slip *,
+html:not(.dark) .unified-bet-slip * {
+  color: #0f172a !important;
+}
+
+/* Exception for buttons with colored backgrounds */
+html:not(.dark) .bg-blue-500 *,
+html:not(.dark) .bg-blue-600 *,
+html:not(.dark) .bg-green-500 *,
+html:not(.dark) .bg-green-600 *,
+html:not(.dark) .bg-primary * {
+  color: white !important;
 }
 
 /* ==================== DARK MODE STYLES ==================== */

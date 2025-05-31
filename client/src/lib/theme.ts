@@ -11,17 +11,17 @@ export interface ThemeContextType {
 export const PROFESSIONAL_COLORS = {
   light: {
     background: "#ffffff",
-    foreground: "#0f172a", // Darker, higher contrast text
+    foreground: "#0f172a", // Very dark text for maximum contrast
     card: "#ffffff",
-    cardForeground: "#1e293b",
+    cardForeground: "#0f172a", // Very dark text on white cards
     primary: "#0ea5e9", // WeParlay sky blue - vibrant but professional
-    primaryForeground: "#ffffff",
+    primaryForeground: "#ffffff", // White text on blue primary
     secondary: "#f8fafc", // Clean light gray
-    secondaryForeground: "#374151",
+    secondaryForeground: "#0f172a", // Very dark text on light secondary
     muted: "#f1f5f9", // Subtle background
-    mutedForeground: "#6b7280", // Medium gray for secondary text
+    mutedForeground: "#1e293b", // Darker gray for better contrast
     accent: "#10b981", // WeParlay green accent
-    accentForeground: "#ffffff",
+    accentForeground: "#ffffff", // White text on green accent
     destructive: "#ef4444",
     destructiveForeground: "#ffffff",
     border: "#e5e7eb", // Softer border
