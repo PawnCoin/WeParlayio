@@ -213,51 +213,42 @@ const ComprehensiveBetting = () => {
           </Card>
         </div>
 
-        {/* Featured Sports Grid */}
-        <Card className="bg-slate-800 border-slate-700">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
-              <Sparkles className="w-5 h-5 text-yellow-400" />
-              Featured Sports
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredSports.map((sport) => (
-                <Card 
-                  key={sport.key} 
-                  className="bg-slate-700 border-slate-600 hover:bg-slate-650 transition-colors cursor-pointer group"
-                  onClick={() => handleSportClick(sport.key)}
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          {getSportIcon()}
-                          <h3 className="font-semibold text-white group-hover:text-blue-400 transition-colors">
-                            {sport.displayName}
-                          </h3>
-                        </div>
-                        <p className="text-slate-400 text-sm mb-4">{sport.key}</p>
-                        <Button 
-                          variant="secondary" 
-                          size="sm" 
-                          className="bg-slate-600 hover:bg-slate-500 text-white border-slate-500 group-hover:bg-blue-600 group-hover:border-blue-500 transition-colors"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSportClick(sport.key);
-                          }}
-                        >
-                          View <ChevronRight className="w-4 h-4 ml-1" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Featured Sports Grid - Exact Design Match */}
+        <div className="space-y-6">
+          <h2 className="flex items-center gap-2 text-white text-xl font-semibold">
+            <Sparkles className="w-5 h-5 text-yellow-400" />
+            Featured Sports
+          </h2>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredSports.map((sport) => (
+              <div 
+                key={sport.key} 
+                className="bg-slate-800 border border-slate-600 rounded-lg p-6 relative hover:bg-slate-750 transition-colors"
+              >
+                <div className="flex flex-col h-full">
+                  <div className="flex-1">
+                    <h3 className="text-white text-lg font-semibold mb-1">
+                      {sport.displayName}
+                    </h3>
+                    <p className="text-slate-400 text-sm mb-4">{sport.key}</p>
+                  </div>
+                  
+                  <div className="flex justify-end">
+                    <Button 
+                      variant="secondary" 
+                      size="sm" 
+                      className="bg-slate-600 hover:bg-slate-500 text-white border-slate-500 px-4 py-2 rounded-md"
+                      onClick={() => handleSportClick(sport.key)}
+                    >
+                      View <ChevronRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* Additional Navigation */}
         <div className="mt-8 flex gap-4 justify-center">
