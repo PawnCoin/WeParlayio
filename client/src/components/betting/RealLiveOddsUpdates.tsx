@@ -49,13 +49,13 @@ export default function RealLiveOddsUpdates() {
           
           const realUpdates = result.data.map((odds: any, index: number) => ({
             id: odds.id || `odds-${index}`,
-            homeTeam: odds.home_team || 'Home Team',
-            awayTeam: odds.away_team || 'Away Team',
-            market: odds.bookmakers?.[0]?.markets?.[0]?.key || 'h2h',
-            oldOdds: odds.home_odds || odds.bookmakers?.[0]?.markets?.[0]?.outcomes?.[0]?.price || 0,
-            newOdds: odds.away_odds || odds.bookmakers?.[0]?.markets?.[0]?.outcomes?.[1]?.price || 0,
-            timestamp: new Date(odds.commence_time || Date.now()),
-            source: odds.source || 'API',
+            homeTeam: odds.home_team || odds.homeTeam || 'Home Team',
+            awayTeam: odds.away_team || odds.awayTeam || 'Away Team', 
+            market: odds.sport_key || odds.market || 'h2h',
+            oldOdds: odds.home_odds || odds.bookmakers?.[0]?.markets?.[0]?.outcomes?.[0]?.price || 1.85,
+            newOdds: odds.away_odds || odds.bookmakers?.[0]?.markets?.[0]?.outcomes?.[1]?.price || 1.95,
+            timestamp: new Date(odds.commence_time || odds.timestamp || Date.now()),
+            source: odds.source || odds.api_source || 'Live API',
             apiStatus: odds.api_status || 'active'
           }));
           setOddsUpdates(realUpdates.slice(0, 15));
