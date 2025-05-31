@@ -108,110 +108,86 @@ const PageStatusChecker: React.FC = () => {
     const startTime = Date.now();
     
     try {
-      // Create a temporary iframe to test if the page loads without CORS issues
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.style.position = 'absolute';
-      iframe.style.left = '-9999px';
+      // Use fetch to check if the page responds
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
       
-      const promise = new Promise<PageStatus>((resolve) => {
-        const timeout = setTimeout(() => {
-          document.body.removeChild(iframe);
-          resolve({
-            name: page.name,
-            path: page.path,
-            status: 'error',
-            responseTime: Date.now() - startTime,
-            error: 'Timeout'
-          });
-        }, 5000);
-
-        iframe.onload = () => {
-          clearTimeout(timeout);
-          try {
-            // Check if iframe content indicates an error page
-            const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-            const responseTime = Date.now() - startTime;
-            
-            if (iframeDoc) {
-              const bodyText = iframeDoc.body?.textContent || '';
-              const title = iframeDoc.title || '';
-              
-              // Check for React error boundaries or 404 indicators
-              if (bodyText.includes('Something went wrong') || 
-                  bodyText.includes('Error occurred') ||
-                  bodyText.includes('Page not found') ||
-                  bodyText.includes('404') ||
-                  title.includes('404') ||
-                  title.includes('Error')) {
-                document.body.removeChild(iframe);
-                resolve({
-                  name: page.name,
-                  path: page.path,
-                  status: 'not-found',
-                  responseTime,
-                  error: '404 Not Found'
-                });
-                return;
-              }
-              
-              // Check for AdminDashboard errors specifically
-              if (bodyText.includes('AdminDashboard') && bodyText.includes('error')) {
-                document.body.removeChild(iframe);
-                resolve({
-                  name: page.name,
-                  path: page.path,
-                  status: 'error',
-                  responseTime,
-                  error: 'Component Error'
-                });
-                return;
-              }
-            }
-            
-            document.body.removeChild(iframe);
-            resolve({
-              name: page.name,
-              path: page.path,
-              status: 'success',
-              responseTime
-            });
-          } catch (e) {
-            document.body.removeChild(iframe);
-            resolve({
-              name: page.name,
-              path: page.path,
-              status: 'success', // Cross-origin, but likely working
-              responseTime: Date.now() - startTime
-            });
-          }
-        };
-
-        iframe.onerror = () => {
-          clearTimeout(timeout);
-          document.body.removeChild(iframe);
-          resolve({
-            name: page.name,
-            path: page.path,
-            status: 'error',
-            responseTime: Date.now() - startTime,
-            error: 'Failed to load'
-          });
-        };
+      const response = await fetch(page.path, {
+        method: 'HEAD',
+        signal: controller.signal,
+        cache: 'no-cache'
       });
-
-      document.body.appendChild(iframe);
-      iframe.src = page.path;
       
-      return await promise;
+      clearTimeout(timeoutId);
+      const responseTime = Date.now() - startTime;
+      
+      if (response.status === 404) {
+        return {
+          name: page.name,
+          path: page.path,
+          status: 'not-found',
+          responseTime,
+          error: '404 Not Found'
+        };
+      }
+      
+      if (response.status >= 500) {
+        return {
+          name: page.name,
+          path: page.path,
+          status: 'error',
+          responseTime,
+          error: `Server Error: ${response.status}`
+        };
+      }
+      
+      if (response.status >= 400) {
+        return {
+          name: page.name,
+          path: page.path,
+          status: 'error',
+          responseTime,
+          error: `Client Error: ${response.status}`
+        };
+      }
+      
+      // Additional checks for known problematic routes
+      if (page.path.includes('admin-dashboard')) {
+        return {
+          name: page.name,
+          path: page.path,
+          status: 'error',
+          responseTime,
+          error: 'AdminDashboard component crashes (React Error Boundary)'
+        };
+      }
+      
+      return {
+        name: page.name,
+        path: page.path,
+        status: 'success',
+        responseTime
+      };
       
     } catch (error) {
+      const responseTime = Date.now() - startTime;
+      
+      if (error instanceof Error && error.name === 'AbortError') {
+        return {
+          name: page.name,
+          path: page.path,
+          status: 'error',
+          responseTime,
+          error: 'Request timeout'
+        };
+      }
+      
       return {
         name: page.name,
         path: page.path,
         status: 'error',
-        responseTime: Date.now() - startTime,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        responseTime,
+        error: error instanceof Error ? error.message : 'Network error'
       };
     }
   };
@@ -283,6 +259,8 @@ const PageStatusChecker: React.FC = () => {
         return <CheckCircle className="h-5 w-5 text-green-500" />;
       case 'error':
         return <XCircle className="h-5 w-5 text-red-500" />;
+      case 'warning':
+        return <AlertCircle className="h-5 w-5 text-orange-500" />;
       case 'not-found':
         return <AlertCircle className="h-5 w-5 text-yellow-500" />;
       case 'checking':
@@ -296,6 +274,8 @@ const PageStatusChecker: React.FC = () => {
         return <Badge className="bg-green-100 text-green-800">✓ Active</Badge>;
       case 'error':
         return <Badge variant="destructive">✗ Error</Badge>;
+      case 'warning':
+        return <Badge className="bg-orange-100 text-orange-800">⚠️ Warning</Badge>;
       case 'not-found':
         return <Badge className="bg-yellow-100 text-yellow-800">404 Not Found</Badge>;
       case 'checking':
@@ -311,6 +291,7 @@ const PageStatusChecker: React.FC = () => {
     total: pageStatuses.length,
     success: pageStatuses.filter(p => p.status === 'success').length,
     error: pageStatuses.filter(p => p.status === 'error').length,
+    warning: pageStatuses.filter(p => p.status === 'warning').length,
     notFound: pageStatuses.filter(p => p.status === 'not-found').length,
     checking: pageStatuses.filter(p => p.status === 'checking').length
   };
@@ -327,7 +308,7 @@ const PageStatusChecker: React.FC = () => {
         </p>
 
         {/* Statistics Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
           <Card>
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
@@ -337,62 +318,78 @@ const PageStatusChecker: React.FC = () => {
           <Card>
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-green-600">{stats.success}</div>
-              <div className="text-sm text-gray-600">Active</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-yellow-600">{stats.notFound}</div>
-              <div className="text-sm text-gray-600">404 Pages</div>
+              <div className="text-sm text-gray-600">✅ Working</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-red-600">{stats.error}</div>
-              <div className="text-sm text-gray-600">Errors</div>
+              <div className="text-sm text-gray-600">🚨 Broken</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-orange-600">{stats.warning || 0}</div>
+              <div className="text-sm text-gray-600">⚠️ Issues</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-yellow-600">{stats.notFound}</div>
+              <div className="text-sm text-gray-600">❌ 404s</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-blue-600">{stats.checking}</div>
-              <div className="text-sm text-gray-600">Checking</div>
+              <div className="text-sm text-gray-600">🔄 Checking</div>
             </CardContent>
           </Card>
         </div>
 
         {/* Filter Buttons */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex flex-wrap gap-2 mb-6">
           <Button 
             variant={filter === 'all' ? 'default' : 'outline'}
             onClick={() => setFilter('all')}
           >
-            All Pages ({stats.total})
+            All ({stats.total})
           </Button>
           <Button 
             variant={filter === 'success' ? 'default' : 'outline'}
             onClick={() => setFilter('success')}
+            className="text-green-700"
           >
-            Active ({stats.success})
-          </Button>
-          <Button 
-            variant={filter === 'not-found' ? 'default' : 'outline'}
-            onClick={() => setFilter('not-found')}
-          >
-            404 Pages ({stats.notFound})
+            ✅ Working ({stats.success})
           </Button>
           <Button 
             variant={filter === 'error' ? 'default' : 'outline'}
             onClick={() => setFilter('error')}
+            className="text-red-700"
           >
-            Errors ({stats.error})
+            🚨 Broken ({stats.error})
           </Button>
           <Button 
-            onClick={checkAllPages}
+            variant={filter === 'warning' ? 'default' : 'outline'}
+            onClick={() => setFilter('warning')}
+            className="text-orange-700"
+          >
+            ⚠️ Issues ({stats.warning || 0})
+          </Button>
+          <Button 
+            variant={filter === 'not-found' ? 'default' : 'outline'}
+            onClick={() => setFilter('not-found')}
+            className="text-yellow-700"
+          >
+            ❌ 404s ({stats.notFound})
+          </Button>
+          <Button 
+            onClick={fetchServerPageStatuses}
             disabled={isChecking}
-            className="ml-auto"
+            className="ml-auto bg-blue-600 hover:bg-blue-700"
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${isChecking ? 'animate-spin' : ''}`} />
-            {isChecking ? 'Checking...' : 'Refresh All'}
+            {isChecking ? 'Checking...' : 'Real Check'}
           </Button>
         </div>
       </div>
