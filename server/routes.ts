@@ -97,6 +97,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
             previousOdds: (event.bookmakers?.[0]?.markets?.[0]?.outcomes?.[0]?.price || (1.85 + index * 0.05)) - 0.05,
             timestamp: new Date().toISOString(),
             eventId: event.id,
+
+
+  // REAL-TIME MEMORY MONITORING - Check server health
+  app.get('/api/system/memory-status', async (req, res) => {
+    try {
+      const memUsage = process.memoryUsage();
+      const memUsagePercent = (memUsage.heapUsed / memUsage.heapTotal) * 100;
+      
+      const status = {
+        memory: {
+          used: Math.round(memUsage.heapUsed / 1024 / 1024),
+          total: Math.round(memUsage.heapTotal / 1024 / 1024),
+          percentage: parseFloat(memUsagePercent.toFixed(2)),
+          external: Math.round(memUsage.external / 1024 / 1024),
+          rss: Math.round(memUsage.rss / 1024 / 1024)
+        },
+        status: memUsagePercent > 90 ? 'CRITICAL' : memUsagePercent > 80 ? 'WARNING' : 'HEALTHY',
+        uptime: Math.round(process.uptime()),
+        timestamp: new Date().toISOString(),
+        crash_risk: memUsagePercent > 85 ? 'HIGH' : memUsagePercent > 75 ? 'MEDIUM' : 'LOW'
+      };
+      
+      res.json(status);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to get memory status' });
+    }
+  });
+
+
             bookmaker: event.bookmakers?.[0]?.title || 'Free API'
           }));
           tickerOdds.push(...formattedOdds);
@@ -2908,24 +2937,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get unified odds from all API sources with memory throttling
+  // MEMORY-SAFE odds endpoint with aggressive throttling
   app.get('/api/odds/unified', async (req, res) => {
     try {
-      // Memory check before expensive API calls
+      // STRICT memory check before ANY expensive operations
       const memUsage = process.memoryUsage();
       const memUsagePercent = (memUsage.heapUsed / memUsage.heapTotal) * 100;
       
-      if (memUsagePercent > 88) {
-        console.warn(`🚫 Odds API throttled: ${memUsagePercent.toFixed(2)}% memory usage`);
+      if (memUsagePercent > 80) {
+        console.warn(`🚫 API BLOCKED: ${memUsagePercent.toFixed(2)}% memory - PREVENTING CRASH`);
         return res.json({ 
           odds: [], 
-          message: 'Odds API temporarily throttled',
-          retry_after: 30
+          message: 'API temporarily disabled to prevent server crash',
+          memory_usage: memUsagePercent.toFixed(2) + '%',
+          retry_after: 60
         });
+      }
+      
+      // Force garbage collection before expensive operation
+      if (global.gc) {
+        global.gc();
       }
       
       const { sport } = req.query;
       const unifiedOdds = await unifiedSportsApi.getUnifiedOdds(sport as string);
+      
+      // Memory check after operation
+      const postMemUsage = process.memoryUsage();
+      const postMemPercent = (postMemUsage.heapUsed / postMemUsage.heapTotal) * 100;
+      
+      if (postMemPercent > 85) {
+        console.warn(`⚠️ Memory spike after API call: ${postMemPercent.toFixed(2)}%`);
+        if (global.gc) {
+          global.gc();
+        }
+      }
+      
       res.json(unifiedOdds);
     } catch (error) {
       console.error('Error fetching unified odds:', error);

@@ -69,26 +69,26 @@ export default function ComprehensiveBetting() {
     return () => clearInterval(memoryInterval);
   }, [pollingEnabled]);
 
-  // Fetch real sports data using working APIs only
+  // CRASH PREVENTION: Conservative polling to prevent memory overload
   const { data: sports, refetch: refetchSports } = useQuery({
     queryKey: ["/api/sports"],
-    refetchInterval: pollingEnabled ? 600000 : false, // 10 minutes or disabled
+    refetchInterval: false, // Manual refresh only to prevent memory issues
   });
 
   const { data: oddsData, refetch: refetchOdds } = useQuery({
     queryKey: ["/api/odds"],
-    refetchInterval: pollingEnabled ? 300000 : false, // 5 minutes or disabled
+    refetchInterval: false, // Manual refresh only to prevent memory issues
   });
 
-  // Fetch live events data
+  // Fetch live events data - CONSERVATIVE POLLING
   const { data: liveEvents, refetch: refetchLive } = useQuery({
     queryKey: ["/api/events/live"],
-    refetchInterval: pollingEnabled ? 120000 : false, // 2 minutes or disabled
+    refetchInterval: pollingEnabled ? 300000 : false, // 5 minutes maximum
   });
 
   const { data: upcomingEvents, refetch: refetchUpcoming } = useQuery({
     queryKey: ["/api/events/upcoming"],
-    refetchInterval: pollingEnabled ? 600000 : false, // 10 minutes or disabled
+    refetchInterval: false, // Static data - no auto refresh needed
   });
 
   // Filter sports based on search

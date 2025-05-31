@@ -106,23 +106,50 @@ app.use((req, res, next) => {
     log(`🚀 WeParlay server running on HTTP at 0.0.0.0:${port}`);
     console.log('🔧 Starting automated crash recovery monitoring...');
 
-    // AGGRESSIVE MEMORY MANAGEMENT SETUP
+    // PROACTIVE CRASH PREVENTION SYSTEM
     if (global.gc) {
-      // Run garbage collection every 30 seconds
+      // Aggressive memory monitoring every 10 seconds
       setInterval(() => {
-        const before = process.memoryUsage().heapUsed;
-        global.gc();
-        const after = process.memoryUsage().heapUsed;
-        const freed = (before - after) / 1024 / 1024;
-        if (freed > 1) {
-          console.log(`🧹 GC freed ${freed.toFixed(2)} MB`);
+        const memUsage = process.memoryUsage();
+        const memPercent = (memUsage.heapUsed / memUsage.heapTotal) * 100;
+        
+        // EMERGENCY RESTART before crash occurs
+        if (memPercent > 90) {
+          console.error(`🚨 EMERGENCY: ${memPercent.toFixed(2)}% memory - RESTARTING NOW TO PREVENT CRASH`);
+          process.exit(1);
         }
-      }, 30000);
+        
+        // Aggressive cleanup at 85%
+        if (memPercent > 85) {
+          console.warn(`⚠️ HIGH MEMORY: ${memPercent.toFixed(2)}% - aggressive cleanup`);
+          for (let i = 0; i < 3; i++) {
+            global.gc();
+          }
+        }
+        
+        // Regular cleanup at 75%
+        if (memPercent > 75) {
+          global.gc();
+          const after = process.memoryUsage().heapUsed;
+          const freed = (memUsage.heapUsed - after) / 1024 / 1024;
+          if (freed > 1) {
+            console.log(`🧹 GC freed ${freed.toFixed(2)} MB`);
+          }
+        }
+      }, 10000); // Check every 10 seconds
 
-      console.log('✅ Automatic garbage collection enabled');
+      console.log('✅ PROACTIVE crash prevention system enabled');
     } else {
-      console.warn('⚠️ Garbage collection not available - consider running with --expose-gc');
+      console.warn('⚠️ Garbage collection not available - crashes more likely');
     }
+
+    // Set memory limits and warnings
+    process.on('warning', (warning) => {
+      if (warning.name === 'MaxListenersExceededWarning') {
+        console.warn('⚠️ Memory leak detected - cleaning up listeners');
+        process.removeAllListeners();
+      }
+    });
 
     // Set aggressive memory limits
     process.on('warning', (warning) => {

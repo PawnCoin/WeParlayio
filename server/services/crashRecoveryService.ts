@@ -68,7 +68,7 @@ export class CrashRecoveryService {
       }
     });
 
-    // Memory usage check
+    // Memory usage check with emergency prevention
     this.healthChecks.push({
       name: 'memory',
       critical: true,
@@ -76,60 +76,68 @@ export class CrashRecoveryService {
         const memUsage = process.memoryUsage();
         const memUsagePercent = (memUsage.heapUsed / memUsage.heapTotal) * 100;
         
-        // AGGRESSIVE MEMORY MANAGEMENT
-        if (memUsagePercent > 95) {
-          console.error(`🚨 CRITICAL MEMORY: ${memUsagePercent.toFixed(2)}% - EMERGENCY ACTIONS`);
+        // PREVENT CRASHES BEFORE THEY HAPPEN
+        if (memUsagePercent > 92) {
+          console.error(`🚨 EMERGENCY MEMORY PREVENTION: ${memUsagePercent.toFixed(2)}% - IMMEDIATE RESTART`);
           
-          // Immediate aggressive cleanup
-          if (global.gc) {
-            global.gc();
-            global.gc(); // Force twice
+          // Emergency restart BEFORE crash occurs
+          setTimeout(() => {
+            console.log('🔄 EMERGENCY RESTART TO PREVENT CRASH');
+            process.exit(1);
+          }, 500);
+          return false;
+        }
+        
+        if (memUsagePercent > 88) {
+          console.error(`🚨 CRITICAL MEMORY: ${memUsagePercent.toFixed(2)}% - AGGRESSIVE CLEANUP`);
+          
+          // Multiple aggressive cleanup attempts
+          for (let i = 0; i < 3; i++) {
+            if (global.gc) {
+              global.gc();
+            }
           }
           
-          // Clear all caches and intervals
+          // Clear ALL non-essential cached data
           try {
-            // Kill all non-essential intervals
+            // Clear all intervals and timeouts
             const highestTimeoutId = setTimeout(() => {}, 0);
             for (let i = 1; i < highestTimeoutId; i++) {
               clearTimeout(i);
               clearInterval(i);
             }
             
-            // Clear require cache for non-core modules
+            // Aggressive require cache cleanup
             Object.keys(require.cache).forEach(key => {
-              if (!key.includes('express') && !key.includes('db') && !key.includes('storage')) {
+              if (!key.includes('express') && !key.includes('db') && !key.includes('storage') && !key.includes('routes')) {
                 delete require.cache[key];
               }
             });
             
-            console.log('🧹 Emergency cleanup completed');
+            // Clear any global caches
+            if (global.apiCache) {
+              global.apiCache = {};
+            }
+            if (global.oddsCache) {
+              global.oddsCache = {};
+            }
+            
+            console.log('🧹 AGGRESSIVE cleanup completed');
           } catch (error) {
-            console.error('Emergency cleanup error:', error);
-          }
-          
-          // If still over 97%, emergency restart
-          const postCleanupUsage = process.memoryUsage();
-          const postCleanupPercent = (postCleanupUsage.heapUsed / postCleanupUsage.heapTotal) * 100;
-          
-          if (postCleanupPercent > 97) {
-            console.error(`💀 MEMORY STILL CRITICAL: ${postCleanupPercent.toFixed(2)}% - RESTARTING NOW`);
-            setTimeout(() => {
-              process.exit(1);
-            }, 1000);
-            return false;
+            console.error('Cleanup error:', error);
           }
           
           return false;
         }
         
-        if (memUsagePercent > 85) {
+        if (memUsagePercent > 80) {
           console.warn(`⚠️ High memory usage: ${memUsagePercent.toFixed(2)}% - preventive cleanup`);
           if (global.gc) {
             global.gc();
           }
         }
         
-        return true;
+        return memUsagePercent < 85;
       }
     });
 
