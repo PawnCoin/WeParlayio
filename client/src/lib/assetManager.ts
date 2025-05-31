@@ -247,4 +247,117 @@ export class AssetManager {
       'wnba', 'ufc', 'boxing', 'nascar', 'tennis', 'esports'
     ];
   }
+    // Reliable team logo URLs from ESPN CDN
+  private static teamLogos: Record<string, Record<string, string>> = {
+    nba: {
+      "Boston Celtics": "https://a.espncdn.com/i/teamlogos/nba/500/bos.png",
+      "Los Angeles Lakers": "https://a.espncdn.com/i/teamlogos/nba/500/lal.png",
+      "Golden State Warriors": "https://a.espncdn.com/i/teamlogos/nba/500/gs.png",
+      "Miami Heat": "https://a.espncdn.com/i/teamlogos/nba/500/mia.png",
+      "Chicago Bulls": "https://a.espncdn.com/i/teamlogos/nba/500/chi.png",
+      "Brooklyn Nets": "https://a.espncdn.com/i/teamlogos/nba/500/bkn.png",
+      "Milwaukee Bucks": "https://a.espncdn.com/i/teamlogos/nba/500/mil.png",
+      "New York Knicks": "https://a.espncdn.com/i/teamlogos/nba/500/ny.png"
+    },
+    nfl: {
+      "Kansas City Chiefs": "https://a.espncdn.com/i/teamlogos/nfl/500/kc.png",
+      "Dallas Cowboys": "https://a.espncdn.com/i/teamlogos/nfl/500/dal.png",
+      "New England Patriots": "https://a.espncdn.com/i/teamlogos/nfl/500/ne.png",
+      "Green Bay Packers": "https://a.espncdn.com/i/teamlogos/nfl/500/gb.png",
+      "Philadelphia Eagles": "https://a.espncdn.com/i/teamlogos/nfl/500/phi.png",
+      "Pittsburgh Steelers": "https://a.espncdn.com/i/teamlogos/nfl/500/pit.png"
+    },
+    soccer: {
+      "Manchester United": "https://logos-world.net/wp-content/uploads/2020/06/Manchester-United-Logo.png",
+      "Barcelona": "https://logos-world.net/wp-content/uploads/2020/06/Barcelona-Logo.png",
+      "Real Madrid": "https://logos-world.net/wp-content/uploads/2020/06/Real-Madrid-Logo.png",
+      "Liverpool": "https://logos-world.net/wp-content/uploads/2020/06/Liverpool-Logo.png",
+      "Chelsea": "https://logos-world.net/wp-content/uploads/2020/06/Chelsea-Logo.png",
+      "Arsenal": "https://logos-world.net/wp-content/uploads/2020/06/Arsenal-Logo.png"
+    }
+  };
+
+  // Get team logo with multiple fallback options
+  static getTeamLogo(teamName: string, league: string = 'NBA'): string {
+    if (!teamName) {
+      return this.getSportIcon(league);
+    }
+
+    // Try our reliable logo mappings first
+    const normalizedLeague = league.toLowerCase().replace(/\s+/g, '');
+    const leagueLogos = this.teamLogos[normalizedLeague];
+
+    if (leagueLogos && leagueLogos[teamName]) {
+      return leagueLogos[teamName];
+    }
+
+    // Try ESPN service as fallback
+    try {
+      const espnLogo = ESPNAssetService.getTeamLogo(teamName, league);
+      if (espnLogo && !espnLogo.includes('default')) {
+        return espnLogo;
+      }
+    } catch (error) {
+      console.warn('ESPN service failed:', error);
+    }
+
+    // Generate a simple SVG with team initials
+    return this.generateTeamInitialsLogo(teamName, league);
+  }
+
+  // Generate a simple logo with team initials
+  static generateTeamInitialsLogo(teamName: string, league: string): string {
+    const initials = teamName
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase())
+      .join('')
+      .substring(0, 3);
+
+    const colors = this.getLeagueColors(league);
+
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+      <circle cx="20" cy="20" r="18" fill="${colors.bg}" stroke="${colors.border}" stroke-width="2"/>
+      <text x="20" y="26" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="${colors.text}">${initials}</text>
+    </svg>`;
+
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  }
+
+  // Get league-specific colors
+  static getLeagueColors(league: string): { bg: string; border: string; text: string } {
+    const colorSchemes: Record<string, { bg: string; border: string; text: string }> = {
+      'nba': { bg: '#1d4ed8', border: '#1e40af', text: '#ffffff' },
+      'nfl': { bg: '#dc2626', border: '#b91c1c', text: '#ffffff' },
+      'mlb': { bg: '#059669', border: '#047857', text: '#ffffff' },
+      'nhl': { bg: '#7c3aed', border: '#6d28d9', text: '#ffffff' },
+      'soccer': { bg: '#ea580c', border: '#c2410c', text: '#ffffff' },
+      'default': { bg: '#6b7280', border: '#4b5563', text: '#ffffff' }
+    };
+
+    const normalizedLeague = league.toLowerCase().replace(/\s+/g, '');
+    return colorSchemes[normalizedLeague] || colorSchemes.default;
+  }
+
+  // Get sport icon
+  static getSportIcon(sport: string): string {
+    const sportIcons: Record<string, string> = {
+      'nba': '🏀',
+      'nfl': '🏈', 
+      'mlb': '⚾',
+      'nhl': '🏒',
+      'soccer': '⚽',
+      'mls': '⚽',
+      'premier-league': '⚽',
+      'ncaa': '🏀',
+      'esports': '🎮',
+      'ufc': '🥊',
+      'boxing': '🥊',
+      'tennis': '🎾',
+      'golf': '⛳',
+      'nascar': '🏎️'
+    };
+
+    const normalizedSport = sport.toLowerCase().replace(/\s+/g, '-');
+    return sportIcons[normalizedSport] || '⚽';
+  }
 }
