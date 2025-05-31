@@ -45,50 +45,32 @@ export default function ComprehensiveBetting() {
   const { addToBetSlip } = useBetting();
   const { user, isAuthenticated } = useAuth();
 
-  // Memory-aware API polling with adaptive intervals
-  const [pollingEnabled, setPollingEnabled] = useState(true);
-  
-  // Check browser memory and adjust polling
-  useEffect(() => {
-    const checkMemory = () => {
-      if ('memory' in performance) {
-        const memInfo = (performance as any).memory;
-        const memUsagePercent = (memInfo.usedJSHeapSize / memInfo.jsHeapSizeLimit) * 100;
-        
-        if (memUsagePercent > 85) {
-          console.warn(`🚫 Client polling disabled: ${memUsagePercent.toFixed(2)}% memory usage`);
-          setPollingEnabled(false);
-        } else if (memUsagePercent < 70 && !pollingEnabled) {
-          console.log(`✅ Client polling re-enabled: ${memUsagePercent.toFixed(2)}% memory usage`);
-          setPollingEnabled(true);
-        }
-      }
-    };
-    
-    const memoryInterval = setInterval(checkMemory, 15000);
-    return () => clearInterval(memoryInterval);
-  }, [pollingEnabled]);
+  // CRASH PREVENTION: NO AUTOMATIC POLLING - ALL MANUAL ONLY
+  console.log('🛡️ Crash prevention mode: All API polling disabled');
 
-  // CRASH PREVENTION: Conservative polling to prevent memory overload
+  // ALL queries are manual-only to prevent memory crashes
   const { data: sports, refetch: refetchSports } = useQuery({
     queryKey: ["/api/sports"],
-    refetchInterval: false, // Manual refresh only to prevent memory issues
+    refetchInterval: false, // MANUAL ONLY - no auto refresh
+    staleTime: Infinity, // Never auto-refetch
   });
 
   const { data: oddsData, refetch: refetchOdds } = useQuery({
     queryKey: ["/api/odds"],
-    refetchInterval: false, // Manual refresh only to prevent memory issues
+    refetchInterval: false, // MANUAL ONLY - no auto refresh
+    staleTime: Infinity, // Never auto-refetch
   });
 
-  // Fetch live events data - CONSERVATIVE POLLING
   const { data: liveEvents, refetch: refetchLive } = useQuery({
     queryKey: ["/api/events/live"],
-    refetchInterval: pollingEnabled ? 300000 : false, // 5 minutes maximum
+    refetchInterval: false, // MANUAL ONLY - no auto refresh
+    staleTime: Infinity, // Never auto-refetch
   });
 
   const { data: upcomingEvents, refetch: refetchUpcoming } = useQuery({
     queryKey: ["/api/events/upcoming"],
-    refetchInterval: false, // Static data - no auto refresh needed
+    refetchInterval: false, // MANUAL ONLY - no auto refresh
+    staleTime: Infinity, // Never auto-refetch
   });
 
   // Filter sports based on search

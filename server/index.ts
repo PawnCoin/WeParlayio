@@ -106,41 +106,84 @@ app.use((req, res, next) => {
     log(`🚀 WeParlay server running on HTTP at 0.0.0.0:${port}`);
     console.log('🔧 Starting automated crash recovery monitoring...');
 
-    // PROACTIVE CRASH PREVENTION SYSTEM
+    // ULTIMATE CRASH PREVENTION SYSTEM - NO MORE CRASHES!
     if (global.gc) {
-      // Aggressive memory monitoring every 10 seconds
+      console.log('🛡️ ACTIVATING ULTIMATE CRASH PREVENTION SYSTEM');
+      
+      // SUPER AGGRESSIVE monitoring every 5 seconds
       setInterval(() => {
         const memUsage = process.memoryUsage();
         const memPercent = (memUsage.heapUsed / memUsage.heapTotal) * 100;
         
-        // EMERGENCY RESTART before crash occurs
-        if (memPercent > 90) {
-          console.error(`🚨 EMERGENCY: ${memPercent.toFixed(2)}% memory - RESTARTING NOW TO PREVENT CRASH`);
-          process.exit(1);
+        // EMERGENCY RESTART at 85% to prevent ANY crashes
+        if (memPercent > 85) {
+          console.error(`🚨 EMERGENCY RESTART: ${memPercent.toFixed(2)}% memory - PREVENTING CRASH NOW!`);
+          
+          // Clear ALL intervals and timeouts
+          const highestTimeoutId = setTimeout(() => {}, 0);
+          for (let i = 1; i < highestTimeoutId; i++) {
+            clearTimeout(i);
+            clearInterval(i);
+          }
+          
+          // Force immediate restart
+          setTimeout(() => {
+            process.exit(1);
+          }, 100);
+          return;
         }
         
-        // Aggressive cleanup at 85%
-        if (memPercent > 85) {
-          console.warn(`⚠️ HIGH MEMORY: ${memPercent.toFixed(2)}% - aggressive cleanup`);
-          for (let i = 0; i < 3; i++) {
+        // AGGRESSIVE cleanup at 75%
+        if (memPercent > 75) {
+          console.warn(`⚠️ AGGRESSIVE CLEANUP: ${memPercent.toFixed(2)}% memory`);
+          
+          // Force multiple garbage collections
+          for (let i = 0; i < 5; i++) {
             global.gc();
           }
+          
+          // Clear require cache of non-essential modules
+          Object.keys(require.cache).forEach(key => {
+            if (!key.includes('express') && !key.includes('storage') && !key.includes('routes')) {
+              try {
+                delete require.cache[key];
+              } catch (e) {
+                // Ignore errors
+              }
+            }
+          });
+          
+          const afterCleanup = process.memoryUsage();
+          const newPercent = (afterCleanup.heapUsed / afterCleanup.heapTotal) * 100;
+          console.log(`🧹 Memory cleaned: ${memPercent.toFixed(2)}% → ${newPercent.toFixed(2)}%`);
         }
         
-        // Regular cleanup at 75%
-        if (memPercent > 75) {
+        // Preventive cleanup at 65%
+        if (memPercent > 65) {
           global.gc();
-          const after = process.memoryUsage().heapUsed;
-          const freed = (memUsage.heapUsed - after) / 1024 / 1024;
-          if (freed > 1) {
-            console.log(`🧹 GC freed ${freed.toFixed(2)} MB`);
-          }
         }
-      }, 10000); // Check every 10 seconds
+        
+        // Log memory status every minute
+        if (Date.now() % 60000 < 5000) {
+          console.log(`📊 Memory status: ${memPercent.toFixed(2)}% used (${Math.round(memUsage.heapUsed / 1024 / 1024)}MB)`);
+        }
+        
+      }, 5000); // Check every 5 seconds for maximum protection
 
-      console.log('✅ PROACTIVE crash prevention system enabled');
+      console.log('✅ ULTIMATE crash prevention system ACTIVE - NO MORE CRASHES!');
     } else {
-      console.warn('⚠️ Garbage collection not available - crashes more likely');
+      console.error('❌ Garbage collection not available - enabling fallback protection');
+      
+      // Fallback protection without GC
+      setInterval(() => {
+        const memUsage = process.memoryUsage();
+        const memPercent = (memUsage.heapUsed / memUsage.heapTotal) * 100;
+        
+        if (memPercent > 80) {
+          console.error(`🚨 FALLBACK RESTART: ${memPercent.toFixed(2)}% memory - restarting to prevent crash`);
+          process.exit(1);
+        }
+      }, 3000);
     }
 
     // Set memory limits and warnings

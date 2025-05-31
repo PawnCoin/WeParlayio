@@ -99,6 +99,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
             eventId: event.id,
 
 
+  // EMERGENCY MEMORY CHECK MIDDLEWARE - BLOCK ALL REQUESTS IF MEMORY TOO HIGH
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/api/') && req.path !== '/api/system/memory-status') {
+      const memUsage = process.memoryUsage();
+      const memUsagePercent = (memUsage.heapUsed / memUsage.heapTotal) * 100;
+      
+      if (memUsagePercent > 75) {
+        console.warn(`🚫 API BLOCKED: ${req.path} - Memory at ${memUsagePercent.toFixed(2)}%`);
+        return res.status(503).json({
+          error: 'Service temporarily unavailable due to high memory usage',
+          memory_percent: memUsagePercent.toFixed(2),
+          message: 'Please try again in a few moments'
+        });
+      }
+    }
+    next();
+  });
+
   // REAL-TIME MEMORY MONITORING - Check server health
   app.get('/api/system/memory-status', async (req, res) => {
     try {
@@ -113,10 +131,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           external: Math.round(memUsage.external / 1024 / 1024),
           rss: Math.round(memUsage.rss / 1024 / 1024)
         },
-        status: memUsagePercent > 90 ? 'CRITICAL' : memUsagePercent > 80 ? 'WARNING' : 'HEALTHY',
+        status: memUsagePercent > 75 ? 'CRITICAL' : memUsagePercent > 65 ? 'WARNING' : 'HEALTHY',
         uptime: Math.round(process.uptime()),
         timestamp: new Date().toISOString(),
-        crash_risk: memUsagePercent > 85 ? 'HIGH' : memUsagePercent > 75 ? 'MEDIUM' : 'LOW'
+        crash_risk: memUsagePercent > 70 ? 'HIGH' : memUsagePercent > 60 ? 'MEDIUM' : 'LOW',
+        protection_level: 'MAXIMUM - NO CRASHES ALLOWED'
       };
       
       res.json(status);

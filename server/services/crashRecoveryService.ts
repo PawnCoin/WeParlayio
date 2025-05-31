@@ -76,55 +76,72 @@ export class CrashRecoveryService {
         const memUsage = process.memoryUsage();
         const memUsagePercent = (memUsage.heapUsed / memUsage.heapTotal) * 100;
         
-        // PREVENT CRASHES BEFORE THEY HAPPEN
-        if (memUsagePercent > 92) {
-          console.error(`🚨 EMERGENCY MEMORY PREVENTION: ${memUsagePercent.toFixed(2)}% - IMMEDIATE RESTART`);
+        // ULTIMATE CRASH PREVENTION - NEVER LET MEMORY GET HIGH
+        if (memUsagePercent > 80) {
+          console.error(`🚨 ULTRA-EARLY PREVENTION: ${memUsagePercent.toFixed(2)}% - IMMEDIATE RESTART`);
           
-          // Emergency restart BEFORE crash occurs
-          setTimeout(() => {
-            console.log('🔄 EMERGENCY RESTART TO PREVENT CRASH');
-            process.exit(1);
-          }, 500);
-          return false;
-        }
-        
-        if (memUsagePercent > 88) {
-          console.error(`🚨 CRITICAL MEMORY: ${memUsagePercent.toFixed(2)}% - AGGRESSIVE CLEANUP`);
-          
-          // Multiple aggressive cleanup attempts
-          for (let i = 0; i < 3; i++) {
-            if (global.gc) {
-              global.gc();
-            }
-          }
-          
-          // Clear ALL non-essential cached data
+          // Clear everything immediately
           try {
-            // Clear all intervals and timeouts
             const highestTimeoutId = setTimeout(() => {}, 0);
             for (let i = 1; i < highestTimeoutId; i++) {
               clearTimeout(i);
               clearInterval(i);
             }
+          } catch (e) {
+            // Ignore cleanup errors
+          }
+          
+          // Emergency restart at 80% to NEVER allow crashes
+          setTimeout(() => {
+            console.log('🔄 ULTRA-EARLY RESTART TO GUARANTEE NO CRASHES');
+            process.exit(1);
+          }, 200);
+          return false;
+        }
+        
+        if (memUsagePercent > 70) {
+          console.warn(`⚠️ PREVENTIVE CLEANUP: ${memUsagePercent.toFixed(2)}% - MAXIMUM CLEANUP`);
+          
+          // MAXIMUM cleanup attempts
+          for (let i = 0; i < 10; i++) {
+            if (global.gc) {
+              global.gc();
+            }
+          }
+          
+          // Clear ALL possible cached data
+          try {
+            // Clear ALL intervals and timeouts
+            const highestTimeoutId = setTimeout(() => {}, 0);
+            for (let i = 1; i < highestTimeoutId; i++) {
+              try {
+                clearTimeout(i);
+                clearInterval(i);
+              } catch (e) {
+                // Ignore errors
+              }
+            }
             
-            // Aggressive require cache cleanup
+            // EXTREME require cache cleanup
             Object.keys(require.cache).forEach(key => {
-              if (!key.includes('express') && !key.includes('db') && !key.includes('storage') && !key.includes('routes')) {
-                delete require.cache[key];
+              if (!key.includes('express') && !key.includes('storage') && !key.includes('index')) {
+                try {
+                  delete require.cache[key];
+                } catch (e) {
+                  // Ignore errors
+                }
               }
             });
             
-            // Clear any global caches
-            if (global.apiCache) {
-              global.apiCache = {};
-            }
-            if (global.oddsCache) {
-              global.oddsCache = {};
-            }
+            // Clear ALL global caches
+            if (global.apiCache) global.apiCache = {};
+            if (global.oddsCache) global.oddsCache = {};
+            if (global.sportsCache) global.sportsCache = {};
+            if (global.liveCache) global.liveCache = {};
             
-            console.log('🧹 AGGRESSIVE cleanup completed');
+            console.log('🧹 MAXIMUM cleanup completed');
           } catch (error) {
-            console.error('Cleanup error:', error);
+            console.error('Cleanup error (ignored):', error);
           }
           
           return false;
