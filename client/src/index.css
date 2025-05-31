@@ -120,6 +120,46 @@ html:not(.dark) .mobile-nav * {
   color: white !important;
 }
 
+/* Sidebar text - ensure high contrast in light mode */
+html:not(.dark) nav a,
+html:not(.dark) nav button,
+html:not(.dark) nav span,
+html:not(.dark) nav div,
+html:not(.dark) .sidebar-content *,
+html:not(.dark) [role="navigation"] *,
+html:not(.dark) .navigation-item *,
+html:not(.dark) .nav-link * {
+  color: #1f2937 !important; /* Dark gray for excellent contrast */
+}
+
+/* Sidebar headings */
+html:not(.dark) .sidebar h2,
+html:not(.dark) .sidebar h3,
+html:not(.dark) .sidebar .font-semibold,
+html:not(.dark) .sidebar .text-lg {
+  color: #111827 !important; /* Very dark for headings */
+}
+
+/* Active/hover states in sidebar */
+html:not(.dark) .sidebar .bg-primary *,
+html:not(.dark) .sidebar .bg-blue-500 *,
+html:not(.dark) .sidebar .text-primary {
+  color: white !important;
+}
+
+/* Ensure icons and buttons in sidebar are visible */
+html:not(.dark) .sidebar svg,
+html:not(.dark) .sidebar .icon {
+  color: #374151 !important;
+}
+
+/* Badge and tag text in sidebar */
+html:not(.dark) .sidebar .badge,
+html:not(.dark) .sidebar .tag,
+html:not(.dark) .sidebar .label {
+  color: #1f2937 !important;
+}
+
 /* Business proposal modal - white text on colored backgrounds */
 html:not(.dark) .bg-gradient-to-r *,
 html:not(.dark) .bg-gradient-to-br *,
