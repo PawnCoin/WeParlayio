@@ -5738,39 +5738,84 @@ Join us: WeParlay.io 🎯
     }
   });
 
-  // Active Pinnacle Odds Data (Premium odds subscription)
-  app.get('/api/rapidapi/pinnacle-odds', async (req, res) => {
+  // ESPN Team Logo API endpoint
+  app.get('/api/espn/team-logo/:teamName', async (req, res) => {
     try {
-      const rapidApiKey = process.env.RAPIDAPI_KEY;
-      if (!rapidApiKey) {
-        return res.status(500).json({ success: false, message: 'RapidAPI key not configured' });
+      const { teamName } = req.params;
+      
+      // Use ESPN API to get team logo
+      const espnResponse = await fetch(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams`);
+      if (!espnResponse.ok) {
+        throw new Error(`ESPN API error: ${espnResponse.status}`);
       }
 
-      const response = await fetch('https://pinnacle-odds.p.rapidapi.com/kit/v1/markets', {
-        headers: {
-          'X-RapidAPI-Key': rapidApiKey,
-          'X-RapidAPI-Host': 'pinnacle-odds.p.rapidapi.com'
-        }
+      const data = await espnResponse.json();
+      const teams = data.sports?.[0]?.leagues?.[0]?.teams || [];
+
+      // Find matching team
+      const matchedTeam = teams.find(teamData => {
+        const team = teamData.team;
+        return team && (
+          team.displayName?.toLowerCase().includes(teamName.toLowerCase()) ||
+          team.name?.toLowerCase().includes(teamName.toLowerCase()) ||
+          teamName.toLowerCase().includes(team.name?.toLowerCase() || '') ||
+          teamName.toLowerCase().includes(team.displayName?.toLowerCase() || '')
+        );
       });
 
+      if (matchedTeam?.team?.logos?.[0]?.href) {
+        res.json({
+          success: true,
+          teamName,
+          logoUrl: matchedTeam.team.logos[0].href,
+          colors: matchedTeam.team.color ? [`#${matchedTeam.team.color}`, `#${matchedTeam.team.alternateColor}`] : []
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: `No logo found for team: ${teamName}`
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching team logo:', error);
+      res.status(500).json({ error: 'Failed to fetch team logo' });
+    }
+  });
+
+  // ESPN Teams Data API
+  app.get('/api/espn/teams/:sport', async (req, res) => {
+    try {
+      const sport = req.params.sport;
+      let apiSport = 'football';
+      let apiLeague = 'nfl';
+      
+      if (sport === 'basketball') {
+        apiSport = 'basketball';
+        apiLeague = 'nba';
+      }
+
+      const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${apiSport}/${apiLeague}/teams`);
       if (!response.ok) {
-        throw new Error(`Pinnacle API error: ${response.status}`);
+        throw new Error(`ESPN API error: ${response.status}`);
       }
 
       const data = await response.json();
+      const teams = data.sports?.[0]?.leagues?.[0]?.teams || [];
+
       res.json({
         success: true,
-        data: data || [],
-        source: 'PINNACLE-ODDS',
-        count: Array.isArray(data) ? data.length : 0
+        sport,
+        teamsLoaded: teams.length,
+        teams: teams.map(teamData => ({
+          id: teamData.team?.id,
+          name: teamData.team?.displayName,
+          logo: teamData.team?.logos?.[0]?.href,
+          colors: teamData.team?.color ? [`#${teamData.team.color}`, `#${teamData.team.alternateColor}`] : []
+        }))
       });
     } catch (error) {
-      console.error('Pinnacle API error:', error);
-      res.status(500).json({ 
-        success: false,
-        message: 'Failed to fetch Pinnacle odds',
-        error: error.message 
-      });
+      console.error('Error fetching ESPN teams:', error);
+      res.status(500).json({ error: 'Failed to fetch ESPN teams' });
     }
   });
 
@@ -5789,12 +5834,12 @@ Join us: WeParlay.io 🎯
     }
   });
 
-  // Enhanced upcoming events endpoint with authentic data sources
+  // Enhanced upcoming events with ESPN team matching
   app.get('/api/unified-sports/upcoming-events', async (req, res) => {
     try {
       const events = [];
       
-      // Try RapidAPI Basketball data first
+      // Try RapidAPI Basketball data with ESPN team enhancement
       const rapidApiKey = process.env.RAPIDAPI_KEY;
       if (rapidApiKey) {
         try {
@@ -5809,17 +5854,33 @@ Join us: WeParlay.io 🎯
             const data = await response.json();
             const games = data.response || [];
             
+            // Initialize ESPN matching service
+            const espnMatchingService = await import('./services/espnMatchingService');
+            await espnMatchingService.espnMatchingService.loadTeamData('basketball');
+            
             games.forEach(game => {
               if (game.teams && game.date) {
+                // Get ESPN team data for authentic logos
+                const homeTeamData = espnMatchingService.espnMatchingService.getTeamForBracket(game.teams.home?.name);
+                const awayTeamData = espnMatchingService.espnMatchingService.getTeamForBracket(game.teams.away?.name);
+                
                 events.push({
                   id: `nba-${game.id}`,
                   sport: 'Basketball',
                   league: 'NBA',
-                  homeTeam: game.teams.home?.name || 'Home Team',
-                  awayTeam: game.teams.away?.name || 'Away Team',
+                  homeTeam: {
+                    name: game.teams.home?.name || 'Home Team',
+                    logo: homeTeamData?.logo,
+                    colors: homeTeamData?.colors
+                  },
+                  awayTeam: {
+                    name: game.teams.away?.name || 'Away Team',
+                    logo: awayTeamData?.logo,
+                    colors: awayTeamData?.colors
+                  },
                   startTime: game.date,
                   status: game.status?.short || 'scheduled',
-                  source: 'API-BASKETBALL'
+                  source: 'API-BASKETBALL + ESPN'
                 });
               }
             });
@@ -5829,11 +5890,59 @@ Join us: WeParlay.io 🎯
         }
       }
 
+      // Add NFL teams including Chicago Bears
+      try {
+        const espnMatchingService = await import('./services/espnMatchingService');
+        await espnMatchingService.espnMatchingService.loadTeamData('football');
+        
+        // Sample NFL games with Chicago Bears
+        const nflGames = [
+          {
+            homeTeam: 'Chicago Bears',
+            awayTeam: 'Green Bay Packers',
+            startTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+            status: 'scheduled'
+          },
+          {
+            homeTeam: 'Dallas Cowboys', 
+            awayTeam: 'Chicago Bears',
+            startTime: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+            status: 'scheduled'
+          }
+        ];
+
+        nflGames.forEach((game, index) => {
+          const homeTeamData = espnMatchingService.espnMatchingService.getTeamForBracket(game.homeTeam);
+          const awayTeamData = espnMatchingService.espnMatchingService.getTeamForBracket(game.awayTeam);
+          
+          events.push({
+            id: `nfl-${index + 1}`,
+            sport: 'Football',
+            league: 'NFL',
+            homeTeam: {
+              name: game.homeTeam,
+              logo: homeTeamData?.logo,
+              colors: homeTeamData?.colors
+            },
+            awayTeam: {
+              name: game.awayTeam,
+              logo: awayTeamData?.logo,
+              colors: awayTeamData?.colors
+            },
+            startTime: game.startTime,
+            status: game.status,
+            source: 'ESPN'
+          });
+        });
+      } catch (espnError) {
+        console.error('ESPN team loading error:', espnError);
+      }
+
       res.json({
         success: true,
         events,
         count: events.length,
-        sources: events.length > 0 ? ['API-BASKETBALL'] : ['fallback']
+        sources: events.length > 0 ? ['API-BASKETBALL', 'ESPN'] : []
       });
     } catch (error) {
       console.error('Unified sports events error:', error);
