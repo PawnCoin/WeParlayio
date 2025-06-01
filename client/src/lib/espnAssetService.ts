@@ -16,6 +16,11 @@ export class ESPNAssetService {
       return `${this.ESPN_TEAM_LOGO_BASE}/${leagueCode}/500/${teamAbbr}.png`;
     }
 
+    if (leagueCode === 'mlb') {
+      const teamAbbr = this.getMLBTeamAbbreviation(teamName);
+      return `${this.ESPN_TEAM_LOGO_BASE}/${leagueCode}/500/${teamAbbr}.png`;
+    }
+
     // For other leagues, use team slug
     const teamSlug = teamName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
     return `${this.ESPN_TEAM_LOGO_BASE}/${leagueCode}/500/${teamSlug}.png`;
@@ -150,6 +155,43 @@ export class ESPNAssetService {
     };
 
     return nflTeams[teamName] || teamName.toLowerCase().slice(0, 3);
+  }
+
+  private static getMLBTeamAbbreviation(teamName: string): string {
+    const mlbTeams: Record<string, string> = {
+      'Arizona Diamondbacks': 'ari',
+      'Atlanta Braves': 'atl',
+      'Baltimore Orioles': 'bal',
+      'Boston Red Sox': 'bos',
+      'Chicago Cubs': 'chc',
+      'Chicago White Sox': 'chw',
+      'Cincinnati Reds': 'cin',
+      'Cleveland Guardians': 'cle',
+      'Colorado Rockies': 'col',
+      'Detroit Tigers': 'det',
+      'Houston Astros': 'hou',
+      'Kansas City Royals': 'kc',
+      'Los Angeles Angels': 'laa',
+      'Los Angeles Dodgers': 'lad',
+      'Miami Marlins': 'mia',
+      'Milwaukee Brewers': 'mil',
+      'Minnesota Twins': 'min',
+      'New York Mets': 'nym',
+      'New York Yankees': 'nyy',
+      'Oakland Athletics': 'oak',
+      'Philadelphia Phillies': 'phi',
+      'Pittsburgh Pirates': 'pit',
+      'San Diego Padres': 'sd',
+      'San Francisco Giants': 'sf',
+      'Seattle Mariners': 'sea',
+      'St. Louis Cardinals': 'stl',
+      'Tampa Bay Rays': 'tb',
+      'Texas Rangers': 'tex',
+      'Toronto Blue Jays': 'tor',
+      'Washington Nationals': 'wsh'
+    };
+
+    return mlbTeams[teamName] || teamName.toLowerCase().slice(0, 3);
   }
 
   private static getPlayerESPNId(playerName: string, sport: string): string | null {
