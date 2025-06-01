@@ -16,7 +16,7 @@ import LoginEnhanced from "@/pages/LoginEnhanced";
 import AuthTestDemo from "@/pages/AuthTestDemo";
 import UserDirectory from "@/pages/UserDirectory";
 import SocialMediaBots from "@/pages/SocialMediaBots";
-import SocialMediaDashboard from "@/pages/SocialMediaDashboard";
+
 import EmailMonitoring from "@/pages/EmailMonitoring";
 import VipFeatures from "./pages/VipFeatures";
 import WalletManagement from "./pages/WalletManagement";
@@ -46,7 +46,7 @@ import WalletTest from "@/pages/WalletTest";
 import UserProfilePage from "@/pages/UserProfilePage";
 import FantasySportsEnhanced from "@/pages/FantasySportsEnhanced";
 import GamingIntegration from "@/pages/GamingIntegration";
-import LiveSportsStreaming from "@/pages/LiveSportsStreaming";
+
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
 import MobileVoiceBetting from "@/components/mobile/MobileVoiceBetting";
@@ -90,6 +90,9 @@ import PayoutManagement from "@/pages/system/PayoutManagement";
 import SystemLogs from "@/pages/system/SystemLogs";
 import ApiStatus from "@/pages/system/ApiStatus";
 import SystemHealth from "@/pages/system/SystemHealth";
+import UnifiedGaming from "@/pages/system/UnifiedGaming";
+import SocialMediaDashboard from "@/pages/system/SocialMediaDashboard";
+import LiveSportsStreaming from "@/pages/system/LiveSportsStreaming";
 import MultiCurrencyBetting from "@/pages/MultiCurrencyBetting";
 import { lazy } from 'react';
 
@@ -185,6 +188,9 @@ function Router() {
       <Route path="/logs" component={SystemLogs} />
       <Route path="/api-status" component={ApiStatus} />
       <Route path="/system-health" component={SystemHealth} />
+      <Route path="/unified-gaming" component={UnifiedGaming} />
+      <Route path="/social-media-dashboard" component={SocialMediaDashboard} />
+      <Route path="/live-sports-streaming" component={LiveSportsStreaming} />
 
       {/* Enhanced Multi-Currency Betting */}
       <Route path="/multi-currency-betting" component={MultiCurrencyBetting} />
