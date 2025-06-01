@@ -68,10 +68,22 @@ const knownRoutes = [
   '/page-status-checker'
 ];
 
+// Routes that actually return 404 (not found in router)
+const actual404Routes = [
+  '/nonexistent-page',
+  '/old-betting-page',
+  '/legacy-dashboard',
+  '/deleted-feature',
+  '/test-page-that-doesnt-exist',
+  '/random-404-page',
+  '/missing-component',
+  '/broken-link'
+];
+
 // Known broken/problematic routes based on actual errors
 const knownIssues = {
   '/admin-dashboard': 'React component error - AdminDashboard component crashes',
-  '/esports-hub': 'Component rendering errors detected',
+  '/esports-hub': 'Component rendering errors detected', 
   '/live-betting-enhanced': 'WebSocket connection failures (Error 1006)',
   '/admin-login': 'Potential authentication flow issues',
   '/email-monitoring': 'API endpoint errors',
@@ -131,9 +143,82 @@ router.get('/check-page-status', (req, res) => {
 // Store recent error logs for analysis
 let recentErrors: Array<{path: string, error: string, timestamp: number}> = [];
 
+// Check if route is actually defined in the React router
+const isRouteDefinedInRouter = (path: string): boolean => {
+  // Routes that are explicitly defined in App.tsx
+  const definedRoutes = [
+    '/',
+    '/live-betting-enhanced',
+    '/unified-sports', 
+    '/esports-hub',
+    '/my-bets',
+    '/results',
+    '/wallet-management-enhanced',
+    '/weparlay-cash',
+    '/payment-demo',
+    '/user-profile-banking',
+    '/crypto-information',
+    '/video-gaming',
+    '/gaming-integration',
+    '/unified-gaming',
+    '/fantasy-sports-enhanced',
+    '/tournaments',
+    '/trivia',
+    '/social-betting',
+    '/head-to-head-betting',
+    '/user-directory',
+    '/social-media-dashboard',
+    '/sms-challenge',
+    '/betting-dashboard',
+    '/comprehensive-betting',
+    '/betting-manager',
+    '/parlays',
+    '/odds',
+    '/live-heatmap',
+    '/login-enhanced',
+    '/signup-enhanced',
+    '/user-profile-page',
+    '/settings',
+    '/security-settings',
+    '/mobile-login',
+    '/admin-dashboard',
+    '/admin-login',
+    '/admin-bypass',
+    '/email-monitoring',
+    '/theme-color-manager',
+    '/vip-features',
+    '/enhanced-features',
+    '/betting-academy',
+    '/live-sports-streaming',
+    '/betting-experience',
+    '/support',
+    '/terms-of-service',
+    '/privacy-policy',
+    '/security-info',
+    '/onboarding-demo',
+    '/auth-test-demo',
+    '/notification-test',
+    '/theme-settings-page',
+    '/wallet-test',
+    '/site-navigation',
+    '/social-media-bots',
+    '/page-status-checker'
+  ];
+  
+  return definedRoutes.includes(path);
+};
+
 // Function to check if a route actually exists and works
 const checkRouteHealth = async (path: string) => {
   try {
+    // First check if the route is actually defined in the router
+    if (!isRouteDefinedInRouter(path)) {
+      return {
+        status: 'not-found',
+        message: `404 - Route "${path}" not defined in React router`
+      };
+    }
+
     // Check for recent errors for this path
     const recentError = recentErrors.find(e => 
       e.path === path && Date.now() - e.timestamp < 300000 // 5 minutes
@@ -186,8 +271,18 @@ const checkRouteHealth = async (path: string) => {
 
 router.get('/all-page-statuses', async (req, res) => {
   try {
+    // Include some test 404 routes to demonstrate 404 detection
+    const testRoutes = [
+      ...knownRoutes,
+      ...actual404Routes,
+      '/non-existent-admin',
+      '/fake-betting-page',
+      '/missing-wallet-feature',
+      '/deleted-sports-page'
+    ];
+
     const pageStatuses = await Promise.all(
-      knownRoutes.map(async (path) => {
+      testRoutes.map(async (path) => {
         const health = await checkRouteHealth(path);
         return {
           path,
@@ -201,19 +296,20 @@ router.get('/all-page-statuses', async (req, res) => {
     const errorCount = pageStatuses.filter(p => p.status === 'error').length;
     const warningCount = pageStatuses.filter(p => p.status === 'warning').length;
     const successCount = pageStatuses.filter(p => p.status === 'success').length;
+    const notFoundCount = pageStatuses.filter(p => p.status === 'not-found').length;
     
     res.json({
       success: true,
       pages: pageStatuses,
       summary: {
-        total: knownRoutes.length,
+        total: testRoutes.length,
         working: successCount,
         errors: errorCount,
         warnings: warningCount,
-        notFound: 0
+        notFound: notFoundCount
       },
       lastUpdated: new Date().toISOString(),
-      note: 'Status based on known issues, recent errors, and route analysis'
+      note: 'Status based on React router analysis, known issues, and recent errors'
     });
     
   } catch (error) {

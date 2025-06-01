@@ -21,7 +21,7 @@ const PageStatusChecker: React.FC = () => {
   const [isChecking, setIsChecking] = useState(false);
   const [filter, setFilter] = useState<'all' | 'success' | 'error' | 'not-found'>('all');
 
-  // Complete list of all pages in the WeParlay platform
+  // Complete list of all pages in the WeParlay platform + test 404 routes
   const allPages = [
     // Core Features
     { name: "Home", path: "/" },
@@ -101,7 +101,17 @@ const PageStatusChecker: React.FC = () => {
     // Additional Pages
     { name: "Site Navigation", path: "/site-navigation" },
     { name: "Social Media Bots", path: "/social-media-bots" },
-    { name: "Page Status Checker", path: "/page-status-checker" }
+    { name: "Page Status Checker", path: "/page-status-checker" },
+
+    // Test 404 Routes (These should show as 404 errors)
+    { name: "❌ Non-Existent Page", path: "/nonexistent-page" },
+    { name: "❌ Old Betting Page", path: "/old-betting-page" },
+    { name: "❌ Legacy Dashboard", path: "/legacy-dashboard" },
+    { name: "❌ Deleted Feature", path: "/deleted-feature" },
+    { name: "❌ Missing Component", path: "/missing-component" },
+    { name: "❌ Broken Link", path: "/broken-link" },
+    { name: "❌ Non-Existent Admin", path: "/non-existent-admin" },
+    { name: "❌ Fake Betting Page", path: "/fake-betting-page" }
   ];
 
   const checkPageStatus = async (page: { name: string; path: string }): Promise<PageStatus> => {
@@ -231,9 +241,11 @@ const PageStatusChecker: React.FC = () => {
       
       if (data.success) {
         const serverStatuses: PageStatus[] = data.pages.map((page: any) => ({
-          name: allPages.find(p => p.path === page.path)?.name || page.path,
+          name: allPages.find(p => p.path === page.path)?.name || `Unknown: ${page.path}`,
           path: page.path,
-          status: page.status === 'error' ? 'error' : page.status === 'not-found' ? 'not-found' : 'success',
+          status: page.status === 'error' ? 'error' : 
+                  page.status === 'not-found' ? 'not-found' : 
+                  page.status === 'warning' ? 'warning' : 'success',
           error: page.status !== 'success' ? page.message : undefined,
           responseTime: 0
         }));
