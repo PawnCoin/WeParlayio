@@ -127,23 +127,23 @@ export default function NotificationManagement() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Total Sent Today"
-          value={stats?.totalSentToday || 0}
+          value={(statistics as any)?.totalSentToday || 0}
           icon={Send}
-          trend={stats?.dailyGrowth}
+          trend={(statistics as any)?.dailyGrowth}
         />
         <StatCard
           title="Email Delivery Rate"
-          value={`${stats?.emailDeliveryRate || 0}%`}
+          value={`${(statistics as any)?.emailDeliveryRate || 0}%`}
           icon={Mail}
         />
         <StatCard
           title="SMS Delivery Rate"
-          value={`${stats?.smsDeliveryRate || 0}%`}
+          value={`${(statistics as any)?.smsDeliveryRate || 0}%`}
           icon={MessageSquare}
         />
         <StatCard
           title="Active Templates"
-          value={templates?.filter((t: any) => t.isActive).length || 0}
+          value={(templates as any[])?.filter((t: any) => t.status === 'active').length || 0}
           icon={Bell}
         />
       </div>
