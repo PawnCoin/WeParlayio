@@ -208,7 +208,7 @@ export default function TransactionManagement() {
                     <SelectValue placeholder="All types" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All types</SelectItem>
+                    <SelectItem value="all">All types</SelectItem>
                     <SelectItem value="deposit">Deposit</SelectItem>
                     <SelectItem value="withdrawal">Withdrawal</SelectItem>
                     <SelectItem value="bet">Bet</SelectItem>
@@ -225,7 +225,7 @@ export default function TransactionManagement() {
                     <SelectValue placeholder="All currencies" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All currencies</SelectItem>
+                    <SelectItem value="all">All currencies</SelectItem>
                     <SelectItem value="USD">USD</SelectItem>
                     <SelectItem value="WEPARLAY">WeParlay Cash</SelectItem>
                     <SelectItem value="BTC">Bitcoin</SelectItem>
@@ -241,7 +241,7 @@ export default function TransactionManagement() {
                     <SelectValue placeholder="All statuses" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All statuses</SelectItem>
+                    <SelectItem value="all">All statuses</SelectItem>
                     <SelectItem value="pending">Pending</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
                     <SelectItem value="failed">Failed</SelectItem>
