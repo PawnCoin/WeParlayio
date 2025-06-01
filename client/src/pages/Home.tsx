@@ -435,9 +435,11 @@ const Home: React.FC = () => {
           <Card className="border-green-200 bg-green-50/50">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-bold text-lg">
-                  M
-                </div>
+                <img 
+                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face" 
+                  alt="Mike Profile" 
+                  className="w-12 h-12 rounded-full object-cover border-2 border-green-200"
+                />
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <h4 className="font-semibold">Mike_SportsFan</h4>
@@ -446,7 +448,7 @@ const Home: React.FC = () => {
                     </div>
                   </div>
                   <p className="text-sm text-gray-700 mb-2">
-                    "Won $8,500 on a 5-leg NBA parlay! WeParlay's odds are consistently better than other platforms. Instant crypto payouts made it even sweeter! 🚀"
+                    "Just hit my biggest win ever - $8.5K on an NBA parlay!! Been using WeParlay for 6 months and their odds beat DraftKings every time. Crypto withdrawals are instant too which is clutch"
                   </p>
                   <div className="flex items-center gap-2">
                     <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Platinum Member</span>
@@ -461,18 +463,20 @@ const Home: React.FC = () => {
           <Card className="border-blue-200 bg-blue-50/50">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-lg">
-                  S
-                </div>
+                <img 
+                  src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face" 
+                  alt="Sarah Profile" 
+                  className="w-12 h-12 rounded-full object-cover border-2 border-blue-200"
+                />
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <h4 className="font-semibold">CryptoSarah_2024</h4>
+                    <h4 className="font-semibold">Sarah.crypto</h4>
                     <div className="flex text-yellow-400">
                       ⭐⭐⭐⭐⭐
                     </div>
                   </div>
                   <p className="text-sm text-gray-700 mb-2">
-                    "Finally, a platform that takes security seriously! Wallet integration is seamless, and I love the transparent transaction history. Customer support is amazing! 💎"
+                    "Switched from Bovada last month. The wallet connection was super easy and I love seeing all my transaction history in one place. Support actually responds within minutes!"
                   </p>
                   <div className="flex items-center gap-2">
                     <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Gold Member</span>
@@ -487,9 +491,11 @@ const Home: React.FC = () => {
           <Card className="border-purple-200 bg-purple-50/50">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold text-lg">
-                  A
-                </div>
+                <img 
+                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face" 
+                  alt="Alex Profile" 
+                  className="w-12 h-12 rounded-full object-cover border-2 border-purple-200"
+                />
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <h4 className="font-semibold">AnalyticsAlex</h4>
@@ -498,7 +504,7 @@ const Home: React.FC = () => {
                     </div>
                   </div>
                   <p className="text-sm text-gray-700 mb-2">
-                    "The social betting challenges with friends got me hooked! Tournament brackets are genius. Plus WeParlay Cash lets me practice risk-free. This is the future! ⚡"
+                    "The group challenges with my buddies are addictive lol. Tournament brackets during March Madness were perfect. WeParlay Cash is great for testing strategies without risking real money"
                   </p>
                   <div className="flex items-center gap-2">
                     <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">Silver Member</span>
