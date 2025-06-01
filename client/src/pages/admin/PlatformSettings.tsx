@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -47,6 +48,13 @@ interface PlatformSettings {
 }
 
 export default function PlatformSettings() {
+  const { isAdmin } = useAuth();
+
+  // Admin users bypass tier restrictions
+  if (isAdmin) {
+    return <PlatformSettingsContent />;
+  }
+
   return (
     <TierGuard requiredTier="diamond" userTier="none" feature="Platform Settings">
       <PlatformSettingsContent />

@@ -103,9 +103,9 @@ export function useAuth() {
 
   return {
     user,
-    isLoading,
-    error: null,
     isAuthenticated,
+    isLoading,
+    isAdmin: user?.email?.includes('admin') || user?.role === 'admin',
     login,
     logout,
     connectWallet,
