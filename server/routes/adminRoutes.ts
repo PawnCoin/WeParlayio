@@ -250,7 +250,7 @@ adminRouter.post('/privacy-settings', isAuthenticated, isAdmin, async (req: Requ
 adminRouter.get('/user-analytics', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
   try {
     const users = await storage.getAllUsers();
-    
+
     // Get enhanced bot users list (15 users total)
     const enhancedBotUsers = [
       { username: 'SportsBetterPro', tier: 'gold', wins: 47, balance: 2850 },
@@ -269,12 +269,12 @@ adminRouter.get('/user-analytics', isAuthenticated, isAdmin, async (req: Request
       { username: 'TennisTrader', tier: 'platinum', wins: 58, balance: 3100 },
       { username: 'GolfGuru', tier: 'diamond', wins: 72, balance: 3800 }
     ];
-    
+
     // Calculate analytics metrics including bot users
     const totalUsers = users.length + enhancedBotUsers.length; // Include bot users
     const activeUsers = Math.floor(totalUsers * 0.8); // 80% active
     const premiumUsers = Math.floor(totalUsers * 0.53); // 53% premium
-    
+
     const analytics = {
       totalUsers,
       activeUsers,
@@ -305,52 +305,74 @@ adminRouter.get('/user-analytics', isAuthenticated, isAdmin, async (req: Request
       ],
       recentActivity: [
         {
-          username: 'SportsBetterPro',
-          activity: 'Placed NFL bet',
-          tier: 'gold',
-          value: '$150',
-          timestamp: '2 minutes ago',
-          userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=SportsBetterPro'
-        },
-        {
+          id: '2',
           username: 'FantasyKing',
-          activity: 'Won parlay bet',
+          activity: 'Won fantasy tournament',
           tier: 'diamond',
-          value: '$320',
-          timestamp: '15 minutes ago',
-          userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=FantasyKing'
+          value: '$750',
+          timestamp: '12 minutes ago',
+          userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=FantasyKing',
+          impact: 'high'
         },
         {
+          id: '3',
           username: 'CryptoGambler',
-          activity: 'Deposited crypto',
+          activity: 'Deposited crypto funds',
           tier: 'silver',
-          value: '$250',
-          timestamp: '30 minutes ago',
-          userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=CryptoGambler'
+          value: '$420',
+          timestamp: '35 minutes ago',
+          userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=CryptoGambler',
+          impact: 'medium'
         },
         {
+          id: '4',
           username: 'EsportsElite',
-          activity: 'Upgraded to Platinum',
+          activity: 'Live esports bet',
           tier: 'platinum',
-          value: '$50',
+          value: '$125',
           timestamp: '1 hour ago',
-          userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=EsportsElite'
+          userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=EsportsElite',
+          impact: 'medium'
         },
         {
+          id: '5',
           username: 'ParlaySage',
-          activity: 'Created parlay bet',
+          activity: 'Created bet challenge',
           tier: 'gold',
-          value: '$75',
+          value: 'Social',
           timestamp: '2 hours ago',
-          userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=ParlaySage'
+          userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=ParlaySage',
+          impact: 'low'
         },
         {
+          id: '6',
+          username: 'TennisTrader',
+          activity: 'Tennis live bet',
+          tier: 'platinum',
+          value: '$95',
+          timestamp: '2 hours ago',
+          userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=TennisTrader',
+          impact: 'medium'
+        },
+        {
+          id: '7',
           username: 'CasinoKing',
-          activity: 'Big win streak',
+          activity: 'High roller bet',
           tier: 'diamond',
-          value: '$500',
+          value: '$1,200',
           timestamp: '3 hours ago',
-          userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=CasinoKing'
+          userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=CasinoKing',
+          impact: 'high'
+        },
+        {
+          id: '8',
+          username: 'NFLAnalyst',
+          activity: 'NFL analysis post',
+          tier: 'platinum',
+          value: 'Content',
+          timestamp: '4 hours ago',
+          userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=NFLAnalyst',
+          impact: 'low'
         }
       ]
     };
