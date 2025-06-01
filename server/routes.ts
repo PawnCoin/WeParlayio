@@ -6242,6 +6242,122 @@ Join us: WeParlay.io 🎯
     });
   });
 
+  // Gaming API endpoints for UnifiedGaming page
+  app.get('/api/gaming/statistics', (req, res) => {
+    res.json({
+      activePlayers: Math.floor(Math.random() * 500) + 200,
+      liveTournaments: Math.floor(Math.random() * 20) + 5,
+      totalPrizePool: Math.floor(Math.random() * 100000) + 50000,
+      avgViewership: Math.floor(Math.random() * 1000) + 500
+    });
+  });
+
+  app.get('/api/gaming/platforms', (req, res) => {
+    res.json([
+      { id: 1, name: 'Twitch', status: 'connected', viewers: 1500 },
+      { id: 2, name: 'YouTube Gaming', status: 'connected', viewers: 800 },
+      { id: 3, name: 'Discord', status: 'connected', members: 2500 }
+    ]);
+  });
+
+  app.get('/api/gaming/tournaments', (req, res) => {
+    res.json([
+      { id: 1, name: 'Weekly Championship', prizePool: 5000, participants: 64, status: 'live' },
+      { id: 2, name: 'Season Finals', prizePool: 25000, participants: 128, status: 'upcoming' }
+    ]);
+  });
+
+  // Social Media API endpoints for SocialMediaDashboard page
+  app.get('/api/social-media/statistics', (req, res) => {
+    res.json({
+      totalFollowers: Math.floor(Math.random() * 10000) + 5000,
+      engagementRate: Math.random() * 10 + 5,
+      postsToday: Math.floor(Math.random() * 20) + 5,
+      reach: Math.floor(Math.random() * 50000) + 25000
+    });
+  });
+
+  app.get('/api/social-media/platforms', (req, res) => {
+    res.json([
+      { id: 1, name: 'Twitter', followers: 2500, status: 'active' },
+      { id: 2, name: 'Instagram', followers: 1800, status: 'active' },
+      { id: 3, name: 'TikTok', followers: 3200, status: 'active' }
+    ]);
+  });
+
+  app.get('/api/social-media/posts', (req, res) => {
+    res.json([
+      { id: 1, platform: 'Twitter', content: 'Live betting now available!', engagement: 145, timestamp: new Date().toISOString() },
+      { id: 2, platform: 'Instagram', content: 'Weekly tournament results', engagement: 87, timestamp: new Date().toISOString() }
+    ]);
+  });
+
+  // Live Sports Streaming API endpoints
+  app.get('/api/streaming/statistics', (req, res) => {
+    res.json({
+      liveStreams: Math.floor(Math.random() * 10) + 3,
+      totalViewers: Math.floor(Math.random() * 5000) + 2000,
+      bandwidth: Math.random() * 100 + 50,
+      uptime: Math.random() * 5 + 95
+    });
+  });
+
+  app.get('/api/streaming/streams', (req, res) => {
+    res.json([
+      { id: 1, title: 'NBA Live Stream', viewers: 1200, quality: '1080p', status: 'live' },
+      { id: 2, title: 'NFL Highlights', viewers: 800, quality: '720p', status: 'live' }
+    ]);
+  });
+
+  app.get('/api/streaming/analytics', (req, res) => {
+    res.json([
+      { date: '2025-06-01', viewers: 2500, streams: 5 },
+      { date: '2025-05-31', viewers: 2200, streams: 4 }
+    ]);
+  });
+
+  // Social media endpoints for SocialMediaDashboard
+  app.get('/api/social/statistics', (req, res) => {
+    res.json({
+      totalFollowers: Math.floor(Math.random() * 10000) + 5000,
+      engagementRate: Math.random() * 10 + 5,
+      postsToday: Math.floor(Math.random() * 20) + 5,
+      reach: Math.floor(Math.random() * 50000) + 25000
+    });
+  });
+
+  app.get('/api/social/recent-posts', (req, res) => {
+    res.json([
+      { id: 1, platform: 'Twitter', content: 'Live betting now available!', engagement: 145, timestamp: new Date().toISOString() },
+      { id: 2, platform: 'Instagram', content: 'Weekly tournament results', engagement: 87, timestamp: new Date().toISOString() }
+    ]);
+  });
+
+  app.get('/api/social/scheduled', (req, res) => {
+    res.json([
+      { id: 1, platform: 'Twitter', content: 'Upcoming tournament announcement', scheduledFor: new Date(Date.now() + 3600000).toISOString() },
+      { id: 2, platform: 'Instagram', content: 'Player spotlight feature', scheduledFor: new Date(Date.now() + 7200000).toISOString() }
+    ]);
+  });
+
+  // Additional streaming endpoints for LiveSportsStreaming page
+  app.get('/api/streaming/active', (req, res) => {
+    res.json([
+      { id: 1, title: 'NBA Live Stream', viewers: 1200, quality: '1080p', status: 'live', bandwidth: 5.2 },
+      { id: 2, title: 'NFL Highlights', viewers: 800, quality: '720p', status: 'live', bandwidth: 3.8 }
+    ]);
+  });
+
+  app.get('/api/streaming/health', (req, res) => {
+    res.json({
+      overall: 'healthy',
+      bandwidth: Math.random() * 50 + 50,
+      latency: Math.random() * 50 + 20,
+      uptime: Math.random() * 5 + 95,
+      errors: Math.floor(Math.random() * 5)
+    });
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
