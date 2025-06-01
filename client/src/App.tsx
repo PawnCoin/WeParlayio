@@ -82,7 +82,7 @@ import OwnerAccess from "@/pages/OwnerAccess";
 import ManageUsers from "@/pages/admin/ManageUsers";
 import FinancialOverview from "@/pages/admin/FinancialOverview";
 import Analytics from "@/pages/admin/Analytics";
-import PlatformSettings from "@/pages/admin/PlatformSettings";
+import SimplePlatformSettings from "@/pages/admin/SimplePlatformSettings";
 import VisualComponentEditorPage from "./pages/admin/VisualComponentEditor";
 import NotificationManagement from "@/pages/system/NotificationManagement";
 import TransactionManagement from "@/pages/system/TransactionManagement";
@@ -182,7 +182,7 @@ function Router() {
       <Route path="/theme-color-manager" component={ThemeColorManager} />
 
       {/* System Management Routes */}
-      <Route path="/platform-settings" component={PlatformSettings} />
+      <Route path="/platform-settings" component={SimplePlatformSettings} />
       <Route path="/security" component={SecuritySettings} />
       <Route path="/notifications" component={NotificationManagement} />
       <Route path="/transactions" component={TransactionManagement} />
@@ -227,7 +227,7 @@ function Router() {
       <Route path="/admin/manage-users" component={ManageUsers} />
       <Route path="/admin/financial-overview" component={FinancialOverview} />
       <Route path="/admin/analytics" component={Analytics} />
-      <Route path="/admin/platform-settings" component={PlatformSettings} />
+      <Route path="/admin/platform-settings" component={SimplePlatformSettings} />
       <Route path="/admin/visual-component-editor" component={VisualComponentEditorPage} />
       <Route path="/admin/social-media-dashboard" component={SocialMediaDashboard} />
       <Route path="/admin/user-analytics" component={lazy(() => import("./pages/admin/UserAnalytics"))} />

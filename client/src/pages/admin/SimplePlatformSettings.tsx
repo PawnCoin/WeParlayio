@@ -33,22 +33,23 @@ function PlatformSettingsContent() {
   });
 
   // Safely access settings data with fallbacks
-  const siteName = settings?.general?.siteName || "WeParlay.io";
-  const maintenanceMode = settings?.general?.maintenanceMode || false;
-  const registrationEnabled = settings?.general?.registrationEnabled || true;
-  const minBetAmount = settings?.general?.minBetAmount || 1;
-  const maxBetAmount = settings?.general?.maxBetAmount || 10000;
+  const settingsData = settings || {};
+  const siteName = settingsData.general?.siteName || "WeParlay.io";
+  const maintenanceMode = settingsData.general?.maintenanceMode || false;
+  const registrationEnabled = settingsData.general?.registrationEnabled || true;
+  const minBetAmount = settingsData.general?.minBetAmount || 1;
+  const maxBetAmount = settingsData.general?.maxBetAmount || 10000;
   
   // Feature flags
-  const parlayEnabled = settings?.betting?.parlayEnabled || true;
-  const liveStreaming = settings?.betting?.liveStreaming || true;
-  const fantasyEnabled = settings?.features?.fantasyEnabled || true;
-  const socialBetting = settings?.features?.socialBetting || true;
+  const parlayEnabled = settingsData.betting?.parlayEnabled || true;
+  const liveStreaming = settingsData.betting?.liveStreaming || true;
+  const fantasyEnabled = settingsData.features?.fantasyEnabled || true;
+  const socialBetting = settingsData.features?.socialBetting || true;
   
   // Integration status
-  const stripeEnabled = settings?.integrations?.stripeEnabled || false;
-  const paypalEnabled = settings?.integrations?.paypalEnabled || false;
-  const twilioEnabled = settings?.integrations?.twilioEnabled || false;
+  const stripeEnabled = settingsData.integrations?.stripeEnabled || false;
+  const paypalEnabled = settingsData.integrations?.paypalEnabled || false;
+  const twilioEnabled = settingsData.integrations?.twilioEnabled || false;
 
   // Update settings mutation
   const updateSettingsMutation = useMutation({
@@ -170,7 +171,7 @@ function PlatformSettingsContent() {
                 <Switch
                   id="registration"
                   checked={registrationEnabled}
-                  readOnly
+                  disabled
                 />
               </div>
             </CardContent>
@@ -190,7 +191,7 @@ function PlatformSettingsContent() {
                     <Label>Parlay Betting</Label>
                     <p className="text-sm text-muted-foreground">Enable parlay bets</p>
                   </div>
-                  <Switch checked={parlayEnabled} readOnly />
+                  <Switch checked={parlayEnabled} disabled />
                 </div>
                 
                 <div className="flex items-center justify-between">
@@ -198,7 +199,7 @@ function PlatformSettingsContent() {
                     <Label>Live Streaming</Label>
                     <p className="text-sm text-muted-foreground">Enable live sports streaming</p>
                   </div>
-                  <Switch checked={liveStreaming} readOnly />
+                  <Switch checked={liveStreaming} disabled />
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -206,7 +207,7 @@ function PlatformSettingsContent() {
                     <Label>Fantasy Sports</Label>
                     <p className="text-sm text-muted-foreground">Enable fantasy sports features</p>
                   </div>
-                  <Switch checked={fantasyEnabled} readOnly />
+                  <Switch checked={fantasyEnabled} disabled />
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -214,7 +215,7 @@ function PlatformSettingsContent() {
                     <Label>Social Betting</Label>
                     <p className="text-sm text-muted-foreground">Enable social betting features</p>
                   </div>
-                  <Switch checked={socialBetting} readOnly />
+                  <Switch checked={socialBetting} disabled />
                 </div>
               </div>
             </CardContent>
