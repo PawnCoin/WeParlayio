@@ -47,6 +47,9 @@ const Home: React.FC = () => {
         const response = await fetch('/api/unified-sports/upcoming-events');
         if (response.ok) {
           const data = await response.json();
+          console.log('Upcoming events API response:', data);
+          console.log('Events array:', data.events);
+          console.log('Events array length:', data.events?.length);
           return data.events || [];
         }
         return [];
