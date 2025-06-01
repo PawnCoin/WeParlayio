@@ -26,7 +26,7 @@ const QuickNavButton: React.FC = () => {
   ];
 
   return (
-    
+
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
           <Button 
@@ -78,7 +78,7 @@ const QuickNavButton: React.FC = () => {
           </div>
         </SheetContent>
       </Sheet>
-    
+
   );
 };
 

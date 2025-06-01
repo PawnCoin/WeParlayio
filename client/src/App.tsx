@@ -150,6 +150,7 @@ function Router() {
       <Route path="/wallet-test" component={WalletTest} />
       <Route path="/user-profile-banking" component={UserProfileBanking} />
       <Route path="/user-profile" component={UserProfilePage} />
+      <Route path="/user-profile-page" component={UserProfilePage} />
       <Route path="/profile" component={UserProfilePage} />
 
       {/* Payment & Demo */}

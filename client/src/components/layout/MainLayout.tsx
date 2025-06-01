@@ -360,10 +360,17 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       {/* Footer */}
       <Footer />
       
-      {/* Bottom Right Corner - Organized Stack */}
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-3 items-end">
-        <SystemStatusIndicator />
-        <QuickNavButton />
+      {/* Bottom Right Corner - Professionally Organized */}
+      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 items-end">
+        {/* System Status - Top */}
+        <div className="bg-black/10 backdrop-blur-sm rounded-lg p-2 shadow-lg">
+          <SystemStatusIndicator />
+        </div>
+        
+        {/* Quick Navigation - Bottom */}
+        <div className="bg-black/10 backdrop-blur-sm rounded-lg p-2 shadow-lg">
+          <QuickNavButton />
+        </div>
       </div>
     </div>
   );
