@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
@@ -137,7 +136,7 @@ export default function ComprehensiveBetting() {
       description: `Loading ${event.title || event.name}...`,
       duration: 2000,
     });
-    
+
     // Navigate to live betting page for this event
     window.location.href = `/live-betting?event=${event.id}`;
   };
@@ -165,7 +164,7 @@ export default function ComprehensiveBetting() {
     };
 
     addToBetSlip(betData);
-    
+
     toast({
       title: "Added to Bet Slip",
       description: `${event.title || event.name} (${betType}) added to your bet slip`,
@@ -192,7 +191,7 @@ export default function ComprehensiveBetting() {
       });
       return;
     }
-    
+
     toast({
       title: "Loading Analytics",
       description: "Opening advanced betting analytics...",
@@ -210,6 +209,47 @@ export default function ComprehensiveBetting() {
     window.location.href = `/events/${event.id}`;
   };
 
+  const { addBet } = useBetting();
+  const { toast } = useToast();
+  const [selectedSport, setSelectedSport] = useState('basketball_nba');
+  const [selectedMarket, setSelectedMarket] = useState('moneyline');
+  const [timeFilter, setTimeFilter] = useState('today');
+
+  // Fetch live odds data
+  const { data: liveOdds, isLoading: liveOddsLoading, error: liveOddsError } = useQuery({
+    queryKey: ['/api/unified-sports/odds', selectedSport],
+    refetchInterval: 30000,
+    retry: 3,
+  });
+
+  // Fetch detailed odds with all markets
+  const { data: detailedOdds, isLoading: detailedLoading } = useQuery({
+    queryKey: ['/api/odds/detailed', selectedSport],
+    refetchInterval: 45000,
+    retry: 2,
+  });
+
+  // Fetch player props
+  const { data: playerProps, isLoading: playerPropsLoading } = useQuery({
+    queryKey: ['/api/odds/player-props', selectedSport],
+    refetchInterval: 60000,
+    retry: 2,
+  });
+
+  // Fetch team props
+  const { data: teamProps, isLoading: teamPropsLoading } = useQuery({
+    queryKey: ['/api/odds/team-props', selectedSport],
+    refetchInterval: 60000,
+    retry: 2,
+  });
+
+  // Fetch popular parlays
+  const { data: popularParlays, isLoading: parlaysLoading } = useQuery({
+    queryKey: ['/api/odds/parlays', selectedSport],
+    refetchInterval: 120000,
+    retry: 1,
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -225,7 +265,7 @@ export default function ComprehensiveBetting() {
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Your comprehensive sports betting command center with real-time data from top global sources
           </p>
-          
+
           {/* Search Bar */}
           <div className="max-w-md mx-auto relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -370,7 +410,7 @@ export default function ComprehensiveBetting() {
                 <Play className="h-5 w-5 mr-2" />
                 Start Live Betting
               </Button>
-              
+
               <Button
                 onClick={() => window.location.href = '/tournaments'}
                 variant="outline"
@@ -379,7 +419,7 @@ export default function ComprehensiveBetting() {
                 <Crown className="h-5 w-5 mr-2" />
                 Join Tournaments
               </Button>
-              
+
               <Button
                 onClick={handleNavigateToGaming}
                 variant="outline"

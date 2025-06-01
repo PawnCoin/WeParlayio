@@ -16,6 +16,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Filter, BarChart2, Handshake, Users, Crown, Sparkles } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import { useBetting } from "@/lib/betting";
+import { useToast } from "@/components/ui/use-toast";
+import { Clock, Trophy, TrendingUp } from "lucide-react";
 
 const featuredGame = {
   id: 1,
@@ -71,69 +75,72 @@ const featuredGame = {
 
 
 const Home: React.FC = () => {
+  const { user, isAuthenticated } = useAuth();
+  const { addBet } = useBetting();
+  const { toast } = useToast();
   const [sportFilter, setSportFilter] = useState("All Sports");
   const [selectedTab, setSelectedTab] = useState("game-lines");
   const [showPartnersModal, setShowPartnersModal] = useState(false);
+  const [selectedSport, setSelectedSport] = useState<string>("all");
+  const [selectedTimeFrame, setSelectedTimeFrame] = useState<string>("today");
+  const [showBusinessProposal, setShowBusinessProposal] = useState(false);
 
-  // Get all available sports
-  const { data: sports, isLoading: isLoadingSports } = useQuery({
-    queryKey: ["/api/sports"],
-    queryFn: () => sportsBetAPI.getSports(),
-  });
-
-  // Get live events from all sports
-  const { data: liveEvents, isLoading: isLoadingLiveEvents } = useQuery({
-    queryKey: ["/api/events/live"],
-    queryFn: () => sportsBetAPI.getLiveEvents(),
-    refetchInterval: 30000, // Refresh every 30 seconds
-  });
-
-  // Get upcoming events from all sports
-  const { data: upcomingEvents, isLoading: isLoadingUpcomingEvents } = useQuery({
-    queryKey: ["/api/events/upcoming"],
-    queryFn: async () => {
-      try {
-        // Try unified sports API first
-        const response = await fetch('/api/unified-sports/upcoming-events?limit=10');
-        if (response.ok) {
-          const data = await response.json();
-          return data.events || data || [];
-        }
-        
-        // Fallback to individual sport endpoints
-        const sports = ['basketball_nba', 'basketball_wnba', 'baseball_mlb', 'americanfootball_nfl'];
-        const allEvents = [];
-        
-        for (const sport of sports) {
-          try {
-            const sportResponse = await fetch(`/api/sports/${sport}/upcoming?limit=3`);
-            if (sportResponse.ok) {
-              const sportData = await sportResponse.json();
-              allEvents.push(...(Array.isArray(sportData) ? sportData : []));
-            }
-          } catch (error) {
-            console.log(`Failed to fetch ${sport} upcoming events`);
-          }
-        }
-        
-        return allEvents.slice(0, 10);
-      } catch (error) {
-        console.error('Failed to fetch upcoming events:', error);
-        return [];
-      }
-    },
-    refetchInterval: 60000, // Refresh every minute
-  });
-
-  // Get active tournament
-  const { data: activeTournament, isLoading: isLoadingTournament } = useQuery({
-    queryKey: ["/api/tournaments/1"],
-    queryFn: () => sportsBetAPI.getTournament(1),
-    retry: false,
-    // Silently handle tournament not found error
-    onError: (error) => {
-      console.log("Active tournament not found", error);
+  // Check URL parameters for business proposal
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('partners') === 'true') {
+      setShowBusinessProposal(true);
     }
+  }, []);
+
+  // Fetch live events from unified sports API
+  const { data: liveEvents, isLoading: liveLoading, error: liveError } = useQuery({
+    queryKey: ['/api/unified-sports/live'],
+    refetchInterval: 30000,
+    retry: 3,
+    staleTime: 15000,
+  });
+
+  // Fetch upcoming events
+  const { data: upcomingEvents, isLoading: upcomingLoading, error: upcomingError } = useQuery({
+    queryKey: ['/api/unified-sports/upcoming/24'],
+    refetchInterval: 60000,
+    retry: 2,
+    staleTime: 30000,
+  });
+
+  // Fetch popular markets
+  const { data: popularMarkets, isLoading: marketsLoading } = useQuery({
+    queryKey: ['/api/unified-sports/markets/popular'],
+    refetchInterval: 120000,
+    retry: 2,
+  });
+
+  // Fetch all sports odds
+  const { data: allOdds, isLoading: oddsLoading } = useQuery({
+    queryKey: ['/api/unified-sports/odds/all'],
+    refetchInterval: 45000,
+    retry: 2,
+  });
+
+  // Fetch tournaments
+  const { data: tournaments, isLoading: tournamentsLoading } = useQuery({
+    queryKey: ['/api/tournaments'],
+    refetchInterval: 300000,
+    retry: 1,
+  });
+
+  // Fetch user's recent bets if authenticated
+  const { data: userBets, isLoading: betsLoading } = useQuery({
+    queryKey: ['/api/users', user?.id, 'bets'],
+    enabled: isAuthenticated && !!user?.id,
+    refetchInterval: 60000,
+  });
+
+  // Fetch sports data
+  const { data: sportsData, isLoading: sportsLoading } = useQuery({
+    queryKey: ['/api/sports'],
+    staleTime: 300000,
   });
 
   return (
@@ -402,7 +409,7 @@ const Home: React.FC = () => {
       {/* User Success Stories & Testimonials */}
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-6 text-center">What Our Users Are Saying</h2>
-        
+
         {/* Success Stats Banner */}
         <div className="mb-6">
           <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
@@ -553,6 +560,328 @@ const Home: React.FC = () => {
       <BusinessProposalModal 
         isOpen={showPartnersModal}
         onClose={() => setShowPartnersModal(false)}
+      />
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Content Area */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Live Events Section */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                  <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                  Live Events
+                </h2>
+                <Button variant="outline" size="sm">
+                  View All Live ({liveEvents?.length || 0})
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {liveLoading ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <Card key={i} className="bg-gradient-to-r from-red-50 to-orange-50 border-red-200">
+                      <CardContent className="p-4">
+                        <Skeleton className="h-20 w-full" />
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : liveError ? (
+                  <div className="col-span-2 text-center py-8">
+                    <p className="text-gray-500">Unable to load live events. Please try again.</p>
+                  </div>
+                ) : liveEvents?.length > 0 ? (
+                  liveEvents.slice(0, 6).map((event: any, i: number) => (
+                    <Card key={i} className="bg-gradient-to-r from-red-50 to-orange-50 border-red-200 hover:shadow-lg transition-shadow">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-medium text-red-600 bg-red-100 px-2 py-1 rounded-full flex items-center gap-1">
+                            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                            LIVE
+                          </span>
+                          <span className="text-sm text-gray-500">{event.sport || 'Sports'}</span>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span className="font-medium">{event.teams?.[0] || 'Team A'}</span>
+                            <span className="font-bold text-lg">{Math.floor(Math.random() * 50) + 70}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="font-medium">{event.teams?.[1] || 'Team B'}</span>
+                            <span className="font-bold text-lg">{Math.floor(Math.random() * 50) + 70}</span>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 mt-3">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="flex-1 hover:bg-green-50"
+                            onClick={() => {
+                              addBet({
+                                id: `live-${i}-1`,
+                                eventId: event.id || `live-${i}`,
+                                type: 'spread',
+                                selection: event.teams?.[0] || 'Team A',
+                                odds: 110,
+                                stake: 0
+                              });
+                              toast({ title: "Bet added to slip!" });
+                            }}
+                          >
+                            {event.teams?.[0]?.slice(0, 8)} +3.5
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="flex-1 hover:bg-green-50"
+                            onClick={() => {
+                              addBet({
+                                id: `live-${i}-2`,
+                                eventId: event.id || `live-${i}`,
+                                type: 'spread',
+                                selection: event.teams?.[1] || 'Team B',
+                                odds: -110,
+                                stake: 0
+                              });
+                              toast({ title: "Bet added to slip!" });
+                            }}
+                          >
+                            {event.teams?.[1]?.slice(0, 8)} -3.5
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="col-span-2 text-center py-8">
+                    <Clock className="mx-auto h-12 w-12 text-gray-400 mb-3" />
+                    <p className="text-gray-500">No live events right now</p>
+                    <p className="text-sm text-gray-400">Check back during game times</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Upcoming Games Section */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                  <Clock className="h-6 w-6" />
+                  Upcoming Games
+                </h2>
+                <Select value={selectedTimeFrame} onValueChange={setSelectedTimeFrame}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="today">Today</SelectItem>
+                    <SelectItem value="tomorrow">Tomorrow</SelectItem>
+                    <SelectItem value="week">This Week</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4">
+                {upcomingLoading ? (
+                  Array.from({ length: 3 }).map((_, i) => (
+                    <Card key={i}>
+                      <CardContent className="p-4">
+                        <Skeleton className="h-16 w-full" />
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : upcomingError ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">Unable to load upcoming games</p>
+                  </div>
+                ) : upcomingEvents?.length > 0 ? (
+                  upcomingEvents.slice(0, 8).map((event: any, i: number) => (
+                    <Card key={i} className="hover:shadow-md transition-shadow">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3">
+                              <div className="text-sm text-gray-500">
+                                {new Date(event.startTime).toLocaleDateString()} • {new Date(event.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                                {event.sport || 'Sports'}
+                              </span>
+                            </div>
+                            <div className="mt-2">
+                              <div className="font-semibold">{event.teams?.[0] || 'Team A'} vs {event.teams?.[1] || 'Team B'}</div>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => {
+                                addBet({
+                                  id: `upcoming-${i}-1`,
+                                  eventId: event.id || `upcoming-${i}`,
+                                  type: 'moneyline',
+                                  selection: event.teams?.[0] || ''Team A',
+                                  odds: event.odds?.[0]?.moneyline?.[0] || 150,
+                                  stake: 0
+                                });
+                                toast({ title: "Bet added to slip!" });
+                              }}
+                            >
+                              {event.odds?.[0]?.moneyline?.[0] ? `+${event.odds[0].moneyline[0]}` : '+150'}
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => {
+                                addBet({
+                                  id: `upcoming-${i}-2`,
+                                  eventId: event.id || `upcoming-${i}`,
+                                  type: 'moneyline',
+                                  selection: event.teams?.[1] || 'Team B',
+                                  odds: event.odds?.[0]?.moneyline?.[1] || -170,
+                                  stake: 0
+                                });
+                                toast({ title: "Bet added to slip!" });
+                              }}
+                            >
+                              {event.odds?.[0]?.moneyline?.[1] ? `${event.odds[0].moneyline[1]}` : '-170'}
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <Trophy className="mx-auto h-12 w-12 text-gray-400 mb-3" />
+                    <p className="text-gray-500">No upcoming games found</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Popular Markets Section */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                  <TrendingUp className="h-6 w-6" />
+                  Popular Markets
+                </h2>
+                <Button variant="outline" size="sm">
+                  View All Markets
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {marketsLoading ? (
+                  Array.from({ length: 6 }).map((_, i) => (
+                    <Card key={i}>
+                      <CardContent className="p-4">
+                        <Skeleton className="h-12 w-full" />
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : popularMarkets?.length > 0 ? (
+                  popularMarkets.slice(0, 9).map((market: any, i: number) => (
+                    <Card key={i} className="hover:shadow-md transition-shadow cursor-pointer">
+                      <CardContent className="p-4">
+                        <div className="text-sm font-medium mb-2">{market.event || `Game ${i + 1}`}</div>
+                        <div className="text-xs text-gray-500 mb-3">{market.sport || 'Sports'}</div>
+                        <Button 
+                          size="sm" 
+                          className="w-full"
+                          onClick={() => {
+                            addBet({
+                              id: `popular-${i}`,
+                              eventId: market.id || `popular-${i}`,
+                              type: 'popular',
+                              selection: market.selection || 'Popular Pick',
+                              odds: market.odds || 120,
+                              stake: 0
+                            });
+                            toast({ title: "Popular bet added to slip!" });
+                          }}
+                        >
+                          {market.selection || 'Popular Pick'} ({market.odds ? `+${market.odds}` : '+120'})
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="col-span-3 text-center py-8">
+                    <p className="text-gray-500">Loading popular markets...</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+           {/* Sidebar Content Area */}
+           <div className="lg:col-span-1 space-y-6">
+              {/* Quick Filters */}
+              <Card>
+                <CardContent className="space-y-4">
+                  <h2 className="text-lg font-semibold">Quick Filters</h2>
+                  <div className="space-y-2">
+                    <Button variant="outline" className="w-full justify-start">
+                      <Filter className="mr-2 h-4 w-4" />
+                      Live Now
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start">
+                      <Clock className="mr-2 h-4 w-4" />
+                      Starting Soon
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start">
+                      <Trophy className="mr-2 h-4 w-4" />
+                      Tournaments
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Odds Boosts */}
+              <Card>
+                <CardContent className="space-y-4">
+                  <h2 className="text-lg font-semibold">Odds Boosts</h2>
+                  <div className="space-y-2">
+                    {/* Boosted Game 1 */}
+                    <div className="border rounded-md p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium">Team A vs Team B</span>
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">+150</span>
+                      </div>
+                      <p className="text-sm text-gray-500">Point Spread - Team A</p>
+                      <Button size="sm" className="w-full mt-2">Bet Now</Button>
+                    </div>
+
+                    {/* Boosted Game 2 */}
+                    <div className="border rounded-md p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium">Team C vs Team D</span>
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">+200</span>
+                      </div>
+                      <p className="text-sm text-gray-500">Moneyline - Team C</p>
+                      <Button size="sm" className="w-full mt-2">Bet Now</Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Live Chat */}
+              <Card>
+                <CardContent className="space-y-4">
+                  <h2 className="text-lg font-semibold">Live Chat</h2>
+                  <p className="text-sm text-gray-500">Join the conversation and chat with other bettors.</p>
+                  <Button variant="outline" className="w-full">Join Chat</Button>
+                </CardContent>
+              </Card>
+            </div>
+        </div>
+
+      {/* Partnership Modal */}
+      <BusinessProposalModal
+        isOpen={showBusinessProposal}
+        onClose={() => setShowBusinessProposal(false)}
       />
     </div>
   );

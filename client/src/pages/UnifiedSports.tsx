@@ -42,21 +42,48 @@ export default function UnifiedSports() {
   });
 
   // Fetch American sports
-  const { data: americanSports } = useQuery({
+  const { data: americanSports, isLoading: americanLoading, error: americanError } = useQuery({
     queryKey: ['/api/unified-sports/sports/american'],
-    refetchInterval: 300000 // 5 minutes
+    refetchInterval: 300000, // 5 minutes
+    retry: 3,
+    staleTime: 240000,
   });
 
   // Fetch international sports
-  const { data: internationalSports } = useQuery({
+  const { data: internationalSports, isLoading: internationalLoading, error: internationalError } = useQuery({
     queryKey: ['/api/unified-sports/sports/international'],
-    refetchInterval: 300000
+    refetchInterval: 300000,
+    retry: 3,
+    staleTime: 240000,
   });
 
   // Fetch combat sports
-  const { data: combatSports } = useQuery({
+  const { data: combatSports, isLoading: combatLoading, error: combatError } = useQuery({
     queryKey: ['/api/unified-sports/sports/combat'],
-    refetchInterval: 300000
+    refetchInterval: 300000,
+    retry: 3,
+    staleTime: 240000,
+  });
+
+  // Fetch API status
+  const { data: apiStatus, isLoading: statusLoading } = useQuery({
+    queryKey: ['/api/unified-sports/status'],
+    refetchInterval: 60000,
+    retry: 2,
+  });
+
+  // Fetch live games across all sports
+  const { data: allLiveGames, isLoading: liveGamesLoading } = useQuery({
+    queryKey: ['/api/unified-sports/live'],
+    refetchInterval: 15000,
+    retry: 3,
+  });
+
+  // Fetch upcoming games
+  const { data: allUpcomingGames, isLoading: upcomingGamesLoading } = useQuery({
+    queryKey: ['/api/unified-sports/upcoming/48'],
+    refetchInterval: 120000,
+    retry: 2,
   });
 
   const getSportIcon = (sport: string) => {
