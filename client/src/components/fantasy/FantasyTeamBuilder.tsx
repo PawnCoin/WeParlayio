@@ -18,6 +18,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Search, UserPlus, Trash2, BarChart2, Share2, Download, Upload, RefreshCcw, AlertTriangle, Award, TrendingUp, CheckCircle2, Users, Lock, Info } from "lucide-react";
+import { ESPNAssetService } from "@/lib/espnAssetService";
 
 // Define a player type that matches the needs of the component
 interface FantasyPlayer {
@@ -606,13 +607,17 @@ const FantasyTeamBuilder: React.FC<FantasyTeamBuilderProps> = ({
                       <div className="col-span-1 font-medium">{player.position}</div>
                       <div className="col-span-4 flex items-center">
                         <Avatar className="w-6 h-6 rounded-full mr-2">
-                          {player.photo ? (
-                            <AvatarImage src={player.photo} alt={player.name} />
-                          ) : (
-                            <AvatarFallback className="bg-primary/10 text-primary">
-                              {player.name.charAt(0)}
-                            </AvatarFallback>
-                          )}
+                          <AvatarImage 
+                            src={ESPNAssetService.getPlayerImage(player.name, 'nba')} 
+                            alt={player.name}
+                            onError={(e) => {
+                              // Fallback to ESPN generic player image if specific player not found
+                              e.currentTarget.src = 'https://a.espncdn.com/combiner/i?img=/i/headshots/nophoto.png&w=350&h=254';
+                            }}
+                          />
+                          <AvatarFallback className="bg-primary/10 text-primary">
+                            {player.name.charAt(0)}
+                          </AvatarFallback>
                         </Avatar>
                         <div>
                           <div className="font-medium">{player.name}</div>
@@ -766,13 +771,17 @@ const FantasyTeamBuilder: React.FC<FantasyTeamBuilderProps> = ({
                           <div className="col-span-1 font-medium">{player.position}</div>
                           <div className="col-span-4 flex items-center">
                             <Avatar className="w-6 h-6 rounded-full mr-2">
-                              {player.photo ? (
-                                <AvatarImage src={player.photo} alt={player.name} />
-                              ) : (
-                                <AvatarFallback className="bg-primary/10 text-primary">
-                                  {player.name.charAt(0)}
-                                </AvatarFallback>
-                              )}
+                              <AvatarImage 
+                                src={ESPNAssetService.getPlayerImage(player.name, 'nba')} 
+                                alt={player.name}
+                                onError={(e) => {
+                                  // Fallback to ESPN generic player image if specific player not found
+                                  e.currentTarget.src = 'https://a.espncdn.com/combiner/i?img=/i/headshots/nophoto.png&w=350&h=254';
+                                }}
+                              />
+                              <AvatarFallback className="bg-primary/10 text-primary">
+                                {player.name.charAt(0)}
+                              </AvatarFallback>
                             </Avatar>
                             <div>
                               <div>{player.name}</div>
