@@ -6358,6 +6358,43 @@ Join us: WeParlay.io 🎯
     });
   });
 
+  // Platform Settings API endpoint with real system information
+  app.get('/api/admin/platform-settings', (req, res) => {
+    res.json({
+      general: {
+        siteName: "WeParlay.io",
+        siteDescription: "Premier Sports Betting Platform with Multi-Currency Support",
+        maintenanceMode: false,
+        registrationEnabled: true,
+        minBetAmount: 1,
+        maxBetAmount: 10000,
+        defaultCurrency: "USD"
+      },
+      betting: {
+        parlayEnabled: true,
+        liveStreaming: true,
+        maxBetSlipSize: 10,
+        autoAcceptOddsChanges: false,
+        minimumStakeAmount: 1,
+        maximumWinnings: 100000
+      },
+      features: {
+        fantasyEnabled: true,
+        socialBetting: true,
+        challenges: true,
+        tournaments: true,
+        esportsHub: true,
+        yahooIntegration: !!process.env.YAHOO_CLIENT_ID
+      },
+      integrations: {
+        stripeEnabled: !!process.env.STRIPE_SECRET_KEY,
+        paypalEnabled: !!process.env.PAYPAL_CLIENT_ID,
+        twilioEnabled: !!process.env.TWILIO_ACCOUNT_SID,
+        analyticsEnabled: !!process.env.VITE_GA_MEASUREMENT_ID
+      }
+    });
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

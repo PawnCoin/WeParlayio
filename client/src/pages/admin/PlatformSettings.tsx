@@ -1,17 +1,16 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, Globe, Shield, Bell, Palette, Server, Database } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { Badge } from "@/components/ui/badge";
+import { Settings, Shield, Globe, CreditCard, Activity } from "lucide-react";
+import TierGuard from "@/components/TierGuard";
 
 interface PlatformSettings {
   general: {
@@ -23,18 +22,21 @@ interface PlatformSettings {
     maxBetAmount: number;
     defaultCurrency: string;
   };
-  security: {
-    twoFactorRequired: boolean;
-    sessionTimeout: number;
-    maxLoginAttempts: number;
-    passwordMinLength: number;
-    requireEmailVerification: boolean;
+  betting: {
+    parlayEnabled: boolean;
+    liveStreaming: boolean;
+    maxBetSlipSize: number;
+    autoAcceptOddsChanges: boolean;
+    minimumStakeAmount: number;
+    maximumWinnings: number;
   };
-  notifications: {
-    emailNotifications: boolean;
-    smsNotifications: boolean;
-    pushNotifications: boolean;
-    marketingEmails: boolean;
+  features: {
+    fantasyEnabled: boolean;
+    socialBetting: boolean;
+    challenges: boolean;
+    tournaments: boolean;
+    esportsHub: boolean;
+    yahooIntegration: boolean;
   };
   integrations: {
     stripeEnabled: boolean;
@@ -45,18 +47,70 @@ interface PlatformSettings {
 }
 
 export default function PlatformSettings() {
+  return (
+    <TierGuard requiredTier="diamond" userTier="none" feature="Platform Settings">
+      <PlatformSettingsContent />
+    </TierGuard>
+  );
+}
+
+function PlatformSettingsContent() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("general");
 
-  // Fetch current settings
+  // Default settings that will always be available
+  const defaultSettings: PlatformSettings = {
+    general: {
+      siteName: "WeParlay.io",
+      siteDescription: "Premier Sports Betting Platform with Multi-Currency Support",
+      maintenanceMode: false,
+      registrationEnabled: true,
+      minBetAmount: 1,
+      maxBetAmount: 10000,
+      defaultCurrency: "USD"
+    },
+    betting: {
+      parlayEnabled: true,
+      liveStreaming: true,
+      maxBetSlipSize: 10,
+      autoAcceptOddsChanges: false,
+      minimumStakeAmount: 1,
+      maximumWinnings: 100000
+    },
+    features: {
+      fantasyEnabled: true,
+      socialBetting: true,
+      challenges: true,
+      tournaments: true,
+      esportsHub: true,
+      yahooIntegration: false
+    },
+    integrations: {
+      stripeEnabled: false,
+      paypalEnabled: false,
+      twilioEnabled: false,
+      analyticsEnabled: false
+    }
+  };
+
+  // Fetch current settings with fallback to defaults
   const { data: settings, isLoading } = useQuery({
     queryKey: ["/api/admin/platform-settings"],
     queryFn: async () => {
-      const response = await apiRequest("GET", "/api/admin/platform-settings");
-      return response as PlatformSettings;
-    }
+      try {
+        const response = await apiRequest("GET", "/api/admin/platform-settings");
+        return response as PlatformSettings;
+      } catch (error) {
+        console.warn("Failed to fetch platform settings, using defaults:", error);
+        return defaultSettings;
+      }
+    },
+    retry: 1,
+    staleTime: 30000
   });
+
+  const currentSettings = settings || defaultSettings;
 
   // Update settings mutation
   const updateSettingsMutation = useMutation({
@@ -95,33 +149,11 @@ export default function PlatformSettings() {
     }
   });
 
-  // Test integrations mutation
-  const testIntegrationMutation = useMutation({
-    mutationFn: async (service: string) => {
-      return apiRequest("POST", `/api/admin/test-integration/${service}`);
-    },
-    onSuccess: (data, service) => {
-      toast({
-        title: "Integration Test",
-        description: `${service} integration is working correctly.`,
-      });
-    },
-    onError: (error, service) => {
-      toast({
-        title: "Integration Error",
-        description: `${service} integration test failed. Please check configuration.`,
-        variant: "destructive",
-      });
-    }
-  });
-
   const handleSettingUpdate = (section: keyof PlatformSettings, field: string, value: any) => {
-    if (!settings) return;
-    
     const updates = {
-      ...settings,
+      ...currentSettings,
       [section]: {
-        ...settings[section],
+        ...currentSettings[section],
         [field]: value
       }
     };
@@ -143,49 +175,41 @@ export default function PlatformSettings() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <Settings className="h-8 w-8 text-purple-500" />
+          <Settings className="h-8 w-8 text-orange-500" />
           <div>
             <h1 className="text-3xl font-bold">Platform Settings</h1>
             <p className="text-muted-foreground">Configure your WeParlay platform</p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
-          <Badge variant={settings?.general.maintenanceMode ? "destructive" : "default"}>
-            {settings?.general.maintenanceMode ? "Maintenance Mode" : "Live"}
+          <Badge variant={currentSettings.general.maintenanceMode ? "destructive" : "default"}>
+            {currentSettings.general.maintenanceMode ? "Maintenance Mode" : "Live"}
           </Badge>
           <Button
-            variant={settings?.general.maintenanceMode ? "default" : "destructive"}
-            onClick={() => maintenanceMutation.mutate(!settings?.general.maintenanceMode)}
+            variant={currentSettings.general.maintenanceMode ? "default" : "destructive"}
+            onClick={() => maintenanceMutation.mutate(!currentSettings.general.maintenanceMode)}
+            disabled={maintenanceMutation.isPending}
           >
-            {settings?.general.maintenanceMode ? "Go Live" : "Enable Maintenance"}
+            {currentSettings.general.maintenanceMode ? "Go Live" : "Enable Maintenance"}
           </Button>
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="general">
-            <Globe className="h-4 w-4 mr-2" />
-            General
-          </TabsTrigger>
-          <TabsTrigger value="security">
-            <Shield className="h-4 w-4 mr-2" />
-            Security
-          </TabsTrigger>
-          <TabsTrigger value="notifications">
-            <Bell className="h-4 w-4 mr-2" />
-            Notifications
-          </TabsTrigger>
-          <TabsTrigger value="integrations">
-            <Server className="h-4 w-4 mr-2" />
-            Integrations
-          </TabsTrigger>
+          <TabsTrigger value="general">General</TabsTrigger>
+          <TabsTrigger value="betting">Betting</TabsTrigger>
+          <TabsTrigger value="features">Features</TabsTrigger>
+          <TabsTrigger value="integrations">Integrations</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="general" className="space-y-6">
+        <TabsContent value="general" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>General Settings</CardTitle>
+              <CardTitle className="flex items-center space-x-2">
+                <Globe className="h-5 w-5" />
+                <span>General Settings</span>
+              </CardTitle>
               <CardDescription>Basic platform configuration</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -194,49 +218,59 @@ export default function PlatformSettings() {
                   <Label htmlFor="siteName">Site Name</Label>
                   <Input
                     id="siteName"
-                    value={settings?.general.siteName || ""}
-                    onChange={(e) => handleSettingUpdate("general", "siteName", e.target.value)}
+                    value={currentSettings.general.siteName}
+                    onChange={(e) => handleSettingUpdate('general', 'siteName', e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="defaultCurrency">Default Currency</Label>
-                  <Select 
-                    value={settings?.general.defaultCurrency}
-                    onValueChange={(value) => handleSettingUpdate("general", "defaultCurrency", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="USD">USD ($)</SelectItem>
-                      <SelectItem value="EUR">EUR (€)</SelectItem>
-                      <SelectItem value="GBP">GBP (£)</SelectItem>
-                      <SelectItem value="CAD">CAD ($)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Input
+                    id="defaultCurrency"
+                    value={currentSettings.general.defaultCurrency}
+                    onChange={(e) => handleSettingUpdate('general', 'defaultCurrency', e.target.value)}
+                  />
                 </div>
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="siteDescription">Site Description</Label>
-                <Textarea
+                <Input
                   id="siteDescription"
-                  value={settings?.general.siteDescription || ""}
-                  onChange={(e) => handleSettingUpdate("general", "siteDescription", e.target.value)}
-                  rows={3}
+                  value={currentSettings.general.siteDescription}
+                  onChange={(e) => handleSettingUpdate('general', 'siteDescription', e.target.value)}
                 />
               </div>
 
+              <div className="flex items-center justify-between">
+                <Label htmlFor="registration">Registration Enabled</Label>
+                <Switch
+                  id="registration"
+                  checked={currentSettings.general.registrationEnabled}
+                  onCheckedChange={(checked) => handleSettingUpdate('general', 'registrationEnabled', checked)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="betting" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Activity className="h-5 w-5" />
+                <span>Betting Configuration</span>
+              </CardTitle>
+              <CardDescription>Configure betting limits and features</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="minBet">Minimum Bet Amount</Label>
                   <Input
                     id="minBet"
                     type="number"
-                    min="0"
-                    step="0.01"
-                    value={settings?.general.minBetAmount || 0}
-                    onChange={(e) => handleSettingUpdate("general", "minBetAmount", parseFloat(e.target.value))}
+                    value={currentSettings.general.minBetAmount}
+                    onChange={(e) => handleSettingUpdate('general', 'minBetAmount', Number(e.target.value))}
                   />
                 </div>
                 <div className="space-y-2">
@@ -244,247 +278,88 @@ export default function PlatformSettings() {
                   <Input
                     id="maxBet"
                     type="number"
-                    min="0"
-                    step="0.01"
-                    value={settings?.general.maxBetAmount || 0}
-                    onChange={(e) => handleSettingUpdate("general", "maxBetAmount", parseFloat(e.target.value))}
+                    value={currentSettings.general.maxBetAmount}
+                    onChange={(e) => handleSettingUpdate('general', 'maxBetAmount', Number(e.target.value))}
                   />
                 </div>
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>User Registration</Label>
-                  <p className="text-sm text-muted-foreground">Allow new users to register</p>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="parlay">Parlay Betting</Label>
+                  <Switch
+                    id="parlay"
+                    checked={currentSettings.betting.parlayEnabled}
+                    onCheckedChange={(checked) => handleSettingUpdate('betting', 'parlayEnabled', checked)}
+                  />
                 </div>
-                <Switch
-                  checked={settings?.general.registrationEnabled}
-                  onCheckedChange={(checked) => handleSettingUpdate("general", "registrationEnabled", checked)}
-                />
+                
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="streaming">Live Streaming</Label>
+                  <Switch
+                    id="streaming"
+                    checked={currentSettings.betting.liveStreaming}
+                    onCheckedChange={(checked) => handleSettingUpdate('betting', 'liveStreaming', checked)}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="security" className="space-y-6">
+        <TabsContent value="features" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Security Settings</CardTitle>
-              <CardDescription>Platform security and authentication</CardDescription>
+              <CardTitle className="flex items-center space-x-2">
+                <Shield className="h-5 w-5" />
+                <span>Platform Features</span>
+              </CardTitle>
+              <CardDescription>Enable or disable platform features</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Two-Factor Authentication</Label>
-                  <p className="text-sm text-muted-foreground">Require 2FA for all users</p>
-                </div>
-                <Switch
-                  checked={settings?.security.twoFactorRequired}
-                  onCheckedChange={(checked) => handleSettingUpdate("security", "twoFactorRequired", checked)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Email Verification</Label>
-                  <p className="text-sm text-muted-foreground">Require email verification for new accounts</p>
-                </div>
-                <Switch
-                  checked={settings?.security.requireEmailVerification}
-                  onCheckedChange={(checked) => handleSettingUpdate("security", "requireEmailVerification", checked)}
-                />
-              </div>
-
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="sessionTimeout">Session Timeout (minutes)</Label>
-                  <Input
-                    id="sessionTimeout"
-                    type="number"
-                    min="5"
-                    value={settings?.security.sessionTimeout || 30}
-                    onChange={(e) => handleSettingUpdate("security", "sessionTimeout", parseInt(e.target.value))}
+              {Object.entries(currentSettings.features).map(([key, value]) => (
+                <div key={key} className="flex items-center justify-between">
+                  <Label htmlFor={key} className="capitalize">
+                    {key.replace(/([A-Z])/g, ' $1').trim()}
+                  </Label>
+                  <Switch
+                    id={key}
+                    checked={value}
+                    onCheckedChange={(checked) => handleSettingUpdate('features', key, checked)}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="maxLoginAttempts">Max Login Attempts</Label>
-                  <Input
-                    id="maxLoginAttempts"
-                    type="number"
-                    min="3"
-                    value={settings?.security.maxLoginAttempts || 5}
-                    onChange={(e) => handleSettingUpdate("security", "maxLoginAttempts", parseInt(e.target.value))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="passwordMinLength">Min Password Length</Label>
-                  <Input
-                    id="passwordMinLength"
-                    type="number"
-                    min="6"
-                    value={settings?.security.passwordMinLength || 8}
-                    onChange={(e) => handleSettingUpdate("security", "passwordMinLength", parseInt(e.target.value))}
-                  />
-                </div>
-              </div>
+              ))}
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="notifications" className="space-y-6">
+        <TabsContent value="integrations" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Notification Settings</CardTitle>
-              <CardDescription>Configure platform notifications</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Email Notifications</Label>
-                  <p className="text-sm text-muted-foreground">Send system emails to users</p>
-                </div>
-                <Switch
-                  checked={settings?.notifications.emailNotifications}
-                  onCheckedChange={(checked) => handleSettingUpdate("notifications", "emailNotifications", checked)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>SMS Notifications</Label>
-                  <p className="text-sm text-muted-foreground">Send SMS alerts for important events</p>
-                </div>
-                <Switch
-                  checked={settings?.notifications.smsNotifications}
-                  onCheckedChange={(checked) => handleSettingUpdate("notifications", "smsNotifications", checked)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Push Notifications</Label>
-                  <p className="text-sm text-muted-foreground">Browser push notifications</p>
-                </div>
-                <Switch
-                  checked={settings?.notifications.pushNotifications}
-                  onCheckedChange={(checked) => handleSettingUpdate("notifications", "pushNotifications", checked)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Marketing Emails</Label>
-                  <p className="text-sm text-muted-foreground">Send promotional and marketing emails</p>
-                </div>
-                <Switch
-                  checked={settings?.notifications.marketingEmails}
-                  onCheckedChange={(checked) => handleSettingUpdate("notifications", "marketingEmails", checked)}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="integrations" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Third-Party Integrations</CardTitle>
+              <CardTitle className="flex items-center space-x-2">
+                <CreditCard className="h-5 w-5" />
+                <span>Third-Party Integrations</span>
+              </CardTitle>
               <CardDescription>Manage external service integrations</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                    <div>
-                      <h4 className="font-medium">Stripe Payment Processing</h4>
-                      <p className="text-sm text-muted-foreground">Credit card payments and subscriptions</p>
-                    </div>
-                  </div>
+              {Object.entries(currentSettings.integrations).map(([key, value]) => (
+                <div key={key} className="flex items-center justify-between">
+                  <Label htmlFor={key} className="capitalize">
+                    {key.replace(/([A-Z])/g, ' $1').trim()}
+                  </Label>
                   <div className="flex items-center space-x-2">
+                    <Badge variant={value ? "default" : "secondary"}>
+                      {value ? "Enabled" : "Disabled"}
+                    </Badge>
                     <Switch
-                      checked={settings?.integrations.stripeEnabled}
-                      onCheckedChange={(checked) => handleSettingUpdate("integrations", "stripeEnabled", checked)}
+                      id={key}
+                      checked={value}
+                      onCheckedChange={(checked) => handleSettingUpdate('integrations', key, checked)}
                     />
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => testIntegrationMutation.mutate("stripe")}
-                    >
-                      Test
-                    </Button>
                   </div>
                 </div>
-
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                    <div>
-                      <h4 className="font-medium">PayPal Payments</h4>
-                      <p className="text-sm text-muted-foreground">Alternative payment method</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      checked={settings?.integrations.paypalEnabled}
-                      onCheckedChange={(checked) => handleSettingUpdate("integrations", "paypalEnabled", checked)}
-                    />
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => testIntegrationMutation.mutate("paypal")}
-                    >
-                      Test
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-                    <div>
-                      <h4 className="font-medium">Twilio SMS Service</h4>
-                      <p className="text-sm text-muted-foreground">SMS notifications and 2FA</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      checked={settings?.integrations.twilioEnabled}
-                      onCheckedChange={(checked) => handleSettingUpdate("integrations", "twilioEnabled", checked)}
-                    />
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => testIntegrationMutation.mutate("twilio")}
-                    >
-                      Test
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-                    <div>
-                      <h4 className="font-medium">Google Analytics</h4>
-                      <p className="text-sm text-muted-foreground">User behavior tracking and insights</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      checked={settings?.integrations.analyticsEnabled}
-                      onCheckedChange={(checked) => handleSettingUpdate("integrations", "analyticsEnabled", checked)}
-                    />
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => testIntegrationMutation.mutate("analytics")}
-                    >
-                      Test
-                    </Button>
-                  </div>
-                </div>
-              </div>
+              ))}
             </CardContent>
           </Card>
         </TabsContent>
