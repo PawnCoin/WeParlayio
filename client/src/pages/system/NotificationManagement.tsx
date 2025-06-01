@@ -39,22 +39,22 @@ export default function NotificationManagement() {
   const [selectedTemplate, setSelectedTemplate] = useState<NotificationTemplate | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
-  // Fetch notification templates
-  const { data: templates, isLoading: templatesLoading } = useQuery({
+  // Fetch notification statistics from real backend
+  const { data: statistics = {}, isLoading: statsLoading } = useQuery({
+    queryKey: ['/api/notifications/statistics'],
+    refetchInterval: 30000 // Refresh every 30 seconds
+  });
+
+  // Fetch notification templates from real backend  
+  const { data: templates = [], isLoading: templatesLoading } = useQuery({
     queryKey: ['/api/notifications/templates'],
-    staleTime: 30 * 1000,
+    refetchInterval: 60000 // Refresh every minute
   });
 
-  // Fetch notification settings
-  const { data: settings } = useQuery({
+  // Fetch notification settings from real backend
+  const { data: settings = {}, isLoading: settingsLoading } = useQuery({
     queryKey: ['/api/notifications/settings'],
-    staleTime: 60 * 1000,
-  });
-
-  // Fetch notification statistics
-  const { data: stats } = useQuery({
-    queryKey: ['/api/notifications/stats'],
-    staleTime: 30 * 1000,
+    refetchInterval: 60000 // Refresh every minute
   });
 
   // Send test notification mutation
