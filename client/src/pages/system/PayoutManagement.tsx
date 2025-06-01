@@ -36,13 +36,13 @@ export default function PayoutManagement() {
 
   // Fetch payouts
   const { data: payouts, isLoading } = useQuery({
-    queryKey: ['/api/payouts'],
+    queryKey: ['/api/payouts/list'],
     staleTime: 30 * 1000,
   });
 
   // Fetch payout statistics
   const { data: stats } = useQuery({
-    queryKey: ['/api/payouts/stats'],
+    queryKey: ['/api/payouts/statistics'],
     staleTime: 60 * 1000,
   });
 
@@ -52,7 +52,8 @@ export default function PayoutManagement() {
       return apiRequest('POST', `/api/payouts/${id}/${action}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/payouts'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/payouts/list'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/payouts/statistics'] });
       toast({
         title: 'Payout Updated',
         description: 'Payout has been processed successfully',
@@ -73,7 +74,8 @@ export default function PayoutManagement() {
       return apiRequest('POST', '/api/payouts/bulk-process', { action, payoutIds });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/payouts'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/payouts/list'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/payouts/statistics'] });
       toast({
         title: 'Bulk Operation Complete',
         description: 'Selected payouts have been processed',
