@@ -6,10 +6,10 @@ import "./index.css";
 // Handle unhandled promise rejections with better error recovery
 window.addEventListener('unhandledrejection', (event) => {
   const reason = event.reason;
-  
+
   // Always prevent crashes - log but don't crash the app
   event.preventDefault();
-  
+
   // Check if it's a safe-to-ignore error
   const isSafeError = reason && (
     typeof reason === 'string' && (
@@ -39,7 +39,7 @@ window.addEventListener('unhandledrejection', (event) => {
 
   // Log actual application errors but don't crash
   console.warn('⚠️ Application error caught and handled:', reason);
-  
+
   // Auto-recovery attempt
   setTimeout(() => {
     console.log('🔄 Attempting auto-recovery...');
@@ -56,6 +56,11 @@ initWordPressSync();
 
 // Theme initialization
 console.log('🎨 WeParlay theme system initialized');
+
+import UserDirectory from './pages/UserDirectory';
+import UserProfileBanking from './pages/UserProfileBanking';
+import UserProfilePage from './pages/UserProfilePage';
+import WalletTest from './pages/WalletTest';
 
 createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>
