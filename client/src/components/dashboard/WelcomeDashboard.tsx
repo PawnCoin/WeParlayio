@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,8 +27,13 @@ const WelcomeDashboard: React.FC = () => {
   const [timeOfDay, setTimeOfDay] = useState<string>('');
   const [showWelcome, setShowWelcome] = useState(true);
   const [recommendations, setRecommendations] = useState<RecommendationProps[]>([]);
-  const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(true);
+
+  // Fetch real upcoming events from unified sports endpoint
+  const { data: upcomingEventsData, isLoading: isLoadingUpcomingEvents } = useQuery({
+    queryKey: ['/api/unified-sports/upcoming-events'],
+    refetchInterval: 30000 // Refresh every 30 seconds
+  });
   
   // Get time of day for personalized greeting
   useEffect(() => {
@@ -39,7 +45,6 @@ const WelcomeDashboard: React.FC = () => {
     // Load personalized recommendations (simulate API call)
     setTimeout(() => {
       setRecommendations(generateRecommendations());
-      setUpcomingEvents(generateUpcomingEvents());
       setLoadingRecommendations(false);
     }, 1500);
     
@@ -98,31 +103,24 @@ const WelcomeDashboard: React.FC = () => {
     ];
   };
   
-  // Generate sample upcoming events
-  const generateUpcomingEvents = () => {
-    return [
-      {
-        id: 'event1',
-        title: 'Lakers vs. Warriors',
-        time: 'Today, 7:30 PM',
-        league: 'NBA',
-        hot: true
-      },
-      {
-        id: 'event2',
-        title: 'Chiefs vs. Eagles',
-        time: 'Tomorrow, 3:25 PM',
-        league: 'NFL'
-      },
-      {
-        id: 'event3',
-        title: 'UFC 287: Jones vs. Gane',
-        time: 'Sat, 10:00 PM',
-        league: 'UFC',
-        hot: true
-      }
-    ];
+  // Process real upcoming events data
+  const processUpcomingEvents = (data: any) => {
+    if (!data?.events) return [];
+    
+    return data.events.slice(0, 3).map((event: any) => ({
+      id: event.id,
+      title: `${event.awayTeam} vs. ${event.homeTeam}`,
+      time: new Date(event.date).toLocaleDateString('en-US', {
+        weekday: 'short',
+        hour: 'numeric',
+        minute: '2-digit'
+      }),
+      league: event.sport || event.league || 'Sports',
+      hot: Math.random() > 0.5 // Randomly assign hot status for variety
+    }));
   };
+
+  const upcomingEvents = processUpcomingEvents(upcomingEventsData);
   
   // If user is not authenticated, don't show the personalized welcome
   if (!isAuthenticated) return null;
@@ -284,39 +282,70 @@ const WelcomeDashboard: React.FC = () => {
         {/* Upcoming events tab */}
         <TabsContent value="upcoming">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {upcomingEvents.map((event) => (
-              <motion.div
-                key={event.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Card className="h-full border-gray-200 dark:border-gray-800">
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-start">
-                      <Badge variant={event.league === 'NBA' ? 'default' : event.league === 'UFC' ? 'destructive' : 'outline'}>
-                        {event.league}
-                      </Badge>
-                      {event.hot && (
-                        <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 hover:bg-orange-100 dark:hover:bg-orange-900">
-                          <Flame className="h-3 w-3 mr-1" /> Hot
+            {isLoadingUpcomingEvents ? (
+              // Loading skeleton
+              <>
+                {[1, 2, 3].map((i) => (
+                  <Card key={i} className="h-full border-gray-200 dark:border-gray-800">
+                    <CardHeader className="pb-2">
+                      <div className="animate-pulse flex space-x-4">
+                        <div className="rounded-full bg-gray-200 dark:bg-gray-700 h-6 w-16"></div>
+                        <div className="flex-1 space-y-2">
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex space-x-2">
+                        <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded flex-1"></div>
+                        <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded flex-1"></div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </>
+            ) : upcomingEvents.length > 0 ? (
+              upcomingEvents.map((event: any) => (
+                <motion.div
+                  key={event.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Card className="h-full border-gray-200 dark:border-gray-800">
+                    <CardHeader className="pb-2">
+                      <div className="flex justify-between items-start">
+                        <Badge variant={event.league === 'NBA' ? 'default' : event.league === 'UFC' ? 'destructive' : 'outline'}>
+                          {event.league}
                         </Badge>
-                      )}
-                    </div>
-                    <CardTitle className="text-lg mt-2">{event.title}</CardTitle>
-                    <CardDescription className="flex items-center">
-                      <Clock className="h-3 w-3 mr-1 inline" /> {event.time}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex space-x-2">
-                      <Button variant="outline" size="sm" className="flex-1">View Odds</Button>
-                      <Button size="sm" className="flex-1">Quick Bet</Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
+                        {event.hot && (
+                          <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 hover:bg-orange-100 dark:hover:bg-orange-900">
+                            <Flame className="h-3 w-3 mr-1" /> Hot
+                          </Badge>
+                        )}
+                      </div>
+                      <CardTitle className="text-lg mt-2">{event.title}</CardTitle>
+                      <CardDescription className="flex items-center">
+                        <Clock className="h-3 w-3 mr-1 inline" /> {event.time}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex space-x-2">
+                        <Button variant="outline" size="sm" className="flex-1">View Odds</Button>
+                        <Button size="sm" className="flex-1">Quick Bet</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))
+            ) : (
+              <div className="col-span-3 text-center py-12 text-muted-foreground">
+                <Calendar className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                <p className="text-lg font-medium">No Upcoming Events</p>
+                <p>Check back soon for new betting opportunities!</p>
+              </div>
+            )}
           </div>
         </TabsContent>
         
