@@ -59,36 +59,67 @@ export default function Parlays() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch real odds data
+  // Fetch unified sports data (same as rest of site)
+  const { data: sportsData } = useQuery({
+    queryKey: ["/api/sports"],
+    refetchInterval: 30000,
+  });
+
+  // Fetch real odds data (integrated with all site data)
   const { data: realOddsData } = useQuery({
     queryKey: ["/api/real-odds"],
     refetchInterval: 30000,
   });
 
-  // Fetch sportsbook parlays
-  const { data: sportsbookParlays } = useQuery({
-    queryKey: ["/api/sportsbook/parlays"],
-    refetchInterval: 300000,
+  // Fetch live events (same source as other pages)
+  const { data: liveEvents } = useQuery({
+    queryKey: ["/api/events/live"],
+    refetchInterval: 15000,
   });
 
-  // Transform real odds data into sportsbook-style matchups
-  const sportsbookMatchups: ParlayMatchup[] = realOddsData?.data ? realOddsData.data.slice(0, 20).map((odds: any, index: number) => ({
-    id: `matchup-${odds.id || index}`,
-    sport: odds.sport_title || 'Soccer',
-    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    homeTeam: odds.home_team || 'Home Team',
-    awayTeam: odds.away_team || 'Away Team',
-    moneylineOdds: {
-      home: odds.home_odds || +152,
-      away: odds.away_odds || +267,
-      tie: odds.tie_odds || +157
-    },
-    overUnder: {
-      line: 1.5,
-      over: +100,
-      under: -125
-    }
-  })) : [];
+  // Fetch upcoming events (integrated data)
+  const { data: upcomingEvents } = useQuery({
+    queryKey: ["/api/unified-sports/upcoming-events"],
+    refetchInterval: 30000,
+  });
+
+  // Fetch user's cash balance (integrated with betting system)
+  const { data: userBalance } = useQuery({
+    queryKey: ["/api/user/cash-balance"],
+    refetchInterval: 10000,
+  });
+
+  // Combine all sports data sources into unified matchups
+  const combinedSportsData = [
+    ...(realOddsData?.data || []),
+    ...(liveEvents?.data || []),
+    ...(upcomingEvents?.data || [])
+  ];
+
+  // Transform unified sports data into sportsbook-style matchups
+  const sportsbookMatchups: ParlayMatchup[] = combinedSportsData.slice(0, 50).map((event: any, index: number) => {
+    // Handle different data source formats
+    const sportType = event.sport_title || event.sport || event.category || 'Unknown Sport';
+    const gameTime = event.start_time || event.commence_time || new Date().toISOString();
+    
+    return {
+      id: `matchup-${event.id || event.game_id || index}`,
+      sport: sportType,
+      time: new Date(gameTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      homeTeam: event.home_team || event.homeTeam || 'Home Team',
+      awayTeam: event.away_team || event.awayTeam || 'Away Team',
+      moneylineOdds: {
+        home: event.home_odds || event.moneyline?.home || +152,
+        away: event.away_odds || event.moneyline?.away || +267,
+        tie: event.tie_odds || event.moneyline?.tie || +157
+      },
+      overUnder: {
+        line: event.total_line || event.overUnder?.line || 1.5,
+        over: event.over_odds || event.overUnder?.over || +100,
+        under: event.under_odds || event.overUnder?.under || -125
+      }
+    };
+  });
 
   // Filter matchups based on selected sport and search
   const filteredMatchups = sportsbookMatchups.filter(matchup => {
@@ -201,14 +232,16 @@ export default function Parlays() {
     placeParlayMutation.mutate(parlayData);
   };
 
-  const sports = [
-    "PARLAY CARDS", "All Sport Parlay Card", "Football Parlay and Teaser Card", 
-    "Basketball Parlay Card", "Soccer Parlay Card",
+  // Get dynamic sports list from actual data
+  const uniqueSports = Array.from(new Set(sportsbookMatchups.map(m => m.sport.toUpperCase()).filter(Boolean)));
+  const availableSports = [
+    "PARLAY CARDS", 
+    "All Sport Parlay Card", 
+    "Football Parlay and Teaser Card", 
+    "Basketball Parlay Card", 
+    "Soccer Parlay Card",
     "LIVE BETTING",
-    "NBA", "WNBA", "MLB", "NCAA BASEBALL", "NFL", "SOCCER", "NHL", "GOLF", 
-    "HORSES", "AUTO RACING", "UFL", "NCAA FOOTBALL", "NCAA BASKETBALL", 
-    "CFL", "TENNIS", "UFC/MMA", "BOXING", "US PRESIDENTIAL ELECTION (2028)", 
-    "ESPORTS", "TABLE TENNIS", "INTERNATIONAL BASKETBALL", "RUGBY", "CRICKET"
+    ...uniqueSports
   ];
 
   return (
@@ -255,7 +288,7 @@ export default function Parlays() {
 
             {/* Sports List */}
             <div className="space-y-1">
-              {sports.map((sport, index) => {
+              {availableSports.map((sport, index) => {
                 const isCategory = sport === "PARLAY CARDS" || sport === "LIVE BETTING";
                 const isSelected = selectedSport === sport.toLowerCase();
                 
