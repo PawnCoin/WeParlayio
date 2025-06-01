@@ -5,7 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TeamLogo, TeamMatchup } from '@/components/betting/TeamLogo';
+import { SportsbookParlayCard } from '@/components/parlay/SportsbookParlayCard';
+import { ProgressiveParlayRules } from '@/components/parlay/ProgressiveParlayRules';
 import { apiRequest } from '@/lib/queryClient';
 import { 
   Plus, 
@@ -17,7 +21,11 @@ import {
   Zap,
   CheckCircle,
   X,
-  Award
+  Award,
+  Filter,
+  Search,
+  Clock,
+  BarChart3
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -34,6 +42,9 @@ interface ParlayLeg {
 export default function Parlays() {
   const [parlayLegs, setParlayLegs] = useState<ParlayLeg[]>([]);
   const [betAmount, setBetAmount] = useState<number>(10);
+  const [selectedSport, setSelectedSport] = useState<string>("all");
+  const [parlayType, setParlayType] = useState<"standard" | "progressive">("standard");
+  const [searchFilter, setSearchFilter] = useState<string>("");
   const { toast } = useToast();
 
   // Fetch real odds data for parlay building
