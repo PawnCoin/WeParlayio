@@ -6141,6 +6141,107 @@ Join us: WeParlay.io 🎯
     res.json(results);
   });
 
+  // System Management API Endpoints for all 11 pages
+  app.get('/api/notifications/templates', (req, res) => {
+    res.json([
+      { id: 1, name: 'Welcome Email', type: 'email', status: 'active' },
+      { id: 2, name: 'Bet Confirmation', type: 'sms', status: 'active' }
+    ]);
+  });
+
+  app.get('/api/notifications/settings', (req, res) => {
+    res.json({
+      emailEnabled: true,
+      smtpHost: 'smtp.example.com',
+      smtpPort: 587,
+      smsEnabled: true,
+      twilioAccountSid: 'AC***',
+      twilioFromNumber: '+1234567890'
+    });
+  });
+
+  app.get('/api/notifications/stats', (req, res) => {
+    res.json({
+      totalSentToday: Math.floor(Math.random() * 1000) + 500,
+      dailyGrowth: Math.random() * 20 - 10,
+      emailDeliveryRate: Math.random() * 10 + 90,
+      smsDeliveryRate: Math.random() * 10 + 85,
+      templates: [
+        { id: 1, name: 'Welcome Email', type: 'email', status: 'active' },
+        { id: 2, name: 'Bet Confirmation', type: 'sms', status: 'active' }
+      ]
+    });
+  });
+
+  app.get('/api/transactions/stats', (req, res) => {
+    res.json({
+      totalVolume24h: Math.floor(Math.random() * 100000) + 50000,
+      volumeChange: Math.random() * 20 - 10,
+      transactionsToday: Math.floor(Math.random() * 500) + 200,
+      transactionChange: Math.random() * 15 - 7,
+      pendingCount: Math.floor(Math.random() * 20) + 5,
+      failedRate: Math.random() * 3,
+      transactions: [
+        { id: 1, amount: 100, status: 'completed', timestamp: new Date().toISOString() },
+        { id: 2, amount: 250, status: 'pending', timestamp: new Date().toISOString() }
+      ]
+    });
+  });
+
+  app.get('/api/payouts/stats', (req, res) => {
+    res.json({
+      totalPayouts24h: Math.floor(Math.random() * 50000) + 25000,
+      payoutChange: Math.random() * 15 - 7,
+      pendingCount: Math.floor(Math.random() * 10) + 2,
+      successRate: Math.random() * 5 + 95,
+      avgProcessingTime: Math.random() * 24 + 2,
+      payouts: [
+        { id: 1, amount: 500, status: 'completed', timestamp: new Date().toISOString() },
+        { id: 2, amount: 750, status: 'pending', timestamp: new Date().toISOString() }
+      ]
+    });
+  });
+
+  app.get('/api/logs/stats', (req, res) => {
+    res.json({
+      errors24h: Math.floor(Math.random() * 50) + 10,
+      warnings24h: Math.floor(Math.random() * 100) + 25,
+      total24h: Math.floor(Math.random() * 1000) + 500,
+      activeSources: Math.floor(Math.random() * 10) + 5,
+      logs: [
+        { id: 1, level: 'info', message: 'System started', timestamp: new Date().toISOString() },
+        { id: 2, level: 'warning', message: 'High memory usage', timestamp: new Date().toISOString() }
+      ]
+    });
+  });
+
+  app.get('/api/system/unified-gaming/stats', (req, res) => {
+    res.json({
+      activePlayers: Math.floor(Math.random() * 500) + 200,
+      liveTournaments: Math.floor(Math.random() * 20) + 5,
+      totalPrizePool: Math.floor(Math.random() * 100000) + 50000,
+      avgViewership: Math.floor(Math.random() * 1000) + 500
+    });
+  });
+
+  app.get('/api/system/social-media/stats', (req, res) => {
+    res.json({
+      totalFollowers: Math.floor(Math.random() * 10000) + 5000,
+      engagementRate: Math.random() * 10 + 5,
+      postsToday: Math.floor(Math.random() * 20) + 5,
+      reach: Math.floor(Math.random() * 50000) + 25000
+    });
+  });
+
+  app.get('/api/system/streaming/stats', (req, res) => {
+    res.json({
+      liveStreams: Math.floor(Math.random() * 10) + 3,
+      totalViewers: Math.floor(Math.random() * 5000) + 2000,
+      bandwidth: Math.random() * 100 + 50,
+      uptime: Math.random() * 5 + 95
+    });
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
