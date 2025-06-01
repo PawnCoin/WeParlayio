@@ -4,10 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { TeamLogo, TeamMatchup } from '@/components/betting/TeamLogo';
 import { SportsbookParlayCard } from '@/components/parlay/SportsbookParlayCard';
 import { ProgressiveParlayRules } from '@/components/parlay/ProgressiveParlayRules';
 import { apiRequest } from '@/lib/queryClient';
@@ -18,14 +15,11 @@ import {
   DollarSign,
   TrendingUp,
   Target,
-  Zap,
   CheckCircle,
-  X,
-  Award,
-  Filter,
   Search,
   Clock,
-  BarChart3
+  BarChart3,
+  Award
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -38,34 +32,79 @@ interface ParlayLeg {
   game_id?: string;
 }
 
-// Enhanced Parlays with Real Team Logos - Updated for WeParlay
+interface ParlayMatchup {
+  id: string;
+  sport: string;
+  time: string;
+  homeTeam: string;
+  awayTeam: string;
+  moneylineOdds: {
+    home: number;
+    away: number;
+    tie?: number;
+  };
+  overUnder: {
+    line: number;
+    over: number;
+    under: number;
+  };
+}
+
 export default function Parlays() {
   const [parlayLegs, setParlayLegs] = useState<ParlayLeg[]>([]);
   const [betAmount, setBetAmount] = useState<number>(10);
-  const [selectedSport, setSelectedSport] = useState<string>("all");
+  const [selectedSport, setSelectedSport] = useState<string>("soccer");
   const [parlayType, setParlayType] = useState<"standard" | "progressive">("standard");
   const [searchFilter, setSearchFilter] = useState<string>("");
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  // Fetch real odds data for parlay building
+  // Fetch real odds data
   const { data: realOddsData } = useQuery({
     queryKey: ["/api/real-odds"],
     refetchInterval: 30000,
   });
 
-  // Fetch authentic sportsbook parlays from sportsbook.ag
+  // Fetch sportsbook parlays
   const { data: sportsbookParlays } = useQuery({
     queryKey: ["/api/sportsbook/parlays"],
-    refetchInterval: 300000, // 5 minutes
+    refetchInterval: 300000,
+  });
+
+  // Transform real odds data into sportsbook-style matchups
+  const sportsbookMatchups: ParlayMatchup[] = realOddsData?.data ? realOddsData.data.slice(0, 20).map((odds: any, index: number) => ({
+    id: `matchup-${odds.id || index}`,
+    sport: odds.sport_title || 'Soccer',
+    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    homeTeam: odds.home_team || 'Home Team',
+    awayTeam: odds.away_team || 'Away Team',
+    moneylineOdds: {
+      home: odds.home_odds || +152,
+      away: odds.away_odds || +267,
+      tie: odds.tie_odds || +157
+    },
+    overUnder: {
+      line: 1.5,
+      over: +100,
+      under: -125
+    }
+  })) : [];
+
+  // Filter matchups based on selected sport and search
+  const filteredMatchups = sportsbookMatchups.filter(matchup => {
+    const sportMatch = selectedSport === "all" || matchup.sport.toLowerCase().includes(selectedSport.toLowerCase());
+    const searchMatch = searchFilter === "" || 
+      matchup.homeTeam.toLowerCase().includes(searchFilter.toLowerCase()) ||
+      matchup.awayTeam.toLowerCase().includes(searchFilter.toLowerCase());
+    return sportMatch && searchMatch;
   });
 
   // Calculate parlay odds and payout
   const calculateParlayOdds = () => {
-    if (parlayLegs.length === 0) return { odds: 0, payout: 0 };
+    if (parlayLegs.length === 0) return { odds: 0, payout: 0, profit: 0 };
     
     let totalOdds = 1;
     parlayLegs.forEach(leg => {
-      // Convert American odds to decimal for calculation
       const decimal = leg.odds > 0 ? (leg.odds / 100) + 1 : (100 / Math.abs(leg.odds)) + 1;
       totalOdds *= decimal;
     });
@@ -73,310 +112,346 @@ export default function Parlays() {
     const payout = betAmount * totalOdds;
     const profit = payout - betAmount;
     
-    return { 
-      odds: totalOdds, 
-      payout: payout,
-      profit: profit
-    };
+    return { odds: totalOdds, payout, profit };
   };
 
-  // Add a bet to parlay
-  const addToParlayFromOdds = (oddsData: any) => {
+  const parlayStats = calculateParlayOdds();
+
+  // Add selection from sportsbook card
+  const addSelectionFromSportsbook = (selection: any) => {
     const newLeg: ParlayLeg = {
-      id: `${Date.now()}-${Math.random()}`,
-      sport: oddsData.sport_title || 'Unknown Sport',
-      teams: `${oddsData.home_team} vs ${oddsData.away_team}`,
-      pick: oddsData.home_team || 'Team A',
-      odds: oddsData.home_odds || 100,
-      game_id: oddsData.id
+      id: selection.id,
+      sport: selection.sport,
+      teams: selection.matchup,
+      pick: `${selection.team} ${selection.type}`,
+      odds: selection.odds,
+      game_id: selection.matchupId
     };
-    
-    setParlayLegs(prev => [...prev, newLeg]);
-    toast({
-      title: "Added to Parlay",
-      description: `${newLeg.teams} added successfully`,
+
+    setParlayLegs(prev => {
+      const exists = prev.find(leg => leg.id === newLeg.id);
+      if (exists) {
+        toast({
+          title: "Selection Already Added",
+          description: "This selection is already in your parlay",
+          variant: "destructive",
+        });
+        return prev;
+      }
+      
+      toast({
+        title: "Selection Added",
+        description: `Added ${newLeg.pick} to your parlay`,
+      });
+      
+      return [...prev, newLeg];
     });
   };
 
   // Remove leg from parlay
   const removeLeg = (legId: string) => {
     setParlayLegs(prev => prev.filter(leg => leg.id !== legId));
+    toast({
+      title: "Selection Removed",
+      description: "Selection removed from parlay",
+    });
   };
 
-  // Place parlay bet
-  const placeParlayBet = async () => {
+  // Place parlay bet mutation
+  const placeParlayMutation = useMutation({
+    mutationFn: async (parlayData: any) => {
+      return apiRequest("POST", "/api/bets/parlay", parlayData);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Parlay Placed!",
+        description: `Successfully placed parlay bet for $${betAmount}`,
+      });
+      setParlayLegs([]);
+      setBetAmount(10);
+      queryClient.invalidateQueries({ queryKey: ["/api/user/bets"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Bet Failed",
+        description: error.message || "Failed to place parlay bet",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const placeParlayBet = () => {
     if (parlayLegs.length < 2) {
       toast({
-        title: "Invalid Parlay",
-        description: "Parlays must have at least 2 legs",
+        title: "Insufficient Legs",
+        description: "Parlay requires at least 2 legs",
         variant: "destructive",
       });
       return;
     }
 
-    const { payout } = calculateParlayOdds();
-    
-    try {
-      // Here you would call your betting API
-      toast({
-        title: "Parlay Placed!",
-        description: `$${betAmount} parlay bet placed. Potential payout: $${payout.toFixed(2)}`,
-      });
-      
-      // Clear parlay after placing
-      setParlayLegs([]);
-      setBetAmount(10);
-    } catch (error) {
-      toast({
-        title: "Bet Failed",
-        description: "Unable to place parlay bet",
-        variant: "destructive",
-      });
-    }
+    const parlayData = {
+      legs: parlayLegs,
+      betAmount,
+      parlayType,
+      totalOdds: parlayStats.odds,
+      potentialPayout: parlayStats.payout
+    };
+
+    placeParlayMutation.mutate(parlayData);
   };
 
-  const parlayStats = calculateParlayOdds();
-  const oddsArray = Array.isArray(realOddsData) ? realOddsData : [];
-  const sportsbookData = sportsbookParlays?.data || [];
-
-  // Add sportsbook parlay to builder
-  const addSportsbookParlay = (parlay: any) => {
-    parlay.legs.forEach((leg: any) => {
-      const newLeg: ParlayLeg = {
-        id: `${Date.now()}-${Math.random()}`,
-        sport: parlay.sport,
-        teams: parlay.teams,
-        pick: leg.pick,
-        odds: leg.odds,
-        game_id: parlay.id
-      };
-      setParlayLegs(prev => [...prev, newLeg]);
-    });
-    
-    toast({
-      title: "Sportsbook Parlay Added",
-      description: `${parlay.teams} added from sportsbook.ag`,
-    });
-  };
+  const sports = [
+    "PARLAY CARDS", "All Sport Parlay Card", "Football Parlay and Teaser Card", 
+    "Basketball Parlay Card", "Soccer Parlay Card",
+    "LIVE BETTING",
+    "NBA", "WNBA", "MLB", "NCAA BASEBALL", "NFL", "SOCCER", "NHL", "GOLF", 
+    "HORSES", "AUTO RACING", "UFL", "NCAA FOOTBALL", "NCAA BASKETBALL", 
+    "CFL", "TENNIS", "UFC/MMA", "BOXING", "US PRESIDENTIAL ELECTION (2028)", 
+    "ESPORTS", "TABLE TENNIS", "INTERNATIONAL BASKETBALL", "RUGBY", "CRICKET"
+  ];
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold text-gray-900">Parlay Builder</h1>
-        <p className="text-gray-600">Combine multiple bets for bigger payouts</p>
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-800">PARLAY CARDS</h1>
+          <div className="flex items-center gap-4">
+            <Select value={parlayType} onValueChange={(value: "standard" | "progressive") => setParlayType(value)}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Parlay Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="standard">Standard</SelectItem>
+                <SelectItem value="progressive">Progressive</SelectItem>
+              </SelectContent>
+            </Select>
+            <Badge variant="secondary" className="bg-green-100 text-green-800">
+              <CheckCircle className="h-3 w-3 mr-1" />
+              Live Odds
+            </Badge>
+            <Badge variant="outline">
+              {filteredMatchups.length} Games
+            </Badge>
+          </div>
+        </div>
       </div>
 
-      {/* Sportsbook Parlays Section */}
-      {sportsbookData.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Live Sportsbook Parlays (sportsbook.ag)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-3">
-              {sportsbookData.slice(0, 5).map((parlay: any) => (
-                <div key={parlay.id} className="flex items-center justify-between p-3 border rounded">
-                  <div className="flex-1">
-                    <p className="font-medium">{parlay.teams}</p>
-                    <p className="text-sm text-gray-600">{parlay.sport}</p>
-                    <Badge variant="outline" className="mt-1">
-                      {parlay.combinedOdds > 0 ? `+${parlay.combinedOdds}` : parlay.combinedOdds}
-                    </Badge>
-                  </div>
-                  <Button 
-                    size="sm" 
-                    onClick={() => addSportsbookParlay(parlay)}
-                    className="ml-3"
-                  >
-                    Add to Builder
-                  </Button>
-                </div>
-              ))}
+      <div className="flex">
+        {/* Left Sidebar - Sport Navigation */}
+        <div className="w-64 bg-white border-r border-gray-200 min-h-screen p-4">
+          <div className="space-y-6">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search teams..."
+                value={searchFilter}
+                onChange={(e) => setSearchFilter(e.target.value)}
+                className="pl-10"
+              />
             </div>
-          </CardContent>
-        </Card>
-      )}
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Available Bets */}
-        <div className="lg:col-span-2 space-y-4">
-          <h2 className="text-xl font-semibold">Available Bets</h2>
-          
-          {oddsArray.length === 0 ? (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <Target className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No Live Odds Available</h3>
-                <p className="text-gray-600">
-                  Live betting markets will appear here when games are active.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4">
-              {oddsArray.slice(0, 8).map((odds: any, index: number) => (
-                <Card key={`parlay-odds-${odds.id || index}`} className="border-l-4 border-l-green-500">
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-start">
-                      <div className="space-y-2">
-                        <h3 className="font-semibold">{odds.sport_title}</h3>
-                        <p className="text-sm text-gray-600">
-                          {odds.home_team} vs {odds.away_team}
-                        </p>
-                        <div className="flex gap-4">
-                          {odds.home_team && (
-                            <div className="text-center">
-                              <p className="text-xs text-gray-500">{odds.home_team}</p>
-                              <p className="font-bold text-blue-600">
-                                {odds.home_odds > 0 ? `+${odds.home_odds}` : odds.home_odds}
-                              </p>
-                            </div>
-                          )}
-                          {odds.away_team && (
-                            <div className="text-center">
-                              <p className="text-xs text-gray-500">{odds.away_team}</p>
-                              <p className="font-bold text-red-600">
-                                {odds.away_odds > 0 ? `+${odds.away_odds}` : odds.away_odds}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <Button 
-                        size="sm"
-                        onClick={() => addToParlayFromOdds(odds)}
-                        className="shrink-0"
-                      >
-                        <Plus className="h-4 w-4 mr-1" />
-                        Add
-                      </Button>
+            {/* Sports List */}
+            <div className="space-y-1">
+              {sports.map((sport, index) => {
+                const isCategory = sport === "PARLAY CARDS" || sport === "LIVE BETTING";
+                const isSelected = selectedSport === sport.toLowerCase();
+                
+                if (isCategory) {
+                  return (
+                    <div key={sport} className="py-2">
+                      <h3 className="font-semibold text-gray-800 text-sm uppercase tracking-wider">
+                        {sport}
+                      </h3>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
+                  );
+                }
+                
+                return (
+                  <Button
+                    key={sport}
+                    variant={isSelected ? "default" : "ghost"}
+                    className="w-full justify-start text-sm text-gray-600 hover:text-gray-800"
+                    onClick={() => setSelectedSport(sport.toLowerCase())}
+                  >
+                    {sport}
+                  </Button>
+                );
+              })}
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Parlay Slip */}
-        <div className="space-y-4">
-          <Card className="sticky top-4">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calculator className="h-5 w-5" />
-                Parlay Slip ({parlayLegs.length} legs)
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {parlayLegs.length === 0 ? (
-                <div className="text-center py-6 text-gray-500">
-                  <Target className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                  <p className="text-sm">Add bets to build your parlay</p>
+        {/* Main Content Area */}
+        <div className="flex-1 p-6">
+          <div className="grid lg:grid-cols-4 gap-6">
+            {/* Game Cards - 3 columns */}
+            <div className="lg:col-span-3">
+              {/* Header with filters */}
+              <div className="bg-gray-800 text-white px-4 py-3 mb-4 rounded-t-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <h2 className="text-lg font-semibold text-yellow-400">
+                      ALL {selectedSport.toUpperCase()} GAME LINES
+                    </h2>
+                    <Button size="sm" variant="outline" className="text-white border-white hover:bg-white hover:text-black">
+                      UPDATE
+                    </Button>
+                  </div>
+                  <Select value="American (+105)" onValueChange={() => {}}>
+                    <SelectTrigger className="w-40 bg-gray-700 border-gray-600 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="American (+105)">American (+105)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              ) : (
-                <>
-                  {/* Parlay Legs */}
-                  <div className="space-y-3">
-                    {parlayLegs.map((leg) => (
-                      <div key={leg.id} className="border rounded p-3 bg-gray-50">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <p className="text-sm font-medium">{leg.sport}</p>
-                            <p className="text-xs text-gray-600">{leg.teams}</p>
-                            <p className="text-xs text-blue-600">{leg.pick}</p>
-                            <Badge variant="outline" className="mt-1">
-                              {leg.odds > 0 ? `+${leg.odds}` : leg.odds}
-                            </Badge>
+                
+                {/* Table Headers */}
+                <div className="grid grid-cols-4 gap-4 mt-4 text-sm font-medium">
+                  <div>Time</div>
+                  <div>Team</div>
+                  <div>Money</div>
+                  <div>Total</div>
+                </div>
+              </div>
+
+              {/* Game Cards */}
+              <div className="space-y-4">
+                {filteredMatchups.length === 0 ? (
+                  <Card>
+                    <CardContent className="p-8 text-center">
+                      <Target className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No Games Available</h3>
+                      <p className="text-gray-600">
+                        Live betting markets will appear here when games are active.
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  filteredMatchups.map((matchup) => (
+                    <SportsbookParlayCard
+                      key={matchup.id}
+                      matchup={matchup}
+                      onAddSelection={addSelectionFromSportsbook}
+                    />
+                  ))
+                )}
+              </div>
+
+              {/* Progressive Parlay Rules */}
+              {parlayType === "progressive" && (
+                <ProgressiveParlayRules
+                  selectedLegs={parlayLegs.length}
+                  betAmount={betAmount}
+                />
+              )}
+            </div>
+
+            {/* Parlay Slip - Right column */}
+            <div className="space-y-4">
+              <Card className="sticky top-4">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calculator className="h-5 w-5" />
+                    {parlayType === "progressive" ? "Progressive " : ""}Parlay Slip ({parlayLegs.length} legs)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {parlayLegs.length === 0 ? (
+                    <div className="text-center py-6 text-gray-500">
+                      <Target className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                      <p className="text-sm">Add bets to build your parlay</p>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Parlay Legs */}
+                      <div className="space-y-3">
+                        {parlayLegs.map((leg) => (
+                          <div key={leg.id} className="border rounded p-3 bg-gray-50">
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <p className="text-sm font-medium">{leg.sport}</p>
+                                <p className="text-xs text-gray-600">{leg.teams}</p>
+                                <p className="text-xs text-blue-600">{leg.pick}</p>
+                                <Badge variant="outline" className="mt-1">
+                                  {leg.odds > 0 ? `+${leg.odds}` : leg.odds}
+                                </Badge>
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => removeLeg(leg.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => removeLeg(leg.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                        ))}
+                      </div>
+
+                      {/* Bet Amount */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Bet Amount</label>
+                        <div className="relative">
+                          <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          <Input
+                            type="number"
+                            value={betAmount}
+                            onChange={(e) => setBetAmount(Number(e.target.value))}
+                            className="pl-10"
+                            min="1"
+                            step="1"
+                          />
                         </div>
                       </div>
-                    ))}
-                  </div>
 
-                  {/* Bet Amount */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Bet Amount</label>
-                    <div className="relative">
-                      <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <Input
-                        type="number"
-                        value={betAmount}
-                        onChange={(e) => setBetAmount(Number(e.target.value))}
-                        className="pl-10"
-                        min="1"
-                        step="1"
-                      />
-                    </div>
-                  </div>
+                      {/* Parlay Stats */}
+                      <div className="space-y-2 pt-2 border-t">
+                        <div className="flex justify-between text-sm">
+                          <span>Total Odds:</span>
+                          <span className="font-bold">
+                            {parlayStats.odds > 0 ? `+${Math.round((parlayStats.odds - 1) * 100)}` : parlayStats.odds.toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span>Potential Profit:</span>
+                          <span className="font-bold text-green-600">
+                            ${parlayStats.profit.toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-lg font-bold">
+                          <span>Total Payout:</span>
+                          <span className="text-green-600">
+                            ${parlayStats.payout.toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
 
-                  {/* Parlay Stats */}
-                  <div className="space-y-2 pt-2 border-t">
-                    <div className="flex justify-between text-sm">
-                      <span>Total Odds:</span>
-                      <span className="font-bold">
-                        {parlayStats.odds > 0 ? `+${Math.round((parlayStats.odds - 1) * 100)}` : parlayStats.odds.toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Potential Profit:</span>
-                      <span className="font-bold text-green-600">
-                        ${parlayStats.profit.toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-lg font-bold">
-                      <span>Total Payout:</span>
-                      <span className="text-green-600">
-                        ${parlayStats.payout.toFixed(2)}
-                      </span>
-                    </div>
-                  </div>
+                      {/* Place Bet Button */}
+                      <Button 
+                        onClick={placeParlayBet}
+                        className="w-full"
+                        disabled={parlayLegs.length < 2 || placeParlayMutation.isPending}
+                      >
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        {placeParlayMutation.isPending ? "Placing..." : `Place ${parlayType === "progressive" ? "Progressive " : ""}Parlay Bet`}
+                      </Button>
 
-                  {/* Place Bet Button */}
-                  <Button 
-                    onClick={placeParlayBet}
-                    className="w-full"
-                    disabled={parlayLegs.length < 2}
-                  >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Place Parlay Bet
-                  </Button>
-
-                  {parlayLegs.length < 2 && (
-                    <p className="text-xs text-gray-500 text-center">
-                      Add at least 2 legs to place parlay
-                    </p>
+                      {parlayLegs.length < 2 && (
+                        <p className="text-xs text-gray-500 text-center">
+                          Add at least 2 legs to place parlay
+                        </p>
+                      )}
+                    </>
                   )}
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Parlay Tips */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Zap className="h-4 w-4" />
-                Parlay Tips
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-xs space-y-2">
-              <p>• Higher payouts but all legs must win</p>
-              <p>• Minimum 2 legs required</p>
-              <p>• Risk increases with more legs</p>
-              <p>• Consider correlated outcomes</p>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
       </div>
     </div>
