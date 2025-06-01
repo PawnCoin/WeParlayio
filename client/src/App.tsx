@@ -90,6 +90,7 @@ import PayoutManagement from "@/pages/system/PayoutManagement";
 import SystemLogs from "@/pages/system/SystemLogs";
 import ApiStatus from "@/pages/system/ApiStatus";
 import SystemHealth from "@/pages/system/SystemHealth";
+import MultiCurrencyBetting from "@/pages/MultiCurrencyBetting";
 import { lazy } from 'react';
 
 function Router() {
