@@ -84,6 +84,7 @@ import FinancialOverview from "@/pages/admin/FinancialOverview";
 import Analytics from "@/pages/admin/Analytics";
 import PlatformSettings from "@/pages/admin/PlatformSettings";
 import VisualComponentEditorPage from "./pages/admin/VisualComponentEditor";
+import { lazy } from 'react';
 
 function Router() {
   // Track page views when routes change
@@ -207,6 +208,9 @@ function Router() {
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin-bypass" component={AdminBypass} />
       <Route path="/owner-access" component={OwnerAccess} />
+      <Route path="/admin/manage-users" component={lazy(() => import("./pages/admin/ManageUsers"))} />
+      <Route path="/admin/user-analytics" component={lazy(() => import("./pages/admin/UserAnalytics"))} />
+      <Route path="/admin/platform-settings" component={lazy(() => import("./pages/admin/PlatformSettings"))} />
 
       {/* Default route */}
       <Route path="/" component={Home} />

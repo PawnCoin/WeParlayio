@@ -3927,8 +3927,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let users = await storage.getAllUsers();
       console.log(`📊 Found ${users.length} users in database`);
       
-      // Always show your real bot users (SportsBetterPro, FantasyKing, CryptoGambler) plus any other users
-      const realBotUsers = [
+      // Enhanced bot users list - 15 users for vibrant community
+      const enhancedBotUsers = [
         {
           id: 'SportsBetterPro',
           username: 'SportsBetterPro',
@@ -3967,10 +3967,166 @@ export async function registerRoutes(app: Express): Promise<Server> {
           createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
           isOnline: false,
           lastSeen: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 'LiveBetMaster',
+          username: 'LiveBetMaster',
+          firstName: 'Jordan',
+          lastName: 'Williams',
+          profileImageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=LiveBetMaster',
+          subscriptionTier: 'bronze',
+          balance: 890,
+          wins: 15,
+          createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
+          isOnline: true,
+          lastSeen: new Date().toISOString()
+        },
+        {
+          id: 'EsportsElite',
+          username: 'EsportsElite',
+          firstName: 'Taylor',
+          lastName: 'Kim',
+          profileImageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=EsportsElite',
+          subscriptionTier: 'platinum',
+          balance: 3200,
+          wins: 67,
+          createdAt: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString(),
+          isOnline: true,
+          lastSeen: new Date().toISOString()
+        },
+        {
+          id: 'ParlaySage',
+          username: 'ParlaySage',
+          firstName: 'Cameron',
+          lastName: 'Davis',
+          profileImageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=ParlaySage',
+          subscriptionTier: 'gold',
+          balance: 2100,
+          wins: 34,
+          createdAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
+          isOnline: false,
+          lastSeen: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 'TriviaChamp',
+          username: 'TriviaChamp',
+          firstName: 'Riley',
+          lastName: 'Thompson',
+          profileImageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=TriviaChamp',
+          subscriptionTier: 'silver',
+          balance: 1450,
+          wins: 28,
+          createdAt: new Date(Date.now() - 18 * 24 * 60 * 60 * 1000).toISOString(),
+          isOnline: true,
+          lastSeen: new Date().toISOString()
+        },
+        {
+          id: 'CasinoKing',
+          username: 'CasinoKing',
+          firstName: 'Morgan',
+          lastName: 'Garcia',
+          profileImageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=CasinoKing',
+          subscriptionTier: 'diamond',
+          balance: 4200,
+          wins: 78,
+          createdAt: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000).toISOString(),
+          isOnline: true,
+          lastSeen: new Date().toISOString()
+        },
+        {
+          id: 'NFLAnalyst',
+          username: 'NFLAnalyst',
+          firstName: 'Quinn',
+          lastName: 'Rodriguez',
+          profileImageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=NFLAnalyst',
+          subscriptionTier: 'platinum',
+          balance: 2900,
+          wins: 52,
+          createdAt: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString(),
+          isOnline: false,
+          lastSeen: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 'BasketballPro',
+          username: 'BasketballPro',
+          firstName: 'Avery',
+          lastName: 'Lee',
+          profileImageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=BasketballPro',
+          subscriptionTier: 'gold',
+          balance: 1850,
+          wins: 41,
+          createdAt: new Date(Date.now() - 22 * 24 * 60 * 60 * 1000).toISOString(),
+          isOnline: true,
+          lastSeen: new Date().toISOString()
+        },
+        {
+          id: 'SoccerStar',
+          username: 'SoccerStar',
+          firstName: 'Blake',
+          lastName: 'Wilson',
+          profileImageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=SoccerStar',
+          subscriptionTier: 'gold',
+          balance: 2350,
+          wins: 45,
+          createdAt: new Date(Date.now() - 32 * 24 * 60 * 60 * 1000).toISOString(),
+          isOnline: true,
+          lastSeen: new Date().toISOString()
+        },
+        {
+          id: 'HockeyHero',
+          username: 'HockeyHero',
+          firstName: 'Casey',
+          lastName: 'Brown',
+          profileImageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=HockeyHero',
+          subscriptionTier: 'silver',
+          balance: 1180,
+          wins: 19,
+          createdAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
+          isOnline: false,
+          lastSeen: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 'BaseballBet',
+          username: 'BaseballBet',
+          firstName: 'Drew',
+          lastName: 'Miller',
+          profileImageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=BaseballBet',
+          subscriptionTier: 'bronze',
+          balance: 950,
+          wins: 12,
+          createdAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+          isOnline: true,
+          lastSeen: new Date().toISOString()
+        },
+        {
+          id: 'TennisTrader',
+          username: 'TennisTrader',
+          firstName: 'Sage',
+          lastName: 'Anderson',
+          profileImageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=TennisTrader',
+          subscriptionTier: 'platinum',
+          balance: 3100,
+          wins: 58,
+          createdAt: new Date(Date.now() - 38 * 24 * 60 * 60 * 1000).toISOString(),
+          isOnline: true,
+          lastSeen: new Date().toISOString()
+        },
+        {
+          id: 'GolfGuru',
+          username: 'GolfGuru',
+          firstName: 'River',
+          lastName: 'Taylor',
+          profileImageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=GolfGuru',
+          subscriptionTier: 'diamond',
+          balance: 3800,
+          wins: 72,
+          createdAt: new Date(Date.now() - 42 * 24 * 60 * 60 * 1000).toISOString(),
+          isOnline: false,
+          lastSeen: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString()
         }
       ];
 
-      // Add any real database users to the bot users
+      // Add any real database users to the enhanced bot users
       const databaseUsers = users.map(user => ({
         id: user.id,
         username: user.username,
@@ -3985,9 +4141,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lastSeen: user.lastLogin
       }));
 
-      // Combine real bot users with any database users
-      const allUsers = [...realBotUsers, ...databaseUsers];
-      console.log(`📊 Returning ${allUsers.length} total users (${realBotUsers.length} bots + ${databaseUsers.length} database)`);
+      // Combine enhanced bot users with any database users
+      const allUsers = [...enhancedBotUsers, ...databaseUsers];
+      console.log(`📊 Returning ${allUsers.length} total users (${enhancedBotUsers.length} bots + ${databaseUsers.length} database)`);
       
       return res.json(allUsers);
     } catch (error) {

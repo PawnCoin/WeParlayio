@@ -162,7 +162,7 @@ export default function AdminDashboard() {
                     <Users className="h-6 w-6 mb-2" />
                     User Directory
                   </Button>
-                  <Button className="h-20 flex-col" onClick={() => window.open('/admin/user-analytics', '_blank')}>
+                  <Button className="h-20 flex-col" onClick={() => window.location.href = '/admin/user-analytics'}>
                     <BarChart3 className="h-6 w-6 mb-2" />
                     User Analytics
                   </Button>
