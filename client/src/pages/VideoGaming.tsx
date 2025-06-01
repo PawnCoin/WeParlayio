@@ -27,7 +27,7 @@ const VideoGaming: React.FC = () => {
   // Toggle between real money and virtual WeParlay Cash
   const handleCurrencyToggle = (checked: boolean) => {
     setUseFakeMoney(checked);
-    
+
     toast({
       title: checked ? "Using WeParlay Cash" : "Using Real Money",
       description: checked 
@@ -63,22 +63,22 @@ const VideoGaming: React.FC = () => {
             <Trophy className="h-4 w-4" /> Leaderboard
           </TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="create">
           <VideoGameBetting />
         </TabsContent>
-        
+
         <TabsContent value="challenges">
           <BettingChallenges />
         </TabsContent>
-        
+
         <TabsContent value="leaderboard">
           <div className="bg-card rounded-lg shadow border border-muted p-6">
             <div className="flex items-center mb-6">
               <Trophy className="h-6 w-6 mr-3 text-yellow-500" />
               <h2 className="text-2xl font-bold">Video Game Betting Leaderboard</h2>
             </div>
-            
+
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -126,11 +126,11 @@ const VideoGaming: React.FC = () => {
                 </tbody>
               </table>
             </div>
-            
+
             <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-muted/30 p-4 rounded-lg">
                 <div className="flex items-center mb-3">
-                  <TrendingUp className="h-5 w-5 mr-2 text-primary" />
+                  <TrendingUp className="h-5 w-5 mr-2 text-blue-600" />
                   <h3 className="font-bold">Most Popular Games</h3>
                 </div>
                 <ol className="space-y-2">
@@ -148,10 +148,10 @@ const VideoGaming: React.FC = () => {
                   </li>
                 </ol>
               </div>
-              
+
               <div className="bg-muted/30 p-4 rounded-lg">
                 <div className="flex items-center mb-3">
-                  <BarChart2 className="h-5 w-5 mr-2 text-primary" />
+                  <BarChart2 className="h-5 w-5 mr-2 text-blue-600" />
                   <h3 className="font-bold">Biggest Wins</h3>
                 </div>
                 <ol className="space-y-2">
@@ -169,10 +169,10 @@ const VideoGaming: React.FC = () => {
                   </li>
                 </ol>
               </div>
-              
+
               <div className="bg-muted/30 p-4 rounded-lg">
                 <div className="flex items-center mb-3">
-                  <Settings className="h-5 w-5 mr-2 text-primary" />
+                  <Settings className="h-5 w-5 mr-2 text-blue-600" />
                   <h3 className="font-bold">Your Stats</h3>
                 </div>
                 <div className="space-y-2">

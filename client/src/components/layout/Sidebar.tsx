@@ -153,7 +153,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
               </div>
               <span className="text-lg font-bold">
                 <span className="text-blue-600">We</span>
-                <span className="text-white dark:text-white">Parlay</span>
+                <span className="text-gray-700 dark:text-gray-300">Parlay</span>
                 <span className="text-blue-400">.io</span>
               </span>
             </div>
@@ -168,7 +168,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
 
       {/* Main Sidebar Navigation */}
       <nav className="flex-1 overflow-y-auto p-4">
-        <div className="mb-2 text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">
+        <div className="mb-2 text-xs uppercase font-semibold text-gray-600 dark:text-gray-400">
           Main Navigation
         </div>
         <ul className="space-y-1 mb-6">
@@ -414,7 +414,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
           </li>
         </ul>
 
-        <div className="mb-2 text-xs uppercase font-semibold text-gray-500 dark:text-gray-400">
+        <div className="mb-2 text-xs uppercase font-semibold text-gray-600 dark:text-gray-400">
           Sports Categories
         </div>
         <div className="space-y-2">
