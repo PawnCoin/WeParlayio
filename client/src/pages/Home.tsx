@@ -88,35 +88,17 @@ const Home: React.FC = () => {
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
-  // Get upcoming events from all sports
+  // Get upcoming events from unified sports endpoint
   const { data: upcomingEvents, isLoading: isLoadingUpcomingEvents } = useQuery({
-    queryKey: ["/api/events/upcoming"],
+    queryKey: ["/api/unified-sports/upcoming-events"],
     queryFn: async () => {
       try {
-        // Try unified sports API first
-        const response = await fetch('/api/unified-sports/upcoming-events?limit=10');
+        const response = await fetch('/api/unified-sports/upcoming-events');
         if (response.ok) {
           const data = await response.json();
-          return data.events || data || [];
+          return data.events || [];
         }
-        
-        // Fallback to individual sport endpoints
-        const sports = ['basketball_nba', 'basketball_wnba', 'baseball_mlb', 'americanfootball_nfl'];
-        const allEvents = [];
-        
-        for (const sport of sports) {
-          try {
-            const sportResponse = await fetch(`/api/sports/${sport}/upcoming?limit=3`);
-            if (sportResponse.ok) {
-              const sportData = await sportResponse.json();
-              allEvents.push(...(Array.isArray(sportData) ? sportData : []));
-            }
-          } catch (error) {
-            console.log(`Failed to fetch ${sport} upcoming events`);
-          }
-        }
-        
-        return allEvents.slice(0, 10);
+        return [];
       } catch (error) {
         console.error('Failed to fetch upcoming events:', error);
         return [];
@@ -334,27 +316,27 @@ const Home: React.FC = () => {
         ) : upcomingEvents && upcomingEvents.length > 0 ? (
           <div className="space-y-4">
             {upcomingEvents
-              .filter((event: any) => sportFilter === "All Sports" || event.sport_key === sportFilter || event.sport_key?.includes(sportFilter))
+              .filter((event: any) => sportFilter === "All Sports" || event.sport?.includes(sportFilter) || event.league?.includes(sportFilter))
               .slice(0, 6)
               .map((event: any) => (
-                <UpcomingGameCard key={`${event.id}-${event.sport_key || 'unknown'}`} game={{
+                <UpcomingGameCard key={`${event.id}-${event.sport || 'unknown'}`} game={{
                   id: event.id,
                   homeTeam: {
-                    id: event.home_team_id || 1,
-                    name: event.home_team,
+                    id: 1,
+                    name: event.homeTeam,
                     logo: ""
                   },
                   awayTeam: {
-                    id: event.away_team_id || 2,
-                    name: event.away_team,
+                    id: 2,
+                    name: event.awayTeam,
                     logo: ""
                   },
-                  startTime: event.commence_time,
-                  bookmakers: event.bookmakers || [],
+                  startTime: event.date,
+                  bookmakers: [],
                   odds: {
-                    homeSpread: event.bookmakers?.[0]?.markets?.find((m: any) => m.key === "spreads")?.outcomes?.find((o: any) => o.name === event.home_team) || { line: -3.5, odds: -110 },
-                    awaySpread: event.bookmakers?.[0]?.markets?.find((m: any) => m.key === "spreads")?.outcomes?.find((o: any) => o.name === event.away_team) || { line: 3.5, odds: -110 },
-                    total: event.bookmakers?.[0]?.markets?.find((m: any) => m.key === "totals")?.outcomes?.[0] || { line: 220.5, odds: -110 }
+                    homeSpread: { line: -3.5, odds: -110 },
+                    awaySpread: { line: 3.5, odds: -110 },
+                    total: { line: 220.5, odds: -110 }
                   }
                 }} />
               ))}
