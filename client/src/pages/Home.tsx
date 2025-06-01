@@ -521,27 +521,27 @@ const Home: React.FC = () => {
           <Card className="bg-gradient-to-r from-gray-50 to-slate-50 border-gray-200">
             <CardContent className="p-4">
               <div className="text-center">
-                <h3 className="font-bold text-gray-800 mb-3">🏆 Trusted by Champions</h3>
+                <h3 className="font-bold text-gray-800 mb-3">Trusted by Champions</h3>
                 <div className="flex flex-wrap justify-center items-center gap-6 text-sm text-gray-600">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span>✅ FDIC-Insured Banking</span>
+                    <span>FDIC-Insured Banking</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span>🔒 256-bit SSL Encryption</span>
+                    <span>256-bit SSL Encryption</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                    <span>⚡ 99.9% Uptime Guarantee</span>
+                    <span>99.9% Uptime Guarantee</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                    <span>🎯 Licensed & Regulated</span>
+                    <span>Licensed & Regulated</span>
                   </div>
                 </div>
                 <p className="text-xs text-gray-500 mt-2">
-                  Join thousands of satisfied users who've made WeParlay their go-to betting platform
+                  Over 50,000 users trust WeParlay for secure, reliable sports betting
                 </p>
               </div>
             </CardContent>
