@@ -8,6 +8,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Server, Cpu, HardDrive, Wifi, Activity, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 
 interface SystemMetrics {
+  timestamp: string;
+  overall_status: string;
+  uptime: number;
+  activeConnections: number;
+  responseTime: number;
   cpu: {
     usage: number;
     cores: number;
@@ -16,44 +21,38 @@ interface SystemMetrics {
   memory: {
     used: number;
     total: number;
-    available: number;
+    free: number;
     usage: number;
   };
   disk: {
     used: number;
     total: number;
-    available: number;
+    free: number;
     usage: number;
   };
   network: {
-    upload: number;
-    download: number;
-    latency: number;
+    bytesIn: number;
+    bytesOut: number;
+    packetsIn: number;
+    packetsOut: number;
   };
-  uptime: number;
-  activeConnections: number;
-  responseTime: number;
+  alerts: any[];
+  environment: string;
 }
 
 export default function SystemHealth() {
   // Fetch real-time system metrics
-  const { data: metrics, isLoading, refetch } = useQuery({
-    queryKey: ['/api/system/metrics'],
+  const { data: metrics, isLoading, refetch } = useQuery<SystemMetrics>({
+    queryKey: ['/api/system/system-health'],
     staleTime: 5 * 1000,
     refetchInterval: 10 * 1000, // Auto-refresh every 10 seconds
   });
 
-  // Fetch system alerts
-  const { data: alerts } = useQuery({
-    queryKey: ['/api/system/alerts'],
-    staleTime: 30 * 1000,
-  });
-
-  // Fetch performance history
-  const { data: performance } = useQuery({
-    queryKey: ['/api/system/performance'],
-    staleTime: 60 * 1000,
-  });
+  // Use alerts from system health data (already included in the real API response)
+  const alerts = metrics?.alerts || [];
+  
+  // Performance data is included in the main system health response
+  const performance = metrics;
 
   const getHealthStatus = (usage: number) => {
     if (usage < 70) return { status: 'healthy', color: 'text-green-600', bg: 'bg-green-100' };
@@ -203,7 +202,7 @@ export default function SystemHealth() {
                     className={`w-full ${getHealthStatus(metrics?.memory?.usage || 0).bg}`}
                   />
                   <div className="text-xs text-muted-foreground">
-                    Available: {formatBytes(metrics?.memory?.available || 0)}
+                    Available: {formatBytes(metrics?.memory?.free || 0)}
                   </div>
                 </div>
               )}
