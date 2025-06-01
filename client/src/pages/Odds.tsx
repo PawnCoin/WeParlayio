@@ -26,7 +26,7 @@ export default function Odds() {
 
   // Fetch real odds data from your working endpoints
   const { data: realOddsData, refetch: refetchRealOdds, isLoading } = useQuery({
-    queryKey: ["/api/odds", selectedSport === 'all' ? 'americanfootball_nfl' : selectedSport],
+    queryKey: ["/api/odds"],
     refetchInterval: 30000, // Update every 30 seconds
     staleTime: 10000,
   });
@@ -43,6 +43,7 @@ export default function Odds() {
     refetchInterval: 30000,
   });
 
+  // Fetch NFL live data
   const { data: nflLiveData } = useQuery({
     queryKey: ["/api/odds/americanfootball_nfl"],
     refetchInterval: 30000,
