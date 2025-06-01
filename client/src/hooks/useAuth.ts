@@ -54,7 +54,7 @@ export function useAuth() {
     setUser(siteOwnerUser);
     setIsAuthenticated(true);
     setIsLoading(false);
-    
+
     // Store the admin user
     localStorage.setItem('weparlay_user', JSON.stringify(siteOwnerUser));
   }, []);

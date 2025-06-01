@@ -5256,6 +5256,32 @@ Join us: WeParlay.io 🎯
       } else {
         res.status(403).json({ message: "Admin access required" });
       }
+    } catch (error) {
+      console.error('Error setting admin tier:', error);
+      res.status(500).json({ message: 'Failed to set admin tier' });
+    }
+  });
+
+  // Auto-elevate admin users on login
+  app.post("/api/admin/auto-elevate", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const user = await storage.getUser(userId);
+      
+      // Check if user is admin and auto-elevate their tier
+      if (user?.email?.includes('admin') || user?.id === 'admin' || user?.role === 'admin') {
+        await storage.updateUserTier(userId, 'platinum');
+        await storage.updateUserStatus(userId, 'admin');
+        
+        const updatedUser = await storage.getUser(userId);
+        res.json({ 
+          success: true,
+          message: "Admin privileges automatically granted!",
+          user: updatedUser
+        });
+      } else {
+        res.json({ success: false, message: "Not an admin user" });
+      }
     } catch (error: any) {
       res.status(500).json({ message: "Error setting admin tier: " + error.message });
     }

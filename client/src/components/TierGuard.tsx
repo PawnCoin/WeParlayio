@@ -3,6 +3,7 @@ import { useLocation } from 'wouter';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Crown, Diamond, Star, Zap } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface TierGuardProps {
   children: React.ReactNode;
@@ -46,16 +47,22 @@ const tierFeatures = {
 
 export default function TierGuard({ children, requiredTier, userTier = 'none', feature }: TierGuardProps) {
   const [, setLocation] = useLocation();
-  
+  const { isAdmin } = useAuth(); // Access isAdmin from useAuth hook
+
   const userTierLevel = tierHierarchy[userTier as keyof typeof tierHierarchy] || 0;
   const requiredTierLevel = tierHierarchy[requiredTier];
-  
+
+  // Bypass tier check if user is admin
+  if (isAdmin) {
+    return <>{children}</>;
+  }
+
   if (userTierLevel >= requiredTierLevel) {
     return <>{children}</>;
   }
 
   const TierIcon = tierIcons[requiredTier];
-  
+
   const handleUpgrade = () => {
     setLocation('/upgrade-tier');
   };
@@ -86,7 +93,7 @@ export default function TierGuard({ children, requiredTier, userTier = 'none', f
               ))}
             </ul>
           </div>
-          
+
           <div className="text-center">
             <div className="text-2xl font-bold text-green-600 mb-2">
               {tierPrices[requiredTier]}
@@ -95,7 +102,7 @@ export default function TierGuard({ children, requiredTier, userTier = 'none', f
               Upgrade now to access this feature and more
             </p>
           </div>
-          
+
           <div className="space-y-2">
             <Button onClick={handleUpgrade} className="w-full">
               Upgrade to {requiredTier.charAt(0).toUpperCase() + requiredTier.slice(1)}
