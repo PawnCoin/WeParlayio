@@ -42,16 +42,8 @@ export class ESPNAssetService {
   }
 
   static getPlayerImage(playerName: string, sport: string = 'nba'): string {
-    const leagueCode = this.getLeagueCode(sport);
-
-    // ESPN player headshots format
-    const playerId = this.getPlayerESPNId(playerName, sport);
-    if (playerId) {
-      return `${this.ESPN_PLAYER_BASE}/${leagueCode}/players/full/${playerId}.png`;
-    }
-
-    // Fallback to generic player silhouette
-    return `${this.ESPN_PLAYER_BASE}/${leagueCode}/players/full/default.png`;
+    // Use ESPN's generic player headshot that always loads
+    return 'https://a.espncdn.com/combiner/i?img=/i/headshots/nophoto.png&w=350&h=254';
   }
 
   private static getLeagueCode(league: string): string {
@@ -105,7 +97,17 @@ export class ESPNAssetService {
       'Indiana Pacers': 'ind',
       'Washington Wizards': 'wsh',
       'Charlotte Hornets': 'cha',
-      'Orlando Magic': 'orl'
+      'Orlando Magic': 'orl',
+      // Also handle abbreviations directly
+      'GSW': 'gs',
+      'CLE': 'cle',
+      'BOS': 'bos',
+      'MIL': 'mil',
+      'DEN': 'den',
+      'LAL': 'lal',
+      'PHX': 'phx',
+      'PHI': 'phi',
+      'DAL': 'dal'
     };
 
     return nbaTeams[teamName] || teamName.toLowerCase().slice(0, 3);

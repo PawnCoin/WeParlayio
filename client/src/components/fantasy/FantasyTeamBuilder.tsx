@@ -792,7 +792,17 @@ const FantasyTeamBuilder: React.FC<FantasyTeamBuilderProps> = ({
                               )}
                             </div>
                           </div>
-                          <div className="col-span-2 text-xs text-gray-500 dark:text-gray-400">{player.team}</div>
+                          <div className="col-span-2 flex items-center">
+                            <img 
+                              src={ESPNAssetService.getTeamLogo(player.team, 'nba')} 
+                              alt={player.team}
+                              className="w-4 h-4 mr-1"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                            <span className="text-xs text-gray-500 dark:text-gray-400">{player.team}</span>
+                          </div>
                           <div className="col-span-2 text-right">${player.salary.toLocaleString()}</div>
                           <div className="col-span-2 text-right font-medium text-green-600 dark:text-green-400">{player.projectedPoints}</div>
                           <div className="col-span-1 text-right">
