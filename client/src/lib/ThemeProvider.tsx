@@ -9,14 +9,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
     if (typeof window !== 'undefined') {
       const savedTheme = localStorage.getItem("theme") as Theme | null;
       if (savedTheme) return savedTheme;
-      
-      // Check for system preference
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        return "dark";
-      }
     }
     
-    return "light";
+    // Default to dark mode for all new visitors
+    return "dark";
   });
 
   useEffect(() => {
