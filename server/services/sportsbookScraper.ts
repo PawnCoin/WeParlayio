@@ -27,6 +27,41 @@ export interface PlayerProp {
   timestamp: string;
 }
 
+// Simple cache for scraped data
+const cache = {
+  parlays: null as SportsbookParlay[] | null,
+  props: null as PlayerProp[] | null,
+  parlaysTime: 0,
+  propsTime: 0,
+  timeout: 5 * 60 * 1000, // 5 minutes
+
+  getParlaysCache(): SportsbookParlay[] | null {
+    if (this.parlays && (Date.now() - this.parlaysTime) < this.timeout) {
+      return this.parlays;
+    }
+    return null;
+  },
+
+  setParlaysCache(parlays: SportsbookParlay[]): void {
+    this.parlays = parlays;
+    this.parlaysTime = Date.now();
+  },
+
+  getPropsCache(): PlayerProp[] | null {
+    if (this.props && (Date.now() - this.propsTime) < this.timeout) {
+      return this.props;
+    }
+    return null;
+  },
+
+  setPropsCache(props: PlayerProp[]): void {
+    this.props = props;
+    this.propsTime = Date.now();
+  }
+};
+
+export const sportsbookCache = cache;
+
 export class SportsbookScraper {
   private browser: Browser | null = null;
   private page: Page | null = null;
@@ -281,38 +316,4 @@ export class SportsbookScraper {
   }
 }
 
-// Cache for scraped data
-class SportsbookCache {
-  private parlaysCache: { data: SportsbookParlay[], timestamp: number } | null = null;
-  private propsCache: { data: PlayerProp[], timestamp: number } | null = null;
-  private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-
-  isParlaysCacheValid(): boolean {
-    return this.parlaysCache !== null && 
-           (Date.now() - this.parlaysCache.timestamp) < this.CACHE_DURATION;
-  }
-
-  isPropsCacheValid(): boolean {
-    return this.propsCache !== null && 
-           (Date.now() - this.propsCache.timestamp) < this.CACHE_DURATION;
-  }
-
-  setParlaysCache(data: SportsbookParlay[]): void {
-    this.parlaysCache = { data, timestamp: Date.now() };
-  }
-
-  setPropsCache(data: PlayerProp[]): void {
-    this.propsCache = { data, timestamp: Date.now() };
-  }
-
-  getParlaysCache(): SportsbookParlay[] | null {
-    return this.isParlaysCacheValid() ? this.parlaysCache!.data : null;
-  }
-
-  getPropsCache(): PlayerProp[] | null {
-    return this.isPropsCacheValid() ? this.propsCache!.data : null;
-  }
-}
-
-export const sportsbookCache = new SportsbookCache();
 export const sportsbookScraper = new SportsbookScraper();
