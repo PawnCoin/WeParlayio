@@ -143,6 +143,7 @@ function Router() {
       {/* Social Features */}
       <Route path="/social-betting" component={SocialBetting} />
       <Route path="/head-to-head" component={HeadToHeadBetting} />
+      <Route path="/head-to-head-betting" component={HeadToHeadBetting} />
 
       {/* Trivia */}
       <Route path="/trivia" component={Trivia} />
