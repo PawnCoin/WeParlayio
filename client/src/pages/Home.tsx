@@ -17,56 +17,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Filter, BarChart2, Handshake, Users, Crown, Sparkles } from "lucide-react";
 
-const featuredGame = {
-  id: 1,
-  homeTeam: {
-    id: 1,
-    name: "Boston Celtics",
-    logo: "",
-    record: "20-5",
-    location: "Home"
-  },
-  awayTeam: {
-    id: 2,
-    name: "LA Lakers",
-    logo: "",
-    record: "16-8",
-    location: "Away"
-  },
-  startTime: new Date().toISOString(),
-  status: "live",
-  homeScore: 94,
-  awayScore: 87,
-  period: "3rd Quarter",
-  timeRemaining: "9:24",
-  sportName: "NBA",
-  odds: {
-    moneyline: {
-      home: -145,
-      away: 125
-    },
-    pointSpread: {
-      home: {
-        line: -4.5,
-        odds: -110
-      },
-      away: {
-        line: 4.5,
-        odds: -110
-      }
-    },
-    total: {
-      over: {
-        line: 223.5,
-        odds: -110
-      },
-      under: {
-        line: 223.5,
-        odds: -110
-      }
-    }
-  }
-};
+// Featured game will be pulled from real API data
 
 
 
