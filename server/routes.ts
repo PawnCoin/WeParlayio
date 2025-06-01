@@ -5363,6 +5363,107 @@ Join us: WeParlay.io 🎯
     }
   });
 
+  // Unified upcoming events endpoint
+  app.get('/api/unified-sports/upcoming-events', async (req, res) => {
+    try {
+      const upcomingEvents = [];
+      
+      // Fetch from ESPN API with upcoming games
+      try {
+        const espnResponse = await fetch('https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard');
+        if (espnResponse.ok) {
+          const espnData = await espnResponse.json();
+          const events = espnData.events?.slice(0, 5) || [];
+          
+          events.forEach(event => {
+            upcomingEvents.push({
+              id: `espn-${event.id}`,
+              title: `${event.competitions[0]?.competitors[0]?.team?.displayName || 'Team A'} vs ${event.competitions[0]?.competitors[1]?.team?.displayName || 'Team B'}`,
+              sport: 'NBA Basketball',
+              league: 'NBA',
+              date: event.date,
+              status: event.status?.type?.description || 'Scheduled',
+              homeTeam: event.competitions[0]?.competitors[0]?.team?.displayName || 'Team A',
+              awayTeam: event.competitions[0]?.competitors[1]?.team?.displayName || 'Team B',
+              venue: event.competitions[0]?.venue?.fullName || 'TBA',
+              source: 'ESPN'
+            });
+          });
+        }
+      } catch (error) {
+        console.warn('ESPN API error:', error);
+      }
+
+      // Fetch from your working baseball endpoint
+      try {
+        const baseballResponse = await fetch('http://localhost:5000/api/sports/baseball_mlb/live');
+        if (baseballResponse.ok) {
+          const baseballData = await baseballResponse.json();
+          const events = baseballData.slice(0, 3) || [];
+          
+          events.forEach(event => {
+            upcomingEvents.push({
+              id: `mlb-${event.id}`,
+              title: `${event.away_team} vs ${event.home_team}`,
+              sport: 'MLB Baseball',
+              league: 'MLB',
+              date: event.commence_time,
+              status: 'Live',
+              homeTeam: event.home_team,
+              awayTeam: event.away_team,
+              venue: 'MLB Stadium',
+              source: 'Live API'
+            });
+          });
+        }
+      } catch (error) {
+        console.warn('Baseball API error:', error);
+      }
+
+      // Fetch from your working NFL endpoint
+      try {
+        const nflResponse = await fetch('http://localhost:5000/api/odds/americanfootball_nfl');
+        if (nflResponse.ok) {
+          const nflData = await nflResponse.json();
+          const events = nflData.slice(0, 3) || [];
+          
+          events.forEach(event => {
+            upcomingEvents.push({
+              id: `nfl-${event.id}`,
+              title: `${event.away_team} vs ${event.home_team}`,
+              sport: 'NFL Football',
+              league: 'NFL',
+              date: event.commence_time,
+              status: 'Scheduled',
+              homeTeam: event.home_team,
+              awayTeam: event.away_team,
+              venue: 'NFL Stadium',
+              source: 'Live API'
+            });
+          });
+        }
+      } catch (error) {
+        console.warn('NFL API error:', error);
+      }
+
+      res.json({
+        success: true,
+        events: upcomingEvents,
+        count: upcomingEvents.length,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error('Error fetching upcoming events:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to fetch upcoming events',
+        events: [],
+        count: 0
+      });
+    }
+  });
+
   // GRID live matches for enhanced features
   app.get('/api/grid/live-matches', async (req, res) => {
     try {
