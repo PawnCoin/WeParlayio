@@ -50,6 +50,7 @@ const Home: React.FC = () => {
           console.log('Upcoming events API response:', data);
           console.log('Events array:', data.events);
           console.log('Events array length:', data.events?.length);
+          console.log('Returning events:', data.events || []);
           return data.events || [];
         }
         return [];
@@ -267,7 +268,7 @@ const Home: React.FC = () => {
             <Skeleton className="h-24 w-full" />
             <Skeleton className="h-24 w-full" />
           </div>
-        ) : upcomingEvents && upcomingEvents.length > 0 ? (
+        ) : (console.log('Checking upcomingEvents:', upcomingEvents, 'Length:', upcomingEvents?.length), upcomingEvents && upcomingEvents.length > 0) ? (
           <div className="space-y-4">
             {upcomingEvents
               .filter((event: any) => sportFilter === "All Sports" || event.sport?.includes(sportFilter) || event.league?.includes(sportFilter))
