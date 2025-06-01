@@ -56,6 +56,7 @@ initWordPressSync();
 
 // Theme initialization
 console.log('🎨 WeParlay theme system initialized');
+console.log('🔄 Frontend updated:', new Date().toISOString());
 
 createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>
