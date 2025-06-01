@@ -189,10 +189,15 @@ function Router() {
       <Route path="/payouts" component={PayoutManagement} />
       <Route path="/logs" component={SystemLogs} />
       <Route path="/api-status" component={ApiStatus} />
+      <Route path="/system/api-status" component={ApiStatus} />
       <Route path="/system-health" component={SystemHealth} />
+      <Route path="/system/system-health" component={SystemHealth} />
       <Route path="/unified-gaming" component={UnifiedGaming} />
+      <Route path="/system/unified-gaming" component={UnifiedGaming} />
       <Route path="/social-media-dashboard" component={SocialMediaDashboard} />
+      <Route path="/system/social-media-dashboard" component={SocialMediaDashboard} />
       <Route path="/live-sports-streaming" component={LiveSportsStreaming} />
+      <Route path="/system/live-sports-streaming" component={LiveSportsStreaming} />
 
       {/* Enhanced Multi-Currency Betting */}
       <Route path="/multi-currency-betting" component={MultiCurrencyBetting} />
