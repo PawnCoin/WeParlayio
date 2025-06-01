@@ -186,6 +186,9 @@ function Router() {
       <Route path="/api-status" component={ApiStatus} />
       <Route path="/system-health" component={SystemHealth} />
 
+      {/* Enhanced Multi-Currency Betting */}
+      <Route path="/multi-currency-betting" component={MultiCurrencyBetting} />
+
       {/* Crypto */}
       <Route path="/crypto-info" component={CryptoInformation} />
       <Route path="/crypto-guide" component={CryptoInformation} />
