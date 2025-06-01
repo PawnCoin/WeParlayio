@@ -28,12 +28,6 @@ const SocialBetting: React.FC = () => {
     refetchInterval: 30000,
   });
 
-  // Fetch real user betting activity
-  const { data: friendActivity } = useQuery({
-    queryKey: ["/api/social/friend-activity"], 
-    refetchInterval: 15000,
-  });
-
   // Real social feed with actual user posts
   const socialFeed = [
     {
@@ -74,7 +68,7 @@ const SocialBetting: React.FC = () => {
   ];
 
   // Fetch real friend activity from backend
-  const { data: friendActivity = [] } = useQuery({
+  const { data: backendFriendActivity = [] } = useQuery({
     queryKey: ["/api/social-betting/activity"],
     refetchInterval: 30000,
   });
@@ -295,7 +289,7 @@ const SocialBetting: React.FC = () => {
               <CardTitle className="text-lg font-bold">Friend Activity</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {friendActivity.map(activity => (
+              {backendFriendActivity.map(activity => (
                 <div key={activity.id} className="flex gap-3 items-start">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={activity.user.avatar} />
