@@ -25,11 +25,8 @@ export default function ApiStatus() {
     refetchInterval: 30 * 1000, // Auto-refresh every 30 seconds
   });
 
-  // Fetch overall system health
-  const { data: systemHealth } = useQuery({
-    queryKey: ['/api/system/health'],
-    staleTime: 30 * 1000,
-  });
+  // Fetch overall system health from the same endpoint
+  const systemHealth = services;
 
   const getStatusColor = (status: string) => {
     switch (status) {

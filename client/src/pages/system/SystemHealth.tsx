@@ -226,7 +226,7 @@ export default function SystemHealth() {
                     className={`w-full ${getHealthStatus(metrics?.disk?.usage || 0).bg}`}
                   />
                   <div className="text-xs text-muted-foreground">
-                    Available: {formatBytes(metrics?.disk?.available || 0)}
+                    Available: {formatBytes(metrics?.disk?.free || 0)}
                   </div>
                 </div>
               )}
@@ -304,21 +304,21 @@ export default function SystemHealth() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="text-center">
                   <p className="text-2xl font-bold text-green-600">
-                    {formatBytes(metrics?.network?.upload || 0)}/s
+                    {formatBytes(metrics?.network?.bytesOut || 0)}/s
                   </p>
-                  <p className="text-sm text-muted-foreground">Upload Speed</p>
+                  <p className="text-sm text-muted-foreground">Bytes Out</p>
                 </div>
                 <div className="text-center">
                   <p className="text-2xl font-bold text-blue-600">
-                    {formatBytes(metrics?.network?.download || 0)}/s
+                    {formatBytes(metrics?.network?.bytesIn || 0)}/s
                   </p>
-                  <p className="text-sm text-muted-foreground">Download Speed</p>
+                  <p className="text-sm text-muted-foreground">Bytes In</p>
                 </div>
                 <div className="text-center">
                   <p className="text-2xl font-bold text-purple-600">
-                    {metrics?.network?.latency || 0}ms
+                    {metrics?.network?.packetsIn || 0}
                   </p>
-                  <p className="text-sm text-muted-foreground">Latency</p>
+                  <p className="text-sm text-muted-foreground">Packets In</p>
                 </div>
               </div>
             </CardContent>
