@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { AssetManager } from '@/lib/assetManager';
 import { 
   TrendingUp, 
   Activity, 
@@ -216,7 +217,7 @@ export default function Odds() {
               <Card key={`odds-${odds.id || index}`} className="border-l-4 border-l-blue-500">
                 <CardHeader>
                   <div className="flex justify-between items-start">
-                    <div>
+                    <div className="flex items-center gap-3">
                       <CardTitle className="text-lg">{odds.sport_title}</CardTitle>
                       <p className="text-sm text-gray-600 mt-1">
                         {odds.home_team} vs {odds.away_team}
