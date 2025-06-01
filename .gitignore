@@ -4,3 +4,29 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+node_modules
+dist
+.DS_Store
+server/public
+vite.config.ts.*
+*.tar.gz
+
+# Prevent temporary files
+attached_assets/Pasted-*.txt
+attached_assets/targeted_element_*.png
+attached_assets/Screenshot*.png
+*.tmp
+*.temp
+*-backup.*
+*-copy.*
+*-duplicate.*
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+Thumbs.db
+.DS_Store
