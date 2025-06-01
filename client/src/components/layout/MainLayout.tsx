@@ -359,8 +359,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <OddsTicker />
       {/* Footer */}
       <Footer />
-      <SystemStatusIndicator />
-      <QuickNavButton />
+      
+      {/* Bottom Right Corner - Organized Stack */}
+      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-3 items-end">
+        <SystemStatusIndicator />
+        <QuickNavButton />
+      </div>
     </div>
   );
 };

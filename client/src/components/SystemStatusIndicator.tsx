@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Badge } from './ui/badge';
 import { Alert, AlertDescription } from './ui/alert';
@@ -68,7 +67,7 @@ export default function SystemStatusIndicator() {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="bottom-4 right-4 z-50">
       <div 
         className="cursor-pointer"
         onClick={() => setShowDetails(!showDetails)}
@@ -87,13 +86,13 @@ export default function SystemStatusIndicator() {
             <AlertDescription>
               <div className="space-y-2">
                 <div className="font-semibold">System Status Details</div>
-                
+
                 {status.resilience.emergencyMode && (
                   <div className="text-sm text-yellow-600">
                     ⚠️ Some APIs are temporarily unavailable. Using cached data to ensure uninterrupted service.
                   </div>
                 )}
-                
+
                 {status.warnings.length > 0 && (
                   <div className="text-sm">
                     <div className="font-medium mb-1">Notices:</div>
@@ -102,7 +101,7 @@ export default function SystemStatusIndicator() {
                     ))}
                   </div>
                 )}
-                
+
                 <div className="text-xs text-gray-500 mt-2">
                   All betting and core features remain fully functional.
                   Click to dismiss.

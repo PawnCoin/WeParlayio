@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -27,7 +26,7 @@ const QuickNavButton: React.FC = () => {
   ];
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
           <Button 
@@ -47,7 +46,7 @@ const QuickNavButton: React.FC = () => {
               Jump to any page quickly
             </SheetDescription>
           </SheetHeader>
-          
+
           <div className="mt-6 space-y-3">
             {quickLinks.map((link) => (
               <Button
@@ -79,7 +78,7 @@ const QuickNavButton: React.FC = () => {
           </div>
         </SheetContent>
       </Sheet>
-    </div>
+    
   );
 };
 
