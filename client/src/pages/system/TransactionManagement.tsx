@@ -39,13 +39,13 @@ export default function TransactionManagement() {
 
   // Fetch transactions
   const { data: transactions, isLoading } = useQuery({
-    queryKey: ['/api/transactions', filters],
+    queryKey: ['/api/transactions/list', filters],
     staleTime: 30 * 1000,
   });
 
   // Fetch transaction statistics
   const { data: stats } = useQuery({
-    queryKey: ['/api/transactions/stats'],
+    queryKey: ['/api/transactions/statistics'],
     staleTime: 60 * 1000,
   });
 

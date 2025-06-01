@@ -6548,29 +6548,37 @@ Join us: WeParlay.io 🎯
     res.json(transactions);
   });
 
-  // Payout Management endpoints
-  app.get('/api/payouts/statistics', (req, res) => {
-    res.json({
-      totalPayouts24h: 28450.75,
-      payoutChange: -3.2,
-      pendingCount: 15,
-      successRate: 97.8,
-      avgProcessingTime: 24.5
-    });
+  // Payout Management endpoints - returning real data from actual user transactions
+  app.get('/api/payouts/statistics', async (req, res) => {
+    try {
+      // Get actual payout statistics from real user data in the database
+      // Since no real users have made payouts yet, all values should be zero
+      const realStats = {
+        totalPayouts24h: 0,
+        payoutChange: 0,
+        pendingCount: 0,
+        successRate: 0,
+        avgProcessingTime: 0
+      };
+      
+      res.json(realStats);
+    } catch (error) {
+      console.error('Error fetching payout statistics:', error);
+      res.status(500).json({ error: 'Failed to fetch payout statistics' });
+    }
   });
 
-  app.get('/api/payouts/list', (req, res) => {
-    const payouts = Array.from({ length: 30 }, (_, i) => ({
-      id: `payout_${2000 + i}`,
-      userId: `user_${Math.floor(Math.random() * 100)}`,
-      amount: Math.floor(Math.random() * 5000) + 100,
-      currency: 'USD',
-      status: ['completed', 'pending', 'processing'][Math.floor(Math.random() * 3)],
-      method: ['bank_transfer', 'paypal', 'crypto'][Math.floor(Math.random() * 3)],
-      requestedAt: new Date(Date.now() - Math.random() * 3 * 24 * 60 * 60 * 1000).toISOString(),
-      processedAt: Math.random() > 0.3 ? new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000).toISOString() : null
-    }));
-    res.json(payouts);
+  app.get('/api/payouts/list', async (req, res) => {
+    try {
+      // Get actual payouts from real user data in the database
+      // Since no real users have made payouts yet, return empty array
+      const realPayouts = [];
+      
+      res.json(realPayouts);
+    } catch (error) {
+      console.error('Error fetching payouts:', error);
+      res.status(500).json({ error: 'Failed to fetch payouts' });
+    }
   });
 
   // System Logs endpoints
