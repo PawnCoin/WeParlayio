@@ -18,6 +18,7 @@ import { feeRouter } from "./routes/feeRoutes";
 import { adminRouter } from "./routes/adminRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
 import { socialMediaBotRouter } from "./routes/socialMediaBotRoutes";
+import { theTVAppService } from "./services/theTVAppService";
 import gamingRoutes from "./routes/gamingRoutes";
 import unifiedSportsRoutes from "./routes/unifiedSportsRoutes";
 import { bankingRouter } from "./routes/bankingRoutes";
@@ -6965,6 +6966,66 @@ Join us: WeParlay.io 🎯
     } catch (error) {
       console.error('Error fetching active bets:', error);
       res.status(500).json({ error: 'Failed to fetch active bets' });
+    }
+  });
+
+  // TheTVApp.tv Global Streaming API Routes
+  app.get('/api/streaming/live/sports', async (req, res) => {
+    try {
+      const streams = await theTVAppService.getLiveSportsStreams();
+      res.json({ success: true, streams });
+    } catch (error: any) {
+      console.error('Error fetching live sports streams:', error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  });
+
+  app.get('/api/streaming/live/esports', async (req, res) => {
+    try {
+      const streams = await theTVAppService.getLiveEsportsStreams();
+      res.json({ success: true, streams });
+    } catch (error: any) {
+      console.error('Error fetching live esports streams:', error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  });
+
+  app.get('/api/streaming/sport/:sportType', async (req, res) => {
+    try {
+      const { sportType } = req.params;
+      const streams = await theTVAppService.getStreamsBySport(sportType);
+      res.json({ success: true, streams });
+    } catch (error: any) {
+      console.error(`Error fetching ${sportType} streams:`, error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  });
+
+  app.get('/api/streaming/details/:eventId', async (req, res) => {
+    try {
+      const { eventId } = req.params;
+      const stream = await theTVAppService.getStreamDetails(eventId);
+      if (!stream) {
+        return res.status(404).json({ success: false, message: 'Stream not found' });
+      }
+      res.json({ success: true, stream });
+    } catch (error: any) {
+      console.error('Error fetching stream details:', error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  });
+
+  app.get('/api/streaming/search', async (req, res) => {
+    try {
+      const query = req.query.q as string;
+      if (!query) {
+        return res.status(400).json({ success: false, message: 'Search query required' });
+      }
+      const streams = await theTVAppService.searchStreams(query);
+      res.json({ success: true, streams });
+    } catch (error: any) {
+      console.error('Error searching streams:', error);
+      res.status(500).json({ success: false, message: error.message });
     }
   });
 
