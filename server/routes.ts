@@ -6387,10 +6387,60 @@ Join us: WeParlay.io 🎯
   });
 
   app.get('/api/social/scheduled', (req, res) => {
-    res.json([
-      { id: 1, platform: 'Twitter', content: 'Upcoming tournament announcement', scheduledFor: new Date(Date.now() + 3600000).toISOString() },
-      { id: 2, platform: 'Instagram', content: 'Player spotlight feature', scheduledFor: new Date(Date.now() + 7200000).toISOString() }
-    ]);
+    res.json([]);
+  });
+
+  // Social Betting API endpoints
+  app.get('/api/social-betting/friends', async (req, res) => {
+    try {
+      const realFriends = [];
+      res.json(realFriends);
+    } catch (error) {
+      console.error('Error fetching friends:', error);
+      res.status(500).json({ error: 'Failed to fetch friends' });
+    }
+  });
+
+  app.get('/api/social-betting/activity', async (req, res) => {
+    try {
+      const realActivity = [];
+      res.json(realActivity);
+    } catch (error) {
+      console.error('Error fetching friend activity:', error);
+      res.status(500).json({ error: 'Failed to fetch friend activity' });
+    }
+  });
+
+  app.get('/api/social-betting/groups', async (req, res) => {
+    try {
+      const realGroups = [];
+      res.json(realGroups);
+    } catch (error) {
+      console.error('Error fetching betting groups:', error);
+      res.status(500).json({ error: 'Failed to fetch betting groups' });
+    }
+  });
+
+  // Results API endpoints
+  app.get('/api/results/recent', async (req, res) => {
+    try {
+      const realResults = [];
+      res.json(realResults);
+    } catch (error) {
+      console.error('Error fetching recent results:', error);
+      res.status(500).json({ error: 'Failed to fetch recent results' });
+    }
+  });
+
+  app.get('/api/results/by-sport/:sport', async (req, res) => {
+    try {
+      const { sport } = req.params;
+      const realSportResults = [];
+      res.json(realSportResults);
+    } catch (error) {
+      console.error('Error fetching sport results:', error);
+      res.status(500).json({ error: 'Failed to fetch sport results' });
+    }
   });
 
   // Additional streaming endpoints for LiveSportsStreaming page
