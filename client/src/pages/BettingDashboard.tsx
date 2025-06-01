@@ -10,8 +10,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import EnhancedBetTooltip from "@/components/betting/EnhancedBetTooltip";
 import RealTimeOddsVisualization from '@/components/betting/RealTimeOddsVisualization';
+import TierUpgradePrompt from '@/components/TierUpgradePrompt';
 import { useBetSlip } from '@/contexts/BetSlipContext';
-import { Clock, Calendar, Filter, TrendingUp, RefreshCw, AlertTriangle } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { Clock, Calendar, Filter, TrendingUp, RefreshCw, AlertTriangle, Crown, Zap, BarChart3, Target } from 'lucide-react';
 import { formatGameTime, formatGameDate } from '@/lib/sportsDataUtils';
 
 const PROFESSIONAL_LEAGUES = [
@@ -30,9 +32,13 @@ type BetType = 'moneyline' | 'spread' | 'total' | 'player-props' | 'team-props' 
 
 const BettingDashboard: React.FC = () => {
   const { addBet } = useBetSlip();
+  const { user } = useAuth();
   const [selectedLeagues, setSelectedLeagues] = useState<string[]>(PROFESSIONAL_LEAGUES.map(league => league.key));
   const [betTypes, setBetTypes] = useState<BetType[]>(['moneyline', 'spread', 'total', 'player-props', 'team-props']);
   const [timeFrame, setTimeFrame] = useState<'today' | 'tomorrow' | 'this-week'>('today');
+  
+  // Mock user tier for demonstration - replace with real user tier
+  const userTier = user?.tier || 'bronze';
   
   // Fetch sports data
   const { data: sports, isLoading: isLoadingSports, error: sportsError } = useQuery({
@@ -220,29 +226,62 @@ const BettingDashboard: React.FC = () => {
                       />
                       <Label htmlFor="bet-total" className="text-sm cursor-pointer">Total (Over/Under)</Label>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="bet-player-props" 
-                        checked={betTypes.includes('player-props')}
-                        onCheckedChange={() => toggleBetType('player-props')}
-                      />
-                      <Label htmlFor="bet-player-props" className="text-sm cursor-pointer">Player Props</Label>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="bet-player-props" 
+                          checked={betTypes.includes('player-props')}
+                          onCheckedChange={() => toggleBetType('player-props')}
+                          disabled={userTier === 'bronze'}
+                        />
+                        <Label htmlFor="bet-player-props" className="text-sm cursor-pointer">Player Props</Label>
+                      </div>
+                      {userTier === 'bronze' && (
+                        <TierUpgradePrompt
+                          requiredTier="silver"
+                          feature="Player Props"
+                          description="Bet on individual player statistics and performance"
+                          compact={true}
+                        />
+                      )}
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="bet-team-props" 
-                        checked={betTypes.includes('team-props')}
-                        onCheckedChange={() => toggleBetType('team-props')}
-                      />
-                      <Label htmlFor="bet-team-props" className="text-sm cursor-pointer">Team Props</Label>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="bet-team-props" 
+                          checked={betTypes.includes('team-props')}
+                          onCheckedChange={() => toggleBetType('team-props')}
+                          disabled={userTier === 'bronze'}
+                        />
+                        <Label htmlFor="bet-team-props" className="text-sm cursor-pointer">Team Props</Label>
+                      </div>
+                      {userTier === 'bronze' && (
+                        <TierUpgradePrompt
+                          requiredTier="silver"
+                          feature="Team Props"
+                          description="Advanced team statistics and performance betting"
+                          compact={true}
+                        />
+                      )}
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="bet-parlays" 
-                        checked={betTypes.includes('parlays')}
-                        onCheckedChange={() => toggleBetType('parlays')}
-                      />
-                      <Label htmlFor="bet-parlays" className="text-sm cursor-pointer">Parlays</Label>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="bet-parlays" 
+                          checked={betTypes.includes('parlays')}
+                          onCheckedChange={() => toggleBetType('parlays')}
+                          disabled={!['gold', 'platinum', 'diamond'].includes(userTier)}
+                        />
+                        <Label htmlFor="bet-parlays" className="text-sm cursor-pointer">Advanced Parlays</Label>
+                      </div>
+                      {!['gold', 'platinum', 'diamond'].includes(userTier) && (
+                        <TierUpgradePrompt
+                          requiredTier="gold"
+                          feature="Advanced Parlays"
+                          description="Unlimited parlay combinations with enhanced odds"
+                          compact={true}
+                        />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -274,7 +313,7 @@ const BettingDashboard: React.FC = () => {
         
         <div className="md:col-span-3">
           <Tabs defaultValue="live">
-            <TabsList className="grid grid-cols-3 mb-4">
+            <TabsList className="grid grid-cols-4 mb-4">
               <TabsTrigger value="live" className="flex items-center">
                 <Clock className="h-4 w-4 mr-2" />
                 Live Events
@@ -286,6 +325,13 @@ const BettingDashboard: React.FC = () => {
               <TabsTrigger value="odds-viz" className="flex items-center">
                 <TrendingUp className="h-4 w-4 mr-2" />
                 Real-Time Odds
+              </TabsTrigger>
+              <TabsTrigger value="analytics" className="flex items-center">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Analytics
+                {!['gold', 'platinum', 'diamond'].includes(userTier) && (
+                  <Crown className="h-3 w-3 ml-1 text-yellow-500" />
+                )}
               </TabsTrigger>
             </TabsList>
             
@@ -1273,6 +1319,175 @@ const BettingDashboard: React.FC = () => {
 
             <TabsContent value="odds-viz">
               <RealTimeOddsVisualization />
+            </TabsContent>
+            
+            <TabsContent value="analytics">
+              {['gold', 'platinum', 'diamond'].includes(userTier) ? (
+                <div className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <BarChart3 className="h-5 w-5 mr-2" />
+                        Advanced Betting Analytics
+                        <Badge className="ml-2 bg-yellow-100 text-yellow-800">
+                          <Crown className="h-3 w-3 mr-1" />
+                          Premium
+                        </Badge>
+                      </CardTitle>
+                      <CardDescription>
+                        Deep insights into betting patterns, odds movements, and performance metrics
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="space-y-4">
+                          <h3 className="font-semibold flex items-center">
+                            <Target className="h-4 w-4 mr-2" />
+                            Accuracy Metrics
+                          </h3>
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">Win Rate</span>
+                              <span className="font-medium">68.4%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">ROI</span>
+                              <span className="font-medium text-green-600">+12.8%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">Sharp Money</span>
+                              <span className="font-medium">74%</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <h3 className="font-semibold flex items-center">
+                            <TrendingUp className="h-4 w-4 mr-2" />
+                            Market Analysis
+                          </h3>
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">Line Movement</span>
+                              <span className="font-medium">Favorable</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">Steam Moves</span>
+                              <span className="font-medium">3 detected</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">Value Bets</span>
+                              <span className="font-medium text-green-600">12 available</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <h3 className="font-semibold flex items-center">
+                            <Zap className="h-4 w-4 mr-2" />
+                            AI Predictions
+                          </h3>
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">Model Confidence</span>
+                              <span className="font-medium">87%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">Edge Detection</span>
+                              <span className="font-medium text-green-600">Active</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">Suggested Units</span>
+                              <span className="font-medium">2.5u</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-6 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-semibold text-yellow-800">Premium Analytics Active</h4>
+                            <p className="text-sm text-yellow-700">Advanced metrics, AI predictions, and market analysis</p>
+                          </div>
+                          <Crown className="h-8 w-8 text-yellow-600" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  <TierUpgradePrompt
+                    requiredTier="gold"
+                    feature="Advanced Betting Analytics"
+                    description="Unlock AI-powered predictions, market analysis, sharp money tracking, and advanced performance metrics to maximize your betting edge."
+                  />
+                  
+                  <Card className="border-dashed border-2 opacity-60">
+                    <CardHeader>
+                      <CardTitle className="flex items-center text-muted-foreground">
+                        <BarChart3 className="h-5 w-5 mr-2" />
+                        Preview: Premium Analytics
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="space-y-4">
+                          <h3 className="font-semibold flex items-center text-muted-foreground">
+                            <Target className="h-4 w-4 mr-2" />
+                            Accuracy Metrics
+                          </h3>
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">Win Rate</span>
+                              <span className="font-medium text-muted-foreground">••••</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">ROI</span>
+                              <span className="font-medium text-muted-foreground">••••</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <h3 className="font-semibold flex items-center text-muted-foreground">
+                            <TrendingUp className="h-4 w-4 mr-2" />
+                            Market Analysis
+                          </h3>
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">Line Movement</span>
+                              <span className="font-medium text-muted-foreground">••••</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">Steam Moves</span>
+                              <span className="font-medium text-muted-foreground">••••</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <h3 className="font-semibold flex items-center text-muted-foreground">
+                            <Zap className="h-4 w-4 mr-2" />
+                            AI Predictions
+                          </h3>
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">Model Confidence</span>
+                              <span className="font-medium text-muted-foreground">••••</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">Edge Detection</span>
+                              <span className="font-medium text-muted-foreground">••••</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </div>
