@@ -21,6 +21,11 @@ export class ESPNAssetService {
       return `${this.ESPN_TEAM_LOGO_BASE}/${leagueCode}/500/${teamAbbr}.png`;
     }
 
+    if (leagueCode === 'nhl') {
+      const teamAbbr = this.getNHLTeamAbbreviation(teamName);
+      return `${this.ESPN_TEAM_LOGO_BASE}/${leagueCode}/500/${teamAbbr}.png`;
+    }
+
     // For other leagues, use team slug
     const teamSlug = teamName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
     return `${this.ESPN_TEAM_LOGO_BASE}/${leagueCode}/500/${teamSlug}.png`;

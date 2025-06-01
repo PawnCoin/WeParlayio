@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { ESPNAssetService } from '@/lib/espnAssetService';
 
 interface TeamLogoProps {
   src?: string | null;
@@ -8,6 +9,7 @@ interface TeamLogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
   fallbackColor?: string;
+  league?: string; // Add league prop for ESPN integration
 }
 
 const sizeClasses = {
@@ -23,11 +25,18 @@ export function TeamLogo({
   teamAbbr, 
   size = 'md', 
   className,
-  fallbackColor = '#3b82f6'
+  fallbackColor = '#3b82f6',
+  league = 'nba'
 }: TeamLogoProps) {
   const [imageError, setImageError] = React.useState(false);
   
-  if (!src || imageError) {
+  // Determine the best logo source - prioritize ESPN, then provided src
+  const logoSrc = React.useMemo(() => {
+    if (src && !imageError) return src;
+    return ESPNAssetService.getTeamLogo(teamName, league);
+  }, [src, teamName, league, imageError]);
+  
+  if (imageError) {
     // Fallback to abbreviation or first letters
     const displayText = teamAbbr || teamName.split(' ').map(word => word[0]).join('').slice(0, 3);
     
@@ -48,7 +57,7 @@ export function TeamLogo({
 
   return (
     <img
-      src={src}
+      src={logoSrc}
       alt={`${teamName} logo`}
       className={cn(
         'rounded-full object-contain',
@@ -69,7 +78,8 @@ export function TeamMatchup({
   awayTeamLogo,
   homeTeamColor,
   awayTeamColor,
-  size = 'md' 
+  size = 'md',
+  league = 'nba'
 }: {
   homeTeam: string;
   awayTeam: string;
@@ -78,6 +88,7 @@ export function TeamMatchup({
   homeTeamColor?: string;
   awayTeamColor?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  league?: string;
 }) {
   return (
     <div className="flex items-center justify-center gap-3">
@@ -87,6 +98,7 @@ export function TeamMatchup({
           teamName={awayTeam} 
           size={size}
           fallbackColor={awayTeamColor}
+          league={league}
         />
         <span className="font-medium">{awayTeam}</span>
       </div>
@@ -99,6 +111,7 @@ export function TeamMatchup({
           teamName={homeTeam} 
           size={size}
           fallbackColor={homeTeamColor}
+          league={league}
         />
         <span className="font-medium">{homeTeam}</span>
       </div>
