@@ -251,8 +251,27 @@ adminRouter.get('/user-analytics', isAuthenticated, isAdmin, async (req: Request
   try {
     const users = await storage.getAllUsers();
     
-    // Calculate analytics metrics
-    const totalUsers = users.length + 15; // Include bot users
+    // Get enhanced bot users list (15 users total)
+    const enhancedBotUsers = [
+      { username: 'SportsBetterPro', tier: 'gold', wins: 47, balance: 2850 },
+      { username: 'FantasyKing', tier: 'diamond', wins: 89, balance: 5420 },
+      { username: 'CryptoGambler', tier: 'silver', wins: 23, balance: 1230 },
+      { username: 'LiveBetMaster', tier: 'bronze', wins: 15, balance: 890 },
+      { username: 'EsportsElite', tier: 'platinum', wins: 67, balance: 3200 },
+      { username: 'ParlaySage', tier: 'gold', wins: 34, balance: 2100 },
+      { username: 'TriviaChamp', tier: 'silver', wins: 28, balance: 1450 },
+      { username: 'CasinoKing', tier: 'diamond', wins: 78, balance: 4200 },
+      { username: 'NFLAnalyst', tier: 'platinum', wins: 52, balance: 2900 },
+      { username: 'BasketballPro', tier: 'gold', wins: 41, balance: 1850 },
+      { username: 'SoccerStar', tier: 'gold', wins: 45, balance: 2350 },
+      { username: 'HockeyHero', tier: 'silver', wins: 19, balance: 1180 },
+      { username: 'BaseballBet', tier: 'bronze', wins: 12, balance: 950 },
+      { username: 'TennisTrader', tier: 'platinum', wins: 58, balance: 3100 },
+      { username: 'GolfGuru', tier: 'diamond', wins: 72, balance: 3800 }
+    ];
+    
+    // Calculate analytics metrics including bot users
+    const totalUsers = users.length + enhancedBotUsers.length; // Include bot users
     const activeUsers = Math.floor(totalUsers * 0.8); // 80% active
     const premiumUsers = Math.floor(totalUsers * 0.53); // 53% premium
     
@@ -302,12 +321,36 @@ adminRouter.get('/user-analytics', isAuthenticated, isAdmin, async (req: Request
           userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=FantasyKing'
         },
         {
+          username: 'CryptoGambler',
+          activity: 'Deposited crypto',
+          tier: 'silver',
+          value: '$250',
+          timestamp: '30 minutes ago',
+          userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=CryptoGambler'
+        },
+        {
           username: 'EsportsElite',
           activity: 'Upgraded to Platinum',
           tier: 'platinum',
           value: '$50',
           timestamp: '1 hour ago',
           userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=EsportsElite'
+        },
+        {
+          username: 'ParlaySage',
+          activity: 'Created parlay bet',
+          tier: 'gold',
+          value: '$75',
+          timestamp: '2 hours ago',
+          userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=ParlaySage'
+        },
+        {
+          username: 'CasinoKing',
+          activity: 'Big win streak',
+          tier: 'diamond',
+          value: '$500',
+          timestamp: '3 hours ago',
+          userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=CasinoKing'
         }
       ]
     };
