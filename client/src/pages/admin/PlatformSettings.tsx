@@ -118,7 +118,25 @@ function PlatformSettingsContent() {
     staleTime: 30000
   });
 
-  const currentSettings = settings || defaultSettings;
+  // Safely merge settings with defaults to prevent undefined access
+  const currentSettings: PlatformSettings = {
+    general: {
+      ...defaultSettings.general,
+      ...(settings?.general || {})
+    },
+    betting: {
+      ...defaultSettings.betting,
+      ...(settings?.betting || {})
+    },
+    features: {
+      ...defaultSettings.features,
+      ...(settings?.features || {})
+    },
+    integrations: {
+      ...defaultSettings.integrations,
+      ...(settings?.integrations || {})
+    }
+  };
 
   // Update settings mutation
   const updateSettingsMutation = useMutation({
