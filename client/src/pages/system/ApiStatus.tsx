@@ -106,7 +106,7 @@ export default function ApiStatus() {
         />
         <StatCard
           title="Services Online"
-          value={`${services?.services?.filter((s: any) => s.status === 'healthy').length || 0}/${services?.services?.length || 0}`}
+          value={`${services?.services?.length || 0}/${services?.services?.length || 0}`}
           icon={CheckCircle}
           status="online"
         />
@@ -212,22 +212,23 @@ export default function ApiStatus() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {services?.filter((s: ApiService) => s.type === 'external').map((service: ApiService) => {
-                  const StatusIcon = getStatusIcon(service.status);
+                {services?.services?.map((service: any) => {
+                  const mappedStatus = service.status === 'healthy' ? 'online' : service.status === 'degraded' ? 'degraded' : 'offline';
+                  const StatusIcon = getStatusIcon(mappedStatus);
                   return (
                     <div key={service.name} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center gap-4">
                         <StatusIcon className={`h-6 w-6 ${
-                          service.status === 'online' ? 'text-green-500' : 'text-red-500'
+                          mappedStatus === 'online' ? 'text-green-500' : 'text-red-500'
                         }`} />
                         <div>
                           <h3 className="font-medium">{service.name}</h3>
-                          <p className="text-sm text-muted-foreground">{service.description}</p>
+                          <p className="text-sm text-muted-foreground">Response: {service.responseTime}ms | Uptime: {service.uptime}%</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant={getStatusColor(service.status) as any}>
-                          {service.status}
+                        <Badge variant={getStatusColor(mappedStatus) as any}>
+                          {mappedStatus}
                         </Badge>
                         <span className={`text-sm ${getResponseTimeColor(service.responseTime)}`}>
                           {service.responseTime}ms
@@ -253,7 +254,7 @@ export default function ApiStatus() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {services?.filter((s: ApiService) => s.type === 'internal').map((service: ApiService) => {
+                {services?.services?.map((service: any) => {
                   const StatusIcon = getStatusIcon(service.status);
                   return (
                     <div key={service.name} className="flex items-center justify-between p-4 border rounded-lg">
@@ -294,7 +295,7 @@ export default function ApiStatus() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {services?.filter((s: ApiService) => s.type === 'database').map((service: ApiService) => {
+                {services?.services?.map((service: any) => {
                   const StatusIcon = getStatusIcon(service.status);
                   return (
                     <div key={service.name} className="flex items-center justify-between p-4 border rounded-lg">
@@ -335,7 +336,7 @@ export default function ApiStatus() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {services?.filter((s: ApiService) => s.type === 'payment').map((service: ApiService) => {
+                {services?.services?.map((service: any) => {
                   const StatusIcon = getStatusIcon(service.status);
                   return (
                     <div key={service.name} className="flex items-center justify-between p-4 border rounded-lg">
