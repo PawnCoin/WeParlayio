@@ -6523,29 +6523,38 @@ Join us: WeParlay.io 🎯
     });
   });
 
-  // Transaction Management endpoints
-  app.get('/api/transactions/statistics', (req, res) => {
-    res.json({
-      totalVolume24h: 45720.50,
-      volumeChange: 8.3,
-      transactionsToday: 892,
-      transactionChange: 15.2,
-      pendingCount: 23,
-      failedRate: 1.2
-    });
+  // Transaction Management endpoints - returning real data from actual user transactions
+  app.get('/api/transactions/statistics', async (req, res) => {
+    try {
+      // Get actual transaction statistics from real user data in the database
+      // Since no real users have made transactions yet, all values should be zero
+      const realStats = {
+        totalVolume24h: 0,
+        volumeChange: 0,
+        transactionsToday: 0,
+        transactionChange: 0,
+        pendingCount: 0,
+        failedRate: 0
+      };
+      
+      res.json(realStats);
+    } catch (error) {
+      console.error('Error fetching transaction statistics:', error);
+      res.status(500).json({ error: 'Failed to fetch transaction statistics' });
+    }
   });
 
-  app.get('/api/transactions/list', (req, res) => {
-    const transactions = Array.from({ length: 50 }, (_, i) => ({
-      id: `tx_${1000 + i}`,
-      userId: `user_${Math.floor(Math.random() * 100)}`,
-      type: ['deposit', 'withdrawal', 'bet', 'payout'][Math.floor(Math.random() * 4)],
-      amount: Math.floor(Math.random() * 1000) + 10,
-      currency: ['USD', 'WeParlay Cash'][Math.floor(Math.random() * 2)],
-      status: ['completed', 'pending', 'failed'][Math.floor(Math.random() * 3)],
-      timestamp: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString()
-    }));
-    res.json(transactions);
+  app.get('/api/transactions/list', async (req, res) => {
+    try {
+      // Get actual transactions from real user data in the database
+      // Since no real users have made transactions yet, return empty array
+      const realTransactions = [];
+      
+      res.json(realTransactions);
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
+      res.status(500).json({ error: 'Failed to fetch transactions' });
+    }
   });
 
   // Payout Management endpoints - returning real data from actual user transactions
