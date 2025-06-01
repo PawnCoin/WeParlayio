@@ -6395,6 +6395,28 @@ Join us: WeParlay.io 🎯
     });
   });
 
+  // Maintenance mode endpoint
+  app.post('/api/admin/maintenance-mode', (req, res) => {
+    const { enabled } = req.body;
+    // In a real application, this would update the system configuration
+    res.json({ 
+      success: true, 
+      maintenanceMode: enabled,
+      message: `Maintenance mode ${enabled ? 'enabled' : 'disabled'}` 
+    });
+  });
+
+  // PUT endpoint for platform settings updates
+  app.put('/api/admin/platform-settings', (req, res) => {
+    const updates = req.body;
+    // In a real application, this would persist the settings to database
+    res.json({ 
+      success: true, 
+      settings: updates,
+      message: 'Platform settings updated successfully' 
+    });
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

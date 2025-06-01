@@ -94,6 +94,7 @@ import UnifiedGaming from "@/pages/system/UnifiedGaming";
 import SocialMediaDashboard from "@/pages/system/SocialMediaDashboard";
 import LiveSportsStreaming from "@/pages/system/LiveSportsStreaming";
 import MultiCurrencyBetting from "@/pages/MultiCurrencyBetting";
+import UpgradeTier from "@/pages/UpgradeTier";
 import { lazy } from 'react';
 
 function Router() {
@@ -177,6 +178,7 @@ function Router() {
       <Route path="/settings" component={Settings} />
       <Route path="/security-settings" component={SecuritySettings} />
       <Route path="/theme-settings" component={ThemeSettingsPage} />
+      <Route path="/upgrade-tier" component={UpgradeTier} />
       <Route path="/theme-color-manager" component={ThemeColorManager} />
 
       {/* System Management Routes */}
