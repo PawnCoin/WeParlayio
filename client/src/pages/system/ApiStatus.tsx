@@ -100,25 +100,25 @@ export default function ApiStatus() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Overall Status"
-          value={systemHealth?.overallStatus || 'Unknown'}
-          icon={getStatusIcon(systemHealth?.overallStatus)}
-          status={systemHealth?.overallStatus}
+          value={services?.overallStatus || 'Unknown'}
+          icon={getStatusIcon(services?.overallStatus)}
+          status={services?.overallStatus === 'healthy' ? 'online' : 'offline'}
         />
         <StatCard
           title="Services Online"
-          value={`${services?.filter((s: ApiService) => s.status === 'online').length || 0}/${services?.length || 0}`}
+          value={`${services?.services?.filter((s: any) => s.status === 'healthy').length || 0}/${services?.services?.length || 0}`}
           icon={CheckCircle}
           status="online"
         />
         <StatCard
           title="Avg Response Time"
-          value={`${systemHealth?.avgResponseTime || 0}ms`}
+          value={`${services?.avgResponseTime || 0}ms`}
           icon={Clock}
           status="online"
         />
         <StatCard
-          title="System Uptime"
-          value={`${systemHealth?.systemUptime || 0}%`}
+          title="Total Services"
+          value={services?.services?.length || 0}
           icon={Server}
           status="online"
         />
@@ -143,31 +143,32 @@ export default function ApiStatus() {
               <div className="space-y-4">
                 {isLoading ? (
                   <div className="text-center py-8">Loading service status...</div>
-                ) : services?.length > 0 ? (
-                  services.map((service: ApiService) => {
-                    const StatusIcon = getStatusIcon(service.status);
-                    const TypeIcon = getTypeIcon(service.type);
+                ) : services?.services?.length > 0 ? (
+                  services.services.map((service: any) => {
+                    const mappedStatus = service.status === 'healthy' ? 'online' : service.status === 'degraded' ? 'degraded' : 'offline';
+                    const StatusIcon = getStatusIcon(mappedStatus);
+                    const serviceType = 'external'; // Map all services as external for now
                     return (
                       <div key={service.name} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-2">
                             <StatusIcon className={`h-5 w-5 ${
-                              service.status === 'online' ? 'text-green-500' :
-                              service.status === 'offline' ? 'text-red-500' :
+                              mappedStatus === 'online' ? 'text-green-500' :
+                              mappedStatus === 'offline' ? 'text-red-500' :
                               'text-yellow-500'
                             }`} />
-                            <TypeIcon className="h-5 w-5 text-muted-foreground" />
+                            <Globe className="h-5 w-5 text-muted-foreground" />
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
                               <h3 className="font-medium">{service.name}</h3>
-                              <Badge variant={getStatusColor(service.status) as any}>
-                                {service.status}
+                              <Badge variant={getStatusColor(mappedStatus) as any}>
+                                {mappedStatus}
                               </Badge>
-                              <Badge variant="outline">{service.type}</Badge>
+                              <Badge variant="outline">external</Badge>
                             </div>
-                            <p className="text-sm text-muted-foreground">{service.description}</p>
-                            <p className="text-xs text-muted-foreground">{service.url}</p>
+                            <p className="text-sm text-muted-foreground">Response time: {service.responseTime}ms</p>
+                            <p className="text-xs text-muted-foreground">Uptime: {service.uptime}%</p>
                           </div>
                         </div>
                         <div className="text-right">
