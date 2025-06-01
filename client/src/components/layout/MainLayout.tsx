@@ -275,8 +275,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                           </DropdownMenuItem>
                         </>
                       )}
-                      
-                      
+
+
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={logout}>
                         Logout
@@ -346,14 +346,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <OddsTicker />
       {/* Footer */}
       <Footer />
-      
+
       {/* Bottom Right Corner - Professionally Organized */}
       <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 items-end">
         {/* System Status - Top */}
         <div className="bg-black/10 backdrop-blur-sm rounded-lg p-2 shadow-lg">
           <SystemStatusIndicator />
         </div>
-        
+
         {/* Quick Navigation - Bottom */}
         <div className="bg-black/10 backdrop-blur-sm rounded-lg p-2 shadow-lg">
           <QuickNavButton />
