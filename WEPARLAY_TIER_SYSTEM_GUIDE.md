@@ -1,410 +1,246 @@
-
-# WeParlay Tier System - Complete Feature Guide
+# WeParlay.io Tier-Based Access System Guide
 
 ## Overview
-WeParlay uses a sophisticated tier-based subscription system that provides different levels of access, features, and benefits. Each tier is designed to cater to different types of bettors, from casual users to professional gamblers.
+The WeParlay platform uses a tier-based system (Bronze → Silver → Gold → Platinum → Diamond) to provide progressive access to features and enhanced betting experiences.
 
 ---
 
-## WOOD TIER (Free Tier)
-**Price:** FREE  
-**Default Tier:** Yes  
-**Target Audience:** New users and casual bettors
+## **BRONZE TIER** (Entry Level - Free)
+*Starting tier for all new users*
 
-### Page Access
-- ✅ Home Dashboard
-- ✅ Basic Sports Betting Pages
-- ✅ Basic Odds Display
-- ✅ Basic Live Sports Streaming
-- ✅ Basic User Profile
-- ✅ Terms of Service & Privacy Policy
-- ✅ Basic Support (Standard Priority)
-- ❌ VIP Features Page (Limited View)
-- ❌ Advanced Analytics
-- ❌ Premium Tournaments
+### Accessible Features:
+- **Basic Betting**
+  - Moneyline, spread, and total bets
+  - Maximum bet: $50 per wager
+  - Standard odds display
+  - Basic bet slip functionality
 
-### Betting Features
-- **Head-to-Head Real Money:** ✅ (Up to $50 max bet)
-- **Head-to-Head Virtual:** ✅
-- **Parlay Cash:** ❌
-- **Parlay Virtual:** ✅
-- **Tournament Participation:** ❌
-- **Max Bet Amount:** $50
-- **Max Open Bets:** 3
-- **Bet Protection:** ❌
+- **Sports Coverage**
+  - NFL, NBA, MLB, NHL games
+  - Basic game information and scores
+  - Standard team logos and stats
 
-### Content & Data Access
-- **Live Odds Access:** ✅ (Basic)
-- **Stats Access:** ✅ (Basic)
-- **Advanced Stats Access:** ❌
-- **Prediction Engine Access:** ❌
-- **Live Streaming:** ❌
+- **Account Features**
+  - User profile creation
+  - Basic transaction history
+  - Standard customer support
+  - WeParlay Cash balance tracking
 
-### Social Features
-- **Create Groups:** ❌
-- **Join Groups:** ✅
-- **Custom Gamertag:** ❌
-- **Custom Bets:** ❌
-- **Max Invites:** 5
-- **SMS Notifications:** ❌
+- **Platform Access**
+  - Home dashboard
+  - Betting dashboard (limited)
+  - Basic sports pages
+  - Help center
 
-### Financial Benefits
-- **Weekly Bonus:** 100 WeParlay Cash
-- **Withdrawal Fee Discount:** 0%
-- **Support Priority:** Standard
-
-### Limitations
-- No access to premium betting strategies
+### Restrictions:
+- No live streaming access
+- No advanced analytics
+- No prop betting
+- No parlay builder
 - Basic customer support only
-- Limited social features
-- No customization options
-- Cannot create betting groups or challenges
 
 ---
 
-## BRONZE TIER
-**Price:** $9.99/month  
-**Target Audience:** Regular bettors who want enhanced features
+## **SILVER TIER** (Active User)
+*Requirements: $500+ total wagered OR 30+ days active*
 
-### Page Access
-- ✅ All Wood Tier Pages
-- ✅ VIP Features Page (Bronze Level)
-- ✅ Enhanced Betting Dashboard
-- ✅ Parlay Cash Betting
-- ✅ Tournament Participation
-- ✅ Basic Group Management
-- ✅ Custom Gamertag Setup
-- ✅ Enhanced Profile Customization
+### Additional Features:
+- **Enhanced Betting**
+  - Player props and team props
+  - Maximum bet: $200 per wager
+  - Live betting on major games
+  - Enhanced odds display with trends
 
-### Betting Features
-- **Head-to-Head Real Money:** ✅ (Up to $200 max bet)
-- **Head-to-Head Virtual:** ✅
-- **Parlay Cash:** ✅
-- **Parlay Virtual:** ✅
-- **Tournament Participation:** ✅
-- **Max Bet Amount:** $200
-- **Max Open Bets:** 5
-- **Bet Protection:** ❌
-- **Odds Boost:** 2.5%
+- **Sports Features**
+  - Live score updates
+  - Basic team statistics
+  - Game highlights (text summaries)
+  - Injury reports
 
-### Premium Features
-- **Premium Suggestions:** 10/month
-- **Voice Betting:** 5/day
-- **Fantasy Team Sync:** ❌
-- **Yahoo Fantasy Integration:** ❌
+- **Platform Access**
+  - Enhanced betting dashboard
+  - Basic analytics page
+  - Live sports scores
+  - Standard notification system
 
-### Social Integration
-- **Facebook Integration:** Basic Share
-- **Twitter Integration:** Basic Share
-- **Instagram Integration:** ❌
-- **LinkedIn Integration:** ❌
-- **YouTube Integration:** ❌
-
-### Content & Data Access
-- **Live Odds Access:** ✅ (Enhanced)
-- **Stats Access:** ✅ (Enhanced)
-- **Advanced Stats Access:** ❌
-- **Prediction Engine Access:** ❌
-
-### Social Features
-- **Create Groups:** ✅
-- **Join Groups:** ✅
-- **Custom Gamertag:** ✅
-- **Custom Bets:** ✅
-- **Max Invites:** 10
-- **SMS Notifications:** ❌
-
-### Financial Benefits
-- **Weekly Bonus:** 250 WeParlay Cash
-- **Withdrawal Fee Discount:** 5%
-- **Support Priority:** Standard
-
-### Bronze Exclusive Features
-- Access to Bronze-only tournaments
-- Basic customization options
-- Ability to create betting challenges
-- Enhanced betting interface
+- **Rewards**
+  - 1% cashback on losses
+  - Weekly bonus opportunities
+  - Basic loyalty points
 
 ---
 
-## SILVER TIER
-**Price:** $19.99/month  
-**Target Audience:** Serious bettors who want advanced features
+## **GOLD TIER** (Committed Player)
+*Requirements: $2,500+ total wagered OR verified identity + payment method*
 
-### Page Access
-- ✅ All Bronze Tier Pages
-- ✅ Advanced Analytics Dashboard
-- ✅ Enhanced Tournament Hub
-- ✅ Advanced Group Management
-- ✅ Fantasy Sports Integration
-- ✅ Priority Support Portal
+### Additional Features:
+- **Advanced Betting**
+  - Parlay builder (up to 8 legs)
+  - Maximum bet: $500 per wager
+  - Live betting on all available games
+  - Advanced prop markets
+  - Custom bet builder
 
-### Betting Features
-- **Head-to-Head Real Money:** ✅ (Up to $500 max bet)
-- **Head-to-Head Virtual:** ✅
-- **Parlay Cash:** ✅
-- **Parlay Virtual:** ✅
-- **Tournament Participation:** ✅
-- **Max Bet Amount:** $500
-- **Max Open Bets:** 10
-- **Bet Protection:** ❌
-- **Odds Boost:** 3.5%
+- **Premium Sports Features**
+  - Live streaming (basic quality)
+  - Advanced team analytics
+  - Player performance metrics
+  - Expert picks and insights
+  - Game prediction tools
 
-### Premium Features
-- **Premium Suggestions:** 30/month
-- **Voice Betting:** 20/day
-- **Fantasy Team Sync:** Basic Sync
-- **Yahoo Fantasy Integration:** ❌
+- **Enhanced Platform Access**
+  - Advanced analytics dashboard
+  - System health monitoring (basic)
+  - Priority customer support
+  - Real-time notifications
 
-### Social Integration
-- **Facebook Integration:** Basic Share
-- **Twitter Integration:** Full Integration
-- **Instagram Integration:** Basic Share
-- **LinkedIn Integration:** ❌
-- **YouTube Integration:** ❌
-
-### Content & Data Access
-- **Live Odds Access:** ✅ (Premium)
-- **Stats Access:** ✅ (Premium)
-- **Advanced Stats Access:** ✅
-- **Prediction Engine Access:** ❌
-
-### Social Features
-- **Create Groups:** ✅
-- **Join Groups:** ✅
-- **Custom Gamertag:** ✅
-- **Custom Bets:** ✅
-- **Max Invites:** 20
-- **SMS Notifications:** ✅
-
-### Financial Benefits
-- **Weekly Bonus:** 500 WeParlay Cash
-- **Withdrawal Fee Discount:** 10%
-- **Support Priority:** Priority (Email)
-
-### Silver Exclusive Features
-- Advanced statistics and analytics
-- Enhanced social sharing capabilities
-- Priority customer support via email
-- Fantasy team synchronization (basic)
-- SMS notifications for important events
+- **VIP Benefits**
+  - 2% cashback on losses
+  - Daily bonus spins
+  - Exclusive promotions
+  - Early access to new features
 
 ---
 
-## GOLD TIER
-**Price:** $49.99/month  
-**Target Audience:** Professional bettors and serious enthusiasts
+## **PLATINUM TIER** (VIP Player)
+*Requirements: $10,000+ total wagered AND verified premium account*
 
-### Page Access
-- ✅ All Silver Tier Pages
-- ✅ Professional Analytics Suite
-- ✅ VIP Tournament Hub
-- ✅ Advanced Fantasy Integration
-- ✅ Custom Betting Studio
-- ✅ Live Chat Support
-- ✅ Yahoo Fantasy Dashboard
+### Additional Features:
+- **Elite Betting**
+  - Unlimited parlay legs
+  - Maximum bet: $2,000 per wager
+  - Exclusive betting markets
+  - Early line access
+  - Custom odds requests
 
-### Betting Features
-- **Head-to-Head Real Money:** ✅ (Up to $1,000 max bet)
-- **Head-to-Head Virtual:** ✅
-- **Parlay Cash:** ✅
-- **Parlay Virtual:** ✅
-- **Tournament Participation:** ✅ (VIP Tournaments)
-- **Max Bet Amount:** $1,000
-- **Max Open Bets:** 15
-- **Bet Protection:** ✅
-- **Odds Boost:** 5%
+- **Premium Streaming & Data**
+  - HD live streaming
+  - Multi-game viewing
+  - Advanced statistics overlay
+  - Real-time coaching insights
+  - Historical performance data
 
-### Premium Features
-- **Premium Suggestions:** Unlimited
-- **Voice Betting:** Unlimited
-- **Fantasy Team Sync:** Full Sync
-- **Yahoo Fantasy Integration:** Full Integration
+- **VIP Platform Access**
+  - Complete system management dashboard
+  - API status monitoring
+  - Transaction management tools
+  - Advanced user analytics
+  - White-label customization options
 
-### Social Integration
-- **Facebook Integration:** Full Integration
-- **Twitter Integration:** Automated Posts
-- **Instagram Integration:** Story Templates
-- **LinkedIn Integration:** Basic Share
-- **YouTube Integration:** Video Sharing
-
-### Content & Data Access
-- **Live Odds Access:** ✅ (Professional)
-- **Stats Access:** ✅ (Professional)
-- **Advanced Stats Access:** ✅
-- **Prediction Engine Access:** ✅
-
-### Social Features
-- **Create Groups:** ✅
-- **Join Groups:** ✅
-- **Custom Gamertag:** ✅
-- **Custom Bets:** ✅
-- **Max Invites:** 50
-- **SMS Notifications:** ✅
-
-### Financial Benefits
-- **Weekly Bonus:** 1,000 WeParlay Cash
-- **Withdrawal Fee Discount:** 20%
-- **Support Priority:** Priority (Live Chat)
-
-### Gold Exclusive Features
-- Full Yahoo Fantasy Sports integration
-- Professional-grade analytics and insights
-- Bet protection insurance
-- Custom betting options and scenarios
-- Priority access to new features
-- VIP tournament participation
-- Advanced social media integration
-- Live chat customer support
+- **Elite Benefits**
+  - 3% cashback on losses
+  - Personal account manager
+  - Exclusive VIP events
+  - Custom betting limits
+  - Priority withdrawals
 
 ---
 
-## PLATINUM TIER
-**Price:** $99.99/month  
-**Target Audience:** High-stakes professional bettors and whale customers
+## **DIAMOND TIER** (Elite/Whale Status)
+*Requirements: $50,000+ total wagered AND invitation only*
 
-### Page Access
-- ✅ All Gold Tier Pages
-- ✅ Platinum Exclusive Dashboard
-- ✅ Dedicated Account Manager Portal
-- ✅ VIP Concierge Services
-- ✅ Custom Betting Builder
-- ✅ Advanced Auto-Betting Interface
-- ✅ Exclusive Events & Promotions
+### Exclusive Features:
+- **Unlimited Betting**
+  - No maximum bet limits
+  - Exclusive high-stakes markets
+  - Private betting rooms
+  - Custom event creation
+  - Whale-only tournaments
 
-### Betting Features
-- **Head-to-Head Real Money:** ✅ (Up to $2,500 max bet)
-- **Head-to-Head Virtual:** ✅
-- **Parlay Cash:** ✅
-- **Parlay Virtual:** ✅
-- **Tournament Participation:** ✅ (Platinum Exclusive)
-- **Max Bet Amount:** $2,500
-- **Max Open Bets:** 30
-- **Bet Protection:** ✅ (Enhanced)
-- **Odds Boost:** 7.5%
+- **Premium Services**
+  - 4K live streaming
+  - Personal betting consultant
+  - Custom API access
+  - Private Discord channel
+  - Direct developer contact
 
-### Premium Features
-- **Premium Suggestions:** Unlimited + Exclusive
-- **Voice Betting:** Priority Processing
-- **Fantasy Team Sync:** Auto-Sync
-- **Yahoo Fantasy Integration:** Auto-Bet
+- **Complete Platform Control**
+  - Full admin dashboard access
+  - Real-time system monitoring
+  - Custom feature requests
+  - Beta testing participation
+  - Revenue sharing opportunities
 
-### Social Integration
-- **Facebook Integration:** App Integration
-- **Twitter Integration:** API Access
-- **Instagram Integration:** API Access
-- **LinkedIn Integration:** Full Integration
-- **YouTube Integration:** Live Streaming
-
-### Content & Data Access
-- **Live Odds Access:** ✅ (Platinum Exclusive)
-- **Stats Access:** ✅ (Platinum Exclusive)
-- **Advanced Stats Access:** ✅ (Enhanced)
-- **Prediction Engine Access:** ✅ (Advanced)
-- **Live Streaming Access:** ✅
-
-### Social Features
-- **Create Groups:** ✅
-- **Join Groups:** ✅
-- **Custom Gamertag:** ✅
-- **Custom Bets:** ✅
-- **Max Invites:** 100
-- **SMS Notifications:** ✅
-
-### Financial Benefits
-- **Weekly Bonus:** 2,500 WeParlay Cash
-- **Withdrawal Fee Discount:** 50%
-- **Support Priority:** VIP (Phone + Dedicated Agent)
-
-### Platinum Exclusive Features
-- **Dedicated Personal Account Manager**
-- **Auto-betting via Yahoo Fantasy integration**
-- **Exclusive Facebook app integration**
-- **API access for social media platforms**
-- **Live streaming capabilities**
-- **Priority voice betting processing**
-- **Enhanced bet protection with full coverage**
-- **Access to Platinum-only tournaments and events**
-- **Custom bet building tools**
-- **VIP concierge services**
-- **Maximum odds boost at 7.5%**
-- **Exclusive prediction data and insights**
-- **Phone support with dedicated agent**
+- **Diamond Benefits**
+  - 5% cashback on losses
+  - No withdrawal limits
+  - Instant payouts
+  - Concierge services
+  - Annual VIP event invitations
 
 ---
 
-## Feature Comparison Summary
+## **FEATURE VISIBILITY STRATEGY**
 
-| Feature | Wood | Bronze | Silver | Gold | Platinum |
-|---------|------|--------|--------|------|----------|
-| **Monthly Cost** | FREE | $9.99 | $19.99 | $49.99 | $99.99 |
-| **Max Bet Amount** | $50 | $200 | $500 | $1,000 | $2,500 |
-| **Max Open Bets** | 3 | 5 | 10 | 15 | 30 |
-| **Odds Boost** | 0% | 2.5% | 3.5% | 5% | 7.5% |
-| **Weekly Bonus** | 100 | 250 | 500 | 1,000 | 2,500 |
-| **Withdrawal Discount** | 0% | 5% | 10% | 20% | 50% |
-| **Voice Betting** | ❌ | 5/day | 20/day | Unlimited | Priority |
-| **Yahoo Fantasy** | ❌ | ❌ | ❌ | Full | Auto-Bet |
-| **Support Level** | Standard | Standard | Priority Email | Live Chat | Phone + Agent |
-| **Bet Protection** | ❌ | ❌ | ❌ | ✅ | Enhanced |
+### **Public Attraction Features** (Visible to All Tiers)
+These features should be visible to create desire for upgrades:
 
----
+- **Live Streaming Preview** - Show "upgrade to watch" overlays
+- **Advanced Analytics Teasers** - Display limited data with upgrade prompts
+- **VIP Tournament Banners** - Showcase exclusive events
+- **Success Stories** - Display winnings from higher-tier users
+- **Feature Comparison Tables** - Clear tier benefits display
 
-## Tier Upgrade Benefits
+### **VIP-Only Features** (Hidden Until Tier Achieved)
+These features remain completely hidden until unlocked:
 
-### Immediate Benefits Upon Upgrade
-- **Instant Access:** All tier features become available immediately
-- **Retroactive Bonuses:** Receive prorated weekly bonuses
-- **Enhanced Limits:** Higher betting limits take effect instantly
-- **Priority Processing:** Queue priority for all services
-
-### Long-term Benefits
-- **Loyalty Rewards:** Additional bonuses for maintaining tier status
-- **Exclusive Events:** Access to tier-specific tournaments and promotions
-- **Early Access:** Beta features and new platform additions
-- **Personal Growth:** Advanced analytics to improve betting strategy
+- **High-Stakes Betting Rooms**
+- **Personal Account Manager Contact**
+- **Custom API Development Tools**
+- **Revenue Sharing Programs**
+- **Private Community Access**
 
 ---
 
-## Getting Started with Tier Upgrades
+## **UPGRADE PROMPTS & INCENTIVES**
 
-### How to Upgrade
-1. Navigate to VIP Features page
-2. Select desired tier
-3. Complete payment process
-4. Instant access to all tier benefits
+### When to Show Upgrade Prompts:
+1. **Bet Limit Reached** - "Increase your betting power with Silver tier"
+2. **Streaming Attempt** - "Unlock HD streaming with Gold tier"
+3. **Analytics Access** - "Get deeper insights with Platinum tier"
+4. **Feature Interaction** - Contextual upgrades based on user behavior
 
-### Payment Options
-- Monthly subscriptions
-- Annual discounts available
-- Cryptocurrency payments accepted
-- Traditional payment methods supported
-
----
-
-## Support & Resources
-
-### Wood Tier Support
-- **Method:** Email only
-- **Response Time:** 24-48 hours
-- **Availability:** Business hours
-
-### Bronze/Silver Tier Support
-- **Method:** Email + Priority Queue
-- **Response Time:** 12-24 hours
-- **Availability:** Extended hours
-
-### Gold Tier Support
-- **Method:** Live Chat + Email
-- **Response Time:** 2-4 hours
-- **Availability:** Nearly 24/7
-
-### Platinum Tier Support
-- **Method:** Phone + Dedicated Agent
-- **Response Time:** 30 minutes or less
-- **Availability:** 24/7 with dedicated representative
+### Incentive Strategies:
+- **Progress Bars** - Show tier advancement progress
+- **Limited Time Offers** - Temporary tier discounts
+- **Achievement Unlock** - Gamified tier progression
+- **Social Proof** - Display tier distribution statistics
 
 ---
 
-*Last Updated: January 2025*  
-*For the most current tier benefits and pricing, visit the VIP Features page in your WeParlay account.*
+## **RECOMMENDED IMPLEMENTATION**
+
+### **Hybrid Approach: Strategic Visibility**
+1. **Show Enhanced Features** with clear tier requirements
+2. **Enable Feature Previews** with upgrade calls-to-action
+3. **Hide Ultra-Premium Features** (Diamond tier exclusives)
+4. **Create FOMO** through limited-time tier promotions
+
+### **Benefits of This Strategy:**
+- **Transparency** builds trust with users
+- **Clear Value Proposition** for each tier
+- **Progressive Engagement** encourages natural upgrading
+- **Premium Exclusivity** maintains high-tier value
+
+### **User Experience Flow:**
+Bronze → See locked features → Understand value → Natural progression → Achieve higher tiers → Unlock premium experiences
+
+---
+
+## **MONETIZATION OPPORTUNITIES**
+
+### **Tier Advancement Revenue:**
+- **Accelerated Tier Access** - Pay to skip wagering requirements
+- **Temporary Tier Boosts** - Weekly/monthly premium access
+- **Feature à la Carte** - Individual feature unlocks
+- **VIP Event Tickets** - Premium experience purchases
+
+### **Retention Strategies:**
+- **Tier Maintenance** - Requirement to stay active for tier benefits
+- **Loyalty Bonuses** - Increasing rewards with tier tenure
+- **Referral Rewards** - Tier bonuses for bringing friends
+- **Seasonal Challenges** - Limited-time tier advancement opportunities
+
+---
+
+*This tier system balances user attraction with premium exclusivity, creating a natural progression path that encourages engagement while maintaining the value of higher tiers.*
