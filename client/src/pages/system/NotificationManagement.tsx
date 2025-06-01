@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,51 +8,84 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Bell, Mail, MessageSquare, Settings, Send, Users, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Bell, Send, Mail, MessageSquare, TrendingUp, TrendingDown } from 'lucide-react';
+
+interface NotificationStatistics {
+  totalSentToday: number;
+  dailyGrowth: number;
+  emailDeliveryRate: number;
+  smsDeliveryRate: number;
+  lastUpdated: string;
+}
 
 interface NotificationTemplate {
   id: number;
   name: string;
   type: 'email' | 'sms' | 'push' | 'in-app';
-  subject: string;
-  content: string;
-  isActive: boolean;
-  createdAt: string;
+  status: 'active' | 'inactive';
 }
 
 interface NotificationSettings {
   emailEnabled: boolean;
-  smsEnabled: boolean;
-  pushEnabled: boolean;
-  inAppEnabled: boolean;
   smtpHost: string;
   smtpPort: number;
-  smtpUser: string;
+  smsEnabled: boolean;
   twilioAccountSid: string;
-  twilioAuthToken: string;
   twilioFromNumber: string;
 }
 
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ElementType;
+  trend?: number;
+}
+
+const StatCard: React.FC<StatCardProps> = ({ title, value, icon: Icon, trend }) => (
+  <Card>
+    <CardContent className="p-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-muted-foreground">{title}</p>
+          <p className="text-2xl font-bold">{value}</p>
+          {trend !== undefined && (
+            <div className="flex items-center mt-1">
+              {trend > 0 ? (
+                <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
+              ) : (
+                <TrendingDown className="h-4 w-4 text-red-500 mr-1" />
+              )}
+              <span className={`text-sm ${trend > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                {Math.abs(trend)}%
+              </span>
+            </div>
+          )}
+        </div>
+        <Icon className="h-8 w-8 text-muted-foreground" />
+      </div>
+    </CardContent>
+  </Card>
+);
+
 export default function NotificationManagement() {
   const { toast } = useToast();
-  const [selectedTemplate, setSelectedTemplate] = useState<NotificationTemplate | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
   // Fetch notification statistics from real backend
-  const { data: statistics = {}, isLoading: statsLoading } = useQuery({
+  const { data: statistics, isLoading: statisticsLoading } = useQuery<NotificationStatistics>({
     queryKey: ['/api/notifications/statistics'],
-    refetchInterval: 30000 // Refresh every 30 seconds
+    refetchInterval: 60000 // Refresh every minute
   });
 
-  // Fetch notification templates from real backend  
-  const { data: templates = [], isLoading: templatesLoading } = useQuery({
+  // Fetch notification templates from real backend
+  const { data: templates, isLoading: templatesLoading } = useQuery<NotificationTemplate[]>({
     queryKey: ['/api/notifications/templates'],
     refetchInterval: 60000 // Refresh every minute
   });
 
   // Fetch notification settings from real backend
-  const { data: settings = {}, isLoading: settingsLoading } = useQuery({
+  const { data: settings, isLoading: settingsLoading } = useQuery<NotificationSettings>({
     queryKey: ['/api/notifications/settings'],
     refetchInterval: 60000 // Refresh every minute
   });
@@ -79,43 +112,48 @@ export default function NotificationManagement() {
 
   // Update settings mutation
   const updateSettingsMutation = useMutation({
-    mutationFn: async (newSettings: Partial<NotificationSettings>) => {
-      return apiRequest('PATCH', '/api/notifications/settings', newSettings);
+    mutationFn: async (updatedSettings: Partial<NotificationSettings>) => {
+      return apiRequest('PUT', '/api/notifications/settings', updatedSettings);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/notifications/settings'] });
       toast({
         title: 'Settings Updated',
-        description: 'Notification settings have been saved',
+        description: 'Notification settings have been saved successfully',
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/notifications/settings'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Update Failed',
+        description: error.message,
+        variant: 'destructive',
       });
     },
   });
 
-  const StatCard = ({ title, value, icon: Icon, trend }: any) => (
-    <Card>
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className="text-2xl font-bold">{value}</p>
-            {trend && (
-              <p className="text-xs text-muted-foreground">
-                {trend > 0 ? '+' : ''}{trend}% from last month
-              </p>
-            )}
+  if (statisticsLoading || templatesLoading || settingsLoading) {
+    return (
+      <div className="p-6">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-32 bg-gray-200 rounded"></div>
+            ))}
           </div>
-          <Icon className="h-8 w-8 text-muted-foreground" />
         </div>
-      </CardContent>
-    </Card>
-  );
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-6 space-y-6">
+      <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Notification Management</h1>
-          <p className="text-muted-foreground">Manage system notifications and templates</p>
+          <p className="text-muted-foreground">
+            Monitor and configure platform notification systems
+          </p>
         </div>
         <Button onClick={() => setIsCreating(true)}>
           <Bell className="mr-2 h-4 w-4" />
@@ -127,23 +165,23 @@ export default function NotificationManagement() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Total Sent Today"
-          value={(statistics as any)?.totalSentToday || 0}
+          value={statistics?.totalSentToday || 0}
           icon={Send}
-          trend={(statistics as any)?.dailyGrowth}
+          trend={statistics?.dailyGrowth}
         />
         <StatCard
           title="Email Delivery Rate"
-          value={`${(statistics as any)?.emailDeliveryRate || 0}%`}
+          value={`${statistics?.emailDeliveryRate || 0}%`}
           icon={Mail}
         />
         <StatCard
           title="SMS Delivery Rate"
-          value={`${(statistics as any)?.smsDeliveryRate || 0}%`}
+          value={`${statistics?.smsDeliveryRate || 0}%`}
           icon={MessageSquare}
         />
         <StatCard
           title="Active Templates"
-          value={(templates as any[])?.filter((t: any) => t.status === 'active').length || 0}
+          value={templates?.filter(t => t.status === 'active').length || 0}
           icon={Bell}
         />
       </div>
@@ -153,7 +191,6 @@ export default function NotificationManagement() {
           <TabsTrigger value="templates">Templates</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
           <TabsTrigger value="test">Test Notifications</TabsTrigger>
-          <TabsTrigger value="logs">Logs</TabsTrigger>
         </TabsList>
 
         <TabsContent value="templates" className="space-y-6">
@@ -166,42 +203,33 @@ export default function NotificationManagement() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {templatesLoading ? (
-                  <div className="text-center py-8">Loading templates...</div>
-                ) : templates?.length > 0 ? (
-                  templates.map((template: NotificationTemplate) => (
-                    <div key={template.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
+                {templates && templates.length > 0 ? (
+                  templates.map((template) => (
+                    <div
+                      key={template.id}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div>
                           <h3 className="font-medium">{template.name}</h3>
-                          <Badge variant={template.isActive ? 'default' : 'secondary'}>
-                            {template.isActive ? 'Active' : 'Inactive'}
-                          </Badge>
-                          <Badge variant="outline">{template.type}</Badge>
+                          <p className="text-sm text-muted-foreground">
+                            Type: {template.type}
+                          </p>
                         </div>
-                        <p className="text-sm text-muted-foreground">{template.subject}</p>
                       </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setSelectedTemplate(template)}>
+                      <div className="flex items-center space-x-2">
+                        <Badge variant={template.status === 'active' ? 'default' : 'secondary'}>
+                          {template.status}
+                        </Badge>
+                        <Button variant="outline" size="sm">
                           Edit
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => sendTestMutation.mutate({
-                            type: template.type,
-                            recipient: 'test@example.com',
-                            template: template.id
-                          })}
-                        >
-                          Test
                         </Button>
                       </div>
                     </div>
                   ))
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
-                    No templates found
+                    No notification templates found
                   </div>
                 )}
               </div>
@@ -214,7 +242,7 @@ export default function NotificationManagement() {
             <CardHeader>
               <CardTitle>Notification Settings</CardTitle>
               <CardDescription>
-                Configure notification providers and delivery settings
+                Configure email and SMS notification providers
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -227,9 +255,7 @@ export default function NotificationManagement() {
                       <Switch
                         id="email-enabled"
                         checked={settings?.emailEnabled || false}
-                        onCheckedChange={(checked) => 
-                          updateSettingsMutation.mutate({ emailEnabled: checked })
-                        }
+                        disabled
                       />
                     </div>
                     <div className="space-y-2">
@@ -238,9 +264,7 @@ export default function NotificationManagement() {
                         id="smtp-host"
                         value={settings?.smtpHost || ''}
                         placeholder="smtp.gmail.com"
-                        onChange={(e) => 
-                          updateSettingsMutation.mutate({ smtpHost: e.target.value })
-                        }
+                        readOnly
                       />
                     </div>
                     <div className="space-y-2">
@@ -248,11 +272,8 @@ export default function NotificationManagement() {
                       <Input
                         id="smtp-port"
                         type="number"
-                        value={settings?.smtpPort || ''}
-                        placeholder="587"
-                        onChange={(e) => 
-                          updateSettingsMutation.mutate({ smtpPort: parseInt(e.target.value) })
-                        }
+                        value={settings?.smtpPort || 587}
+                        readOnly
                       />
                     </div>
                   </div>
@@ -266,9 +287,7 @@ export default function NotificationManagement() {
                       <Switch
                         id="sms-enabled"
                         checked={settings?.smsEnabled || false}
-                        onCheckedChange={(checked) => 
-                          updateSettingsMutation.mutate({ smsEnabled: checked })
-                        }
+                        disabled
                       />
                     </div>
                     <div className="space-y-2">
@@ -276,10 +295,8 @@ export default function NotificationManagement() {
                       <Input
                         id="twilio-sid"
                         value={settings?.twilioAccountSid || ''}
-                        placeholder="ACxxxxxxxxxxxxx"
-                        onChange={(e) => 
-                          updateSettingsMutation.mutate({ twilioAccountSid: e.target.value })
-                        }
+                        placeholder="AC***"
+                        readOnly
                       />
                     </div>
                     <div className="space-y-2">
@@ -288,9 +305,7 @@ export default function NotificationManagement() {
                         id="twilio-phone"
                         value={settings?.twilioFromNumber || ''}
                         placeholder="+1234567890"
-                        onChange={(e) => 
-                          updateSettingsMutation.mutate({ twilioFromNumber: e.target.value })
-                        }
+                        readOnly
                       />
                     </div>
                   </div>
@@ -305,63 +320,41 @@ export default function NotificationManagement() {
             <CardHeader>
               <CardTitle>Test Notifications</CardTitle>
               <CardDescription>
-                Send test notifications to verify your configuration
+                Send test notifications to verify system functionality
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Email Test</h3>
-                  <div className="space-y-3">
-                    <Input placeholder="test@example.com" />
-                    <Button 
-                      onClick={() => sendTestMutation.mutate({
-                        type: 'email',
-                        recipient: 'test@example.com',
-                        template: 1
-                      })}
-                      disabled={sendTestMutation.isPending}
-                    >
-                      Send Test Email
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">SMS Test</h3>
-                  <div className="space-y-3">
-                    <Input placeholder="+1234567890" />
-                    <Button 
-                      onClick={() => sendTestMutation.mutate({
-                        type: 'sms',
-                        recipient: '+1234567890',
-                        template: 1
-                      })}
-                      disabled={sendTestMutation.isPending}
-                    >
-                      Send Test SMS
-                    </Button>
-                  </div>
-                </div>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Button
+                  onClick={() => sendTestMutation.mutate({
+                    type: 'email',
+                    recipient: 'test@example.com',
+                    template: 1
+                  })}
+                  disabled={sendTestMutation.isPending}
+                >
+                  <Mail className="mr-2 h-4 w-4" />
+                  Test Email
+                </Button>
+                <Button
+                  onClick={() => sendTestMutation.mutate({
+                    type: 'sms',
+                    recipient: '+1234567890',
+                    template: 2
+                  })}
+                  disabled={sendTestMutation.isPending}
+                >
+                  <MessageSquare className="mr-2 h-4 w-4" />
+                  Test SMS
+                </Button>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="logs" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Notification Logs</CardTitle>
-              <CardDescription>
-                View recent notification delivery logs and failures
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="text-center py-8 text-muted-foreground">
-                  Notification logs will appear here
+              {statistics && (
+                <div className="mt-6 p-4 bg-muted rounded-lg">
+                  <p className="text-sm text-muted-foreground">
+                    Last updated: {new Date(statistics.lastUpdated).toLocaleString()}
+                  </p>
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
