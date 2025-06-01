@@ -58,50 +58,21 @@ const LiveBettingContent: React.FC = () => {
     data: liveEventsData, 
     isLoading: isLoadingLiveEvents,
     refetch: refetchLiveEvents,
-    dataUpdatedAt: liveDataUpdatedAt,
-    error: liveEventsError
+    dataUpdatedAt: liveDataUpdatedAt
   } = useQuery({
-    queryKey: ['/api/unified-sports/live'],
+    queryKey: ['/api/odds', selectedSport, 'live'],
     refetchInterval: refreshInterval,
-    refetchOnWindowFocus: false,
-    retry: 3,
-    staleTime: 10000,
+    refetchOnWindowFocus: false
   });
   
   // Fetch upcoming events data
   const { 
     data: upcomingEventsData, 
     isLoading: isLoadingUpcomingEvents,
-    refetch: refetchUpcomingEvents,
-    error: upcomingEventsError
+    refetch: refetchUpcomingEvents
   } = useQuery({
-    queryKey: ['/api/unified-sports/upcoming/24'],
-    refetchOnWindowFocus: false,
-    retry: 2,
-    staleTime: 30000,
-  });
-
-  // Fetch real-time odds for selected sport
-  const { 
-    data: realTimeOdds, 
-    isLoading: oddsLoading,
-    error: oddsError
-  } = useQuery({
-    queryKey: ['/api/unified-sports/odds', selectedSport],
-    refetchInterval: 20000,
-    retry: 3,
-    enabled: selectedSport !== "all",
-  });
-
-  // Fetch best odds comparison
-  const { 
-    data: oddsComparison, 
-    isLoading: comparisonLoading 
-  } = useQuery({
-    queryKey: ['/api/unified-sports/best-odds', selectedSport],
-    refetchInterval: 45000,
-    retry: 2,
-    enabled: selectedSport !== "all",
+    queryKey: ['/api/odds', selectedSport, 'upcoming'],
+    refetchOnWindowFocus: false
   });
   
   // Convert data to arrays if needed

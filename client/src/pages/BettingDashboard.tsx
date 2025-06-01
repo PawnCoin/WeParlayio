@@ -37,9 +37,7 @@ const BettingDashboard: React.FC = () => {
   // Fetch sports data
   const { data: sports, isLoading: isLoadingSports, error: sportsError } = useQuery({
     queryKey: ['/api/sports'],
-    refetchInterval: 30000,
-    retry: 3,
-    staleTime: 120000,
+    refetchInterval: 30000, // Refresh every 30 seconds
   });
 
   // Handle sports error
@@ -51,41 +49,14 @@ const BettingDashboard: React.FC = () => {
   
   // Fetch upcoming events for all selected leagues
   const { data: upcomingEvents, isLoading: isLoadingEvents, error: eventsError } = useQuery({
-    queryKey: ['/api/unified-sports/upcoming/24'],
-    refetchInterval: 60000,
-    retry: 3,
-    staleTime: 30000,
+    queryKey: ['/api/events/upcoming'],
+    refetchInterval: 60000, // Refresh every minute
   });
   
   // Fetch live events
   const { data: liveEvents, isLoading: isLoadingLive, error: liveError } = useQuery({
-    queryKey: ['/api/unified-sports/live'],
-    refetchInterval: 10000,
-    retry: 3,
-    staleTime: 5000,
-  });
-
-  // Fetch comprehensive odds data
-  const { data: comprehensiveOdds, isLoading: oddsLoading } = useQuery({
-    queryKey: ['/api/unified-sports/odds/all'],
-    refetchInterval: 45000,
-    retry: 2,
-    staleTime: 20000,
-  });
-
-  // Fetch user's betting history if authenticated
-  const { data: userBettingHistory, isLoading: historyLoading } = useQuery({
-    queryKey: ['/api/users', 'betting-history'],
-    refetchInterval: 120000,
-    retry: 2,
-    staleTime: 60000,
-  });
-
-  // Fetch trending bets
-  const { data: trendingBets, isLoading: trendingLoading } = useQuery({
-    queryKey: ['/api/bets/trending'],
-    refetchInterval: 180000,
-    retry: 2,
+    queryKey: ['/api/events/live'],
+    refetchInterval: 10000, // Refresh every 10 seconds for live data
   });
 
   // Handle live events error
