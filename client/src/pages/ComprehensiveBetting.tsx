@@ -71,13 +71,16 @@ export default function ComprehensiveBetting() {
     onError: (error) => console.log('Live events error (handled):', error),
   });
 
-  const { data: upcomingEvents, refetch: refetchUpcoming, error: upcomingError } = useQuery({
-    queryKey: ["/api/events/upcoming"],
+  const { data: upcomingEventsData, refetch: refetchUpcoming, error: upcomingError } = useQuery({
+    queryKey: ["/api/unified-sports/upcoming-events"],
     refetchInterval: 30000,
     retry: 2,
     retryDelay: 2000,
     onError: (error) => console.log('Upcoming events error (handled):', error),
   });
+
+  // Process upcoming events from unified endpoint
+  const upcomingEvents = upcomingEventsData?.events || [];
 
   // Filter sports based on search
   const filteredSports = sports?.filter((sport: any) =>

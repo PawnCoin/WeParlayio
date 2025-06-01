@@ -48,8 +48,8 @@ const BettingDashboard: React.FC = () => {
   }, [sportsError]);
   
   // Fetch upcoming events for all selected leagues
-  const { data: upcomingEvents, isLoading: isLoadingEvents, error: eventsError } = useQuery({
-    queryKey: ['/api/events/upcoming'],
+  const { data: upcomingEventsData, isLoading: isLoadingEvents, error: eventsError } = useQuery({
+    queryKey: ['/api/unified-sports/upcoming-events'],
     refetchInterval: 60000, // Refresh every minute
   });
   
@@ -66,6 +66,9 @@ const BettingDashboard: React.FC = () => {
     }
   }, [liveError]);
   
+  // Process real upcoming events data from unified endpoint
+  const upcomingEvents = upcomingEventsData?.events || [];
+  
   // Filter events based on selected leagues
   const filteredLiveEvents = Array.isArray(liveEvents) ? liveEvents.filter((event: any) => {
     if (selectedLeagues.length === 0) return true; // Show all if none selected
@@ -74,27 +77,16 @@ const BettingDashboard: React.FC = () => {
   
   const filteredUpcomingEvents = Array.isArray(upcomingEvents) ? upcomingEvents.filter((event: any) => {
     if (selectedLeagues.length === 0) return true; // Show all if none selected
-    return selectedLeagues.includes(event.sport_key);
+    return selectedLeagues.includes(event.sport_key || event.sport);
   }) : [];
   
-  // Helper to get team name by ID
-  const getTeamName = (teamId: number) => {
-    // In a real app, this would fetch from an API or state
-    const teamNames: Record<number, string> = {
-      1: 'Lakers',
-      2: 'Warriors',
-      3: 'Celtics',
-      4: 'Heat',
-      5: 'Bucks',
-      6: 'Nuggets',
-      7: 'Chiefs',
-      8: 'Eagles',
-      9: 'Cowboys',
-      10: 'Yankees',
-      11: 'Red Sox',
-      12: 'Dodgers',
-    };
-    return teamNames[teamId] || `Team ${teamId}`;
+  // Helper to get team name - now uses real data from events
+  const getTeamName = (event: any, isHome: boolean = true) => {
+    if (isHome) {
+      return event.homeTeam || event.home_team || 'Home Team';
+    } else {
+      return event.awayTeam || event.away_team || 'Away Team';
+    }
   };
   
   // Helper to get sport name by key
