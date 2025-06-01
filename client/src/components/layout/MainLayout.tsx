@@ -275,12 +275,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                           </DropdownMenuItem>
                         </>
                       )}
-                      <DropdownMenuItem asChild>
-                        <Link href="/admin-bypass" className="flex items-center text-blue-500 font-semibold">
-                          <Shield className="mr-2 h-4 w-4" />
-                          Admin Dashboard
-                        </Link>
-                      </DropdownMenuItem>
+                      
                       
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={logout}>

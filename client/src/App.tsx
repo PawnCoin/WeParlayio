@@ -196,7 +196,7 @@ function Router() {
       <Route path="/signup-enhanced" component={SignUpEnhanced} />
 
       {/* Admin Routes - Direct access without authentication */}
-      <Route path="/admin" component={AdminDashboard} />
+      
       <Route path="/admin/manage-users" component={ManageUsers} />
       <Route path="/admin/financial-overview" component={FinancialOverview} />
       <Route path="/admin/analytics" component={Analytics} />
@@ -205,8 +205,8 @@ function Router() {
       <Route path="/admin/social-media-dashboard" component={SocialMediaDashboard} />
       <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/force-admin" component={AdminDashboard} />
-      <Route path="/admin-login" component={AdminLogin} />
-      <Route path="/admin-bypass" component={AdminBypass} />
+      
+      
       <Route path="/owner-access" component={OwnerAccess} />
       <Route path="/admin/manage-users" component={lazy(() => import("./pages/admin/ManageUsers"))} />
       <Route path="/admin/user-analytics" component={lazy(() => import("./pages/admin/UserAnalytics"))} />
