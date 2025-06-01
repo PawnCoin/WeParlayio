@@ -1,0 +1,126 @@
+Fetching Lists of Series from the GRID API
+Before you can fetch and use the in-game data for the matches available on the GRID Platform (for example, to download your scrim files if you belong to a professional team), you will need to find a list of series IDs for your code to work through. Here's how to get that list, using GRID's Central Data API.
+
+Central Data is a GraphQL API that contains GRID's "static data", such as data about teams, players, tournaments, and series.
+
+For details about how to work with GRID's GraphQL APIs, including details around pagination, rate limiting, and errors, see the GraphQL API Reference documentation.
+
+Preparing and Sending Your Query
+To get a list of series that meet certain criteria, we'll use the allSeries query.
+
+Here's a basic example of a simple allSeries query that fetches the most recent 50 Valorant esports series.
+
+In this example, we have used filters to request only VALORANT series and only "esports" series (no scrims).
+
+Endpoint: https://api.grid.gg/central-data/graphql
+
+
+{
+    allSeries (
+        first: 50,
+        filter: {
+            titleId: 6  # Valorant
+            types: ESPORTS  # Esports matches only
+        }
+        orderBy: StartTimeScheduled  # Sort by start time
+        orderDirection: DESC  # Sort by most recent first
+    ) {
+        totalCount
+        pageInfo {
+            hasPreviousPage
+            hasNextPage
+            startCursor
+            endCursor
+        }
+        edges {
+            node {
+                id
+                title {
+                    id
+                }
+                tournament {
+                    id
+                    name
+                }
+            }
+        }
+    }
+}
+Parameters and Filters in this Query
+The first: 50 parameter specifies that we want to receive 50 results per page, which is the maximum allowed.
+
+Filters
+
+
+filter: {
+    titleId: 6
+    types: ESPORTS
+}
+The titleId: 6 portion requests the Valorant game title. See below for title IDs for other game titles.
+
+The types: ESPORTS portion requests only esports series (no scrims).
+
+Finally, orderBy: StartTimeScheduled sorts the response by start time, and orderDirection: DESC asks it so sort the most recent first (descending order).
+
+Response Fields in this Query
+The totalCount field asks the query to show us how many total series are available using these filters.
+
+
+pageInfo {
+    hasPreviousPage
+    hasNextPage
+    startCursor
+    endCursor
+}
+These pagination fields give us useful information about which page we are viewing within all of the available pages of results. More on that later!
+
+
+edges {
+    node {
+        id
+        tournament {
+            id
+            name
+        }
+    }
+}
+This portion of the query asks GraphQL to send us information about each series as an array of "nodes." For more on what "edges" and "nodes" are in GraphQL, see the official documentation.
+
+Within each node, we are asking for the id of the series and the id and name of the tournament to which it belongs. Several other fields are available for series nodes, as listed here.
+
+Filters
+There are several different filters you can use to ensure that you are finding all of the series you are interested in, and only the series you are interested in.
+
+To use a filter, simply add it on a line inside the filter: {} portion of your query. Some commonly useful filters are described below, with a complete list available here.
+
+titleId
+
+This filters the result by game title. For example, you can use these values:
+
+VALORANT - 6
+LOL - 3
+Rainbow 6: Siege - 25
+For a complete list of title IDs, see the API Reference.
+
+types
+
+Available series types include ESPORTS (official matches), SCRIM (private practice matches), and COMPETITIVE (Champions Queue).
+
+startTimeScheduled The time the series was scheduled to begin, using UTC. To use this filter, you must provide either a gte paramter ("greater than or equal"), an lte paramater ("less than or equal"), or both. For example, to find series that started between January 1, 2023 and December 31, 2023, you could use this filter:
+
+
+startTimeScheduled: {
+    gte: "2023-01-01T00:00:00Z"
+    lte: "2023-12-31T00:00:00Z"
+}
+productServiceLevels
+
+This filter can restrict the results to only show games with certain levels of available data. For example, to only return series with complete live data, you could use this filter:
+
+
+productServiceLevels: {
+    productName: "liveDataFeed"
+    serviceLevel: FULL
+}
+Pagination
+Since you can only retrieve 50 records at a time, you may need to submit many queries to fetch a complete list of series that match your filters. You can do this using query pagination.

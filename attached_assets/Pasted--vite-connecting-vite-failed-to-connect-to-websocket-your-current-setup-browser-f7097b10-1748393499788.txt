@@ -1,0 +1,46 @@
+[vite] connecting...
+[vite] failed to connect to websocket.
+your current setup:
+  (browser) f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/ <--[HTTP]--> localhost:5173/ (server)
+  (browser) f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev:/ <--[WebSocket (failing)]--> localhost:5173/ (server)
+Check out your Vite / network configuration and https://vite.dev/config/server-options.html#server-hmr .
+your current setup:
+(browser) f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/ &lt;--[HTTP]--&gt; localhost:5173/ (server)
+(browser) f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev:/ &lt;--[WebSocket (failing)]--&gt; localhost:5173/ (server)
+Check out your Vite / network configuration and https://vite.dev/config/server-options.html#server-hmr .
+at t.value (https://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+Applied WordPress design configuration 
+Object {colors: {…}, fonts: {…}, buttons: {…}, logo: {…}, layout: "full-width", …}
+🚀 WeParlay Analytics initialized!
+Crown is not defined
+Crown is not defined
+The above error occurred in the <UserProfileBanking> component:
+
+    at UserProfileBanking (https://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/src/pages/UserProfileBanking.tsx:51:37)
+    at Route (https://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=ccc99d98:206:16)
+    at Switch (https://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=ccc99d98:262:17)
+    at Router (https://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/src/App.tsx?t=1748393375799&v=uODfsslBE84NAUST-LVKc:116:3)
+    at div
+    at div
+    at main
+    at div
+    at MainLayout (https://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/src/components/layout/MainLayout.tsx:42:23)
+    at AppContent (https://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/src/App.tsx?t=1748393375799&v=uODfsslBE84NAUST-LVKc:401:66)
+    at BettingProvider (https://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/src/contexts/BettingContext.tsx:29:35)
+    at BetSlipProvider (https://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/src/contexts/BetSlipContext.tsx:21:35)
+    at TeamThemeProvider (https://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/src/contexts/TeamThemeContext.tsx:58:37)
+    at CurrencyModeProvider (https://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/src/contexts/CurrencyModeContext.tsx:20:40)
+    at OnboardingProvider (https://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/src/contexts/OnboardingContext.tsx:29:38)
+    at Provider (https://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=ccc99d98:38:15)
+    at TooltipProvider (https://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=ccc99d98:65:5)
+    at QueryClientProvider (https://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=ccc99d98:2909:3)
+    at App (https://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/src/App.tsx?t=1748393375799&v=uODfsslBE84NAUST-LVKc:454:9)
+    at ThemeProvider (https://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/src/lib/ThemeProvider.tsx?v=uODfsslBE84NAUST-LVKc:21:3)
+    at QueryClientProvider (https://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=ccc99d98:2909:3)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+Crown is not defined

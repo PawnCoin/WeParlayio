@@ -1,0 +1,214 @@
+/* Direct overrides for bet slip styling with increased specificity */
+
+/* ==================== LIGHT MODE STYLES ==================== */
+html:not(.dark) body .bet-selection {
+  background-color: #ffffff !important;
+  border-color: #e5e7eb !important;
+}
+
+html:not(.dark) body .pick-text {
+  color: #0f172a !important; /* Very dark for maximum contrast */
+  font-weight: 600 !important;
+}
+
+html:not(.dark) body .team-text {
+  color: #0f172a !important; /* Very dark for maximum contrast */
+  font-weight: 500 !important;
+}
+
+html:not(.dark) body .bet-type-text {
+  color: #0f172a !important; /* Very dark for maximum contrast */
+  font-weight: 600 !important;
+}
+
+html:not(.dark) body .odds-badge {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important; /* Very dark text */
+  border-color: #e2e8f0 !important;
+  font-weight: 600 !important;
+}
+
+/* Force all betting slip text to be dark in light mode */
+html:not(.dark) .bet-slip-container *,
+html:not(.dark) .betting-slip *,
+html:not(.dark) .unified-bet-slip * {
+  color: #0f172a !important;
+}
+
+/* Exception for buttons with colored backgrounds */
+html:not(.dark) .bg-blue-500 *,
+html:not(.dark) .bg-blue-600 *,
+html:not(.dark) .bg-green-500 *,
+html:not(.dark) .bg-green-600 *,
+html:not(.dark) .bg-primary * {
+  color: white !important;
+}
+
+/* ==================== DARK MODE STYLES ==================== */
+html.dark body .bet-selection {
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+}
+
+html.dark body .pick-text {
+  color: #ffffff !important;
+}
+
+html.dark body .team-text {
+  color: #f1f5f9 !important;
+}
+
+html.dark body .bet-type-text {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+html.dark body .odds-badge {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+  border-color: #334155 !important;
+}
+
+/* ==================== DARK MODE BACKGROUND FIXES ==================== */
+/* Complete dark mode styles to eliminate any white backgrounds */
+html.dark body {
+  background-color: #0f172a !important;
+}
+
+html.dark .bg-white,
+html.dark .bg-slate-50,
+html.dark .bg-slate-100 {
+  background-color: #0f172a !important;
+}
+
+html.dark .border-white,
+html.dark .border-slate-50,
+html.dark .border-slate-100 {
+  border-color: #1e293b !important;
+}
+
+/* Betting slip specific dark mode overrides */
+html.dark .betting-slip-container {
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+}
+
+html.dark .betting-slip-container [class*="bg-white"],
+html.dark .betting-slip-container [class*="bg-slate-50"],
+html.dark .betting-slip-container [class*="bg-slate-100"] {
+  background-color: #1e293b !important;
+}
+
+html.dark .betting-slip-header,
+html.dark .betting-slip-footer {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+/* ==================== COMMON BUTTON STYLES ==================== */
+.place-bet-button {
+  background-color: #2563eb !important;
+  color: white !important;
+  font-weight: 600 !important;
+  padding: 0.5rem !important;
+  height: auto !important;
+  min-height: 2.5rem !important;
+  border-radius: 0.375rem !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+.place-bet-button:hover {
+  background-color: #1d4ed8 !important;
+  transform: translateY(-1px) !important;
+}
+
+.place-bet-button:disabled {
+  background-color: #9ca3af !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+/* ==================== ENHANCED MOBILE RESPONSIVE STYLES ==================== */
+@media (max-width: 768px) {
+  /* Make bet selections more touch-friendly on mobile */
+  .bet-selections-container {
+    max-height: 130px !important;
+  }
+  
+  .bet-selection {
+    padding: 8px !important;
+    margin-bottom: 6px !important;
+    border-radius: 8px !important;
+    touch-action: manipulation;
+  }
+  
+  /* Enhance tap targets for mobile */
+  .bet-selection button {
+    min-height: 24px !important;
+    min-width: 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  
+  /* Improve visibility of odds on mobile */
+  .odds-badge {
+    font-size: 0.8rem !important;
+    padding: 2px 6px !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+  }
+  
+  /* Parlay breakdown optimizations for mobile */
+  .bet-selection-container .parlay-breakdown {
+    font-size: 0.7rem !important;
+    padding: 0.5rem !important;
+  }
+  
+  /* Ensure Place Bet button has good visibility */
+  .place-bet-button {
+    min-height: 44px !important; /* Larger touch target for mobile */
+    margin-top: 4px !important;
+    font-size: 0.9rem !important;
+    font-weight: 700 !important;
+  }
+  
+  /* Better input field for mobile */
+  input[type="number"] {
+    font-size: 16px !important; /* Prevents iOS zoom on focus */
+    height: 40px !important;
+    padding: 8px 12px !important;
+  }
+  
+  /* Improve 5% odds boost switch on mobile */
+  .odds-boost-switch {
+    margin-top: 8px !important;
+  }
+}
+
+/* Hidden sticky mobile footer for bet slip (optional toggle) */
+.mobile-bet-slip-toggle {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .mobile-bet-slip-toggle {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #fff;
+    border-top: 1px solid #e5e7eb;
+    padding: 8px 16px;
+    z-index: 50;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  html.dark .mobile-bet-slip-toggle {
+    background-color: #0f172a;
+    border-color: #334155;
+  }
+}
