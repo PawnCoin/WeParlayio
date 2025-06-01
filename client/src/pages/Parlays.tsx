@@ -42,6 +42,12 @@ export default function Parlays() {
     refetchInterval: 30000,
   });
 
+  // Fetch authentic sportsbook parlays from sportsbook.ag
+  const { data: sportsbookParlays } = useQuery({
+    queryKey: ["/api/sportsbook/parlays"],
+    refetchInterval: 300000, // 5 minutes
+  });
+
   // Calculate parlay odds and payout
   const calculateParlayOdds = () => {
     if (parlayLegs.length === 0) return { odds: 0, payout: 0 };
@@ -120,6 +126,27 @@ export default function Parlays() {
 
   const parlayStats = calculateParlayOdds();
   const oddsArray = Array.isArray(realOddsData) ? realOddsData : [];
+  const sportsbookData = sportsbookParlays?.data || [];
+
+  // Add sportsbook parlay to builder
+  const addSportsbookParlay = (parlay: any) => {
+    parlay.legs.forEach((leg: any) => {
+      const newLeg: ParlayLeg = {
+        id: `${Date.now()}-${Math.random()}`,
+        sport: parlay.sport,
+        teams: parlay.teams,
+        pick: leg.pick,
+        odds: leg.odds,
+        game_id: parlay.id
+      };
+      setParlayLegs(prev => [...prev, newLeg]);
+    });
+    
+    toast({
+      title: "Sportsbook Parlay Added",
+      description: `${parlay.teams} added from sportsbook.ag`,
+    });
+  };
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
@@ -128,6 +155,40 @@ export default function Parlays() {
         <h1 className="text-3xl font-bold text-gray-900">Parlay Builder</h1>
         <p className="text-gray-600">Combine multiple bets for bigger payouts</p>
       </div>
+
+      {/* Sportsbook Parlays Section */}
+      {sportsbookData.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Live Sportsbook Parlays (sportsbook.ag)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3">
+              {sportsbookData.slice(0, 5).map((parlay: any) => (
+                <div key={parlay.id} className="flex items-center justify-between p-3 border rounded">
+                  <div className="flex-1">
+                    <p className="font-medium">{parlay.teams}</p>
+                    <p className="text-sm text-gray-600">{parlay.sport}</p>
+                    <Badge variant="outline" className="mt-1">
+                      {parlay.combinedOdds > 0 ? `+${parlay.combinedOdds}` : parlay.combinedOdds}
+                    </Badge>
+                  </div>
+                  <Button 
+                    size="sm" 
+                    onClick={() => addSportsbookParlay(parlay)}
+                    className="ml-3"
+                  >
+                    Add to Builder
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Available Bets */}

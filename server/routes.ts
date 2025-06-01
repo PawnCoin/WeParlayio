@@ -6443,6 +6443,108 @@ Join us: WeParlay.io 🎯
     }
   });
 
+  // Sportsbook.ag scraping endpoints
+  app.get('/api/sportsbook/parlays', async (req, res) => {
+    try {
+      const { sportsbookScraper, sportsbookCache } = await import('./services/sportsbookScraper');
+      
+      // Check cache first
+      let parlays = sportsbookCache.getParlaysCache();
+      
+      if (!parlays) {
+        // Scrape fresh data
+        console.log('🔍 Scraping fresh parlay data from sportsbook.ag...');
+        await sportsbookScraper.initialize();
+        parlays = await sportsbookScraper.scrapeParlays();
+        await sportsbookScraper.close();
+        
+        // Cache the results
+        sportsbookCache.setParlaysCache(parlays);
+        console.log(`✅ Scraped ${parlays.length} parlays from sportsbook.ag`);
+      } else {
+        console.log(`📦 Serving ${parlays.length} cached parlays from sportsbook.ag`);
+      }
+      
+      res.json({
+        success: true,
+        data: parlays,
+        source: 'sportsbook.ag',
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error scraping sportsbook parlays:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to fetch sportsbook parlays',
+        data: []
+      });
+    }
+  });
+
+  app.get('/api/sportsbook/player-props', async (req, res) => {
+    try {
+      const { sportsbookScraper, sportsbookCache } = await import('./services/sportsbookScraper');
+      
+      // Check cache first
+      let props = sportsbookCache.getPropsCache();
+      
+      if (!props) {
+        // Scrape fresh data
+        console.log('🔍 Scraping fresh player props from sportsbook.ag...');
+        await sportsbookScraper.initialize();
+        props = await sportsbookScraper.scrapePlayerProps();
+        await sportsbookScraper.close();
+        
+        // Cache the results
+        sportsbookCache.setPropsCache(props);
+        console.log(`✅ Scraped ${props.length} player props from sportsbook.ag`);
+      } else {
+        console.log(`📦 Serving ${props.length} cached player props from sportsbook.ag`);
+      }
+      
+      res.json({
+        success: true,
+        data: props,
+        source: 'sportsbook.ag', 
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error scraping sportsbook props:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to fetch sportsbook player props',
+        data: []
+      });
+    }
+  });
+
+  app.get('/api/sportsbook/full-data', async (req, res) => {
+    try {
+      const { sportsbookScraper } = await import('./services/sportsbookScraper');
+      
+      console.log('🔍 Scraping full sportsbook data from sportsbook.ag...');
+      await sportsbookScraper.initialize();
+      const fullData = await sportsbookScraper.scrapeFullSectionData();
+      await sportsbookScraper.close();
+      
+      res.json({
+        success: true,
+        parlays: fullData.parlays,
+        playerProps: fullData.props,
+        source: 'sportsbook.ag',
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error scraping full sportsbook data:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to fetch full sportsbook data',
+        parlays: [],
+        playerProps: []
+      });
+    }
+  });
+
   // Additional streaming endpoints for LiveSportsStreaming page
   app.get('/api/streaming/active', (req, res) => {
     res.json([

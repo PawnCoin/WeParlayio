@@ -7,6 +7,7 @@ import { Users, Trophy, Share2, MessageSquare, Globe, Activity, UserPlus, Heart 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import BettingChallenge from '@/components/social/BettingChallenge';
 import SocialShareButton from '@/components/SocialShareButton';
+import { useQuery } from '@tanstack/react-query';
 
 const SocialBetting: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("challenges");
@@ -55,55 +56,23 @@ const SocialBetting: React.FC = () => {
     }
   ];
 
-  // Mock friend activity
-  const friendActivity = [
-    {
-      id: 'a1',
-      user: { id: 'u5', name: 'Riley', avatar: '' },
-      action: 'placed a bet',
-      details: 'Moneyline on Celtics',
-      timestamp: '30 minutes ago'
-    },
-    {
-      id: 'a2',
-      user: { id: 'u6', name: 'Morgan', avatar: '' },
-      action: 'won a challenge',
-      details: 'UFC Fight Night Pool',
-      timestamp: '2 hours ago'
-    },
-    {
-      id: 'a3',
-      user: { id: 'u7', name: 'Quinn', avatar: '' },
-      action: 'shared a bet slip',
-      details: '3-team parlay',
-      timestamp: '4 hours ago'
-    }
-  ];
+  // Fetch real friend activity from backend
+  const { data: friendActivity = [] } = useQuery({
+    queryKey: ["/api/social-betting/activity"],
+    refetchInterval: 30000,
+  });
 
-  // Mock groups
-  const bettingGroups = [
-    {
-      id: 'g1',
-      name: 'NBA Enthusiasts',
-      members: 28,
-      activeChallenge: true,
-      image: ''
-    },
-    {
-      id: 'g2',
-      name: 'NFL Sunday Club',
-      members: 42,
-      activeChallenge: true,
-      image: ''
-    },
-    {
-      id: 'g3',
-      name: 'UFC Bettors',
-      members: 16,
-      activeChallenge: false,
-      image: ''
-    }
-  ];
+  // Fetch real betting groups from backend
+  const { data: bettingGroups = [] } = useQuery({
+    queryKey: ["/api/social-betting/groups"],
+    refetchInterval: 60000,
+  });
+
+  // Fetch real friends list from backend
+  const { data: friendsList = [] } = useQuery({
+    queryKey: ["/api/social-betting/friends"],
+    refetchInterval: 60000,
+  });
 
   return (
     <div className="p-4 container max-w-6xl mx-auto">
