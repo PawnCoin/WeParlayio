@@ -51,6 +51,7 @@ interface UserAnalyticsData {
   avgSessionDuration: number;
   churnRate: number;
   retentionRate: number;
+  sessionGrowth: number;
   userGrowthData: Array<{
     date: string;
     newUsers: number;
@@ -288,7 +289,7 @@ const UserAnalytics: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle>User Growth Trend</CardTitle>
-          <CardDescription>User acquisition and engagement over time</CardDescription>
+          <CardDescription>User acquisition and engagement over time ({analytics?.totalUsers} total users including bots)</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-80">
@@ -301,7 +302,6 @@ const UserAnalytics: React.FC = () => {
                 <Area 
                   type="monotone" 
                   dataKey="totalUsers" 
-                  stackId="1"
                   stroke="#3b82f6" 
                   fill="#3b82f6"
                   fillOpacity={0.6}
@@ -310,10 +310,9 @@ const UserAnalytics: React.FC = () => {
                 <Area 
                   type="monotone" 
                   dataKey="activeUsers" 
-                  stackId="2"
                   stroke="#10b981" 
                   fill="#10b981"
-                  fillOpacity={0.6}
+                  fillOpacity={0.4}
                   name="Active Users"
                 />
                 <Line 
@@ -329,8 +328,41 @@ const UserAnalytics: React.FC = () => {
         </CardContent>
       </Card>
 
+      {/* User Summary Statistics */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Comprehensive User Statistics</CardTitle>
+          <CardDescription>Complete breakdown of all users including bot users for platform demonstration</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center p-4 bg-blue-50 rounded-lg">
+              <div className="text-2xl font-bold text-blue-600">{analytics?.totalUsers}</div>
+              <div className="text-sm text-muted-foreground">Total Users</div>
+            </div>
+            <div className="text-center p-4 bg-green-50 rounded-lg">
+              <div className="text-2xl font-bold text-green-600">{analytics?.activeUsers}</div>
+              <div className="text-sm text-muted-foreground">Active Users</div>
+            </div>
+            <div className="text-center p-4 bg-purple-50 rounded-lg">
+              <div className="text-2xl font-bold text-purple-600">{analytics?.premiumUsers}</div>
+              <div className="text-sm text-muted-foreground">Premium Users</div>
+            </div>
+            <div className="text-center p-4 bg-orange-50 rounded-lg">
+              <div className="text-2xl font-bold text-orange-600">{analytics?.newUsersToday}</div>
+              <div className="text-sm text-muted-foreground">New Today</div>
+            </div>
+          </div>
+          <div className="mt-4 p-4 bg-yellow-50 rounded-lg">
+            <p className="text-sm text-yellow-800">
+              <strong>Note:</strong> This analytics dashboard includes comprehensive data from all platform users, including demo bot users that showcase platform activity and engagement patterns.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* User Segments & Engagement */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
         <Card>
           <CardHeader>
             <CardTitle>User Tier Distribution</CardTitle>
