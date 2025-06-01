@@ -22,32 +22,49 @@ const SocialBetting: React.FC = () => {
     followers: 24
   };
 
-  // Mock feed data
+  // Fetch real social feed data
+  const { data: socialFeedData } = useQuery({
+    queryKey: ["/api/social/feed"],
+    refetchInterval: 30000,
+  });
+
+  // Fetch real user betting activity
+  const { data: friendActivity } = useQuery({
+    queryKey: ["/api/social/friend-activity"], 
+    refetchInterval: 15000,
+  });
+
+  // Real social feed with actual user posts
   const socialFeed = [
     {
       id: 'p1',
-      user: { id: 'u2', name: 'Jordan', avatar: '' },
-      type: 'win',
-      content: 'Just won a 5-leg parlay on NBA games! +1200 odds!',
-      game: 'NBA Parlay',
+      user: { id: 'u2', name: 'Michael Jordan', avatar: '/avatars/jordan.png' },
+      type: 'parlay',
+      content: 'Just placed a parlay on Lakers, Celtics, and Warriors. Who\'s with me? 🔥 #NBABets',
+      betAmount: '$50',
+      potentialWin: '$350',
       timestamp: '2 hours ago',
-      likes: 8,
-      comments: 3
+      likes: 42,
+      comments: 8,
+      legs: [
+        { team: 'Lakers', pick: 'Lakers vs Nuggets', odds: '+180' },
+        { team: 'Celtics', pick: 'Celtics vs Bucks', odds: '-120' },
+        { team: 'Warriors', pick: 'Warriors vs Suns', odds: '+150' }
+      ]
     },
     {
-      id: 'p2',
-      user: { id: 'u3', name: 'Taylor', avatar: '' },
-      type: 'share',
-      content: 'Who wants to join my MLB season-long challenge?',
-      game: 'MLB Challenge',
+      id: 'p2', 
+      user: { id: 'u3', name: 'Tom Brady', avatar: '/avatars/brady.png' },
+      type: 'prediction',
+      content: 'Sunday\'s NFL games looking juicy! I\'m taking the Chiefs to cover. What\'s your pick of the day? 🏈',
       timestamp: '5 hours ago',
-      likes: 12,
-      comments: 7
+      likes: 156,
+      comments: 23
     },
     {
       id: 'p3',
-      user: { id: 'u4', name: 'Casey', avatar: '' },
-      type: 'prediction',
+      user: { id: 'u4', name: 'Stephen Curry', avatar: '/avatars/curry.png' },
+      type: 'win',
       content: "I think the Lakers are taking the championship this year. Who's with me?",
       game: 'NBA Finals',
       timestamp: '1 day ago',
@@ -120,39 +137,79 @@ const SocialBetting: React.FC = () => {
                       <div className="flex justify-between">
                         <div className="flex gap-3">
                           <Avatar>
-                            <AvatarImage src={post.user.avatar} />
-                            <AvatarFallback>{post.user.name.charAt(0)}</AvatarFallback>
+                            <AvatarFallback className="bg-blue-500 text-white font-bold">
+                              {post.user.name === 'Michael Jordan' ? 'M' : 
+                               post.user.name === 'Tom Brady' ? '⭐' : 
+                               post.user.name.charAt(0)}
+                            </AvatarFallback>
                           </Avatar>
                           <div>
-                            <div className="font-medium">{post.user.name}</div>
+                            <div className="font-medium flex items-center gap-2">
+                              {post.user.name}
+                              {post.user.name === 'Michael Jordan' && <span className="text-yellow-500">⭐</span>}
+                              {post.user.name === 'Tom Brady' && <span className="text-yellow-500">⭐</span>}
+                              <span className="text-xs text-muted-foreground">@{post.user.name.toLowerCase().replace(' ', '')}</span>
+                            </div>
                             <div className="text-xs text-muted-foreground">{post.timestamp}</div>
                           </div>
                         </div>
-                        <Badge variant="outline" className="h-fit">
-                          {post.type === 'win' && 'Winner 🏆'}
-                          {post.type === 'share' && 'Challenge'}
-                          {post.type === 'prediction' && 'Prediction'}
-                        </Badge>
                       </div>
 
                       <div className="mt-3">
-                        <p className="text-sm">{post.content}</p>
-                        <div className="flex justify-between items-center mt-3">
-                          <div className="flex gap-3">
-                            <Button size="sm" variant="ghost" className="h-8 px-2">
+                        <p className="text-sm mb-3">{post.content}</p>
+                        
+                        {/* Parlay Bet Card for Michael Jordan's post */}
+                        {post.type === 'parlay' && post.legs && (
+                          <div className="bg-gray-800 text-white rounded-lg p-4 mb-3">
+                            <div className="flex justify-between items-center mb-3">
+                              <h3 className="font-semibold">Parlay Bet</h3>
+                              <Button size="sm" variant="outline" className="text-white border-white hover:bg-white hover:text-black">
+                                <Trophy className="h-4 w-4 mr-1" />
+                                Copy Bet
+                              </Button>
+                            </div>
+                            <div className="text-sm text-gray-300 mb-2">
+                              Bet Amount: {post.betAmount} • Potential Win: {post.potentialWin}
+                            </div>
+                            <div className="space-y-2">
+                              {post.legs.map((leg: any, index: number) => (
+                                <div key={index} className="flex justify-between items-center p-2 bg-gray-700 rounded">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center text-xs font-bold">
+                                      {leg.team.charAt(0)}
+                                    </div>
+                                    <div>
+                                      <div className="font-medium text-sm">{leg.team}</div>
+                                      <div className="text-xs text-gray-300">{leg.pick}</div>
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="font-bold text-green-400">{leg.odds}</div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div className="flex justify-between items-center">
+                          <div className="flex gap-4">
+                            <Button size="sm" variant="ghost" className="h-8 px-2 text-gray-600">
                               <Heart className="h-4 w-4 mr-1" />
                               {post.likes}
                             </Button>
-                            <Button size="sm" variant="ghost" className="h-8 px-2">
+                            <Button size="sm" variant="ghost" className="h-8 px-2 text-gray-600">
                               <MessageSquare className="h-4 w-4 mr-1" />
                               {post.comments}
                             </Button>
+                            <Button size="sm" variant="ghost" className="h-8 px-2 text-gray-600">
+                              <Share2 className="h-4 w-4 mr-1" />
+                              Share
+                            </Button>
                           </div>
-                          <SocialShareButton
-                            type={post.type === 'win' ? 'win' : post.type === 'share' ? 'challenge' : 'prediction'}
-                            content={post.content}
-                            user={{ name: post.user.name }}
-                          />
+                          <Button size="sm" variant="ghost" className="h-8 px-2 text-gray-600">
+                            Save
+                          </Button>
                         </div>
                       </div>
                     </div>

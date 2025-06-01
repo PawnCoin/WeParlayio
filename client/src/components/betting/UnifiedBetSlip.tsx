@@ -19,6 +19,7 @@ import {
   CheckCircle,
   Target
 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const UnifiedBetSlip: React.FC = () => {
@@ -35,6 +36,7 @@ const UnifiedBetSlip: React.FC = () => {
   
   const [betAmount, setBetAmount] = useState('25.00');
   const [betType, setBetType] = useState<'single' | 'parlay'>('single');
+  const [currency, setCurrency] = useState('USD');
   const [isLoading, setIsLoading] = useState(false);
 
   // Calculate odds and potential payout
@@ -249,11 +251,31 @@ const UnifiedBetSlip: React.FC = () => {
               </AnimatePresence>
             </ScrollArea>
 
+            {/* Currency Selector */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Currency</label>
+              <Select value={currency} onValueChange={setCurrency}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="USD">💵 USD (Real Money)</SelectItem>
+                  <SelectItem value="WEPARLAY">🎯 WeParlay Cash</SelectItem>
+                  <SelectItem value="BTC">₿ Bitcoin</SelectItem>
+                  <SelectItem value="ETH">⟠ Ethereum</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Bet Amount Input */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Bet Amount</label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm">
+                  {currency === 'USD' ? '$' : 
+                   currency === 'WEPARLAY' ? 'WP' :
+                   currency === 'BTC' ? '₿' : '⟠'}
+                </div>
                 <Input
                   type="number"
                   value={betAmount}

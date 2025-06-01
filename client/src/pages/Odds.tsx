@@ -24,9 +24,9 @@ export default function Odds() {
   const [refreshing, setRefreshing] = useState(false);
   const { toast } = useToast();
 
-  // Fetch real odds data from your RapidAPI subscription
+  // Fetch real odds data from your working endpoints
   const { data: realOddsData, refetch: refetchRealOdds, isLoading } = useQuery({
-    queryKey: ["/api/real-odds"],
+    queryKey: ["/api/odds", selectedSport === 'all' ? 'americanfootball_nfl' : selectedSport],
     refetchInterval: 30000, // Update every 30 seconds
     staleTime: 10000,
   });
@@ -35,6 +35,17 @@ export default function Odds() {
   const { data: sports } = useQuery({
     queryKey: ["/api/sports"],
     staleTime: 300000,
+  });
+
+  // Fetch live markets count across all sports
+  const { data: liveMarketsData } = useQuery({
+    queryKey: ["/api/sports/baseball_mlb/live"],
+    refetchInterval: 30000,
+  });
+
+  const { data: nflLiveData } = useQuery({
+    queryKey: ["/api/odds/americanfootball_nfl"],
+    refetchInterval: 30000,
   });
 
   // Manual refresh function
@@ -58,6 +69,11 @@ export default function Odds() {
 
   const oddsArray = Array.isArray(realOddsData) ? realOddsData : [];
   const sportsArray = Array.isArray(sports) ? sports : [];
+  const liveMarketsArray = Array.isArray(liveMarketsData) ? liveMarketsData : [];
+  const nflLiveArray = Array.isArray(nflLiveData) ? nflLiveData : [];
+
+  // Calculate total live markets from all active data sources
+  const totalLiveMarkets = liveMarketsArray.length + nflLiveArray.length + oddsArray.length;
 
   // Filter odds by selected sport
   const filteredOdds = selectedSport === 'all' 
@@ -116,7 +132,7 @@ export default function Odds() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs md:text-sm text-gray-600">Live Markets</p>
-                <p className="text-lg md:text-2xl font-bold">{filteredOdds.length}</p>
+                <p className="text-lg md:text-2xl font-bold">{totalLiveMarkets || filteredOdds.length}</p>
               </div>
               <Activity className="h-8 w-8 text-blue-600" />
             </div>
