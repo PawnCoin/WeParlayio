@@ -84,6 +84,13 @@ import FinancialOverview from "@/pages/admin/FinancialOverview";
 import Analytics from "@/pages/admin/Analytics";
 import PlatformSettings from "@/pages/admin/PlatformSettings";
 import VisualComponentEditorPage from "./pages/admin/VisualComponentEditor";
+import NotificationManagement from "@/pages/system/NotificationManagement";
+import TransactionManagement from "@/pages/system/TransactionManagement";
+import PayoutManagement from "@/pages/system/PayoutManagement";
+import SystemLogs from "@/pages/system/SystemLogs";
+import ApiStatus from "@/pages/system/ApiStatus";
+import SystemHealth from "@/pages/system/SystemHealth";
+import LiveMonitor from "@/components/LiveMonitor";
 import { lazy } from 'react';
 
 function Router() {
@@ -168,6 +175,16 @@ function Router() {
       <Route path="/security-settings" component={SecuritySettings} />
       <Route path="/theme-settings" component={ThemeSettingsPage} />
       <Route path="/theme-color-manager" component={ThemeColorManager} />
+
+      {/* System Management Routes */}
+      <Route path="/platform-settings" component={PlatformSettings} />
+      <Route path="/security" component={SecuritySettings} />
+      <Route path="/notifications" component={NotificationManagement} />
+      <Route path="/transactions" component={TransactionManagement} />
+      <Route path="/payouts" component={PayoutManagement} />
+      <Route path="/logs" component={SystemLogs} />
+      <Route path="/api-status" component={ApiStatus} />
+      <Route path="/system-health" component={SystemHealth} />
 
       {/* Crypto */}
       <Route path="/crypto-info" component={CryptoInformation} />
