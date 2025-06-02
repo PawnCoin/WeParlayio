@@ -43,13 +43,16 @@ export class TVApp2Service {
   private baseUrl: string;
   
   constructor() {
-    this.tvapp2Host = process.env.TVAPP2_HOST || 'localhost';
-    this.tvapp2Port = process.env.TVAPP2_PORT || '5004';
-    this.baseUrl = `http://${this.tvapp2Host}:${this.tvapp2Port}`;
+    this.tvapp2Host = process.env.TVAPP2_HOST || 'streams.weparlay.cloud';
+    this.tvapp2Port = process.env.TVAPP2_PORT || '443';
     
-    if (!process.env.TVAPP2_HOST) {
-      console.warn('TVApp2 host not configured. Please set TVAPP2_HOST environment variable.');
-    }
+    // Use HTTPS for cloud service, HTTP for local
+    const protocol = process.env.TVAPP2_HOST ? 'http' : 'https';
+    this.baseUrl = process.env.TVAPP2_HOST 
+      ? `${protocol}://${this.tvapp2Host}:${this.tvapp2Port}`
+      : `${protocol}://${this.tvapp2Host}`;
+    
+    console.log(`TVApp2 configured: ${this.baseUrl}`);
   }
 
   /**
@@ -57,19 +60,24 @@ export class TVApp2Service {
    */
   async getLiveSportsStreams(): Promise<SportStream[]> {
     try {
-      // TVApp2 provides M3U playlists and EPG data
-      const response = await fetch(`${this.baseUrl}/playlist.m3u`);
+      // Connect to authentic TVApp2 streaming service
+      const response = await fetch(`${this.baseUrl}/api/channels/live`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'WeParlay-Platform/1.0'
+        }
+      });
       
       if (!response.ok) {
-        throw new Error(`TVApp2 error: ${response.status}`);
+        throw new Error(`TVApp2 service error: ${response.status}`);
       }
 
-      const m3uContent = await response.text();
-      return this.parseM3UContent(m3uContent);
+      const data = await response.json();
+      return this.formatAuthenticStreams(data.channels || [], 'sports');
     } catch (error) {
       console.error('TVApp2 connection error:', error);
-      console.log('TVApp2 service not available - please provide TVAPP2_HOST configuration or start TVApp2 service');
-      return this.getMockSportsStreams();
+      throw new Error('Authentic streaming service unavailable. Please configure TVApp2 connection details.');
     }
   }
 
