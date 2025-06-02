@@ -210,6 +210,7 @@ function Router() {
       <Route path="/legal-compliance" component={LegalComplianceDashboard} />
       <Route path="/kyc-verification" component={KYCVerification} />
       <Route path="/responsible-gambling" component={ResponsibleGamblingCenter} />
+      <Route path="/risk-management" component={RiskManagementDashboard} />
 
       {/* Crypto */}
       <Route path="/crypto-info" component={CryptoInformation} />
