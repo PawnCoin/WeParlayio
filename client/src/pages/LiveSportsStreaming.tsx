@@ -32,17 +32,32 @@ export default function LiveSportsStreaming() {
     queryKey: ['/api/streaming/status']
   });
 
-  // Fetch live sports streams
-  const { data: sportsStreams, isLoading: sportsLoading } = useQuery({
-    queryKey: ['/api/streaming/sports'],
-    enabled: streamingStatus?.configured
+  // Fetch live sports streams from M3U playlist
+  const { data: sportsStreamsData, isLoading: sportsLoading } = useQuery({
+    queryKey: ['/api/streaming/sports-channels'],
+    enabled: streamingStatus?.available
   });
 
   // Fetch live esports streams  
   const { data: esportsStreams, isLoading: esportsLoading } = useQuery({
-    queryKey: ['/api/streaming/esports'],
-    enabled: streamingStatus?.configured
+    queryKey: ['/api/streaming/search?q=esports'],
+    enabled: streamingStatus?.available
   });
+
+  // Transform M3U data to StreamEvent format
+  const sportsStreams = sportsStreamsData?.channels?.map((channel: any) => ({
+    id: channel.eventId,
+    title: channel.title,
+    homeTeam: channel.homeTeam || 'Live',
+    awayTeam: channel.awayTeam || 'Sports',
+    league: channel.league,
+    streamUrl: channel.sources?.[0]?.url,
+    quality: channel.sources?.[0]?.quality || 'HD',
+    viewerCount: channel.sources?.[0]?.viewers || 1000,
+    isLive: channel.sources?.[0]?.isLive || true,
+    startTime: channel.startTime,
+    sport: channel.sportType
+  })) || [];
 
   // Get user tier and determine stream access
   const userTier = user?.tier || 'bronze';
@@ -99,7 +114,7 @@ export default function LiveSportsStreaming() {
     </Card>
   );
 
-  if (!streamingStatus?.configured) {
+  if (!streamingStatus?.available) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card>
