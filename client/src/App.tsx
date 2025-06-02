@@ -128,6 +128,12 @@ function Router() {
       <Route path="/results" component={Results} />
       <Route path="/parlays" component={Parlays} />
 
+      {/* TIER 2 - Core Functionality */}
+      <Route path="/enhanced-odds" component={EnhancedOddsDisplay} />
+      <Route path="/multi-sport-betting" component={MultiSportBettingEngine} />
+      <Route path="/account-management" component={UserAccountManagement} />
+      <Route path="/betting-interface" component={BasicBettingInterface} />
+
       {/* Sports Pages */}
       <Route path="/sport/:sportKey" component={SportPage} />
       <Route path="/sports/:sportKey" component={SportPage} />

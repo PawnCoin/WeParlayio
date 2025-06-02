@@ -9,14 +9,14 @@ import { useQuery } from '@tanstack/react-query';
 import { 
   Football, 
   Basketball,
-  Baseball,
   Trophy,
   Target,
   Clock,
   DollarSign,
   TrendingUp,
   Users,
-  Gamepad2
+  Gamepad2,
+  Circle
 } from 'lucide-react';
 
 interface BetType {
@@ -107,7 +107,7 @@ export default function MultiSportBettingEngine() {
     {
       key: 'baseball_mlb',
       name: 'MLB',
-      icon: <Baseball className="h-5 w-5" />,
+      icon: <Circle className="h-5 w-5" />,
       betTypes: [
         {
           id: 'moneyline',
