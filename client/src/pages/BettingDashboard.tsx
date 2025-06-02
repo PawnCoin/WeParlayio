@@ -55,14 +55,14 @@ const BettingDashboard: React.FC = () => {
     refetchInterval: 60000,
   });
 
-  // Helper to safely get team name
+  // Helper to safely get team name from real API data
   const getTeamName = (event: any, isHome: boolean = true) => {
     if (!event) return isHome ? 'Home Team' : 'Away Team';
     
     if (isHome) {
-      return event.homeTeam || event.home_team || 'Home Team';
+      return event.homeTeam || event.home_team || event.homeTeamName || 'Home Team';
     } else {
-      return event.awayTeam || event.away_team || 'Away Team';
+      return event.awayTeam || event.away_team || event.awayTeamName || 'Away Team';
     }
   };
 
