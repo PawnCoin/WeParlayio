@@ -20,7 +20,6 @@ const navigationItems = [
   { path: '/', label: 'Home', icon: Home },
   { path: '/odds', label: 'Live Odds', icon: BarChart2, badge: 'FREE' },
   { path: '/parlays', label: 'Parlay Builder', icon: Target },
-  { path: '/results', label: 'Results', icon: TrendingUp },
   { path: '/tournaments', label: 'Tournaments', icon: Trophy },
   { path: '/fantasy', label: 'Fantasy', icon: Medal },
   { path: '/gaming', label: 'Gaming', icon: Gamepad2 },
