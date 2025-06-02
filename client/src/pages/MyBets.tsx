@@ -29,51 +29,15 @@ const MyBets: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'pending' | 'won' | 'lost'>('all');
 
-  // Mock bet data - replace with real API call
-  const mockBets: Bet[] = [
-    {
-      id: '1',
-      event: 'Lakers vs Warriors',
-      type: 'moneyline',
-      amount: 50,
-      odds: '+125',
-      status: 'won',
-      placedAt: '2024-01-20T14:30:00Z',
-      settledAt: '2024-01-20T22:15:00Z',
-      payout: 112.50,
-      selections: [{ team: 'Lakers', market: 'Moneyline', odds: '+125' }]
-    },
-    {
-      id: '2',
-      event: 'Celtics vs Heat',
-      type: 'spread',
-      amount: 25,
-      odds: '-110',
-      status: 'pending',
-      placedAt: '2024-01-21T10:15:00Z',
-      selections: [{ team: 'Celtics', market: 'Spread -3.5', odds: '-110' }]
-    },
-    {
-      id: '3',
-      event: 'Cowboys vs Giants | Chiefs vs Raiders',
-      type: 'parlay',
-      amount: 100,
-      odds: '+280',
-      status: 'lost',
-      placedAt: '2024-01-19T16:45:00Z',
-      settledAt: '2024-01-21T21:30:00Z',
-      selections: [
-        { team: 'Cowboys', market: 'Moneyline', odds: '-150' },
-        { team: 'Chiefs', market: 'Spread -7', odds: '-110' }
-      ]
-    }
-  ];
-
-  const { data: bets = mockBets } = useQuery({
+  // Fetch authentic betting data from database
+  const { data: bets = [], isLoading: betsLoading, error: betsError } = useQuery({
     queryKey: ['user-bets', user?.id],
     queryFn: async () => {
-      const response = await fetch(`/api/users/${user?.id}/bets`);
-      if (!response.ok) return mockBets;
+      if (!user?.id) return [];
+      const response = await fetch(`/api/users/${user.id}/bets`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch betting history');
+      }
       return response.json();
     },
     enabled: isAuthenticated && !!user?.id,
