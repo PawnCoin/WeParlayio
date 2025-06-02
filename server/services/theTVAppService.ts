@@ -43,14 +43,9 @@ export class TVApp2Service {
   private baseUrl: string;
   
   constructor() {
-    this.tvapp2Host = process.env.TVAPP2_HOST || 'streams.weparlay.cloud';
-    this.tvapp2Port = process.env.TVAPP2_PORT || '443';
-    
-    // Use HTTPS for cloud service, HTTP for local
-    const protocol = process.env.TVAPP2_HOST ? 'http' : 'https';
-    this.baseUrl = process.env.TVAPP2_HOST 
-      ? `${protocol}://${this.tvapp2Host}:${this.tvapp2Port}`
-      : `${protocol}://${this.tvapp2Host}`;
+    this.tvapp2Host = process.env.TVAPP2_HOST || '127.0.0.1';
+    this.tvapp2Port = process.env.TVAPP2_PORT || '4124';
+    this.baseUrl = `http://${this.tvapp2Host}:${this.tvapp2Port}`;
     
     console.log(`TVApp2 configured: ${this.baseUrl}`);
   }
@@ -60,21 +55,28 @@ export class TVApp2Service {
    */
   async getLiveSportsStreams(): Promise<SportStream[]> {
     try {
-      // Connect to authentic TVApp2 streaming service
-      const response = await fetch(`${this.baseUrl}/api/channels/live`, {
+      // Check TVApp2 service health first
+      const healthResponse = await fetch(`${this.baseUrl}/api/health`, {
         method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'WeParlay-Platform/1.0'
-        }
+        timeout: 5000
       });
-      
-      if (!response.ok) {
-        throw new Error(`TVApp2 service error: ${response.status}`);
+
+      if (!healthResponse.ok) {
+        throw new Error(`TVApp2 health check failed: ${healthResponse.status}`);
       }
 
-      const data = await response.json();
-      return this.formatStreamData(data.channels || [], 'sports');
+      // Get M3U playlist from TVApp2
+      const m3uResponse = await fetch(`${this.baseUrl}/m3u`, {
+        method: 'GET',
+        timeout: 10000
+      });
+
+      if (!m3uResponse.ok) {
+        throw new Error(`TVApp2 M3U fetch failed: ${m3uResponse.status}`);
+      }
+
+      const m3uContent = await m3uResponse.text();
+      return this.parseM3UContent(m3uContent);
     } catch (error) {
       console.error('TVApp2 connection error:', error);
       throw new Error('Authentic streaming service unavailable. Please configure TVApp2 connection details.');
