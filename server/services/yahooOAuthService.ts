@@ -22,7 +22,8 @@ export class YahooOAuthService {
   constructor() {
     this.clientId = process.env.YAHOO_CLIENT_ID || '';
     this.clientSecret = process.env.YAHOO_CLIENT_SECRET || '';
-    this.redirectUri = `${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000'}/api/yahoo/callback`;
+    const domain = process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000';
+    this.redirectUri = domain.includes('localhost') ? `http://${domain}/api/yahoo/callback` : `https://${domain}/api/yahoo/callback`;
   }
 
   // Generate Yahoo OAuth URL
