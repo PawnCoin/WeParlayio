@@ -427,6 +427,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test challenge creation endpoint (bypasses auth for testing)
+  app.post('/api/challenges/test', async (req: any, res) => {
+    try {
+      const userId = 'test-user-123'; // Test user ID
+      const { 
+        eventId, 
+        eventName, 
+        amount, 
+        pick, 
+        odds, 
+        isVirtual = true, 
+        type = 'head-to-head',
+        expiresAt,
+        invitePhone,
+        customMessage
+      } = req.body;
+
+      // Create the challenge
+      const challengeData = {
+        uuid: require('crypto').randomUUID(),
+        createdBy: userId,
+        eventId: eventId || null,
+        eventName: eventName || 'Test Event',
+        amount: amount || 50,
+        pick: pick || 'Test Pick',
+        odds: odds || -110,
+        isVirtual: isVirtual,
+        type: type,
+        expiresAt: expiresAt ? new Date(expiresAt) : new Date(Date.now() + 24 * 60 * 60 * 1000),
+        customMessage: customMessage || null
+      };
+
+      const challenge = await storage.createBettingChallenge(challengeData);
+      
+      // Send SMS notification if phone provided
+      if (invitePhone) {
+        const { smsService } = await import('./services/smsService');
+        await smsService.sendChallengeInvitation(
+          invitePhone,
+          challengeData.eventName,
+          challengeData.amount,
+          challenge.uuid,
+          challengeData.isVirtual
+        );
+      }
+
+      res.json({ 
+        success: true, 
+        challenge,
+        message: invitePhone ? 'Challenge created and SMS sent!' : 'Challenge created successfully!' 
+      });
+    } catch (error) {
+      console.error("Error creating test challenge:", error);
+      res.status(500).json({ message: "Failed to create test challenge" });
+    }
+  });
+
   // Head-to-head betting challenge routes
   app.post('/api/challenges', async (req: any, res) => {
     try {

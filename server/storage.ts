@@ -204,6 +204,159 @@ export class MemStorage implements IStorage {
     return updatedUser;
   }
 
+  // Challenge management methods
+  async getUserChallenges(userId: string, status?: string): Promise<BettingChallenge[]> {
+    return Array.from(this.challenges.values())
+      .filter(challenge => 
+        (challenge.createdBy === userId || challenge.acceptedBy === userId) &&
+        (!status || challenge.status === status)
+      );
+  }
+
+  async acceptBettingChallenge(uuid: string, acceptedBy: string): Promise<BettingChallenge> {
+    const challenge = this.challenges.get(uuid);
+    if (!challenge) throw new Error('Challenge not found');
+    
+    const updatedChallenge = {
+      ...challenge,
+      acceptedBy,
+      status: 'accepted' as const,
+      updatedAt: new Date()
+    };
+    this.challenges.set(uuid, updatedChallenge);
+    return updatedChallenge;
+  }
+
+  async updateBettingChallengeStatus(uuid: string, status: string): Promise<BettingChallenge> {
+    const challenge = this.challenges.get(uuid);
+    if (!challenge) throw new Error('Challenge not found');
+    
+    const updatedChallenge = {
+      ...challenge,
+      status: status as any,
+      updatedAt: new Date()
+    };
+    this.challenges.set(uuid, updatedChallenge);
+    return updatedChallenge;
+  }
+
+  async settleBettingChallenge(uuid: string, winnerId?: string, isDraw: boolean = false): Promise<BettingChallenge> {
+    const challenge = this.challenges.get(uuid);
+    if (!challenge) throw new Error('Challenge not found');
+    
+    const updatedChallenge = {
+      ...challenge,
+      status: 'settled' as const,
+      winnerId: isDraw ? null : winnerId,
+      settledAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.challenges.set(uuid, updatedChallenge);
+    return updatedChallenge;
+  }
+
+  // Notification management
+  async createNotification(notification: InsertNotification): Promise<Notification> {
+    const newNotification: Notification = {
+      ...notification,
+      id: this.nextId++,
+      createdAt: new Date()
+    };
+    this.notifications.set(newNotification.id, newNotification);
+    return newNotification;
+  }
+
+  async getUserNotifications(userId: string, unreadOnly: boolean = false): Promise<Notification[]> {
+    return Array.from(this.notifications.values())
+      .filter(notification => 
+        notification.userId === userId &&
+        (!unreadOnly || !notification.read)
+      )
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async markNotificationAsRead(id: number, userId: string): Promise<Notification> {
+    const notification = this.notifications.get(id);
+    if (!notification || notification.userId !== userId) {
+      throw new Error('Notification not found');
+    }
+    
+    const updatedNotification = { ...notification, read: true };
+    this.notifications.set(id, updatedNotification);
+    return updatedNotification;
+  }
+
+  // Transaction management
+  async getTransactions(limit: number, offset: number): Promise<Transaction[]> {
+    const allTransactions = Array.from(this.transactions.values())
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    return allTransactions.slice(offset, offset + limit);
+  }
+
+  async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
+    const newTransaction: Transaction = {
+      ...transaction,
+      id: this.nextId++,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.transactions.set(newTransaction.id, newTransaction);
+    return newTransaction;
+  }
+
+  // User balance management
+  async updateUserWeplayTokenBalance(userId: string, amount: number): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error('User not found');
+    
+    const updatedUser = { 
+      ...user, 
+      weplayTokenBalance: (user.weplayTokenBalance || 0) + amount,
+      updatedAt: new Date()
+    };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+
+  async incrementUserWins(userId: string): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error('User not found');
+    
+    const updatedUser = { 
+      ...user, 
+      wins: (user.wins || 0) + 1,
+      updatedAt: new Date()
+    };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+
+  // Betting management
+  async createBet(bet: InsertBet): Promise<Bet> {
+    const newBet: Bet = {
+      ...bet,
+      id: this.nextId++,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.bets.set(newBet.id, newBet);
+    return newBet;
+  }
+
+  async settleBet(betId: number, status: string): Promise<Bet> {
+    const bet = this.bets.get(betId);
+    if (!bet) throw new Error('Bet not found');
+    
+    const updatedBet = {
+      ...bet,
+      status: status as any,
+      settledAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.bets.set(betId, updatedBet);
+    return updatedBet;
+  }
+
   async getUserByGamertag(gamertag: string): Promise<User | undefined> {
     return Array.from(this.users.values()).find(user => user.gamertag === gamertag);
   }
