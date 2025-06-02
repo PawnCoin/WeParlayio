@@ -394,10 +394,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Send SMS notification (integrate with SMS service)
       try {
-        const { smsService } = await import('./services/smsService');
+        const { sendSMS } = await import('./services/smsService');
         const message = `🎯 WeParlay Challenge: ${customMessage || `${user.username || 'A friend'} challenged you to a $${challengeAmount} bet!`} Join: ${req.protocol}://${req.get('host')}/challenges/${challenge.challengeUuid}`;
         
-        await smsService.sendSMS(friendPhone, message);
+        await sendSMS({
+          to: friendPhone,
+          message: message,
+          type: 'bet_confirmation'
+        });
         
         // Log successful SMS for admin tracking
         console.log(`SMS Challenge sent: User ${userId} (${userTier}) -> ${friendPhone} for $${challengeAmount}`);
@@ -6966,6 +6970,44 @@ Join us: WeParlay.io 🎯
     } catch (error) {
       console.error('Error fetching active bets:', error);
       res.status(500).json({ error: 'Failed to fetch active bets' });
+    }
+  });
+
+  // Test Twilio SMS functionality
+  app.post('/api/notifications/test-sms', async (req, res) => {
+    try {
+      const { phone, type = 'test' } = req.body;
+      
+      if (!phone) {
+        return res.status(400).json({ success: false, message: 'Phone number is required' });
+      }
+
+      const { sendSMS } = await import('./services/smsService');
+      const testMessage = 'Test SMS from WeParlay - Your Twilio integration is working correctly!';
+      
+      const success = await sendSMS({
+        to: phone,
+        message: testMessage,
+        type: type as any
+      });
+
+      if (success) {
+        res.json({ 
+          success: true, 
+          message: 'SMS sent successfully! Check your phone.'
+        });
+      } else {
+        res.status(500).json({ 
+          success: false, 
+          message: 'Failed to send SMS. Check Twilio credentials.'
+        });
+      }
+    } catch (error: any) {
+      console.error('SMS test error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: `SMS test failed: ${error.message}`
+      });
     }
   });
 
