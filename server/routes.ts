@@ -331,6 +331,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // const bookieRoutes = await import('./routes/bookieRoutes');
   // app.use('/api/bookie', bookieRoutes.default);
   
+  // SMS Challenge Test endpoint (bypasses auth for testing)
+  app.post('/api/challenges/sms-test', async (req: any, res) => {
+    try {
+      const {
+        eventName,
+        amount,
+        pick,
+        notificationPhone,
+        isVirtual = true,
+        customMessage
+      } = req.body;
+
+      if (!eventName || !pick) {
+        return res.status(400).json({ message: "Event name and pick are required" });
+      }
+
+      if (!notificationPhone) {
+        return res.status(400).json({ message: "Phone number is required for SMS test" });
+      }
+
+      // Create challenge
+      const challengeData = {
+        uuid: require('crypto').randomUUID(),
+        createdBy: 'test-user-123',
+        eventName,
+        amount: amount || 50,
+        pick,
+        isVirtual,
+        customMessage,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+      };
+
+      const challenge = await storage.createBettingChallenge(challengeData);
+
+      // Send SMS notification
+      const { sendChallengeInvitation } = await import('./services/smsService');
+      await sendChallengeInvitation(
+        notificationPhone,
+        eventName,
+        amount || 50,
+        challenge.uuid,
+        isVirtual
+      );
+
+      res.json({ 
+        success: true, 
+        challengeUuid: challenge.uuid,
+        amount: challenge.amount,
+        isVirtual: challenge.isVirtual,
+        expiresAt: challenge.expiresAt,
+        message: 'Challenge created and SMS sent successfully!'
+      });
+
+    } catch (error) {
+      console.error("Error creating SMS test challenge:", error);
+      res.status(500).json({ message: "Failed to create SMS test challenge", error: error.message });
+    }
+  });
+
   // SMS Challenge endpoint with VIP and consent validation
   app.post('/api/challenges/sms', async (req: any, res) => {
     try {
