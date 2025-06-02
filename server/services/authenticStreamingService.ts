@@ -15,7 +15,7 @@ interface StreamData {
   language: string;
   quality: 'SD' | 'HD' | '4K';
   streamUrl: string;
-  platform: 'twitch' | 'youtube' | 'betfair' | 'highlights';
+  platform: 'twitch' | 'youtube' | 'betfair' | 'highlights' | 'flashlive';
   category: 'esports' | 'sports' | 'general';
   tags: string[];
   startTime?: string;

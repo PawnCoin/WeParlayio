@@ -15,7 +15,7 @@ interface StreamData {
   language: string;
   quality: 'SD' | 'HD' | '4K';
   streamUrl: string;
-  platform: 'twitch' | 'youtube' | 'facebook' | 'kick';
+  platform: 'twitch' | 'youtube' | 'facebook' | 'kick' | 'flashlive' | 'highlights' | 'betfair';
   category: 'esports' | 'sports' | 'general';
   tags: string[];
   startTime?: string;
@@ -50,9 +50,14 @@ export class UnifiedStreamingService {
   private rapidApiKey: string;
   private rapidApiHost = 'twitch-api.p.rapidapi.com';
   private youtubeApiHost = 'youtube-v3-alternative.p.rapidapi.com';
+  private authenticService: any;
 
   constructor() {
     this.rapidApiKey = process.env.RAPIDAPI_KEY || '';
+    // Import authentic streaming service for FlashLive Sports data
+    import('./authenticStreamingService').then(module => {
+      this.authenticService = module.authenticStreamingService;
+    });
     console.log('🎮 Unified Streaming Service initialized');
   }
 
