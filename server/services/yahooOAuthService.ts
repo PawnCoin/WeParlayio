@@ -23,7 +23,8 @@ export class YahooOAuthService {
     this.clientId = process.env.YAHOO_CLIENT_ID || '';
     this.clientSecret = process.env.YAHOO_CLIENT_SECRET || '';
     const domain = process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000';
-    this.redirectUri = domain.includes('localhost') ? `http://${domain}/api/yahoo/callback` : `https://${domain}/api/yahoo/callback`;
+    this.redirectUri = `https://${domain}/api/yahoo/callback`;
+    console.log('Yahoo OAuth configured with redirect URI:', this.redirectUri);
   }
 
   // Generate Yahoo OAuth URL

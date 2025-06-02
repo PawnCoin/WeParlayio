@@ -2254,13 +2254,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const profile = await yahooOAuthService.getUserProfile(tokens.access_token);
       console.log('Yahoo user profile retrieved:', profile.name);
 
-      // For now, store tokens in session temporarily until user logs in
-      req.session.yahooTokens = {
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
-        expires_at: Date.now() + tokens.expires_in * 1000,
-        profile: profile
-      };
+      // Store tokens in session temporarily until user logs in
+      if (req.session) {
+        req.session.yahooTokens = {
+          access_token: tokens.access_token,
+          refresh_token: tokens.refresh_token,
+          expires_at: Date.now() + tokens.expires_in * 1000,
+          profile: profile
+        };
+      }
 
       res.redirect('/fantasy?yahoo_connected=true&user=' + encodeURIComponent(profile.name));
     } catch (error) {
@@ -3392,11 +3394,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/rapidapi/espn/:sport/:league', async (req, res) => {
     try {
       const { sport, league } = req.params;
-      const espnData = await rapidApiService.getESPNData(sport, league);
-      res.json(espnData);
+      const rapidApiIntegration = await import('./services/rapidApiIntegrationService');
+      
+      let data = [];
+      if (sport === 'basketball' && league === 'nba') {
+        data = await rapidApiIntegration.rapidApiIntegration.getBasketballData('nba');
+      } else if (sport === 'esports') {
+        if (league === 'lol') {
+          data = await rapidApiIntegration.rapidApiIntegration.getLoLEsportsData();
+        } else if (league === 'valorant') {
+          data = await rapidApiIntegration.rapidApiIntegration.getValorantEsportsData();
+        }
+      }
+      
+      res.json({
+        success: true,
+        sport,
+        league,
+        data,
+        count: data.length
+      });
     } catch (error) {
       console.error('Error fetching ESPN data from RapidAPI:', error);
-      res.status(500).json({ message: 'Failed to fetch ESPN data from RapidAPI' });
+      res.status(500).json({ 
+        success: false,
+        message: 'Failed to fetch ESPN data from RapidAPI',
+        error: error.message 
+      });
     }
   });
 
