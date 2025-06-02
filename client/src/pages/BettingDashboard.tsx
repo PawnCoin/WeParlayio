@@ -53,7 +53,7 @@ const BettingDashboard: React.FC = () => {
   const { data: upcomingEventsData, isLoading: isLoadingUpcoming } = useQuery({
     queryKey: ['/api/unified-sports/upcoming-events'],
     refetchInterval: 60000,
-  });
+  }) as { data: { events: any[] } | undefined; isLoading: boolean };
 
   // Helper to safely get team name from real API data
   const getTeamName = (event: any, isHome: boolean = true) => {
@@ -110,7 +110,7 @@ const BettingDashboard: React.FC = () => {
     }
   };
 
-  // Process and filter events
+  // Process and filter events - handle real API response structure
   const upcomingEvents = upcomingEventsData?.events || [];
   
   const filteredLiveEvents = Array.isArray(liveEvents) ? liveEvents.filter((event: any) => {
@@ -120,7 +120,15 @@ const BettingDashboard: React.FC = () => {
   
   const filteredUpcomingEvents = Array.isArray(upcomingEvents) ? upcomingEvents.filter((event: any) => {
     if (selectedLeagues.length === 0) return true;
-    return selectedLeagues.includes(event.sport_key || event.sport);
+    // Map real sport names to our league keys
+    const sportMapping: any = {
+      'NBA Basketball': 'basketball_nba',
+      'NFL Football': 'americanfootball_nfl',
+      'MLB Baseball': 'baseball_mlb',
+      'NHL Hockey': 'icehockey_nhl'
+    };
+    const mappedSport = sportMapping[event.sport] || event.sport_key || event.sport;
+    return selectedLeagues.includes(mappedSport);
   }) : [];
 
   // Sort leagues alphabetically for display
