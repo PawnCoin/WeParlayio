@@ -185,14 +185,16 @@ export class AuthenticStreamingService {
     return results.slice(0, 5).map((query: string, index: number) => ({
       id: `youtube-${index}`,
       title: `${query} - Live Stream`,
-      description: `Live content for ${query}`,
-      thumbnail: '',
+      streamer: 'YouTube Sports',
+      thumbnailUrl: '',
       streamUrl: `https://youtube.com/results?search_query=${encodeURIComponent(query)}+live`,
       platform: 'youtube',
       category: 'sports',
       isLive: true,
-      viewers: Math.floor(Math.random() * 5000) + 500,
-      language: 'en'
+      viewerCount: Math.floor(Math.random() * 5000) + 500,
+      language: 'en',
+      quality: 'HD',
+      tags: [query, 'live', 'sports']
     }));
   }
 
@@ -203,18 +205,16 @@ export class AuthenticStreamingService {
     return categories.slice(0, 10).map((category: any) => ({
       id: category.ENTITY_ID || category.CATEGORY_ID?.toString() || Math.random().toString(),
       title: `${category.NAME} Live Coverage`,
-      description: `Live sports coverage for ${category.NAME}`,
-      thumbnail: '',
+      streamer: 'FlashLive Sports',
+      thumbnailUrl: '',
       streamUrl: `https://flashscore.com/${category.ENTITY_SLUG || 'sports'}`,
       platform: 'flashlive',
       category: 'sports',
       isLive: true,
-      viewers: Math.floor(Math.random() * 3000) + 200,
+      viewerCount: Math.floor(Math.random() * 3000) + 200,
       language: 'en',
-      metadata: {
-        categoryType: category.CATEGORY_TYPE,
-        entitySlug: category.ENTITY_SLUG
-      }
+      quality: 'HD',
+      tags: [category.NAME, category.CATEGORY_TYPE, 'live']
     }));
   }
 
@@ -353,8 +353,8 @@ export class AuthenticStreamingService {
     if (!this.rapidApiKey) return [];
 
     try {
-      // Use your actual FlashLive Sports API endpoint
-      const response = await fetch('https://flashlive-sports.p.rapidapi.com/v1/news/categories', {
+      // Use your actual FlashLive Sports API endpoint with required locale parameter
+      const response = await fetch('https://flashlive-sports.p.rapidapi.com/v1/news/categories?locale=en_INT', {
         headers: {
           'X-RapidAPI-Key': this.rapidApiKey,
           'X-RapidAPI-Host': 'flashlive-sports.p.rapidapi.com'

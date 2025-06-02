@@ -144,6 +144,12 @@ export class UnifiedStreamingService {
   async getStreamsBySport(sport: string): Promise<StreamData[]> {
     const streams: StreamData[] = [];
 
+    // Get authentic FlashLive Sports data from your subscription
+    if (this.authenticService) {
+      const flashLiveStreams = await this.authenticService.getFlashLiveSports();
+      streams.push(...flashLiveStreams);
+    }
+
     // Get YouTube sports streams
     const youtubeStreams = await this.getYouTubeLiveStreams(`${sport} live`);
     streams.push(...youtubeStreams);
