@@ -8187,72 +8187,102 @@ Join us: WeParlay.io 🎯
     }
   });
 
-  // Tournament page API endpoints
+  // Tournament page API endpoints - REAL TOURNAMENTS ONLY
   app.get('/api/tournaments', async (req, res) => {
     try {
-      const tournaments = [
-        {
-          id: 'tournament-1',
-          name: 'WeParlay Summer Championship',
-          sport: 'Mixed Sports',
-          format: 'Single Elimination',
-          prizePool: 50000,
-          entryFee: 25,
-          startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-          maxParticipants: 128,
-          currentParticipants: 87,
-          status: 'upcoming',
-          description: 'The ultimate sports betting tournament featuring multiple sports and massive prizes.',
-          rules: 'Standard betting rules apply. Minimum bet $5, maximum bet $500 per event.'
-        },
-        {
-          id: 'tournament-2',
-          name: 'NFL Prediction Masters',
-          sport: 'American Football',
-          format: 'Round Robin',
-          prizePool: 25000,
-          entryFee: 15,
-          startDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-          endDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
-          maxParticipants: 64,
-          currentParticipants: 52,
-          status: 'upcoming',
-          description: 'Predict NFL game outcomes and compete for the championship.',
-          rules: 'Must predict spread, over/under, and winner for each game.'
-        },
-        {
-          id: 'tournament-3',
-          name: 'Basketball Elite Cup',
-          sport: 'Basketball',
-          format: 'Swiss System',
-          prizePool: 15000,
-          entryFee: 10,
-          startDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-          endDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-          maxParticipants: 32,
-          currentParticipants: 32,
-          status: 'active',
-          description: 'Live NBA and college basketball tournament with daily competitions.',
-          rules: 'Daily picks required. Miss 2 days and you are eliminated.'
-        },
-        {
-          id: 'tournament-4',
-          name: 'Soccer World Series',
-          sport: 'Soccer',
-          format: 'League',
-          prizePool: 35000,
-          entryFee: 20,
-          startDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-          endDate: new Date(Date.now() + 28 * 24 * 60 * 60 * 1000).toISOString(),
-          maxParticipants: 96,
-          currentParticipants: 23,
-          status: 'upcoming',
-          description: 'International soccer tournament covering major leagues worldwide.',
-          rules: 'Pick winners from Premier League, La Liga, Serie A, and Bundesliga.'
+      const realTournaments = [];
+      
+      // Get real March Madness/NCAA tournament data
+      try {
+        const ncaaResponse = await fetch('https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/tournaments');
+        const ncaaData = await ncaaResponse.json();
+        
+        if (ncaaData.tournaments && ncaaData.tournaments.length > 0) {
+          ncaaData.tournaments.forEach((tournament: any) => {
+            if (tournament.name && tournament.id) {
+              realTournaments.push({
+                id: `ncaa-${tournament.id}`,
+                name: tournament.name,
+                sport: 'College Basketball',
+                format: 'Single Elimination',
+                startDate: tournament.startDate || new Date().toISOString(),
+                endDate: tournament.endDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                status: tournament.isActive ? 'active' : 'upcoming',
+                description: `${tournament.name} - Official NCAA tournament`,
+                source: 'ESPN'
+              });
+            }
+          });
         }
-      ];
-      res.json(tournaments);
+      } catch (error) {
+        console.log('NCAA tournament data not available');
+      }
+      
+      // Get real NFL playoff/tournament data
+      try {
+        const nflResponse = await fetch('https://site.api.espn.com/apis/site/v2/sports/football/nfl/seasons');
+        const nflData = await nflResponse.json();
+        
+        if (nflData.seasons && nflData.seasons.length > 0) {
+          const currentSeason = nflData.seasons[0];
+          if (currentSeason.types) {
+            currentSeason.types.forEach((type: any) => {
+              if (type.name === 'Postseason' || type.name === 'Playoffs') {
+                realTournaments.push({
+                  id: `nfl-playoffs-${currentSeason.year}`,
+                  name: `${currentSeason.year} NFL Playoffs`,
+                  sport: 'NFL Football',
+                  format: 'Single Elimination',
+                  startDate: type.startDate || new Date().toISOString(),
+                  endDate: type.endDate || new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
+                  status: type.hasGroups ? 'active' : 'upcoming',
+                  description: `Official NFL ${currentSeason.year} playoff tournament`,
+                  source: 'ESPN'
+                });
+              }
+            });
+          }
+        }
+      } catch (error) {
+        console.log('NFL tournament data not available');
+      }
+      
+      // Get real NBA playoff data
+      try {
+        const nbaResponse = await fetch('https://site.api.espn.com/apis/site/v2/sports/basketball/nba/seasons');
+        const nbaData = await nbaResponse.json();
+        
+        if (nbaData.seasons && nbaData.seasons.length > 0) {
+          const currentSeason = nbaData.seasons[0];
+          if (currentSeason.types) {
+            currentSeason.types.forEach((type: any) => {
+              if (type.name === 'Postseason' || type.name === 'Playoffs') {
+                realTournaments.push({
+                  id: `nba-playoffs-${currentSeason.year}`,
+                  name: `${currentSeason.year} NBA Playoffs`,
+                  sport: 'NBA Basketball',
+                  format: 'Best of 7 Series',
+                  startDate: type.startDate || new Date().toISOString(),
+                  endDate: type.endDate || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
+                  status: type.hasGroups ? 'active' : 'upcoming',
+                  description: `Official NBA ${currentSeason.year} playoff tournament`,
+                  source: 'ESPN'
+                });
+              }
+            });
+          }
+        }
+      } catch (error) {
+        console.log('NBA tournament data not available');
+      }
+      
+      // If no real tournaments found, return empty array (no fake data)
+      if (realTournaments.length === 0) {
+        console.log('No real tournaments currently available - showing authentic empty state');
+      }
+      
+      console.log(`Found ${realTournaments.length} real tournaments from authentic sources`);
+      res.json(realTournaments);
     } catch (error) {
       console.error('Tournaments error:', error);
       res.status(500).json({ error: 'Failed to fetch tournaments' });
