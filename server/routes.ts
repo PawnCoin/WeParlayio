@@ -8170,6 +8170,190 @@ Join us: WeParlay.io 🎯
     }
   });
 
+  // Tournament page API endpoints
+  app.get('/api/tournaments', async (req, res) => {
+    try {
+      const tournaments = [
+        {
+          id: 'tournament-1',
+          name: 'WeParlay Summer Championship',
+          sport: 'Mixed Sports',
+          format: 'Single Elimination',
+          prizePool: 50000,
+          entryFee: 25,
+          startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+          maxParticipants: 128,
+          currentParticipants: 87,
+          status: 'upcoming',
+          description: 'The ultimate sports betting tournament featuring multiple sports and massive prizes.',
+          rules: 'Standard betting rules apply. Minimum bet $5, maximum bet $500 per event.'
+        },
+        {
+          id: 'tournament-2',
+          name: 'NFL Prediction Masters',
+          sport: 'American Football',
+          format: 'Round Robin',
+          prizePool: 25000,
+          entryFee: 15,
+          startDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+          endDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
+          maxParticipants: 64,
+          currentParticipants: 52,
+          status: 'upcoming',
+          description: 'Predict NFL game outcomes and compete for the championship.',
+          rules: 'Must predict spread, over/under, and winner for each game.'
+        },
+        {
+          id: 'tournament-3',
+          name: 'Basketball Elite Cup',
+          sport: 'Basketball',
+          format: 'Swiss System',
+          prizePool: 15000,
+          entryFee: 10,
+          startDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+          endDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+          maxParticipants: 32,
+          currentParticipants: 32,
+          status: 'active',
+          description: 'Live NBA and college basketball tournament with daily competitions.',
+          rules: 'Daily picks required. Miss 2 days and you are eliminated.'
+        },
+        {
+          id: 'tournament-4',
+          name: 'Soccer World Series',
+          sport: 'Soccer',
+          format: 'League',
+          prizePool: 35000,
+          entryFee: 20,
+          startDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+          endDate: new Date(Date.now() + 28 * 24 * 60 * 60 * 1000).toISOString(),
+          maxParticipants: 96,
+          currentParticipants: 23,
+          status: 'upcoming',
+          description: 'International soccer tournament covering major leagues worldwide.',
+          rules: 'Pick winners from Premier League, La Liga, Serie A, and Bundesliga.'
+        }
+      ];
+      res.json(tournaments);
+    } catch (error) {
+      console.error('Tournaments error:', error);
+      res.status(500).json({ error: 'Failed to fetch tournaments' });
+    }
+  });
+
+  app.get('/api/tournaments/my-entries', async (req, res) => {
+    try {
+      const userEntries = [
+        {
+          id: 'entry-1',
+          tournamentId: 'tournament-1',
+          userId: 'user-1',
+          teamName: 'Dream Team',
+          entryDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+          status: 'registered',
+          currentRound: 0,
+          totalEarnings: 0
+        },
+        {
+          id: 'entry-2',
+          tournamentId: 'tournament-3',
+          userId: 'user-1',
+          teamName: 'Court Kings',
+          entryDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+          status: 'active',
+          currentRound: 2,
+          totalEarnings: 125.50
+        }
+      ];
+      res.json(userEntries);
+    } catch (error) {
+      console.error('Tournament entries error:', error);
+      res.status(500).json({ error: 'Failed to fetch tournament entries' });
+    }
+  });
+
+  app.get('/api/tournaments/brackets/:tournamentId', async (req, res) => {
+    try {
+      const { tournamentId } = req.params;
+      
+      const brackets = [
+        {
+          id: 'bracket-1',
+          tournamentId,
+          round: 1,
+          matchNumber: 1,
+          team1: 'Alpha Squad',
+          team2: 'Beta Team',
+          winner: 'Alpha Squad',
+          scheduledTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          status: 'completed'
+        },
+        {
+          id: 'bracket-2',
+          tournamentId,
+          round: 1,
+          matchNumber: 2,
+          team1: 'Gamma Force',
+          team2: 'Delta Warriors',
+          scheduledTime: new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString(),
+          status: 'scheduled'
+        },
+        {
+          id: 'bracket-3',
+          tournamentId,
+          round: 2,
+          matchNumber: 1,
+          team1: 'Alpha Squad',
+          team2: 'TBD',
+          scheduledTime: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
+          status: 'scheduled'
+        }
+      ];
+      res.json(brackets);
+    } catch (error) {
+      console.error('Tournament brackets error:', error);
+      res.status(500).json({ error: 'Failed to fetch tournament brackets' });
+    }
+  });
+
+  app.post('/api/tournaments/join', async (req, res) => {
+    try {
+      const { tournamentId, teamName } = req.body;
+      
+      if (!tournamentId || !teamName) {
+        return res.status(400).json({
+          success: false,
+          message: 'Tournament ID and team name are required'
+        });
+      }
+
+      // Simulate tournament entry
+      const entryId = `entry-${Date.now()}`;
+      
+      res.json({
+        success: true,
+        entryId,
+        message: `Successfully joined tournament with team "${teamName}"`,
+        data: {
+          id: entryId,
+          tournamentId,
+          teamName,
+          entryDate: new Date().toISOString(),
+          status: 'registered',
+          currentRound: 0,
+          totalEarnings: 0
+        }
+      });
+    } catch (error) {
+      console.error('Tournament join error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to join tournament'
+      });
+    }
+  });
+
   app.get('/api/streaming/channels', async (req, res) => {
     try {
       const channels = [
