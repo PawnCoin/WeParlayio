@@ -65,12 +65,12 @@ export default function ApiStatus() {
   };
 
   const StatCard = ({ title, value, icon: Icon, status }: any) => (
-    <Card>
+    <Card className="bg-slate-800 border-slate-700">
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className="text-2xl font-bold">{value}</p>
+            <p className="text-sm font-medium text-slate-400">{title}</p>
+            <p className="text-2xl font-bold text-white">{value}</p>
           </div>
           <Icon className={`h-8 w-8 ${
             status === 'online' ? 'text-green-500' : 
@@ -83,18 +83,19 @@ export default function ApiStatus() {
   );
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">API Status</h1>
-          <p className="text-muted-foreground">Monitor API endpoints and service health</p>
+    <div className="min-h-screen bg-slate-900 text-white">
+      <div className="container mx-auto p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white">API Status</h1>
+            <p className="text-slate-400">Monitor API endpoints and service health</p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => refetch()} className="border-slate-700 bg-slate-800 hover:bg-slate-700 text-white">
+              Refresh Status
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => refetch()}>
-            Refresh Status
-          </Button>
-        </div>
-      </div>
 
       {/* Overall System Health */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -125,31 +126,31 @@ export default function ApiStatus() {
       </div>
 
       <Tabs defaultValue="all" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="all">All Services</TabsTrigger>
-          <TabsTrigger value="external">External APIs</TabsTrigger>
-          <TabsTrigger value="internal">Internal Services</TabsTrigger>
-          <TabsTrigger value="database">Database</TabsTrigger>
-          <TabsTrigger value="payment">Payment Services</TabsTrigger>
+        <TabsList className="bg-slate-800 border-slate-700">
+          <TabsTrigger value="all" className="data-[state=active]:bg-slate-700 data-[state=active]:text-white text-slate-300">All Services</TabsTrigger>
+          <TabsTrigger value="external" className="data-[state=active]:bg-slate-700 data-[state=active]:text-white text-slate-300">External APIs</TabsTrigger>
+          <TabsTrigger value="internal" className="data-[state=active]:bg-slate-700 data-[state=active]:text-white text-slate-300">Internal Services</TabsTrigger>
+          <TabsTrigger value="database" className="data-[state=active]:bg-slate-700 data-[state=active]:text-white text-slate-300">Database</TabsTrigger>
+          <TabsTrigger value="payment" className="data-[state=active]:bg-slate-700 data-[state=active]:text-white text-slate-300">Payment Services</TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="space-y-6">
-          <Card>
+          <Card className="bg-slate-800 border-slate-700">
             <CardHeader>
-              <CardTitle>All API Services</CardTitle>
-              <CardDescription>Complete overview of all system services and their current status</CardDescription>
+              <CardTitle className="text-white">All API Services</CardTitle>
+              <CardDescription className="text-slate-400">Complete overview of all system services and their current status</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {isLoading ? (
-                  <div className="text-center py-8">Loading service status...</div>
+                  <div className="text-center py-8 text-slate-400">Loading service status...</div>
                 ) : services?.services?.length > 0 ? (
                   services.services.map((service: any) => {
                     const mappedStatus = service.status === 'healthy' ? 'online' : service.status === 'degraded' ? 'degraded' : 'offline';
                     const StatusIcon = getStatusIcon(mappedStatus);
                     const serviceType = 'external'; // Map all services as external for now
                     return (
-                      <div key={service.name} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div key={service.name} className="flex items-center justify-between p-4 border border-slate-700 bg-slate-750 rounded-lg">
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-2">
                             <StatusIcon className={`h-5 w-5 ${
@@ -157,18 +158,18 @@ export default function ApiStatus() {
                               mappedStatus === 'offline' ? 'text-red-500' :
                               'text-yellow-500'
                             }`} />
-                            <Globe className="h-5 w-5 text-muted-foreground" />
+                            <Globe className="h-5 w-5 text-slate-400" />
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <h3 className="font-medium">{service.name}</h3>
+                              <h3 className="font-medium text-white">{service.name}</h3>
                               <Badge variant={getStatusColor(mappedStatus) as any}>
                                 {mappedStatus}
                               </Badge>
-                              <Badge variant="outline">external</Badge>
+                              <Badge variant="outline" className="border-slate-600 text-slate-300">external</Badge>
                             </div>
-                            <p className="text-sm text-muted-foreground">Response time: {service.responseTime}ms</p>
-                            <p className="text-xs text-muted-foreground">Uptime: {service.uptime}%</p>
+                            <p className="text-sm text-slate-400">Response time: {service.responseTime}ms</p>
+                            <p className="text-xs text-slate-500">Uptime: {service.uptime}%</p>
                           </div>
                         </div>
                         <div className="text-right">
@@ -369,6 +370,7 @@ export default function ApiStatus() {
           </Card>
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 }
