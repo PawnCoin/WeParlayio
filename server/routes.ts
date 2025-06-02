@@ -29,6 +29,11 @@ import { apiTestRouter } from "./routes/apiTestRoutes";
 import { espnFantasyService } from "./services/espnFantasyService";
 import { yahooOAuthService } from "./services/yahooOAuthService";
 
+// Helper function to generate empty odds array when APIs are unavailable
+function generateFallbackOdds() {
+  return [];
+}
+
 // Export the routes so they can be imported by index.ts
 export { notificationRoutes, websocketPollingRoutes };
 
@@ -1446,7 +1451,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       try {
         // Use unified sports API to get REAL upcoming events from all sources
-        const unifiedData = await unifiedSportsApiService.getUnifiedUpcomingEvents();
+        const unifiedData = await UnifiedSportsApiService.getUnifiedUpcomingEvents();
         
         // Filter events for the specific sport
         const sportEvents = unifiedData.filter((event: any) => 
