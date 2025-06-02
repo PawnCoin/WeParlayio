@@ -36,7 +36,7 @@ import TermsOfService from "@/pages/TermsOfService"; // Terms of service page fo
 import SecurityInfo from "@/pages/SecurityInfo"; // Security information page showing our protection measures
 import Support from "@/pages/Support"; // Automated support system
 import CryptoInformation from "@/pages/CryptoInformation"; // Cryptocurrency information and guides
-import SmsChallenge from "@/pages/SmsChallenge"; // VIP SMS Challenge system
+
 import UserProfileBanking from "@/pages/UserProfileBanking"; // Complete user profile with integrated banking
 import MyBets from "@/pages/MyBets"; // User betting history and tracking
 import WeParlayCash from "@/pages/WeParlayCash"; // WeParlay Cash hub and management
@@ -170,7 +170,7 @@ function Router() {
       <Route path="/payment-demo" component={PaymentDemo} />
       <Route path="/onboarding-demo" component={OnboardingDemo} />
       <Route path="/notification-test" component={NotificationTest} />
-      <Route path="/sms-challenge" component={SmsChallenge} />
+
 
       {/* Academy */}
       <Route path="/betting-academy" component={BettingAcademy} />

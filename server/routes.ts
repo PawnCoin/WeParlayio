@@ -339,8 +339,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // SMS Challenge endpoint with VIP and consent validation
   app.post('/api/challenges/sms', isAuthenticated, async (req: any, res) => {
     try {
-
-      const userId = req.user.claims.sub;
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
       const { friendPhone, challengeAmount, customMessage, gameData, smsConsent, marketingConsent, userTier } = req.body;
 
       // Check VIP tier access
