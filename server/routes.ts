@@ -2093,41 +2093,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // CRITICAL: Fantasy team management endpoints
-  app.get('/api/fantasy/teams', isAuthenticated, async (req, res) => {
-    try {
-      const userId = req.user?.claims?.sub;
-      const fantasyTeams = await storage.getUserFantasyTeams(parseInt(userId));
-      res.json(fantasyTeams);
-    } catch (error) {
-      console.error('Error fetching fantasy teams:', error);
-      res.status(500).json({ message: 'Failed to fetch fantasy teams' });
-    }
-  });
-
-  app.post('/api/fantasy/teams', isAuthenticated, async (req, res) => {
-    try {
-      const userId = req.user?.claims?.sub;
-      const { name, sportId, maxSalary } = req.body;
-
-      if (!name || !sportId) {
-        return res.status(400).json({ message: 'Name and sport ID are required' });
-      }
-
-      const fantasyTeam = await storage.createFantasyTeam({
-        userId,
-        name,
-        sportId,
-        salary: 0,
-        maxSalary: maxSalary || 50000
-      });
-
-      res.json({ success: true, fantasyTeam });
-    } catch (error) {
-      console.error('Error creating fantasy team:', error);
-      res.status(500).json({ message: 'Failed to create fantasy team' });
-    }
-  });
+  // Fantasy team endpoints moved to working implementation below
 
   app.post('/api/fantasy/teams/:teamId/players/:playerId', isAuthenticated, async (req, res) => {
     try {
