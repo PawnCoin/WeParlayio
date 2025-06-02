@@ -6,7 +6,13 @@ export class CleanStreamingService {
 
   constructor() {
     this.espnApiKey = process.env.ESPN_API_KEY || '';
-    this.gridApiKey = process.env.GRID_API_KEY || '';
+    this.gridApiKey = process.env.PANDASCORE_API_TOKEN || '';
+    
+    if (this.gridApiKey) {
+      console.log('✅ PandaScore API configured successfully');
+    } else {
+      console.log('⚠️ PANDASCORE_API_TOKEN not found');
+    }
   }
 
   // Get live sports streams from ESPN API only
@@ -28,7 +34,7 @@ export class CleanStreamingService {
   // Get esports streams from GRID API only
   async getEsportsStreams(): Promise<any[]> {
     if (!this.gridApiKey) {
-      console.log('GRID API key not configured');
+      console.log('PandaScore API key not configured');
       return [];
     }
 
@@ -47,9 +53,10 @@ export class CleanStreamingService {
       }
 
       const matches = await response.json();
+      console.log('✅ PandaScore API connected - fetched', matches.length, 'matches');
       return this.formatPandaScoreStreams(Array.isArray(matches) ? matches : []);
     } catch (error) {
-      console.error('GRID esports streaming error:', error);
+      console.error('PandaScore API error:', error);
       return [];
     }
   }
