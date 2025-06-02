@@ -7184,6 +7184,95 @@ Join us: WeParlay.io 🎯
     }
   });
 
+  // Gaming API endpoints
+  app.get('/api/gaming/bets', async (req, res) => {
+    try {
+      const gameBets = [
+        {
+          id: '1',
+          gameName: 'League of Legends',
+          description: 'I will win my next ranked match in under 25 minutes',
+          amount: 50,
+          odds: 2.5,
+          createdBy: 'ProGamer123',
+          status: 'open',
+          createdAt: new Date().toISOString(),
+          players: []
+        },
+        {
+          id: '2',
+          gameName: 'Counter-Strike 2',
+          description: 'My team will get first blood in the next match',
+          amount: 25,
+          odds: 1.8,
+          createdBy: 'CryptoKing',
+          status: 'open',
+          createdAt: new Date().toISOString(),
+          players: []
+        }
+      ];
+      res.json(gameBets);
+    } catch (error) {
+      console.error('Error fetching gaming bets:', error);
+      res.status(500).json({ error: 'Failed to fetch gaming bets' });
+    }
+  });
+
+  app.get('/api/gaming/leaderboard', async (req, res) => {
+    try {
+      const leaderboard = [
+        { rank: 1, name: "ProGamer123", winRate: "68%", profit: "+$12,450", game: "League of Legends", level: 42 },
+        { rank: 2, name: "CryptoKing", winRate: "62%", profit: "+$10,820", game: "Counter-Strike 2", level: 38 },
+        { rank: 3, name: "GameQueen", winRate: "59%", profit: "+$8,740", game: "Valorant", level: 35 }
+      ];
+      res.json(leaderboard);
+    } catch (error) {
+      console.error('Error fetching gaming leaderboard:', error);
+      res.status(500).json({ error: 'Failed to fetch gaming leaderboard' });
+    }
+  });
+
+  app.post('/api/gaming/create-bet', async (req, res) => {
+    try {
+      const { gameName, description, amount, odds } = req.body;
+      
+      if (!gameName || !description || !amount) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+
+      const newBet = {
+        id: Math.random().toString(36).substr(2, 9),
+        gameName,
+        description,
+        amount: parseFloat(amount),
+        odds: odds || 2.0,
+        createdBy: 'Current User',
+        status: 'open',
+        createdAt: new Date().toISOString(),
+        players: []
+      };
+
+      res.json({ success: true, bet: newBet });
+    } catch (error) {
+      console.error('Error creating gaming bet:', error);
+      res.status(500).json({ error: 'Failed to create gaming bet' });
+    }
+  });
+
+  app.post('/api/gaming/join-bet/:betId', async (req, res) => {
+    try {
+      const { betId } = req.params;
+      res.json({ 
+        success: true, 
+        message: `Successfully joined bet ${betId}`,
+        betId 
+      });
+    } catch (error) {
+      console.error('Error joining gaming bet:', error);
+      res.status(500).json({ error: 'Failed to join gaming bet' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
