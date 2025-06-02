@@ -31,15 +31,27 @@ const HeadToHeadBetting: React.FC = () => {
   const [isDepositing, setIsDepositing] = useState(false);
   const [depositSuccess, setDepositSuccess] = useState(false);
   
-  const [challenges, setChallenges] = useState<ChallengeProps[]>([
+  // Fetch real challenges from API
+  const { data: challenges, isLoading: challengesLoading } = useQuery({
+    queryKey: ['/api/challenges'],
+    enabled: isAuthenticated
+  });
+
+  // Fetch user balance
+  const { data: userBalance } = useQuery({
+    queryKey: ['/api/wallet/balance'],
+    enabled: isAuthenticated
+  });
+
+  const [mockChallenges] = useState<ChallengeProps[]>([
     {
       id: '1',
       opponent: 'JohnSports92',
       amount: 50,
       description: 'Lakers vs Warriors - Lakers to win',
       status: 'pending',
-      expiry: '2023-05-20',
-      date: '2023-05-16'
+      expiry: '2025-06-10',
+      date: '2025-06-02'
     },
     {
       id: '2',
@@ -47,7 +59,7 @@ const HeadToHeadBetting: React.FC = () => {
       amount: 25,
       description: 'Celtics vs Heat - Total points over 220.5',
       status: 'accepted',
-      expiry: '2023-05-22',
+      expiry: '2025-06-12',
       date: '2023-05-15'
     },
     {
