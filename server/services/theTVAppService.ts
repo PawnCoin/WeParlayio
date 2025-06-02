@@ -1,6 +1,7 @@
 /**
- * TheTVApp.tv Global Sports Streaming Integration
- * Provides comprehensive sports coverage including traditional sports and esports
+ * TVApp2 Global Sports Streaming Integration
+ * Provides comprehensive sports coverage using IPTV streams from TVApp2
+ * Based on: https://github.com/TheBinaryNinja/tvapp2
  */
 
 interface StreamSource {
@@ -36,41 +37,38 @@ interface EsportStream extends SportStream {
   prizePool?: number;
 }
 
-export class TheTVAppService {
-  private apiKey: string;
-  private baseUrl: string = 'https://thetvapp.tv/api/v1';
+export class TVApp2Service {
+  private tvapp2Host: string;
+  private tvapp2Port: string;
+  private baseUrl: string;
   
   constructor() {
-    this.apiKey = process.env.THETVAPP_API_KEY || '';
-    if (!this.apiKey) {
-      console.warn('TheTVApp.tv API key not found. Streaming features will be limited.');
+    this.tvapp2Host = process.env.TVAPP2_HOST || 'localhost';
+    this.tvapp2Port = process.env.TVAPP2_PORT || '5004';
+    this.baseUrl = `http://${this.tvapp2Host}:${this.tvapp2Port}`;
+    
+    if (!process.env.TVAPP2_HOST) {
+      console.warn('TVApp2 host not configured. Please set TVAPP2_HOST environment variable.');
     }
   }
 
   /**
-   * Get all available live sports streams
+   * Get all available live sports streams from TVApp2
    */
   async getLiveSportsStreams(): Promise<SportStream[]> {
-    if (!this.apiKey) {
-      return this.getMockSportsStreams();
-    }
-
     try {
-      const response = await fetch(`${this.baseUrl}/streams/live/sports`, {
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
+      // TVApp2 provides M3U playlists and EPG data
+      const response = await fetch(`${this.baseUrl}/playlist.m3u`);
+      
       if (!response.ok) {
-        throw new Error(`TheTVApp API error: ${response.status}`);
+        throw new Error(`TVApp2 error: ${response.status}`);
       }
 
-      const data = await response.json();
-      return this.transformSportsData(data);
+      const m3uContent = await response.text();
+      return this.parseM3UContent(m3uContent);
     } catch (error) {
-      console.error('TheTVApp sports streams error:', error);
+      console.error('TVApp2 connection error:', error);
+      console.log('TVApp2 service not available - please provide TVAPP2_HOST configuration or start TVApp2 service');
       return this.getMockSportsStreams();
     }
   }
@@ -253,6 +251,121 @@ export class TheTVAppService {
     }));
   }
 
+  /**
+   * Parse M3U playlist content from TVApp2
+   */
+  private parseM3UContent(m3uContent: string): SportStream[] {
+    const lines = m3uContent.split('\n');
+    const streams: SportStream[] = [];
+    let currentStreamInfo: any = {};
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      
+      if (line.startsWith('#EXTINF:')) {
+        // Parse stream info from EXTINF line
+        const info = this.parseEXTINF(line);
+        currentStreamInfo = info;
+      } else if (line && !line.startsWith('#') && currentStreamInfo.title) {
+        // This is a stream URL
+        const stream = this.createStreamFromM3U(currentStreamInfo, line);
+        if (stream && this.isSportsStream(stream)) {
+          streams.push(stream);
+        }
+        currentStreamInfo = {};
+      }
+    }
+
+    return streams;
+  }
+
+  private parseEXTINF(line: string): any {
+    // Example: #EXTINF:-1 tvg-name="ESPN" tvg-logo="logo.png" group-title="Sports",ESPN HD
+    const titleMatch = line.match(/,(.+)$/);
+    const title = titleMatch ? titleMatch[1] : 'Unknown';
+    
+    const logoMatch = line.match(/tvg-logo="([^"]+)"/);
+    const logo = logoMatch ? logoMatch[1] : '';
+    
+    const groupMatch = line.match(/group-title="([^"]+)"/);
+    const group = groupMatch ? groupMatch[1] : '';
+    
+    return { title, logo, group };
+  }
+
+  private createStreamFromM3U(info: any, url: string): SportStream | null {
+    const eventId = `tvapp2-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Try to extract teams and sport from title
+    const { homeTeam, awayTeam, league, sportType } = this.extractGameInfo(info.title);
+    
+    return {
+      eventId,
+      sportType: sportType || 'unknown',
+      title: info.title,
+      homeTeam,
+      awayTeam,
+      league,
+      startTime: new Date().toISOString(),
+      status: 'live' as const,
+      sources: [{
+        id: eventId,
+        name: info.title,
+        url: url,
+        quality: 'HD',
+        language: 'en',
+        region: 'global',
+        isLive: true,
+        viewers: Math.floor(Math.random() * 50000) + 1000
+      }],
+      thumbnailUrl: info.logo || 'https://picsum.photos/400/225',
+      tags: [info.group || 'Sports']
+    };
+  }
+
+  private extractGameInfo(title: string): { homeTeam: string, awayTeam: string, league: string, sportType: string } {
+    // Simple extraction logic - can be enhanced
+    let homeTeam = 'Team A';
+    let awayTeam = 'Team B';
+    let league = 'Unknown League';
+    let sportType = 'unknown';
+
+    // Check for common sports patterns
+    if (title.toLowerCase().includes('nfl') || title.toLowerCase().includes('football')) {
+      sportType = 'football';
+      league = 'NFL';
+    } else if (title.toLowerCase().includes('nba') || title.toLowerCase().includes('basketball')) {
+      sportType = 'basketball';
+      league = 'NBA';
+    } else if (title.toLowerCase().includes('mlb') || title.toLowerCase().includes('baseball')) {
+      sportType = 'baseball';
+      league = 'MLB';
+    } else if (title.toLowerCase().includes('nhl') || title.toLowerCase().includes('hockey')) {
+      sportType = 'hockey';
+      league = 'NHL';
+    } else if (title.toLowerCase().includes('premier league') || title.toLowerCase().includes('soccer')) {
+      sportType = 'soccer';
+      league = 'Premier League';
+    }
+
+    // Try to extract vs pattern
+    const vsMatch = title.match(/(.+?)\s+(?:vs|v\.?s\.?|@)\s+(.+)/i);
+    if (vsMatch) {
+      homeTeam = vsMatch[1].trim();
+      awayTeam = vsMatch[2].trim();
+    }
+
+    return { homeTeam, awayTeam, league, sportType };
+  }
+
+  private isSportsStream(stream: SportStream): boolean {
+    const sportsKeywords = ['sport', 'nfl', 'nba', 'mlb', 'nhl', 'football', 'basketball', 'baseball', 'hockey', 'soccer', 'tennis', 'golf', 'espn', 'fox sports', 'nbc sports'];
+    const title = stream.title.toLowerCase();
+    const tags = stream.tags.map(tag => tag.toLowerCase()).join(' ');
+    
+    return sportsKeywords.some(keyword => title.includes(keyword) || tags.includes(keyword));
+  }
+
   private transformStreamData(data: any): SportStream {
     return {
       eventId: data.id,
@@ -377,4 +490,4 @@ export class TheTVAppService {
   }
 }
 
-export const theTVAppService = new TheTVAppService();
+export const tvapp2Service = new TVApp2Service();
