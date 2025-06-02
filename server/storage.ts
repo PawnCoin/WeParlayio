@@ -152,16 +152,30 @@ export class MemStorage implements IStorage {
   }
 
   async createBettingChallenge(challenge: InsertBettingChallenge): Promise<BettingChallenge> {
-    const uuid = challenge.uuid || require('crypto').randomUUID();
+    const challengeUuid = require('crypto').randomUUID();
     const newChallenge: BettingChallenge = {
       ...challenge,
       id: this.nextId++,
-      uuid,
+      challengeUuid,
       status: challenge.status || 'pending',
+      odds: challenge.odds || null,
+      currency: challenge.currency || 'USD',
+      isVirtual: challenge.isVirtual !== undefined ? challenge.isVirtual : true,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      acceptedAt: null,
+      settledAt: null,
+      winnerId: null,
+      isDraw: false,
+      notificationSent: false,
+      acceptedBy: null,
+      eventId: challenge.eventId || null,
+      oppositePick: challenge.oppositePick || null,
+      notificationEmail: challenge.notificationEmail || null,
+      notificationPhone: challenge.notificationPhone || null,
+      customMessage: challenge.customMessage || null
     };
-    this.challenges.set(uuid, newChallenge);
+    this.challenges.set(challengeUuid, newChallenge);
     return newChallenge;
   }
 

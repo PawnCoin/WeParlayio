@@ -374,17 +374,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdBy: userId,
         eventName: gameData?.event || 'Custom Challenge',
         amount: parseFloat(challengeAmount),
+        pick: gameData?.pick || 'Custom Pick',
         isVirtual: true,
         notificationPhone: friendPhone,
         customMessage: customMessage || `${user.username || 'A friend'} challenged you to a bet on WeParlay!`,
         status: 'pending',
-        expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000), // 48 hours
-        metadata: {
-          smsConsent: true,
-          marketingConsent: marketingConsent || false,
-          userTier,
-          challengeType: 'sms'
-        }
+        expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000) // 48 hours
       });
 
       // Store user consent preferences
@@ -418,7 +413,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "SMS challenge sent successfully!",
         challenge: {
           id: challenge.id,
-          uuid: challenge.challengeUuid,
+          challengeUuid: challenge.challengeUuid,
           amount: challenge.amount,
           expiresAt: challenge.expiresAt
         }
