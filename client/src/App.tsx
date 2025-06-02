@@ -54,6 +54,7 @@ import MobileVoiceBetting from "@/components/mobile/MobileVoiceBetting";
 import { CurrencyModeProvider } from "./contexts/CurrencyModeContext";
 import { TeamThemeProvider } from "./contexts/TeamThemeContext";
 import { BetSlipProvider } from "./contexts/BetSlipContext";
+import { UnifiedBetSlipProvider } from "./components/betting/UnifiedBetSlipManager";
 import { OnboardingProvider, useOnboarding } from "./contexts/OnboardingContext";
 import { BettingProvider } from "./contexts/BettingContext";
 import InteractiveOnboardingWizard from "./components/onboarding/InteractiveOnboardingWizard";
@@ -295,11 +296,11 @@ function App() {
         <OnboardingProvider>
           <CurrencyModeProvider>
             <TeamThemeProvider>
-              <BetSlipProvider>
+              <UnifiedBetSlipProvider>
                 <BettingProvider>
                   <AppContent />
                 </BettingProvider>
-              </BetSlipProvider>
+              </UnifiedBetSlipProvider>
             </TeamThemeProvider>
           </CurrencyModeProvider>
         </OnboardingProvider>
