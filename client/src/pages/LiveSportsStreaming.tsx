@@ -60,24 +60,27 @@ export default function LiveSportsStreaming() {
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
-  // Convert FlashLive Sports data to streaming format
-  const liveStreams: LiveStream[] = streamingData?.events?.map((event: any) => ({
-    id: event.id || Math.random().toString(),
-    title: `${event.homeTeam?.name || 'Home'} vs ${event.awayTeam?.name || 'Away'}`,
+  // Only display authentic ESPN data - no mock or placeholder content
+  const liveStreams: LiveStream[] = streamingData?.events?.filter((event: any) => 
+    event && event.homeTeam && event.awayTeam && 
+    typeof event.homeTeam === 'string' && typeof event.awayTeam === 'string'
+  ).map((event: any) => ({
+    id: event.id || `espn-${Date.now()}-${Math.random()}`,
+    title: `${event.homeTeam} vs ${event.awayTeam}`,
     sport: event.sport || 'football',
-    league: event.competition?.name || 'League',
+    league: event.league || 'NFL',
     homeTeam: {
-      name: event.homeTeam?.name || 'Home Team',
-      logo: event.homeTeam?.logo,
-      score: event.homeTeam?.score || 0
+      name: event.homeTeam,
+      logo: event.homeTeamLogo,
+      score: event.homeScore || 0
     },
     awayTeam: {
-      name: event.awayTeam?.name || 'Away Team', 
-      logo: event.awayTeam?.logo,
-      score: event.awayTeam?.score || 0
+      name: event.awayTeam,
+      logo: event.awayTeamLogo,
+      score: event.awayScore || 0
     },
-    status: event.status === 'LIVE' ? 'live' : 'scheduled',
-    viewers: Math.floor(Math.random() * 50000) + 5000,
+    status: event.status === 'live' ? 'live' : 'scheduled',
+    viewers: event.viewerCount || 0,
     streamUrl: event.streamUrl || `https://stream.example.com/${event.id}`,
     thumbnailUrl: event.thumbnail || 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&q=80',
     startTime: event.startTime || new Date().toISOString(),
