@@ -396,10 +396,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Send SMS notification (integrate with SMS service)
       try {
-        const { smsService } = await import('./services/smsService');
+        const { sendSMS } = await import('./services/smsService');
         const message = `🎯 WeParlay Challenge: ${customMessage || `${user.username || 'A friend'} challenged you to a $${challengeAmount} bet!`} Join: ${req.protocol}://${req.get('host')}/challenges/${challenge.challengeUuid}`;
         
-        await smsService.sendSMS(friendPhone, message);
+        await sendSMS({
+          to: friendPhone,
+          message: message,
+          type: 'bet_confirmation'
+        });
         
         // Log successful SMS for admin tracking
         console.log(`SMS Challenge sent: User ${userId} (${userTier}) -> ${friendPhone} for $${challengeAmount}`);
