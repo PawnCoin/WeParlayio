@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import authRoutes from "./routes/authRoutes";
 import aiSupportRoutes from "./routes/aiSupport";
 import authRouter from "./auth";
+import { isAuthenticated } from "./replitAuth";
 import { additionalSportsData } from "./services/mockSportsData";
 import { OddsApiService } from "./services/oddsApiService";
 import { AdvancedOddsService } from "./services/advancedOddsService";
@@ -25,8 +26,6 @@ import { bankingRouter } from "./routes/bankingRoutes";
 import websocketPollingRoutes from "./routes/websocketPollingRoutes";
 import oddsTickerRouter from "./routes/oddsTickerRoutes";
 import { apiTestRouter } from "./routes/apiTestRoutes";
-import smsRoutes from "./routes/smsRoutes";
-import { setupAuth, isAuthenticated } from "./replitAuth";
 
 // Export the routes so they can be imported by index.ts
 export { notificationRoutes, websocketPollingRoutes };
@@ -39,9 +38,6 @@ const rapidApiService = new RapidApiService();
 const sportsGameOddsService = new SportsGameOddsService();
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Setup authentication first
-  await setupAuth(app);
-  
   // OWNER DIRECT ACCESS - No authentication required
   app.get('/api/owner-access', (req, res) => {
     res.json({
@@ -337,12 +333,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // app.use('/api/bookie', bookieRoutes.default);
   
   // SMS Challenge endpoint with VIP and consent validation
-  app.post('/api/challenges/sms', isAuthenticated, async (req: any, res) => {
+  app.post('/api/challenges/sms', async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
-      if (!userId) {
-        return res.status(401).json({ message: "Authentication required" });
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
       }
+
+      const userId = req.user.claims.sub;
       const { friendPhone, challengeAmount, customMessage, gameData, smsConsent, marketingConsent, userTier } = req.body;
 
       // Check VIP tier access
@@ -376,12 +373,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdBy: userId,
         eventName: gameData?.event || 'Custom Challenge',
         amount: parseFloat(challengeAmount),
-        pick: gameData?.pick || 'Custom Pick',
         isVirtual: true,
         notificationPhone: friendPhone,
         customMessage: customMessage || `${user.username || 'A friend'} challenged you to a bet on WeParlay!`,
         status: 'pending',
-        expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000) // 48 hours
+        expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000), // 48 hours
+        metadata: {
+          smsConsent: true,
+          marketingConsent: marketingConsent || false,
+          userTier,
+          challengeType: 'sms'
+        }
       });
 
       // Store user consent preferences
@@ -393,14 +395,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Send SMS notification (integrate with SMS service)
       try {
-        const { sendSMS } = await import('./services/smsService');
+        const { smsService } = await import('./services/smsService');
         const message = `🎯 WeParlay Challenge: ${customMessage || `${user.username || 'A friend'} challenged you to a $${challengeAmount} bet!`} Join: ${req.protocol}://${req.get('host')}/challenges/${challenge.challengeUuid}`;
         
-        await sendSMS({
-          to: friendPhone,
-          message: message,
-          type: 'bet_confirmation'
-        });
+        await smsService.sendSMS(friendPhone, message);
         
         // Log successful SMS for admin tracking
         console.log(`SMS Challenge sent: User ${userId} (${userTier}) -> ${friendPhone} for $${challengeAmount}`);
@@ -415,7 +413,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "SMS challenge sent successfully!",
         challenge: {
           id: challenge.id,
-          challengeUuid: challenge.challengeUuid,
+          uuid: challenge.challengeUuid,
           amount: challenge.amount,
           expiresAt: challenge.expiresAt
         }
@@ -7203,9 +7201,6 @@ Join us: WeParlay.io 🎯
       });
     }
   });
-
-  // Mount SMS/MMS routes for VIP users
-  app.use('/api/sms', smsRoutes);
 
   const httpServer = createServer(app);
   return httpServer;

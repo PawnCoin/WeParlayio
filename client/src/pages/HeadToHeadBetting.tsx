@@ -3,14 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import HeadToHeadChallenge from '@/components/betting/HeadToHeadChallenge';
-import VipSmsChallenge from '@/components/VipSmsChallenge';
-import { DollarSign, AlertTriangle, Clock, Trophy, Plus, ArrowRight, ArrowUpRight, CreditCard, CheckCircle, MessageSquare, Crown } from 'lucide-react';
+import { DollarSign, AlertTriangle, Clock, Trophy, Plus, ArrowRight, ArrowUpRight, CreditCard, CheckCircle, MessageSquare } from 'lucide-react';
 import { Link } from 'wouter';
 
 interface ChallengeProps {
@@ -291,80 +289,7 @@ const HeadToHeadBetting: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Create Challenge */}
         <div className="md:col-span-2">
-          {/* Check if user has VIP access for SMS challenges */}
-          {user?.tier && ['bronze', 'silver', 'gold', 'platinum'].includes(user.tier.toLowerCase()) ? (
-            <div className="space-y-6">
-              {/* VIP SMS Challenge Section */}
-              <Card className="border-yellow-200 bg-gradient-to-r from-yellow-50 to-orange-50">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Crown className="h-5 w-5 text-yellow-600" />
-                    VIP Challenge Center
-                    <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
-                      {user.tier.toUpperCase()}
-                    </span>
-                  </CardTitle>
-                  <CardDescription>
-                    Send instant SMS and email challenges to friends with your VIP access
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <VipSmsChallenge />
-                </CardContent>
-              </Card>
-              
-              {/* Regular Challenge Section */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Standard Challenges</CardTitle>
-                  <CardDescription>
-                    Create regular head-to-head challenges via email
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <HeadToHeadChallenge />
-                </CardContent>
-              </Card>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {/* Regular Challenge for Non-VIP */}
-              <HeadToHeadChallenge />
-              
-              {/* VIP Upgrade Notice */}
-              <Card className="border-yellow-200 bg-gradient-to-r from-yellow-50 to-orange-50">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Crown className="h-5 w-5 text-yellow-600" />
-                    Unlock VIP Challenge Features
-                  </CardTitle>
-                  <CardDescription>
-                    Upgrade to Bronze tier or higher for instant SMS challenges
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <MessageSquare className="h-4 w-4 text-blue-500" />
-                      <span className="text-sm">Instant SMS notifications to friends</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Trophy className="h-4 w-4 text-green-500" />
-                      <span className="text-sm">Priority challenge processing</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Crown className="h-4 w-4 text-yellow-500" />
-                      <span className="text-sm">VIP betting limits and bonuses</span>
-                    </div>
-                    <Button variant="default" className="w-full mt-4">
-                      Upgrade to VIP
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
+          <HeadToHeadChallenge />
         </div>
         
         {/* My Challenges */}
@@ -468,7 +393,36 @@ const HeadToHeadBetting: React.FC = () => {
             </CardContent>
           </Card>
           
-
+          {/* SMS Challenge Integration */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare className="h-5 w-5 text-blue-500" />
+                Quick SMS Challenges
+                {!user?.tier || !['bronze', 'silver', 'gold', 'platinum'].includes(user.tier.toLowerCase()) && (
+                  <Badge variant="secondary" className="text-xs">VIP Only</Badge>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                {user?.tier && ['bronze', 'silver', 'gold', 'platinum'].includes(user.tier.toLowerCase()) 
+                  ? 'Send instant challenge notifications via SMS or email to friends.'
+                  : 'SMS challenges are available for VIP members (Bronze tier and above).'}
+              </p>
+              <Link href="/sms-challenge">
+                <Button 
+                  variant="outline" 
+                  className={`w-full ${!user?.tier || !['bronze', 'silver', 'gold', 'platinum'].includes(user.tier.toLowerCase()) ? 'opacity-60' : ''}`}
+                >
+                  {user?.tier && ['bronze', 'silver', 'gold', 'platinum'].includes(user.tier.toLowerCase()) 
+                    ? 'Try SMS Challenge Center'
+                    : 'Upgrade for SMS Challenges'}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
 
           {/* How It Works Card */}
           <Card>

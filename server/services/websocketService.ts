@@ -20,12 +20,12 @@ class WebSocketService {
   private clients: Map<string, ConnectedClient> = new Map();
   private subscriptions: Map<string, Set<string>> = new Map();
   private server: Server | null = null;
-  private initialized = false;
+  private isInitialized = false;
   private heartbeatInterval: NodeJS.Timeout | null = null;
 
   public initialize(server: Server): boolean {
     try {
-      if (this.initialized) {
+      if (this.isInitialized) {
         console.log('🔄 WebSocket service already initialized');
         return true;
       }
@@ -33,16 +33,17 @@ class WebSocketService {
       this.server = server;
       this.wss = new WebSocketServer({ 
         server,
-        path: '/websocket',
+        path: '/ws',
+        host: '0.0.0.0',
         perMessageDeflate: false,
         clientTracking: true,
         maxPayload: 16 * 1024 * 1024, // 16MB
-        skipUTF8Validation: false
+        skipUTF8Validation: true
       });
 
       this.setupWebSocketServer();
       this.startHeartbeat();
-      this.initialized = true;
+      this.isInitialized = true;
 
       console.log('✅ WebSocket service initialized successfully');
       return true;

@@ -46,8 +46,7 @@ const VipSmsChallenge: React.FC<VipSmsChallengeProps> = ({
     expiryHours: '24',
     sendSms: true,
     sendEmail: true,
-    isVirtual: true,
-    challengeType: preselectedBet ? 'fixed' : 'custom' // Fixed (from odds cards) or Custom
+    isVirtual: true
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -199,35 +198,6 @@ const VipSmsChallenge: React.FC<VipSmsChallengeProps> = ({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* Challenge Type Selector */}
-        <div className="space-y-3">
-          <Label>Challenge Type</Label>
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => handleInputChange('challengeType', 'fixed')}
-              className={`px-4 py-2 rounded-lg border ${
-                formData.challengeType === 'fixed'
-                  ? 'bg-blue-100 border-blue-500 text-blue-700'
-                  : 'bg-gray-50 border-gray-300'
-              }`}
-            >
-              Fixed (From Odds Cards)
-            </button>
-            <button
-              type="button"
-              onClick={() => handleInputChange('challengeType', 'custom')}
-              className={`px-4 py-2 rounded-lg border ${
-                formData.challengeType === 'custom'
-                  ? 'bg-green-100 border-green-500 text-green-700'
-                  : 'bg-gray-50 border-gray-300'
-              }`}
-            >
-              Custom Challenge
-            </button>
-          </div>
-        </div>
-
         {/* Event Information */}
         <div className="space-y-3">
           <Label htmlFor="eventName">Event/Game</Label>
@@ -236,7 +206,6 @@ const VipSmsChallenge: React.FC<VipSmsChallengeProps> = ({
             value={formData.eventName}
             onChange={(e) => handleInputChange('eventName', e.target.value)}
             placeholder="e.g., Lakers vs Warriors"
-            disabled={formData.challengeType === 'fixed' && preselectedBet}
           />
         </div>
 

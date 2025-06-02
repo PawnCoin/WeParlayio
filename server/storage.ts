@@ -61,7 +61,6 @@ export class MemStorage implements IStorage {
   private sports = new Map<number, Sport>();
   private events = new Map<number, Event>();
   private challenges = new Map<string, BettingChallenge>();
-  private notifications = new Map<number, Notification>();
   private nextId = 1;
 
   constructor() {
@@ -152,30 +151,16 @@ export class MemStorage implements IStorage {
   }
 
   async createBettingChallenge(challenge: InsertBettingChallenge): Promise<BettingChallenge> {
-    const challengeUuid = require('crypto').randomUUID();
+    const uuid = challenge.uuid || require('crypto').randomUUID();
     const newChallenge: BettingChallenge = {
       ...challenge,
       id: this.nextId++,
-      challengeUuid,
+      uuid,
       status: challenge.status || 'pending',
-      odds: challenge.odds || null,
-      currency: challenge.currency || 'USD',
-      isVirtual: challenge.isVirtual !== undefined ? challenge.isVirtual : true,
       createdAt: new Date(),
-      updatedAt: new Date(),
-      acceptedAt: null,
-      settledAt: null,
-      winnerId: null,
-      isDraw: false,
-      notificationSent: false,
-      acceptedBy: null,
-      eventId: challenge.eventId || null,
-      oppositePick: challenge.oppositePick || null,
-      notificationEmail: challenge.notificationEmail || null,
-      notificationPhone: challenge.notificationPhone || null,
-      customMessage: challenge.customMessage || null
+      updatedAt: new Date()
     };
-    this.challenges.set(challengeUuid, newChallenge);
+    this.challenges.set(uuid, newChallenge);
     return newChallenge;
   }
 
@@ -253,58 +238,6 @@ export class MemStorage implements IStorage {
       createdAt: new Date()
     } as SupportTicketMessage;
     return newMessage;
-  }
-
-  // Missing betting challenge methods
-  async getUserChallenges(userId: string, status?: string): Promise<BettingChallenge[]> {
-    return Array.from(this.challenges.values()).filter(challenge => 
-      (challenge.createdBy === userId || challenge.acceptedBy === userId) &&
-      (!status || challenge.status === status)
-    );
-  }
-
-  async acceptBettingChallenge(uuid: string, acceptedBy: string): Promise<BettingChallenge> {
-    const challenge = this.challenges.get(uuid);
-    if (!challenge) throw new Error('Challenge not found');
-    
-    const updatedChallenge = { 
-      ...challenge, 
-      acceptedBy, 
-      status: 'accepted',
-      updatedAt: new Date()
-    };
-    this.challenges.set(uuid, updatedChallenge);
-    return updatedChallenge;
-  }
-
-  async updateBettingChallengeStatus(uuid: string, status: string): Promise<BettingChallenge> {
-    const challenge = this.challenges.get(uuid);
-    if (!challenge) throw new Error('Challenge not found');
-    
-    const updatedChallenge = { 
-      ...challenge, 
-      status,
-      updatedAt: new Date()
-    };
-    this.challenges.set(uuid, updatedChallenge);
-    return updatedChallenge;
-  }
-
-  async getUserNotifications(userId: string, unreadOnly: boolean = false): Promise<Notification[]> {
-    return Array.from(this.notifications.values()).filter(notification => 
-      notification.userId === userId && (!unreadOnly || !notification.isRead)
-    );
-  }
-
-  async markNotificationAsRead(id: number, userId: string): Promise<Notification> {
-    const notification = this.notifications.get(id);
-    if (!notification || notification.userId !== userId) {
-      throw new Error('Notification not found');
-    }
-    
-    const updatedNotification = { ...notification, isRead: true, readAt: new Date() };
-    this.notifications.set(id, updatedNotification);
-    return updatedNotification;
   }
 }
 

@@ -36,7 +36,7 @@ import TermsOfService from "@/pages/TermsOfService"; // Terms of service page fo
 import SecurityInfo from "@/pages/SecurityInfo"; // Security information page showing our protection measures
 import Support from "@/pages/Support"; // Automated support system
 import CryptoInformation from "@/pages/CryptoInformation"; // Cryptocurrency information and guides
-
+import SmsChallenge from "@/pages/SmsChallenge"; // VIP SMS Challenge system
 import UserProfileBanking from "@/pages/UserProfileBanking"; // Complete user profile with integrated banking
 import MyBets from "@/pages/MyBets"; // User betting history and tracking
 import WeParlayCash from "@/pages/WeParlayCash"; // WeParlay Cash hub and management
@@ -46,7 +46,6 @@ import WalletTest from "@/pages/WalletTest";
 import UserProfilePage from "@/pages/UserProfilePage";
 import FantasySportsEnhanced from "@/pages/FantasySportsEnhanced";
 import GamingIntegration from "@/pages/GamingIntegration";
-import SmsTemplateSettings from "@/pages/admin/SmsTemplateSettings";
 
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
@@ -170,7 +169,7 @@ function Router() {
       <Route path="/payment-demo" component={PaymentDemo} />
       <Route path="/onboarding-demo" component={OnboardingDemo} />
       <Route path="/notification-test" component={NotificationTest} />
-
+      <Route path="/sms-challenge" component={SmsChallenge} />
 
       {/* Academy */}
       <Route path="/betting-academy" component={BettingAcademy} />
@@ -236,7 +235,6 @@ function Router() {
       <Route path="/admin/platform-settings" component={SimplePlatformSettings} />
       <Route path="/admin/visual-component-editor" component={VisualComponentEditorPage} />
       <Route path="/admin/social-media-dashboard" component={SocialMediaDashboard} />
-      <Route path="/admin/sms-templates" component={SmsTemplateSettings} />
       <Route path="/admin/user-analytics" component={lazy(() => import("./pages/admin/UserAnalytics"))} />
       <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/force-admin" component={AdminDashboard} />

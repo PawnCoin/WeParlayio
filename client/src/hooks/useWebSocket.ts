@@ -234,10 +234,10 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 const getWebSocketUrl = () => {
   // For development, connect to the server's WebSocket endpoint
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    return `ws://localhost:5000/websocket`;
+    return `ws://localhost:5000/ws`;
   }
 
   // For Replit environment, use the current domain with wss protocol
   const host = window.location.host;
-  return `wss://${host}/websocket`;
+  return `wss://${host}/ws`;
 };
