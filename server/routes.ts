@@ -2354,49 +2354,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ESPN Fantasy Sports status endpoint
   app.get('/api/espn/fantasy/status', async (req, res) => {
     try {
-      const hasApiKey = !!process.env.RAPIDAPI_KEY;
-      
-      if (!hasApiKey) {
-        return res.json({ 
-          connected: false,
-          error: 'RapidAPI key not configured for ESPN Fantasy',
-          requiresSetup: true
-        });
-      }
-
-      // Test ESPN Fantasy connection
+      // Test the new ESPN Fantasy API connection
       try {
-        const players = await espnFantasyService.getFantasyPlayers('nfl');
+        const response = await fetch('http://espn-fantasy-football-api.s3-website.us-east-2.amazonaws.com/v2/leagues');
         
-        if (players.length === 0) {
-          return res.json({ 
+        if (response.ok) {
+          const data = await response.json();
+          return res.json({
+            connected: true,
+            status: 'ESPN Fantasy API is accessible',
+            apiUrl: 'espn-fantasy-football-api.s3-website.us-east-2.amazonaws.com',
+            dataAvailable: Array.isArray(data) && data.length > 0
+          });
+        } else {
+          return res.json({
             connected: false,
-            error: 'ESPN Fantasy API endpoint not responding - may need specific subscription',
-            requiresSetup: true,
-            playerCount: 0
+            error: `ESPN Fantasy API error: ${response.statusText}`,
+            requiresSetup: false
           });
         }
-        
-        res.json({ 
-          connected: true,
-          playerCount: players.length,
-          developmentMode: process.env.NODE_ENV === 'development'
-        });
       } catch (apiError) {
-        return res.json({ 
+        return res.json({
           connected: false,
-          error: 'ESPN Fantasy API endpoint unavailable',
-          requiresSetup: true,
-          playerCount: 0
+          error: 'ESPN Fantasy API endpoint not responding',
+          requiresSetup: false
         });
       }
     } catch (error) {
       console.error('Error checking ESPN Fantasy status:', error);
-      res.json({ 
-        connected: false,
-        error: 'ESPN Fantasy API unavailable - check RapidAPI subscription',
-        requiresSetup: true
-      });
+      res.status(500).json({ message: 'Failed to check ESPN Fantasy status' });
+    }
+  });
+
+  // ESPN Fantasy API endpoints using the new service
+  app.get('/api/espn/leagues', async (req, res) => {
+    try {
+      const response = await fetch('http://espn-fantasy-football-api.s3-website.us-east-2.amazonaws.com/v2/leagues');
+      
+      if (!response.ok) {
+        throw new Error(`ESPN API error: ${response.statusText}`);
+      }
+
+      const leagues = await response.json();
+      res.json(leagues);
+    } catch (error) {
+      console.error('Error fetching ESPN leagues:', error);
+      res.status(500).json({ message: 'Failed to fetch ESPN leagues' });
+    }
+  });
+
+  app.get('/api/espn/league/:leagueId', async (req, res) => {
+    try {
+      const { leagueId } = req.params;
+      const response = await fetch(`http://espn-fantasy-football-api.s3-website.us-east-2.amazonaws.com/v2/leagues/${leagueId}`);
+      
+      if (!response.ok) {
+        throw new Error(`ESPN API error: ${response.statusText}`);
+      }
+
+      const leagueData = await response.json();
+      res.json(leagueData);
+    } catch (error) {
+      console.error('Error fetching ESPN league data:', error);
+      res.status(500).json({ message: 'Failed to fetch ESPN league data' });
+    }
+  });
+
+  app.get('/api/espn/league/:leagueId/teams', async (req, res) => {
+    try {
+      const { leagueId } = req.params;
+      const response = await fetch(`http://espn-fantasy-football-api.s3-website.us-east-2.amazonaws.com/v2/leagues/${leagueId}/teams`);
+      
+      if (!response.ok) {
+        throw new Error(`ESPN API error: ${response.statusText}`);
+      }
+
+      const teams = await response.json();
+      res.json(teams);
+    } catch (error) {
+      console.error('Error fetching ESPN teams:', error);
+      res.status(500).json({ message: 'Failed to fetch ESPN teams' });
     }
   });
 

@@ -66,11 +66,11 @@ const ESPNFantasyDisplay: React.FC = () => {
               <ul className="text-sm space-y-2 pl-4">
                 <li className="flex items-start gap-2">
                   <span className="text-gray-400">•</span>
-                  <span>RapidAPI key: {process.env.RAPIDAPI_KEY ? '✓ Available' : '✗ Missing'}</span>
+                  <span>ESPN Fantasy API: {espnStatus?.apiUrl ? '✓ Available' : '✗ Not responding'}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-gray-400">•</span>
-                  <span>ESPN Fantasy endpoint: ✗ Not responding</span>
+                  <span>API Endpoint: {espnStatus?.apiUrl || 'Not configured'}</span>
                 </li>
               </ul>
 
