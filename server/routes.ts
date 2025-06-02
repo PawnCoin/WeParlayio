@@ -1214,6 +1214,144 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Failed to fetch streaming data' });
     }
   });
+
+  // PSN API endpoints
+  app.get('/api/psn/profile/:psnId', async (req, res) => {
+    try {
+      const { psnApiService } = await import('./services/psnApiService');
+      const { psnId } = req.params;
+      const profile = await psnApiService.getUserProfile(psnId);
+      
+      if (!profile) {
+        return res.status(404).json({ error: 'PSN profile not found' });
+      }
+      
+      res.json(profile);
+    } catch (error) {
+      console.error('PSN profile error:', error);
+      res.status(500).json({ error: 'Failed to fetch PSN profile' });
+    }
+  });
+
+  app.get('/api/psn/games/:psnId', async (req, res) => {
+    try {
+      const { psnApiService } = await import('./services/psnApiService');
+      const { psnId } = req.params;
+      const limit = parseInt(req.query.limit as string) || 20;
+      const games = await psnApiService.getUserGameStats(psnId, limit);
+      
+      res.json(games);
+    } catch (error) {
+      console.error('PSN games error:', error);
+      res.status(500).json({ error: 'Failed to fetch PSN game stats' });
+    }
+  });
+
+  app.get('/api/psn/activity/:psnId', async (req, res) => {
+    try {
+      const { psnApiService } = await import('./services/psnApiService');
+      const { psnId } = req.params;
+      const activity = await psnApiService.getUserActivity(psnId);
+      
+      res.json(activity);
+    } catch (error) {
+      console.error('PSN activity error:', error);
+      res.status(500).json({ error: 'Failed to fetch PSN activity' });
+    }
+  });
+
+  app.get('/api/psn/search', async (req, res) => {
+    try {
+      const { psnApiService } = await import('./services/psnApiService');
+      const query = req.query.q as string;
+      
+      if (!query) {
+        return res.status(400).json({ error: 'Search query required' });
+      }
+      
+      const users = await psnApiService.searchUsers(query);
+      res.json(users);
+    } catch (error) {
+      console.error('PSN search error:', error);
+      res.status(500).json({ error: 'Failed to search PSN users' });
+    }
+  });
+
+  app.get('/api/psn/health', async (req, res) => {
+    try {
+      const { psnApiService } = await import('./services/psnApiService');
+      const health = await psnApiService.checkHealth();
+      res.json(health);
+    } catch (error) {
+      console.error('PSN health error:', error);
+      res.status(500).json({ error: 'PSN service unavailable' });
+    }
+  });
+
+  // Xbox API endpoints
+  app.get('/api/xbox/profile/:gamertag', async (req, res) => {
+    try {
+      if (!process.env.XBOX_API_KEY) {
+        return res.status(503).json({ error: 'Xbox API not configured' });
+      }
+
+      const { gamertag } = req.params;
+      const response = await fetch(`https://xbl.io/api/v2/profile/${gamertag}`, {
+        headers: {
+          'Authorization': `Bearer ${process.env.XBOX_API_KEY}`,
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Xbox API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error('Xbox profile error:', error);
+      res.status(500).json({ error: 'Failed to fetch Xbox profile' });
+    }
+  });
+
+  app.get('/api/xbox/achievements/:gamertag', async (req, res) => {
+    try {
+      if (!process.env.XBOX_API_KEY) {
+        return res.status(503).json({ error: 'Xbox API not configured' });
+      }
+
+      const { gamertag } = req.params;
+      const response = await fetch(`https://xbl.io/api/v2/achievements/${gamertag}`, {
+        headers: {
+          'Authorization': `Bearer ${process.env.XBOX_API_KEY}`,
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Xbox API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error('Xbox achievements error:', error);
+      res.status(500).json({ error: 'Failed to fetch Xbox achievements' });
+    }
+  });
+
+  app.get('/api/xbox/health', async (req, res) => {
+    try {
+      const configured = !!process.env.XBOX_API_KEY;
+      res.json({ 
+        status: configured ? 'healthy' : 'not_configured',
+        configured 
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Xbox service unavailable' });
+    }
+  });
   
   // Clean streaming data endpoint using only ESPN API and GRID API
   app.get('/api/unified-sports/streaming-data', async (req, res) => {
