@@ -7036,15 +7036,22 @@ Join us: WeParlay.io 🎯
     }
   });
 
-  // Streaming API endpoints for authentic live streaming data
+  // Authentic streaming API endpoints using your RapidAPI subscriptions
   app.get('/api/streaming/live/sports', async (req, res) => {
     try {
-      const { unifiedStreamingService } = await import('./services/unifiedStreamingService');
-      const streams = await unifiedStreamingService.getStreamsBySport('sports');
+      const { authenticStreamingService } = await import('./services/authenticStreamingService');
+      const [betfair, flashlive, highlights] = await Promise.all([
+        authenticStreamingService.getBetfairLiveStreams(),
+        authenticStreamingService.getFlashLiveSports(),
+        authenticStreamingService.getSportHighlights()
+      ]);
+      
+      const streams = [...betfair, ...flashlive, ...highlights];
       res.json({
         success: true,
         streams: streams,
-        count: streams.length
+        count: streams.length,
+        sources: ['Betfair Sports', 'FlashLive', 'Sport Highlights']
       });
     } catch (error) {
       console.error('Sports streaming error:', error);
@@ -7058,12 +7065,13 @@ Join us: WeParlay.io 🎯
 
   app.get('/api/streaming/live/esports', async (req, res) => {
     try {
-      const { unifiedStreamingService } = await import('./services/unifiedStreamingService');
-      const streams = await unifiedStreamingService.getTwitchEsportsStreams();
+      const { authenticStreamingService } = await import('./services/authenticStreamingService');
+      const streams = await authenticStreamingService.getTwitchStreams();
       res.json({
         success: true,
-        streams: streams,
-        count: streams.length
+        streams: streams.filter(s => s.category === 'esports'),
+        count: streams.filter(s => s.category === 'esports').length,
+        sources: ['Twitch API', 'Twitch Scraper']
       });
     } catch (error) {
       console.error('Esports streaming error:', error);
@@ -7077,12 +7085,19 @@ Join us: WeParlay.io 🎯
 
   app.get('/api/streaming/top', async (req, res) => {
     try {
-      const { unifiedStreamingService } = await import('./services/unifiedStreamingService');
-      const streams = await unifiedStreamingService.getTopLiveStreams();
+      const { authenticStreamingService } = await import('./services/authenticStreamingService');
+      const streams = await authenticStreamingService.getAllLiveStreams();
+      
+      // Sort by viewer count and get top streams
+      const topStreams = streams
+        .sort((a, b) => b.viewerCount - a.viewerCount)
+        .slice(0, 20);
+        
       res.json({
         success: true,
-        streams: streams,
-        count: streams.length
+        streams: topStreams,
+        count: topStreams.length,
+        sources: ['Betfair', 'Twitch', 'YouTube', 'FlashLive', 'Sport Highlights']
       });
     } catch (error) {
       console.error('Top streams error:', error);
@@ -7105,13 +7120,14 @@ Join us: WeParlay.io 🎯
         });
       }
 
-      const { unifiedStreamingService } = await import('./services/unifiedStreamingService');
-      const streams = await unifiedStreamingService.searchStreams(query);
+      const { authenticStreamingService } = await import('./services/authenticStreamingService');
+      const streams = await authenticStreamingService.searchStreams(query);
       res.json({
         success: true,
         streams: streams,
         count: streams.length,
-        query: query
+        query: query,
+        sources: ['Betfair', 'Twitch', 'YouTube', 'FlashLive', 'Sport Highlights']
       });
     } catch (error) {
       console.error('Stream search error:', error);
@@ -7125,11 +7141,12 @@ Join us: WeParlay.io 🎯
 
   app.get('/api/streaming/analytics', async (req, res) => {
     try {
-      const { unifiedStreamingService } = await import('./services/unifiedStreamingService');
-      const analytics = await unifiedStreamingService.getStreamAnalytics();
+      const { authenticStreamingService } = await import('./services/authenticStreamingService');
+      const analytics = await authenticStreamingService.getStreamAnalytics();
       res.json({
         success: true,
-        ...analytics
+        ...analytics,
+        lastUpdated: new Date().toISOString()
       });
     } catch (error) {
       console.error('Streaming analytics error:', error);
