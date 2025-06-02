@@ -8030,6 +8030,146 @@ Join us: WeParlay.io 🎯
     }
   });
 
+  // Additional gaming endpoints for UnifiedGaming component
+  app.get('/api/gaming/statistics', async (req, res) => {
+    try {
+      const stats = {
+        activePlayers: 45670,
+        liveTournaments: 12,
+        totalPrizePool: 2450000,
+        todayMatches: 28,
+        platformUptime: 99.7,
+        activeStreamers: 156
+      };
+      res.json(stats);
+    } catch (error) {
+      console.error('Gaming statistics error:', error);
+      res.status(500).json({ error: 'Failed to fetch gaming statistics' });
+    }
+  });
+
+  app.get('/api/gaming/platforms', async (req, res) => {
+    try {
+      const platforms = [
+        {
+          id: 'steam',
+          name: 'Steam',
+          connected: true,
+          games: 8,
+          status: 'active',
+          lastSync: new Date().toISOString()
+        },
+        {
+          id: 'riot',
+          name: 'Riot Games',
+          connected: true,
+          games: 3,
+          status: 'active',
+          lastSync: new Date().toISOString()
+        },
+        {
+          id: 'battlenet',
+          name: 'Battle.net',
+          connected: true,
+          games: 5,
+          status: 'active',
+          lastSync: new Date().toISOString()
+        },
+        {
+          id: 'epic',
+          name: 'Epic Games',
+          connected: false,
+          games: 0,
+          status: 'disconnected',
+          lastSync: null
+        }
+      ];
+      res.json(platforms);
+    } catch (error) {
+      console.error('Gaming platforms error:', error);
+      res.status(500).json({ error: 'Failed to fetch gaming platforms' });
+    }
+  });
+
+  app.get('/api/gaming/tournaments', async (req, res) => {
+    try {
+      const tournaments = {
+        success: true,
+        sports_available: [
+          {
+            id: 'csgo',
+            name: 'Counter-Strike 2',
+            active_tournaments: 3,
+            total_prize: 750000,
+            participants: 32
+          },
+          {
+            id: 'dota2',
+            name: 'Dota 2',
+            active_tournaments: 2,
+            total_prize: 1200000,
+            participants: 18
+          },
+          {
+            id: 'lol',
+            name: 'League of Legends',
+            active_tournaments: 4,
+            total_prize: 900000,
+            participants: 24
+          },
+          {
+            id: 'valorant',
+            name: 'Valorant',
+            active_tournaments: 2,
+            total_prize: 400000,
+            participants: 16
+          }
+        ],
+        upcoming_matches: [
+          {
+            id: 'match-1',
+            tournament: 'IEM Katowice',
+            game: 'Counter-Strike 2',
+            team1: 'FaZe Clan',
+            team2: 'Natus Vincere',
+            startTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+            prize: 250000,
+            status: 'upcoming'
+          },
+          {
+            id: 'match-2',
+            tournament: 'The International',
+            game: 'Dota 2',
+            team1: 'Team Spirit',
+            team2: 'PSG.LGD',
+            startTime: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
+            prize: 500000,
+            status: 'upcoming'
+          },
+          {
+            id: 'match-3',
+            tournament: 'LCK Summer',
+            game: 'League of Legends',
+            team1: 'T1',
+            team2: 'Gen.G',
+            startTime: new Date(Date.now() + 1 * 60 * 60 * 1000).toISOString(),
+            prize: 300000,
+            status: 'live'
+          }
+        ]
+      };
+      res.json(tournaments);
+    } catch (error) {
+      console.error('Gaming tournaments error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to fetch gaming tournaments',
+        sports_available: [],
+        upcoming_matches: []
+      });
+    }
+  });
+
   app.get('/api/streaming/channels', async (req, res) => {
     try {
       const channels = [
