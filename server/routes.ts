@@ -7693,6 +7693,110 @@ Join us: WeParlay.io 🎯
       };
       res.json(status);
     } catch (error) {
+      console.error('Streaming status error:', error);
+      res.status(500).json({ error: 'Failed to get streaming status' });
+    }
+  });
+
+  app.get('/api/streaming/channels', async (req, res) => {
+    try {
+      const channels = [
+        {
+          id: 'espn-1',
+          name: 'ESPN Live',
+          streamUrl: 'https://live.tvpass.org/espn/index.m3u8',
+          category: 'sports',
+          quality: '1080p',
+          language: 'en',
+          isLive: true,
+          viewers: 12500
+        },
+        {
+          id: 'fox-sports-1',
+          name: 'FOX Sports 1',
+          streamUrl: 'https://live.tvpass.org/foxsports1/index.m3u8',
+          category: 'sports',
+          quality: '720p',
+          language: 'en',
+          isLive: true,
+          viewers: 8300
+        },
+        {
+          id: 'nfl-network',
+          name: 'NFL Network',
+          streamUrl: 'https://live.tvpass.org/nfl/index.m3u8',
+          category: 'premium',
+          quality: '1080p',
+          language: 'en',
+          isLive: true,
+          viewers: 15200
+        },
+        {
+          id: 'nba-tv',
+          name: 'NBA TV',
+          streamUrl: 'https://live.tvpass.org/nba/index.m3u8',
+          category: 'premium',
+          quality: '720p',
+          language: 'en',
+          isLive: true,
+          viewers: 9800
+        },
+        {
+          id: 'twitch-esports',
+          name: 'Twitch Esports',
+          streamUrl: 'https://live.tvpass.org/twitch/index.m3u8',
+          category: 'esports',
+          quality: '1080p',
+          language: 'en',
+          isLive: true,
+          viewers: 6700
+        }
+      ];
+      res.json(channels);
+    } catch (error) {
+      console.error('Streaming channels error:', error);
+      res.status(500).json({ error: 'Failed to get streaming channels' });
+    }
+  });
+
+  app.post('/api/streaming/play', async (req, res) => {
+    try {
+      const { channelId, tier } = req.body;
+      
+      // Simulate tier checking
+      const channel = {
+        id: channelId,
+        accessGranted: true,
+        message: `Stream started for ${tier} tier user`
+      };
+      
+      res.json({ success: true, channel, message: 'Stream access granted' });
+    } catch (error) {
+      console.error('Stream play error:', error);
+      res.status(500).json({ success: false, error: 'Failed to start stream' });
+    }
+  });
+
+  app.post('/api/streaming/favorite', async (req, res) => {
+    try {
+      const { channelId } = req.body;
+      res.json({ success: true, message: 'Channel added to favorites' });
+    } catch (error) {
+      console.error('Favorite channel error:', error);
+      res.status(500).json({ success: false, error: 'Failed to add favorite' });
+    }
+  });
+
+  app.get('/api/user/profile', async (req, res) => {
+    try {
+      // Return user profile with tier information
+      res.json({
+        id: 'user-1',
+        tier: 'gold',
+        username: 'demo-user',
+        balance: 1500.00
+      });
+    } catch (error) {
       console.error('Error fetching streaming status:', error);
       res.status(500).json({ error: 'Failed to fetch streaming status' });
     }
