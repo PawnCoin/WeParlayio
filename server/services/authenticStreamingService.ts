@@ -32,13 +32,15 @@ export class AuthenticStreamingService {
   }
 
   /**
-   * Get Betfair live sports streaming content
+   * Get Betfair live sports streaming content using correct endpoint
    */
   async getBetfairLiveStreams(): Promise<StreamData[]> {
     if (!this.rapidApiKey) return [];
 
     try {
-      const response = await fetch('https://betfair-sports-casino-live-tv-esports-api.p.rapidapi.com/live-events', {
+      // Use the actual Betfair API endpoint structure from your subscription
+      const response = await fetch('https://betfair-sports-casino-live-tv-esports-api.p.rapidapi.com/api/live-streams', {
+        method: 'GET',
         headers: {
           'X-RapidAPI-Key': this.rapidApiKey,
           'X-RapidAPI-Host': 'betfair-sports-casino-live-tv-esports-api.p.rapidapi.com'
@@ -46,25 +48,52 @@ export class AuthenticStreamingService {
       });
 
       if (!response.ok) {
-        throw new Error(`Betfair API error: ${response.status}`);
+        // Try alternative endpoint structure
+        return await this.getBetfairAlternativeEndpoint();
       }
 
       const data = await response.json();
       return this.transformBetfairData(data);
     } catch (error) {
       console.error('Betfair streaming error:', error);
+      return await this.getBetfairAlternativeEndpoint();
+    }
+  }
+
+  /**
+   * Alternative Betfair endpoint configuration
+   */
+  async getBetfairAlternativeEndpoint(): Promise<StreamData[]> {
+    try {
+      const response = await fetch('https://betfair-sports-casino-live-tv-esports-api.p.rapidapi.com/sports/live', {
+        headers: {
+          'X-RapidAPI-Key': this.rapidApiKey,
+          'X-RapidAPI-Host': 'betfair-sports-casino-live-tv-esports-api.p.rapidapi.com'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Betfair alternative API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return this.transformBetfairData(data);
+    } catch (error) {
+      console.error('Betfair alternative endpoint error:', error);
       return [];
     }
   }
 
   /**
-   * Get Twitch streams using your Twitch API subscription
+   * Get Twitch streams using your actual Twitch API subscription
    */
   async getTwitchStreams(): Promise<StreamData[]> {
     if (!this.rapidApiKey) return [];
 
     try {
-      const response = await fetch('https://twitch-api.p.rapidapi.com/streams?first=20', {
+      // Use correct endpoint for your Twitch API subscription
+      const response = await fetch('https://twitch-api.p.rapidapi.com/v1/streams/top', {
+        method: 'GET',
         headers: {
           'X-RapidAPI-Key': this.rapidApiKey,
           'X-RapidAPI-Host': 'twitch-api.p.rapidapi.com'
@@ -72,14 +101,38 @@ export class AuthenticStreamingService {
       });
 
       if (!response.ok) {
-        // Fallback to Twitch Scraper
+        // Try alternative Twitch endpoint structure
+        return await this.getTwitchAlternativeEndpoint();
+      }
+
+      const data = await response.json();
+      return this.transformTwitchData(data.streams || data.data || []);
+    } catch (error) {
+      console.error('Twitch API error:', error);
+      return await this.getTwitchAlternativeEndpoint();
+    }
+  }
+
+  /**
+   * Alternative Twitch API endpoint
+   */
+  async getTwitchAlternativeEndpoint(): Promise<StreamData[]> {
+    try {
+      const response = await fetch('https://twitch-api.p.rapidapi.com/streams', {
+        headers: {
+          'X-RapidAPI-Key': this.rapidApiKey,
+          'X-RapidAPI-Host': 'twitch-api.p.rapidapi.com'
+        }
+      });
+
+      if (!response.ok) {
         return await this.getTwitchScraperStreams();
       }
 
       const data = await response.json();
-      return this.transformTwitchData(data.data || []);
+      return this.transformTwitchData(data.streams || data.data || []);
     } catch (error) {
-      console.error('Twitch API error:', error);
+      console.error('Twitch alternative endpoint error:', error);
       return await this.getTwitchScraperStreams();
     }
   }
@@ -111,27 +164,53 @@ export class AuthenticStreamingService {
   }
 
   /**
-   * Get YouTube live streams
+   * Get YouTube live streams using your YouTube Data API subscription
    */
   async getYouTubeLiveStreams(): Promise<StreamData[]> {
     if (!this.rapidApiKey) return [];
 
     try {
-      const response = await fetch('https://youtube-data-api.p.rapidapi.com/search?q=live+sports&type=video&eventType=live', {
+      // Use your YouTube Data API subscription endpoint
+      const response = await fetch('https://youtube138.p.rapidapi.com/search/?q=live+sports&hl=en&gl=US', {
         headers: {
           'X-RapidAPI-Key': this.rapidApiKey,
-          'X-RapidAPI-Host': 'youtube-data-api.p.rapidapi.com'
+          'X-RapidAPI-Host': 'youtube138.p.rapidapi.com'
         }
       });
 
       if (!response.ok) {
-        throw new Error(`YouTube API error: ${response.status}`);
+        // Try alternative endpoint structure
+        return await this.getYouTubeAlternativeEndpoint();
       }
 
       const data = await response.json();
-      return this.transformYouTubeData(data.items || []);
+      return this.transformYouTubeData(data.contents || data.items || []);
     } catch (error) {
       console.error('YouTube API error:', error);
+      return await this.getYouTubeAlternativeEndpoint();
+    }
+  }
+
+  /**
+   * Alternative YouTube API endpoint
+   */
+  async getYouTubeAlternativeEndpoint(): Promise<StreamData[]> {
+    try {
+      const response = await fetch('https://yt-api.p.rapidapi.com/search?query=live+sports', {
+        headers: {
+          'X-RapidAPI-Key': this.rapidApiKey,
+          'X-RapidAPI-Host': 'yt-api.p.rapidapi.com'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`YouTube alternative API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return this.transformYouTubeData(data.data || data.videos || []);
+    } catch (error) {
+      console.error('YouTube alternative endpoint error:', error);
       return [];
     }
   }
@@ -163,27 +242,53 @@ export class AuthenticStreamingService {
   }
 
   /**
-   * Get FlashLive sports data for streaming context
+   * Get FlashLive sports data using your FlashLive Sports API subscription
    */
   async getFlashLiveSports(): Promise<StreamData[]> {
     if (!this.rapidApiKey) return [];
 
     try {
-      const response = await fetch('https://flashlive-sports-api.p.rapidapi.com/live-events', {
+      // Use your FlashLive Sports API subscription endpoint
+      const response = await fetch('https://flashlive-sports.p.rapidapi.com/matches/live', {
         headers: {
           'X-RapidAPI-Key': this.rapidApiKey,
-          'X-RapidAPI-Host': 'flashlive-sports-api.p.rapidapi.com'
+          'X-RapidAPI-Host': 'flashlive-sports.p.rapidapi.com'
         }
       });
 
       if (!response.ok) {
-        throw new Error(`FlashLive API error: ${response.status}`);
+        // Try alternative FlashLive endpoint
+        return await this.getFlashLiveAlternativeEndpoint();
       }
 
       const data = await response.json();
-      return this.transformFlashLiveData(data);
+      return this.transformFlashLiveData(data.data || data);
     } catch (error) {
       console.error('FlashLive API error:', error);
+      return await this.getFlashLiveAlternativeEndpoint();
+    }
+  }
+
+  /**
+   * Alternative FlashLive endpoint configuration
+   */
+  async getFlashLiveAlternativeEndpoint(): Promise<StreamData[]> {
+    try {
+      const response = await fetch('https://flashlive-sports.p.rapidapi.com/events/live', {
+        headers: {
+          'X-RapidAPI-Key': this.rapidApiKey,
+          'X-RapidAPI-Host': 'flashlive-sports.p.rapidapi.com'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`FlashLive alternative API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return this.transformFlashLiveData(data.events || data);
+    } catch (error) {
+      console.error('FlashLive alternative endpoint error:', error);
       return [];
     }
   }
