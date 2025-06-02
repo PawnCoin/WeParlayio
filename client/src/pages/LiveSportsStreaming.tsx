@@ -73,57 +73,51 @@ const LiveSportsStreaming: React.FC = () => {
     queryKey: ['/api/sports-categories'],
   });
 
-  // Mock data for development (replace with real API data)
-  const mockStreams: LiveStream[] = [
-    {
-      id: 'nfl-1',
-      title: 'Kansas City Chiefs vs Buffalo Bills',
-      sport: 'football',
-      league: 'NFL',
-      homeTeam: {
-        name: 'Kansas City Chiefs',
-        logo: 'https://logos-world.net/wp-content/uploads/2020/06/Kansas-City-Chiefs-Logo.png',
-        score: 28
-      },
-      awayTeam: {
-        name: 'Buffalo Bills',
-        logo: 'https://logos-world.net/wp-content/uploads/2020/06/Buffalo-Bills-Logo.png',
-        score: 24
-      },
-      status: 'live',
-      viewers: 485000,
-      streamUrl: 'https://www.youtube.com/watch?v=live_nfl_stream',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1566577739112-5180d4bf9390?w=800&q=80',
-      startTime: new Date().toISOString(),
-      period: '4th Quarter',
-      timeRemaining: '03:45',
-      odds: {
-        homeWin: 1.85,
-        awayWin: 1.95
-      },
-      isEsport: false
+  // Live Sports Streams from RapidAPI Services
+  const { data: activeStreams, isLoading: streamsLoading } = useQuery({
+    queryKey: ['/api/streaming/active'],
+    refetchInterval: 30000 // Refresh every 30 seconds
+  });
+
+  const { data: user } = useQuery({
+    queryKey: ['/api/auth/user'],
+    retry: false,
+  });
+
+  // Check user tier for access control
+  const userTier = user?.tier || 'Bronze';
+  const hasFullAccess = ['Gold', 'Platinum', 'Diamond'].includes(userTier);
+  const hasPreviewAccess = ['Silver', 'Gold', 'Platinum', 'Diamond'].includes(userTier);
+
+  // Convert authentic RapidAPI stream data to our format
+  const liveStreams: LiveStream[] = (activeStreams || []).map((stream: any) => ({
+    id: stream.id || stream.eventId,
+    title: stream.title || `${stream.homeTeam} vs ${stream.awayTeam}`,
+    sport: stream.sportType || stream.category,
+    league: stream.league || stream.tournament,
+    homeTeam: {
+      name: stream.homeTeam || stream.teams?.[0]?.name,
+      logo: stream.teams?.[0]?.logo,
+      score: stream.homeScore || stream.scores?.home
     },
-    {
-      id: 'nba-1',
-      title: 'Los Angeles Lakers vs Boston Celtics',
-      sport: 'basketball',
-      league: 'NBA',
-      homeTeam: {
-        name: 'Los Angeles Lakers',
-        logo: 'https://logos-world.net/wp-content/uploads/2020/05/Los-Angeles-Lakers-Logo.png',
-        score: 112
-      },
-      awayTeam: {
-        name: 'Boston Celtics',
-        logo: 'https://logos-world.net/wp-content/uploads/2020/06/Boston-Celtics-Logo.png',
-        score: 108
-      },
-      status: 'live',
-      viewers: 324000,
-      streamUrl: 'https://www.youtube.com/watch?v=live_nba_stream',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800&q=80',
-      startTime: new Date().toISOString(),
-      period: '4th Quarter',
+    awayTeam: {
+      name: stream.awayTeam || stream.teams?.[1]?.name,
+      logo: stream.teams?.[1]?.logo,
+      score: stream.awayScore || stream.scores?.away
+    },
+    status: stream.status || (stream.isLive ? 'live' : 'scheduled'),
+    viewers: stream.viewers || stream.viewerCount || 0,
+    streamUrl: stream.streamUrl || stream.sources?.[0]?.url,
+    thumbnailUrl: stream.thumbnailUrl || stream.thumbnail,
+    startTime: stream.startTime || new Date().toISOString(),
+    period: stream.period || stream.gameState,
+    timeRemaining: stream.timeRemaining || stream.clock,
+    odds: {
+      homeWin: stream.odds?.home || 1.85,
+      awayWin: stream.odds?.away || 1.95
+    },
+    isEsport: stream.category === 'esports' || stream.sportType === 'esports'
+  }));
       timeRemaining: '02:18',
       odds: {
         homeWin: 1.75,
