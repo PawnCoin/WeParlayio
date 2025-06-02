@@ -4,7 +4,6 @@ import { storage } from "./storage";
 import authRoutes from "./routes/authRoutes";
 import aiSupportRoutes from "./routes/aiSupport";
 import authRouter from "./auth";
-import { isAuthenticated } from "./replitAuth";
 import { additionalSportsData } from "./services/mockSportsData";
 import { OddsApiService } from "./services/oddsApiService";
 import { AdvancedOddsService } from "./services/advancedOddsService";
@@ -27,6 +26,7 @@ import websocketPollingRoutes from "./routes/websocketPollingRoutes";
 import oddsTickerRouter from "./routes/oddsTickerRoutes";
 import { apiTestRouter } from "./routes/apiTestRoutes";
 import smsRoutes from "./routes/smsRoutes";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 
 // Export the routes so they can be imported by index.ts
 export { notificationRoutes, websocketPollingRoutes };
@@ -39,6 +39,9 @@ const rapidApiService = new RapidApiService();
 const sportsGameOddsService = new SportsGameOddsService();
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup authentication first
+  await setupAuth(app);
+  
   // OWNER DIRECT ACCESS - No authentication required
   app.get('/api/owner-access', (req, res) => {
     res.json({
