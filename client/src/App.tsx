@@ -46,7 +46,6 @@ import WalletTest from "@/pages/WalletTest";
 import UserProfilePage from "@/pages/UserProfilePage";
 import FantasySportsEnhanced from "@/pages/FantasySportsEnhanced";
 import GamingIntegration from "@/pages/GamingIntegration";
-import RapidAPITest from "@/pages/RapidAPITest";
 
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
@@ -191,7 +190,6 @@ function Router() {
       <Route path="/logs" component={SystemLogs} />
       <Route path="/api-status" component={ApiStatus} />
       <Route path="/system/api-status" component={ApiStatus} />
-      <Route path="/rapidapi-test" component={RapidAPITest} />
       <Route path="/system-health" component={SystemHealth} />
       <Route path="/system/system-health" component={SystemHealth} />
       <Route path="/unified-gaming" component={UnifiedGaming} />

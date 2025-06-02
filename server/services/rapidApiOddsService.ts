@@ -66,10 +66,6 @@ export class RapidApiOddsService {
       });
 
       if (!response.ok) {
-        if (response.status === 429) {
-          console.log(`⚠️ RapidAPI Odds quota exhausted, switching to backup services`);
-          return null; // Let backup services handle this
-        }
         throw new Error(`RapidAPI Odds error: ${response.status}`);
       }
 

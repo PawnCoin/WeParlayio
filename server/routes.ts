@@ -19,20 +19,12 @@ import { adminRouter } from "./routes/adminRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
 import { socialMediaBotRouter } from "./routes/socialMediaBotRoutes";
 import { theTVAppService } from "./services/theTVAppService";
-import { unifiedStreamingService } from "./services/unifiedStreamingService";
 import gamingRoutes from "./routes/gamingRoutes";
 import unifiedSportsRoutes from "./routes/unifiedSportsRoutes";
 import { bankingRouter } from "./routes/bankingRoutes";
 import websocketPollingRoutes from "./routes/websocketPollingRoutes";
 import oddsTickerRouter from "./routes/oddsTickerRoutes";
 import { apiTestRouter } from "./routes/apiTestRoutes";
-import { espnFantasyService } from "./services/espnFantasyService";
-import { yahooOAuthService } from "./services/yahooOAuthService";
-
-// Helper function to generate empty odds array when APIs are unavailable
-function generateFallbackOdds() {
-  return [];
-}
 
 // Export the routes so they can be imported by index.ts
 export { notificationRoutes, websocketPollingRoutes };
@@ -953,8 +945,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const homeTeam = competition?.competitors?.find((c: any) => c.homeAway === 'home');
         const awayTeam = competition?.competitors?.find((c: any) => c.homeAway === 'away');
         
-        // Skip RapidAPI Odds due to quota exhaustion
-        console.log('⚠️ RapidAPI Odds service disabled due to quota exhaustion');
+        try {
+          // Get real odds from your working RapidAPI Odds API
+          const { RapidApiOddsService } = await import('./services/rapidApiOddsService');
+          const rapidOdds = new RapidApiOddsService();
+          const realOdds = await rapidOdds.getOdds(event.id, 'bet365,pinnacle,draftkings');
+        } catch (error) {
+          console.log('Could not fetch real odds for event:', event.id);
+        }
         
         return {
           id: event.id,
@@ -1207,198 +1205,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: error.message || "Failed to fetch sports from The Odds API" });
     }
   });
-
-  // Authentic streaming data from GRID and ESPN APIs
-  app.get('/api/streaming/all-streams', async (req, res) => {
-    try {
-      const { CleanStreamingService } = await import('./services/cleanStreamingService');
-      const cleanStreaming = new CleanStreamingService();
-      const allStreams = await cleanStreaming.getAllStreams();
-      
-      res.json(allStreams);
-    } catch (error) {
-      console.error('Streaming API error:', error);
-      res.status(500).json({ error: 'Failed to fetch streaming data' });
-    }
-  });
-
-  // PSN API endpoints
-  app.get('/api/psn/profile/:psnId', async (req, res) => {
-    try {
-      const { psnApiService } = await import('./services/psnApiService');
-      const { psnId } = req.params;
-      const profile = await psnApiService.getUserProfile(psnId);
-      
-      if (!profile) {
-        return res.status(404).json({ error: 'PSN profile not found' });
-      }
-      
-      res.json(profile);
-    } catch (error) {
-      console.error('PSN profile error:', error);
-      res.status(500).json({ error: 'Failed to fetch PSN profile' });
-    }
-  });
-
-  app.get('/api/psn/games/:psnId', async (req, res) => {
-    try {
-      const { psnApiService } = await import('./services/psnApiService');
-      const { psnId } = req.params;
-      const limit = parseInt(req.query.limit as string) || 20;
-      const games = await psnApiService.getUserGameStats(psnId, limit);
-      
-      res.json(games);
-    } catch (error) {
-      console.error('PSN games error:', error);
-      res.status(500).json({ error: 'Failed to fetch PSN game stats' });
-    }
-  });
-
-  app.get('/api/psn/activity/:psnId', async (req, res) => {
-    try {
-      const { psnApiService } = await import('./services/psnApiService');
-      const { psnId } = req.params;
-      const activity = await psnApiService.getUserActivity(psnId);
-      
-      res.json(activity);
-    } catch (error) {
-      console.error('PSN activity error:', error);
-      res.status(500).json({ error: 'Failed to fetch PSN activity' });
-    }
-  });
-
-  app.get('/api/psn/search', async (req, res) => {
-    try {
-      const { psnApiService } = await import('./services/psnApiService');
-      const query = req.query.q as string;
-      
-      if (!query) {
-        return res.status(400).json({ error: 'Search query required' });
-      }
-      
-      const users = await psnApiService.searchUsers(query);
-      res.json(users);
-    } catch (error) {
-      console.error('PSN search error:', error);
-      res.status(500).json({ error: 'Failed to search PSN users' });
-    }
-  });
-
-  app.get('/api/psn/health', async (req, res) => {
-    try {
-      const { psnApiService } = await import('./services/psnApiService');
-      const health = await psnApiService.checkHealth();
-      res.json(health);
-    } catch (error) {
-      console.error('PSN health error:', error);
-      res.status(500).json({ error: 'PSN service unavailable' });
-    }
-  });
-
-  // Xbox API endpoints
-  app.get('/api/xbox/profile/:gamertag', async (req, res) => {
-    try {
-      if (!process.env.XBOX_API_KEY) {
-        return res.status(503).json({ error: 'Xbox API not configured' });
-      }
-
-      const { gamertag } = req.params;
-      const response = await fetch(`https://xbl.io/api/v2/profile/${gamertag}`, {
-        headers: {
-          'Authorization': `Bearer ${process.env.XBOX_API_KEY}`,
-          'Accept': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Xbox API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      res.json(data);
-    } catch (error) {
-      console.error('Xbox profile error:', error);
-      res.status(500).json({ error: 'Failed to fetch Xbox profile' });
-    }
-  });
-
-  app.get('/api/xbox/achievements/:gamertag', async (req, res) => {
-    try {
-      if (!process.env.XBOX_API_KEY) {
-        return res.status(503).json({ error: 'Xbox API not configured' });
-      }
-
-      const { gamertag } = req.params;
-      const response = await fetch(`https://xbl.io/api/v2/achievements/${gamertag}`, {
-        headers: {
-          'Authorization': `Bearer ${process.env.XBOX_API_KEY}`,
-          'Accept': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Xbox API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      res.json(data);
-    } catch (error) {
-      console.error('Xbox achievements error:', error);
-      res.status(500).json({ error: 'Failed to fetch Xbox achievements' });
-    }
-  });
-
-  app.get('/api/xbox/health', async (req, res) => {
-    try {
-      const configured = !!process.env.XBOX_API_KEY;
-      res.json({ 
-        status: configured ? 'healthy' : 'not_configured',
-        configured 
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Xbox service unavailable' });
-    }
-  });
   
-  // Clean streaming data endpoint using only ESPN API and GRID API
-  app.get('/api/unified-sports/streaming-data', async (req, res) => {
-    try {
-      const { CleanStreamingService } = await import('./services/cleanStreamingService');
-      const cleanStreaming = new CleanStreamingService();
-      const allStreams = await cleanStreaming.getAllStreams();
-      
-      res.json({
-        success: true,
-        events: allStreams,
-        totalEvents: allStreams.length
-      });
-    } catch (error) {
-      console.error('Clean streaming data error:', error);
-      res.json({
-        success: false,
-        events: [],
-        totalEvents: 0,
-        error: 'Unable to fetch streaming data from authentic sources'
-      });
-    }
-  });
-
   // Get live events for a specific sport
   app.get("/api/sports/:sportKey/live", async (req, res) => {
     try {
       const { sportKey } = req.params;
       
-      // Always return empty array for live events - no mock data allowed
-      // Only show real live events from authenticated API sources
+      // Check if this is one of our expanded sports (including college and women's leagues)
+      const newSportsMapping: Record<string, keyof typeof additionalSportsData> = {
+        // Pro Sports
+        'boxing_main': 'boxing_main',
+        'mma_ufc': 'mma_ufc',
+        'motorsport_nascar': 'motorsport_nascar',
+        'tennis_atp': 'tennis_atp',
+        'tennis_wta': 'tennis_wta',
+        'basketball_wnba': 'basketball_wnba',
+        'football_ufl': 'football_ufl',
+        // College Sports
+        'football_ncaaf': 'football_ncaaf',
+        'basketball_ncaam': 'basketball_ncaam',
+        'basketball_ncaaw': 'basketball_ncaaw'
+      };
+      
+      if (newSportsMapping[sportKey]) {
+        // For our new sports, we'll pretend there are no live events currently
+        // This could be enhanced to simulate live events if needed
+        return res.json([]);
+      }
       
       try {
-        // Only return live events if we have authenticated API access
-        // No mock data allowed - return empty array if no real live events
-        if (!process.env.THE_ODDS_API_KEY || process.env.THE_ODDS_API_KEY === 'demo') {
-          console.log(`No live ${sportKey} games currently happening - showing empty as requested`);
-          return res.json([]);
-        }
-        
         // Try to get scores for the sport to find live events
         const scores = await oddsApiService.getScores(sportKey);
         
@@ -1408,12 +1243,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const startTime = new Date(event.commence_time);
           return startTime <= now && !event.completed;
         });
-        
-        // If no live events found, return empty array
-        if (liveEvents.length === 0) {
-          console.log(`No live ${sportKey} games currently happening - showing empty as requested`);
-          return res.json([]);
-        }
         
         // For each live event, add odds data if available
         try {
@@ -1429,17 +1258,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.warn("Could not fetch odds for live events:", oddsError);
         }
         
-        // Only return events if we actually have live data, otherwise empty array
-        res.json(liveEvents.length > 0 ? liveEvents : []);
+        res.json(liveEvents);
       } catch (error: any) {
         console.error(`Error fetching live events for ${sportKey}:`, error);
-        // On error, return empty array instead of mock data
-        res.json([]);
+        res.status(500).json({ message: error.message || "Failed to fetch live events" });
       }
     } catch (error: any) {
       console.error("Error in live events route:", error);
-      // On error, return empty array instead of mock data
-      res.json([]);
+      res.status(500).json({ message: error.message || "Internal server error" });
     }
   });
   
@@ -1451,7 +1277,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       try {
         // Use unified sports API to get REAL upcoming events from all sources
-        const unifiedData = await UnifiedSportsApiService.getUnifiedUpcomingEvents();
+        const unifiedData = await unifiedSportsApiService.getUnifiedUpcomingEvents();
         
         // Filter events for the specific sport
         const sportEvents = unifiedData.filter((event: any) => 
@@ -2172,41 +1998,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // CRITICAL: Yahoo Fantasy Sports OAuth integration endpoints
+  // CRITICAL: Yahoo Fantasy Sports integration endpoints
   app.get('/api/yahoo/status', isAuthenticated, async (req, res) => {
     try {
       const userId = req.user?.claims?.sub;
-      if (!userId) {
-        return res.status(401).json({ message: 'User not authenticated' });
-      }
-
-      const hasCredentials = !!(process.env.YAHOO_CLIENT_ID && process.env.YAHOO_CLIENT_SECRET);
-      
-      if (!hasCredentials) {
-        return res.json({ 
-          authenticated: false,
-          connected: false,
-          error: 'Yahoo API credentials not configured',
-          requiresSetup: true
-        });
-      }
-
-      // Check if user has Yahoo tokens stored
       const user = await storage.getUser(userId);
-      if (user?.yahooAccessToken && user?.yahooTokenExpiry && new Date(user.yahooTokenExpiry) > new Date()) {
-        return res.json({ 
-          authenticated: true,
-          connected: true,
-          expiresAt: user.yahooTokenExpiry
-        });
-      }
-
+      
+      const authenticated = !!(user?.yahooAccessToken && user?.yahooRefreshToken);
+      
       res.json({ 
-        authenticated: false,
-        connected: false,
-        error: 'Yahoo OAuth login required',
-        requiresSetup: false,
-        loginUrl: '/api/yahoo/login'
+        authenticated,
+        tokenExpiry: user?.yahooTokenExpiry || null
       });
     } catch (error) {
       console.error('Error checking Yahoo status:', error);
@@ -2214,242 +2016,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Start Yahoo OAuth flow
-  app.get('/api/yahoo/login', (req, res) => {
-    try {
-      const hasCredentials = !!(process.env.YAHOO_CLIENT_ID && process.env.YAHOO_CLIENT_SECRET);
-      
-      if (!hasCredentials) {
-        return res.status(400).json({ 
-          error: 'Yahoo OAuth credentials not configured. Please add YAHOO_CLIENT_ID and YAHOO_CLIENT_SECRET to environment variables.'
-        });
-      }
-
-      const authUrl = yahooOAuthService.getAuthUrl();
-      res.redirect(authUrl);
-    } catch (error) {
-      console.error('Error starting Yahoo OAuth flow:', error);
-      res.status(500).json({ message: 'Failed to start Yahoo login' });
-    }
-  });
-
-  // Yahoo OAuth callback
-  app.get('/api/yahoo/callback', async (req, res) => {
-    try {
-      const { code, error, state } = req.query;
-
-      if (error) {
-        console.log('Yahoo OAuth error:', error);
-        return res.redirect('/fantasy?error=yahoo_auth_cancelled');
-      }
-
-      if (!code) {
-        console.log('No authorization code received from Yahoo');
-        return res.redirect('/fantasy?error=yahoo_auth_no_code');
-      }
-
-      // Exchange code for tokens
-      const tokens = await yahooOAuthService.exchangeCodeForTokens(code as string);
-      console.log('Yahoo OAuth tokens received successfully');
-      
-      // Get user profile to verify connection
-      const profile = await yahooOAuthService.getUserProfile(tokens.access_token);
-      console.log('Yahoo user profile retrieved:', profile.name);
-
-      // Store tokens in session temporarily until user logs in
-      if (req.session) {
-        req.session.yahooTokens = {
-          access_token: tokens.access_token,
-          refresh_token: tokens.refresh_token,
-          expires_at: Date.now() + tokens.expires_in * 1000,
-          profile: profile
-        };
-      }
-
-      res.redirect('/fantasy?yahoo_connected=true&user=' + encodeURIComponent(profile.name));
-    } catch (error) {
-      console.error('Error in Yahoo OAuth callback:', error);
-      res.redirect('/fantasy?error=yahoo_auth_failed&details=' + encodeURIComponent(error.message));
-    }
-  });
-
-  // Yahoo Fantasy API endpoints
-  app.get('/api/yahoo/leagues', isAuthenticated, async (req, res) => {
+  app.post('/api/yahoo/connect', isAuthenticated, async (req, res) => {
     try {
       const userId = req.user?.claims?.sub;
-      if (!userId) {
-        return res.status(401).json({ message: 'User not authenticated' });
+      const { accessToken, refreshToken, expiry } = req.body;
+
+      if (!accessToken || !refreshToken) {
+        return res.status(400).json({ message: 'Access token and refresh token are required' });
       }
 
-      const user = await storage.getUser(userId);
-      if (!user?.yahooAccessToken) {
-        return res.status(401).json({ message: 'Yahoo not connected' });
-      }
+      await storage.updateYahooIntegration(userId, accessToken, refreshToken, new Date(expiry));
 
-      const leagues = await yahooOAuthService.getFantasyLeagues(user.yahooAccessToken);
-      res.json(leagues);
+      res.json({ success: true, message: 'Yahoo account connected successfully' });
     } catch (error) {
-      console.error('Error fetching Yahoo leagues:', error);
-      res.status(500).json({ message: 'Failed to fetch leagues' });
-    }
-  });
-
-  app.get('/api/yahoo/standings/:leagueKey', isAuthenticated, async (req, res) => {
-    try {
-      const userId = req.user?.claims?.sub;
-      const { leagueKey } = req.params;
-
-      if (!userId) {
-        return res.status(401).json({ message: 'User not authenticated' });
-      }
-
-      const user = await storage.getUser(userId);
-      if (!user?.yahooAccessToken) {
-        return res.status(401).json({ message: 'Yahoo not connected' });
-      }
-
-      // Fetch league standings using Yahoo API
-      const response = await fetch(
-        `https://fantasysports.yahooapis.com/fantasy/v2/league/${leagueKey}/standings?format=json`,
-        {
-          headers: {
-            'Authorization': `Bearer ${user.yahooAccessToken}`
-          }
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Yahoo API error: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      const standings = data.fantasy_content?.league?.[1]?.standings?.[0]?.teams || [];
-      
-      res.json(standings);
-    } catch (error) {
-      console.error('Error fetching Yahoo standings:', error);
-      res.status(500).json({ message: 'Failed to fetch standings' });
-    }
-  });
-
-  app.get('/api/yahoo/roster/:leagueKey/:teamKey', isAuthenticated, async (req, res) => {
-    try {
-      const userId = req.user?.claims?.sub;
-      const { leagueKey, teamKey } = req.params;
-
-      if (!userId) {
-        return res.status(401).json({ message: 'User not authenticated' });
-      }
-
-      const user = await storage.getUser(userId);
-      if (!user?.yahooAccessToken) {
-        return res.status(401).json({ message: 'Yahoo not connected' });
-      }
-
-      const roster = await yahooOAuthService.getFantasyRoster(user.yahooAccessToken, leagueKey, teamKey);
-      res.json(roster);
-    } catch (error) {
-      console.error('Error fetching Yahoo roster:', error);
-      res.status(500).json({ message: 'Failed to fetch roster' });
-    }
-  });
-
-  // ESPN Fantasy Sports status endpoint
-  app.get('/api/espn/fantasy/status', async (req, res) => {
-    try {
-      // Test the new ESPN Fantasy API connection
-      try {
-        const response = await fetch('http://espn-fantasy-football-api.s3-website.us-east-2.amazonaws.com/v2/leagues');
-        
-        if (response.ok) {
-          const data = await response.json();
-          return res.json({
-            connected: true,
-            status: 'ESPN Fantasy API is accessible',
-            apiUrl: 'espn-fantasy-football-api.s3-website.us-east-2.amazonaws.com',
-            dataAvailable: Array.isArray(data) && data.length > 0
-          });
-        } else {
-          return res.json({
-            connected: false,
-            error: `ESPN Fantasy API error: ${response.statusText}`,
-            requiresSetup: false
-          });
-        }
-      } catch (apiError) {
-        return res.json({
-          connected: false,
-          error: 'ESPN Fantasy API endpoint not responding',
-          requiresSetup: false
-        });
-      }
-    } catch (error) {
-      console.error('Error checking ESPN Fantasy status:', error);
-      res.status(500).json({ message: 'Failed to check ESPN Fantasy status' });
-    }
-  });
-
-  // ESPN Fantasy API endpoints using the new service
-  app.get('/api/espn/leagues', async (req, res) => {
-    try {
-      const response = await fetch('http://espn-fantasy-football-api.s3-website.us-east-2.amazonaws.com/v2/leagues');
-      
-      if (!response.ok) {
-        throw new Error(`ESPN API error: ${response.statusText}`);
-      }
-
-      const leagues = await response.json();
-      res.json(leagues);
-    } catch (error) {
-      console.error('Error fetching ESPN leagues:', error);
-      res.status(500).json({ message: 'Failed to fetch ESPN leagues' });
-    }
-  });
-
-  app.get('/api/espn/league/:leagueId', async (req, res) => {
-    try {
-      const { leagueId } = req.params;
-      const response = await fetch(`http://espn-fantasy-football-api.s3-website.us-east-2.amazonaws.com/v2/leagues/${leagueId}`);
-      
-      if (!response.ok) {
-        throw new Error(`ESPN API error: ${response.statusText}`);
-      }
-
-      const leagueData = await response.json();
-      res.json(leagueData);
-    } catch (error) {
-      console.error('Error fetching ESPN league data:', error);
-      res.status(500).json({ message: 'Failed to fetch ESPN league data' });
-    }
-  });
-
-  app.get('/api/espn/league/:leagueId/teams', async (req, res) => {
-    try {
-      const { leagueId } = req.params;
-      const response = await fetch(`http://espn-fantasy-football-api.s3-website.us-east-2.amazonaws.com/v2/leagues/${leagueId}/teams`);
-      
-      if (!response.ok) {
-        throw new Error(`ESPN API error: ${response.statusText}`);
-      }
-
-      const teams = await response.json();
-      res.json(teams);
-    } catch (error) {
-      console.error('Error fetching ESPN teams:', error);
-      res.status(500).json({ message: 'Failed to fetch ESPN teams' });
-    }
-  });
-
-  // ESPN Fantasy players endpoint
-  app.get('/api/fantasy/players', async (req, res) => {
-    try {
-      const sport = req.query.sport as string || 'nfl';
-      const players = await espnFantasyService.getFantasyPlayers(sport);
-      
-      res.json(players);
-    } catch (error) {
-      console.error('Error fetching fantasy players:', error);
-      res.json([]);
+      console.error('Error connecting Yahoo account:', error);
+      res.status(500).json({ message: 'Failed to connect Yahoo account' });
     }
   });
 
@@ -3375,29 +2956,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Unified RapidAPI feed from all subscribed APIs
   app.get('/api/rapidapi/unified-feed', async (req, res) => {
     try {
-      const rapidApiIntegration = await import('./services/rapidApiIntegrationService');
-      
-      // Aggregate data from all your active subscriptions
-      const [basketballData, allSportsData, flashLiveData, lolData] = await Promise.all([
-        rapidApiIntegration.rapidApiIntegration.getBasketballData('nba'),
-        rapidApiIntegration.rapidApiIntegration.getAllSportsData(),
-        rapidApiIntegration.rapidApiIntegration.getFlashLiveData(),
-        rapidApiIntegration.rapidApiIntegration.getLoLEsportsData()
-      ]);
-
-      const unifiedFeed = [
-        ...basketballData.map(item => ({ ...item, source: 'API-Basketball', sport_category: 'Basketball' })),
-        ...allSportsData.map(item => ({ ...item, source: 'AllSportsAPI', sport_category: 'Multi-Sport' })),
-        ...flashLiveData.map(item => ({ ...item, source: 'FlashLive', sport_category: 'Live Sports' })),
-        ...lolData.map(item => ({ ...item, source: 'LoL Esports', sport_category: 'Esports' }))
-      ];
-
+      const unifiedFeed = await rapidApiSportsService.getUnifiedRapidAPIFeed();
       res.json({
         success: true,
         total_events: unifiedFeed.length,
         data: unifiedFeed,
         timestamp: new Date().toISOString(),
-        sources: ['API-Basketball', 'AllSportsAPI', 'FlashLive', 'LoL Esports']
+        sources: [...new Set(unifiedFeed.map(event => event.sport_category))]
       });
     } catch (error) {
       console.error('Error fetching unified RapidAPI feed:', error);
@@ -3412,33 +2977,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/rapidapi/espn/:sport/:league', async (req, res) => {
     try {
       const { sport, league } = req.params;
-      const rapidApiIntegration = await import('./services/rapidApiIntegrationService');
-      
-      let data = [];
-      if (sport === 'basketball' && league === 'nba') {
-        data = await rapidApiIntegration.rapidApiIntegration.getBasketballData('nba');
-      } else if (sport === 'esports') {
-        if (league === 'lol') {
-          data = await rapidApiIntegration.rapidApiIntegration.getLoLEsportsData();
-        } else if (league === 'valorant') {
-          data = await rapidApiIntegration.rapidApiIntegration.getValorantEsportsData();
-        }
-      }
-      
-      res.json({
-        success: true,
-        sport,
-        league,
-        data,
-        count: data.length
-      });
+      const espnData = await rapidApiService.getESPNData(sport, league);
+      res.json(espnData);
     } catch (error) {
       console.error('Error fetching ESPN data from RapidAPI:', error);
-      res.status(500).json({ 
-        success: false,
-        message: 'Failed to fetch ESPN data from RapidAPI',
-        error: error.message 
-      });
+      res.status(500).json({ message: 'Failed to fetch ESPN data from RapidAPI' });
     }
   });
 
@@ -6904,36 +6447,21 @@ Join us: WeParlay.io 🎯
     ]);
   });
 
-  // Clean streaming statistics using only ESPN and GRID APIs
-  app.get('/api/streaming/statistics', async (req, res) => {
-    try {
-      const { CleanStreamingService } = await import('./services/cleanStreamingService');
-      const cleanStreaming = new CleanStreamingService();
-      const allStreams = await cleanStreaming.getAllStreams();
-      
-      res.json({
-        liveStreams: allStreams.length,
-        totalViewers: allStreams.reduce((sum, stream) => sum + (stream.viewers || 0), 0),
-        bandwidth: 95.7,
-        uptime: 99.8
-      });
-    } catch (error) {
-      console.error('Error fetching streaming statistics:', error);
-      res.status(500).json({ error: 'Failed to fetch streaming statistics' });
-    }
+  // Live Sports Streaming API endpoints
+  app.get('/api/streaming/statistics', (req, res) => {
+    res.json({
+      liveStreams: Math.floor(Math.random() * 10) + 3,
+      totalViewers: Math.floor(Math.random() * 5000) + 2000,
+      bandwidth: Math.random() * 100 + 50,
+      uptime: Math.random() * 5 + 95
+    });
   });
 
-  app.get('/api/streaming/active', async (req, res) => {
-    try {
-      const { CleanStreamingService } = await import('./services/cleanStreamingService');
-      const cleanStreaming = new CleanStreamingService();
-      const allStreams = await cleanStreaming.getAllStreams();
-      
-      res.json(allStreams);
-    } catch (error) {
-      console.error('Error fetching active streams:', error);
-      res.status(500).json({ error: 'Failed to fetch active streams' });
-    }
+  app.get('/api/streaming/streams', (req, res) => {
+    res.json([
+      { id: 1, title: 'NBA Live Stream', viewers: 1200, quality: '1080p', status: 'live' },
+      { id: 2, title: 'NFL Highlights', viewers: 800, quality: '720p', status: 'live' }
+    ]);
   });
 
   app.get('/api/streaming/analytics', (req, res) => {
@@ -7441,10 +6969,10 @@ Join us: WeParlay.io 🎯
     }
   });
 
-  // Unified Streaming API Routes (RapidAPI Integration)
+  // TheTVApp.tv Global Streaming API Routes
   app.get('/api/streaming/live/sports', async (req, res) => {
     try {
-      const streams = await unifiedStreamingService.getStreamsBySport('sports');
+      const streams = await theTVAppService.getLiveSportsStreams();
       res.json({ success: true, streams });
     } catch (error: any) {
       console.error('Error fetching live sports streams:', error);
@@ -7454,7 +6982,7 @@ Join us: WeParlay.io 🎯
 
   app.get('/api/streaming/live/esports', async (req, res) => {
     try {
-      const streams = await unifiedStreamingService.getTwitchEsportsStreams();
+      const streams = await theTVAppService.getLiveEsportsStreams();
       res.json({ success: true, streams });
     } catch (error: any) {
       console.error('Error fetching live esports streams:', error);
@@ -7465,7 +6993,7 @@ Join us: WeParlay.io 🎯
   app.get('/api/streaming/sport/:sportType', async (req, res) => {
     try {
       const { sportType } = req.params;
-      const streams = await unifiedStreamingService.getStreamsBySport(sportType);
+      const streams = await theTVAppService.getStreamsBySport(sportType);
       res.json({ success: true, streams });
     } catch (error: any) {
       console.error(`Error fetching ${sportType} streams:`, error);
@@ -7473,12 +7001,16 @@ Join us: WeParlay.io 🎯
     }
   });
 
-  app.get('/api/streaming/top', async (req, res) => {
+  app.get('/api/streaming/details/:eventId', async (req, res) => {
     try {
-      const streams = await unifiedStreamingService.getTopLiveStreams();
-      res.json({ success: true, streams });
+      const { eventId } = req.params;
+      const stream = await theTVAppService.getStreamDetails(eventId);
+      if (!stream) {
+        return res.status(404).json({ success: false, message: 'Stream not found' });
+      }
+      res.json({ success: true, stream });
     } catch (error: any) {
-      console.error('Error fetching top streams:', error);
+      console.error('Error fetching stream details:', error);
       res.status(500).json({ success: false, message: error.message });
     }
   });
@@ -7489,141 +7021,11 @@ Join us: WeParlay.io 🎯
       if (!query) {
         return res.status(400).json({ success: false, message: 'Search query required' });
       }
-      const streams = await unifiedStreamingService.searchStreams(query);
+      const streams = await theTVAppService.searchStreams(query);
       res.json({ success: true, streams });
     } catch (error: any) {
       console.error('Error searching streams:', error);
       res.status(500).json({ success: false, message: error.message });
-    }
-  });
-
-  app.get('/api/streaming/analytics', async (req, res) => {
-    try {
-      const analytics = await unifiedStreamingService.getStreamAnalytics();
-      res.json({ success: true, analytics });
-    } catch (error: any) {
-      console.error('Error fetching stream analytics:', error);
-      res.status(500).json({ success: false, message: error.message });
-    }
-  });
-
-  // Clean streaming API using only ESPN and GRID APIs
-  app.get('/api/streaming/live/sports', async (req, res) => {
-    try {
-      const { CleanStreamingService } = await import('./services/cleanStreamingService');
-      const cleanStreaming = new CleanStreamingService();
-      const sportsStreams = await cleanStreaming.getLiveSportsStreams();
-      
-      res.json({
-        success: true,
-        streams: sportsStreams,
-        count: sportsStreams.length,
-        sources: ['ESPN API']
-      });
-    } catch (error) {
-      console.error('Sports streaming error:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: 'Failed to fetch sports streams',
-        streams: []
-      });
-    }
-  });
-
-  app.get('/api/streaming/live/esports', async (req, res) => {
-    try {
-      const { CleanStreamingService } = await import('./services/cleanStreamingService');
-      const cleanStreaming = new CleanStreamingService();
-      const esportsStreams = await cleanStreaming.getEsportsStreams();
-      
-      res.json({
-        success: true,
-        streams: esportsStreams,
-        count: esportsStreams.length,
-        sources: ['GRID API (74,000 esports instances)']
-      });
-    } catch (error) {
-      console.error('Esports streaming error:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: 'Failed to fetch esports streams',
-        streams: []
-      });
-    }
-  });
-
-  app.get('/api/streaming/top', async (req, res) => {
-    try {
-      const { CleanStreamingService } = await import('./services/cleanStreamingService');
-      const cleanStreaming = new CleanStreamingService();
-      const streams = await cleanStreaming.getAllStreams();
-      
-      // Sort by viewer count and get top streams
-      const topStreams = streams
-        .sort((a, b) => b.viewers - a.viewers)
-        .slice(0, 20);
-        
-      res.json({
-        success: true,
-        streams: topStreams,
-        count: topStreams.length,
-        sources: ['ESPN API', 'GRID API (74,000 esports instances)']
-      });
-    } catch (error) {
-      console.error('Top streams error:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: 'Failed to fetch top streams',
-        streams: []
-      });
-    }
-  });
-
-  app.get('/api/streaming/search', async (req, res) => {
-    try {
-      const query = req.query.q as string || '';
-      if (!query || query.length < 2) {
-        return res.json({
-          success: true,
-          streams: [],
-          count: 0
-        });
-      }
-
-      const { authenticStreamingService } = await import('./services/authenticStreamingService');
-      const streams = await authenticStreamingService.searchStreams(query);
-      res.json({
-        success: true,
-        streams: streams,
-        count: streams.length,
-        query: query,
-        sources: ['Betfair', 'Twitch', 'YouTube', 'FlashLive', 'Sport Highlights']
-      });
-    } catch (error) {
-      console.error('Stream search error:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: 'Failed to search streams',
-        streams: []
-      });
-    }
-  });
-
-  app.get('/api/streaming/analytics', async (req, res) => {
-    try {
-      const { authenticStreamingService } = await import('./services/authenticStreamingService');
-      const analytics = await authenticStreamingService.getStreamAnalytics();
-      res.json({
-        success: true,
-        ...analytics,
-        lastUpdated: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error('Streaming analytics error:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: 'Failed to fetch streaming analytics'
-      });
     }
   });
 

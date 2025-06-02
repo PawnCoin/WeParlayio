@@ -3,7 +3,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
@@ -103,23 +102,6 @@ const HeadToHeadBetting: React.FC = () => {
         description: `$${depositAmount} has been added to your account.`,
       });
     }, 1500);
-  };
-
-  // Function to handle challenge creation
-  const handleCreateChallenge = () => {
-    try {
-      toast({
-        title: "Challenge Creation",
-        description: "Head to head challenge feature is available for authenticated users.",
-      });
-    } catch (error) {
-      console.error("Error creating challenge:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create challenge.",
-        variant: "destructive",
-      });
-    }
   };
   
   // Filter challenges based on active tab
@@ -248,7 +230,7 @@ const HeadToHeadBetting: React.FC = () => {
               </DialogContent>
             </Dialog>
             
-            <Button className="flex items-center" onClick={handleCreateChallenge}>
+            <Button className="flex items-center">
               <Plus className="mr-2 h-4 w-4" />
               Create Challenge
             </Button>
