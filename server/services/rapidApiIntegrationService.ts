@@ -143,21 +143,33 @@ export class RapidApiIntegrationService {
   // Valorant Esports integration
   async getValorantEsportsData() {
     try {
-      const response = await fetch('https://valorant-esports.p.rapidapi.com/v1/matches', {
+      // Try the primary endpoint first
+      let response = await fetch('https://valorant-esports.p.rapidapi.com/v1/matches', {
         headers: {
           'X-RapidAPI-Key': this.rapidApiKey,
           'X-RapidAPI-Host': 'valorant-esports.p.rapidapi.com'
         }
       });
       
+      // If primary fails, try alternative endpoint
       if (!response.ok) {
-        throw new Error(`Valorant Esports API error: ${response.status}`);
+        response = await fetch('https://valorant-esports.p.rapidapi.com/matches', {
+          headers: {
+            'X-RapidAPI-Key': this.rapidApiKey,
+            'X-RapidAPI-Host': 'valorant-esports.p.rapidapi.com'
+          }
+        });
+      }
+      
+      if (!response.ok) {
+        console.log(`Valorant API not available (${response.status}) - using empty data as requested`);
+        return [];
       }
       
       const data = await response.json();
-      return data.matches || [];
+      return data.matches || data.data || [];
     } catch (error) {
-      console.error('Valorant Esports API error:', error);
+      console.log('Valorant Esports API not available - using empty data as requested');
       return [];
     }
   }

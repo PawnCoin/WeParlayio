@@ -3373,13 +3373,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Unified RapidAPI feed from all subscribed APIs
   app.get('/api/rapidapi/unified-feed', async (req, res) => {
     try {
-      const unifiedFeed = await rapidApiSportsService.getUnifiedRapidAPIFeed();
+      const rapidApiIntegration = await import('./services/rapidApiIntegrationService');
+      
+      // Aggregate data from all your active subscriptions
+      const [basketballData, allSportsData, flashLiveData, lolData] = await Promise.all([
+        rapidApiIntegration.rapidApiIntegration.getBasketballData('nba'),
+        rapidApiIntegration.rapidApiIntegration.getAllSportsData(),
+        rapidApiIntegration.rapidApiIntegration.getFlashLiveData(),
+        rapidApiIntegration.rapidApiIntegration.getLoLEsportsData()
+      ]);
+
+      const unifiedFeed = [
+        ...basketballData.map(item => ({ ...item, source: 'API-Basketball', sport_category: 'Basketball' })),
+        ...allSportsData.map(item => ({ ...item, source: 'AllSportsAPI', sport_category: 'Multi-Sport' })),
+        ...flashLiveData.map(item => ({ ...item, source: 'FlashLive', sport_category: 'Live Sports' })),
+        ...lolData.map(item => ({ ...item, source: 'LoL Esports', sport_category: 'Esports' }))
+      ];
+
       res.json({
         success: true,
         total_events: unifiedFeed.length,
         data: unifiedFeed,
         timestamp: new Date().toISOString(),
-        sources: [...new Set(unifiedFeed.map(event => event.sport_category))]
+        sources: ['API-Basketball', 'AllSportsAPI', 'FlashLive', 'LoL Esports']
       });
     } catch (error) {
       console.error('Error fetching unified RapidAPI feed:', error);
