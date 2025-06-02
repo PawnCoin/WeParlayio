@@ -115,28 +115,28 @@ export class CleanStreamingService {
     }));
   }
 
-  private formatGRIDStreams(events: any[]): any[] {
-    return events.map((event: any) => ({
-      id: event.id,
-      title: event.title,
+  private formatGRIDStreams(matches: any[]): any[] {
+    return matches.map((match: any) => ({
+      id: match.id,
+      title: match.title,
       sport: 'esports',
-      league: event.game?.title || 'Esports',
+      league: match.game?.name || 'Esports',
       homeTeam: {
-        name: event.teams?.[0]?.name || 'Team 1',
-        logo: event.teams?.[0]?.logo,
+        name: match.opponents?.[0]?.name || 'Team 1',
+        logo: match.opponents?.[0]?.image_url,
         score: 0
       },
       awayTeam: {
-        name: event.teams?.[1]?.name || 'Team 2',
-        logo: event.teams?.[1]?.logo,
+        name: match.opponents?.[1]?.name || 'Team 2',
+        logo: match.opponents?.[1]?.image_url,
         score: 0
       },
-      status: event.status === 'live' ? 'live' : 'scheduled',
-      viewers: event.streams?.[0]?.viewers || 0,
-      streamUrl: event.streams?.[0]?.url || `https://grid.gg/events/${event.id}`,
-      thumbnailUrl: event.teams?.[0]?.logo || 'https://grid.gg/logo.png',
-      startTime: event.startTime,
-      period: event.status === 'live' ? 'Live' : 'Scheduled',
+      status: match.status === 'live' ? 'live' : 'scheduled',
+      viewers: 0, // GRID doesn't provide viewer counts in their API
+      streamUrl: match.streams?.[0]?.raw_url || match.streams?.[0]?.embed_url || `https://grid.gg/matches/${match.id}`,
+      thumbnailUrl: match.opponents?.[0]?.image_url || 'https://grid.gg/logo.png',
+      startTime: match.begin_at,
+      period: match.status === 'live' ? 'Live' : 'Scheduled',
       timeRemaining: '',
       isEsport: true
     }));

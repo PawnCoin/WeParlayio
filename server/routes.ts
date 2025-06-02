@@ -1200,6 +1200,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: error.message || "Failed to fetch sports from The Odds API" });
     }
   });
+
+  // Authentic streaming data from GRID and ESPN APIs
+  app.get('/api/streaming/all-streams', async (req, res) => {
+    try {
+      const { CleanStreamingService } = await import('./services/cleanStreamingService');
+      const cleanStreaming = new CleanStreamingService();
+      const allStreams = await cleanStreaming.getAllStreams();
+      
+      res.json(allStreams);
+    } catch (error) {
+      console.error('Streaming API error:', error);
+      res.status(500).json({ error: 'Failed to fetch streaming data' });
+    }
+  });
   
   // Clean streaming data endpoint using only ESPN API and GRID API
   app.get('/api/unified-sports/streaming-data', async (req, res) => {
