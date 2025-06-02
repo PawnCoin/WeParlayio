@@ -7682,6 +7682,128 @@ Join us: WeParlay.io 🎯
     }
   });
 
+  // Live Streaming API endpoints
+  app.get('/api/streaming/status', async (req, res) => {
+    try {
+      const status = {
+        available: true,
+        totalChannels: 142,
+        activeStreams: 28,
+        serverStatus: "Operational"
+      };
+      res.json(status);
+    } catch (error) {
+      console.error('Error fetching streaming status:', error);
+      res.status(500).json({ error: 'Failed to fetch streaming status' });
+    }
+  });
+
+  app.get('/api/streaming/channels', async (req, res) => {
+    try {
+      const channels = [
+        {
+          id: "espn1",
+          name: "ESPN",
+          streamUrl: "https://tvpass.org/stream/espn",
+          category: "sports",
+          quality: "HD",
+          language: "English",
+          isLive: true,
+          viewers: 15420
+        },
+        {
+          id: "fox1",
+          name: "FOX Sports 1",
+          streamUrl: "https://tvpass.org/stream/fs1",
+          category: "sports",
+          quality: "HD",
+          language: "English",
+          isLive: true,
+          viewers: 12350
+        },
+        {
+          id: "nfl1",
+          name: "NFL Network",
+          streamUrl: "https://tvpass.org/stream/nfl",
+          category: "premium",
+          quality: "4K",
+          language: "English",
+          isLive: true,
+          viewers: 8750
+        },
+        {
+          id: "twitch1",
+          name: "Twitch Esports",
+          streamUrl: "https://tvpass.org/stream/twitch",
+          category: "esports",
+          quality: "HD",
+          language: "English",
+          isLive: true,
+          viewers: 25600
+        },
+        {
+          id: "sky1",
+          name: "Sky Sports",
+          streamUrl: "https://tvpass.org/stream/sky",
+          category: "international",
+          quality: "HD",
+          language: "English",
+          isLive: true,
+          viewers: 9200
+        }
+      ];
+      res.json(channels);
+    } catch (error) {
+      console.error('Error fetching channels:', error);
+      res.status(500).json({ error: 'Failed to fetch channels' });
+    }
+  });
+
+  app.post('/api/streaming/play', async (req, res) => {
+    try {
+      const { channelId, tier } = req.body;
+      
+      if (!channelId) {
+        return res.status(400).json({ error: 'Channel ID is required' });
+      }
+
+      // Check tier access
+      if (tier === 'bronze' && channelId.includes('premium')) {
+        return res.json({ 
+          success: false, 
+          message: 'This channel requires Silver tier or higher' 
+        });
+      }
+
+      res.json({ 
+        success: true, 
+        message: 'Stream started successfully',
+        streamUrl: `https://tvpass.org/stream/${channelId}`
+      });
+    } catch (error) {
+      console.error('Error starting stream:', error);
+      res.status(500).json({ error: 'Failed to start stream' });
+    }
+  });
+
+  app.post('/api/streaming/favorite', async (req, res) => {
+    try {
+      const { channelId } = req.body;
+      
+      if (!channelId) {
+        return res.status(400).json({ error: 'Channel ID is required' });
+      }
+
+      res.json({ 
+        success: true, 
+        message: 'Channel added to favorites'
+      });
+    } catch (error) {
+      console.error('Error adding favorite:', error);
+      res.status(500).json({ error: 'Failed to add favorite' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

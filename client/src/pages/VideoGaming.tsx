@@ -1,504 +1,530 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
-} from "@/components/ui/tabs";
-import { Button } from '@/components/ui/button';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Gamepad2, 
-  Trophy, 
-  Users, 
-  Settings, 
-  TrendingUp, 
-  BarChart2,
-  Sparkles,
-  Plus,
-  Clock,
-  DollarSign
-} from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest, queryClient } from '@/lib/queryClient';
+import { Gamepad2, Trophy, TrendingUp, Users, Zap, Star, Play } from 'lucide-react';
+import { apiRequest } from '@/lib/queryClient';
+
+interface Game {
+  id: string;
+  name: string;
+  category: string;
+  platform: string;
+  image: string;
+  isLive: boolean;
+  viewers: number;
+  upcomingMatches: number;
+}
+
+interface Match {
+  id: string;
+  gameId: string;
+  team1: string;
+  team2: string;
+  startTime: string;
+  odds: {
+    team1: number;
+    team2: number;
+  };
+  prize: number;
+  tournament: string;
+  status: 'upcoming' | 'live' | 'completed';
+}
 
 interface GameBet {
   id: string;
-  gameName: string;
-  description: string;
+  matchId: string;
+  team: string;
   amount: number;
   odds: number;
-  createdBy: string;
-  status: 'open' | 'matched' | 'settled';
+  status: 'pending' | 'won' | 'lost';
   createdAt: string;
-  players?: string[];
 }
 
-interface LeaderboardPlayer {
+interface LeaderboardEntry {
   rank: number;
-  name: string;
-  winRate: string;
-  profit: string;
-  game: string;
-  level: number;
+  username: string;
+  totalWins: number;
+  winPercentage: number;
+  totalEarnings: number;
 }
 
 const VideoGaming: React.FC = () => {
   const { toast } = useToast();
-  const [selectedGame, setSelectedGame] = useState('');
-  const [betAmount, setBetAmount] = useState('');
-  const [betDescription, setBetDescription] = useState('');
-  const [customOdds, setCustomOdds] = useState('');
+  const queryClient = useQueryClient();
+  
+  const [selectedGame, setSelectedGame] = useState<string>('all');
+  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+  const [betAmount, setBetAmount] = useState<string>('');
+  const [selectedTeam, setSelectedTeam] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  // Fetch active game bets
-  const { data: gameBets = [], isLoading: betsLoading } = useQuery({
-    queryKey: ['/api/gaming/bets']
+  // Fetch popular games
+  const { data: games = [], isLoading: gamesLoading } = useQuery({
+    queryKey: ['/api/gaming/games'],
+    refetchInterval: 300000, // 5 minutes
   });
 
-  // Fetch leaderboard data
+  // Fetch live matches
+  const { data: matches = [], isLoading: matchesLoading } = useQuery({
+    queryKey: ['/api/gaming/matches', selectedGame],
+    refetchInterval: 30000,
+  });
+
+  // Fetch user bets
+  const { data: userBets = [], isLoading: betsLoading } = useQuery({
+    queryKey: ['/api/gaming/my-bets'],
+    refetchInterval: 60000,
+  });
+
+  // Fetch leaderboard
   const { data: leaderboard = [], isLoading: leaderboardLoading } = useQuery({
-    queryKey: ['/api/gaming/leaderboard']
+    queryKey: ['/api/gaming/leaderboard'],
+    refetchInterval: 300000,
   });
 
-  // Create new game bet mutation
-  const createBetMutation = useMutation({
-    mutationFn: async (betData: any) => {
-      return await apiRequest('POST', '/api/gaming/create-bet', betData);
+  // Place bet mutation
+  const placeBetMutation = useMutation({
+    mutationFn: async (betData: {
+      matchId: string;
+      team: string;
+      amount: number;
+    }) => {
+      return apiRequest('POST', '/api/gaming/place-bet', betData);
     },
-    onSuccess: () => {
-      toast({
-        title: "Bet Created",
-        description: "Your game bet has been created successfully!",
-      });
-      // Reset form
-      setSelectedGame('');
-      setBetAmount('');
-      setBetDescription('');
-      setCustomOdds('');
-      // Invalidate cache
-      queryClient.invalidateQueries({ queryKey: ['/api/gaming/bets'] });
+    onSuccess: (data) => {
+      if (data.success) {
+        toast({
+          title: "Bet Placed Successfully",
+          description: `Your bet of $${betAmount} on ${selectedTeam} has been placed`,
+        });
+        setBetAmount('');
+        setSelectedTeam('');
+        setSelectedMatch(null);
+        queryClient.invalidateQueries({ queryKey: ['/api/gaming/my-bets'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/user/balance'] });
+      } else {
+        toast({
+          title: "Bet Failed",
+          description: data.message || "Unable to place bet",
+          variant: "destructive",
+        });
+      }
     },
-    onError: (error: any) => {
+    onError: () => {
       toast({
         title: "Error",
-        description: error.message || "Failed to create bet",
+        description: "Failed to place bet. Please try again.",
         variant: "destructive",
       });
     }
   });
 
-  // Join bet mutation
-  const joinBetMutation = useMutation({
-    mutationFn: async (betId: string) => {
-      return await apiRequest('POST', `/api/gaming/join-bet/${betId}`);
-    },
-    onSuccess: () => {
-      toast({
-        title: "Bet Joined",
-        description: "You've successfully joined the bet!",
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/gaming/bets'] });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to join bet",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const handleCreateBet = () => {
-    if (!selectedGame || !betAmount || !betDescription) {
+  const handlePlaceBet = () => {
+    if (!selectedMatch || !selectedTeam || !betAmount) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all required fields",
+        description: "Please select a team and enter a bet amount",
         variant: "destructive",
       });
       return;
     }
 
-    createBetMutation.mutate({
-      gameName: selectedGame,
-      description: betDescription,
-      amount: parseFloat(betAmount),
-      odds: customOdds ? parseFloat(customOdds) : 2.0
+    const amount = parseFloat(betAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast({
+        title: "Invalid Amount",
+        description: "Please enter a valid bet amount",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    placeBetMutation.mutate({
+      matchId: selectedMatch.id,
+      team: selectedTeam,
+      amount
     });
   };
 
-  const popularGames = [
-    'League of Legends',
-    'Counter-Strike 2',
-    'Valorant',
-    'Dota 2',
-    'Fortnite',
-    'Call of Duty',
-    'Apex Legends',
-    'Overwatch 2',
-    'Rocket League',
-    'FIFA 24'
-  ];
+  const filteredGames = games.filter((game: Game) =>
+    game.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredMatches = matches.filter((match: Match) =>
+    selectedGame === 'all' || match.gameId === selectedGame
+  );
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'live': return 'bg-green-500';
+      case 'upcoming': return 'bg-blue-500';
+      case 'completed': return 'bg-gray-500';
+      default: return 'bg-gray-500';
+    }
+  };
+
+  const getBetStatusColor = (status: string) => {
+    switch (status) {
+      case 'won': return 'text-green-600';
+      case 'lost': return 'text-red-600';
+      case 'pending': return 'text-yellow-600';
+      default: return 'text-gray-600';
+    }
+  };
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold mb-2 flex items-center">
-            <Gamepad2 className="mr-2 h-8 w-8" />
-            Video Game Betting
-          </h1>
-          <p className="text-muted-foreground">
-            Create custom bets on any game, any matchup
-          </p>
-        </div>
-      </div>
-
-      <Tabs defaultValue="create" className="w-full">
-        <TabsList className="grid grid-cols-3 mb-8">
-          <TabsTrigger value="create" className="flex items-center gap-1">
-            <Plus className="h-4 w-4" /> Create Bet
-          </TabsTrigger>
-          <TabsTrigger value="active" className="flex items-center gap-1">
-            <Clock className="h-4 w-4" /> Active Bets
-          </TabsTrigger>
-          <TabsTrigger value="leaderboard" className="flex items-center gap-1">
-            <Trophy className="h-4 w-4" /> Leaderboard
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="create">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Gamepad2 className="h-5 w-5" />
-                Create New Game Bet
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="game-select">Select Game</Label>
-                    <Select value={selectedGame} onValueChange={setSelectedGame}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Choose a game" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {popularGames.map((game) => (
-                          <SelectItem key={game} value={game}>
-                            {game}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="bet-amount">Bet Amount (WeParlay Cash)</Label>
-                    <div className="relative">
-                      <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="bet-amount"
-                        type="number"
-                        placeholder="0.00"
-                        value={betAmount}
-                        onChange={(e) => setBetAmount(e.target.value)}
-                        className="pl-10"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="custom-odds">Custom Odds (Optional)</Label>
-                    <Input
-                      id="custom-odds"
-                      type="number"
-                      step="0.1"
-                      placeholder="2.0"
-                      value={customOdds}
-                      onChange={(e) => setCustomOdds(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="bet-description">Bet Description</Label>
-                    <Textarea
-                      id="bet-description"
-                      placeholder="Describe your bet (e.g., 'I'll win the next ranked match' or 'My team will get first blood')"
-                      value={betDescription}
-                      onChange={(e) => setBetDescription(e.target.value)}
-                      rows={4}
-                    />
-                  </div>
-
-                  <div className="bg-muted/30 p-4 rounded-lg">
-                    <h4 className="font-semibold mb-2">Bet Preview</h4>
-                    <p className="text-sm text-muted-foreground mb-1">
-                      Game: {selectedGame || 'Not selected'}
-                    </p>
-                    <p className="text-sm text-muted-foreground mb-1">
-                      Amount: {betAmount ? `$${betAmount}` : '$0.00'} WeParlay Cash
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Potential Win: {betAmount && customOdds 
-                        ? `$${(parseFloat(betAmount) * parseFloat(customOdds)).toFixed(2)}` 
-                        : '$0.00'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <Button 
-                onClick={handleCreateBet}
-                disabled={createBetMutation.isPending}
-                className="w-full"
-              >
-                {createBetMutation.isPending ? 'Creating...' : 'Create Bet'}
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="active">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold">Active Game Bets</h2>
-              <Badge variant="outline">{gameBets.length} Active</Badge>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <Gamepad2 className="h-8 w-8 text-purple-600" />
+                Video Gaming Hub
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400">Bet on esports matches and tournaments</p>
             </div>
-
-            {betsLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[...Array(6)].map((_, i) => (
-                  <Card key={i} className="animate-pulse">
-                    <CardContent className="p-4">
-                      <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
-                      <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
-                      <div className="h-4 bg-gray-200 rounded w-full"></div>
-                    </CardContent>
-                  </Card>
-                ))}
+            
+            {/* Quick Stats */}
+            <div className="flex items-center gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-purple-600">{games.length}</div>
+                <div className="text-sm text-gray-600">Games</div>
               </div>
-            ) : gameBets.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {gameBets.map((bet: GameBet) => (
-                  <Card key={bet.id} className="hover:shadow-lg transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <Badge variant="secondary">{bet.gameName}</Badge>
-                        <Badge variant={bet.status === 'open' ? 'default' : 'outline'}>
-                          {bet.status}
-                        </Badge>
-                      </div>
-                      
-                      <h3 className="font-semibold mb-2 line-clamp-2">{bet.description}</h3>
-                      
-                      <div className="space-y-2 text-sm text-muted-foreground mb-4">
-                        <div className="flex justify-between">
-                          <span>Amount:</span>
-                          <span className="font-medium">${bet.amount}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Odds:</span>
-                          <span className="font-medium">{bet.odds}x</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Creator:</span>
-                          <span className="font-medium">{bet.createdBy}</span>
-                        </div>
-                      </div>
-
-                      {bet.status === 'open' && (
-                        <Button 
-                          onClick={() => joinBetMutation.mutate(bet.id)}
-                          disabled={joinBetMutation.isPending}
-                          className="w-full"
-                          size="sm"
-                        >
-                          Join Bet
-                        </Button>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">{matches.filter((m: Match) => m.status === 'live').length}</div>
+                <div className="text-sm text-gray-600">Live Matches</div>
               </div>
-            ) : (
-              <Card>
-                <CardContent className="text-center py-8">
-                  <Gamepad2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">No active game bets available</p>
-                  <p className="text-sm text-gray-500 mt-2">Create the first bet to get started!</p>
-                </CardContent>
-              </Card>
-            )}
+            </div>
           </div>
-        </TabsContent>
 
-        <TabsContent value="leaderboard">
-          <div className="bg-card rounded-lg shadow border border-muted p-6">
-            <div className="flex items-center mb-6">
-              <Trophy className="h-6 w-6 mr-3 text-yellow-500" />
-              <h2 className="text-2xl font-bold">Video Game Betting Leaderboard</h2>
-            </div>
-
-            {leaderboardLoading ? (
-              <div className="animate-pulse space-y-4">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="h-16 bg-gray-200 rounded"></div>
+          {/* Search and Filter */}
+          <div className="flex gap-4 mb-6">
+            <Input
+              placeholder="Search games..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="max-w-xs"
+            />
+            
+            <Select value={selectedGame} onValueChange={setSelectedGame}>
+              <SelectTrigger className="max-w-xs">
+                <SelectValue placeholder="Filter by game" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Games</SelectItem>
+                {games.map((game: Game) => (
+                  <SelectItem key={game.id} value={game.id}>
+                    {game.name}
+                  </SelectItem>
                 ))}
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-muted">
-                      <th className="py-3 px-2 text-left">Rank</th>
-                      <th className="py-3 px-2 text-left">Player</th>
-                      <th className="py-3 px-2 text-left">Win Rate</th>
-                      <th className="py-3 px-2 text-left">Profit</th>
-                      <th className="py-3 px-2 text-left">Top Game</th>
-                      <th className="py-3 px-2 text-left">Level</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {leaderboard.length > 0 ? leaderboard.map((player: LeaderboardPlayer, index: number) => (
-                      <tr key={index} className="border-b border-muted">
-                        <td className="py-4 px-2">
-                          {player.rank === 1 ? (
-                            <div className="flex items-center">
-                              <span className="text-yellow-500 font-bold">{player.rank}</span>
-                              <Sparkles className="h-4 w-4 ml-1 text-yellow-500" />
-                            </div>
-                          ) : (
-                            <span className={player.rank <= 3 ? "font-bold" : ""}>{player.rank}</span>
-                          )}
-                        </td>
-                        <td className="py-4 px-2">{player.name}</td>
-                        <td className="py-4 px-2 text-green-500">{player.winRate}</td>
-                        <td className="py-4 px-2 text-green-500">{player.profit}</td>
-                        <td className="py-4 px-2">{player.game}</td>
-                        <td className="py-4 px-2">
-                          <div className="flex items-center">
-                            <span className="bg-primary/10 text-primary px-2 py-1 rounded text-xs font-bold">
-                              Lvl {player.level}
-                            </span>
-                          </div>
-                        </td>
-                      </tr>
-                    )) : (
-                      // Fallback data when API returns empty
-                      [
-                        { rank: 1, name: "ProGamer123", winRate: "68%", profit: "+$12,450", game: "League of Legends", level: 42 },
-                        { rank: 2, name: "CryptoKing", winRate: "62%", profit: "+$10,820", game: "CS:GO", level: 38 },
-                        { rank: 3, name: "GameQueen", winRate: "59%", profit: "+$8,740", game: "Valorant", level: 35 },
-                        { rank: 4, name: "Ninja2099", winRate: "57%", profit: "+$7,320", game: "Fortnite", level: 33 },
-                        { rank: 5, name: "BetMaster", winRate: "55%", profit: "+$6,450", game: "Dota 2", level: 29 },
-                      ].map((player, index) => (
-                        <tr key={index} className="border-b border-muted">
-                          <td className="py-4 px-2">
-                            {player.rank === 1 ? (
-                              <div className="flex items-center">
-                                <span className="text-yellow-500 font-bold">{player.rank}</span>
-                                <Sparkles className="h-4 w-4 ml-1 text-yellow-500" />
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <Tabs defaultValue="matches" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="matches">Live Matches</TabsTrigger>
+            <TabsTrigger value="games">Popular Games</TabsTrigger>
+            <TabsTrigger value="mybets">My Bets</TabsTrigger>
+            <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
+          </TabsList>
+
+          {/* Live Matches Tab */}
+          <TabsContent value="matches" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Matches List */}
+              <div className="lg:col-span-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Trophy className="h-5 w-5" />
+                      Live & Upcoming Matches
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {matchesLoading ? (
+                      <div className="text-center py-8">Loading matches...</div>
+                    ) : filteredMatches.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">No matches found</div>
+                    ) : (
+                      filteredMatches.map((match: Match) => (
+                        <div
+                          key={match.id}
+                          className={`p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer ${
+                            selectedMatch?.id === match.id ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20' : ''
+                          }`}
+                          onClick={() => setSelectedMatch(match)}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Badge className={`${getStatusColor(match.status)} text-white`}>
+                                  {match.status.toUpperCase()}
+                                </Badge>
+                                <span className="text-sm text-gray-600">{match.tournament}</span>
                               </div>
-                            ) : (
-                              <span className={player.rank <= 3 ? "font-bold" : ""}>{player.rank}</span>
-                            )}
-                          </td>
-                          <td className="py-4 px-2">{player.name}</td>
-                          <td className="py-4 px-2 text-green-500">{player.winRate}</td>
-                          <td className="py-4 px-2 text-green-500">{player.profit}</td>
-                          <td className="py-4 px-2">{player.game}</td>
-                          <td className="py-4 px-2">
-                            <div className="flex items-center">
-                              <span className="bg-primary/10 text-primary px-2 py-1 rounded text-xs font-bold">
-                                Lvl {player.level}
-                              </span>
+                              
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="text-center">
+                                  <div className="font-semibold">{match.team1}</div>
+                                  <div className="text-sm text-purple-600">+{match.odds.team1}</div>
+                                </div>
+                                
+                                <div className="text-center px-4">
+                                  <div className="text-lg font-bold">VS</div>
+                                  <div className="text-sm text-gray-500">
+                                    {new Date(match.startTime).toLocaleTimeString()}
+                                  </div>
+                                </div>
+                                
+                                <div className="text-center">
+                                  <div className="font-semibold">{match.team2}</div>
+                                  <div className="text-sm text-purple-600">+{match.odds.team2}</div>
+                                </div>
+                              </div>
+                              
+                              <div className="text-sm text-gray-600">
+                                Prize Pool: ${match.prize.toLocaleString()}
+                              </div>
                             </div>
-                          </td>
-                        </tr>
+                          </div>
+                        </div>
                       ))
                     )}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-muted/30 p-4 rounded-lg">
-                <div className="flex items-center mb-3">
-                  <TrendingUp className="h-5 w-5 mr-2 text-blue-600" />
-                  <h3 className="font-bold">Most Popular Games</h3>
-                </div>
-                <ol className="space-y-2">
-                  <li className="flex justify-between">
-                    <span>League of Legends</span>
-                    <span className="text-muted-foreground">32% of bets</span>
-                  </li>
-                  <li className="flex justify-between">
-                    <span>Counter-Strike 2</span>
-                    <span className="text-muted-foreground">24% of bets</span>
-                  </li>
-                  <li className="flex justify-between">
-                    <span>Valorant</span>
-                    <span className="text-muted-foreground">18% of bets</span>
-                  </li>
-                </ol>
+                  </CardContent>
+                </Card>
               </div>
 
-              <div className="bg-muted/30 p-4 rounded-lg">
-                <div className="flex items-center mb-3">
-                  <BarChart2 className="h-5 w-5 mr-2 text-blue-600" />
-                  <h3 className="font-bold">Biggest Wins</h3>
-                </div>
-                <ol className="space-y-2">
-                  <li className="flex justify-between">
-                    <span>CryptoKing</span>
-                    <span className="text-green-500">+$3,200 in one bet</span>
-                  </li>
-                  <li className="flex justify-between">
-                    <span>ProGamer123</span>
-                    <span className="text-green-500">+$2,840 in one bet</span>
-                  </li>
-                  <li className="flex justify-between">
-                    <span>Ninja2099</span>
-                    <span className="text-green-500">+$2,150 in one bet</span>
-                  </li>
-                </ol>
-              </div>
+              {/* Bet Panel */}
+              <div>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Zap className="h-5 w-5" />
+                      Place Bet
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {selectedMatch ? (
+                      <>
+                        <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                          <div className="text-sm font-medium mb-1">{selectedMatch.tournament}</div>
+                          <div className="text-lg font-bold">
+                            {selectedMatch.team1} vs {selectedMatch.team2}
+                          </div>
+                        </div>
 
-              <div className="bg-muted/30 p-4 rounded-lg">
-                <div className="flex items-center mb-3">
-                  <Settings className="h-5 w-5 mr-2 text-blue-600" />
-                  <h3 className="font-bold">Your Stats</h3>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Win Rate:</span>
-                    <span className="text-green-500">52%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Total Bets:</span>
-                    <span>24</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Rank:</span>
-                    <span>#156</span>
-                  </div>
-                </div>
-                <Button variant="outline" className="w-full mt-4">View Detailed Stats</Button>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Select Team</label>
+                          <Select value={selectedTeam} onValueChange={setSelectedTeam}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Choose team to bet on" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value={selectedMatch.team1}>
+                                {selectedMatch.team1} (+{selectedMatch.odds.team1})
+                              </SelectItem>
+                              <SelectItem value={selectedMatch.team2}>
+                                {selectedMatch.team2} (+{selectedMatch.odds.team2})
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Bet Amount ($)</label>
+                          <Input
+                            type="number"
+                            placeholder="Enter amount"
+                            value={betAmount}
+                            onChange={(e) => setBetAmount(e.target.value)}
+                            min="1"
+                            step="0.01"
+                          />
+                        </div>
+
+                        {selectedTeam && betAmount && (
+                          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                            <div className="text-sm">Potential Payout:</div>
+                            <div className="text-xl font-bold text-blue-600">
+                              ${(parseFloat(betAmount) * (selectedTeam === selectedMatch.team1 ? selectedMatch.odds.team1 : selectedMatch.odds.team2)).toFixed(2)}
+                            </div>
+                          </div>
+                        )}
+
+                        <Button
+                          onClick={handlePlaceBet}
+                          disabled={placeBetMutation.isPending || !selectedTeam || !betAmount}
+                          className="w-full"
+                        >
+                          {placeBetMutation.isPending ? 'Placing Bet...' : 'Place Bet'}
+                        </Button>
+                      </>
+                    ) : (
+                      <div className="text-center py-8 text-gray-500">
+                        Select a match to place a bet
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
             </div>
-          </div>
-        </TabsContent>
-      </Tabs>
+          </TabsContent>
+
+          {/* Popular Games Tab */}
+          <TabsContent value="games" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {gamesLoading ? (
+                <div className="col-span-full text-center py-8">Loading games...</div>
+              ) : (
+                filteredGames.map((game: Game) => (
+                  <Card key={game.id} className="hover:shadow-lg transition-shadow">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg">{game.name}</CardTitle>
+                        {game.isLive && (
+                          <Badge className="bg-red-500 text-white">
+                            <Play className="h-3 w-3 mr-1" />
+                            LIVE
+                          </Badge>
+                        )}
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Platform:</span>
+                          <span className="font-medium">{game.platform}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Category:</span>
+                          <span className="font-medium">{game.category}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Viewers:</span>
+                          <span className="font-medium text-purple-600">{game.viewers.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Upcoming Matches:</span>
+                          <span className="font-medium">{game.upcomingMatches}</span>
+                        </div>
+                        
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full mt-4"
+                          onClick={() => setSelectedGame(game.id)}
+                        >
+                          View Matches
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </TabsContent>
+
+          {/* My Bets Tab */}
+          <TabsContent value="mybets" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>My Gaming Bets</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {betsLoading ? (
+                  <div className="text-center py-8">Loading your bets...</div>
+                ) : userBets.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">No bets placed yet</div>
+                ) : (
+                  <div className="space-y-4">
+                    {userBets.map((bet: GameBet) => (
+                      <div key={bet.id} className="p-4 border rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-semibold">{bet.team}</div>
+                            <div className="text-sm text-gray-600">
+                              Bet: ${bet.amount} • Odds: +{bet.odds}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {new Date(bet.createdAt).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className={`font-semibold ${getBetStatusColor(bet.status)}`}>
+                              {bet.status.toUpperCase()}
+                            </div>
+                            {bet.status === 'won' && (
+                              <div className="text-sm text-green-600">
+                                +${(bet.amount * bet.odds).toFixed(2)}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Leaderboard Tab */}
+          <TabsContent value="leaderboard" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  Gaming Leaderboard
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {leaderboardLoading ? (
+                  <div className="text-center py-8">Loading leaderboard...</div>
+                ) : (
+                  <div className="space-y-4">
+                    {leaderboard.map((entry: LeaderboardEntry) => (
+                      <div key={entry.rank} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex items-center gap-4">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
+                            entry.rank === 1 ? 'bg-yellow-500 text-white' :
+                            entry.rank === 2 ? 'bg-gray-400 text-white' :
+                            entry.rank === 3 ? 'bg-orange-500 text-white' :
+                            'bg-gray-200 text-gray-700'
+                          }`}>
+                            {entry.rank}
+                          </div>
+                          <div>
+                            <div className="font-semibold">{entry.username}</div>
+                            <div className="text-sm text-gray-600">
+                              {entry.totalWins} wins • {entry.winPercentage}% win rate
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold text-green-600">
+                            ${entry.totalEarnings.toLocaleString()}
+                          </div>
+                          <div className="text-sm text-gray-600">Total Earnings</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 };
