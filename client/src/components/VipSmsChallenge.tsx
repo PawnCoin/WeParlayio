@@ -10,7 +10,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Crown, MessageSquare, Phone, Mail, Zap, DollarSign, Clock, AlertTriangle, CheckCircle, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { apiRequest } from '@/lib/queryClient';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
@@ -125,7 +124,7 @@ const VipSmsChallenge: React.FC<VipSmsChallengeProps> = ({
         marketingConsent: marketingConsent // Track marketing consent
       };
 
-      const response = await apiRequest('POST', '/api/challenges/sms-test', challengeData);
+      const response = await apiRequest('POST', '/api/challenges/sms', challengeData);
 
       setChallengeCreated(response);
 

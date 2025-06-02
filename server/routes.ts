@@ -18,7 +18,6 @@ import { feeRouter } from "./routes/feeRoutes";
 import { adminRouter } from "./routes/adminRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
 import { socialMediaBotRouter } from "./routes/socialMediaBotRoutes";
-import { theTVAppService } from "./services/theTVAppService";
 import gamingRoutes from "./routes/gamingRoutes";
 import unifiedSportsRoutes from "./routes/unifiedSportsRoutes";
 import { bankingRouter } from "./routes/bankingRoutes";
@@ -331,65 +330,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // const bookieRoutes = await import('./routes/bookieRoutes');
   // app.use('/api/bookie', bookieRoutes.default);
   
-  // SMS Challenge Test endpoint (bypasses auth for testing)
-  app.post('/api/challenges/sms-test', async (req: any, res) => {
-    try {
-      const {
-        eventName,
-        amount,
-        pick,
-        notificationPhone,
-        isVirtual = true,
-        customMessage
-      } = req.body;
-
-      if (!eventName || !pick) {
-        return res.status(400).json({ message: "Event name and pick are required" });
-      }
-
-      if (!notificationPhone) {
-        return res.status(400).json({ message: "Phone number is required for SMS test" });
-      }
-
-      // Create challenge
-      const challengeData = {
-        uuid: require('crypto').randomUUID(),
-        createdBy: 'test-user-123',
-        eventName,
-        amount: amount || 50,
-        pick,
-        isVirtual,
-        customMessage,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
-      };
-
-      const challenge = await storage.createBettingChallenge(challengeData);
-
-      // Send SMS notification
-      const { sendChallengeInvitation } = await import('./services/smsService');
-      await sendChallengeInvitation(
-        notificationPhone,
-        eventName,
-        amount || 50,
-        challenge.uuid,
-        isVirtual
-      );
-
-      res.json({ 
-        success: true, 
-        challengeUuid: challenge.uuid,
-        amount: challenge.amount,
-        isVirtual: challenge.isVirtual,
-        expiresAt: challenge.expiresAt,
-        message: 'Challenge created and SMS sent successfully!'
-      });
-
-    } catch (error) {
-      console.error("Error creating SMS test challenge:", error);
-      res.status(500).json({ message: "Failed to create SMS test challenge", error: error.message });
-    }
-  });
-
   // SMS Challenge endpoint with VIP and consent validation
   app.post('/api/challenges/sms', async (req: any, res) => {
     try {
@@ -453,14 +393,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Send SMS notification (integrate with SMS service)
       try {
-        const { sendSMS } = await import('./services/smsService');
+        const { smsService } = await import('./services/smsService');
         const message = `🎯 WeParlay Challenge: ${customMessage || `${user.username || 'A friend'} challenged you to a $${challengeAmount} bet!`} Join: ${req.protocol}://${req.get('host')}/challenges/${challenge.challengeUuid}`;
         
-        await sendSMS({
-          to: friendPhone,
-          message: message,
-          type: 'bet_confirmation'
-        });
+        await smsService.sendSMS(friendPhone, message);
         
         // Log successful SMS for admin tracking
         console.log(`SMS Challenge sent: User ${userId} (${userTier}) -> ${friendPhone} for $${challengeAmount}`);
@@ -483,63 +419,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating SMS challenge:", error);
       res.status(500).json({ message: "Failed to create SMS challenge" });
-    }
-  });
-
-  // Test challenge creation endpoint (bypasses auth for testing)
-  app.post('/api/challenges/test', async (req: any, res) => {
-    try {
-      const userId = 'test-user-123'; // Test user ID
-      const { 
-        eventId, 
-        eventName, 
-        amount, 
-        pick, 
-        odds, 
-        isVirtual = true, 
-        type = 'head-to-head',
-        expiresAt,
-        invitePhone,
-        customMessage
-      } = req.body;
-
-      // Create the challenge
-      const challengeData = {
-        uuid: require('crypto').randomUUID(),
-        createdBy: userId,
-        eventId: eventId || null,
-        eventName: eventName || 'Test Event',
-        amount: amount || 50,
-        pick: pick || 'Test Pick',
-        odds: odds || -110,
-        isVirtual: isVirtual,
-        type: type,
-        expiresAt: expiresAt ? new Date(expiresAt) : new Date(Date.now() + 24 * 60 * 60 * 1000),
-        customMessage: customMessage || null
-      };
-
-      const challenge = await storage.createBettingChallenge(challengeData);
-      
-      // Send SMS notification if phone provided
-      if (invitePhone) {
-        const { smsService } = await import('./services/smsService');
-        await smsService.sendChallengeInvitation(
-          invitePhone,
-          challengeData.eventName,
-          challengeData.amount,
-          challenge.uuid,
-          challengeData.isVirtual
-        );
-      }
-
-      res.json({ 
-        success: true, 
-        challenge,
-        message: invitePhone ? 'Challenge created and SMS sent!' : 'Challenge created successfully!' 
-      });
-    } catch (error) {
-      console.error("Error creating test challenge:", error);
-      res.status(500).json({ message: "Failed to create test challenge" });
     }
   });
 
@@ -7086,104 +6965,6 @@ Join us: WeParlay.io 🎯
     } catch (error) {
       console.error('Error fetching active bets:', error);
       res.status(500).json({ error: 'Failed to fetch active bets' });
-    }
-  });
-
-  // Test Twilio SMS functionality
-  app.post('/api/notifications/test-sms', async (req, res) => {
-    try {
-      const { phone, type = 'test' } = req.body;
-      
-      if (!phone) {
-        return res.status(400).json({ success: false, message: 'Phone number is required' });
-      }
-
-      const { sendSMS } = await import('./services/smsService');
-      const testMessage = 'Test SMS from WeParlay - Your Twilio integration is working correctly!';
-      
-      const success = await sendSMS({
-        to: phone,
-        message: testMessage,
-        type: type as any
-      });
-
-      if (success) {
-        res.json({ 
-          success: true, 
-          message: 'SMS sent successfully! Check your phone.'
-        });
-      } else {
-        res.status(500).json({ 
-          success: false, 
-          message: 'Failed to send SMS. Check Twilio credentials.'
-        });
-      }
-    } catch (error: any) {
-      console.error('SMS test error:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: `SMS test failed: ${error.message}`
-      });
-    }
-  });
-
-  // TheTVApp.tv Global Streaming API Routes
-  app.get('/api/streaming/live/sports', async (req, res) => {
-    try {
-      const streams = await theTVAppService.getLiveSportsStreams();
-      res.json({ success: true, streams });
-    } catch (error: any) {
-      console.error('Error fetching live sports streams:', error);
-      res.status(500).json({ success: false, message: error.message });
-    }
-  });
-
-  app.get('/api/streaming/live/esports', async (req, res) => {
-    try {
-      const streams = await theTVAppService.getLiveEsportsStreams();
-      res.json({ success: true, streams });
-    } catch (error: any) {
-      console.error('Error fetching live esports streams:', error);
-      res.status(500).json({ success: false, message: error.message });
-    }
-  });
-
-  app.get('/api/streaming/sport/:sportType', async (req, res) => {
-    try {
-      const { sportType } = req.params;
-      const streams = await theTVAppService.getStreamsBySport(sportType);
-      res.json({ success: true, streams });
-    } catch (error: any) {
-      console.error(`Error fetching ${sportType} streams:`, error);
-      res.status(500).json({ success: false, message: error.message });
-    }
-  });
-
-  app.get('/api/streaming/details/:eventId', async (req, res) => {
-    try {
-      const { eventId } = req.params;
-      const stream = await theTVAppService.getStreamDetails(eventId);
-      if (!stream) {
-        return res.status(404).json({ success: false, message: 'Stream not found' });
-      }
-      res.json({ success: true, stream });
-    } catch (error: any) {
-      console.error('Error fetching stream details:', error);
-      res.status(500).json({ success: false, message: error.message });
-    }
-  });
-
-  app.get('/api/streaming/search', async (req, res) => {
-    try {
-      const query = req.query.q as string;
-      if (!query) {
-        return res.status(400).json({ success: false, message: 'Search query required' });
-      }
-      const streams = await theTVAppService.searchStreams(query);
-      res.json({ success: true, streams });
-    } catch (error: any) {
-      console.error('Error searching streams:', error);
-      res.status(500).json({ success: false, message: error.message });
     }
   });
 
