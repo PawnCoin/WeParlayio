@@ -43,11 +43,12 @@ export class TVApp2Service {
   private baseUrl: string;
   
   constructor() {
-    this.tvapp2Host = process.env.TVAPP2_HOST || '127.0.0.1';
-    this.tvapp2Port = process.env.TVAPP2_PORT || '4124';
-    this.baseUrl = `http://${this.tvapp2Host}:${this.tvapp2Port}`;
+    // Always use thetvapp.tv for authentic IPTV streaming
+    this.tvapp2Host = 'thetvapp.tv';
+    this.tvapp2Port = '443';
+    this.baseUrl = `https://${this.tvapp2Host}`;
     
-    console.log(`TVApp2 configured: ${this.baseUrl}`);
+    console.log(`TheTVApp configured: ${this.baseUrl}`);
   }
 
   /**
@@ -55,31 +56,23 @@ export class TVApp2Service {
    */
   async getLiveSportsStreams(): Promise<SportStream[]> {
     try {
-      // Check TVApp2 service health first
-      const healthResponse = await fetch(`${this.baseUrl}/api/health`, {
+      // Connect to thetvapp.tv M3U playlist for authentic sports streams
+      const m3uResponse = await fetch(`${this.baseUrl}/get.php?username=${process.env.THETVAPP_USERNAME}&password=${process.env.THETVAPP_PASSWORD}&type=m3u_plus&output=ts`, {
         method: 'GET',
-        timeout: 5000
-      });
-
-      if (!healthResponse.ok) {
-        throw new Error(`TVApp2 health check failed: ${healthResponse.status}`);
-      }
-
-      // Get M3U playlist from TVApp2
-      const m3uResponse = await fetch(`${this.baseUrl}/m3u`, {
-        method: 'GET',
-        timeout: 10000
+        headers: {
+          'User-Agent': 'WeParlay-Platform/1.0'
+        }
       });
 
       if (!m3uResponse.ok) {
-        throw new Error(`TVApp2 M3U fetch failed: ${m3uResponse.status}`);
+        throw new Error(`TheTVApp M3U fetch failed: ${m3uResponse.status}`);
       }
 
       const m3uContent = await m3uResponse.text();
       return this.parseM3UContent(m3uContent);
     } catch (error) {
-      console.error('TVApp2 connection error:', error);
-      throw new Error('Authentic streaming service unavailable. Please configure TVApp2 connection details.');
+      console.error('TheTVApp connection error:', error);
+      throw new Error('Authentic streaming service unavailable. Please configure TheTVApp subscription credentials.');
     }
   }
 
