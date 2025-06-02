@@ -24,7 +24,12 @@ export class YahooOAuthService {
     this.clientSecret = process.env.YAHOO_CLIENT_SECRET || '';
     const domain = process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000';
     this.redirectUri = `https://${domain}/api/yahoo/callback`;
-    console.log('Yahoo OAuth configured with redirect URI:', this.redirectUri);
+    
+    if (!this.clientId || !this.clientSecret) {
+      console.error('Yahoo OAuth credentials missing - authentication will fail');
+    } else {
+      console.log('Yahoo OAuth configured with redirect URI:', this.redirectUri);
+    }
   }
 
   // Generate Yahoo OAuth URL
@@ -43,6 +48,10 @@ export class YahooOAuthService {
 
   // Exchange authorization code for tokens
   async exchangeCodeForTokens(code: string): Promise<YahooTokens> {
+    if (!this.clientId || !this.clientSecret) {
+      throw new Error('Yahoo OAuth credentials are missing. Please provide YAHOO_CLIENT_ID and YAHOO_CLIENT_SECRET.');
+    }
+
     const tokenUrl = 'https://api.login.yahoo.com/oauth2/get_token';
     
     const params = new URLSearchParams({

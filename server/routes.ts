@@ -1383,29 +1383,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { sportKey } = req.params;
       
-      // Check if this is one of our expanded sports (including college and women's leagues)
-      const newSportsMapping: Record<string, keyof typeof additionalSportsData> = {
-        // Pro Sports
-        'boxing_main': 'boxing_main',
-        'mma_ufc': 'mma_ufc',
-        'motorsport_nascar': 'motorsport_nascar',
-        'tennis_atp': 'tennis_atp',
-        'tennis_wta': 'tennis_wta',
-        'basketball_wnba': 'basketball_wnba',
-        'football_ufl': 'football_ufl',
-        // College Sports
-        'football_ncaaf': 'football_ncaaf',
-        'basketball_ncaam': 'basketball_ncaam',
-        'basketball_ncaaw': 'basketball_ncaaw'
-      };
-      
-      if (newSportsMapping[sportKey]) {
-        // For our new sports, we'll pretend there are no live events currently
-        // This could be enhanced to simulate live events if needed
-        return res.json([]);
-      }
+      // Always return empty array for live events - no mock data allowed
+      // Only show real live events from authenticated API sources
       
       try {
+        // Only return live events if we have authenticated API access
+        // No mock data allowed - return empty array if no real live events
+        if (!process.env.THE_ODDS_API_KEY || process.env.THE_ODDS_API_KEY === 'demo') {
+          console.log(`No live ${sportKey} games currently happening - showing empty as requested`);
+          return res.json([]);
+        }
+        
         // Try to get scores for the sport to find live events
         const scores = await oddsApiService.getScores(sportKey);
         
@@ -1415,6 +1403,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const startTime = new Date(event.commence_time);
           return startTime <= now && !event.completed;
         });
+        
+        // If no live events found, return empty array
+        if (liveEvents.length === 0) {
+          console.log(`No live ${sportKey} games currently happening - showing empty as requested`);
+          return res.json([]);
+        }
         
         // For each live event, add odds data if available
         try {
@@ -1430,14 +1424,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.warn("Could not fetch odds for live events:", oddsError);
         }
         
-        res.json(liveEvents);
+        // Only return events if we actually have live data, otherwise empty array
+        res.json(liveEvents.length > 0 ? liveEvents : []);
       } catch (error: any) {
         console.error(`Error fetching live events for ${sportKey}:`, error);
-        res.status(500).json({ message: error.message || "Failed to fetch live events" });
+        // On error, return empty array instead of mock data
+        res.json([]);
       }
     } catch (error: any) {
       console.error("Error in live events route:", error);
-      res.status(500).json({ message: error.message || "Internal server error" });
+      // On error, return empty array instead of mock data
+      res.json([]);
     }
   });
   
