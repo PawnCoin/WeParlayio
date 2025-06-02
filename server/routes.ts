@@ -3087,12 +3087,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create real live events data for selected sports
       const liveEvents = [
         {
-          id: "live-nfl-1",
+          id: 1,
           sport_key: "football_nfl",
           sport_title: "NFL",
-          commence_time: new Date().toISOString(),
+          sportId: 1,
+          homeTeamId: 1,
+          awayTeamId: 2,
           home_team: "Kansas City Chiefs",
           away_team: "Buffalo Bills",
+          homeTeam: "Kansas City Chiefs",
+          awayTeam: "Buffalo Bills",
           status: "in_play",
           time_remaining: "8:24",
           period: 3,
@@ -3100,6 +3104,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             home: 21,
             away: 17
           },
+          startTime: new Date().toISOString(),
+          commence_time: new Date().toISOString(),
           bookmakers: [
             {
               key: "draftkings",
@@ -3117,12 +3123,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ]
         },
         {
-          id: "live-nba-1", 
+          id: 2,
           sport_key: "basketball_nba",
           sport_title: "NBA",
-          commence_time: new Date().toISOString(),
+          sportId: 2,
+          homeTeamId: 3,
+          awayTeamId: 4,
           home_team: "Los Angeles Lakers",
           away_team: "Boston Celtics",
+          homeTeam: "Los Angeles Lakers",
+          awayTeam: "Boston Celtics",
           status: "in_play",
           time_remaining: "5:32",
           period: 2,
@@ -3130,6 +3140,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             home: 56,
             away: 62
           },
+          startTime: new Date().toISOString(),
+          commence_time: new Date().toISOString(),
           bookmakers: [
             {
               key: "fanduel",

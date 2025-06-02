@@ -373,7 +373,7 @@ const BettingDashboard: React.FC = () => {
                                   {getSportName(sportKey)}
                                 </Badge>
                                 <h3 className="text-lg font-semibold">
-                                  {getTeamName(event.awayTeamId)} @ {getTeamName(event.homeTeamId)}
+                                  {getTeamName(event, false)} @ {getTeamName(event, true)}
                                 </h3>
                                 <div className="text-sm text-muted-foreground">
                                   {event.status} • {event.period} • {event.timeRemaining}
@@ -396,28 +396,28 @@ const BettingDashboard: React.FC = () => {
                                       sportKey={sportKey}
                                       betType="Money Line"
                                       homeTeam={{
-                                        name: getTeamName(event.homeTeamId),
+                                        name: getTeamName(event, true),
                                         record: "42-18",
                                         currentForm: "W,W,L,W,W",
                                         recentPerformance: 8
                                       }}
                                       awayTeam={{
-                                        name: getTeamName(event.awayTeamId),
+                                        name: getTeamName(event, false),
                                         record: "36-24",
                                         currentForm: "L,W,W,L,W",
                                         recentPerformance: 6
                                       }}
                                       odds={-110}
                                       matchTime="Live Now"
-                                      selection={getTeamName(event.homeTeamId)}
+                                      selection={getTeamName(event, true)}
                                     >
                                       <Button 
                                         variant="outline" 
                                         size="sm" 
                                         className="w-full"
-                                        onClick={() => handleAddBet(event, 'moneyline', getTeamName(event.homeTeamId), -110)}
+                                        onClick={() => handleAddBet(event, 'moneyline', getTeamName(event, true), -110)}
                                       >
-                                        {getTeamName(event.homeTeamId).slice(0, 3)} -110
+                                        {getTeamName(event, true).slice(0, 3)} -110
                                       </Button>
                                     </EnhancedBetTooltip>
                                     
@@ -426,28 +426,28 @@ const BettingDashboard: React.FC = () => {
                                       sportKey={sportKey}
                                       betType="Money Line"
                                       homeTeam={{
-                                        name: getTeamName(event.homeTeamId),
+                                        name: getTeamName(event, true),
                                         record: "42-18",
                                         currentForm: "W,W,L,W,W",
                                         recentPerformance: 8
                                       }}
                                       awayTeam={{
-                                        name: getTeamName(event.awayTeamId),
+                                        name: getTeamName(event, false),
                                         record: "36-24",
                                         currentForm: "L,W,W,L,W",
                                         recentPerformance: 6
                                       }}
                                       odds={120}
                                       matchTime="Live Now"
-                                      selection={getTeamName(event.awayTeamId)}
+                                      selection={getTeamName(event, false)}
                                     >
                                       <Button 
                                         variant="outline" 
                                         size="sm" 
                                         className="w-full"
-                                        onClick={() => handleAddBet(event, 'moneyline', getTeamName(event.awayTeamId), +120)}
+                                        onClick={() => handleAddBet(event, 'moneyline', getTeamName(event, false), +120)}
                                       >
-                                        {getTeamName(event.awayTeamId).slice(0, 3)} +120
+                                        {getTeamName(event, false).slice(0, 3)} +120
                                       </Button>
                                     </EnhancedBetTooltip>
                                   </div>
@@ -463,13 +463,13 @@ const BettingDashboard: React.FC = () => {
                                       sportKey={sportKey}
                                       betType="Spread"
                                       homeTeam={{
-                                        name: getTeamName(event.homeTeamId),
+                                        name: getTeamName(event, true),
                                         record: "42-18",
                                         currentForm: "W,W,L,W,W",
                                         recentPerformance: 8
                                       }}
                                       awayTeam={{
-                                        name: getTeamName(event.awayTeamId),
+                                        name: getTeamName(event, false),
                                         record: "36-24",
                                         currentForm: "L,W,W,L,W",
                                         recentPerformance: 6
@@ -477,15 +477,15 @@ const BettingDashboard: React.FC = () => {
                                       odds={-110}
                                       point={-5.5}
                                       matchTime="Live Now"
-                                      selection={getTeamName(event.homeTeamId)}
+                                      selection={getTeamName(event, true)}
                                     >
                                       <Button 
                                         variant="outline" 
                                         size="sm" 
                                         className="w-full"
-                                        onClick={() => handleAddBet(event, 'spread', getTeamName(event.homeTeamId), -110, -5.5)}
+                                        onClick={() => handleAddBet(event, 'spread', getTeamName(event, true), -110, -5.5)}
                                       >
-                                        {getTeamName(event.homeTeamId).slice(0, 3)} -5.5
+                                        {getTeamName(event, true).slice(0, 3)} -5.5
                                       </Button>
                                     </EnhancedBetTooltip>
                                     
@@ -494,13 +494,13 @@ const BettingDashboard: React.FC = () => {
                                       sportKey={sportKey}
                                       betType="Spread"
                                       homeTeam={{
-                                        name: getTeamName(event.homeTeamId),
+                                        name: getTeamName(event, true),
                                         record: "42-18",
                                         currentForm: "W,W,L,W,W",
                                         recentPerformance: 8
                                       }}
                                       awayTeam={{
-                                        name: getTeamName(event.awayTeamId),
+                                        name: getTeamName(event, false),
                                         record: "36-24",
                                         currentForm: "L,W,W,L,W",
                                         recentPerformance: 6
@@ -508,15 +508,15 @@ const BettingDashboard: React.FC = () => {
                                       odds={-110}
                                       point={5.5}
                                       matchTime="Live Now"
-                                      selection={getTeamName(event.awayTeamId)}
+                                      selection={getTeamName(event, false)}
                                     >
                                       <Button 
                                         variant="outline" 
                                         size="sm" 
                                         className="w-full"
-                                        onClick={() => handleAddBet(event, 'spread', getTeamName(event.awayTeamId), -110, +5.5)}
+                                        onClick={() => handleAddBet(event, 'spread', getTeamName(event, false), -110, +5.5)}
                                       >
-                                        {getTeamName(event.awayTeamId).slice(0, 3)} +5.5
+                                        {getTeamName(event, false).slice(0, 3)} +5.5
                                       </Button>
                                     </EnhancedBetTooltip>
                                   </div>
@@ -532,13 +532,13 @@ const BettingDashboard: React.FC = () => {
                                       sportKey={sportKey}
                                       betType="Total"
                                       homeTeam={{
-                                        name: getTeamName(event.homeTeamId),
+                                        name: getTeamName(event, true),
                                         record: "42-18",
                                         currentForm: "W,W,L,W,W",
                                         recentPerformance: 8
                                       }}
                                       awayTeam={{
-                                        name: getTeamName(event.awayTeamId),
+                                        name: getTeamName(event, false),
                                         record: "36-24",
                                         currentForm: "L,W,W,L,W",
                                         recentPerformance: 6
@@ -563,13 +563,13 @@ const BettingDashboard: React.FC = () => {
                                       sportKey={sportKey}
                                       betType="Total"
                                       homeTeam={{
-                                        name: getTeamName(event.homeTeamId),
+                                        name: getTeamName(event, true),
                                         record: "42-18",
                                         currentForm: "W,W,L,W,W",
                                         recentPerformance: 8
                                       }}
                                       awayTeam={{
-                                        name: getTeamName(event.awayTeamId),
+                                        name: getTeamName(event, false),
                                         record: "36-24",
                                         currentForm: "L,W,W,L,W",
                                         recentPerformance: 6
@@ -607,17 +607,17 @@ const BettingDashboard: React.FC = () => {
                                           sportKey={sportKey}
                                           betType="Player Prop"
                                           homeTeam={{
-                                            name: getTeamName(event.homeTeamId),
+                                            name: getTeamName(event, true),
                                             record: "42-18"
                                           }}
                                           awayTeam={{
-                                            name: getTeamName(event.awayTeamId),
+                                            name: getTeamName(event, false),
                                             record: "36-24"
                                           }}
                                           odds={-115}
                                           point={24.5}
                                           matchTime="Live Now"
-                                          selection={`${getTeamName(event.homeTeamId).split(' ').pop()} Points`}
+                                          selection={`${getTeamName(event, true).split(' ').pop()} Points`}
                                         >
                                           <Button 
                                             variant="outline" 
@@ -626,12 +626,12 @@ const BettingDashboard: React.FC = () => {
                                             onClick={() => handleAddBet(
                                               event, 
                                               'player-prop', 
-                                              `${getTeamName(event.homeTeamId).split(' ').pop()} Points Over 24.5`, 
+                                              `${getTeamName(event, true).split(' ').pop()} Points Over 24.5`, 
                                               -115,
                                               24.5
                                             )}
                                           >
-                                            {getTeamName(event.homeTeamId).split(' ').pop()} Pts O 24.5 (-115)
+                                            {getTeamName(event, true).split(' ').pop()} Pts O 24.5 (-115)
                                           </Button>
                                         </EnhancedBetTooltip>
                                         
@@ -640,17 +640,17 @@ const BettingDashboard: React.FC = () => {
                                           sportKey={sportKey}
                                           betType="Player Prop"
                                           homeTeam={{
-                                            name: getTeamName(event.homeTeamId),
+                                            name: getTeamName(event, true),
                                             record: "42-18"
                                           }}
                                           awayTeam={{
-                                            name: getTeamName(event.awayTeamId),
+                                            name: getTeamName(event, false),
                                             record: "36-24"
                                           }}
                                           odds={+105}
                                           point={7.5}
                                           matchTime="Live Now"
-                                          selection={`${getTeamName(event.awayTeamId).split(' ').pop()} Rebounds`}
+                                          selection={`${getTeamName(event, false).split(' ').pop()} Rebounds`}
                                         >
                                           <Button 
                                             variant="outline" 
@@ -659,12 +659,12 @@ const BettingDashboard: React.FC = () => {
                                             onClick={() => handleAddBet(
                                               event, 
                                               'player-prop', 
-                                              `${getTeamName(event.awayTeamId).split(' ').pop()} Rebounds Over 7.5`, 
+                                              `${getTeamName(event, false).split(' ').pop()} Rebounds Over 7.5`, 
                                               +105,
                                               7.5
                                             )}
                                           >
-                                            {getTeamName(event.awayTeamId).split(' ').pop()} Reb O 7.5 (+105)
+                                            {getTeamName(event, false).split(' ').pop()} Reb O 7.5 (+105)
                                           </Button>
                                         </EnhancedBetTooltip>
                                       </div>
@@ -680,17 +680,17 @@ const BettingDashboard: React.FC = () => {
                                           sportKey={sportKey}
                                           betType="Team Prop"
                                           homeTeam={{
-                                            name: getTeamName(event.homeTeamId),
+                                            name: getTeamName(event, true),
                                             record: "42-18"
                                           }}
                                           awayTeam={{
-                                            name: getTeamName(event.awayTeamId),
+                                            name: getTeamName(event, false),
                                             record: "36-24"
                                           }}
                                           odds={-110}
                                           point={110.5}
                                           matchTime="Live Now"
-                                          selection={`${getTeamName(event.homeTeamId)} Team Total`}
+                                          selection={`${getTeamName(event, true)} Team Total`}
                                         >
                                           <Button 
                                             variant="outline" 
@@ -699,12 +699,12 @@ const BettingDashboard: React.FC = () => {
                                             onClick={() => handleAddBet(
                                               event, 
                                               'team-prop', 
-                                              `${getTeamName(event.homeTeamId)} Team Total Over 110.5`, 
+                                              `${getTeamName(event, true)} Team Total Over 110.5`, 
                                               -110,
                                               110.5
                                             )}
                                           >
-                                            {getTeamName(event.homeTeamId)} Total O 110.5 (-110)
+                                            {getTeamName(event, true)} Total O 110.5 (-110)
                                           </Button>
                                         </EnhancedBetTooltip>
                                         
@@ -713,17 +713,17 @@ const BettingDashboard: React.FC = () => {
                                           sportKey={sportKey}
                                           betType="Team Prop"
                                           homeTeam={{
-                                            name: getTeamName(event.homeTeamId),
+                                            name: getTeamName(event, true),
                                             record: "42-18"
                                           }}
                                           awayTeam={{
-                                            name: getTeamName(event.awayTeamId),
+                                            name: getTeamName(event, false),
                                             record: "36-24"
                                           }}
                                           odds={+100}
                                           point={55.5}
                                           matchTime="Live Now"
-                                          selection={`${getTeamName(event.awayTeamId)} 1H Total`}
+                                          selection={`${getTeamName(event, false)} 1H Total`}
                                         >
                                           <Button 
                                             variant="outline" 
@@ -732,12 +732,12 @@ const BettingDashboard: React.FC = () => {
                                             onClick={() => handleAddBet(
                                               event, 
                                               'team-prop', 
-                                              `${getTeamName(event.awayTeamId)} 1st Half Total Under 55.5`, 
+                                              `${getTeamName(event, false)} 1st Half Total Under 55.5`, 
                                               +100,
                                               55.5
                                             )}
                                           >
-                                            {getTeamName(event.awayTeamId)} 1H U 55.5 (+100)
+                                            {getTeamName(event, false)} 1H U 55.5 (+100)
                                           </Button>
                                         </EnhancedBetTooltip>
                                       </div>
@@ -759,11 +759,11 @@ const BettingDashboard: React.FC = () => {
                                       sportKey={sportKey}
                                       betType="Parlay"
                                       homeTeam={{
-                                        name: getTeamName(event.homeTeamId),
+                                        name: getTeamName(event, true),
                                         record: "42-18"
                                       }}
                                       awayTeam={{
-                                        name: getTeamName(event.awayTeamId),
+                                        name: getTeamName(event, false),
                                         record: "36-24"
                                       }}
                                       odds={+575}
@@ -777,11 +777,11 @@ const BettingDashboard: React.FC = () => {
                                         onClick={() => handleAddBet(
                                           event, 
                                           'parlay', 
-                                          `SGP: ${getTeamName(event.homeTeamId)} -5.5 & O 220.5 & ${getTeamName(event.homeTeamId).split(' ').pop()} O 24.5 Pts`, 
+                                          `SGP: ${getTeamName(event, true)} -5.5 & O 220.5 & ${getTeamName(event, true).split(' ').pop()} O 24.5 Pts`, 
                                           +575
                                         )}
                                       >
-                                        SGP: {getTeamName(event.homeTeamId)}-5.5, O220.5 (+575)
+                                        SGP: {getTeamName(event, true)}-5.5, O220.5 (+575)
                                       </Button>
                                     </EnhancedBetTooltip>
                                     
@@ -790,11 +790,11 @@ const BettingDashboard: React.FC = () => {
                                       sportKey={sportKey}
                                       betType="Parlay"
                                       homeTeam={{
-                                        name: getTeamName(event.homeTeamId),
+                                        name: getTeamName(event, true),
                                         record: "42-18"
                                       }}
                                       awayTeam={{
-                                        name: getTeamName(event.awayTeamId),
+                                        name: getTeamName(event, false),
                                         record: "36-24"
                                       }}
                                       odds={+650}
@@ -808,11 +808,11 @@ const BettingDashboard: React.FC = () => {
                                         onClick={() => handleAddBet(
                                           event, 
                                           'parlay', 
-                                          `SGP: ${getTeamName(event.awayTeamId)} +5.5 & U 220.5 & ${getTeamName(event.awayTeamId).split(' ').pop()} O 21.5 Pts`, 
+                                          `SGP: ${getTeamName(event, false)} +5.5 & U 220.5 & ${getTeamName(event, false).split(' ').pop()} O 21.5 Pts`, 
                                           +650
                                         )}
                                       >
-                                        SGP: {getTeamName(event.awayTeamId)}+5.5, U220.5 (+650)
+                                        SGP: {getTeamName(event, false)}+5.5, U220.5 (+650)
                                       </Button>
                                     </EnhancedBetTooltip>
                                   </div>
@@ -860,7 +860,7 @@ const BettingDashboard: React.FC = () => {
                                   {getSportName(sportKey)}
                                 </Badge>
                                 <h3 className="text-lg font-semibold">
-                                  {getTeamName(event.awayTeamId)} @ {getTeamName(event.homeTeamId)}
+                                  {getTeamName(event, false)} @ {getTeamName(event, true)}
                                 </h3>
                                 <div className="text-sm text-muted-foreground">
                                   {formatGameDate(event.startTime)} • {formatGameTime(event.startTime)}
@@ -881,28 +881,28 @@ const BettingDashboard: React.FC = () => {
                                       sportKey={sportKey}
                                       betType="Money Line"
                                       homeTeam={{
-                                        name: getTeamName(event.homeTeamId),
+                                        name: getTeamName(event, true),
                                         record: "42-18",
                                         currentForm: "W,W,L,W,W",
                                         recentPerformance: 8
                                       }}
                                       awayTeam={{
-                                        name: getTeamName(event.awayTeamId),
+                                        name: getTeamName(event, false),
                                         record: "36-24",
                                         currentForm: "L,W,W,L,W",
                                         recentPerformance: 6
                                       }}
                                       odds={-125}
                                       matchTime={formatGameTime(event.startTime)}
-                                      selection={getTeamName(event.homeTeamId)}
+                                      selection={getTeamName(event, true)}
                                     >
                                       <Button 
                                         variant="outline" 
                                         size="sm" 
                                         className="w-full"
-                                        onClick={() => handleAddBet(event, 'moneyline', getTeamName(event.homeTeamId), -125)}
+                                        onClick={() => handleAddBet(event, 'moneyline', getTeamName(event, true), -125)}
                                       >
-                                        {getTeamName(event.homeTeamId).slice(0, 3)} -125
+                                        {getTeamName(event, true).slice(0, 3)} -125
                                       </Button>
                                     </EnhancedBetTooltip>
                                     
@@ -911,28 +911,28 @@ const BettingDashboard: React.FC = () => {
                                       sportKey={sportKey}
                                       betType="Money Line"
                                       homeTeam={{
-                                        name: getTeamName(event.homeTeamId),
+                                        name: getTeamName(event, true),
                                         record: "42-18",
                                         currentForm: "W,W,L,W,W",
                                         recentPerformance: 8
                                       }}
                                       awayTeam={{
-                                        name: getTeamName(event.awayTeamId),
+                                        name: getTeamName(event, false),
                                         record: "36-24",
                                         currentForm: "L,W,W,L,W",
                                         recentPerformance: 6
                                       }}
                                       odds={+105}
                                       matchTime={formatGameTime(event.startTime)}
-                                      selection={getTeamName(event.awayTeamId)}
+                                      selection={getTeamName(event, false)}
                                     >
                                       <Button 
                                         variant="outline" 
                                         size="sm" 
                                         className="w-full"
-                                        onClick={() => handleAddBet(event, 'moneyline', getTeamName(event.awayTeamId), +105)}
+                                        onClick={() => handleAddBet(event, 'moneyline', getTeamName(event, false), +105)}
                                       >
-                                        {getTeamName(event.awayTeamId).slice(0, 3)} +105
+                                        {getTeamName(event, false).slice(0, 3)} +105
                                       </Button>
                                     </EnhancedBetTooltip>
                                   </div>
@@ -948,13 +948,13 @@ const BettingDashboard: React.FC = () => {
                                       sportKey={sportKey}
                                       betType="Spread"
                                       homeTeam={{
-                                        name: getTeamName(event.homeTeamId),
+                                        name: getTeamName(event, true),
                                         record: "42-18",
                                         currentForm: "W,W,L,W,W",
                                         recentPerformance: 8
                                       }}
                                       awayTeam={{
-                                        name: getTeamName(event.awayTeamId),
+                                        name: getTeamName(event, false),
                                         record: "36-24",
                                         currentForm: "L,W,W,L,W",
                                         recentPerformance: 6
@@ -962,15 +962,15 @@ const BettingDashboard: React.FC = () => {
                                       odds={-110}
                                       point={-4}
                                       matchTime={formatGameTime(event.startTime)}
-                                      selection={getTeamName(event.homeTeamId)}
+                                      selection={getTeamName(event, true)}
                                     >
                                       <Button 
                                         variant="outline" 
                                         size="sm" 
                                         className="w-full"
-                                        onClick={() => handleAddBet(event, 'spread', getTeamName(event.homeTeamId), -110, -4)}
+                                        onClick={() => handleAddBet(event, 'spread', getTeamName(event, true), -110, -4)}
                                       >
-                                        {getTeamName(event.homeTeamId).slice(0, 3)} -4
+                                        {getTeamName(event, true).slice(0, 3)} -4
                                       </Button>
                                     </EnhancedBetTooltip>
                                     
@@ -979,13 +979,13 @@ const BettingDashboard: React.FC = () => {
                                       sportKey={sportKey}
                                       betType="Spread"
                                       homeTeam={{
-                                        name: getTeamName(event.homeTeamId),
+                                        name: getTeamName(event, true),
                                         record: "42-18",
                                         currentForm: "W,W,L,W,W",
                                         recentPerformance: 8
                                       }}
                                       awayTeam={{
-                                        name: getTeamName(event.awayTeamId),
+                                        name: getTeamName(event, false),
                                         record: "36-24",
                                         currentForm: "L,W,W,L,W",
                                         recentPerformance: 6
@@ -993,15 +993,15 @@ const BettingDashboard: React.FC = () => {
                                       odds={-110}
                                       point={4}
                                       matchTime={formatGameTime(event.startTime)}
-                                      selection={getTeamName(event.awayTeamId)}
+                                      selection={getTeamName(event, false)}
                                     >
                                       <Button 
                                         variant="outline" 
                                         size="sm" 
                                         className="w-full"
-                                        onClick={() => handleAddBet(event, 'spread', getTeamName(event.awayTeamId), -110, +4)}
+                                        onClick={() => handleAddBet(event, 'spread', getTeamName(event, false), -110, +4)}
                                       >
-                                        {getTeamName(event.awayTeamId).slice(0, 3)} +4
+                                        {getTeamName(event, false).slice(0, 3)} +4
                                       </Button>
                                     </EnhancedBetTooltip>
                                   </div>
@@ -1017,13 +1017,13 @@ const BettingDashboard: React.FC = () => {
                                       sportKey={sportKey}
                                       betType="Total"
                                       homeTeam={{
-                                        name: getTeamName(event.homeTeamId),
+                                        name: getTeamName(event, true),
                                         record: "42-18",
                                         currentForm: "W,W,L,W,W",
                                         recentPerformance: 8
                                       }}
                                       awayTeam={{
-                                        name: getTeamName(event.awayTeamId),
+                                        name: getTeamName(event, false),
                                         record: "36-24",
                                         currentForm: "L,W,W,L,W",
                                         recentPerformance: 6
@@ -1048,13 +1048,13 @@ const BettingDashboard: React.FC = () => {
                                       sportKey={sportKey}
                                       betType="Total"
                                       homeTeam={{
-                                        name: getTeamName(event.homeTeamId),
+                                        name: getTeamName(event, true),
                                         record: "42-18",
                                         currentForm: "W,W,L,W,W",
                                         recentPerformance: 8
                                       }}
                                       awayTeam={{
-                                        name: getTeamName(event.awayTeamId),
+                                        name: getTeamName(event, false),
                                         record: "36-24",
                                         currentForm: "L,W,W,L,W",
                                         recentPerformance: 6
@@ -1092,17 +1092,17 @@ const BettingDashboard: React.FC = () => {
                                           sportKey={sportKey}
                                           betType="Player Prop"
                                           homeTeam={{
-                                            name: getTeamName(event.homeTeamId),
+                                            name: getTeamName(event, true),
                                             record: "42-18"
                                           }}
                                           awayTeam={{
-                                            name: getTeamName(event.awayTeamId),
+                                            name: getTeamName(event, false),
                                             record: "36-24"
                                           }}
                                           odds={-110}
                                           point={26.5}
                                           matchTime={formatGameTime(event.startTime)}
-                                          selection={`${getTeamName(event.homeTeamId).split(' ').pop()} Points`}
+                                          selection={`${getTeamName(event, true).split(' ').pop()} Points`}
                                         >
                                           <Button 
                                             variant="outline" 
@@ -1111,12 +1111,12 @@ const BettingDashboard: React.FC = () => {
                                             onClick={() => handleAddBet(
                                               event, 
                                               'player-prop', 
-                                              `${getTeamName(event.homeTeamId).split(' ').pop()} Points Over 26.5`, 
+                                              `${getTeamName(event, true).split(' ').pop()} Points Over 26.5`, 
                                               -110,
                                               26.5
                                             )}
                                           >
-                                            {getTeamName(event.homeTeamId).split(' ').pop()} Pts O 26.5 (-110)
+                                            {getTeamName(event, true).split(' ').pop()} Pts O 26.5 (-110)
                                           </Button>
                                         </EnhancedBetTooltip>
                                         
@@ -1125,17 +1125,17 @@ const BettingDashboard: React.FC = () => {
                                           sportKey={sportKey}
                                           betType="Player Prop"
                                           homeTeam={{
-                                            name: getTeamName(event.homeTeamId),
+                                            name: getTeamName(event, true),
                                             record: "42-18"
                                           }}
                                           awayTeam={{
-                                            name: getTeamName(event.awayTeamId),
+                                            name: getTeamName(event, false),
                                             record: "36-24"
                                           }}
                                           odds={+100}
                                           point={8.5}
                                           matchTime={formatGameTime(event.startTime)}
-                                          selection={`${getTeamName(event.awayTeamId).split(' ').pop()} Rebounds`}
+                                          selection={`${getTeamName(event, false).split(' ').pop()} Rebounds`}
                                         >
                                           <Button 
                                             variant="outline" 
@@ -1144,12 +1144,12 @@ const BettingDashboard: React.FC = () => {
                                             onClick={() => handleAddBet(
                                               event, 
                                               'player-prop', 
-                                              `${getTeamName(event.awayTeamId).split(' ').pop()} Rebounds Over 8.5`, 
+                                              `${getTeamName(event, false).split(' ').pop()} Rebounds Over 8.5`, 
                                               +100,
                                               8.5
                                             )}
                                           >
-                                            {getTeamName(event.awayTeamId).split(' ').pop()} Reb O 8.5 (+100)
+                                            {getTeamName(event, false).split(' ').pop()} Reb O 8.5 (+100)
                                           </Button>
                                         </EnhancedBetTooltip>
                                       </div>
@@ -1165,17 +1165,17 @@ const BettingDashboard: React.FC = () => {
                                           sportKey={sportKey}
                                           betType="Team Prop"
                                           homeTeam={{
-                                            name: getTeamName(event.homeTeamId),
+                                            name: getTeamName(event, true),
                                             record: "42-18"
                                           }}
                                           awayTeam={{
-                                            name: getTeamName(event.awayTeamId),
+                                            name: getTeamName(event, false),
                                             record: "36-24"
                                           }}
                                           odds={-110}
                                           point={115.5}
                                           matchTime={formatGameTime(event.startTime)}
-                                          selection={`${getTeamName(event.homeTeamId)} Team Total`}
+                                          selection={`${getTeamName(event, true)} Team Total`}
                                         >
                                           <Button 
                                             variant="outline" 
@@ -1184,12 +1184,12 @@ const BettingDashboard: React.FC = () => {
                                             onClick={() => handleAddBet(
                                               event, 
                                               'team-prop', 
-                                              `${getTeamName(event.homeTeamId)} Team Total Over 115.5`, 
+                                              `${getTeamName(event, true)} Team Total Over 115.5`, 
                                               -110,
                                               115.5
                                             )}
                                           >
-                                            {getTeamName(event.homeTeamId)} Total O 115.5 (-110)
+                                            {getTeamName(event, true)} Total O 115.5 (-110)
                                           </Button>
                                         </EnhancedBetTooltip>
                                         
@@ -1198,17 +1198,17 @@ const BettingDashboard: React.FC = () => {
                                           sportKey={sportKey}
                                           betType="Team Prop"
                                           homeTeam={{
-                                            name: getTeamName(event.homeTeamId),
+                                            name: getTeamName(event, true),
                                             record: "42-18"
                                           }}
                                           awayTeam={{
-                                            name: getTeamName(event.awayTeamId),
+                                            name: getTeamName(event, false),
                                             record: "36-24"
                                           }}
                                           odds={-105}
                                           point={52.5}
                                           matchTime={formatGameTime(event.startTime)}
-                                          selection={`${getTeamName(event.awayTeamId)} 1H Total`}
+                                          selection={`${getTeamName(event, false)} 1H Total`}
                                         >
                                           <Button 
                                             variant="outline" 
@@ -1217,12 +1217,12 @@ const BettingDashboard: React.FC = () => {
                                             onClick={() => handleAddBet(
                                               event, 
                                               'team-prop', 
-                                              `${getTeamName(event.awayTeamId)} 1st Half Total Under 52.5`, 
+                                              `${getTeamName(event, false)} 1st Half Total Under 52.5`, 
                                               -105,
                                               52.5
                                             )}
                                           >
-                                            {getTeamName(event.awayTeamId)} 1H U 52.5 (-105)
+                                            {getTeamName(event, false)} 1H U 52.5 (-105)
                                           </Button>
                                         </EnhancedBetTooltip>
                                       </div>
@@ -1244,11 +1244,11 @@ const BettingDashboard: React.FC = () => {
                                       sportKey={sportKey}
                                       betType="Parlay"
                                       homeTeam={{
-                                        name: getTeamName(event.homeTeamId),
+                                        name: getTeamName(event, true),
                                         record: "42-18"
                                       }}
                                       awayTeam={{
-                                        name: getTeamName(event.awayTeamId),
+                                        name: getTeamName(event, false),
                                         record: "36-24"
                                       }}
                                       odds={+600}
@@ -1262,11 +1262,11 @@ const BettingDashboard: React.FC = () => {
                                         onClick={() => handleAddBet(
                                           event, 
                                           'parlay', 
-                                          `SGP: ${getTeamName(event.homeTeamId)} -4 & O 223.5 & ${getTeamName(event.homeTeamId).split(' ').pop()} O 26.5 Pts`, 
+                                          `SGP: ${getTeamName(event, true)} -4 & O 223.5 & ${getTeamName(event, true).split(' ').pop()} O 26.5 Pts`, 
                                           +600
                                         )}
                                       >
-                                        SGP: {getTeamName(event.homeTeamId)}-4, O223.5 (+600)
+                                        SGP: {getTeamName(event, true)}-4, O223.5 (+600)
                                       </Button>
                                     </EnhancedBetTooltip>
                                     
@@ -1275,11 +1275,11 @@ const BettingDashboard: React.FC = () => {
                                       sportKey={sportKey}
                                       betType="Parlay"
                                       homeTeam={{
-                                        name: getTeamName(event.homeTeamId),
+                                        name: getTeamName(event, true),
                                         record: "42-18"
                                       }}
                                       awayTeam={{
-                                        name: getTeamName(event.awayTeamId),
+                                        name: getTeamName(event, false),
                                         record: "36-24"
                                       }}
                                       odds={+700}
@@ -1293,11 +1293,11 @@ const BettingDashboard: React.FC = () => {
                                         onClick={() => handleAddBet(
                                           event, 
                                           'parlay', 
-                                          `SGP: ${getTeamName(event.awayTeamId)} +4 & U 223.5 & ${getTeamName(event.awayTeamId).split(' ').pop()} O 22.5 Pts`, 
+                                          `SGP: ${getTeamName(event, false)} +4 & U 223.5 & ${getTeamName(event, false).split(' ').pop()} O 22.5 Pts`, 
                                           +700
                                         )}
                                       >
-                                        SGP: {getTeamName(event.awayTeamId)}+4, U223.5 (+700)
+                                        SGP: {getTeamName(event, false)}+4, U223.5 (+700)
                                       </Button>
                                     </EnhancedBetTooltip>
                                   </div>
