@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import YahooFantasyFootballDisplay from '@/components/fantasy/YahooFantasyFootballDisplay';
 import ESPNFantasyDisplay from '@/components/fantasy/ESPNFantasyDisplay';
+import YahooAuthDemo from '@/components/fantasy/YahooAuthDemo';
 import { Trophy, Target } from "lucide-react";
 
 const FantasySportsEnhanced: React.FC = () => {
@@ -40,7 +41,14 @@ const FantasySportsEnhanced: React.FC = () => {
 
         {/* Yahoo Fantasy Tab */}
         <TabsContent value="yahoo">
-          <YahooFantasyFootballDisplay />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1">
+              <YahooAuthDemo />
+            </div>
+            <div className="lg:col-span-2">
+              <YahooFantasyFootballDisplay />
+            </div>
+          </div>
         </TabsContent>
 
         {/* ESPN Fantasy Tab */}

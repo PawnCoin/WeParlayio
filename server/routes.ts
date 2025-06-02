@@ -2232,41 +2232,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Yahoo OAuth callback
-  app.get('/api/yahoo/callback', isAuthenticated, async (req, res) => {
+  app.get('/api/yahoo/callback', async (req, res) => {
     try {
-      const { code, error } = req.query;
-      const userId = req.user?.claims?.sub;
-
-      if (!userId) {
-        return res.status(401).json({ message: 'User not authenticated' });
-      }
+      const { code, error, state } = req.query;
 
       if (error) {
+        console.log('Yahoo OAuth error:', error);
         return res.redirect('/fantasy?error=yahoo_auth_cancelled');
       }
 
       if (!code) {
+        console.log('No authorization code received from Yahoo');
         return res.redirect('/fantasy?error=yahoo_auth_no_code');
       }
 
       // Exchange code for tokens
       const tokens = await yahooOAuthService.exchangeCodeForTokens(code as string);
+      console.log('Yahoo OAuth tokens received successfully');
       
       // Get user profile to verify connection
       const profile = await yahooOAuthService.getUserProfile(tokens.access_token);
+      console.log('Yahoo user profile retrieved:', profile.name);
 
-      // Store tokens in user record (using dummy method for now)
-      await storage.updateYahooIntegration(
-        userId,
-        tokens.access_token,
-        tokens.refresh_token,
-        new Date(Date.now() + tokens.expires_in * 1000)
-      );
+      // For now, store tokens in session temporarily until user logs in
+      req.session.yahooTokens = {
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+        expires_at: Date.now() + tokens.expires_in * 1000,
+        profile: profile
+      };
 
-      res.redirect('/fantasy?yahoo_connected=true');
+      res.redirect('/fantasy?yahoo_connected=true&user=' + encodeURIComponent(profile.name));
     } catch (error) {
       console.error('Error in Yahoo OAuth callback:', error);
-      res.redirect('/fantasy?error=yahoo_auth_failed');
+      res.redirect('/fantasy?error=yahoo_auth_failed&details=' + encodeURIComponent(error.message));
     }
   });
 
