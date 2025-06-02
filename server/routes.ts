@@ -7273,6 +7273,137 @@ Join us: WeParlay.io 🎯
     }
   });
 
+  // Tournament API endpoints
+  app.get('/api/tournaments', async (req, res) => {
+    try {
+      const tournaments = [
+        {
+          id: 1,
+          name: "NBA Playoffs 2024",
+          sport: "Basketball",
+          status: "active",
+          startDate: "2024-04-01",
+          endDate: "2024-06-15",
+          participants: 1245,
+          prizeMoney: 50000,
+          entryFee: 25,
+          bracketData: {}
+        },
+        {
+          id: 2,
+          name: "NCAA March Madness",
+          sport: "Basketball",
+          status: "upcoming",
+          startDate: "2024-03-15",
+          endDate: "2024-04-08",
+          participants: 2856,
+          prizeMoney: 100000,
+          entryFee: 10,
+          bracketData: {}
+        },
+        {
+          id: 3,
+          name: "Champions League Final",
+          sport: "Soccer",
+          status: "completed",
+          startDate: "2024-05-01",
+          endDate: "2024-05-25",
+          participants: 892,
+          prizeMoney: 25000,
+          entryFee: 15,
+          bracketData: {}
+        }
+      ];
+      res.json(tournaments);
+    } catch (error) {
+      console.error('Error fetching tournaments:', error);
+      res.status(500).json({ error: 'Failed to fetch tournaments' });
+    }
+  });
+
+  app.get('/api/tournaments/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const tournament = {
+        id: parseInt(id),
+        name: "NBA Playoffs 2024",
+        sport: "Basketball",
+        status: "active",
+        startDate: "2024-04-01",
+        endDate: "2024-06-15",
+        participants: 1245,
+        prizeMoney: 50000,
+        entryFee: 25,
+        bracketData: {
+          rounds: [
+            {
+              round: 1,
+              matches: [
+                { team1: "Celtics", team2: "76ers", winner: "Celtics", score: "4-2" },
+                { team1: "Bucks", team2: "Pacers", winner: "Bucks", score: "4-1" },
+                { team1: "Knicks", team2: "Cavaliers", winner: "Knicks", score: "4-3" },
+                { team1: "Magic", team2: "Heat", winner: "Heat", score: "4-2" }
+              ]
+            },
+            {
+              round: 2,
+              matches: [
+                { team1: "Celtics", team2: "Bucks", winner: "Celtics", score: "4-1" },
+                { team1: "Knicks", team2: "Heat", winner: "Knicks", score: "4-3" }
+              ]
+            }
+          ]
+        }
+      };
+      res.json(tournament);
+    } catch (error) {
+      console.error('Error fetching tournament:', error);
+      res.status(500).json({ error: 'Failed to fetch tournament' });
+    }
+  });
+
+  app.post('/api/tournaments', async (req, res) => {
+    try {
+      const { name, sportId, startDate, endDate, status, bracketData } = req.body;
+      
+      if (!name || !sportId) {
+        return res.status(400).json({ error: 'Name and sport are required' });
+      }
+
+      const newTournament = {
+        id: Math.floor(Math.random() * 10000),
+        name,
+        sportId,
+        startDate: startDate || new Date().toISOString(),
+        endDate: endDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        status: status || 'upcoming',
+        bracketData: bracketData || {},
+        participants: 0,
+        prizeMoney: 1000,
+        entryFee: 5
+      };
+
+      res.json(newTournament);
+    } catch (error) {
+      console.error('Error creating tournament:', error);
+      res.status(500).json({ error: 'Failed to create tournament' });
+    }
+  });
+
+  app.post('/api/tournaments/:id/join', async (req, res) => {
+    try {
+      const { id } = req.params;
+      res.json({ 
+        success: true, 
+        message: `Successfully joined tournament ${id}`,
+        tournamentId: id 
+      });
+    } catch (error) {
+      console.error('Error joining tournament:', error);
+      res.status(500).json({ error: 'Failed to join tournament' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
