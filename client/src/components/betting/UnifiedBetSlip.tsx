@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { useUnifiedBetSlip } from './UnifiedBetSlipManager';
+import { useBetSlip } from '@/contexts/BetSlipContext';
 import { 
   TrendingUp, 
   Trash2, 
@@ -29,8 +29,10 @@ const UnifiedBetSlip: React.FC = () => {
     betSlip, 
     removeFromBetSlip, 
     clearBetSlip, 
-    placeBet
-  } = useUnifiedBetSlip();
+    placeBet,
+    shareBetSlip,
+    saveBetSlip 
+  } = useBetSlip();
   
   const [betAmount, setBetAmount] = useState('25.00');
   const [betType, setBetType] = useState<'single' | 'parlay'>('single');
