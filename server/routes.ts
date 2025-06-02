@@ -6986,14 +6986,14 @@ Join us: WeParlay.io 🎯
 
   app.get('/api/streaming/esports', async (req, res) => {
     try {
-      const streams = await tvapp2Service.getLiveEsportsStreams();
+      const streams = await theTVAppService.searchSportsContent('esports');
       res.json({ success: true, streams });
     } catch (error) {
       console.error('Error fetching esports streams:', error);
       res.status(500).json({ 
         success: false, 
         error: 'Failed to fetch esports streams',
-        message: 'Please configure TVApp2 service (TVAPP2_HOST environment variable)'
+        message: 'Unable to connect to streaming service'
       });
     }
   });
@@ -7010,21 +7010,30 @@ Join us: WeParlay.io 🎯
       // Check user tier for streaming access
       const tier = user.tier?.toLowerCase() || 'bronze';
       
+      // Get available streams
+      const streams = await theTVAppService.getSportsStreams();
+      const stream = streams.find(s => s.eventId === eventId);
+      
+      if (!stream) {
+        return res.status(404).json({ 
+          success: false, 
+          error: 'Stream not found' 
+        });
+      }
+
       // Bronze and Silver get 30-second preview
       if (tier === 'bronze' || tier === 'silver') {
-        const streamInfo = await tvapp2Service.getStreamInfo(eventId);
         res.json({
           success: true,
           previewMode: true,
           previewDuration: 30,
           tier,
-          streamUrl: streamInfo?.sources?.[0]?.url,
+          streamUrl: stream.sources?.[0]?.url,
           upgradeRequired: true,
           message: 'Upgrade to Gold tier for unlimited streaming'
         });
       } else {
         // Gold, Platinum, Diamond get full access
-        const streamInfo = await tvapp2Service.getStreamInfo(eventId);
         const quality = tier === 'diamond' ? '4K' : tier === 'platinum' ? 'HD' : 'SD';
         
         res.json({
@@ -7032,7 +7041,7 @@ Join us: WeParlay.io 🎯
           previewMode: false,
           tier,
           quality,
-          streamUrl: streamInfo?.sources?.[0]?.url,
+          streamUrl: stream.sources?.[0]?.url,
           fullAccess: true
         });
       }
@@ -7047,49 +7056,30 @@ Join us: WeParlay.io 🎯
 
   app.get('/api/streaming/status', async (req, res) => {
     try {
-      const isConfigured = process.env.TVAPP2_HOST && process.env.TVAPP2_HOST !== 'localhost';
-      const host = process.env.TVAPP2_HOST || 'Not configured';
-      const port = process.env.TVAPP2_PORT || '5004';
-      
+      const status = await theTVAppService.getServiceStatus();
       res.json({
-        configured: isConfigured,
-        host,
-        port,
-        message: isConfigured ? 'TVApp2 service configured' : 'TVApp2 service needs configuration'
+        configured: status.available,
+        status: status.available ? 'ready' : 'unavailable',
+        message: status.message
       });
     } catch (error) {
       res.status(500).json({ error: 'Failed to check streaming status' });
     }
   });
 
-  // TVApp2 Streaming API Endpoints
-  app.get('/api/streaming/status', async (req, res) => {
-    try {
-      const configured = !!(process.env.TVAPP2_HOST && process.env.TVAPP2_PORT);
-      res.json({
-        configured,
-        status: configured ? 'ready' : 'not_configured',
-        message: configured ? 'TVApp2 streaming service ready' : 'TVApp2 environment variables not configured'
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Error checking streaming status' });
-    }
-  });
+
 
   app.get('/api/streaming/sports', async (req, res) => {
     try {
-      const configured = !!(process.env.TVAPP2_HOST && process.env.TVAPP2_PORT);
-      
-      if (!configured) {
-        return res.json([]);
-      }
-
-      // Use TVApp2 service to get live sports streams
-      const streams = await tvApp2Service.getLiveSportsStreams();
-      res.json(streams);
+      const streams = await theTVAppService.getSportsStreams();
+      res.json({ success: true, streams });
     } catch (error) {
       console.error('Error fetching sports streams:', error);
-      res.status(500).json({ message: 'Error fetching sports streams' });
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to fetch sports streams',
+        message: 'Unable to connect to streaming service'
+      });
     }
   });
 
