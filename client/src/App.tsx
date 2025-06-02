@@ -99,6 +99,10 @@ import LegalComplianceDashboard from "@/pages/LegalComplianceDashboard";
 import KYCVerification from "@/pages/KYCVerification";
 import ResponsibleGamblingCenter from "@/pages/ResponsibleGamblingCenter";
 import RiskManagementDashboard from "@/pages/RiskManagementDashboard";
+import EnhancedOddsDisplay from "@/pages/EnhancedOddsDisplay";
+import MultiSportBettingEngine from "@/pages/MultiSportBettingEngine";
+import UserAccountManagement from "@/pages/UserAccountManagement";
+import BasicBettingInterface from "@/pages/BasicBettingInterface";
 import { lazy } from 'react';
 
 function Router() {
