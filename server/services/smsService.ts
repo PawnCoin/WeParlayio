@@ -10,6 +10,7 @@ export interface SMSOptions {
   to: string;
   message: string;
   type?: 'welcome' | 'bet_confirmation' | 'win_notification' | 'security_alert';
+  mediaUrl?: string; // For MMS support
 }
 
 // SMS message templates
@@ -39,11 +40,18 @@ export const sendSMS = async (options: SMSOptions): Promise<boolean> => {
       message = getSMSTemplate(options.type, { message: options.message });
     }
 
-    const result = await client.messages.create({
+    const messageOptions: any = {
       body: message,
       from: process.env.TWILIO_PHONE_NUMBER,
       to: options.to
-    });
+    };
+
+    // Add media URL for MMS if provided
+    if (options.mediaUrl) {
+      messageOptions.mediaUrl = options.mediaUrl;
+    }
+
+    const result = await client.messages.create(messageOptions);
 
     console.log('✅ SMS sent successfully:', result.sid);
     return true;
@@ -85,3 +93,41 @@ export const sendSecurityAlertSMS = (to: string, alertData: any) => {
     message: `Security alert: ${alertData.action} detected`
   });
 };
+
+// MMS sending function for admin and VIP users
+export const sendMMS = async (to: string, message: string, mediaUrl: string): Promise<boolean> => {
+  return sendSMS({
+    to,
+    message,
+    mediaUrl
+  });
+};
+
+// Enhanced Twilio service class for advanced functionality
+export class TwilioService {
+  constructor(
+    private accountSid: string = process.env.TWILIO_ACCOUNT_SID || '',
+    private authToken: string = process.env.TWILIO_AUTH_TOKEN || ''
+  ) {}
+
+  async sendMms(phone: string, message: string, mediaUrl: string): Promise<boolean> {
+    try {
+      if (!this.accountSid || !this.authToken || !process.env.TWILIO_PHONE_NUMBER) {
+        console.error('Twilio credentials not configured');
+        return false;
+      }
+
+      const client = twilio(this.accountSid, this.authToken);
+      await client.messages.create({
+        body: message,
+        from: process.env.TWILIO_PHONE_NUMBER,
+        to: phone,
+        mediaUrl: mediaUrl
+      });
+      return true;
+    } catch (error) {
+      console.error('Failed to send MMS:', error);
+      return false;
+    }
+  }
+}
