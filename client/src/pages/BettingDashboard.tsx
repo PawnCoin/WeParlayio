@@ -59,9 +59,9 @@ const BettingDashboard: React.FC = () => {
     refetchInterval: 60000, // Refresh every minute
   });
   
-  // Fetch live events
+  // Fetch live events for selected leagues
   const { data: liveEvents, isLoading: isLoadingLive, error: liveError } = useQuery({
-    queryKey: ['/api/events/live'],
+    queryKey: ['/api/events/live', selectedLeagues.join(',')],
     refetchInterval: 10000, // Refresh every 10 seconds for live data
   });
 

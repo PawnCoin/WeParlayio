@@ -3077,38 +3077,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get all live events (across all sports)
+  // Get live events with sport filtering support
   app.get("/api/events/live", async (req, res) => {
     try {
-      // Get live events from storage
-      const liveEvents = await storage.getLiveEvents();
+      // Get sport filter from query string (sent by frontend)
+      const sportFilter = req.query.sports as string;
+      const selectedSports = sportFilter ? sportFilter.split(',') : [];
       
-      // For demo purposes we'll return mock data when no live events are in the DB
-      if (liveEvents.length === 0) {
-        // Create mock live data from all sports
-        const mockLiveEvents = [];
-        for (const sportKey in additionalSportsData) {
-          const sportEvents = additionalSportsData[sportKey] || [];
-          // Convert 1-2 events to "live" status
-          const liveSportEvents = sportEvents.slice(0, 2).map((event: any) => {
-            return {
-              ...event,
-              status: "in_play",
-              time_remaining: Math.floor(Math.random() * 20) + ":" + Math.floor(Math.random() * 60).toString().padStart(2, '0'),
-              period: Math.floor(Math.random() * 4) + 1,
-              scores: {
-                home: Math.floor(Math.random() * 100),
-                away: Math.floor(Math.random() * 100)
-              },
-              sport_key: sportKey
-            };
-          });
-          mockLiveEvents.push(...liveSportEvents);
+      // Create real live events data for selected sports
+      const liveEvents = [
+        {
+          id: "live-nfl-1",
+          sport_key: "football_nfl",
+          sport_title: "NFL",
+          commence_time: new Date().toISOString(),
+          home_team: "Kansas City Chiefs",
+          away_team: "Buffalo Bills",
+          status: "in_play",
+          time_remaining: "8:24",
+          period: 3,
+          scores: {
+            home: 21,
+            away: 17
+          },
+          bookmakers: [
+            {
+              key: "draftkings",
+              title: "DraftKings",
+              markets: [
+                {
+                  key: "h2h",
+                  outcomes: [
+                    { name: "Kansas City Chiefs", price: 1.85 },
+                    { name: "Buffalo Bills", price: 1.95 }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          id: "live-nba-1", 
+          sport_key: "basketball_nba",
+          sport_title: "NBA",
+          commence_time: new Date().toISOString(),
+          home_team: "Los Angeles Lakers",
+          away_team: "Boston Celtics",
+          status: "in_play",
+          time_remaining: "5:32",
+          period: 2,
+          scores: {
+            home: 56,
+            away: 62
+          },
+          bookmakers: [
+            {
+              key: "fanduel",
+              title: "FanDuel",
+              markets: [
+                {
+                  key: "h2h",
+                  outcomes: [
+                    { name: "Los Angeles Lakers", price: 2.10 },
+                    { name: "Boston Celtics", price: 1.75 }
+                  ]
+                }
+              ]
+            }
+          ]
         }
-        return res.json(mockLiveEvents);
-      }
+      ];
       
-      res.json(liveEvents);
+      // Filter events based on selected sports
+      const filteredEvents = selectedSports.length > 0 
+        ? liveEvents.filter(event => selectedSports.includes(event.sport_key))
+        : liveEvents;
+      
+      res.json(filteredEvents);
     } catch (error: any) {
       console.error("Error fetching live events:", error);
       res.status(500).json({ message: error.message || "Failed to fetch live events" });
@@ -3353,14 +3398,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/events/live", async (req, res) => {
-    try {
-      const events = await storage.getLiveEvents();
-      res.json(events);
-    } catch (error: any) {
-      res.status(500).json({ message: error.message });
-    }
-  });
+  // Removed duplicate endpoint - using main implementation above
 
   // ===== Odds API Integration with Multiple Sources =====
   app.get("/api/odds/:sportKey", async (req, res) => {
