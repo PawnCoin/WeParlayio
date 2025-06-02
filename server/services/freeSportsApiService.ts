@@ -429,31 +429,25 @@ export class FreeSportsApiService {
       // NO FALLBACK DATA - Only authentic API data allowed
       const authenticData: any[] = [];
 
-      console.log(`✅ FreeSportsAPI: ${fallbackData.length} events loaded successfully`);
-      return fallbackData;
+      // Try to get real data from authentic APIs only
+      try {
+        const nflOdds = await this.getNFLOdds();
+        const nbaOdds = await this.getNBAOdds();
+        const mlbOdds = await this.getMLBOdds();
+        const nhlOdds = await this.getNHLOdds();
+        const soccerOdds = await this.getSoccerOdds();
+        
+        authenticData.push(...nflOdds, ...nbaOdds, ...mlbOdds, ...nhlOdds, ...soccerOdds);
+      } catch (error) {
+        console.log('⚠️ No authentic API data available at this time');
+      }
+
+      console.log(`✅ FreeSportsAPI: ${authenticData.length} authentic events loaded`);
+      return authenticData;
     } catch (error) {
       console.error('Error in getAllSportsOdds:', error);
-      // Return minimal fallback data to prevent site crash
-      return [
-        {
-          id: 'emergency-fallback-1',
-          sport_title: 'NBA',
-          commence_time: new Date(Date.now() + 3600000).toISOString(),
-          home_team: 'Los Angeles Lakers',
-          away_team: 'Boston Celtics',
-          bookmakers: [{
-            key: 'weparlay_demo',
-            title: 'WeParlay Demo',
-            markets: [{
-              key: 'h2h',
-              outcomes: [
-                { name: 'Los Angeles Lakers', price: 1.85 },
-                { name: 'Boston Celtics', price: 1.95 }
-              ]
-            }]
-          }]
-        }
-      ];
+      // NO MOCK DATA - Return empty array if no authentic data available
+      return [];
     }
   }
 }
