@@ -118,46 +118,11 @@ const LiveSportsStreaming: React.FC = () => {
     },
     isEsport: stream.category === 'esports' || stream.sportType === 'esports'
   }));
-      timeRemaining: '02:18',
-      odds: {
-        homeWin: 1.75,
-        awayWin: 2.10
-      },
-      isEsport: false
-    },
-    {
-      id: 'esports-1',
-      title: 'T1 vs Gen.G - LCK Finals',
-      sport: 'esports',
-      league: 'LCK',
-      homeTeam: {
-        name: 'T1',
-        logo: 'https://am-a.akamaihd.net/image?resize=72:72&f=http%3A%2F%2Fstatic.lolesports.com%2Fteams%2F1592594612171_T1-01-FullonDark.png',
-        score: 2
-      },
-      awayTeam: {
-        name: 'Gen.G',
-        logo: 'https://am-a.akamaihd.net/image?resize=72:72&f=http%3A%2F%2Fstatic.lolesports.com%2Fteams%2FGenG-01-FullonDark.png',
-        score: 1
-      },
-      status: 'live',
-      viewers: 892000,
-      streamUrl: 'https://www.twitch.tv/lck',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&q=80',
-      startTime: new Date().toISOString(),
-      period: 'Game 4',
-      timeRemaining: '28:45',
-      odds: {
-        homeWin: 1.45,
-        awayWin: 2.75
-      },
-      isEsport: true
-    }
-  ];
 
-  const mockCategories: SportCategory[] = [
-    { id: 'all', name: 'All Sports', icon: '🎯', count: mockStreams.length },
-    { id: 'football', name: 'NFL', icon: '🏈', count: 1 },
+  // Sport categories based on actual stream data
+  const sportCategories: SportCategory[] = [
+    { id: 'all', name: 'All Sports', icon: '🎯', count: liveStreams.length },
+    { id: 'football', name: 'NFL', icon: '🏈', count: liveStreams.filter(s => s.sport === 'football').length },
     { id: 'basketball', name: 'NBA', icon: '🏀', count: 1 },
     { id: 'soccer', name: 'Soccer', icon: '⚽', count: 0 },
     { id: 'esports', name: 'Esports', icon: '🎮', count: 1 },
