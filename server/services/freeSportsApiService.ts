@@ -424,16 +424,10 @@ export class FreeSportsApiService {
 
   async getAllSportsOdds(): Promise<any[]> {
     try {
-      console.log('🏀 Fetching sports data from all sources...');
+      console.log('🏀 Fetching authentic sports data from real APIs only...');
       
-      // Always return fallback data to ensure the site works
-      const fallbackData = [
-        ...this.generateFallbackNBA().slice(0, 3),
-        ...this.generateFallbackNFL().slice(0, 3),
-        ...this.generateFallbackMLB().slice(0, 3),
-        ...this.generateFallbackTennis().slice(0, 2),
-        ...this.generateFallbackGolf().slice(0, 2)
-      ];
+      // NO FALLBACK DATA - Only authentic API data allowed
+      const authenticData: any[] = [];
 
       console.log(`✅ FreeSportsAPI: ${fallbackData.length} events loaded successfully`);
       return fallbackData;
