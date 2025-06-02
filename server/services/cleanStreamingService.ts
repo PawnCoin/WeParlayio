@@ -33,55 +33,20 @@ export class CleanStreamingService {
     }
 
     try {
-      const response = await fetch('https://api.grid.gg/central-data/graphql', {
-        method: 'POST',
+      const response = await fetch('https://api.pandascore.co/matches/running', {
+        method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.gridApiKey}`
-        },
-        body: JSON.stringify({
-          query: `
-            query {
-              series(first: 20) {
-                id
-                title
-                status
-                matches {
-                  id
-                  title
-                  status
-                  opponents {
-                    id
-                    name
-                    image_url
-                  }
-                  game {
-                    id
-                    name
-                  }
-                  begin_at
-                  streams {
-                    embed_url
-                    language
-                    main
-                    official
-                    raw_url
-                  }
-                }
-              }
-            }
-          `
-        })
+          'Authorization': `Bearer ${this.gridApiKey}`,
+          'Accept': 'application/json'
+        }
       });
 
       if (!response.ok) {
-        throw new Error(`GRID API error: ${response.status}`);
+        throw new Error(`PandaScore API error: ${response.status}`);
       }
 
-      const data = await response.json();
-      const series = data.data?.series || [];
-      const matches = series.flatMap((serie: any) => serie.matches || []);
-      return this.formatGRIDStreams(matches);
+      const matches = await response.json();
+      return this.formatGRIDStreams(Array.isArray(matches) ? matches : []);
     } catch (error) {
       console.error('GRID esports streaming error:', error);
       return [];
@@ -118,26 +83,26 @@ export class CleanStreamingService {
   private formatGRIDStreams(matches: any[]): any[] {
     return matches.map((match: any) => ({
       id: match.id,
-      title: match.title,
+      title: match.name || `${match.opponents?.[0]?.opponent?.name || 'Team 1'} vs ${match.opponents?.[1]?.opponent?.name || 'Team 2'}`,
       sport: 'esports',
-      league: match.game?.name || 'Esports',
+      league: match.videogame?.name || match.league?.name || 'Esports',
       homeTeam: {
-        name: match.opponents?.[0]?.name || 'Team 1',
-        logo: match.opponents?.[0]?.image_url,
-        score: 0
+        name: match.opponents?.[0]?.opponent?.name || 'Team 1',
+        logo: match.opponents?.[0]?.opponent?.image_url,
+        score: match.results?.[0]?.score || 0
       },
       awayTeam: {
-        name: match.opponents?.[1]?.name || 'Team 2',
-        logo: match.opponents?.[1]?.image_url,
-        score: 0
+        name: match.opponents?.[1]?.opponent?.name || 'Team 2',
+        logo: match.opponents?.[1]?.opponent?.image_url,
+        score: match.results?.[1]?.score || 0
       },
-      status: match.status === 'live' ? 'live' : 'scheduled',
-      viewers: 0, // GRID doesn't provide viewer counts in their API
-      streamUrl: match.streams?.[0]?.raw_url || match.streams?.[0]?.embed_url || `https://grid.gg/matches/${match.id}`,
-      thumbnailUrl: match.opponents?.[0]?.image_url || 'https://grid.gg/logo.png',
+      status: match.status === 'running' ? 'live' : 'scheduled',
+      viewers: match.live?.current_viewers || 0,
+      streamUrl: match.live?.stream_url || match.official_stream_url || `https://www.pandascore.co/matches/${match.id}`,
+      thumbnailUrl: match.opponents?.[0]?.opponent?.image_url || match.videogame?.image_url,
       startTime: match.begin_at,
-      period: match.status === 'live' ? 'Live' : 'Scheduled',
-      timeRemaining: '',
+      period: match.status === 'running' ? 'Live' : 'Scheduled',
+      timeRemaining: match.status === 'running' ? 'LIVE' : '',
       isEsport: true
     }));
   }
