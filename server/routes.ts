@@ -334,11 +334,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // app.use('/api/bookie', bookieRoutes.default);
   
   // SMS Challenge endpoint with VIP and consent validation
-  app.post('/api/challenges/sms', async (req: any, res) => {
+  app.post('/api/challenges/sms', isAuthenticated, async (req: any, res) => {
     try {
-      if (!req.isAuthenticated()) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
 
       const userId = req.user.claims.sub;
       const { friendPhone, challengeAmount, customMessage, gameData, smsConsent, marketingConsent, userTier } = req.body;
