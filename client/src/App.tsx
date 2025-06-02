@@ -96,6 +96,9 @@ import LiveSportsStreaming from "@/pages/system/LiveSportsStreaming";
 import MultiCurrencyBetting from "@/pages/MultiCurrencyBetting";
 import UpgradeTier from "@/pages/UpgradeTier";
 import LegalComplianceDashboard from "@/pages/LegalComplianceDashboard";
+import KYCVerification from "@/pages/KYCVerification";
+import ResponsibleGamblingCenter from "@/pages/ResponsibleGamblingCenter";
+import RiskManagementDashboard from "@/pages/RiskManagementDashboard";
 import { lazy } from 'react';
 
 function Router() {
@@ -202,6 +205,11 @@ function Router() {
 
       {/* Enhanced Multi-Currency Betting */}
       <Route path="/multi-currency-betting" component={MultiCurrencyBetting} />
+      
+      {/* Legal & Compliance */}
+      <Route path="/legal-compliance" component={LegalComplianceDashboard} />
+      <Route path="/kyc-verification" component={KYCVerification} />
+      <Route path="/responsible-gambling" component={ResponsibleGamblingCenter} />
 
       {/* Crypto */}
       <Route path="/crypto-info" component={CryptoInformation} />
