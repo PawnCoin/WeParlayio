@@ -19,6 +19,7 @@ import { adminRouter } from "./routes/adminRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
 import { socialMediaBotRouter } from "./routes/socialMediaBotRoutes";
 import { theTVAppService } from "./services/theTVAppService";
+import { unifiedStreamingService } from "./services/unifiedStreamingService";
 import gamingRoutes from "./routes/gamingRoutes";
 import unifiedSportsRoutes from "./routes/unifiedSportsRoutes";
 import { bankingRouter } from "./routes/bankingRoutes";
@@ -6969,10 +6970,10 @@ Join us: WeParlay.io 🎯
     }
   });
 
-  // TheTVApp.tv Global Streaming API Routes
+  // Unified Streaming API Routes (RapidAPI Integration)
   app.get('/api/streaming/live/sports', async (req, res) => {
     try {
-      const streams = await theTVAppService.getLiveSportsStreams();
+      const streams = await unifiedStreamingService.getStreamsBySport('sports');
       res.json({ success: true, streams });
     } catch (error: any) {
       console.error('Error fetching live sports streams:', error);
@@ -6982,7 +6983,7 @@ Join us: WeParlay.io 🎯
 
   app.get('/api/streaming/live/esports', async (req, res) => {
     try {
-      const streams = await theTVAppService.getLiveEsportsStreams();
+      const streams = await unifiedStreamingService.getTwitchEsportsStreams();
       res.json({ success: true, streams });
     } catch (error: any) {
       console.error('Error fetching live esports streams:', error);
@@ -6993,7 +6994,7 @@ Join us: WeParlay.io 🎯
   app.get('/api/streaming/sport/:sportType', async (req, res) => {
     try {
       const { sportType } = req.params;
-      const streams = await theTVAppService.getStreamsBySport(sportType);
+      const streams = await unifiedStreamingService.getStreamsBySport(sportType);
       res.json({ success: true, streams });
     } catch (error: any) {
       console.error(`Error fetching ${sportType} streams:`, error);
@@ -7001,16 +7002,12 @@ Join us: WeParlay.io 🎯
     }
   });
 
-  app.get('/api/streaming/details/:eventId', async (req, res) => {
+  app.get('/api/streaming/top', async (req, res) => {
     try {
-      const { eventId } = req.params;
-      const stream = await theTVAppService.getStreamDetails(eventId);
-      if (!stream) {
-        return res.status(404).json({ success: false, message: 'Stream not found' });
-      }
-      res.json({ success: true, stream });
+      const streams = await unifiedStreamingService.getTopLiveStreams();
+      res.json({ success: true, streams });
     } catch (error: any) {
-      console.error('Error fetching stream details:', error);
+      console.error('Error fetching top streams:', error);
       res.status(500).json({ success: false, message: error.message });
     }
   });
@@ -7021,10 +7018,20 @@ Join us: WeParlay.io 🎯
       if (!query) {
         return res.status(400).json({ success: false, message: 'Search query required' });
       }
-      const streams = await theTVAppService.searchStreams(query);
+      const streams = await unifiedStreamingService.searchStreams(query);
       res.json({ success: true, streams });
     } catch (error: any) {
       console.error('Error searching streams:', error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  });
+
+  app.get('/api/streaming/analytics', async (req, res) => {
+    try {
+      const analytics = await unifiedStreamingService.getStreamAnalytics();
+      res.json({ success: true, analytics });
+    } catch (error: any) {
+      console.error('Error fetching stream analytics:', error);
       res.status(500).json({ success: false, message: error.message });
     }
   });
