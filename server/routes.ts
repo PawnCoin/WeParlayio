@@ -24,7 +24,7 @@ import { bankingRouter } from "./routes/bankingRoutes";
 import websocketPollingRoutes from "./routes/websocketPollingRoutes";
 import oddsTickerRouter from "./routes/oddsTickerRoutes";
 import { apiTestRouter } from "./routes/apiTestRoutes";
-import { tvapp2Service } from "./services/theTVAppService";
+import { theTVAppService } from "./services/thetvappService";
 
 // Export the routes so they can be imported by index.ts
 export { notificationRoutes, websocketPollingRoutes };
@@ -6969,18 +6969,17 @@ Join us: WeParlay.io 🎯
     }
   });
 
-  // TVApp2 Streaming Integration Endpoints
+  // TheTVApp Streaming Endpoints
   app.get('/api/streaming/sports', async (req, res) => {
     try {
-      const streams = await tvapp2Service.getLiveSportsStreams();
+      const streams = await theTVAppService.getSportsStreams();
       res.json({ success: true, streams });
     } catch (error) {
-      console.error('TVApp2 streaming error:', error);
+      console.error('TheTVApp streaming error:', error);
       res.status(500).json({ 
         success: false, 
         error: 'Streaming service unavailable',
-        message: 'TVApp2 configuration required for authentic IPTV streams',
-        requiresConfiguration: true
+        message: 'Unable to connect to streaming service'
       });
     }
   });
