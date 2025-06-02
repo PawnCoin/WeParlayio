@@ -27,6 +27,7 @@ import websocketPollingRoutes from "./routes/websocketPollingRoutes";
 import oddsTickerRouter from "./routes/oddsTickerRoutes";
 import { apiTestRouter } from "./routes/apiTestRoutes";
 import { espnFantasyService } from "./services/espnFantasyService";
+import { yahooOAuthService } from "./services/yahooOAuthService";
 
 // Export the routes so they can be imported by index.ts
 export { notificationRoutes, websocketPollingRoutes };
@@ -2169,16 +2170,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // CRITICAL: Yahoo Fantasy Sports integration endpoints
-  app.get('/api/yahoo/status', async (req, res) => {
+  // CRITICAL: Yahoo Fantasy Sports OAuth integration endpoints
+  app.get('/api/yahoo/status', isAuthenticated, async (req, res) => {
     try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
+
       const hasCredentials = !!(process.env.YAHOO_CLIENT_ID && process.env.YAHOO_CLIENT_SECRET);
       
+      if (!hasCredentials) {
+        return res.json({ 
+          authenticated: false,
+          connected: false,
+          error: 'Yahoo API credentials not configured',
+          requiresSetup: true
+        });
+      }
+
+      // Check if user has Yahoo tokens stored
+      const user = await storage.getUser(userId);
+      if (user?.yahooAccessToken && user?.yahooTokenExpiry && new Date(user.yahooTokenExpiry) > new Date()) {
+        return res.json({ 
+          authenticated: true,
+          connected: true,
+          expiresAt: user.yahooTokenExpiry
+        });
+      }
+
       res.json({ 
         authenticated: false,
         connected: false,
-        error: hasCredentials ? 'Yahoo OAuth tokens required for authentication' : 'Yahoo API credentials not configured',
-        requiresSetup: true
+        error: 'Yahoo OAuth login required',
+        requiresSetup: false,
+        loginUrl: '/api/yahoo/login'
       });
     } catch (error) {
       console.error('Error checking Yahoo status:', error);
@@ -2186,21 +2212,142 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/yahoo/connect', isAuthenticated, async (req, res) => {
+  // Start Yahoo OAuth flow
+  app.get('/api/yahoo/login', (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
-      const { accessToken, refreshToken, expiry } = req.body;
-
-      if (!accessToken || !refreshToken) {
-        return res.status(400).json({ message: 'Access token and refresh token are required' });
+      const hasCredentials = !!(process.env.YAHOO_CLIENT_ID && process.env.YAHOO_CLIENT_SECRET);
+      
+      if (!hasCredentials) {
+        return res.status(400).json({ 
+          error: 'Yahoo OAuth credentials not configured. Please add YAHOO_CLIENT_ID and YAHOO_CLIENT_SECRET to environment variables.'
+        });
       }
 
-      await storage.updateYahooIntegration(userId, accessToken, refreshToken, new Date(expiry));
-
-      res.json({ success: true, message: 'Yahoo account connected successfully' });
+      const authUrl = yahooOAuthService.getAuthUrl();
+      res.redirect(authUrl);
     } catch (error) {
-      console.error('Error connecting Yahoo account:', error);
-      res.status(500).json({ message: 'Failed to connect Yahoo account' });
+      console.error('Error starting Yahoo OAuth flow:', error);
+      res.status(500).json({ message: 'Failed to start Yahoo login' });
+    }
+  });
+
+  // Yahoo OAuth callback
+  app.get('/api/yahoo/callback', isAuthenticated, async (req, res) => {
+    try {
+      const { code, error } = req.query;
+      const userId = req.user?.claims?.sub;
+
+      if (!userId) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
+
+      if (error) {
+        return res.redirect('/fantasy?error=yahoo_auth_cancelled');
+      }
+
+      if (!code) {
+        return res.redirect('/fantasy?error=yahoo_auth_no_code');
+      }
+
+      // Exchange code for tokens
+      const tokens = await yahooOAuthService.exchangeCodeForTokens(code as string);
+      
+      // Get user profile to verify connection
+      const profile = await yahooOAuthService.getUserProfile(tokens.access_token);
+
+      // Store tokens in user record (using dummy method for now)
+      await storage.updateYahooIntegration(
+        userId,
+        tokens.access_token,
+        tokens.refresh_token,
+        new Date(Date.now() + tokens.expires_in * 1000)
+      );
+
+      res.redirect('/fantasy?yahoo_connected=true');
+    } catch (error) {
+      console.error('Error in Yahoo OAuth callback:', error);
+      res.redirect('/fantasy?error=yahoo_auth_failed');
+    }
+  });
+
+  // Yahoo Fantasy API endpoints
+  app.get('/api/yahoo/leagues', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user?.yahooAccessToken) {
+        return res.status(401).json({ message: 'Yahoo not connected' });
+      }
+
+      const leagues = await yahooOAuthService.getFantasyLeagues(user.yahooAccessToken);
+      res.json(leagues);
+    } catch (error) {
+      console.error('Error fetching Yahoo leagues:', error);
+      res.status(500).json({ message: 'Failed to fetch leagues' });
+    }
+  });
+
+  app.get('/api/yahoo/standings/:leagueKey', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { leagueKey } = req.params;
+
+      if (!userId) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user?.yahooAccessToken) {
+        return res.status(401).json({ message: 'Yahoo not connected' });
+      }
+
+      // Fetch league standings using Yahoo API
+      const response = await fetch(
+        `https://fantasysports.yahooapis.com/fantasy/v2/league/${leagueKey}/standings?format=json`,
+        {
+          headers: {
+            'Authorization': `Bearer ${user.yahooAccessToken}`
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Yahoo API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const standings = data.fantasy_content?.league?.[1]?.standings?.[0]?.teams || [];
+      
+      res.json(standings);
+    } catch (error) {
+      console.error('Error fetching Yahoo standings:', error);
+      res.status(500).json({ message: 'Failed to fetch standings' });
+    }
+  });
+
+  app.get('/api/yahoo/roster/:leagueKey/:teamKey', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { leagueKey, teamKey } = req.params;
+
+      if (!userId) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user?.yahooAccessToken) {
+        return res.status(401).json({ message: 'Yahoo not connected' });
+      }
+
+      const roster = await yahooOAuthService.getFantasyRoster(user.yahooAccessToken, leagueKey, teamKey);
+      res.json(roster);
+    } catch (error) {
+      console.error('Error fetching Yahoo roster:', error);
+      res.status(500).json({ message: 'Failed to fetch roster' });
     }
   });
 
