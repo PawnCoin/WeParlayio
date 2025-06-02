@@ -24,7 +24,7 @@ export const checkSmsPermissions = (req: AuthenticatedRequest, res: Response, ne
 
   // Define permissions based on tier and role
   req.messagingPermissions = {
-    canSendSMS: ['vip', 'diamond'].includes(subscriptionTier) || role === 'admin',
+    canSendSMS: ['gold', 'vip', 'diamond'].includes(subscriptionTier) || role === 'admin',
     canSendMMS: subscriptionTier === 'diamond' || role === 'admin',
     canEditTemplates: role === 'admin',
     isVIP: ['vip', 'diamond'].includes(subscriptionTier),
@@ -34,11 +34,11 @@ export const checkSmsPermissions = (req: AuthenticatedRequest, res: Response, ne
   next();
 };
 
-// Check if user can send SMS (VIP+ only)
+// Check if user can send SMS (Gold+ only)
 export const requireSmsPermission = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   if (!req.messagingPermissions?.canSendSMS) {
     return res.status(403).json({ 
-      message: 'SMS sending requires VIP subscription or higher',
+      message: 'SMS sending requires Gold subscription or higher',
       upgradeRequired: true 
     });
   }
