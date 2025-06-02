@@ -77,6 +77,83 @@ export class TVApp2Service {
   }
 
   /**
+   * Parse M3U content to extract stream information
+   */
+  private parseM3UContent(m3uContent: string): SportStream[] {
+    const streams: SportStream[] = [];
+    const lines = m3uContent.split('\n');
+    
+    let currentStream: Partial<SportStream> = {};
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      
+      if (line.startsWith('#EXTINF:')) {
+        // Parse channel info from EXTINF line
+        const nameMatch = line.match(/,(.+)$/);
+        const logoMatch = line.match(/tvg-logo="([^"]+)"/);
+        const categoryMatch = line.match(/group-title="([^"]+)"/);
+        
+        if (nameMatch) {
+          currentStream = {
+            eventId: `stream_${streams.length + 1}`,
+            title: nameMatch[1],
+            sportType: categoryMatch ? categoryMatch[1] : 'Sports',
+            homeTeam: 'Live',
+            awayTeam: 'Stream',
+            league: categoryMatch ? categoryMatch[1] : 'Sports',
+            startTime: new Date().toISOString(),
+            status: 'live',
+            sources: [],
+            thumbnailUrl: logoMatch ? logoMatch[1] : '',
+            description: `Live ${nameMatch[1]} stream`,
+            tags: ['live', 'sports']
+          };
+        }
+      } else if (line.startsWith('http') && currentStream.title) {
+        // This is the stream URL
+        currentStream.sources = [{
+          id: currentStream.eventId || `stream_${streams.length + 1}`,
+          name: `${currentStream.title} HD`,
+          url: line,
+          quality: 'HD',
+          language: 'en',
+          region: 'US',
+          isLive: true,
+          viewers: Math.floor(Math.random() * 5000) + 1000
+        }];
+        
+        // Only add sports-related streams
+        const title = currentStream.title?.toLowerCase() || '';
+        const category = currentStream.sportType?.toLowerCase() || '';
+        
+        if (this.isSportsChannel(title, category)) {
+          streams.push(currentStream as SportStream);
+        }
+        
+        currentStream = {};
+      }
+    }
+    
+    return streams;
+  }
+  
+  /**
+   * Check if a channel is sports-related
+   */
+  private isSportsChannel(title: string, category: string): boolean {
+    const sportsKeywords = [
+      'sport', 'espn', 'fox sports', 'nfl', 'nba', 'mlb', 'nhl', 
+      'soccer', 'football', 'basketball', 'baseball', 'hockey',
+      'tennis', 'golf', 'racing', 'motorsport', 'olympics',
+      'premier league', 'uefa', 'fifa', 'nascar', 'f1'
+    ];
+    
+    const text = `${title} ${category}`.toLowerCase();
+    return sportsKeywords.some(keyword => text.includes(keyword));
+  }
+
+  /**
    * Get all available live esports streams
    */
   async getLiveEsportsStreams(): Promise<EsportStream[]> {
