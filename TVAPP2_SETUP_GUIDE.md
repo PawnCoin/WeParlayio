@@ -1,220 +1,119 @@
-# TVApp2 Integration Setup Guide for WeParlay
+# TVApp2 IPTV Streaming Setup Guide
 
-This guide will help you set up TVApp2 (IPTV streaming service) with your WeParlay sports betting platform to provide authentic global sports streaming with tier-based access control.
-
-## What is TVApp2?
-
-TVApp2 is a self-hosted Docker container that retrieves M3U playlists and EPG guide data from numerous online IPTV services. It provides comprehensive sports coverage including traditional sports and esports.
-
-Repository: https://github.com/TheBinaryNinja/tvapp2
+## Overview
+This guide will help you set up authentic IPTV streaming for your WeParlay platform using TVApp2 Docker container integration.
 
 ## Prerequisites
+- Docker and Docker Compose installed
+- Access to M3U playlist sources for authentic sports content
+- Server or local environment to run the TVApp2 container
 
-- Docker installed on your server
-- Basic understanding of Docker containers
-- Access to your Replit environment variables/secrets
+## Quick Setup
 
-## Step 1: Set Up TVApp2 Docker Container
-
-### Option A: Docker Run (Quick Setup)
-
+### Step 1: Run the Setup Script
 ```bash
-docker run -d \
-  --name tvapp2 \
-  -p 5004:5004 \
-  -v /path/to/config:/app/config \
-  -v /path/to/data:/app/data \
-  --restart unless-stopped \
-  ghcr.io/thebinaryninja/tvapp2:latest
+./docker-tvapp2-setup.sh
 ```
 
-### Option B: Docker Compose (Recommended)
+This creates the necessary Docker configuration and directories.
 
-Create a `docker-compose.yml` file:
-
-```yaml
-version: '3.8'
-services:
-  tvapp2:
-    image: ghcr.io/thebinaryninja/tvapp2:latest
-    container_name: tvapp2
-    ports:
-      - "5004:5004"
-    volumes:
-      - ./config:/app/config
-      - ./data:/app/data
-    restart: unless-stopped
-    environment:
-      - NODE_ENV=production
-      - PORT=5004
-```
-
-Run with:
+### Step 2: Start TVApp2 Container
 ```bash
-docker-compose up -d
+docker-compose -f docker-compose-tvapp2.yml up -d
 ```
 
-## Step 2: Configure WeParlay Environment Variables
+### Step 3: Configure TVApp2
+1. Open your browser to `http://localhost:5004`
+2. Access the TVApp2 admin interface
+3. Navigate to "Playlist Management"
+4. Add your M3U playlist URLs for sports content
+5. Configure channel categories (Sports, Esports, etc.)
 
-Add these environment variables to your Replit secrets:
+### Step 4: Connect to WeParlay
+Add these environment variables in your Replit secrets:
+- `TVAPP2_HOST=localhost` (or your server IP)
+- `TVAPP2_PORT=5004`
 
-### Required Variables:
-- `TVAPP2_HOST` - Your TVApp2 server IP/hostname (e.g., "192.168.1.100" or "tvapp2.yourdomain.com")
-- `TVAPP2_PORT` - TVApp2 service port (default: "5004")
+## M3U Playlist Sources
 
-### Setting Up in Replit:
-1. Go to your Replit project
-2. Click on "Secrets" tab (🔒 icon)
-3. Add the following secrets:
-   - Key: `TVAPP2_HOST`, Value: `your-tvapp2-server-ip`
-   - Key: `TVAPP2_PORT`, Value: `5004`
-
-## Step 3: Verify Integration
-
-Once configured, you can test the integration using these API endpoints:
-
-### Check TVApp2 Status:
-```
-GET /api/streaming/status
-```
-
-Expected response when configured:
-```json
-{
-  "configured": true,
-  "host": "your-tvapp2-server-ip",
-  "port": "5004",
-  "message": "TVApp2 service configured"
-}
-```
-
-### Test Sports Streams:
-```
-GET /api/streaming/sports
-```
-
-### Test Esports Streams:
-```
-GET /api/streaming/esports
-```
-
-## Step 4: Configure M3U Sources in TVApp2
-
-TVApp2 requires M3U playlist sources. You can configure these through:
-
-1. **Web Interface**: Access `http://your-tvapp2-host:5004` 
-2. **Configuration Files**: Edit configuration files in the mounted config volume
-3. **API**: Use TVApp2's configuration API
-
-### Common M3U Sources:
-- Sports-focused IPTV providers
-- Free sports streaming lists
+For authentic sports streaming, you'll need M3U playlists containing:
+- Live sports channels (ESPN, Fox Sports, NBC Sports, etc.)
+- International sports networks
+- Esports streaming channels
 - Regional sports networks
 
-## Step 5: Tier-Based Streaming Features
-
-Your WeParlay integration includes:
-
-### Bronze/Silver Users:
-- 30-second preview of streams
-- Automatic upgrade prompts
-- SD quality (when available)
-
-### Gold Users:
-- Unlimited streaming access
-- SD quality streams
-- Basic sports coverage
-
-### Platinum Users:
-- Unlimited streaming access
-- HD quality streams
-- Multi-game viewing
-- Enhanced sports coverage
-
-### Diamond Users:
-- Unlimited streaming access
-- 4K quality streams (when available)
-- Exclusive content access
-- Premium sports coverage
-
-## Step 6: Testing the Integration
-
-### Test Stream Access:
-```
-GET /api/streaming/stream/:eventId
+### Sample M3U Format
+```m3u
+#EXTM3U
+#EXTINF:-1,ESPN
+http://your-stream-url/espn.m3u8
+#EXTINF:-1,Fox Sports 1
+http://your-stream-url/fs1.m3u8
+#EXTINF:-1,NBC Sports
+http://your-stream-url/nbcsports.m3u8
 ```
 
-This endpoint will:
-- Check user authentication
-- Verify user tier
-- Return appropriate stream access based on tier
-- Provide 30-second preview for Bronze/Silver users
+## Tier-Based Quality Configuration
 
-### Frontend Integration:
+The system automatically provides quality based on user tiers:
+- **Bronze/Silver**: 30-second preview + SD quality
+- **Gold**: Unlimited SD streaming
+- **Platinum**: Unlimited HD streaming + multi-game viewing
+- **Diamond**: Unlimited 4K streaming + exclusive content
 
-The streaming is already integrated into your Live Sports pages:
-- `/live-sports` - User-facing streaming
-- `/system/live-sports` - Admin management
+## API Endpoints
+
+Once configured, these endpoints become active:
+- `GET /api/streaming/status` - Check configuration status
+- `GET /api/streaming/sports` - Get live sports streams
+- `GET /api/streaming/esports` - Get live esports streams
+- `GET /api/streaming/stream/:eventId` - Access specific stream with tier validation
 
 ## Troubleshooting
 
-### Common Issues:
-
-1. **"TVApp2 service not available"**
-   - Verify Docker container is running
-   - Check `TVAPP2_HOST` and `TVAPP2_PORT` environment variables
-   - Ensure firewall allows port 5004
-
-2. **"No streams found"**
-   - Verify M3U sources are configured in TVApp2
-   - Check TVApp2 logs: `docker logs tvapp2`
-   - Ensure M3U playlists contain sports content
-
-3. **"Connection refused"**
-   - Verify TVApp2 is accessible from your Replit environment
-   - Check network connectivity between services
-   - Confirm correct host/port configuration
-
-### Logs and Debugging:
-
-Check TVApp2 logs:
+### Container Not Starting
 ```bash
-docker logs tvapp2
+# Check container logs
+docker logs weparlay-tvapp2 -f
+
+# Restart container
+docker-compose -f docker-compose-tvapp2.yml restart
 ```
 
-Check WeParlay streaming logs in your Replit console for:
-- "TVApp2 connection error"
-- "TVApp2 service not available"
+### Stream Not Loading
+1. Verify M3U playlist URLs are accessible
+2. Check TVApp2 web interface for channel status
+3. Ensure TVAPP2_HOST and TVAPP2_PORT are correctly set in secrets
+
+### Port Conflicts
+If port 5004 is in use, modify the docker-compose file:
+```yaml
+ports:
+  - "5005:5004"  # Use port 5005 instead
+```
+
+Then update `TVAPP2_PORT=5005` in your secrets.
 
 ## Security Considerations
 
-- Keep TVApp2 behind a firewall
-- Use HTTPS when possible
-- Regularly update TVApp2 container
-- Monitor for unauthorized access
-- Ensure M3U sources are legitimate
+- Use HTTPS for M3U playlist URLs when possible
+- Implement proper authentication for TVApp2 admin interface
+- Consider VPN or private network for production deployments
+- Regularly update TVApp2 container for security patches
 
-## Alternative Configuration
+## Production Deployment
 
-If you cannot set up TVApp2, the system will fall back to:
-- Authentic mock sports data
-- Tier-based preview system still functions
-- All other WeParlay features remain available
+For production environments:
+1. Use dedicated server for TVApp2
+2. Configure SSL/TLS certificates
+3. Set up proper firewall rules
+4. Implement monitoring and logging
+5. Use managed Docker orchestration (Docker Swarm or Kubernetes)
 
 ## Support
 
-For TVApp2-specific issues, refer to:
-- TVApp2 Documentation: https://github.com/TheBinaryNinja/tvapp2
-- TVApp2 Discord: Available in their repository
-
-For WeParlay integration issues, the streaming service provides fallback functionality to ensure your platform remains operational.
-
-## Next Steps
-
-1. Set up TVApp2 Docker container
-2. Configure Replit environment variables
-3. Test the `/api/streaming/status` endpoint
-4. Verify stream access with different user tiers
-5. Configure M3U sources for your target sports coverage
-
-Your WeParlay platform is now ready for comprehensive global sports streaming with tier-based access control and 30-second preview functionality.
+If you encounter issues:
+1. Check the container logs first
+2. Verify network connectivity between WeParlay and TVApp2
+3. Ensure M3U playlists are valid and accessible
+4. Test streaming endpoints using the provided test script
