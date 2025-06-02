@@ -33,6 +33,7 @@ export class CleanStreamingService {
     }
 
     try {
+      // Use PandaScore REST API for running matches
       const response = await fetch('https://api.pandascore.co/matches/running', {
         method: 'GET',
         headers: {
@@ -46,7 +47,7 @@ export class CleanStreamingService {
       }
 
       const matches = await response.json();
-      return this.formatGRIDStreams(Array.isArray(matches) ? matches : []);
+      return this.formatPandaScoreStreams(Array.isArray(matches) ? matches : []);
     } catch (error) {
       console.error('GRID esports streaming error:', error);
       return [];
@@ -80,7 +81,7 @@ export class CleanStreamingService {
     }));
   }
 
-  private formatGRIDStreams(matches: any[]): any[] {
+  private formatPandaScoreStreams(matches: any[]): any[] {
     return matches.map((match: any) => ({
       id: match.id,
       title: match.name || `${match.opponents?.[0]?.opponent?.name || 'Team 1'} vs ${match.opponents?.[1]?.opponent?.name || 'Team 2'}`,
