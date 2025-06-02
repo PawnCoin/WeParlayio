@@ -2034,32 +2034,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // CRITICAL: Tournament bracket betting system
-  app.get('/api/tournaments', async (req, res) => {
-    try {
-      const tournaments = await storage.getAllTournaments();
-      res.json(tournaments);
-    } catch (error) {
-      console.error('Error fetching tournaments:', error);
-      res.status(500).json({ message: 'Failed to fetch tournaments' });
-    }
-  });
-
-  app.get('/api/tournaments/:id', async (req, res) => {
-    try {
-      const { id } = req.params;
-      const tournament = await storage.getTournament(parseInt(id));
-      
-      if (!tournament) {
-        return res.status(404).json({ message: 'Tournament not found' });
-      }
-
-      res.json(tournament);
-    } catch (error) {
-      console.error('Error fetching tournament:', error);
-      res.status(500).json({ message: 'Failed to fetch tournament' });
-    }
-  });
+  // REMOVED: Conflicting tournament endpoints
 
   app.post('/api/tournaments/:id/bets', isAuthenticated, async (req, res) => {
     try {
@@ -3840,46 +3815,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ===== Tournaments Routes =====
-  app.get("/api/tournaments", async (req, res) => {
-    try {
-      const tournaments = await storage.getAllTournaments();
-      res.json(tournaments);
-    } catch (error: any) {
-      res.status(500).json({ message: error.message });
-    }
-  });
 
-  app.get("/api/tournaments/:id", async (req, res) => {
-    try {
-      const tournamentId = parseInt(req.params.id);
-      let tournament = await storage.getTournament(tournamentId);
-      
-      // If tournament doesn't exist, create a demo tournament
-      if (!tournament && tournamentId === 1) {
-        tournament = {
-          id: 1,
-          name: "March Madness 2024",
-          sport: "Basketball",
-          status: "active",
-          entryFee: 25,
-          prizePool: 10000,
-          maxParticipants: 1000,
-          currentParticipants: 847,
-          startDate: new Date(),
-          endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-          bracket: null,
-          rules: "Standard NCAA tournament rules apply"
-        };
-      }
-      
-      if (!tournament) {
-        return res.status(404).json({ message: "Tournament not found" });
-      }
-      res.json(tournament);
-    } catch (error: any) {
-      res.status(500).json({ message: error.message });
-    }
-  });
 
   app.get("/api/sports/:sportId/tournaments", async (req, res) => {
     try {
@@ -7274,93 +7210,7 @@ Join us: WeParlay.io 🎯
   });
 
   // Tournament API endpoints
-  app.get('/api/tournaments', async (req, res) => {
-    try {
-      const tournaments = [
-        {
-          id: 1,
-          name: "NBA Playoffs 2024",
-          sport: "Basketball",
-          status: "active",
-          startDate: "2024-04-01",
-          endDate: "2024-06-15",
-          participants: 1245,
-          prizeMoney: 50000,
-          entryFee: 25,
-          bracketData: {}
-        },
-        {
-          id: 2,
-          name: "NCAA March Madness",
-          sport: "Basketball",
-          status: "upcoming",
-          startDate: "2024-03-15",
-          endDate: "2024-04-08",
-          participants: 2856,
-          prizeMoney: 100000,
-          entryFee: 10,
-          bracketData: {}
-        },
-        {
-          id: 3,
-          name: "Champions League Final",
-          sport: "Soccer",
-          status: "completed",
-          startDate: "2024-05-01",
-          endDate: "2024-05-25",
-          participants: 892,
-          prizeMoney: 25000,
-          entryFee: 15,
-          bracketData: {}
-        }
-      ];
-      res.json(tournaments);
-    } catch (error) {
-      console.error('Error fetching tournaments:', error);
-      res.status(500).json({ error: 'Failed to fetch tournaments' });
-    }
-  });
 
-  app.get('/api/tournaments/:id', async (req, res) => {
-    try {
-      const { id } = req.params;
-      const tournament = {
-        id: parseInt(id),
-        name: "NBA Playoffs 2024",
-        sport: "Basketball",
-        status: "active",
-        startDate: "2024-04-01",
-        endDate: "2024-06-15",
-        participants: 1245,
-        prizeMoney: 50000,
-        entryFee: 25,
-        bracketData: {
-          rounds: [
-            {
-              round: 1,
-              matches: [
-                { team1: "Celtics", team2: "76ers", winner: "Celtics", score: "4-2" },
-                { team1: "Bucks", team2: "Pacers", winner: "Bucks", score: "4-1" },
-                { team1: "Knicks", team2: "Cavaliers", winner: "Knicks", score: "4-3" },
-                { team1: "Magic", team2: "Heat", winner: "Heat", score: "4-2" }
-              ]
-            },
-            {
-              round: 2,
-              matches: [
-                { team1: "Celtics", team2: "Bucks", winner: "Celtics", score: "4-1" },
-                { team1: "Knicks", team2: "Heat", winner: "Knicks", score: "4-3" }
-              ]
-            }
-          ]
-        }
-      };
-      res.json(tournament);
-    } catch (error) {
-      console.error('Error fetching tournament:', error);
-      res.status(500).json({ error: 'Failed to fetch tournament' });
-    }
-  });
 
   app.post('/api/tournaments', async (req, res) => {
     try {
@@ -8171,6 +8021,153 @@ Join us: WeParlay.io 🎯
   });
 
   // Tournament page API endpoints
+
+
+
+  app.post('/api/tournaments/join', async (req, res) => {
+    try {
+      const { tournamentId, teamName } = req.body;
+      
+      if (!tournamentId || !teamName) {
+        return res.status(400).json({
+          success: false,
+          message: 'Tournament ID and team name are required'
+        });
+      }
+
+      // Simulate tournament entry
+      const entryId = `entry-${Date.now()}`;
+      
+      res.json({
+        success: true,
+        entryId,
+        message: `Successfully joined tournament with team "${teamName}"`,
+        data: {
+          id: entryId,
+          tournamentId,
+          teamName,
+          entryDate: new Date().toISOString(),
+          status: 'registered',
+          currentRound: 0,
+          totalEarnings: 0
+        }
+      });
+    } catch (error) {
+      console.error('Tournament join error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to join tournament'
+      });
+    }
+  });
+
+  app.get('/api/streaming/channels', async (req, res) => {
+    try {
+      const channels = [
+        {
+          id: "espn1",
+          name: "ESPN",
+          streamUrl: "https://tvpass.org/stream/espn",
+          category: "sports",
+          quality: "HD",
+          language: "English",
+          isLive: true,
+          viewers: 15420
+        },
+        {
+          id: "fox1",
+          name: "FOX Sports 1",
+          streamUrl: "https://tvpass.org/stream/fs1",
+          category: "sports",
+          quality: "HD",
+          language: "English",
+          isLive: true,
+          viewers: 12350
+        },
+        {
+          id: "nfl1",
+          name: "NFL Network",
+          streamUrl: "https://tvpass.org/stream/nfl",
+          category: "premium",
+          quality: "4K",
+          language: "English",
+          isLive: true,
+          viewers: 8750
+        },
+        {
+          id: "twitch1",
+          name: "Twitch Esports",
+          streamUrl: "https://tvpass.org/stream/twitch",
+          category: "esports",
+          quality: "HD",
+          language: "English",
+          isLive: true,
+          viewers: 25600
+        },
+        {
+          id: "sky1",
+          name: "Sky Sports",
+          streamUrl: "https://tvpass.org/stream/sky",
+          category: "international",
+          quality: "HD",
+          language: "English",
+          isLive: true,
+          viewers: 9200
+        }
+      ];
+      res.json(channels);
+    } catch (error) {
+      console.error('Error fetching channels:', error);
+      res.status(500).json({ error: 'Failed to fetch channels' });
+    }
+  });
+
+  app.post('/api/streaming/play', async (req, res) => {
+    try {
+      const { channelId, tier } = req.body;
+      
+      if (!channelId) {
+        return res.status(400).json({ error: 'Channel ID is required' });
+      }
+
+      // Check tier access
+      if (tier === 'bronze' && channelId.includes('premium')) {
+        return res.json({ 
+          success: false, 
+          message: 'This channel requires Silver tier or higher' 
+        });
+      }
+
+      res.json({ 
+        success: true, 
+        message: 'Stream started successfully',
+        streamUrl: `https://tvpass.org/stream/${channelId}`
+      });
+    } catch (error) {
+      console.error('Error starting stream:', error);
+      res.status(500).json({ error: 'Failed to start stream' });
+    }
+  });
+
+  app.post('/api/streaming/favorite', async (req, res) => {
+    try {
+      const { channelId } = req.body;
+      
+      if (!channelId) {
+        return res.status(400).json({ error: 'Channel ID is required' });
+      }
+
+      res.json({ 
+        success: true, 
+        message: 'Channel added to favorites'
+      });
+    } catch (error) {
+      console.error('Error adding favorite:', error);
+      res.status(500).json({ error: 'Failed to add favorite' });
+    }
+  });
+
+  // Tournament page API endpoints
   app.get('/api/tournaments', async (req, res) => {
     try {
       const tournaments = [
@@ -8351,112 +8348,6 @@ Join us: WeParlay.io 🎯
         success: false,
         error: 'Failed to join tournament'
       });
-    }
-  });
-
-  app.get('/api/streaming/channels', async (req, res) => {
-    try {
-      const channels = [
-        {
-          id: "espn1",
-          name: "ESPN",
-          streamUrl: "https://tvpass.org/stream/espn",
-          category: "sports",
-          quality: "HD",
-          language: "English",
-          isLive: true,
-          viewers: 15420
-        },
-        {
-          id: "fox1",
-          name: "FOX Sports 1",
-          streamUrl: "https://tvpass.org/stream/fs1",
-          category: "sports",
-          quality: "HD",
-          language: "English",
-          isLive: true,
-          viewers: 12350
-        },
-        {
-          id: "nfl1",
-          name: "NFL Network",
-          streamUrl: "https://tvpass.org/stream/nfl",
-          category: "premium",
-          quality: "4K",
-          language: "English",
-          isLive: true,
-          viewers: 8750
-        },
-        {
-          id: "twitch1",
-          name: "Twitch Esports",
-          streamUrl: "https://tvpass.org/stream/twitch",
-          category: "esports",
-          quality: "HD",
-          language: "English",
-          isLive: true,
-          viewers: 25600
-        },
-        {
-          id: "sky1",
-          name: "Sky Sports",
-          streamUrl: "https://tvpass.org/stream/sky",
-          category: "international",
-          quality: "HD",
-          language: "English",
-          isLive: true,
-          viewers: 9200
-        }
-      ];
-      res.json(channels);
-    } catch (error) {
-      console.error('Error fetching channels:', error);
-      res.status(500).json({ error: 'Failed to fetch channels' });
-    }
-  });
-
-  app.post('/api/streaming/play', async (req, res) => {
-    try {
-      const { channelId, tier } = req.body;
-      
-      if (!channelId) {
-        return res.status(400).json({ error: 'Channel ID is required' });
-      }
-
-      // Check tier access
-      if (tier === 'bronze' && channelId.includes('premium')) {
-        return res.json({ 
-          success: false, 
-          message: 'This channel requires Silver tier or higher' 
-        });
-      }
-
-      res.json({ 
-        success: true, 
-        message: 'Stream started successfully',
-        streamUrl: `https://tvpass.org/stream/${channelId}`
-      });
-    } catch (error) {
-      console.error('Error starting stream:', error);
-      res.status(500).json({ error: 'Failed to start stream' });
-    }
-  });
-
-  app.post('/api/streaming/favorite', async (req, res) => {
-    try {
-      const { channelId } = req.body;
-      
-      if (!channelId) {
-        return res.status(400).json({ error: 'Channel ID is required' });
-      }
-
-      res.json({ 
-        success: true, 
-        message: 'Channel added to favorites'
-      });
-    } catch (error) {
-      console.error('Error adding favorite:', error);
-      res.status(500).json({ error: 'Failed to add favorite' });
     }
   });
 
