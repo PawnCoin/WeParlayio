@@ -7797,8 +7797,236 @@ Join us: WeParlay.io 🎯
         balance: 1500.00
       });
     } catch (error) {
-      console.error('Error fetching streaming status:', error);
-      res.status(500).json({ error: 'Failed to fetch streaming status' });
+      console.error('Error fetching user profile:', error);
+      res.status(500).json({ error: 'Failed to fetch user profile' });
+    }
+  });
+
+  // Gaming API endpoints
+  app.get('/api/gaming/games', async (req, res) => {
+    try {
+      const games = [
+        {
+          id: 'csgo',
+          name: 'Counter-Strike 2',
+          category: 'FPS',
+          platform: 'Steam',
+          image: '/gaming/csgo.jpg',
+          isLive: true,
+          viewers: 125000,
+          upcomingMatches: 8
+        },
+        {
+          id: 'dota2',
+          name: 'Dota 2',
+          category: 'MOBA',
+          platform: 'Steam',
+          image: '/gaming/dota2.jpg',
+          isLive: true,
+          viewers: 98000,
+          upcomingMatches: 12
+        },
+        {
+          id: 'lol',
+          name: 'League of Legends',
+          category: 'MOBA',
+          platform: 'Riot',
+          image: '/gaming/lol.jpg',
+          isLive: true,
+          viewers: 156000,
+          upcomingMatches: 15
+        },
+        {
+          id: 'valorant',
+          name: 'Valorant',
+          category: 'FPS',
+          platform: 'Riot',
+          image: '/gaming/valorant.jpg',
+          isLive: true,
+          viewers: 87000,
+          upcomingMatches: 6
+        },
+        {
+          id: 'overwatch',
+          name: 'Overwatch 2',
+          category: 'FPS',
+          platform: 'Battle.net',
+          image: '/gaming/overwatch.jpg',
+          isLive: false,
+          viewers: 42000,
+          upcomingMatches: 3
+        }
+      ];
+      res.json(games);
+    } catch (error) {
+      console.error('Gaming games error:', error);
+      res.status(500).json({ error: 'Failed to fetch gaming data' });
+    }
+  });
+
+  app.get('/api/gaming/matches', async (req, res) => {
+    try {
+      const { selectedGame } = req.query;
+      
+      const allMatches = [
+        {
+          id: 'match-1',
+          gameId: 'csgo',
+          team1: 'FaZe Clan',
+          team2: 'Natus Vincere',
+          startTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+          odds: { team1: 1.85, team2: 2.10 },
+          prize: 250000,
+          tournament: 'IEM Katowice',
+          status: 'upcoming' as const
+        },
+        {
+          id: 'match-2',
+          gameId: 'dota2',
+          team1: 'Team Spirit',
+          team2: 'PSG.LGD',
+          startTime: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
+          odds: { team1: 2.25, team2: 1.70 },
+          prize: 500000,
+          tournament: 'The International',
+          status: 'upcoming' as const
+        },
+        {
+          id: 'match-3',
+          gameId: 'lol',
+          team1: 'T1',
+          team2: 'Gen.G',
+          startTime: new Date(Date.now() + 1 * 60 * 60 * 1000).toISOString(),
+          odds: { team1: 1.95, team2: 1.95 },
+          prize: 300000,
+          tournament: 'LCK Summer',
+          status: 'live' as const
+        },
+        {
+          id: 'match-4',
+          gameId: 'valorant',
+          team1: 'Sentinels',
+          team2: 'OpTic Gaming',
+          startTime: new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString(),
+          odds: { team1: 2.10, team2: 1.80 },
+          prize: 150000,
+          tournament: 'VCT Masters',
+          status: 'upcoming' as const
+        }
+      ];
+
+      const filteredMatches = selectedGame && selectedGame !== 'all' 
+        ? allMatches.filter(match => match.gameId === selectedGame)
+        : allMatches;
+
+      res.json(filteredMatches);
+    } catch (error) {
+      console.error('Gaming matches error:', error);
+      res.status(500).json({ error: 'Failed to fetch matches' });
+    }
+  });
+
+  app.get('/api/gaming/my-bets', async (req, res) => {
+    try {
+      const userBets = [
+        {
+          id: 'bet-1',
+          matchId: 'match-1',
+          team: 'FaZe Clan',
+          amount: 50.00,
+          odds: 1.85,
+          status: 'pending',
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 'bet-2',
+          matchId: 'match-2',
+          team: 'Team Spirit',
+          amount: 25.00,
+          odds: 2.25,
+          status: 'won',
+          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+        }
+      ];
+      res.json(userBets);
+    } catch (error) {
+      console.error('Gaming bets error:', error);
+      res.status(500).json({ error: 'Failed to fetch user bets' });
+    }
+  });
+
+  app.get('/api/gaming/leaderboard', async (req, res) => {
+    try {
+      const leaderboard = [
+        {
+          rank: 1,
+          username: 'ProGamer2024',
+          totalWins: 187,
+          winPercentage: 74.2,
+          totalEarnings: 12500.00
+        },
+        {
+          rank: 2,
+          username: 'EsportsKing',
+          totalWins: 156,
+          winPercentage: 71.8,
+          totalEarnings: 9800.00
+        },
+        {
+          rank: 3,
+          username: 'GamingLegend',
+          totalWins: 134,
+          winPercentage: 69.5,
+          totalEarnings: 8300.00
+        },
+        {
+          rank: 4,
+          username: 'demo-user',
+          totalWins: 23,
+          winPercentage: 65.2,
+          totalEarnings: 1200.00
+        }
+      ];
+      res.json(leaderboard);
+    } catch (error) {
+      console.error('Gaming leaderboard error:', error);
+      res.status(500).json({ error: 'Failed to fetch leaderboard' });
+    }
+  });
+
+  app.post('/api/gaming/place-bet', async (req, res) => {
+    try {
+      const { matchId, team, amount } = req.body;
+      
+      if (!matchId || !team || !amount || amount <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid bet parameters'
+        });
+      }
+
+      // Simulate bet placement
+      const betId = `bet-${Date.now()}`;
+      
+      res.json({
+        success: true,
+        betId,
+        message: `Bet placed successfully on ${team}`,
+        data: {
+          id: betId,
+          matchId,
+          team,
+          amount,
+          status: 'pending',
+          createdAt: new Date().toISOString()
+        }
+      });
+    } catch (error) {
+      console.error('Gaming place bet error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to place bet'
+      });
     }
   });
 
