@@ -7444,40 +7444,95 @@ Join us: WeParlay.io 🎯
     }
   });
 
-  // Fantasy Sports API endpoints
+  // Fantasy Sports API endpoints - REAL 2025 PLAYER DATA ONLY
   app.get('/api/fantasy/players', async (req, res) => {
     try {
-      const players = [
-        {
-          id: 1,
-          name: "Josh Allen",
-          position: "QB",
-          team: "BUF",
-          projectedPoints: 24.8,
-          salary: 8500,
-          ownership: 15.2,
-          props: {
-            passingYards: { line: 267.5, over: -110, under: -110 },
-            passingTds: { line: 1.5, over: -105, under: -125 },
-            rushingYards: { line: 44.5, over: -115, under: -115 }
-          }
-        },
-        {
-          id: 2,
-          name: "Christian McCaffrey",
-          position: "RB",
-          team: "SF",
-          projectedPoints: 22.1,
-          salary: 9200,
-          ownership: 18.7,
-          props: {
-            rushingYards: { line: 89.5, over: -110, under: -110 },
-            receivingYards: { line: 34.5, over: -120, under: -110 },
-            touchdowns: { line: 0.5, over: +105, under: -135 }
+      const realPlayers: any[] = [];
+      
+      // Get real NFL players from ESPN
+      try {
+        const nflResponse = await fetch('https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams');
+        const nflData = await nflResponse.json();
+        
+        if (nflData.sports?.[0]?.leagues?.[0]?.teams) {
+          for (const teamData of nflData.sports[0].leagues[0].teams.slice(0, 5)) { // Limit to first 5 teams
+            const team = teamData.team;
+            try {
+              const rosterResponse = await fetch(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/${team.id}/roster`);
+              const rosterData = await rosterResponse.json();
+              
+              if (rosterData.athletes) {
+                rosterData.athletes.forEach((positionGroup: any) => {
+                  positionGroup.items?.slice(0, 2).forEach((player: any) => { // Top 2 per position
+                    realPlayers.push({
+                      id: player.id,
+                      name: player.fullName || player.displayName,
+                      position: player.position?.abbreviation || 'N/A',
+                      team: team.abbreviation,
+                      jerseyNumber: player.jersey,
+                      height: player.height,
+                      weight: player.weight,
+                      experience: player.experience?.years || 0,
+                      college: player.college?.name || 'N/A',
+                      status: player.status?.name || 'Active',
+                      source: 'ESPN',
+                      season: '2025'
+                    });
+                  });
+                });
+              }
+            } catch (error) {
+              console.log(`Could not fetch roster for team ${team.id}`);
+            }
           }
         }
-      ];
-      res.json(players);
+      } catch (error) {
+        console.log('NFL players not available from ESPN');
+      }
+      
+      // Get real NBA players from ESPN
+      try {
+        const nbaResponse = await fetch('https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams');
+        const nbaData = await nbaResponse.json();
+        
+        if (nbaData.sports?.[0]?.leagues?.[0]?.teams) {
+          for (const teamData of nbaData.sports[0].leagues[0].teams.slice(0, 3)) { // Limit to first 3 teams
+            const team = teamData.team;
+            try {
+              const rosterResponse = await fetch(`https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/${team.id}/roster`);
+              const rosterData = await rosterResponse.json();
+              
+              if (rosterData.athletes) {
+                rosterData.athletes.forEach((positionGroup: any) => {
+                  positionGroup.items?.slice(0, 2).forEach((player: any) => { // Top 2 per position
+                    realPlayers.push({
+                      id: player.id,
+                      name: player.fullName || player.displayName,
+                      position: player.position?.abbreviation || 'N/A',
+                      team: team.abbreviation,
+                      jerseyNumber: player.jersey,
+                      height: player.height,
+                      weight: player.weight,
+                      experience: player.experience?.years || 0,
+                      college: player.college?.name || 'N/A',
+                      status: player.status?.name || 'Active',
+                      source: 'ESPN',
+                      season: '2025'
+                    });
+                  });
+                });
+              }
+            } catch (error) {
+              console.log(`Could not fetch roster for team ${team.id}`);
+            }
+          }
+        }
+      } catch (error) {
+        console.log('NBA players not available from ESPN');
+      }
+      
+      console.log(`Found ${realPlayers.length} real players from ESPN for 2025 season`);
+      res.json(realPlayers);
     } catch (error) {
       console.error('Error fetching fantasy players:', error);
       res.status(500).json({ error: 'Failed to fetch fantasy players' });
