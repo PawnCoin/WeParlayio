@@ -2172,21 +2172,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CRITICAL: Yahoo Fantasy Sports integration endpoints
   app.get('/api/yahoo/status', async (req, res) => {
     try {
-      // Check if Yahoo API credentials are available
       const hasCredentials = !!(process.env.YAHOO_CLIENT_ID && process.env.YAHOO_CLIENT_SECRET);
       
-      if (!hasCredentials) {
-        return res.json({ 
-          authenticated: false,
-          error: 'Yahoo API credentials not configured'
-        });
-      }
-
-      // For development mode, show as connected if credentials exist
       res.json({ 
-        authenticated: true,
-        tokenExpiry: new Date(Date.now() + 86400000).toISOString(), // 24 hours from now
-        developmentMode: process.env.NODE_ENV === 'development'
+        authenticated: false,
+        connected: false,
+        error: hasCredentials ? 'Yahoo OAuth tokens required for authentication' : 'Yahoo API credentials not configured',
+        requiresSetup: true
       });
     } catch (error) {
       console.error('Error checking Yahoo status:', error);
@@ -2220,23 +2212,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!hasApiKey) {
         return res.json({ 
           connected: false,
-          error: 'RapidAPI key not configured for ESPN Fantasy'
+          error: 'RapidAPI key not configured for ESPN Fantasy',
+          requiresSetup: true
         });
       }
 
       // Test ESPN Fantasy connection
-      const players = await espnFantasyService.getFantasyPlayers('nfl');
-      
-      res.json({ 
-        connected: true,
-        playerCount: players.length,
-        developmentMode: process.env.NODE_ENV === 'development'
-      });
+      try {
+        const players = await espnFantasyService.getFantasyPlayers('nfl');
+        
+        if (players.length === 0) {
+          return res.json({ 
+            connected: false,
+            error: 'ESPN Fantasy API endpoint not responding - may need specific subscription',
+            requiresSetup: true,
+            playerCount: 0
+          });
+        }
+        
+        res.json({ 
+          connected: true,
+          playerCount: players.length,
+          developmentMode: process.env.NODE_ENV === 'development'
+        });
+      } catch (apiError) {
+        return res.json({ 
+          connected: false,
+          error: 'ESPN Fantasy API endpoint unavailable',
+          requiresSetup: true,
+          playerCount: 0
+        });
+      }
     } catch (error) {
       console.error('Error checking ESPN Fantasy status:', error);
       res.json({ 
         connected: false,
-        error: 'ESPN Fantasy API unavailable'
+        error: 'ESPN Fantasy API unavailable - check RapidAPI subscription',
+        requiresSetup: true
       });
     }
   });
