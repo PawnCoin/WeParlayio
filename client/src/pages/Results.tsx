@@ -11,65 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar, ChevronRight, Search, Filter, Check, X } from "lucide-react";
 
-// Sample game results for display
-const gameResults = [
-  {
-    id: 1,
-    date: "2023-09-28",
-    homeTeam: {
-      name: "Boston Celtics",
-      score: 112
-    },
-    awayTeam: {
-      name: "LA Lakers",
-      score: 102
-    },
-    status: "Final",
-    league: "NBA"
-  },
-  {
-    id: 2,
-    date: "2023-09-28",
-    homeTeam: {
-      name: "Milwaukee Bucks",
-      score: 98
-    },
-    awayTeam: {
-      name: "Miami Heat",
-      score: 104
-    },
-    status: "Final",
-    league: "NBA"
-  },
-  {
-    id: 3,
-    date: "2023-09-27",
-    homeTeam: {
-      name: "Dallas Mavericks",
-      score: 115
-    },
-    awayTeam: {
-      name: "Denver Nuggets",
-      score: 109
-    },
-    status: "Final",
-    league: "NBA"
-  },
-  {
-    id: 4,
-    date: "2023-09-27",
-    homeTeam: {
-      name: "Golden State Warriors",
-      score: 125
-    },
-    awayTeam: {
-      name: "Phoenix Suns",
-      score: 116
-    },
-    status: "Final",
-    league: "NBA"
-  }
-];
+// REMOVED: No more fake 2023 results - use real ESPN data only
 
 // Sample bet history for display
 const betHistory = [
@@ -128,9 +70,15 @@ const Results: React.FC = () => {
     queryKey: ["/api/sports"],
     queryFn: () => sportsBetAPI.getSports(),
   });
+
+  // Fetch real completed game results from ESPN
+  const { data: recentResults = [], isLoading: resultsLoading } = useQuery({
+    queryKey: ["/api/results/recent"],
+    refetchInterval: 30000, // Refresh every 30 seconds for updated results
+  });
   
-  // Filter game results based on filters
-  const filteredResults = gameResults.filter(game => {
+  // Filter real game results based on filters
+  const filteredResults = recentResults.filter((game: any) => {
     // Date filter
     if (dateFilter && !game.date.includes(dateFilter)) {
       return false;

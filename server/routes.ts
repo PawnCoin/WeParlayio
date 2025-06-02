@@ -6540,10 +6540,120 @@ Join us: WeParlay.io 🎯
     }
   });
 
-  // Results API endpoints
+  // Results API endpoints - REAL ESPN COMPLETED GAMES ONLY
   app.get('/api/results/recent', async (req, res) => {
     try {
-      const realResults = [];
+      const realResults: any[] = [];
+      
+      // Get real completed NFL games
+      try {
+        const nflResponse = await fetch('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard');
+        const nflData = await nflResponse.json();
+        
+        if (nflData.events) {
+          nflData.events.forEach((event: any) => {
+            const status = event.status?.type?.name;
+            if (status === 'STATUS_FINAL') {
+              const competition = event.competitions?.[0];
+              const homeTeam = competition?.competitors?.find((c: any) => c.homeAway === 'home');
+              const awayTeam = competition?.competitors?.find((c: any) => c.homeAway === 'away');
+              
+              realResults.push({
+                id: event.id,
+                date: event.date,
+                homeTeam: {
+                  name: homeTeam?.team?.displayName || 'Home',
+                  score: parseInt(homeTeam?.score || '0')
+                },
+                awayTeam: {
+                  name: awayTeam?.team?.displayName || 'Away', 
+                  score: parseInt(awayTeam?.score || '0')
+                },
+                status: 'Final',
+                league: 'NFL',
+                source: 'ESPN'
+              });
+            }
+          });
+        }
+      } catch (error) {
+        console.log('NFL completed games not available');
+      }
+      
+      // Get real completed NBA games
+      try {
+        const nbaResponse = await fetch('https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard');
+        const nbaData = await nbaResponse.json();
+        
+        if (nbaData.events) {
+          nbaData.events.forEach((event: any) => {
+            const status = event.status?.type?.name;
+            if (status === 'STATUS_FINAL') {
+              const competition = event.competitions?.[0];
+              const homeTeam = competition?.competitors?.find((c: any) => c.homeAway === 'home');
+              const awayTeam = competition?.competitors?.find((c: any) => c.homeAway === 'away');
+              
+              realResults.push({
+                id: event.id,
+                date: event.date,
+                homeTeam: {
+                  name: homeTeam?.team?.displayName || 'Home',
+                  score: parseInt(homeTeam?.score || '0')
+                },
+                awayTeam: {
+                  name: awayTeam?.team?.displayName || 'Away',
+                  score: parseInt(awayTeam?.score || '0') 
+                },
+                status: 'Final',
+                league: 'NBA',
+                source: 'ESPN'
+              });
+            }
+          });
+        }
+      } catch (error) {
+        console.log('NBA completed games not available');
+      }
+      
+      // Get real completed College Football games
+      try {
+        const cfbResponse = await fetch('https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard');
+        const cfbData = await cfbResponse.json();
+        
+        if (cfbData.events) {
+          cfbData.events.forEach((event: any) => {
+            const status = event.status?.type?.name;
+            if (status === 'STATUS_FINAL') {
+              const competition = event.competitions?.[0];
+              const homeTeam = competition?.competitors?.find((c: any) => c.homeAway === 'home');
+              const awayTeam = competition?.competitors?.find((c: any) => c.homeAway === 'away');
+              
+              realResults.push({
+                id: event.id,
+                date: event.date,
+                homeTeam: {
+                  name: homeTeam?.team?.displayName || 'Home',
+                  score: parseInt(homeTeam?.score || '0')
+                },
+                awayTeam: {
+                  name: awayTeam?.team?.displayName || 'Away',
+                  score: parseInt(awayTeam?.score || '0')
+                },
+                status: 'Final', 
+                league: 'College Football',
+                source: 'ESPN'
+              });
+            }
+          });
+        }
+      } catch (error) {
+        console.log('College Football completed games not available');
+      }
+      
+      // Sort by date (most recent first)
+      realResults.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      
+      console.log(`Found ${realResults.length} real completed games from ESPN`);
       res.json(realResults);
     } catch (error) {
       console.error('Error fetching recent results:', error);
@@ -6554,7 +6664,67 @@ Join us: WeParlay.io 🎯
   app.get('/api/results/by-sport/:sport', async (req, res) => {
     try {
       const { sport } = req.params;
-      const realSportResults = [];
+      const realSportResults: any[] = [];
+      
+      let espnUrl = '';
+      switch (sport.toLowerCase()) {
+        case 'nfl':
+        case 'football':
+          espnUrl = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard';
+          break;
+        case 'nba':
+        case 'basketball':
+          espnUrl = 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard';
+          break;
+        case 'college-football':
+          espnUrl = 'https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard';
+          break;
+        case 'mlb':
+        case 'baseball':
+          espnUrl = 'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard';
+          break;
+        default:
+          return res.json([]);
+      }
+      
+      try {
+        const response = await fetch(espnUrl);
+        const data = await response.json();
+        
+        if (data.events) {
+          data.events.forEach((event: any) => {
+            const status = event.status?.type?.name;
+            if (status === 'STATUS_FINAL') {
+              const competition = event.competitions?.[0];
+              const homeTeam = competition?.competitors?.find((c: any) => c.homeAway === 'home');
+              const awayTeam = competition?.competitors?.find((c: any) => c.homeAway === 'away');
+              
+              realSportResults.push({
+                id: event.id,
+                date: event.date,
+                homeTeam: {
+                  name: homeTeam?.team?.displayName || 'Home',
+                  score: parseInt(homeTeam?.score || '0')
+                },
+                awayTeam: {
+                  name: awayTeam?.team?.displayName || 'Away',
+                  score: parseInt(awayTeam?.score || '0')
+                },
+                status: 'Final',
+                league: sport.toUpperCase(),
+                source: 'ESPN'
+              });
+            }
+          });
+        }
+      } catch (error) {
+        console.log(`${sport} completed games not available from ESPN`);
+      }
+      
+      // Sort by date (most recent first)
+      realSportResults.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      
+      console.log(`Found ${realSportResults.length} real ${sport} results from ESPN`);
       res.json(realSportResults);
     } catch (error) {
       console.error('Error fetching sport results:', error);
