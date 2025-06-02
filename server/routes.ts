@@ -7062,6 +7062,77 @@ Join us: WeParlay.io 🎯
     }
   });
 
+  // TVApp2 Streaming API Endpoints
+  app.get('/api/streaming/status', async (req, res) => {
+    try {
+      const configured = !!(process.env.TVAPP2_HOST && process.env.TVAPP2_PORT);
+      res.json({
+        configured,
+        status: configured ? 'ready' : 'not_configured',
+        message: configured ? 'TVApp2 streaming service ready' : 'TVApp2 environment variables not configured'
+      });
+    } catch (error) {
+      res.status(500).json({ message: 'Error checking streaming status' });
+    }
+  });
+
+  app.get('/api/streaming/sports', async (req, res) => {
+    try {
+      const configured = !!(process.env.TVAPP2_HOST && process.env.TVAPP2_PORT);
+      
+      if (!configured) {
+        return res.json([]);
+      }
+
+      // Use TVApp2 service to get live sports streams
+      const streams = await tvApp2Service.getLiveSportsStreams();
+      res.json(streams);
+    } catch (error) {
+      console.error('Error fetching sports streams:', error);
+      res.status(500).json({ message: 'Error fetching sports streams' });
+    }
+  });
+
+  app.get('/api/streaming/esports', async (req, res) => {
+    try {
+      const configured = !!(process.env.TVAPP2_HOST && process.env.TVAPP2_PORT);
+      
+      if (!configured) {
+        return res.json([]);
+      }
+
+      // Use TVApp2 service to get live esports streams
+      const streams = await tvApp2Service.getLiveEsportsStreams();
+      res.json(streams);
+    } catch (error) {
+      console.error('Error fetching esports streams:', error);
+      res.status(500).json({ message: 'Error fetching esports streams' });
+    }
+  });
+
+  app.get('/api/streaming/stream/:eventId', async (req, res) => {
+    try {
+      const { eventId } = req.params;
+      const userTier = req.user?.tier || 'bronze';
+      
+      const configured = !!(process.env.TVAPP2_HOST && process.env.TVAPP2_PORT);
+      
+      if (!configured) {
+        return res.status(503).json({ 
+          message: 'Streaming service not configured',
+          fallback: true
+        });
+      }
+
+      // Get stream URL with tier-based quality
+      const streamData = await tvApp2Service.getStreamUrl(eventId, userTier);
+      res.json(streamData);
+    } catch (error) {
+      console.error('Error getting stream URL:', error);
+      res.status(500).json({ message: 'Error accessing stream' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
