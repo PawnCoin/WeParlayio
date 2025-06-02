@@ -24,6 +24,7 @@ import { bankingRouter } from "./routes/bankingRoutes";
 import websocketPollingRoutes from "./routes/websocketPollingRoutes";
 import oddsTickerRouter from "./routes/oddsTickerRoutes";
 import { apiTestRouter } from "./routes/apiTestRoutes";
+import { tvapp2Service } from "./services/theTVAppService";
 
 // Export the routes so they can be imported by index.ts
 export { notificationRoutes, websocketPollingRoutes };
@@ -6965,6 +6966,99 @@ Join us: WeParlay.io 🎯
     } catch (error) {
       console.error('Error fetching active bets:', error);
       res.status(500).json({ error: 'Failed to fetch active bets' });
+    }
+  });
+
+  // TVApp2 Streaming Integration Endpoints
+  app.get('/api/streaming/sports', async (req, res) => {
+    try {
+      const streams = await tvapp2Service.getLiveSportsStreams();
+      res.json({ success: true, streams });
+    } catch (error) {
+      console.error('Error fetching sports streams:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to fetch sports streams',
+        message: 'Please configure TVApp2 service (TVAPP2_HOST environment variable)'
+      });
+    }
+  });
+
+  app.get('/api/streaming/esports', async (req, res) => {
+    try {
+      const streams = await tvapp2Service.getLiveEsportsStreams();
+      res.json({ success: true, streams });
+    } catch (error) {
+      console.error('Error fetching esports streams:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to fetch esports streams',
+        message: 'Please configure TVApp2 service (TVAPP2_HOST environment variable)'
+      });
+    }
+  });
+
+  app.get('/api/streaming/stream/:eventId', isAuthenticated, async (req, res) => {
+    try {
+      const { eventId } = req.params;
+      const user = await storage.getUser(req.user?.claims?.sub);
+      
+      if (!user) {
+        return res.status(401).json({ error: 'User not found' });
+      }
+
+      // Check user tier for streaming access
+      const tier = user.tier?.toLowerCase() || 'bronze';
+      
+      // Bronze and Silver get 30-second preview
+      if (tier === 'bronze' || tier === 'silver') {
+        const streamInfo = await tvapp2Service.getStreamInfo(eventId);
+        res.json({
+          success: true,
+          previewMode: true,
+          previewDuration: 30,
+          tier,
+          streamUrl: streamInfo?.sources?.[0]?.url,
+          upgradeRequired: true,
+          message: 'Upgrade to Gold tier for unlimited streaming'
+        });
+      } else {
+        // Gold, Platinum, Diamond get full access
+        const streamInfo = await tvapp2Service.getStreamInfo(eventId);
+        const quality = tier === 'diamond' ? '4K' : tier === 'platinum' ? 'HD' : 'SD';
+        
+        res.json({
+          success: true,
+          previewMode: false,
+          tier,
+          quality,
+          streamUrl: streamInfo?.sources?.[0]?.url,
+          fullAccess: true
+        });
+      }
+    } catch (error) {
+      console.error('Error accessing stream:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to access stream' 
+      });
+    }
+  });
+
+  app.get('/api/streaming/status', async (req, res) => {
+    try {
+      const isConfigured = process.env.TVAPP2_HOST && process.env.TVAPP2_HOST !== 'localhost';
+      const host = process.env.TVAPP2_HOST || 'Not configured';
+      const port = process.env.TVAPP2_PORT || '5004';
+      
+      res.json({
+        configured: isConfigured,
+        host,
+        port,
+        message: isConfigured ? 'TVApp2 service configured' : 'TVApp2 service needs configuration'
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to check streaming status' });
     }
   });
 
