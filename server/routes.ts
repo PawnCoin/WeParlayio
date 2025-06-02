@@ -2335,6 +2335,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Live sports streaming from M3U playlist
+  app.get('/api/streaming/sports-channels', async (req, res) => {
+    try {
+      const streams = await theTVAppService.getSportsStreams();
+      res.json({
+        success: true,
+        channels: streams,
+        total: streams.length
+      });
+    } catch (error) {
+      console.error('Sports streaming error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to fetch sports channels',
+        channels: []
+      });
+    }
+  });
+
+  // Search sports streaming content
+  app.get('/api/streaming/search', async (req, res) => {
+    try {
+      const { q } = req.query;
+      if (!q || typeof q !== 'string') {
+        return res.status(400).json({
+          success: false,
+          message: 'Search query required'
+        });
+      }
+
+      const streams = await theTVAppService.searchSportsContent(q);
+      res.json({
+        success: true,
+        channels: streams,
+        total: streams.length,
+        query: q
+      });
+    } catch (error) {
+      console.error('Sports streaming search error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to search sports channels',
+        channels: []
+      });
+    }
+  });
+
+  // Get streaming service status
+  app.get('/api/streaming/status', async (req, res) => {
+    try {
+      const status = await theTVAppService.getServiceStatus();
+      res.json(status);
+    } catch (error) {
+      console.error('Streaming status error:', error);
+      res.status(500).json({
+        available: false,
+        message: 'Failed to check streaming service status'
+      });
+    }
+  });
+
   // CRITICAL: Bet settlement and payout system
   app.post('/api/bets/:id/settle', isAuthenticated, async (req, res) => {
     try {

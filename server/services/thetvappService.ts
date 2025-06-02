@@ -181,38 +181,7 @@ export class TheTVAppService {
     }
   }
 
-  /**
-   * Format data into our stream format
-   */
-  private formatSportsData(data: any): SportStream[] {
-    if (!data || !Array.isArray(data.streams)) {
-      return [];
-    }
 
-    return data.streams.map((stream: any) => ({
-      eventId: stream.id || `stream_${Date.now()}`,
-      sportType: stream.sport || 'sports',
-      title: stream.title || 'Live Stream',
-      homeTeam: stream.homeTeam || 'Team A',
-      awayTeam: stream.awayTeam || 'Team B',
-      league: stream.league || 'Sports',
-      startTime: stream.startTime || new Date().toISOString(),
-      status: 'live',
-      sources: [{
-        id: stream.id || 'source_1',
-        name: 'HD Stream',
-        url: stream.url || '',
-        quality: 'HD',
-        language: 'en',
-        region: 'US',
-        isLive: true,
-        viewers: stream.viewers || 1000
-      }],
-      thumbnailUrl: stream.thumbnail || '',
-      description: stream.description || '',
-      tags: stream.tags || ['live', 'sports']
-    }));
-  }
 
   /**
    * Get service status
