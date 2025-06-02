@@ -42,24 +42,31 @@ export class CleanStreamingService {
         body: JSON.stringify({
           query: `
             query {
-              events(limit: 20) {
+              series(first: 20) {
                 id
                 title
                 status
-                teams {
-                  id
-                  name
-                  logo
-                }
-                game {
+                matches {
                   id
                   title
-                }
-                startTime
-                streams {
-                  url
-                  platform
-                  viewers
+                  status
+                  opponents {
+                    id
+                    name
+                    image_url
+                  }
+                  game {
+                    id
+                    name
+                  }
+                  begin_at
+                  streams {
+                    embed_url
+                    language
+                    main
+                    official
+                    raw_url
+                  }
                 }
               }
             }
@@ -72,7 +79,9 @@ export class CleanStreamingService {
       }
 
       const data = await response.json();
-      return this.formatGRIDStreams(data.data?.events || []);
+      const series = data.data?.series || [];
+      const matches = series.flatMap((serie: any) => serie.matches || []);
+      return this.formatGRIDStreams(matches);
     } catch (error) {
       console.error('GRID esports streaming error:', error);
       return [];
@@ -106,30 +115,31 @@ export class CleanStreamingService {
     }));
   }
 
-  private formatGRIDStreams(series: any[]): any[] {
-    return series.flatMap(serie => 
-      (serie.matches || []).map((match: any) => ({
-        id: match.id,
-        title: match.title || serie.title,
-        sport: 'esports',
-        league: 'Professional Esports',
-        homeTeam: {
-          name: 'Team A',
-          score: 0
-        },
-        awayTeam: {
-          name: 'Team B', 
-          score: 0
-        },
-        status: match.state === 'live' ? 'live' : 'scheduled',
-        viewers: Math.floor(Math.random() * 100000) + 5000,
-        streamUrl: match.streams?.[0]?.url || `https://grid.gg/match/${match.id}`,
-        thumbnailUrl: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&q=80',
-        startTime: new Date().toISOString(),
-        period: 'Live',
-        isEsport: true
-      }))
-    );
+  private formatGRIDStreams(events: any[]): any[] {
+    return events.map((event: any) => ({
+      id: event.id,
+      title: event.title,
+      sport: 'esports',
+      league: event.game?.title || 'Esports',
+      homeTeam: {
+        name: event.teams?.[0]?.name || 'Team 1',
+        logo: event.teams?.[0]?.logo,
+        score: 0
+      },
+      awayTeam: {
+        name: event.teams?.[1]?.name || 'Team 2',
+        logo: event.teams?.[1]?.logo,
+        score: 0
+      },
+      status: event.status === 'live' ? 'live' : 'scheduled',
+      viewers: event.streams?.[0]?.viewers || 0,
+      streamUrl: event.streams?.[0]?.url || `https://grid.gg/events/${event.id}`,
+      thumbnailUrl: event.teams?.[0]?.logo || 'https://grid.gg/logo.png',
+      startTime: event.startTime,
+      period: event.status === 'live' ? 'Live' : 'Scheduled',
+      timeRemaining: '',
+      isEsport: true
+    }));
   }
 
   // Combined stream data from authentic sources only
