@@ -32,9 +32,14 @@ interface StreamSource {
 export class TheTVAppService {
   private m3uUrl: string;
   private sportsChannels: SportStream[] = [];
+  private username: string;
+  private password: string;
   
   constructor() {
-    this.m3uUrl = 'https://tvpass.org/playlist/m3u';
+    this.username = process.env.THETVAPP_USERNAME || '686140897';
+    this.password = process.env.THETVAPP_PASSWORD || '80274761';
+    this.m3uUrl = process.env.M3U_PLAYLIST_URL || 
+      `https://thetv.to:443/get.php?username=${this.username}&password=${this.password}&type=m3u_plus&output=ts`;
     console.log(`M3U Streaming service configured: ${this.m3uUrl}`);
   }
 

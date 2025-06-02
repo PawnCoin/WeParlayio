@@ -25,6 +25,7 @@ import websocketPollingRoutes from "./routes/websocketPollingRoutes";
 import oddsTickerRouter from "./routes/oddsTickerRoutes";
 import { apiTestRouter } from "./routes/apiTestRoutes";
 import { theTVAppService } from "./services/thetvappService";
+import { esportsApiService } from "./services/esportsApiService";
 
 // Export the routes so they can be imported by index.ts
 export { notificationRoutes, websocketPollingRoutes };
@@ -8306,6 +8307,60 @@ Join us: WeParlay.io 🎯
     }
   });
 
+  // Real esports API endpoints
+  app.get('/api/esports/live-matches', async (req, res) => {
+    try {
+      const matches = await esportsApiService.getLiveMatches();
+      res.json({
+        success: true,
+        matches,
+        total: matches.length
+      });
+    } catch (error) {
+      console.error('Error fetching live esports matches:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch live esports matches'
+      });
+    }
+  });
+
+  app.get('/api/esports/tournaments', async (req, res) => {
+    try {
+      const tournaments = await esportsApiService.getActiveTournaments();
+      res.json({
+        success: true,
+        tournaments,
+        total: tournaments.length
+      });
+    } catch (error) {
+      console.error('Error fetching esports tournaments:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch esports tournaments'
+      });
+    }
+  });
+
+  app.get('/api/esports/matches/:game', async (req, res) => {
+    try {
+      const { game } = req.params;
+      const matches = await esportsApiService.getMatchesByGame(game);
+      res.json({
+        success: true,
+        matches,
+        game,
+        total: matches.length
+      });
+    } catch (error) {
+      console.error(`Error fetching ${req.params.game} matches:`, error);
+      res.status(500).json({
+        success: false,
+        error: `Failed to fetch ${req.params.game} matches`
+      });
+    }
+  });
+
   app.get('/api/streaming/channels', async (req, res) => {
     try {
       let realChannels: any[] = [];
@@ -8328,7 +8383,7 @@ Join us: WeParlay.io 🎯
           }));
         }
       } catch (error) {
-        console.log('TVApp2 streaming not available:', error.message);
+        console.log('TVApp2 streaming not available:', (error as any).message);
       }
       
       // If no real streams available, return empty array (no fake data)
