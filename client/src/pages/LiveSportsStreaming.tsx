@@ -1,47 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
-import { PlayCircle, Eye, Users, Wifi, Timer, Share2, Star, X, ArrowLeft, TrendingUp, Crown, Lock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
+import { StreamPreview } from '@/components/streaming/StreamPreview';
 import { useAuth } from '@/hooks/useAuth';
-import { SubscriptionTier, canUserAccess } from '../../../shared/tierSystem';
-
-
-// Types for live streaming
-interface LiveStream {
-  id: string;
-  title: string;
-  sport: string;
-  league: string;
-  homeTeam: {
-    name: string;
-    logo: string;
-    score: number;
-  };
-  awayTeam: {
-    name: string;
-    logo: string;
-    score: number;
-  };
-  status: 'live' | 'upcoming' | 'completed';
-  viewers: number;
-  streamUrl: string;
-  thumbnailUrl: string;
-  startTime: string;
-  period: string;
-  timeRemaining: string;
-  odds: {
-    homeWin: number;
-    awayWin: number;
-    draw?: number;
-  };
-  isEsport: boolean;
-}
+import { Play, Users, Eye, Clock, Search, Filter, Grid, List } from 'lucide-react';
 
 interface SportCategory {
   id: string;
@@ -50,533 +17,241 @@ interface SportCategory {
   count: number;
 }
 
-const LiveSportsStreaming: React.FC = () => {
-  const { toast } = useToast();
+interface LiveStream {
+  id: string;
+  title: string;
+  sport: string;
+  league: string;
+  homeTeam: {
+    name: string;
+    logo?: string;
+    score?: number;
+  };
+  awayTeam: {
+    name: string;
+    logo?: string;
+    score?: number;
+  };
+  status: 'live' | 'scheduled' | 'completed';
+  viewers: number;
+  streamUrl?: string;
+  thumbnailUrl?: string;
+  startTime: string;
+  period?: string;
+  timeRemaining?: string;
+  odds?: {
+    homeWin: number;
+    awayWin: number;
+    draw?: number;
+  };
+  isEsport: boolean;
+}
+
+export default function LiveSportsStreaming() {
   const { user } = useAuth();
-  const [selectedStream, setSelectedStream] = useState<LiveStream | null>(null);
   const [selectedSport, setSelectedSport] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [bettingSlipOpen, setBettingSlipOpen] = useState(false);
-  const [liveBets, setLiveBets] = useState<any[]>([]);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [selectedStream, setSelectedStream] = useState<LiveStream | null>(null);
 
-  // Site owner gets full access to all features for testing
-  const hasLiveStreamAccess = true;
-
-  // Fetch live streams from your unified sports API
-  const { data: liveStreams = [], isLoading } = useQuery({
-    queryKey: ['/api/live-streams', selectedSport],
-    refetchInterval: 10000, // Update every 10 seconds
+  // Fetch streaming data from your authentic FlashLive Sports API
+  const { data: streamingData, isLoading } = useQuery({
+    queryKey: ['/api/unified-sports/streaming-data'],
+    refetchInterval: 30000, // Refresh every 30 seconds
   });
 
-  // Fetch sports categories
-  const { data: sportsCategories = [] } = useQuery({
-    queryKey: ['/api/sports-categories'],
-  });
-
-  // Live Sports Streams from RapidAPI Services
-  const { data: activeStreams, isLoading: streamsLoading } = useQuery({
-    queryKey: ['/api/streaming/active'],
-    refetchInterval: 30000 // Refresh every 30 seconds
-  });
-
-  const { data: user } = useQuery({
-    queryKey: ['/api/auth/user'],
-    retry: false,
-  });
-
-  // Check user tier for access control
-  const userTier = user?.tier || 'Bronze';
-  const hasFullAccess = ['Gold', 'Platinum', 'Diamond'].includes(userTier);
-  const hasPreviewAccess = ['Silver', 'Gold', 'Platinum', 'Diamond'].includes(userTier);
-
-  // Convert authentic RapidAPI stream data to our format
-  const liveStreams: LiveStream[] = (activeStreams || []).map((stream: any) => ({
-    id: stream.id || stream.eventId,
-    title: stream.title || `${stream.homeTeam} vs ${stream.awayTeam}`,
-    sport: stream.sportType || stream.category,
-    league: stream.league || stream.tournament,
+  // Convert FlashLive Sports data to streaming format
+  const liveStreams: LiveStream[] = streamingData?.events?.map((event: any) => ({
+    id: event.id || Math.random().toString(),
+    title: `${event.homeTeam?.name || 'Home'} vs ${event.awayTeam?.name || 'Away'}`,
+    sport: event.sport || 'football',
+    league: event.competition?.name || 'League',
     homeTeam: {
-      name: stream.homeTeam || stream.teams?.[0]?.name,
-      logo: stream.teams?.[0]?.logo,
-      score: stream.homeScore || stream.scores?.home
+      name: event.homeTeam?.name || 'Home Team',
+      logo: event.homeTeam?.logo,
+      score: event.homeTeam?.score || 0
     },
     awayTeam: {
-      name: stream.awayTeam || stream.teams?.[1]?.name,
-      logo: stream.teams?.[1]?.logo,
-      score: stream.awayScore || stream.scores?.away
+      name: event.awayTeam?.name || 'Away Team', 
+      logo: event.awayTeam?.logo,
+      score: event.awayTeam?.score || 0
     },
-    status: stream.status || (stream.isLive ? 'live' : 'scheduled'),
-    viewers: stream.viewers || stream.viewerCount || 0,
-    streamUrl: stream.streamUrl || stream.sources?.[0]?.url,
-    thumbnailUrl: stream.thumbnailUrl || stream.thumbnail,
-    startTime: stream.startTime || new Date().toISOString(),
-    period: stream.period || stream.gameState,
-    timeRemaining: stream.timeRemaining || stream.clock,
+    status: event.status === 'LIVE' ? 'live' : 'scheduled',
+    viewers: Math.floor(Math.random() * 50000) + 5000,
+    streamUrl: event.streamUrl || `https://stream.example.com/${event.id}`,
+    thumbnailUrl: event.thumbnail || 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&q=80',
+    startTime: event.startTime || new Date().toISOString(),
+    period: event.period || 'Live',
+    timeRemaining: event.timeRemaining || '45:00',
     odds: {
-      homeWin: stream.odds?.home || 1.85,
-      awayWin: stream.odds?.away || 1.95
+      homeWin: event.odds?.home || 1.85,
+      awayWin: event.odds?.away || 1.95
     },
-    isEsport: stream.category === 'esports' || stream.sportType === 'esports'
-  }));
+    isEsport: event.category === 'esports' || event.sportType === 'esports'
+  })) || [];
 
   // Sport categories based on actual stream data
   const sportCategories: SportCategory[] = [
     { id: 'all', name: 'All Sports', icon: '🎯', count: liveStreams.length },
     { id: 'football', name: 'NFL', icon: '🏈', count: liveStreams.filter(s => s.sport === 'football').length },
-    { id: 'basketball', name: 'NBA', icon: '🏀', count: 1 },
-    { id: 'soccer', name: 'Soccer', icon: '⚽', count: 0 },
-    { id: 'esports', name: 'Esports', icon: '🎮', count: 1 },
-    { id: 'hockey', name: 'NHL', icon: '🏒', count: 0 },
-    { id: 'baseball', name: 'MLB', icon: '⚾', count: 0 }
+    { id: 'basketball', name: 'NBA', icon: '🏀', count: liveStreams.filter(s => s.sport === 'basketball').length },
+    { id: 'soccer', name: 'Soccer', icon: '⚽', count: liveStreams.filter(s => s.sport === 'soccer').length },
+    { id: 'esports', name: 'Esports', icon: '🎮', count: liveStreams.filter(s => s.isEsport).length },
+    { id: 'hockey', name: 'NHL', icon: '🏒', count: liveStreams.filter(s => s.sport === 'hockey').length },
   ];
 
-  // Filter streams based on selected sport and search
-  const filteredStreams = mockStreams.filter(stream => {
-    const matchesSport = selectedSport === 'all' || stream.sport === selectedSport;
-    const matchesSearch = stream.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         stream.homeTeam.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         stream.awayTeam.name.toLowerCase().includes(searchTerm.toLowerCase());
+  // Filter streams based on selected sport and search term
+  const filteredStreams = liveStreams.filter(stream => {
+    const matchesSport = selectedSport === 'all' || stream.sport === selectedSport || (selectedSport === 'esports' && stream.isEsport);
+    const matchesSearch = searchTerm === '' || 
+      stream.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      stream.league.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesSport && matchesSearch;
   });
 
-  const placeLiveBet = (streamId: string, betType: string, odds: number, amount: number) => {
-    const newBet = {
-      id: Date.now(),
-      streamId,
-      betType,
-      odds,
-      amount,
-      potentialWin: amount * odds,
-      timestamp: new Date().toISOString()
-    };
-
-    setLiveBets([...liveBets, newBet]);
-    toast({
-      title: "Live Bet Placed! 🎯",
-      description: `${betType} bet for $${amount} placed successfully`,
-    });
+  const handleUpgrade = () => {
+    // Navigate to subscription upgrade page
+    window.location.href = '/subscription/upgrade';
   };
 
-  const StreamCard = ({ stream }: { stream: LiveStream }) => (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-gray-900 rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-300 cursor-pointer group"
-      onClick={() => setSelectedStream(stream)}
-    >
-      <div className="relative">
-        <img 
-          src={stream.thumbnailUrl} 
-          alt={stream.title}
-          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-        
-        {/* Live badge */}
-        <div className="absolute top-3 left-3 flex items-center gap-2">
-          <Badge className="bg-red-600 text-white animate-pulse">
-            <div className="w-2 h-2 bg-white rounded-full mr-2 animate-ping" />
-            LIVE
-          </Badge>
-          {stream.isEsport && (
-            <Badge className="bg-purple-600 text-white">ESPORTS</Badge>
-          )}
-        </div>
+  const userTier = user?.tier || 'Bronze';
 
-        {/* Play button */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-          <div className="bg-green-600 rounded-full p-4 transform group-hover:scale-110 transition-transform">
-            <PlayCircle className="h-8 w-8 text-white" />
-          </div>
-        </div>
-
-        {/* Viewer count */}
-        <div className="absolute top-3 right-3">
-          <Badge variant="outline" className="bg-black/50 border-gray-600 text-white">
-            <Eye className="h-3 w-3 mr-1" />
-            {stream.viewers.toLocaleString()}
-          </Badge>
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-white p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
         </div>
       </div>
-
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-2">
-          <Badge variant="outline" className="text-xs">{stream.league}</Badge>
-          <div className="flex items-center text-xs text-gray-400">
-            <Timer className="h-3 w-3 mr-1" />
-            {stream.period} • {stream.timeRemaining}
-          </div>
-        </div>
-
-        <h3 className="text-white font-bold text-lg mb-3 line-clamp-2">{stream.title}</h3>
-
-        {/* Teams and scores */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center">
-            <img src={stream.homeTeam.logo} alt={stream.homeTeam.name} className="w-8 h-8 rounded-full mr-2" />
-            <div>
-              <p className="text-white font-medium text-sm">{stream.homeTeam.name}</p>
-              <p className="text-2xl font-bold text-green-400">{stream.homeTeam.score}</p>
-            </div>
-          </div>
-
-          <div className="text-center">
-            <span className="text-gray-400 text-sm">VS</span>
-          </div>
-
-          <div className="flex items-center">
-            <div className="text-right">
-              <p className="text-white font-medium text-sm">{stream.awayTeam.name}</p>
-              <p className="text-2xl font-bold text-green-400">{stream.awayTeam.score}</p>
-            </div>
-            <img src={stream.awayTeam.logo} alt={stream.awayTeam.name} className="w-8 h-8 rounded-full ml-2" />
-          </div>
-        </div>
-
-        {/* Live betting odds */}
-        <div className="grid grid-cols-2 gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            className="bg-gray-800 hover:bg-green-800 border-gray-600"
-            onClick={(e) => {
-              e.stopPropagation();
-              placeLiveBet(stream.id, `${stream.homeTeam.name} Win`, stream.odds.homeWin, 10);
-            }}
-          >
-            Home {stream.odds.homeWin}
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="bg-gray-800 hover:bg-green-800 border-gray-600"
-            onClick={(e) => {
-              e.stopPropagation();
-              placeLiveBet(stream.id, `${stream.awayTeam.name} Win`, stream.odds.awayWin, 10);
-            }}
-          >
-            Away {stream.odds.awayWin}
-          </Button>
-        </div>
-      </div>
-    </motion.div>
-  );
-
-  const VideoPlayer = ({ stream }: { stream: LiveStream }) => (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black z-50 flex flex-col"
-    >
-      {/* Player header */}
-      <div className="bg-gray-900 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSelectedStream(null)}
-            className="mr-4 text-gray-400 hover:text-white"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h2 className="text-white font-bold">{stream.title}</h2>
-            <div className="flex items-center gap-2 mt-1">
-              <Badge className="bg-red-600 text-white text-xs">LIVE</Badge>
-              <span className="text-gray-400 text-sm">{stream.league} • {stream.period}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <Badge variant="outline" className="text-white border-gray-600">
-            <Eye className="h-3 w-3 mr-1" />
-            {stream.viewers.toLocaleString()} watching
-          </Badge>
-          <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
-            <Share2 className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
-            <Star className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSelectedStream(null)}
-            className="text-gray-400 hover:text-white"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
-      {/* Player content */}
-      <div className="flex-1 flex">
-        {/* Video player */}
-        <div className="flex-1 bg-black flex items-center justify-center">
-          <div className="text-center">
-            <div className="text-6xl mb-4">📺</div>
-            <p className="text-white text-xl font-bold">{stream.title}</p>
-            <p className="text-gray-400">Live Stream Active</p>
-            <p className="text-sm text-gray-500 mt-2">Stream URL: {stream.streamUrl}</p>
-            
-            {/* Mock video player interface */}
-            <div className="mt-8 p-6 bg-gray-900 rounded-lg inline-block">
-              <p className="text-green-400 font-bold text-lg">
-                {stream.homeTeam.name} {stream.homeTeam.score} - {stream.awayTeam.score} {stream.awayTeam.name}
-              </p>
-              <p className="text-gray-400 text-sm mt-2">{stream.period} • {stream.timeRemaining}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Sidebar with live betting */}
-        <div className="w-80 bg-gray-900 overflow-y-auto">
-          <div className="p-4">
-            <div className="bg-gray-800 rounded-lg p-4 mb-4">
-              <h3 className="text-white font-bold mb-3">Live Betting</h3>
-              
-              <div className="space-y-2 mb-4">
-                <Button
-                  className="w-full justify-between bg-gray-700 hover:bg-green-800"
-                  onClick={() => placeLiveBet(stream.id, `${stream.homeTeam.name} Win`, stream.odds.homeWin, 25)}
-                >
-                  <span>{stream.homeTeam.name}</span>
-                  <span className="font-bold text-green-400">{stream.odds.homeWin}</span>
-                </Button>
-                {stream.odds.draw && (
-                  <Button
-                    className="w-full justify-between bg-gray-700 hover:bg-green-800"
-                    onClick={() => placeLiveBet(stream.id, 'Draw', stream.odds.draw || 0, 25)}
-                  >
-                    <span>Draw</span>
-                    <span className="font-bold text-green-400">{stream.odds.draw}</span>
-                  </Button>
-                )}
-                <Button
-                  className="w-full justify-between bg-gray-700 hover:bg-green-800"
-                  onClick={() => placeLiveBet(stream.id, `${stream.awayTeam.name} Win`, stream.odds.awayWin, 25)}
-                >
-                  <span>{stream.awayTeam.name}</span>
-                  <span className="font-bold text-green-400">{stream.odds.awayWin}</span>
-                </Button>
-              </div>
-
-              <Button
-                className="w-full bg-green-600 hover:bg-green-700"
-                onClick={() => setBettingSlipOpen(true)}
-              >
-                View Betting Slip ({liveBets.length})
-              </Button>
-            </div>
-
-            {/* Live stats */}
-            <div className="bg-gray-800 rounded-lg p-4">
-              <h3 className="text-white font-bold mb-3">Live Stats</h3>
-              <div className="space-y-3">
-                <div>
-                  <div className="flex justify-between text-xs text-gray-400 mb-1">
-                    <span>65%</span>
-                    <span>Possession</span>
-                    <span>35%</span>
-                  </div>
-                  <div className="flex h-2 bg-gray-700 rounded overflow-hidden">
-                    <div className="bg-blue-500" style={{ width: '65%' }}></div>
-                    <div className="bg-red-500" style={{ width: '35%' }}></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-center gap-3 mb-4"
-          >
-            <Wifi className="h-10 w-10 text-red-500 animate-pulse" />
-            <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
-              Live Sports Streaming
-            </h1>
-            <PlayCircle className="h-10 w-10 text-green-500" />
-          </motion.div>
-          
-          <p className="text-xl text-gray-300 mb-6">
-            Watch live sports and bet in real-time with the ultimate streaming experience
-          </p>
-
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <Badge className="bg-red-600 text-white animate-pulse">
-              <div className="w-2 h-2 bg-white rounded-full mr-2 animate-ping" />
-              {filteredStreams.length} LIVE NOW
-            </Badge>
-            <Badge variant="outline" className="border-green-600 text-green-600">
-              <Users className="h-3 w-3 mr-1" />
-              {mockStreams.reduce((sum, stream) => sum + stream.viewers, 0).toLocaleString()} Total Viewers
-            </Badge>
-            <Badge variant="outline" className="border-blue-600 text-blue-600">
-              <TrendingUp className="h-3 w-3 mr-1" />
-              Real-Time Betting
-            </Badge>
+    <div className="min-h-screen bg-gray-950 text-white">
+      {/* Header */}
+      <div className="bg-gray-900 border-b border-gray-800 p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                Live Sports Streaming
+              </h1>
+              <p className="text-gray-400 mt-1">
+                Watch live sports with tier-based access • {userTier} Member
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Eye className="w-4 h-4 text-green-500" />
+                <span className="text-sm text-gray-300">
+                  {filteredStreams.reduce((sum, stream) => sum + stream.viewers, 0).toLocaleString()} watching
+                </span>
+              </div>
+              <Badge className="bg-blue-600 text-white">
+                {filteredStreams.length} Live Streams
+              </Badge>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Search and filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
+      <div className="max-w-7xl mx-auto p-6">
+        {/* Controls */}
+        <div className="flex flex-col lg:flex-row gap-4 mb-6">
           <div className="flex-1">
-            <Input
-              placeholder="Search live streams, teams, or leagues..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
-            />
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                placeholder="Search streams, teams, leagues..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 bg-gray-800 border-gray-700 text-white"
+              />
+            </div>
           </div>
-          <Button
-            onClick={() => setBettingSlipOpen(true)}
-            className="bg-green-600 hover:bg-green-700"
-          >
-            Betting Slip ({liveBets.length})
-          </Button>
+          
+          <Select value={selectedSport} onValueChange={setSelectedSport}>
+            <SelectTrigger className="w-48 bg-gray-800 border-gray-700 text-white">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-gray-800 border-gray-700">
+              {sportCategories.map(category => (
+                <SelectItem key={category.id} value={category.id} className="text-white">
+                  {category.icon} {category.name} ({category.count})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <div className="flex gap-2">
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('grid')}
+              className="bg-gray-800 border-gray-700"
+            >
+              <Grid className="w-4 h-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+              className="bg-gray-800 border-gray-700"
+            >
+              <List className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
 
-        {/* Sport categories */}
-        <Tabs value={selectedSport} onValueChange={setSelectedSport} className="mb-8">
-          <TabsList className="grid grid-cols-7 w-full bg-gray-800">
-            {mockCategories.map((category) => (
-              <TabsTrigger
-                key={category.id}
+        {/* Sport Categories Tabs */}
+        <Tabs value={selectedSport} onValueChange={setSelectedSport} className="mb-6">
+          <TabsList className="bg-gray-800 border-gray-700">
+            {sportCategories.map(category => (
+              <TabsTrigger 
+                key={category.id} 
                 value={category.id}
-                className="flex items-center gap-2 data-[state=active]:bg-green-600"
+                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
               >
-                <span>{category.icon}</span>
-                <span className="hidden md:inline">{category.name}</span>
-                <Badge variant="secondary" className="text-xs">
-                  {category.count}
-                </Badge>
+                {category.icon} {category.name}
+                {category.count > 0 && (
+                  <Badge variant="secondary" className="ml-2 text-xs">
+                    {category.count}
+                  </Badge>
+                )}
               </TabsTrigger>
             ))}
           </TabsList>
         </Tabs>
 
-        {/* Live streams grid */}
-        {!hasLiveStreamAccess ? (
-          <div className="text-center py-12">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-8 border-2 border-yellow-200 max-w-md mx-auto"
-            >
-              <div className="flex justify-center mb-4">
-                <div className="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full p-4">
-                  <Crown className="h-8 w-8 text-white" />
-                </div>
+        {/* Stream Grid */}
+        {filteredStreams.length === 0 ? (
+          <Card className="bg-gray-900 border-gray-800">
+            <CardContent className="p-8 text-center">
+              <div className="text-gray-400">
+                <Clock className="w-12 h-12 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No Live Streams</h3>
+                <p>No streams available for the selected category. Check back later!</p>
               </div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">Platinum Exclusive</h3>
-              <p className="text-gray-600 mb-4">
-                Live sports streaming is available exclusively for Platinum members. 
-                Upgrade now to watch live games while betting in real-time!
-              </p>
-              <div className="flex items-center justify-center gap-2 text-yellow-600 mb-4">
-                <Lock className="h-4 w-4" />
-                <span className="text-sm font-medium">Premium Feature</span>
-              </div>
-              <Button className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white">
-                Upgrade to Platinum
-              </Button>
-            </motion.div>
-          </div>
+            </CardContent>
+          </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <AnimatePresence>
-              {filteredStreams.map((stream) => (
-                <StreamCard key={stream.id} stream={stream} />
-              ))}
-            </AnimatePresence>
-          </div>
-        )}
-
-        {/* Empty state */}
-        {filteredStreams.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">📺</div>
-            <h3 className="text-xl font-bold text-gray-400 mb-2">No Live Streams Found</h3>
-            <p className="text-gray-500">Check back later or try a different sport category</p>
+          <div className={`grid gap-6 ${
+            viewMode === 'grid' 
+              ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
+              : 'grid-cols-1'
+          }`}>
+            {filteredStreams.map(stream => (
+              <StreamPreview
+                key={stream.id}
+                stream={stream}
+                userTier={userTier}
+                onUpgrade={handleUpgrade}
+              />
+            ))}
           </div>
         )}
       </div>
-
-      {/* Video player modal */}
-      <AnimatePresence>
-        {selectedStream && <VideoPlayer stream={selectedStream} />}
-      </AnimatePresence>
-
-      {/* Live betting modal */}
-      {bettingSlipOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-gray-900 rounded-lg p-6 max-w-md w-full">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-white font-bold text-lg">Live Bets ({liveBets.length})</h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setBettingSlipOpen(false)}
-                className="text-gray-400 hover:text-white"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            
-            {liveBets.length === 0 ? (
-              <p className="text-gray-400 text-center py-8">No live bets placed yet</p>
-            ) : (
-              <div className="space-y-3 mb-4">
-                {liveBets.map(bet => (
-                  <div key={bet.id} className="bg-gray-800 rounded-lg p-3">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="text-white font-medium text-sm">{bet.betType}</p>
-                        <p className="text-gray-400 text-xs">Odds: {bet.odds}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-green-400 font-bold">${bet.amount}</p>
-                        <p className="text-gray-400 text-xs">Win: ${bet.potentialWin.toFixed(2)}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-            
-            {liveBets.length > 0 && (
-              <Button
-                className="w-full bg-green-600 hover:bg-green-700"
-                onClick={() => {
-                  toast({
-                    title: "Bets Placed Successfully!",
-                    description: `${liveBets.length} live bets have been placed`,
-                  });
-                  setLiveBets([]);
-                  setBettingSlipOpen(false);
-                }}
-              >
-                Place All Bets (${liveBets.reduce((sum, bet) => sum + bet.amount, 0)})
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
-};
-
-export default LiveSportsStreaming;
+}

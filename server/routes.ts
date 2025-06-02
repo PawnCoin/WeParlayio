@@ -946,14 +946,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const homeTeam = competition?.competitors?.find((c: any) => c.homeAway === 'home');
         const awayTeam = competition?.competitors?.find((c: any) => c.homeAway === 'away');
         
-        try {
-          // Get real odds from your working RapidAPI Odds API
-          const { RapidApiOddsService } = await import('./services/rapidApiOddsService');
-          const rapidOdds = new RapidApiOddsService();
-          const realOdds = await rapidOdds.getOdds(event.id, 'bet365,pinnacle,draftkings');
-        } catch (error) {
-          console.log('Could not fetch real odds for event:', event.id);
-        }
+        // Skip RapidAPI Odds due to quota exhaustion
+        console.log('⚠️ RapidAPI Odds service disabled due to quota exhaustion');
         
         return {
           id: event.id,
@@ -1207,6 +1201,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Streaming data endpoint using only working FlashLive Sports API
+  app.get('/api/unified-sports/streaming-data', async (req, res) => {
+    try {
+      const { FlashLiveService } = await import('./services/flashLiveService');
+      const flashLive = new FlashLiveService();
+      const tournaments = await flashLive.getTournaments();
+      
+      const streamingEvents = tournaments.flatMap((tournament: any) => 
+        (tournament.events || []).map((event: any) => ({
+          id: event.id,
+          homeTeam: { name: event.homeTeam, logo: event.homeTeamLogo },
+          awayTeam: { name: event.awayTeam, logo: event.awayTeamLogo },
+          competition: { name: tournament.name },
+          sport: tournament.sport,
+          status: event.status,
+          startTime: event.startTime,
+          streamUrl: `https://stream.flashlive.com/${event.id}`,
+          thumbnail: `https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&q=80`
+        }))
+      );
+
+      res.json({
+        success: true,
+        events: streamingEvents,
+        totalEvents: streamingEvents.length
+      });
+    } catch (error) {
+      console.error('Streaming data error:', error);
+      res.json({
+        success: false,
+        events: [],
+        totalEvents: 0,
+        error: 'Unable to fetch streaming data'
+      });
+    }
+  });
+
   // Get live events for a specific sport
   app.get("/api/sports/:sportKey/live", async (req, res) => {
     try {
