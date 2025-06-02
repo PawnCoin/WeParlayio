@@ -46,6 +46,7 @@ import WalletTest from "@/pages/WalletTest";
 import UserProfilePage from "@/pages/UserProfilePage";
 import FantasySportsEnhanced from "@/pages/FantasySportsEnhanced";
 import GamingIntegration from "@/pages/GamingIntegration";
+import SmsTemplateSettings from "@/pages/admin/SmsTemplateSettings";
 
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
@@ -235,6 +236,7 @@ function Router() {
       <Route path="/admin/platform-settings" component={SimplePlatformSettings} />
       <Route path="/admin/visual-component-editor" component={VisualComponentEditorPage} />
       <Route path="/admin/social-media-dashboard" component={SocialMediaDashboard} />
+      <Route path="/admin/sms-templates" component={SmsTemplateSettings} />
       <Route path="/admin/user-analytics" component={lazy(() => import("./pages/admin/UserAnalytics"))} />
       <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/force-admin" component={AdminDashboard} />

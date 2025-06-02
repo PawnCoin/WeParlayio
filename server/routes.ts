@@ -26,6 +26,7 @@ import { bankingRouter } from "./routes/bankingRoutes";
 import websocketPollingRoutes from "./routes/websocketPollingRoutes";
 import oddsTickerRouter from "./routes/oddsTickerRoutes";
 import { apiTestRouter } from "./routes/apiTestRoutes";
+import smsRoutes from "./routes/smsRoutes";
 
 // Export the routes so they can be imported by index.ts
 export { notificationRoutes, websocketPollingRoutes };
@@ -7201,6 +7202,9 @@ Join us: WeParlay.io 🎯
       });
     }
   });
+
+  // Mount SMS/MMS routes for VIP users
+  app.use('/api/sms', smsRoutes);
 
   const httpServer = createServer(app);
   return httpServer;
