@@ -42,17 +42,24 @@ export class CleanStreamingService {
         body: JSON.stringify({
           query: `
             query {
-              series(first: 10) {
-                title
+              events(limit: 20) {
                 id
-                matches(first: 5) {
+                title
+                status
+                teams {
+                  id
+                  name
+                  logo
+                }
+                game {
                   id
                   title
-                  state
-                  streams {
-                    url
-                    title
-                  }
+                }
+                startTime
+                streams {
+                  url
+                  platform
+                  viewers
                 }
               }
             }
@@ -65,7 +72,7 @@ export class CleanStreamingService {
       }
 
       const data = await response.json();
-      return this.formatGRIDStreams(data.data?.series || []);
+      return this.formatGRIDStreams(data.data?.events || []);
     } catch (error) {
       console.error('GRID esports streaming error:', error);
       return [];
