@@ -6975,11 +6975,12 @@ Join us: WeParlay.io 🎯
       const streams = await tvapp2Service.getLiveSportsStreams();
       res.json({ success: true, streams });
     } catch (error) {
-      console.error('Error fetching sports streams:', error);
+      console.error('TVApp2 streaming error:', error);
       res.status(500).json({ 
         success: false, 
-        error: 'Failed to fetch sports streams',
-        message: 'Please configure TVApp2 service (TVAPP2_HOST environment variable)'
+        error: 'Streaming service unavailable',
+        message: 'TVApp2 configuration required for authentic IPTV streams',
+        requiresConfiguration: true
       });
     }
   });

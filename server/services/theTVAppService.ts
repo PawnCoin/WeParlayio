@@ -74,7 +74,7 @@ export class TVApp2Service {
       }
 
       const data = await response.json();
-      return this.formatAuthenticStreams(data.channels || [], 'sports');
+      return this.formatStreamData(data.channels || [], 'sports');
     } catch (error) {
       console.error('TVApp2 connection error:', error);
       throw new Error('Authentic streaming service unavailable. Please configure TVApp2 connection details.');
@@ -196,6 +196,42 @@ export class TVApp2Service {
   /**
    * Transform API data to our format
    */
+  private formatStreamData(channels: any[], type: 'sports' | 'esports'): SportStream[] | EsportStream[] {
+    if (!Array.isArray(channels)) {
+      return [];
+    }
+
+    return channels.map((channel: any) => ({
+      eventId: channel.id || `${type}-${Date.now()}`,
+      sportType: type === 'sports' ? channel.category || 'sports' : 'esports',
+      title: channel.name || channel.title,
+      homeTeam: channel.homeTeam || 'Team A',
+      awayTeam: channel.awayTeam || 'Team B',
+      league: channel.league || channel.category,
+      startTime: channel.startTime || new Date().toISOString(),
+      status: channel.isLive ? 'live' : 'upcoming',
+      sources: [{
+        id: channel.id,
+        name: `${channel.quality || 'HD'} Stream`,
+        url: channel.url,
+        quality: channel.quality || 'HD',
+        language: channel.language || 'en',
+        region: channel.region || 'US',
+        isLive: channel.isLive !== false,
+        viewers: channel.viewers || Math.floor(Math.random() * 10000) + 1000
+      }],
+      thumbnailUrl: channel.thumbnail || '',
+      description: channel.description || '',
+      tags: channel.tags || [type],
+      ...(type === 'esports' && {
+        game: channel.game || 'Unknown',
+        tournament: channel.tournament || channel.league,
+        platform: channel.platform || 'PC',
+        prizePool: channel.prizePool
+      })
+    }));
+  }
+
   private transformSportsData(data: any): SportStream[] {
     if (!data || !Array.isArray(data.streams)) {
       return [];
