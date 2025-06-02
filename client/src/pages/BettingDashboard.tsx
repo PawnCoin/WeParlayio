@@ -1,27 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import EnhancedBetTooltip from "@/components/betting/EnhancedBetTooltip";
-import RealTimeOddsVisualization from '@/components/betting/RealTimeOddsVisualization';
-import TierUpgradePrompt from '@/components/TierUpgradePrompt';
-import { useBetSlip } from '@/contexts/BetSlipContext';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
-import { Clock, Calendar, Filter, TrendingUp, RefreshCw, AlertTriangle, Crown, Zap, BarChart3, Target } from 'lucide-react';
-import { formatGameTime, formatGameDate } from '@/lib/sportsDataUtils';
 
+// Helper function to format game time
+const formatGameTime = (dateString: string) => {
+  if (!dateString) return 'TBD';
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+  } catch {
+    return 'TBD';
+  }
+};
+
+// Professional leagues configuration
 const PROFESSIONAL_LEAGUES = [
-  { name: 'NFL', key: 'football_nfl', displayName: 'NFL (Football)' },
+  { name: 'NFL', key: 'americanfootball_nfl', displayName: 'NFL (American Football)' },
   { name: 'NBA', key: 'basketball_nba', displayName: 'NBA (Basketball)' },
   { name: 'MLB', key: 'baseball_mlb', displayName: 'MLB (Baseball)' },
-  { name: 'NHL', key: 'hockey_nhl', displayName: 'NHL (Hockey)' },
-  { name: 'MLS', key: 'soccer_mls', displayName: 'MLS (Soccer)' },
+  { name: 'NHL', key: 'icehockey_nhl', displayName: 'NHL (Ice Hockey)' },
+  { name: 'MLS', key: 'soccer_usa_mls', displayName: 'MLS (Soccer)' },
+  { name: 'Premier League', key: 'soccer_epl', displayName: 'Premier League (Soccer)' },
+  { name: 'NCAA Football', key: 'americanfootball_ncaaf', displayName: 'NCAA Football' },
+  { name: 'NCAA Basketball', key: 'basketball_ncaab', displayName: 'NCAA Basketball' },
   { name: 'UFC', key: 'mma_ufc', displayName: 'UFC (MMA)' },
   { name: 'Boxing', key: 'boxing_main', displayName: 'Boxing' },
   { name: 'NASCAR', key: 'motorsport_nascar', displayName: 'NASCAR (Motorsport)' },
@@ -31,92 +35,63 @@ const PROFESSIONAL_LEAGUES = [
 type BetType = 'moneyline' | 'spread' | 'total' | 'player-props' | 'team-props' | 'parlays';
 
 const BettingDashboard: React.FC = () => {
-  const { addBet } = useBetSlip();
   const { user } = useAuth();
   const [selectedLeagues, setSelectedLeagues] = useState<string[]>(PROFESSIONAL_LEAGUES.map(league => league.key));
-  const [betTypes, setBetTypes] = useState<BetType[]>(['moneyline', 'spread', 'total', 'player-props', 'team-props']);
-  const [timeFrame, setTimeFrame] = useState<'today' | 'tomorrow' | 'this-week'>('today');
-  
-  // Mock user tier for demonstration - replace with real user tier
-  const userTier = user?.tier || 'bronze';
-  
-  // Fetch sports data
-  const { data: sports, isLoading: isLoadingSports, error: sportsError } = useQuery({
-    queryKey: ['/api/sports'],
-    refetchInterval: 30000, // Refresh every 30 seconds
+  const [betTypes, setBetTypes] = useState<BetType[]>(['moneyline', 'spread', 'total']);
+  const [betSlip, setBetSlip] = useState<any[]>([]);
+
+  // Mock user tier for demonstration
+  const userTier = user?.tier || 'Bronze';
+
+  // Fetch live events
+  const { data: liveEvents = [], isLoading: isLoadingLive, error: liveError } = useQuery({
+    queryKey: ['/api/events/live'],
+    refetchInterval: 30000,
   });
 
-  // Handle sports error
-  useEffect(() => {
-    if (sportsError) {
-      console.error('Sports data fetch error:', sportsError);
-    }
-  }, [sportsError]);
-  
-  // Fetch upcoming events for all selected leagues
-  const { data: upcomingEventsData, isLoading: isLoadingEvents, error: eventsError } = useQuery({
+  // Fetch upcoming events
+  const { data: upcomingEventsData, isLoading: isLoadingUpcoming } = useQuery({
     queryKey: ['/api/unified-sports/upcoming-events'],
-    refetchInterval: 60000, // Refresh every minute
-  });
-  
-  // Fetch live events for selected leagues
-  const { data: liveEvents, isLoading: isLoadingLive, error: liveError } = useQuery({
-    queryKey: ['/api/events/live', selectedLeagues.join(',')],
-    refetchInterval: 10000, // Refresh every 10 seconds for live data
+    refetchInterval: 60000,
   });
 
-  // Handle live events error
-  useEffect(() => {
-    if (liveError) {
-      console.error('Live events fetch error:', liveError);
-    }
-  }, [liveError]);
-  
-  // Process real upcoming events data from unified endpoint
-  const upcomingEvents = upcomingEventsData?.events || [];
-  
-  // Filter events based on selected leagues
-  const filteredLiveEvents = Array.isArray(liveEvents) ? liveEvents.filter((event: any) => {
-    if (selectedLeagues.length === 0) return true; // Show all if none selected
-    return selectedLeagues.includes(event.sport_key);
-  }) : [];
-  
-  const filteredUpcomingEvents = Array.isArray(upcomingEvents) ? upcomingEvents.filter((event: any) => {
-    if (selectedLeagues.length === 0) return true; // Show all if none selected
-    return selectedLeagues.includes(event.sport_key || event.sport);
-  }) : [];
-  
-  // Helper to get team name - now uses real data from events
+  // Helper to safely get team name
   const getTeamName = (event: any, isHome: boolean = true) => {
+    if (!event) return isHome ? 'Home Team' : 'Away Team';
+    
     if (isHome) {
       return event.homeTeam || event.home_team || 'Home Team';
     } else {
       return event.awayTeam || event.away_team || 'Away Team';
     }
   };
-  
+
   // Helper to get sport name by key
   const getSportName = (sportKey: string) => {
     const league = PROFESSIONAL_LEAGUES.find(l => l.key === sportKey);
     return league ? league.displayName : (sportKey || 'Live Event');
   };
-  
+
   // Handle adding a bet to the bet slip
   const handleAddBet = (event: any, betType: string, selection: string, odds: number, point?: number) => {
-    addBet({
+    if (!event) return;
+    
+    const newBet = {
       id: `${event.id}-${betType}-${selection}`,
       eventId: event.id,
-      gameTitle: `${event.away_team || event.awayTeam || 'Away'} vs ${event.home_team || event.homeTeam || 'Home'}`,
+      gameTitle: `${getTeamName(event, false)} vs ${getTeamName(event, true)}`,
       betType,
       selection,
       odds,
       point,
       amount: 0,
       potential: 0,
-      sport: event.sport_title || 'Live Event',
-    });
+      sport: event.sport_title || getSportName(event.sport_key) || 'Live Event',
+    };
+    
+    setBetSlip(prev => [...prev, newBet]);
   };
-  
+
   // Toggle league selection
   const toggleLeague = (leagueKey: string) => {
     if (selectedLeagues.includes(leagueKey)) {
@@ -125,7 +100,7 @@ const BettingDashboard: React.FC = () => {
       setSelectedLeagues([...selectedLeagues, leagueKey]);
     }
   };
-  
+
   // Toggle bet type selection
   const toggleBetType = (type: BetType) => {
     if (betTypes.includes(type)) {
@@ -134,1364 +109,241 @@ const BettingDashboard: React.FC = () => {
       setBetTypes([...betTypes, type]);
     }
   };
+
+  // Process and filter events
+  const upcomingEvents = upcomingEventsData?.events || [];
   
+  const filteredLiveEvents = Array.isArray(liveEvents) ? liveEvents.filter((event: any) => {
+    if (selectedLeagues.length === 0) return true;
+    return selectedLeagues.includes(event.sport_key);
+  }) : [];
+  
+  const filteredUpcomingEvents = Array.isArray(upcomingEvents) ? upcomingEvents.filter((event: any) => {
+    if (selectedLeagues.length === 0) return true;
+    return selectedLeagues.includes(event.sport_key || event.sport);
+  }) : [];
+
   // Sort leagues alphabetically for display
   const sortedLeagues = [...PROFESSIONAL_LEAGUES].sort((a, b) => a.displayName.localeCompare(b.displayName));
-  
+
   return (
     <div className="container px-4 max-w-7xl mx-auto py-6">
       <h1 className="text-3xl font-bold mb-6">Professional Sports Betting Dashboard</h1>
       
-      {isLoadingSports && (
+      {(isLoadingLive || isLoadingUpcoming) && (
         <div className="mb-6">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                <span className="ml-2 text-muted-foreground">Loading sports data...</span>
+                <span className="ml-2">Loading betting data...</span>
               </div>
             </CardContent>
           </Card>
         </div>
       )}
 
-      {sportsError && (
+      {/* Bet Slip Summary */}
+      {betSlip.length > 0 && (
         <div className="mb-6">
-          <Card className="border-red-200 bg-red-50">
-            <CardContent className="p-6">
-              <div className="flex items-center text-red-600">
-                <AlertTriangle className="h-5 w-5 mr-2" />
-                <span>Error loading sports data. Please try refreshing the page.</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <div className="md:col-span-1">
-          <Card>
+          <Card className="border-green-200">
             <CardHeader>
-              <CardTitle className="text-lg flex items-center">
-                <Filter className="h-5 w-5 mr-2" />
-                Filters
-              </CardTitle>
+              <CardTitle className="text-green-700">Bet Slip ({betSlip.length} selections)</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-sm font-medium mb-3">Professional Leagues</h3>
-                  <div className="space-y-2">
-                    {sortedLeagues.map((league) => (
-                      <div key={league.key} className="flex items-center space-x-2">
-                        <Checkbox 
-                          id={`league-${league.key}`} 
-                          checked={selectedLeagues.includes(league.key)}
-                          onCheckedChange={() => toggleLeague(league.key)}
-                        />
-                        <Label htmlFor={`league-${league.key}`} className="text-sm cursor-pointer">
-                          {league.displayName}
-                        </Label>
-                      </div>
-                    ))}
+              <div className="space-y-2">
+                {betSlip.map((bet) => (
+                  <div key={bet.id} className="flex justify-between items-center p-2 bg-green-50 rounded">
+                    <span className="text-sm">{bet.gameTitle} - {bet.selection}</span>
+                    <span className="text-sm font-medium">{bet.odds > 0 ? '+' : ''}{bet.odds}</span>
                   </div>
-                </div>
-                
-                <Separator />
-                
-                <div>
-                  <h3 className="text-sm font-medium mb-3">Bet Types</h3>
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="bet-moneyline" 
-                        checked={betTypes.includes('moneyline')}
-                        onCheckedChange={() => toggleBetType('moneyline')}
-                      />
-                      <Label htmlFor="bet-moneyline" className="text-sm cursor-pointer">Money Line</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="bet-spread" 
-                        checked={betTypes.includes('spread')}
-                        onCheckedChange={() => toggleBetType('spread')}
-                      />
-                      <Label htmlFor="bet-spread" className="text-sm cursor-pointer">Spread</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="bet-total" 
-                        checked={betTypes.includes('total')}
-                        onCheckedChange={() => toggleBetType('total')}
-                      />
-                      <Label htmlFor="bet-total" className="text-sm cursor-pointer">Total (Over/Under)</Label>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox 
-                          id="bet-player-props" 
-                          checked={betTypes.includes('player-props')}
-                          onCheckedChange={() => toggleBetType('player-props')}
-                          disabled={userTier === 'bronze'}
-                        />
-                        <Label htmlFor="bet-player-props" className="text-sm cursor-pointer">Player Props</Label>
-                      </div>
-                      {userTier === 'bronze' && (
-                        <TierUpgradePrompt
-                          requiredTier="silver"
-                          feature="Player Props"
-                          description="Bet on individual player statistics and performance"
-                          compact={true}
-                        />
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox 
-                          id="bet-team-props" 
-                          checked={betTypes.includes('team-props')}
-                          onCheckedChange={() => toggleBetType('team-props')}
-                          disabled={userTier === 'bronze'}
-                        />
-                        <Label htmlFor="bet-team-props" className="text-sm cursor-pointer">Team Props</Label>
-                      </div>
-                      {userTier === 'bronze' && (
-                        <TierUpgradePrompt
-                          requiredTier="silver"
-                          feature="Team Props"
-                          description="Advanced team statistics and performance betting"
-                          compact={true}
-                        />
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox 
-                          id="bet-parlays" 
-                          checked={betTypes.includes('parlays')}
-                          onCheckedChange={() => toggleBetType('parlays')}
-                          disabled={!['gold', 'platinum', 'diamond'].includes(userTier)}
-                        />
-                        <Label htmlFor="bet-parlays" className="text-sm cursor-pointer">Advanced Parlays</Label>
-                      </div>
-                      {!['gold', 'platinum', 'diamond'].includes(userTier) && (
-                        <TierUpgradePrompt
-                          requiredTier="gold"
-                          feature="Advanced Parlays"
-                          description="Unlimited parlay combinations with enhanced odds"
-                          compact={true}
-                        />
-                      )}
-                    </div>
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                <div>
-                  <h3 className="text-sm font-medium mb-3">Time Frame</h3>
-                  <Select value={timeFrame} onValueChange={(value: any) => setTimeFrame(value)}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select time frame" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="today">Today</SelectItem>
-                      <SelectItem value="tomorrow">Tomorrow</SelectItem>
-                      <SelectItem value="this-week">This Week</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <Button className="w-full" variant="outline">
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Refresh Odds
-                </Button>
+                ))}
               </div>
+              <Button 
+                className="w-full mt-4" 
+                onClick={() => setBetSlip([])}
+              >
+                Clear Bet Slip
+              </Button>
             </CardContent>
           </Card>
         </div>
-        
-        <div className="md:col-span-3">
-          <Tabs defaultValue="live">
-            <TabsList className="grid grid-cols-4 mb-4">
-              <TabsTrigger value="live" className="flex items-center">
-                <Clock className="h-4 w-4 mr-2" />
-                Live Events
-              </TabsTrigger>
-              <TabsTrigger value="upcoming" className="flex items-center">
-                <Calendar className="h-4 w-4 mr-2" />
-                Upcoming Events
-              </TabsTrigger>
-              <TabsTrigger value="odds-viz" className="flex items-center">
-                <TrendingUp className="h-4 w-4 mr-2" />
-                Real-Time Odds
-              </TabsTrigger>
-              <TabsTrigger value="analytics" className="flex items-center">
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Analytics
-                {!['gold', 'platinum', 'diamond'].includes(userTier) && (
-                  <Crown className="h-3 w-3 ml-1 text-yellow-500" />
-                )}
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="live">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center">
-                    <Clock className="h-5 w-5 mr-2" />
-                    Live Professional Sports
-                  </CardTitle>
-                  <CardDescription>
-                    Currently in-progress games with live betting options
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {isLoadingLive ? (
-                    <div className="flex justify-center py-8">
-                      <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent" />
-                    </div>
-                  ) : liveError ? (
-                    <div className="bg-red-50 p-6 text-center rounded-lg border border-red-200">
-                      <div className="flex items-center justify-center text-red-600 mb-2">
-                        <AlertTriangle className="h-5 w-5 mr-2" />
-                        <span className="font-medium">Error Loading Live Events</span>
-                      </div>
-                      <p className="text-red-700 text-sm">
-                        Unable to fetch live events data. Please check your connection and try again.
-                      </p>
-                    </div>
-                  ) : filteredLiveEvents.length > 0 ? (
-                    <div className="space-y-6">
-                      {filteredLiveEvents.map((event: any) => {
-                        const sportKey = sports?.find((sport: any) => sport.id === event.sportId)?.key;
-                        return (
-                          <div key={event.id} className="border rounded-lg p-4 overflow-hidden">
-                            <div className="flex justify-between items-center mb-2">
-                              <div>
-                                <Badge variant="outline" className="mb-1">
-                                  {getSportName(sportKey)}
-                                </Badge>
-                                <h3 className="text-lg font-semibold">
-                                  {getTeamName(event, false)} @ {getTeamName(event, true)}
-                                </h3>
-                                <div className="text-sm text-muted-foreground">
-                                  {event.status} • {event.period} • {event.timeRemaining}
-                                </div>
-                              </div>
-                              <div className="text-xl font-bold">
-                                {event.homeScore} - {event.awayScore}
-                              </div>
-                            </div>
-                            
-                            <Separator className="my-3" />
-                            
-                            <div className="grid grid-cols-3 gap-3 mt-4">
-                              {betTypes.includes('moneyline') && (
-                                <div className="space-y-2">
-                                  <div className="text-xs text-gray-500">Money Line</div>
-                                  <div className="grid grid-cols-2 gap-2">
-                                    <EnhancedBetTooltip
-                                      eventId={event.id.toString()}
-                                      sportKey={sportKey}
-                                      betType="Money Line"
-                                      homeTeam={{
-                                        name: getTeamName(event, true),
-                                        record: "42-18",
-                                        currentForm: "W,W,L,W,W",
-                                        recentPerformance: 8
-                                      }}
-                                      awayTeam={{
-                                        name: getTeamName(event, false),
-                                        record: "36-24",
-                                        currentForm: "L,W,W,L,W",
-                                        recentPerformance: 6
-                                      }}
-                                      odds={-110}
-                                      matchTime="Live Now"
-                                      selection={getTeamName(event, true)}
-                                    >
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        className="w-full"
-                                        onClick={() => handleAddBet(event, 'moneyline', getTeamName(event, true), -110)}
-                                      >
-                                        {getTeamName(event, true).slice(0, 3)} -110
-                                      </Button>
-                                    </EnhancedBetTooltip>
-                                    
-                                    <EnhancedBetTooltip
-                                      eventId={event.id.toString()}
-                                      sportKey={sportKey}
-                                      betType="Money Line"
-                                      homeTeam={{
-                                        name: getTeamName(event, true),
-                                        record: "42-18",
-                                        currentForm: "W,W,L,W,W",
-                                        recentPerformance: 8
-                                      }}
-                                      awayTeam={{
-                                        name: getTeamName(event, false),
-                                        record: "36-24",
-                                        currentForm: "L,W,W,L,W",
-                                        recentPerformance: 6
-                                      }}
-                                      odds={120}
-                                      matchTime="Live Now"
-                                      selection={getTeamName(event, false)}
-                                    >
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        className="w-full"
-                                        onClick={() => handleAddBet(event, 'moneyline', getTeamName(event, false), +120)}
-                                      >
-                                        {getTeamName(event, false).slice(0, 3)} +120
-                                      </Button>
-                                    </EnhancedBetTooltip>
-                                  </div>
-                                </div>
-                              )}
-                              
-                              {betTypes.includes('spread') && (
-                                <div className="space-y-2">
-                                  <div className="text-xs text-gray-500">Spread</div>
-                                  <div className="grid grid-cols-2 gap-2">
-                                    <EnhancedBetTooltip
-                                      eventId={event.id.toString()}
-                                      sportKey={sportKey}
-                                      betType="Spread"
-                                      homeTeam={{
-                                        name: getTeamName(event, true),
-                                        record: "42-18",
-                                        currentForm: "W,W,L,W,W",
-                                        recentPerformance: 8
-                                      }}
-                                      awayTeam={{
-                                        name: getTeamName(event, false),
-                                        record: "36-24",
-                                        currentForm: "L,W,W,L,W",
-                                        recentPerformance: 6
-                                      }}
-                                      odds={-110}
-                                      point={-5.5}
-                                      matchTime="Live Now"
-                                      selection={getTeamName(event, true)}
-                                    >
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        className="w-full"
-                                        onClick={() => handleAddBet(event, 'spread', getTeamName(event, true), -110, -5.5)}
-                                      >
-                                        {getTeamName(event, true).slice(0, 3)} -5.5
-                                      </Button>
-                                    </EnhancedBetTooltip>
-                                    
-                                    <EnhancedBetTooltip
-                                      eventId={event.id.toString()}
-                                      sportKey={sportKey}
-                                      betType="Spread"
-                                      homeTeam={{
-                                        name: getTeamName(event, true),
-                                        record: "42-18",
-                                        currentForm: "W,W,L,W,W",
-                                        recentPerformance: 8
-                                      }}
-                                      awayTeam={{
-                                        name: getTeamName(event, false),
-                                        record: "36-24",
-                                        currentForm: "L,W,W,L,W",
-                                        recentPerformance: 6
-                                      }}
-                                      odds={-110}
-                                      point={5.5}
-                                      matchTime="Live Now"
-                                      selection={getTeamName(event, false)}
-                                    >
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        className="w-full"
-                                        onClick={() => handleAddBet(event, 'spread', getTeamName(event, false), -110, +5.5)}
-                                      >
-                                        {getTeamName(event, false).slice(0, 3)} +5.5
-                                      </Button>
-                                    </EnhancedBetTooltip>
-                                  </div>
-                                </div>
-                              )}
-                              
-                              {betTypes.includes('total') && (
-                                <div className="space-y-2">
-                                  <div className="text-xs text-gray-500">Total</div>
-                                  <div className="grid grid-cols-2 gap-2">
-                                    <EnhancedBetTooltip
-                                      eventId={event.id.toString()}
-                                      sportKey={sportKey}
-                                      betType="Total"
-                                      homeTeam={{
-                                        name: getTeamName(event, true),
-                                        record: "42-18",
-                                        currentForm: "W,W,L,W,W",
-                                        recentPerformance: 8
-                                      }}
-                                      awayTeam={{
-                                        name: getTeamName(event, false),
-                                        record: "36-24",
-                                        currentForm: "L,W,W,L,W",
-                                        recentPerformance: 6
-                                      }}
-                                      odds={-110}
-                                      point={220.5}
-                                      matchTime="Live Now"
-                                      selection="Over"
-                                    >
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        className="w-full"
-                                        onClick={() => handleAddBet(event, 'total', 'Over', -110, 220.5)}
-                                      >
-                                        O 220.5 (-110)
-                                      </Button>
-                                    </EnhancedBetTooltip>
-                                    
-                                    <EnhancedBetTooltip
-                                      eventId={event.id.toString()}
-                                      sportKey={sportKey}
-                                      betType="Total"
-                                      homeTeam={{
-                                        name: getTeamName(event, true),
-                                        record: "42-18",
-                                        currentForm: "W,W,L,W,W",
-                                        recentPerformance: 8
-                                      }}
-                                      awayTeam={{
-                                        name: getTeamName(event, false),
-                                        record: "36-24",
-                                        currentForm: "L,W,W,L,W",
-                                        recentPerformance: 6
-                                      }}
-                                      odds={-110}
-                                      point={220.5}
-                                      matchTime="Live Now"
-                                      selection="Under"
-                                    >
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        className="w-full"
-                                        onClick={() => handleAddBet(event, 'total', 'Under', -110, 220.5)}
-                                      >
-                                        U 220.5 (-110)
-                                      </Button>
-                                    </EnhancedBetTooltip>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                            
-                            {(betTypes.includes('player-props') || betTypes.includes('team-props')) && (
-                              <>
-                                <Separator className="my-3" />
-                                
-                                <div className="grid grid-cols-2 gap-4">
-                                  {betTypes.includes('player-props') && (
-                                    <div className="space-y-2">
-                                      <div className="text-xs text-gray-500">Popular Player Props</div>
-                                      <div className="grid gap-2">
-                                        <EnhancedBetTooltip
-                                          eventId={event.id.toString()}
-                                          sportKey={sportKey}
-                                          betType="Player Prop"
-                                          homeTeam={{
-                                            name: getTeamName(event, true),
-                                            record: "42-18"
-                                          }}
-                                          awayTeam={{
-                                            name: getTeamName(event, false),
-                                            record: "36-24"
-                                          }}
-                                          odds={-115}
-                                          point={24.5}
-                                          matchTime="Live Now"
-                                          selection={`${getTeamName(event, true).split(' ').pop()} Points`}
-                                        >
-                                          <Button 
-                                            variant="outline" 
-                                            size="sm" 
-                                            className="w-full"
-                                            onClick={() => handleAddBet(
-                                              event, 
-                                              'player-prop', 
-                                              `${getTeamName(event, true).split(' ').pop()} Points Over 24.5`, 
-                                              -115,
-                                              24.5
-                                            )}
-                                          >
-                                            {getTeamName(event, true).split(' ').pop()} Pts O 24.5 (-115)
-                                          </Button>
-                                        </EnhancedBetTooltip>
-                                        
-                                        <EnhancedBetTooltip
-                                          eventId={event.id.toString()}
-                                          sportKey={sportKey}
-                                          betType="Player Prop"
-                                          homeTeam={{
-                                            name: getTeamName(event, true),
-                                            record: "42-18"
-                                          }}
-                                          awayTeam={{
-                                            name: getTeamName(event, false),
-                                            record: "36-24"
-                                          }}
-                                          odds={+105}
-                                          point={7.5}
-                                          matchTime="Live Now"
-                                          selection={`${getTeamName(event, false).split(' ').pop()} Rebounds`}
-                                        >
-                                          <Button 
-                                            variant="outline" 
-                                            size="sm" 
-                                            className="w-full"
-                                            onClick={() => handleAddBet(
-                                              event, 
-                                              'player-prop', 
-                                              `${getTeamName(event, false).split(' ').pop()} Rebounds Over 7.5`, 
-                                              +105,
-                                              7.5
-                                            )}
-                                          >
-                                            {getTeamName(event, false).split(' ').pop()} Reb O 7.5 (+105)
-                                          </Button>
-                                        </EnhancedBetTooltip>
-                                      </div>
-                                    </div>
-                                  )}
-                                  
-                                  {betTypes.includes('team-props') && (
-                                    <div className="space-y-2">
-                                      <div className="text-xs text-gray-500">Popular Team Props</div>
-                                      <div className="grid gap-2">
-                                        <EnhancedBetTooltip
-                                          eventId={event.id.toString()}
-                                          sportKey={sportKey}
-                                          betType="Team Prop"
-                                          homeTeam={{
-                                            name: getTeamName(event, true),
-                                            record: "42-18"
-                                          }}
-                                          awayTeam={{
-                                            name: getTeamName(event, false),
-                                            record: "36-24"
-                                          }}
-                                          odds={-110}
-                                          point={110.5}
-                                          matchTime="Live Now"
-                                          selection={`${getTeamName(event, true)} Team Total`}
-                                        >
-                                          <Button 
-                                            variant="outline" 
-                                            size="sm" 
-                                            className="w-full"
-                                            onClick={() => handleAddBet(
-                                              event, 
-                                              'team-prop', 
-                                              `${getTeamName(event, true)} Team Total Over 110.5`, 
-                                              -110,
-                                              110.5
-                                            )}
-                                          >
-                                            {getTeamName(event, true)} Total O 110.5 (-110)
-                                          </Button>
-                                        </EnhancedBetTooltip>
-                                        
-                                        <EnhancedBetTooltip
-                                          eventId={event.id.toString()}
-                                          sportKey={sportKey}
-                                          betType="Team Prop"
-                                          homeTeam={{
-                                            name: getTeamName(event, true),
-                                            record: "42-18"
-                                          }}
-                                          awayTeam={{
-                                            name: getTeamName(event, false),
-                                            record: "36-24"
-                                          }}
-                                          odds={+100}
-                                          point={55.5}
-                                          matchTime="Live Now"
-                                          selection={`${getTeamName(event, false)} 1H Total`}
-                                        >
-                                          <Button 
-                                            variant="outline" 
-                                            size="sm" 
-                                            className="w-full"
-                                            onClick={() => handleAddBet(
-                                              event, 
-                                              'team-prop', 
-                                              `${getTeamName(event, false)} 1st Half Total Under 55.5`, 
-                                              +100,
-                                              55.5
-                                            )}
-                                          >
-                                            {getTeamName(event, false)} 1H U 55.5 (+100)
-                                          </Button>
-                                        </EnhancedBetTooltip>
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              </>
-                            )}
-                            
-                            {betTypes.includes('parlays') && (
-                              <>
-                                <Separator className="my-3" />
-                                
-                                <div className="space-y-2">
-                                  <div className="text-xs text-gray-500">Popular Parlays</div>
-                                  <div className="grid grid-cols-2 gap-2">
-                                    <EnhancedBetTooltip
-                                      eventId={event.id.toString()}
-                                      sportKey={sportKey}
-                                      betType="Parlay"
-                                      homeTeam={{
-                                        name: getTeamName(event, true),
-                                        record: "42-18"
-                                      }}
-                                      awayTeam={{
-                                        name: getTeamName(event, false),
-                                        record: "36-24"
-                                      }}
-                                      odds={+575}
-                                      matchTime="Live Now"
-                                      selection="Same Game Parlay"
-                                    >
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        className="w-full"
-                                        onClick={() => handleAddBet(
-                                          event, 
-                                          'parlay', 
-                                          `SGP: ${getTeamName(event, true)} -5.5 & O 220.5 & ${getTeamName(event, true).split(' ').pop()} O 24.5 Pts`, 
-                                          +575
-                                        )}
-                                      >
-                                        SGP: {getTeamName(event, true)}-5.5, O220.5 (+575)
-                                      </Button>
-                                    </EnhancedBetTooltip>
-                                    
-                                    <EnhancedBetTooltip
-                                      eventId={event.id.toString()}
-                                      sportKey={sportKey}
-                                      betType="Parlay"
-                                      homeTeam={{
-                                        name: getTeamName(event, true),
-                                        record: "42-18"
-                                      }}
-                                      awayTeam={{
-                                        name: getTeamName(event, false),
-                                        record: "36-24"
-                                      }}
-                                      odds={+650}
-                                      matchTime="Live Now"
-                                      selection="Same Game Parlay"
-                                    >
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        className="w-full"
-                                        onClick={() => handleAddBet(
-                                          event, 
-                                          'parlay', 
-                                          `SGP: ${getTeamName(event, false)} +5.5 & U 220.5 & ${getTeamName(event, false).split(' ').pop()} O 21.5 Pts`, 
-                                          +650
-                                        )}
-                                      >
-                                        SGP: {getTeamName(event, false)}+5.5, U220.5 (+650)
-                                      </Button>
-                                    </EnhancedBetTooltip>
-                                  </div>
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="bg-muted/30 p-6 text-center rounded-lg">
-                      <p className="text-muted-foreground">No live professional sports events at the moment. Check back later!</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="upcoming">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center">
-                    <Calendar className="h-5 w-5 mr-2" />
-                    Upcoming Professional Sports
-                  </CardTitle>
-                  <CardDescription>
-                    Upcoming games with pre-game betting options
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {isLoadingEvents ? (
-                    <div className="flex justify-center py-8">
-                      <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent" />
-                    </div>
-                  ) : filteredUpcomingEvents.length > 0 ? (
-                    <div className="space-y-6">
-                      {filteredUpcomingEvents.map((event: any) => {
-                        const sportKey = sports?.find((sport: any) => sport.id === event.sportId)?.key;
-                        return (
-                          <div key={event.id} className="border rounded-lg p-4 overflow-hidden">
-                            <div className="flex justify-between items-center mb-2">
-                              <div>
-                                <Badge variant="outline" className="mb-1">
-                                  {getSportName(sportKey)}
-                                </Badge>
-                                <h3 className="text-lg font-semibold">
-                                  {getTeamName(event, false)} @ {getTeamName(event, true)}
-                                </h3>
-                                <div className="text-sm text-muted-foreground">
-                                  {formatGameDate(event.startTime)} • {formatGameTime(event.startTime)}
-                                </div>
-                              </div>
-                              <TrendingUp className="h-5 w-5 text-primary" />
-                            </div>
-                            
-                            <Separator className="my-3" />
-                            
-                            <div className="grid grid-cols-3 gap-3 mt-4">
-                              {betTypes.includes('moneyline') && (
-                                <div className="space-y-2">
-                                  <div className="text-xs text-gray-500">Money Line</div>
-                                  <div className="grid grid-cols-2 gap-2">
-                                    <EnhancedBetTooltip
-                                      eventId={event.id.toString()}
-                                      sportKey={sportKey}
-                                      betType="Money Line"
-                                      homeTeam={{
-                                        name: getTeamName(event, true),
-                                        record: "42-18",
-                                        currentForm: "W,W,L,W,W",
-                                        recentPerformance: 8
-                                      }}
-                                      awayTeam={{
-                                        name: getTeamName(event, false),
-                                        record: "36-24",
-                                        currentForm: "L,W,W,L,W",
-                                        recentPerformance: 6
-                                      }}
-                                      odds={-125}
-                                      matchTime={formatGameTime(event.startTime)}
-                                      selection={getTeamName(event, true)}
-                                    >
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        className="w-full"
-                                        onClick={() => handleAddBet(event, 'moneyline', getTeamName(event, true), -125)}
-                                      >
-                                        {getTeamName(event, true).slice(0, 3)} -125
-                                      </Button>
-                                    </EnhancedBetTooltip>
-                                    
-                                    <EnhancedBetTooltip
-                                      eventId={event.id.toString()}
-                                      sportKey={sportKey}
-                                      betType="Money Line"
-                                      homeTeam={{
-                                        name: getTeamName(event, true),
-                                        record: "42-18",
-                                        currentForm: "W,W,L,W,W",
-                                        recentPerformance: 8
-                                      }}
-                                      awayTeam={{
-                                        name: getTeamName(event, false),
-                                        record: "36-24",
-                                        currentForm: "L,W,W,L,W",
-                                        recentPerformance: 6
-                                      }}
-                                      odds={+105}
-                                      matchTime={formatGameTime(event.startTime)}
-                                      selection={getTeamName(event, false)}
-                                    >
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        className="w-full"
-                                        onClick={() => handleAddBet(event, 'moneyline', getTeamName(event, false), +105)}
-                                      >
-                                        {getTeamName(event, false).slice(0, 3)} +105
-                                      </Button>
-                                    </EnhancedBetTooltip>
-                                  </div>
-                                </div>
-                              )}
-                              
-                              {betTypes.includes('spread') && (
-                                <div className="space-y-2">
-                                  <div className="text-xs text-gray-500">Spread</div>
-                                  <div className="grid grid-cols-2 gap-2">
-                                    <EnhancedBetTooltip
-                                      eventId={event.id.toString()}
-                                      sportKey={sportKey}
-                                      betType="Spread"
-                                      homeTeam={{
-                                        name: getTeamName(event, true),
-                                        record: "42-18",
-                                        currentForm: "W,W,L,W,W",
-                                        recentPerformance: 8
-                                      }}
-                                      awayTeam={{
-                                        name: getTeamName(event, false),
-                                        record: "36-24",
-                                        currentForm: "L,W,W,L,W",
-                                        recentPerformance: 6
-                                      }}
-                                      odds={-110}
-                                      point={-4}
-                                      matchTime={formatGameTime(event.startTime)}
-                                      selection={getTeamName(event, true)}
-                                    >
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        className="w-full"
-                                        onClick={() => handleAddBet(event, 'spread', getTeamName(event, true), -110, -4)}
-                                      >
-                                        {getTeamName(event, true).slice(0, 3)} -4
-                                      </Button>
-                                    </EnhancedBetTooltip>
-                                    
-                                    <EnhancedBetTooltip
-                                      eventId={event.id.toString()}
-                                      sportKey={sportKey}
-                                      betType="Spread"
-                                      homeTeam={{
-                                        name: getTeamName(event, true),
-                                        record: "42-18",
-                                        currentForm: "W,W,L,W,W",
-                                        recentPerformance: 8
-                                      }}
-                                      awayTeam={{
-                                        name: getTeamName(event, false),
-                                        record: "36-24",
-                                        currentForm: "L,W,W,L,W",
-                                        recentPerformance: 6
-                                      }}
-                                      odds={-110}
-                                      point={4}
-                                      matchTime={formatGameTime(event.startTime)}
-                                      selection={getTeamName(event, false)}
-                                    >
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        className="w-full"
-                                        onClick={() => handleAddBet(event, 'spread', getTeamName(event, false), -110, +4)}
-                                      >
-                                        {getTeamName(event, false).slice(0, 3)} +4
-                                      </Button>
-                                    </EnhancedBetTooltip>
-                                  </div>
-                                </div>
-                              )}
-                              
-                              {betTypes.includes('total') && (
-                                <div className="space-y-2">
-                                  <div className="text-xs text-gray-500">Total</div>
-                                  <div className="grid grid-cols-2 gap-2">
-                                    <EnhancedBetTooltip
-                                      eventId={event.id.toString()}
-                                      sportKey={sportKey}
-                                      betType="Total"
-                                      homeTeam={{
-                                        name: getTeamName(event, true),
-                                        record: "42-18",
-                                        currentForm: "W,W,L,W,W",
-                                        recentPerformance: 8
-                                      }}
-                                      awayTeam={{
-                                        name: getTeamName(event, false),
-                                        record: "36-24",
-                                        currentForm: "L,W,W,L,W",
-                                        recentPerformance: 6
-                                      }}
-                                      odds={-110}
-                                      point={223.5}
-                                      matchTime={formatGameTime(event.startTime)}
-                                      selection="Over"
-                                    >
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        className="w-full"
-                                        onClick={() => handleAddBet(event, 'total', 'Over', -110, 223.5)}
-                                      >
-                                        O 223.5 (-110)
-                                      </Button>
-                                    </EnhancedBetTooltip>
-                                    
-                                    <EnhancedBetTooltip
-                                      eventId={event.id.toString()}
-                                      sportKey={sportKey}
-                                      betType="Total"
-                                      homeTeam={{
-                                        name: getTeamName(event, true),
-                                        record: "42-18",
-                                        currentForm: "W,W,L,W,W",
-                                        recentPerformance: 8
-                                      }}
-                                      awayTeam={{
-                                        name: getTeamName(event, false),
-                                        record: "36-24",
-                                        currentForm: "L,W,W,L,W",
-                                        recentPerformance: 6
-                                      }}
-                                      odds={-110}
-                                      point={223.5}
-                                      matchTime={formatGameTime(event.startTime)}
-                                      selection="Under"
-                                    >
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        className="w-full"
-                                        onClick={() => handleAddBet(event, 'total', 'Under', -110, 223.5)}
-                                      >
-                                        U 223.5 (-110)
-                                      </Button>
-                                    </EnhancedBetTooltip>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                            
-                            {(betTypes.includes('player-props') || betTypes.includes('team-props')) && (
-                              <>
-                                <Separator className="my-3" />
-                                
-                                <div className="grid grid-cols-2 gap-4">
-                                  {betTypes.includes('player-props') && (
-                                    <div className="space-y-2">
-                                      <div className="text-xs text-gray-500">Popular Player Props</div>
-                                      <div className="grid gap-2">
-                                        <EnhancedBetTooltip
-                                          eventId={event.id.toString()}
-                                          sportKey={sportKey}
-                                          betType="Player Prop"
-                                          homeTeam={{
-                                            name: getTeamName(event, true),
-                                            record: "42-18"
-                                          }}
-                                          awayTeam={{
-                                            name: getTeamName(event, false),
-                                            record: "36-24"
-                                          }}
-                                          odds={-110}
-                                          point={26.5}
-                                          matchTime={formatGameTime(event.startTime)}
-                                          selection={`${getTeamName(event, true).split(' ').pop()} Points`}
-                                        >
-                                          <Button 
-                                            variant="outline" 
-                                            size="sm" 
-                                            className="w-full"
-                                            onClick={() => handleAddBet(
-                                              event, 
-                                              'player-prop', 
-                                              `${getTeamName(event, true).split(' ').pop()} Points Over 26.5`, 
-                                              -110,
-                                              26.5
-                                            )}
-                                          >
-                                            {getTeamName(event, true).split(' ').pop()} Pts O 26.5 (-110)
-                                          </Button>
-                                        </EnhancedBetTooltip>
-                                        
-                                        <EnhancedBetTooltip
-                                          eventId={event.id.toString()}
-                                          sportKey={sportKey}
-                                          betType="Player Prop"
-                                          homeTeam={{
-                                            name: getTeamName(event, true),
-                                            record: "42-18"
-                                          }}
-                                          awayTeam={{
-                                            name: getTeamName(event, false),
-                                            record: "36-24"
-                                          }}
-                                          odds={+100}
-                                          point={8.5}
-                                          matchTime={formatGameTime(event.startTime)}
-                                          selection={`${getTeamName(event, false).split(' ').pop()} Rebounds`}
-                                        >
-                                          <Button 
-                                            variant="outline" 
-                                            size="sm" 
-                                            className="w-full"
-                                            onClick={() => handleAddBet(
-                                              event, 
-                                              'player-prop', 
-                                              `${getTeamName(event, false).split(' ').pop()} Rebounds Over 8.5`, 
-                                              +100,
-                                              8.5
-                                            )}
-                                          >
-                                            {getTeamName(event, false).split(' ').pop()} Reb O 8.5 (+100)
-                                          </Button>
-                                        </EnhancedBetTooltip>
-                                      </div>
-                                    </div>
-                                  )}
-                                  
-                                  {betTypes.includes('team-props') && (
-                                    <div className="space-y-2">
-                                      <div className="text-xs text-gray-500">Popular Team Props</div>
-                                      <div className="grid gap-2">
-                                        <EnhancedBetTooltip
-                                          eventId={event.id.toString()}
-                                          sportKey={sportKey}
-                                          betType="Team Prop"
-                                          homeTeam={{
-                                            name: getTeamName(event, true),
-                                            record: "42-18"
-                                          }}
-                                          awayTeam={{
-                                            name: getTeamName(event, false),
-                                            record: "36-24"
-                                          }}
-                                          odds={-110}
-                                          point={115.5}
-                                          matchTime={formatGameTime(event.startTime)}
-                                          selection={`${getTeamName(event, true)} Team Total`}
-                                        >
-                                          <Button 
-                                            variant="outline" 
-                                            size="sm" 
-                                            className="w-full"
-                                            onClick={() => handleAddBet(
-                                              event, 
-                                              'team-prop', 
-                                              `${getTeamName(event, true)} Team Total Over 115.5`, 
-                                              -110,
-                                              115.5
-                                            )}
-                                          >
-                                            {getTeamName(event, true)} Total O 115.5 (-110)
-                                          </Button>
-                                        </EnhancedBetTooltip>
-                                        
-                                        <EnhancedBetTooltip
-                                          eventId={event.id.toString()}
-                                          sportKey={sportKey}
-                                          betType="Team Prop"
-                                          homeTeam={{
-                                            name: getTeamName(event, true),
-                                            record: "42-18"
-                                          }}
-                                          awayTeam={{
-                                            name: getTeamName(event, false),
-                                            record: "36-24"
-                                          }}
-                                          odds={-105}
-                                          point={52.5}
-                                          matchTime={formatGameTime(event.startTime)}
-                                          selection={`${getTeamName(event, false)} 1H Total`}
-                                        >
-                                          <Button 
-                                            variant="outline" 
-                                            size="sm" 
-                                            className="w-full"
-                                            onClick={() => handleAddBet(
-                                              event, 
-                                              'team-prop', 
-                                              `${getTeamName(event, false)} 1st Half Total Under 52.5`, 
-                                              -105,
-                                              52.5
-                                            )}
-                                          >
-                                            {getTeamName(event, false)} 1H U 52.5 (-105)
-                                          </Button>
-                                        </EnhancedBetTooltip>
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              </>
-                            )}
-                            
-                            {betTypes.includes('parlays') && (
-                              <>
-                                <Separator className="my-3" />
-                                
-                                <div className="space-y-2">
-                                  <div className="text-xs text-gray-500">Popular Parlays</div>
-                                  <div className="grid grid-cols-2 gap-2">
-                                    <EnhancedBetTooltip
-                                      eventId={event.id.toString()}
-                                      sportKey={sportKey}
-                                      betType="Parlay"
-                                      homeTeam={{
-                                        name: getTeamName(event, true),
-                                        record: "42-18"
-                                      }}
-                                      awayTeam={{
-                                        name: getTeamName(event, false),
-                                        record: "36-24"
-                                      }}
-                                      odds={+600}
-                                      matchTime={formatGameTime(event.startTime)}
-                                      selection="Same Game Parlay"
-                                    >
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        className="w-full"
-                                        onClick={() => handleAddBet(
-                                          event, 
-                                          'parlay', 
-                                          `SGP: ${getTeamName(event, true)} -4 & O 223.5 & ${getTeamName(event, true).split(' ').pop()} O 26.5 Pts`, 
-                                          +600
-                                        )}
-                                      >
-                                        SGP: {getTeamName(event, true)}-4, O223.5 (+600)
-                                      </Button>
-                                    </EnhancedBetTooltip>
-                                    
-                                    <EnhancedBetTooltip
-                                      eventId={event.id.toString()}
-                                      sportKey={sportKey}
-                                      betType="Parlay"
-                                      homeTeam={{
-                                        name: getTeamName(event, true),
-                                        record: "42-18"
-                                      }}
-                                      awayTeam={{
-                                        name: getTeamName(event, false),
-                                        record: "36-24"
-                                      }}
-                                      odds={+700}
-                                      matchTime={formatGameTime(event.startTime)}
-                                      selection="Same Game Parlay"
-                                    >
-                                      <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        className="w-full"
-                                        onClick={() => handleAddBet(
-                                          event, 
-                                          'parlay', 
-                                          `SGP: ${getTeamName(event, false)} +4 & U 223.5 & ${getTeamName(event, false).split(' ').pop()} O 22.5 Pts`, 
-                                          +700
-                                        )}
-                                      >
-                                        SGP: {getTeamName(event, false)}+4, U223.5 (+700)
-                                      </Button>
-                                    </EnhancedBetTooltip>
-                                  </div>
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="bg-muted/30 p-6 text-center rounded-lg">
-                      <p className="text-muted-foreground">No upcoming professional sports events at the moment. Check back later!</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
+      )}
 
-            <TabsContent value="odds-viz">
-              <RealTimeOddsVisualization />
-            </TabsContent>
-            
-            <TabsContent value="analytics">
-              {['gold', 'platinum', 'diamond'].includes(userTier) ? (
-                <div className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center">
-                        <BarChart3 className="h-5 w-5 mr-2" />
-                        Advanced Betting Analytics
-                        <Badge className="ml-2 bg-yellow-100 text-yellow-800">
-                          <Crown className="h-3 w-3 mr-1" />
-                          Premium
-                        </Badge>
-                      </CardTitle>
-                      <CardDescription>
-                        Deep insights into betting patterns, odds movements, and performance metrics
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="space-y-4">
-                          <h3 className="font-semibold flex items-center">
-                            <Target className="h-4 w-4 mr-2" />
-                            Accuracy Metrics
-                          </h3>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">Win Rate</span>
-                              <span className="font-medium">68.4%</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">ROI</span>
-                              <span className="font-medium text-green-600">+12.8%</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">Sharp Money</span>
-                              <span className="font-medium">74%</span>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-4">
-                          <h3 className="font-semibold flex items-center">
-                            <TrendingUp className="h-4 w-4 mr-2" />
-                            Market Analysis
-                          </h3>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">Line Movement</span>
-                              <span className="font-medium">Favorable</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">Steam Moves</span>
-                              <span className="font-medium">3 detected</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">Value Bets</span>
-                              <span className="font-medium text-green-600">12 available</span>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-4">
-                          <h3 className="font-semibold flex items-center">
-                            <Zap className="h-4 w-4 mr-2" />
-                            AI Predictions
-                          </h3>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">Model Confidence</span>
-                              <span className="font-medium">87%</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">Edge Detection</span>
-                              <span className="font-medium text-green-600">Active</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">Suggested Units</span>
-                              <span className="font-medium">2.5u</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-6 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-semibold text-yellow-800">Premium Analytics Active</h4>
-                            <p className="text-sm text-yellow-700">Advanced metrics, AI predictions, and market analysis</p>
-                          </div>
-                          <Crown className="h-8 w-8 text-yellow-600" />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  <TierUpgradePrompt
-                    requiredTier="gold"
-                    feature="Advanced Betting Analytics"
-                    description="Unlock AI-powered predictions, market analysis, sharp money tracking, and advanced performance metrics to maximize your betting edge."
-                  />
-                  
-                  <Card className="border-dashed border-2 opacity-60">
-                    <CardHeader>
-                      <CardTitle className="flex items-center text-muted-foreground">
-                        <BarChart3 className="h-5 w-5 mr-2" />
-                        Preview: Premium Analytics
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="space-y-4">
-                          <h3 className="font-semibold flex items-center text-muted-foreground">
-                            <Target className="h-4 w-4 mr-2" />
-                            Accuracy Metrics
-                          </h3>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">Win Rate</span>
-                              <span className="font-medium text-muted-foreground">••••</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">ROI</span>
-                              <span className="font-medium text-muted-foreground">••••</span>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-4">
-                          <h3 className="font-semibold flex items-center text-muted-foreground">
-                            <TrendingUp className="h-4 w-4 mr-2" />
-                            Market Analysis
-                          </h3>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">Line Movement</span>
-                              <span className="font-medium text-muted-foreground">••••</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">Steam Moves</span>
-                              <span className="font-medium text-muted-foreground">••••</span>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-4">
-                          <h3 className="font-semibold flex items-center text-muted-foreground">
-                            <Zap className="h-4 w-4 mr-2" />
-                            AI Predictions
-                          </h3>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">Model Confidence</span>
-                              <span className="font-medium text-muted-foreground">••••</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">Edge Detection</span>
-                              <span className="font-medium text-muted-foreground">••••</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
-        </div>
+      {/* League Filter */}
+      <div className="mb-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Select Sports Leagues</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {sortedLeagues.map((league) => (
+                <Button
+                  key={league.key}
+                  variant={selectedLeagues.includes(league.key) ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => toggleLeague(league.key)}
+                >
+                  {league.displayName}
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Bet Type Filter */}
+      <div className="mb-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Bet Types</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {(['moneyline', 'spread', 'total', 'player-props', 'team-props', 'parlays'] as BetType[]).map((type) => (
+                <Button
+                  key={type}
+                  variant={betTypes.includes(type) ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => toggleBetType(type)}
+                >
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Live Events */}
+      {filteredLiveEvents.length > 0 && (
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold mb-4">🔴 Live Games</h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {filteredLiveEvents.map((event: any) => (
+              <Card key={event.id} className="border-red-200">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <Badge variant="destructive">LIVE</Badge>
+                    <span className="text-sm text-gray-500">{getSportName(event.sport_key)}</span>
+                  </div>
+                  <CardTitle className="text-lg">
+                    {getTeamName(event, false)} vs {getTeamName(event, true)}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-2">
+                    {betTypes.includes('moneyline') && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => handleAddBet(event, 'moneyline', getTeamName(event, false), +120)}
+                        >
+                          {getTeamName(event, false).slice(0, 3)} +120
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => handleAddBet(event, 'moneyline', getTeamName(event, true), -140)}
+                        >
+                          {getTeamName(event, true).slice(0, 3)} -140
+                        </Button>
+                      </>
+                    )}
+                    {betTypes.includes('spread') && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => handleAddBet(event, 'spread', getTeamName(event, false), -110, +3.5)}
+                        >
+                          {getTeamName(event, false).slice(0, 3)} +3.5
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => handleAddBet(event, 'spread', getTeamName(event, true), -110, -3.5)}
+                        >
+                          {getTeamName(event, true).slice(0, 3)} -3.5
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Upcoming Events */}
+      {filteredUpcomingEvents.length > 0 && (
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold mb-4">📅 Upcoming Games</h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {filteredUpcomingEvents.slice(0, 12).map((event: any) => (
+              <Card key={event.id}>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <Badge variant="secondary">
+                      {formatGameTime(event.startTime || event.commence_time)}
+                    </Badge>
+                    <span className="text-sm text-gray-500">{getSportName(event.sport_key || event.sport)}</span>
+                  </div>
+                  <CardTitle className="text-lg">
+                    {getTeamName(event, false)} vs {getTeamName(event, true)}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-2">
+                    {betTypes.includes('moneyline') && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => handleAddBet(event, 'moneyline', getTeamName(event, false), +110)}
+                        >
+                          {getTeamName(event, false).slice(0, 3)} +110
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => handleAddBet(event, 'moneyline', getTeamName(event, true), -130)}
+                        >
+                          {getTeamName(event, true).slice(0, 3)} -130
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {filteredLiveEvents.length === 0 && filteredUpcomingEvents.length === 0 && !isLoadingLive && !isLoadingUpcoming && (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <h3 className="text-xl font-semibold mb-2">No events available</h3>
+            <p className="text-gray-500 mb-4">
+              Try selecting different leagues or check back later for more games.
+            </p>
+            <Button onClick={() => setSelectedLeagues(PROFESSIONAL_LEAGUES.map(l => l.key))}>
+              Show All Leagues
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
