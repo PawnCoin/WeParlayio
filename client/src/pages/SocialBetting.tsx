@@ -12,46 +12,29 @@ import { useQuery } from '@tanstack/react-query';
 const SocialBetting: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("challenges");
 
-  // Mock user data - this would come from auth context in a real app
-  const currentUser = {
-    id: 'u1',
-    name: 'User',
-    avatar: '',
-    friends: 12,
-    groups: 3,
-    followers: 24
-  };
+  // Fetch authenticated user data
+  const { data: currentUser } = useQuery({
+    queryKey: ["/api/auth/user"]
+  });
 
-  // Fetch real social feed data
+  // Fetch real social betting activity
   const { data: socialFeedData } = useQuery({
-    queryKey: ["/api/social/feed"],
+    queryKey: ["/api/social-betting/activity"],
     refetchInterval: 30000,
   });
 
-  // Real social feed with actual user posts
-  const socialFeed = [
-    {
-      id: 'p1',
-      user: { id: 'u2', name: 'Michael Jordan', avatar: '/avatars/jordan.png' },
-      type: 'parlay',
-      content: 'Just placed a parlay on Lakers, Celtics, and Warriors. Who\'s with me? 🔥 #NBABets',
-      betAmount: '$50',
-      potentialWin: '$350',
-      timestamp: '2 hours ago',
-      likes: 42,
-      comments: 8,
-      legs: [
-        { team: 'Lakers', pick: 'Lakers vs Nuggets', odds: '+180' },
-        { team: 'Celtics', pick: 'Celtics vs Bucks', odds: '-120' },
-        { team: 'Warriors', pick: 'Warriors vs Suns', odds: '+150' }
-      ]
-    },
-    {
-      id: 'p2', 
-      user: { id: 'u3', name: 'Tom Brady', avatar: '/avatars/brady.png' },
-      type: 'prediction',
-      content: 'Sunday\'s NFL games looking juicy! I\'m taking the Chiefs to cover. What\'s your pick of the day? 🏈',
-      timestamp: '5 hours ago',
+  // Fetch user's friends
+  const { data: friendsData } = useQuery({
+    queryKey: ["/api/social-betting/friends"]
+  });
+
+  // Fetch betting groups
+  const { data: groupsData } = useQuery({
+    queryKey: ["/api/social-betting/groups"]
+  });
+
+  // Use real social feed data or empty array
+  const socialFeed = socialFeedData || [];
       likes: 156,
       comments: 23
     },
