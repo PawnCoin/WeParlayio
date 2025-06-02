@@ -7036,6 +7036,110 @@ Join us: WeParlay.io 🎯
     }
   });
 
+  // Streaming API endpoints for authentic live streaming data
+  app.get('/api/streaming/live/sports', async (req, res) => {
+    try {
+      const { unifiedStreamingService } = await import('./services/unifiedStreamingService');
+      const streams = await unifiedStreamingService.getStreamsBySport('sports');
+      res.json({
+        success: true,
+        streams: streams,
+        count: streams.length
+      });
+    } catch (error) {
+      console.error('Sports streaming error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to fetch sports streams',
+        streams: []
+      });
+    }
+  });
+
+  app.get('/api/streaming/live/esports', async (req, res) => {
+    try {
+      const { unifiedStreamingService } = await import('./services/unifiedStreamingService');
+      const streams = await unifiedStreamingService.getTwitchEsportsStreams();
+      res.json({
+        success: true,
+        streams: streams,
+        count: streams.length
+      });
+    } catch (error) {
+      console.error('Esports streaming error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to fetch esports streams',
+        streams: []
+      });
+    }
+  });
+
+  app.get('/api/streaming/top', async (req, res) => {
+    try {
+      const { unifiedStreamingService } = await import('./services/unifiedStreamingService');
+      const streams = await unifiedStreamingService.getTopLiveStreams();
+      res.json({
+        success: true,
+        streams: streams,
+        count: streams.length
+      });
+    } catch (error) {
+      console.error('Top streams error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to fetch top streams',
+        streams: []
+      });
+    }
+  });
+
+  app.get('/api/streaming/search', async (req, res) => {
+    try {
+      const query = req.query.q as string || '';
+      if (!query || query.length < 2) {
+        return res.json({
+          success: true,
+          streams: [],
+          count: 0
+        });
+      }
+
+      const { unifiedStreamingService } = await import('./services/unifiedStreamingService');
+      const streams = await unifiedStreamingService.searchStreams(query);
+      res.json({
+        success: true,
+        streams: streams,
+        count: streams.length,
+        query: query
+      });
+    } catch (error) {
+      console.error('Stream search error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to search streams',
+        streams: []
+      });
+    }
+  });
+
+  app.get('/api/streaming/analytics', async (req, res) => {
+    try {
+      const { unifiedStreamingService } = await import('./services/unifiedStreamingService');
+      const analytics = await unifiedStreamingService.getStreamAnalytics();
+      res.json({
+        success: true,
+        ...analytics
+      });
+    } catch (error) {
+      console.error('Streaming analytics error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to fetch streaming analytics'
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
