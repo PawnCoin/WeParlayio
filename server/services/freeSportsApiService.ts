@@ -383,235 +383,43 @@ export class FreeSportsApiService {
   }
 
   private generateFallbackNFL(): any[] {
-    const teams = [
-      ['Kansas City Chiefs', 'Buffalo Bills'],
-      ['Dallas Cowboys', 'Philadelphia Eagles'],
-      ['San Francisco 49ers', 'Seattle Seahawks'],
-      ['Green Bay Packers', 'Chicago Bears'],
-      ['New England Patriots', 'Miami Dolphins']
-    ];
-
-    return teams.map((matchup, index) => ({
-      id: `fallback-nfl-${index}`,
-      sport_title: 'NFL',
-      commence_time: new Date(Date.now() + (index + 1) * 3600000).toISOString(),
-      home_team: matchup[0],
-      away_team: matchup[1],
-      bookmakers: [{
-        key: 'weparlay_demo',
-        title: 'WeParlay Demo',
-        markets: [{
-          key: 'h2h',
-          outcomes: [
-            { name: matchup[0], price: +(1.75 + Math.random() * 0.5).toFixed(2) },
-            { name: matchup[1], price: +(1.75 + Math.random() * 0.5).toFixed(2) }
-          ]
-        }]
-      }]
-    }));
+    // NO MOCK DATA - Only authentic API data allowed
+    return [];
   }
 
   private generateFallbackNBA(): any[] {
-    const teams = [
-      ['Los Angeles Lakers', 'Golden State Warriors'],
-      ['Boston Celtics', 'Miami Heat'],
-      ['Phoenix Suns', 'Denver Nuggets'],
-      ['Milwaukee Bucks', 'Philadelphia 76ers'],
-      ['Brooklyn Nets', 'New York Knicks']
-    ];
-
-    return teams.map((matchup, index) => ({
-      id: `fallback-nba-${index}`,
-      sport_title: 'NBA',
-      commence_time: new Date(Date.now() + (index + 1) * 3600000).toISOString(),
-      home_team: matchup[0],
-      away_team: matchup[1],
-      bookmakers: [{
-        key: 'weparlay_demo',
-        title: 'WeParlay Demo',
-        markets: [{
-          key: 'h2h',
-          outcomes: [
-            { name: matchup[0], price: +(1.75 + Math.random() * 0.5).toFixed(2) },
-            { name: matchup[1], price: +(1.75 + Math.random() * 0.5).toFixed(2) }
-          ]
-        }]
-      }]
-    }));
+    // NO MOCK DATA - Only authentic API data allowed
+    return [];
   }
 
   private generateFallbackMLB(): any[] {
-    const teams = [
-      ['New York Yankees', 'Boston Red Sox'],
-      ['Los Angeles Dodgers', 'San Francisco Giants'],
-      ['Houston Astros', 'Texas Rangers'],
-      ['Atlanta Braves', 'New York Mets'],
-      ['Tampa Bay Rays', 'Toronto Blue Jays']
-    ];
-
-    return teams.map((matchup, index) => ({
-      id: `fallback-mlb-${index}`,
-      sport_title: 'MLB',
-      commence_time: new Date(Date.now() + (index + 1) * 3600000).toISOString(),
-      home_team: matchup[0],
-      away_team: matchup[1],
-      bookmakers: [{
-        key: 'weparlay_demo',
-        title: 'WeParlay Demo',
-        markets: [{
-          key: 'h2h',
-          outcomes: [
-            { name: matchup[0], price: +(1.75 + Math.random() * 0.5).toFixed(2) },
-            { name: matchup[1], price: +(1.75 + Math.random() * 0.5).toFixed(2) }
-          ]
-        }]
-      }]
-    }));
+    // NO MOCK DATA - Only authentic API data allowed
+    return [];
   }
 
   private generateFallbackNHL(): any[] {
-    const teams = [
-      ['Toronto Maple Leafs', 'Montreal Canadiens'],
-      ['Edmonton Oilers', 'Calgary Flames'],
-      ['Boston Bruins', 'New York Rangers'],
-      ['Tampa Bay Lightning', 'Florida Panthers'],
-      ['Colorado Avalanche', 'Vegas Golden Knights']
-    ];
-
-    return teams.map((matchup, index) => ({
-      id: `fallback-nhl-${index}`,
-      sport_title: 'NHL',
-      commence_time: new Date(Date.now() + (index + 1) * 3600000).toISOString(),
-      home_team: matchup[0],
-      away_team: matchup[1],
-      bookmakers: [{
-        key: 'weparlay_demo',
-        title: 'WeParlay Demo',
-        markets: [{
-          key: 'h2h',
-          outcomes: [
-            { name: matchup[0], price: +(1.75 + Math.random() * 0.5).toFixed(2) },
-            { name: matchup[1], price: +(1.75 + Math.random() * 0.5).toFixed(2) }
-          ]
-        }]
-      }]
-    }));
+    // NO MOCK DATA - Only authentic API data allowed
+    return [];
   }
 
   private generateFallbackSoccer(): any[] {
-    const teams = [
-      ['Manchester United', 'Liverpool'],
-      ['Arsenal', 'Chelsea'],
-      ['Barcelona', 'Real Madrid'],
-      ['Bayern Munich', 'Borussia Dortmund'],
-      ['AC Milan', 'Inter Milan']
-    ];
-
-    return teams.map((matchup, index) => ({
-      id: `fallback-soccer-${index}`,
-      sport_title: 'Soccer',
-      commence_time: new Date(Date.now() + (index + 1) * 3600000).toISOString(),
-      home_team: matchup[0],
-      away_team: matchup[1],
-      bookmakers: [{
-        key: 'weparlay_demo',
-        title: 'WeParlay Demo',
-        markets: [{
-          key: 'h2h',
-          outcomes: [
-            { name: matchup[0], price: +(1.75 + Math.random() * 0.5).toFixed(2) },
-            { name: matchup[1], price: +(1.75 + Math.random() * 0.5).toFixed(2) }
-          ]
-        }]
-      }]
-    }));
+    // NO MOCK DATA - Only authentic API data allowed
+    return [];
   }
 
     private generateFallbackWNBA(): any[] {
-        const teams = [
-            ['Las Vegas Aces', 'New York Liberty'],
-            ['Connecticut Sun', 'Washington Mystics'],
-            ['Phoenix Mercury', 'Seattle Storm'],
-            ['Chicago Sky', 'Minnesota Lynx'],
-            ['Atlanta Dream', 'Dallas Wings']
-        ];
-
-        return teams.map((matchup, index) => ({
-            id: `fallback-wnba-${index}`,
-            sport_title: 'WNBA',
-            commence_time: new Date(Date.now() + (index + 1) * 3600000).toISOString(),
-            home_team: matchup[0],
-            away_team: matchup[1],
-            bookmakers: [{
-                key: 'weparlay_demo',
-                title: 'WeParlay Demo',
-                markets: [{
-                    key: 'h2h',
-                    outcomes: [
-                        { name: matchup[0], price: +(1.75 + Math.random() * 0.5).toFixed(2) },
-                        { name: matchup[1], price: +(1.75 + Math.random() * 0.5).toFixed(2) }
-                    ]
-                }]
-            }]
-        }));
+        // NO MOCK DATA - Only authentic API data allowed
+        return [];
     }
 
     private generateFallbackTennis(): any[] {
-        const matches = [
-            ['Novak Djokovic', 'Carlos Alcaraz'],
-            ['Iga Swiatek', 'Aryna Sabalenka'],
-            ['Daniil Medvedev', 'Jannik Sinner'],
-            ['Elena Rybakina', 'Jessica Pegula'],
-            ['Rafael Nadal', 'Roger Federer'] // For the memories
-        ];
-
-        return matches.map((matchup, index) => ({
-            id: `fallback-tennis-${index}`,
-            sport_title: 'Tennis',
-            commence_time: new Date(Date.now() + (index + 1) * 3600000).toISOString(),
-            home_team: matchup[0],
-            away_team: matchup[1],
-            bookmakers: [{
-                key: 'weparlay_demo',
-                title: 'WeParlay Demo',
-                markets: [{
-                    key: 'h2h',
-                    outcomes: [
-                        { name: matchup[0], price: +(1.75 + Math.random() * 0.5).toFixed(2) },
-                        { name: matchup[1], price: +(1.75 + Math.random() * 0.5).toFixed(2) }
-                    ]
-                }]
-            }]
-        }));
+        // NO MOCK DATA - Only authentic API data allowed
+        return [];
     }
 
     private generateFallbackGolf(): any[] {
-        const tournaments = [
-            ['Scottie Scheffler', 'Jon Rahm'],
-            ['Rory McIlroy', 'Viktor Hovland'],
-            ['Patrick Cantlay', 'Xander Schauffele'],
-            ['Cameron Smith', 'Justin Thomas'],
-            ['Collin Morikawa', 'Jordan Spieth']
-        ];
-
-        return tournaments.map((matchup, index) => ({
-            id: `fallback-golf-${index}`,
-            sport_title: 'Golf',
-            commence_time: new Date(Date.now() + (index + 1) * 3600000).toISOString(),
-            home_team: matchup[0],
-            away_team: matchup[1],  //Simulating head-to-head matchups
-            bookmakers: [{
-                key: 'weparlay_demo',
-                title: 'WeParlay Demo',
-                markets: [{
-                    key: 'h2h',
-                    outcomes: [
-                        { name: matchup[0], price: +(1.75 + Math.random() * 0.5).toFixed(2) },
-                        { name: matchup[1], price: +(1.75 + Math.random() * 0.5).toFixed(2) }
-                    ]
-                }]
-            }]
-        }));
+        // NO MOCK DATA - Only authentic API data allowed
+        return [];
     }
 
   async getAllSportsOdds(): Promise<any[]> {
