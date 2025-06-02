@@ -7404,6 +7404,284 @@ Join us: WeParlay.io 🎯
     }
   });
 
+  // Fantasy Sports API endpoints
+  app.get('/api/fantasy/players', async (req, res) => {
+    try {
+      const players = [
+        {
+          id: 1,
+          name: "Josh Allen",
+          position: "QB",
+          team: "BUF",
+          projectedPoints: 24.8,
+          salary: 8500,
+          ownership: 15.2,
+          props: {
+            passingYards: { line: 267.5, over: -110, under: -110 },
+            passingTds: { line: 1.5, over: -105, under: -125 },
+            rushingYards: { line: 44.5, over: -115, under: -115 }
+          }
+        },
+        {
+          id: 2,
+          name: "Christian McCaffrey",
+          position: "RB",
+          team: "SF",
+          projectedPoints: 22.1,
+          salary: 9200,
+          ownership: 18.7,
+          props: {
+            rushingYards: { line: 89.5, over: -110, under: -110 },
+            receivingYards: { line: 34.5, over: -120, under: -110 },
+            touchdowns: { line: 0.5, over: +105, under: -135 }
+          }
+        }
+      ];
+      res.json(players);
+    } catch (error) {
+      console.error('Error fetching fantasy players:', error);
+      res.status(500).json({ error: 'Failed to fetch fantasy players' });
+    }
+  });
+
+  app.get('/api/fantasy/teams', async (req, res) => {
+    try {
+      const teams = [
+        {
+          id: 1,
+          name: "Championship Squad",
+          league: "Yahoo Fantasy",
+          sport: "NFL",
+          wins: 8,
+          losses: 4,
+          totalPoints: 1456.8,
+          players: ["Josh Allen", "Christian McCaffrey", "Davante Adams"]
+        },
+        {
+          id: 2,
+          name: "Dynasty Team",
+          league: "ESPN Fantasy",
+          sport: "NBA",
+          wins: 12,
+          losses: 2,
+          totalPoints: 2234.5,
+          players: ["Luka Doncic", "Giannis Antetokounmpo", "Jayson Tatum"]
+        }
+      ];
+      res.json(teams);
+    } catch (error) {
+      console.error('Error fetching fantasy teams:', error);
+      res.status(500).json({ error: 'Failed to fetch fantasy teams' });
+    }
+  });
+
+  app.post('/api/fantasy/create-team', async (req, res) => {
+    try {
+      const { name, sport, league } = req.body;
+      
+      if (!name || !sport) {
+        return res.status(400).json({ error: 'Team name and sport are required' });
+      }
+
+      const newTeam = {
+        id: Math.floor(Math.random() * 10000),
+        name,
+        sport,
+        league: league || 'Custom League',
+        wins: 0,
+        losses: 0,
+        totalPoints: 0,
+        players: []
+      };
+
+      res.json(newTeam);
+    } catch (error) {
+      console.error('Error creating fantasy team:', error);
+      res.status(500).json({ error: 'Failed to create fantasy team' });
+    }
+  });
+
+  app.post('/api/fantasy/connect/:platform', async (req, res) => {
+    try {
+      const { platform } = req.params;
+      const { credentials } = req.body;
+      
+      res.json({ 
+        success: true, 
+        message: `Successfully connected to ${platform}`,
+        platform 
+      });
+    } catch (error) {
+      console.error('Error connecting to fantasy platform:', error);
+      res.status(500).json({ error: 'Failed to connect to fantasy platform' });
+    }
+  });
+
+  // Esports API endpoints
+  app.get('/api/esports/matches', async (req, res) => {
+    try {
+      const matches = [
+        {
+          id: 1,
+          game: "League of Legends",
+          tournament: "LCS Spring Split",
+          team1: { name: "Team Liquid", logo: "/logos/tl.png", odds: 1.65 },
+          team2: { name: "Cloud9", logo: "/logos/c9.png", odds: 2.20 },
+          startTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+          status: "upcoming",
+          streamUrl: "https://twitch.tv/riotgames"
+        },
+        {
+          id: 2,
+          game: "Counter-Strike 2",
+          tournament: "ESL Pro League",
+          team1: { name: "FaZe Clan", logo: "/logos/faze.png", odds: 1.80 },
+          team2: { name: "NAVI", logo: "/logos/navi.png", odds: 1.95 },
+          startTime: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
+          status: "upcoming",
+          streamUrl: "https://twitch.tv/esl_csgo"
+        },
+        {
+          id: 3,
+          game: "Valorant",
+          tournament: "VCT Champions",
+          team1: { name: "Sentinels", logo: "/logos/sen.png", odds: 2.10 },
+          team2: { name: "LOUD", logo: "/logos/loud.png", odds: 1.70 },
+          startTime: new Date().toISOString(),
+          status: "live",
+          streamUrl: "https://twitch.tv/valorant"
+        }
+      ];
+      res.json(matches);
+    } catch (error) {
+      console.error('Error fetching esports matches:', error);
+      res.status(500).json({ error: 'Failed to fetch esports matches' });
+    }
+  });
+
+  app.get('/api/esports/tournaments', async (req, res) => {
+    try {
+      const tournaments = [
+        {
+          id: 1,
+          name: "League of Legends World Championship",
+          game: "League of Legends",
+          prizePool: "$2,225,000",
+          startDate: "2024-09-25",
+          endDate: "2024-11-02",
+          teams: 16,
+          status: "upcoming"
+        },
+        {
+          id: 2,
+          name: "The International",
+          game: "Dota 2",
+          prizePool: "$15,000,000",
+          startDate: "2024-10-12",
+          endDate: "2024-10-27",
+          teams: 20,
+          status: "upcoming"
+        },
+        {
+          id: 3,
+          name: "VCT Champions",
+          game: "Valorant",
+          prizePool: "$1,000,000",
+          startDate: "2024-08-01",
+          endDate: "2024-08-26",
+          teams: 16,
+          status: "active"
+        }
+      ];
+      res.json(tournaments);
+    } catch (error) {
+      console.error('Error fetching esports tournaments:', error);
+      res.status(500).json({ error: 'Failed to fetch esports tournaments' });
+    }
+  });
+
+  app.post('/api/esports/bet', async (req, res) => {
+    try {
+      const { matchId, betType, selection, amount } = req.body;
+      
+      if (!matchId || !betType || !selection || !amount) {
+        return res.status(400).json({ error: 'Missing required bet parameters' });
+      }
+
+      const bet = {
+        id: Math.floor(Math.random() * 10000),
+        matchId,
+        betType,
+        selection,
+        amount: parseFloat(amount),
+        odds: 1.85,
+        status: 'pending',
+        placedAt: new Date().toISOString()
+      };
+
+      res.json({ success: true, bet });
+    } catch (error) {
+      console.error('Error placing esports bet:', error);
+      res.status(500).json({ error: 'Failed to place esports bet' });
+    }
+  });
+
+  // Comprehensive Betting API endpoints
+  app.get('/api/betting/comprehensive', async (req, res) => {
+    try {
+      const bettingData = {
+        liveGames: [
+          {
+            id: 1,
+            sport: "NFL",
+            homeTeam: "Chiefs",
+            awayTeam: "Bills",
+            score: "14-10",
+            quarter: "2nd",
+            timeRemaining: "08:42",
+            moneyline: { home: -110, away: +105 },
+            spread: { line: -3.5, home: -110, away: -110 },
+            total: { line: 47.5, over: -105, under: -115 }
+          },
+          {
+            id: 2,
+            sport: "NBA",
+            homeTeam: "Lakers",
+            awayTeam: "Celtics",
+            score: "78-72",
+            quarter: "3rd",
+            timeRemaining: "05:23",
+            moneyline: { home: +120, away: -140 },
+            spread: { line: +2.5, home: -110, away: -110 },
+            total: { line: 215.5, over: -110, under: -110 }
+          }
+        ],
+        upcomingGames: [
+          {
+            id: 3,
+            sport: "MLB",
+            homeTeam: "Yankees",
+            awayTeam: "Red Sox",
+            startTime: "2024-06-03T19:05:00Z",
+            moneyline: { home: -150, away: +130 },
+            runLine: { line: -1.5, home: +140, away: -160 },
+            total: { line: 9.5, over: -105, under: -115 }
+          }
+        ],
+        popularBets: [
+          { type: "Moneyline", sport: "NFL", percentage: 35 },
+          { type: "Point Spread", sport: "NBA", percentage: 28 },
+          { type: "Over/Under", sport: "MLB", percentage: 22 },
+          { type: "Player Props", sport: "NFL", percentage: 15 }
+        ]
+      };
+      res.json(bettingData);
+    } catch (error) {
+      console.error('Error fetching comprehensive betting data:', error);
+      res.status(500).json({ error: 'Failed to fetch comprehensive betting data' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
