@@ -217,16 +217,16 @@ export class AssetManager {
   // Get sport icon using ESPN service
 
 
-  // Get team logo using Universal Team Service
-  static getTeamLogo(teamName: string, league: string = 'nba'): string {
-    const cacheKey = `${league}-${teamName}`;
-    if (this.logoCache.has(cacheKey)) {
-      return this.logoCache.get(cacheKey)!;
+  // Get sport icon using ESPN service
+  static getSportIcon(sport: string): string {
+    const cacheKey = `sport-${sport}`;
+    if (this.iconCache.has(cacheKey)) {
+      return this.iconCache.get(cacheKey)!;
     }
 
-    const logoPath = UniversalTeamService.getTeamLogo(teamName, league);
-    this.logoCache.set(cacheKey, logoPath);
-    return logoPath;
+    const iconPath = ESPNAssetService.getSportIcon(sport);
+    this.iconCache.set(cacheKey, iconPath);
+    return iconPath;
   }
 
   // Get player photo

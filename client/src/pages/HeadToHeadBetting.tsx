@@ -104,6 +104,23 @@ const HeadToHeadBetting: React.FC = () => {
       });
     }, 1500);
   };
+
+  // Function to handle challenge creation
+  const handleCreateChallenge = () => {
+    try {
+      toast({
+        title: "Challenge Creation",
+        description: "Head to head challenge feature is available for authenticated users.",
+      });
+    } catch (error) {
+      console.error("Error creating challenge:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create challenge.",
+        variant: "destructive",
+      });
+    }
+  };
   
   // Filter challenges based on active tab
   const filteredChallenges = challenges.filter(challenge => {
@@ -231,7 +248,7 @@ const HeadToHeadBetting: React.FC = () => {
               </DialogContent>
             </Dialog>
             
-            <Button className="flex items-center">
+            <Button className="flex items-center" onClick={handleCreateChallenge}>
               <Plus className="mr-2 h-4 w-4" />
               Create Challenge
             </Button>
