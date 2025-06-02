@@ -1,6 +1,6 @@
 export class ESPNFantasyService {
   private apiKey: string;
-  private baseUrl = 'https://fantasy-sports-api.rapidapi.com';
+  private baseUrl = 'https://api-nba-v1.p.rapidapi.com'; // Using NBA API as backup
 
   constructor() {
     this.apiKey = process.env.RAPIDAPI_KEY || '';
@@ -13,20 +13,32 @@ export class ESPNFantasyService {
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/players/${sport}`, {
-        headers: {
-          'X-RapidAPI-Key': this.apiKey,
-          'X-RapidAPI-Host': 'fantasy-sports-api.rapidapi.com'
-        }
-      });
+      // Try multiple ESPN Fantasy endpoints
+      const endpoints = [
+        'https://fantasy-sports-api.rapidapi.com',
+        'https://espn-fantasy-api.p.rapidapi.com',
+        'https://api-basketball.p.rapidapi.com'
+      ];
 
-      if (!response.ok) {
-        console.log(`ESPN Fantasy API error: ${response.status}`);
-        return [];
+      for (const endpoint of endpoints) {
+        try {
+          const response = await fetch(`${endpoint}/players`, {
+            headers: {
+              'X-RapidAPI-Key': this.apiKey,
+              'X-RapidAPI-Host': endpoint.replace('https://', '')
+            }
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            return Array.isArray(data) ? data : data.players || data.response || [];
+          }
+        } catch (e) {
+          continue; // Try next endpoint
+        }
       }
 
-      const data = await response.json();
-      return Array.isArray(data) ? data : data.players || [];
+      return [];
     } catch (error) {
       console.log('ESPN Fantasy API unavailable:', error);
       return [];
