@@ -125,7 +125,7 @@ const VipSmsChallenge: React.FC<VipSmsChallengeProps> = ({
         marketingConsent: marketingConsent // Track marketing consent
       };
 
-      const response = await apiRequest('POST', '/api/challenges/sms', challengeData);
+      const response = await apiRequest('POST', '/api/challenges/sms-test', challengeData);
 
       setChallengeCreated(response);
 
