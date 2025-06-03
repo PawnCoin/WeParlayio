@@ -54,15 +54,16 @@ export default function CryptoCheckout() {
   const loadSupportedCryptocurrencies = async () => {
     try {
       const response = await apiRequest('GET', '/api/crypto/supported');
+      console.log('Crypto API response:', response);
       
-      if (response && response.cryptocurrencies && Array.isArray(response.cryptocurrencies)) {
+      if (response && response.success && response.cryptocurrencies && Array.isArray(response.cryptocurrencies)) {
         setSupportedCryptos(response.cryptocurrencies);
         
         // Auto-select Pawn Coin if available
         const pawnCoin = response.cryptocurrencies.find((c: CryptoOption) => c.symbol === '$Pc');
         if (pawnCoin && pawnCoin.currentPrice > 0) {
           setSelectedCrypto(pawnCoin);
-          setAmount((tierPrice / pawnCoin.currentPrice).toFixed(2));
+          setAmount((tierPrice / pawnCoin.currentPrice).toFixed(pawnCoin.decimals || 8));
         }
       } else {
         console.error('Invalid response format:', response);
@@ -194,10 +195,10 @@ export default function CryptoCheckout() {
     });
   };
 
-  const getCryptoIcon = (symbol: string) => {
+  const renderCryptoIcon = (symbol: string) => {
     // Special handling for $Pc - return image element
     if (symbol === '$Pc') {
-      return <img src={pcLogoPath} alt="Pawn Coin" className="w-full h-full object-cover" />;
+      return <img src={pcLogoPath} alt="Pawn Coin" className="w-6 h-6 rounded-full object-cover" />;
     }
     
     const icons: { [key: string]: string } = {
@@ -216,7 +217,9 @@ export default function CryptoCheckout() {
       'LTC': 'Ł',
       'ATOM': 'ATOM'
     };
-    return icons[symbol] || symbol;
+    
+    const iconText = icons[symbol] || symbol;
+    return <span className="w-6 h-6 flex items-center justify-center text-sm font-bold">{iconText}</span>;
   };
 
   const getTypeColor = (type: string) => {
@@ -316,7 +319,7 @@ export default function CryptoCheckout() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-gradient-to-r from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                          {getCryptoIcon(crypto.symbol)}
+                          {renderCryptoIcon(crypto.symbol)}
                         </div>
                         <div>
                           <div className="font-medium text-white">{crypto.name}</div>
@@ -358,7 +361,7 @@ export default function CryptoCheckout() {
                   <div className="p-4 bg-gray-700 rounded-lg">
                     <div className="flex items-center gap-3 mb-3">
                       <div className="w-10 h-10 bg-gradient-to-r from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white font-bold">
-                        {getCryptoIcon(selectedCrypto.symbol)}
+                        {renderCryptoIcon(selectedCrypto.symbol)}
                       </div>
                       <div>
                         <div className="font-semibold text-white">{selectedCrypto.name}</div>
