@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -6,11 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 import HeadToHeadChallenge from '@/components/betting/HeadToHeadChallenge';
-import { DollarSign, AlertTriangle, Clock, Trophy, Plus, ArrowRight, ArrowUpRight, CreditCard, CheckCircle, MessageSquare } from 'lucide-react';
+import { DollarSign, AlertTriangle, Clock, Trophy, Plus, ArrowRight, ArrowUpRight, CreditCard, CheckCircle, MessageSquare, Smartphone, Zap, TrendingUp } from 'lucide-react';
 import { Link } from 'wouter';
 
 interface ChallengeProps {
@@ -27,15 +28,30 @@ interface ChallengeProps {
 const HeadToHeadBetting: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('active');
   const [showDepositDialog, setShowDepositDialog] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
   const [isDepositing, setIsDepositing] = useState(false);
   const [depositSuccess, setDepositSuccess] = useState(false);
+  const [selectedGame, setSelectedGame] = useState<any>(null);
+  const [showQuickBetDialog, setShowQuickBetDialog] = useState(false);
   
   // Fetch real challenges from API
   const { data: challenges = [], isLoading: challengesLoading } = useQuery({
     queryKey: ['/api/challenges'],
+    enabled: isAuthenticated
+  });
+
+  // Fetch live games for quick betting
+  const { data: liveGames = [] } = useQuery({
+    queryKey: ['/api/events/live'],
+    enabled: isAuthenticated
+  });
+
+  // Fetch SMS betting statistics
+  const { data: smsStats } = useQuery({
+    queryKey: ['/api/sms/statistics'],
     enabled: isAuthenticated
   });
 
@@ -47,6 +63,44 @@ const HeadToHeadBetting: React.FC = () => {
     queryKey: ['/api/wallet/balance'],
     enabled: isAuthenticated
   });
+
+  // Quick SMS bet mutation
+  const quickSmsBet = useMutation({
+    mutationFn: async (betData: { gameId: string; amount: number; pick: string; phone: string }) => {
+      return apiRequest('POST', '/api/sms/quick-bet', betData);
+    },
+    onSuccess: () => {
+      toast({
+        title: "SMS Bet Sent!",
+        description: "Your friend will receive a text message to accept the challenge.",
+      });
+      setShowQuickBetDialog(false);
+      queryClient.invalidateQueries({ queryKey: ['/api/challenges'] });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to send SMS bet. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Auto-settlement system
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    
+    const interval = setInterval(async () => {
+      try {
+        await apiRequest('POST', '/api/challenges/auto-settle');
+        queryClient.invalidateQueries({ queryKey: ['/api/challenges'] });
+      } catch (error) {
+        console.log('Auto-settlement check completed');
+      }
+    }, 30000); // Check every 30 seconds
+
+    return () => clearInterval(interval);
+  }, [isAuthenticated, queryClient]);
 
   const [mockChallenges] = useState<ChallengeProps[]>([
     {
