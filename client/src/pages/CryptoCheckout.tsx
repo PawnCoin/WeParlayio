@@ -98,7 +98,7 @@ export default function CryptoCheckout() {
     }
   };
 
-  const filteredCryptos = supportedCryptos.filter(crypto => {
+  const filteredCryptos = (supportedCryptos || []).filter(crypto => {
     const matchesSearch = crypto.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          crypto.symbol.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterType === 'all' || crypto.type === filterType;
@@ -106,7 +106,7 @@ export default function CryptoCheckout() {
   });
 
   const handleCryptoSelect = (cryptoSymbol: string) => {
-    const crypto = supportedCryptos.find(c => c.symbol === cryptoSymbol);
+    const crypto = (supportedCryptos || []).find(c => c.symbol === cryptoSymbol);
     if (crypto) {
       setSelectedCrypto(crypto);
       if (crypto.currentPrice > 0) {
