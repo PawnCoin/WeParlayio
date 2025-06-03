@@ -152,6 +152,7 @@ function Router() {
 
       {/* VIP Features */}
       <Route path="/vip" component={VipFeatures} />
+      <Route path="/vip-features" component={VipFeatures} />
 
       {/* WeParlay Cash */}
       <Route path="/weparlay-cash" component={WeParlayCash} />
