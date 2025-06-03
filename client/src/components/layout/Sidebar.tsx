@@ -285,19 +285,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
             </Link>
           </li>
           <li>
-            <Link href="/enhanced-features">
-              <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
-                location === '/enhanced-features' 
-                  ? "bg-primary text-white" 
-                  : "hover:bg-gray-100 dark:hover:bg-gray-800"
-              }`}>
-                <Zap className="h-5 w-5 mr-3" />
-                <span>Enhanced Features</span>
-              </div>
-            </Link>
-          </li>
-
-          <li>
             <Link href="/esports-hub">
               <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
                 location === '/esports-hub' 
@@ -326,17 +313,45 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
           </li>
 
           <li>
-            <Link href="/vip">
-              <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
-                location === '/vip' 
-                  ? "bg-primary text-white" 
+            <details className="group">
+              <summary className={`flex items-center py-2 px-4 rounded-md cursor-pointer list-none ${
+                ['/vip', '/enhanced-features'].includes(location) 
+                  ? "bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900/40 dark:to-yellow-900/40" 
                   : "bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 hover:from-amber-100 hover:to-yellow-100 dark:hover:from-amber-900/40 dark:hover:to-yellow-900/40"
               }`}>
                 <Crown className="h-5 w-5 mr-3 text-amber-500" />
-                <span className="text-amber-700 dark:text-amber-300 font-medium">VIP Features</span>
-                <span className="ml-2 text-[10px] font-bold py-0.5 px-1.5 bg-amber-200 dark:bg-amber-800 text-amber-800 dark:text-amber-200 rounded-full">NEW</span>
-              </div>
-            </Link>
+                <span className="text-amber-700 dark:text-amber-300 font-medium">VIP Area</span>
+                <span className="ml-2 text-[10px] font-bold py-0.5 px-1.5 bg-amber-200 dark:bg-amber-800 text-amber-800 dark:text-amber-200 rounded-full">PREMIUM</span>
+                <ChevronDown className="h-4 w-4 ml-auto group-open:rotate-180 transition-transform text-amber-600" />
+              </summary>
+              <ul className="ml-6 mt-2 space-y-1">
+                <li>
+                  <Link href="/vip">
+                    <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${
+                      location === '/vip' 
+                        ? "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300" 
+                        : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}>
+                      <Crown className="h-4 w-4 mr-2 text-amber-500" />
+                      <span>VIP Dashboard</span>
+                    </div>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/enhanced-features">
+                    <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${
+                      location === '/enhanced-features' 
+                        ? "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300" 
+                        : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}>
+                      <Zap className="h-4 w-4 mr-2 text-amber-500" />
+                      <span>Enhanced Features</span>
+                      <span className="ml-auto text-xs bg-amber-100 text-amber-700 dark:bg-amber-800 dark:text-amber-300 px-2 py-0.5 rounded-full">PRO</span>
+                    </div>
+                  </Link>
+                </li>
+              </ul>
+            </details>
           </li>
 
 
