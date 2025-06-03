@@ -2209,9 +2209,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // CRITICAL: Crypto wallet integration
-  app.post('/api/wallet/connect', isAuthenticated, async (req, res) => {
+  // CRITICAL: Crypto wallet integration (public endpoint for initial connection)
+  app.post('/api/wallet/connect', async (req, res) => {
     try {
+      // Allow wallet connection without authentication for initial setup
       const userId = req.user?.claims?.sub;
       const { walletAddress, walletType } = req.body;
 
