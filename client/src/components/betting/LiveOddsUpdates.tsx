@@ -85,10 +85,10 @@ export default function LiveOddsUpdates() {
   useEffect(() => {
     fetchRealOddsUpdates();
     
-    // Fetch real odds updates every 5 seconds
+    // Fetch real odds updates every 30 seconds (reduced from 5 seconds)
     const interval = setInterval(() => {
       fetchRealOddsUpdates();
-    }, 5000);
+    }, 30000);
 
     return () => clearInterval(interval);
   }, []);

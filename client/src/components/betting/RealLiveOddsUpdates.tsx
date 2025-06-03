@@ -71,10 +71,10 @@ export default function RealLiveOddsUpdates() {
     
     fetchRealOddsUpdates();
     
-    // Fetch real odds updates every 8 seconds
+    // Fetch real odds updates every 45 seconds (reduced from 8 seconds)
     const interval = setInterval(() => {
       fetchRealOddsUpdates();
-    }, 8000);
+    }, 45000);
 
     return () => clearInterval(interval);
   }, []);

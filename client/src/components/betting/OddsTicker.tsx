@@ -123,7 +123,7 @@ const OddsTicker: React.FC = () => {
       } catch (error) {
         console.error('Failed to fetch odds updates:', error);
       }
-    }, 5000);
+    }, 30000); // Reduced from 5 seconds to 30 seconds
 
     return () => clearInterval(updateInterval);
   }, [isConnected, isPaused]);
