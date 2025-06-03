@@ -99,7 +99,7 @@ export default function BettingAcademy() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <Card 
             className="cursor-pointer hover:shadow-lg transition-shadow bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 hover:border-blue-500"
-            onClick={() => setLocation('/unified-sports')}
+            onClick={() => setLocation('/betting-dashboard')}
           >
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-blue-400">
@@ -110,7 +110,7 @@ export default function BettingAcademy() {
           </Card>
           <Card 
             className="cursor-pointer hover:shadow-lg transition-shadow bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 hover:border-green-500"
-            onClick={() => setLocation('/live-heatmap')}
+            onClick={() => setLocation('/live-betting')}
           >
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-green-400">
@@ -121,7 +121,7 @@ export default function BettingAcademy() {
           </Card>
           <Card 
             className="cursor-pointer hover:shadow-lg transition-shadow bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 hover:border-orange-500"
-            onClick={() => setLocation('/esports-hub')}
+            onClick={() => setLocation('/api-status')}
           >
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-orange-400">
@@ -132,7 +132,7 @@ export default function BettingAcademy() {
           </Card>
           <Card 
             className="cursor-pointer hover:shadow-lg transition-shadow bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 hover:border-purple-500"
-            onClick={() => setLocation('/comprehensive-betting')}
+            onClick={() => setLocation('/tournaments')}
           >
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-purple-400">
