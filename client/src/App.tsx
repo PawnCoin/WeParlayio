@@ -94,6 +94,7 @@ import UnifiedGaming from "@/pages/system/UnifiedGaming";
 import SocialMediaDashboard from "@/pages/system/SocialMediaDashboard";
 import LiveSportsStreaming from "@/pages/system/LiveSportsStreaming";
 import LiveStreaming from "@/pages/LiveStreaming";
+import BankingSystem from "@/pages/BankingSystem";
 import MultiCurrencyBetting from "@/pages/MultiCurrencyBetting";
 import UpgradeTier from "@/pages/UpgradeTier";
 import { lazy } from 'react';
@@ -118,6 +119,7 @@ function Router() {
       <Route path="/live-heatmap" component={LiveHeatmap} />
       <Route path="/live-streaming" component={LiveSportsStreaming} />
       <Route path="/streaming" component={LiveStreaming} />
+      <Route path="/banking" component={BankingSystem} />
       <Route path="/my-bets" component={MyBets} />
       <Route path="/results" component={Results} />
       <Route path="/parlays" component={Parlays} />
