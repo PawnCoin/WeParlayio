@@ -20,9 +20,9 @@ const MemoizedOddsItem = memo<{ item: OddsItem }>(({ item }) => {
     if (!item.previousOdds) return null;
     
     if (item.currentOdds > item.previousOdds) {
-      return <ArrowUpRight className="w-4 h-4 text-green-500" />;
+      return <ArrowUpRight className="w-3 h-3 text-green-400" />;
     } else if (item.currentOdds < item.previousOdds) {
-      return <ArrowDownRight className="w-4 h-4 text-red-500" />;
+      return <ArrowDownRight className="w-3 h-3 text-red-400" />;
     }
     return null;
   }, [item.currentOdds, item.previousOdds]);
@@ -31,16 +31,77 @@ const MemoizedOddsItem = memo<{ item: OddsItem }>(({ item }) => {
     return item.currentOdds > 0 ? `+${item.currentOdds}` : item.currentOdds.toString();
   }, [item.currentOdds]);
 
+  // Extract team abbreviations from full names
+  const getTeamAbbreviation = useMemo(() => {
+    const teamNames = item.teams.split(' vs ');
+    const abbreviations = teamNames.map(team => {
+      // Common team abbreviations mapping
+      const abbrevMap: Record<string, string> = {
+        'Los Angeles Lakers': 'LAL',
+        'Boston Celtics': 'BOS',
+        'Golden State Warriors': 'GSW',
+        'Miami Heat': 'MIA',
+        'Chicago Bulls': 'CHI',
+        'New York Knicks': 'NYK',
+        'Dallas Cowboys': 'DAL',
+        'New England Patriots': 'NE',
+        'Green Bay Packers': 'GB',
+        'Pittsburgh Steelers': 'PIT',
+        'Kansas City Chiefs': 'KC',
+        'Buffalo Bills': 'BUF',
+        'New York Yankees': 'NYY',
+        'Los Angeles Dodgers': 'LAD',
+        'Boston Red Sox': 'BOS',
+        'Chicago Cubs': 'CHC',
+        'Houston Astros': 'HOU',
+        'Atlanta Braves': 'ATL'
+      };
+      
+      // Return abbreviation if exists, otherwise create one from first letters
+      return abbrevMap[team] || team.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 3);
+    });
+    
+    return abbreviations.join(' vs ');
+  }, [item.teams]);
+
+  const getSportColor = useMemo(() => {
+    const colors: Record<string, string> = {
+      'NBA': 'bg-orange-600 text-white',
+      'NFL': 'bg-green-600 text-white', 
+      'MLB': 'bg-blue-600 text-white',
+      'NHL': 'bg-red-600 text-white',
+      'Soccer': 'bg-emerald-600 text-white',
+      'Tennis': 'bg-yellow-600 text-black',
+      'Esports': 'bg-purple-600 text-white',
+      'Boxing': 'bg-gray-600 text-white',
+      'MMA': 'bg-red-700 text-white',
+    };
+    return colors[item.sport] || 'bg-gray-500 text-white';
+  }, [item.sport]);
+
   return (
-    <div className="flex items-center space-x-4 p-2 border-r border-border/30 last:border-r-0 min-w-[200px]">
-      <div className="flex-1">
-        <div className="text-sm font-medium text-foreground">{item.teams}</div>
-        <div className="text-xs text-muted-foreground">{item.sport}</div>
-      </div>
-      <div className="flex items-center space-x-2">
-        <span className="text-sm font-mono">{formattedOdds}</span>
+    <div className="inline-flex items-center mr-6 px-3 py-1 min-w-[160px]">
+      <span className={`px-2 py-0.5 text-xs font-medium rounded mr-2 ${getSportColor}`}>
+        {item.sport}
+      </span>
+      
+      <span className="text-sm font-medium text-white mr-2 whitespace-nowrap">
+        {getTeamAbbreviation}
+      </span>
+
+      <span className={`font-mono text-sm font-bold flex items-center ${
+        item.currentOdds > item.previousOdds ? 'text-green-400' :
+        item.currentOdds < item.previousOdds ? 'text-red-400' : 'text-white'
+      }`}>
+        {formattedOdds}
         {trendIcon}
-      </div>
+      </span>
+
+      {item.bookmaker && (
+        <span className="ml-2 text-xs text-gray-500">
+          {item.bookmaker}
+        </span>
+      )}
     </div>
   );
 });
