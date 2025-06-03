@@ -310,6 +310,24 @@ export class AssetManager {
     }
   };
 
+  // Get sport icon
+  static getSportIcon(sport: string): string {
+    const sportMapping: Record<string, string> = {
+      'basketball': '🏀',
+      'football': '🏈', 
+      'american-football': '🏈',
+      'soccer': '⚽',
+      'baseball': '⚾',
+      'hockey': '🏒',
+      'tennis': '🎾',
+      'golf': '⛳',
+      'boxing': '🥊',
+      'mma': '🥊',
+      'esports': '🎮'
+    };
+    return sportMapping[sport.toLowerCase()] || '🏆';
+  }
+
   // Get team logo with multiple fallback options
   static getTeamLogo(teamName: string, league: string = 'NBA'): string {
     if (!teamName) {
