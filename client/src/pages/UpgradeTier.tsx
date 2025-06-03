@@ -98,18 +98,35 @@ export default function UpgradeTier() {
   const { toast } = useToast();
 
   const upgradeMutation = useMutation({
-    mutationFn: async (tierId: string) => {
-      const response = await apiRequest('POST', '/api/stripe/create-tier-subscription', { tierId });
-      return response.json();
+    mutationFn: async ({ tierId, paymentMethod }: { tierId: string, paymentMethod: 'stripe' | 'crypto' }) => {
+      if (paymentMethod === 'stripe') {
+        const response = await apiRequest('POST', '/api/stripe/create-tier-subscription', { tierId });
+        return { ...await response.json(), paymentMethod: 'stripe' };
+      } else {
+        // For crypto payments, we'll redirect directly with tier info
+        const plan = tierPlans.find(p => p.id === tierId);
+        return { 
+          tierName: plan?.name,
+          amount: parseFloat(plan?.price.replace('$', '') || '0'),
+          currency: 'PC',
+          paymentMethod: 'crypto'
+        };
+      }
     },
     onSuccess: (data: any) => {
-      toast({
-        title: "Upgrade Initiated",
-        description: `Starting upgrade to ${data.tierName} tier. Redirecting to payment...`,
-      });
-      
-      // Redirect to Stripe Checkout or handle payment flow
-      window.location.href = `/payment-checkout?subscription=${data.subscriptionId}&client_secret=${data.clientSecret}`;
+      if (data.paymentMethod === 'stripe') {
+        toast({
+          title: "Upgrade Initiated",
+          description: `Starting upgrade to ${data.tierName} tier. Redirecting to payment...`,
+        });
+        window.location.href = `/payment-checkout?subscription=${data.subscriptionId}&client_secret=${data.clientSecret}`;
+      } else {
+        toast({
+          title: "Crypto Payment Selected",
+          description: `Redirecting to crypto checkout for ${data.tierName} tier...`,
+        });
+        window.location.href = `/crypto-checkout?tier=${data.tierName}&amount=${data.amount}&currency=${data.currency}`;
+      }
     },
     onError: (error: any) => {
       toast({
@@ -121,9 +138,9 @@ export default function UpgradeTier() {
     },
   });
 
-  const handleUpgrade = (planId: string) => {
+  const handleUpgrade = (planId: string, paymentMethod: 'stripe' | 'crypto' = 'stripe') => {
     setSelectedPlan(planId);
-    upgradeMutation.mutate(planId);
+    upgradeMutation.mutate({ tierId: planId, paymentMethod });
   };
 
   const handleGoBack = () => {
@@ -197,14 +214,32 @@ export default function UpgradeTier() {
                     ))}
                   </ul>
 
-                  <Button 
-                    className="w-full"
-                    variant={plan.popular || plan.elite ? "default" : "outline"}
-                    onClick={() => handleUpgrade(plan.id)}
-                    disabled={selectedPlan === plan.id}
-                  >
-                    {selectedPlan === plan.id ? 'Processing...' : `Upgrade to ${plan.name}`}
-                  </Button>
+                  <div className="space-y-2">
+                    <Button 
+                      className="w-full"
+                      variant={plan.popular || plan.elite ? "default" : "outline"}
+                      onClick={() => handleUpgrade(plan.id, 'stripe')}
+                      disabled={selectedPlan === plan.id}
+                    >
+                      {selectedPlan === plan.id ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        `Pay with Card - ${plan.name}`
+                      )}
+                    </Button>
+                    
+                    <Button 
+                      className="w-full"
+                      variant="outline"
+                      onClick={() => handleUpgrade(plan.id, 'crypto')}
+                      disabled={selectedPlan === plan.id}
+                    >
+                      Pay with Pawn Coin ($PC)
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             );

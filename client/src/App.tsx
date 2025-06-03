@@ -105,6 +105,8 @@ import CompleteBettingSystem from "@/pages/CompleteBettingSystem";
 import MultiCurrencyBetting from "@/pages/MultiCurrencyBetting";
 import UpgradeTier from "@/pages/UpgradeTier";
 import PaymentCheckout from "@/pages/PaymentCheckout";
+import CryptoCheckout from "@/pages/CryptoCheckout";
+import TierUpgradeSuccess from "@/pages/TierUpgradeSuccess";
 import CryptoWallet from "@/pages/CryptoWallet";
 import TwilioOptInDemo from "@/pages/TwilioOptInDemo";
 import { lazy } from 'react';
@@ -197,6 +199,8 @@ function Router() {
       {/* Payment & Demo */}
       <Route path="/payment-demo" component={PaymentDemo} />
       <Route path="/payment-checkout" component={PaymentCheckout} />
+      <Route path="/crypto-checkout" component={CryptoCheckout} />
+      <Route path="/tier-upgrade-success" component={TierUpgradeSuccess} />
       <Route path="/onboarding-demo" component={OnboardingDemo} />
       <Route path="/notification-test" component={NotificationTest} />
       <Route path="/sms-challenge" component={SMSCenter} />
