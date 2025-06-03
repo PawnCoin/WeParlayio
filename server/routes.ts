@@ -28,6 +28,7 @@ import { apiTestRouter } from "./routes/apiTestRoutes";
 import { theTVAppService } from "./services/thetvappService";
 import { esportsApiService } from "./services/esportsApiService";
 import { cryptoService } from "./services/cryptoService";
+import { createCashAppPayment, getCashAppPaymentStatus, initiateCashAppPayout } from "./cashapp";
 
 // Export the routes so they can be imported by index.ts
 export { notificationRoutes, websocketPollingRoutes };
@@ -3515,6 +3516,19 @@ Start betting through text now!`;
       console.error('Error fetching WeParlay Cash transactions:', error);
       res.status(500).json({ message: 'Failed to fetch transactions' });
     }
+  });
+
+  // Cash App payment routes
+  app.post('/api/cashapp/payment', async (req, res) => {
+    await createCashAppPayment(req, res);
+  });
+
+  app.get('/api/cashapp/payment/:paymentId', async (req, res) => {
+    await getCashAppPaymentStatus(req, res);
+  });
+
+  app.post('/api/cashapp/payout', isAuthenticated, async (req, res) => {
+    await initiateCashAppPayout(req, res);
   });
 
   // Return the HTTP server
