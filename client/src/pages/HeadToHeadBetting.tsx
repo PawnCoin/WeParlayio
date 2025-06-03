@@ -118,8 +118,8 @@ const HeadToHeadBetting: React.FC = () => {
   };
   
   // Filter challenges based on active tab - use mock data if API data unavailable
-  const challengesToUse = challenges || mockChallenges;
-  const filteredChallenges = challengesToUse.filter(challenge => {
+  const challengesToUse = Array.isArray(challenges) ? challenges : mockChallenges;
+  const filteredChallenges = challengesToUse.filter((challenge: ChallengeProps) => {
     if (activeTab === 'active') {
       return challenge.status === 'pending' || challenge.status === 'accepted';
     } else if (activeTab === 'history') {
