@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Wallet, ArrowRight, CheckCircle, AlertCircle, Copy, Search, TrendingUp, TrendingDown, Filter } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
+import pcLogoPath from '@assets/$Pc2d128.png';
 
 interface CryptoOption {
   symbol: string;
@@ -194,12 +195,16 @@ export default function CryptoCheckout() {
   };
 
   const getCryptoIcon = (symbol: string) => {
+    // Special handling for $Pc - return image element
+    if (symbol === '$Pc') {
+      return <img src={pcLogoPath} alt="Pawn Coin" className="w-full h-full object-cover" />;
+    }
+    
     const icons: { [key: string]: string } = {
       'BTC': '₿',
       'ETH': 'Ξ',
       'USDT': '₮',
       'BNB': 'BNB',
-      '$Pc': '$Pc',
       'SOL': 'SOL',
       'XRP': 'XRP',
       'ADA': 'ADA',
