@@ -174,6 +174,7 @@ function Router() {
 
       {/* Wallet & Banking */}
       <Route path="/wallet" component={WalletManagement} />
+      <Route path="/wallet-management-enhancement" component={CryptoWallet} />
       <Route path="/wallet-test" component={WalletTest} />
       <Route path="/user-profile-banking" component={UserProfileBanking} />
       <Route path="/user-profile" component={UserProfilePage} />
