@@ -214,21 +214,6 @@ export class AssetManager {
     return [];
   }
 
-  // Get sport icon using ESPN service
-
-
-  // Get team logo using Universal Team Service
-  static getTeamLogo(teamName: string, league: string = 'nba'): string {
-    const cacheKey = `${league}-${teamName}`;
-    if (this.logoCache.has(cacheKey)) {
-      return this.logoCache.get(cacheKey)!;
-    }
-
-    const logoPath = UniversalTeamService.getTeamLogo(teamName, league);
-    this.logoCache.set(cacheKey, logoPath);
-    return logoPath;
-  }
-
   // Get player photo
   static getPlayerPhoto(playerId: string, sport: string): string {
     return UniversalTeamService.getPlayerPhoto(playerId, sport);

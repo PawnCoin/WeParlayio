@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Users, TrendingUp } from 'lucide-react';
 import { AssetManager } from '@/lib/assetManager';
-import { useBetting } from '@/hooks/use-betting';
+import { useBetting } from '@/contexts/BettingContext';
 
 interface GameCardProps {
   game: {
@@ -45,7 +45,7 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
 
   const handleBetSelect = (betType: string, team: string, odds: number) => {
     const teamName = team || 'unknown';
-    const safeTeamName = typeof teamName === 'string' ? teamName : 'unknown';
+    const safeTeamName = typeof teamName === 'string' && teamName ? teamName : 'unknown';
     const betId = `${game.id}-${betType}-${safeTeamName.toLowerCase()}`;
 
     const bet = {
