@@ -99,15 +99,22 @@ const HeadToHeadBetting: React.FC = () => {
     
     const interval = setInterval(async () => {
       try {
-        await apiRequest('POST', '/api/challenges/auto-settle');
+        const result = await apiRequest('POST', '/api/challenges/auto-settle');
+        const data = await result.json();
+        if (data.settledCount > 0) {
+          toast({
+            title: "Auto-Settlement Complete",
+            description: `${data.settledCount} challenge(s) automatically settled.`,
+          });
+        }
         queryClient.invalidateQueries({ queryKey: ['/api/challenges'] });
       } catch (error) {
-        console.log('Auto-settlement check completed');
+        // Silent auto-settlement check
       }
-    }, 30000); // Check every 30 seconds
+    }, 30000);
 
     return () => clearInterval(interval);
-  }, [isAuthenticated, queryClient]);
+  }, [isAuthenticated, queryClient, toast]);
 
   const [mockChallenges] = useState<ChallengeProps[]>([
     {
@@ -208,6 +215,23 @@ const HeadToHeadBetting: React.FC = () => {
         } else {
           return <span className="bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300 px-2 py-1 rounded-full text-xs font-medium">Draw</span>;
         }
+      case 'auto-settled':
+        if (result === 'won') {
+          return <span className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+            <CheckCircle className="h-3 w-3" />
+            Auto-Won
+          </span>;
+        } else if (result === 'lost') {
+          return <span className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+            <CheckCircle className="h-3 w-3" />
+            Auto-Lost
+          </span>;
+        } else {
+          return <span className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+            <CheckCircle className="h-3 w-3" />
+            Auto-Settled
+          </span>;
+        }
       case 'expired':
         return <span className="bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300 px-2 py-1 rounded-full text-xs font-medium">Expired</span>;
       case 'declined':
@@ -223,8 +247,24 @@ const HeadToHeadBetting: React.FC = () => {
         <div>
           <h1 className="text-3xl font-bold">Head-to-Head Betting</h1>
           <p className="text-muted-foreground mt-2">
-            Challenge friends directly in real-money betting contests
+            Challenge friends directly in real-money betting contests with enhanced SMS features
           </p>
+          
+          {/* Enhanced Features Indicators */}
+          <div className="flex flex-wrap gap-2 mt-3">
+            <Badge variant="outline" className="border-green-500 text-green-700">
+              <CheckCircle className="h-3 w-3 mr-1" />
+              Auto-Settlement
+            </Badge>
+            <Badge variant="outline" className="border-blue-500 text-blue-700">
+              <MessageSquare className="h-3 w-3 mr-1" />
+              SMS Alerts
+            </Badge>
+            <Badge variant="outline" className="border-purple-500 text-purple-700">
+              <Zap className="h-3 w-3 mr-1" />
+              Real-time Updates
+            </Badge>
+          </div>
         </div>
         
         {isAuthenticated && (
@@ -317,12 +357,44 @@ const HeadToHeadBetting: React.FC = () => {
         )}
       </div>
       
+      {/* SMS Statistics Dashboard */}
+      {smsStats && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              Enhanced SMS Betting Performance
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-500">{smsStats.totalSent}</div>
+                <div className="text-sm text-muted-foreground">SMS Challenges Sent</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-500">{smsStats.acceptanceRate}%</div>
+                <div className="text-sm text-muted-foreground">Acceptance Rate</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-purple-500">{smsStats.autoSettled}</div>
+                <div className="text-sm text-muted-foreground">Auto-Settled Today</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-orange-500">{smsStats.avgResponseTime}min</div>
+                <div className="text-sm text-muted-foreground">Avg Response Time</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Currency Options Notice */}
       <Alert variant="default" className="bg-blue-50 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200 border-blue-200 dark:border-blue-800">
         <AlertTriangle className="h-4 w-4" />
-        <AlertTitle>Currency Options Available</AlertTitle>
+        <AlertTitle>Enhanced Features Active</AlertTitle>
         <AlertDescription>
-          Head-to-head challenges now support both real money and WeParlay Cash. Choose your preferred currency when creating a challenge.
+          Head-to-head challenges now include auto-settlement, SMS notifications, and real-time updates. Choose between real money and WeParlay Cash when creating challenges.
         </AlertDescription>
       </Alert>
       
