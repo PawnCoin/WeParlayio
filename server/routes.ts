@@ -2770,6 +2770,58 @@ Start betting through text now!`;
     }
   });
 
+  // SMS Challenge endpoint for enhanced betting
+  app.post('/api/sms/challenge', isAuthenticated, async (req, res) => {
+    try {
+      const { phone, amount, pick, message } = req.body;
+      const userId = (req.user as any).claims.sub;
+      
+      if (!phone || !amount || !pick) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Phone number, amount, and pick are required' 
+        });
+      }
+
+      // Create challenge in database
+      const challenge = await storage.createBettingChallenge({
+        uuid: crypto.randomUUID(),
+        createdBy: userId,
+        eventName: `SMS Challenge: ${pick}`,
+        amount: amount,
+        pick: pick,
+        status: 'pending',
+        expiryDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+        customMessage: message || ''
+      });
+
+      // Send SMS challenge
+      const challengeMessage = `WeParlay Challenge: ${pick} for $${amount}. ${message || 'Accept at weparlay.io/challenge/' + challenge.uuid}`;
+      
+      const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+      const smsResult = await twilioClient.messages.create({
+        body: challengeMessage,
+        from: process.env.TWILIO_PHONE_NUMBER,
+        to: phone
+      });
+
+      console.log(`SMS Challenge sent to ${phone}: ${smsResult.sid}`);
+
+      res.json({
+        success: true,
+        challenge,
+        smsSid: smsResult.sid,
+        message: 'SMS challenge sent successfully'
+      });
+    } catch (error) {
+      console.error('SMS challenge error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to send SMS challenge' 
+      });
+    }
+  });
+
   // COMPREHENSIVE CRYPTOCURRENCY API ENDPOINTS
 
   // Get all supported cryptocurrencies with live prices
