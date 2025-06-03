@@ -104,6 +104,7 @@ import BankingSystem from "@/pages/BankingSystem";
 import CompleteBettingSystem from "@/pages/CompleteBettingSystem";
 import MultiCurrencyBetting from "@/pages/MultiCurrencyBetting";
 import UpgradeTier from "@/pages/UpgradeTier";
+import PaymentCheckout from "@/pages/PaymentCheckout";
 import CryptoWallet from "@/pages/CryptoWallet";
 import TwilioOptInDemo from "@/pages/TwilioOptInDemo";
 import { lazy } from 'react';
@@ -195,6 +196,7 @@ function Router() {
 
       {/* Payment & Demo */}
       <Route path="/payment-demo" component={PaymentDemo} />
+      <Route path="/payment-checkout" component={PaymentCheckout} />
       <Route path="/onboarding-demo" component={OnboardingDemo} />
       <Route path="/notification-test" component={NotificationTest} />
       <Route path="/sms-challenge" component={SMSCenter} />
