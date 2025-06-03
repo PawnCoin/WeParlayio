@@ -36,6 +36,13 @@ const HeadToHeadBetting: React.FC = () => {
   const [depositSuccess, setDepositSuccess] = useState(false);
   const [selectedGame, setSelectedGame] = useState<any>(null);
   const [showQuickBetDialog, setShowQuickBetDialog] = useState(false);
+  const [showSMSDialog, setShowSMSDialog] = useState(false);
+  const [smsFormData, setSMSFormData] = useState({
+    phone: '',
+    amount: '',
+    pick: '',
+    message: ''
+  });
   
   // Fetch real challenges from API
   const { data: challenges = [], isLoading: challengesLoading } = useQuery({
