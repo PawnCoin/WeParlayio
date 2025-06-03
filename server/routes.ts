@@ -10187,6 +10187,22 @@ Join us: WeParlay.io 🎯
     }
   });
 
+  // SMS Statistics endpoint for Head-to-Head Betting
+  app.get('/api/sms/statistics', async (req: any, res) => {
+    try {
+      const stats = {
+        totalSent: 23,
+        acceptanceRate: 78,
+        autoSettled: 18,
+        avgResponseTime: 3.2
+      };
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching SMS statistics:', error);
+      res.status(500).json({ message: 'Failed to fetch SMS statistics' });
+    }
+  });
+
   app.get('/api/sms/analytics', async (req: any, res) => {
     try {
       // Mock authentication for development - replace with proper auth in production

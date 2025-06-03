@@ -36,8 +36,7 @@ import TermsOfService from "@/pages/TermsOfService"; // Terms of service page fo
 import SecurityInfo from "@/pages/SecurityInfo"; // Security information page showing our protection measures
 import Support from "@/pages/Support"; // Automated support system
 import CryptoInformation from "@/pages/CryptoInformation"; // Cryptocurrency information and guides
-// SMS functionality consolidated into SMSCenter
-import SMSCenter from "@/pages/SMSCenter";
+// SMS functionality consolidated into Head-to-Head Betting
 import UserProfileBanking from "@/pages/UserProfileBanking"; // Complete user profile with integrated banking
 import MyBets from "@/pages/MyBets"; // User betting history and tracking
 import WeParlayCash from "@/pages/WeParlayCash"; // WeParlay Cash hub and management
@@ -204,8 +203,8 @@ function Router() {
       <Route path="/tier-upgrade-success" component={TierUpgradeSuccess} />
       <Route path="/onboarding-demo" component={OnboardingDemo} />
       <Route path="/notification-test" component={NotificationTest} />
-      <Route path="/sms-challenge" component={SMSCenter} />
-      <Route path="/sms-center" component={SMSCenter} />
+      <Route path="/sms-challenge" component={HeadToHeadBetting} />
+      <Route path="/sms-center" component={HeadToHeadBetting} />
 
       {/* Academy */}
       <Route path="/betting-academy" component={BettingAcademy} />
