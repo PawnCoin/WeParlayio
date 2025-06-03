@@ -300,23 +300,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
           </li>
 
           <li>
-            <Link href="/head-to-head">
-              <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
-                location === '/head-to-head' 
-                  ? "bg-primary text-white" 
-                  : "bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 hover:from-green-100 hover:to-emerald-100 dark:hover:from-green-900/40 dark:hover:to-emerald-900/40"
-              }`}>
-                <DollarSign className="h-5 w-5 mr-3 text-green-600" />
-                <span className="text-green-700 dark:text-green-300 font-medium">Head-to-Head Bets</span>
-                <span className="ml-2 text-[10px] font-bold py-0.5 px-1.5 bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 rounded-full">REAL $</span>
-              </div>
-            </Link>
-          </li>
-
-          <li>
             <details className="group">
               <summary className={`flex items-center py-2 px-4 rounded-md cursor-pointer list-none ${
-                ['/vip', '/enhanced-features'].includes(location) 
+                ['/vip', '/enhanced-features', '/head-to-head'].includes(location) 
                   ? "bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900/40 dark:to-yellow-900/40" 
                   : "bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 hover:from-amber-100 hover:to-yellow-100 dark:hover:from-amber-900/40 dark:hover:to-yellow-900/40"
               }`}>
@@ -326,6 +312,19 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                 <ChevronDown className="h-4 w-4 ml-auto group-open:rotate-180 transition-transform text-amber-600" />
               </summary>
               <ul className="ml-6 mt-2 space-y-1">
+                <li>
+                  <Link href="/head-to-head">
+                    <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${
+                      location === '/head-to-head' 
+                        ? "bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 dark:bg-gradient-to-r dark:from-green-900 dark:to-emerald-900 dark:text-green-300" 
+                        : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}>
+                      <DollarSign className="h-4 w-4 mr-2 text-green-600" />
+                      <span className="font-bold text-green-700 dark:text-green-300">Head-to-Head ELITE</span>
+                      <span className="ml-auto text-xs bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-300 px-2 py-0.5 rounded-full font-bold">REAL $</span>
+                    </div>
+                  </Link>
+                </li>
                 <li>
                   <Link href="/vip">
                     <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${
