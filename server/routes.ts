@@ -3349,39 +3349,156 @@ Start betting through text now!`;
   app.post("/api/paypal/order/:orderID/capture", async (req, res) => {
     await capturePaypalOrder(req, res);
   });
+
+  // WeParlay Cash tier upgrade routes
+  app.post('/api/weparlay-cash/upgrade-tier', isAuthenticated, async (req: any, res) => {
+    try {
+      const { tier } = req.body;
+      const userId = req.user.claims.sub;
+
+      const tierPricing = {
+        bronze: { amount: 9.99, name: 'Bronze' },
+        silver: { amount: 19.99, name: 'Silver' },
+        gold: { amount: 39.99, name: 'Gold' },
+        platinum: { amount: 79.99, name: 'Platinum' },
+        diamond: { amount: 159.99, name: 'Diamond' }
+      };
+
+      const tierInfo = tierPricing[tier.toLowerCase()];
+      if (!tierInfo) {
+        return res.status(400).json({ message: 'Invalid tier' });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      if (user.weparlayCashBalance < tierInfo.amount) {
+        return res.status(400).json({ 
+          message: 'Insufficient WeParlay Cash balance',
+          required: tierInfo.amount,
+          current: user.weparlayCashBalance
+        });
+      }
+
+      // Deduct WeParlay Cash and upgrade tier
+      await storage.updateUserWeplayTokenBalance(userId, -tierInfo.amount);
+      await storage.updateUserTier(userId, tierInfo.name);
+      
+      // Record transaction
+      await storage.createWeparlayCashTransaction({
+        userId,
+        amount: -tierInfo.amount,
+        type: 'tier_upgrade',
+        description: `Tier upgrade to ${tierInfo.name}`,
+        status: 'completed'
+      });
+
+      res.json({ 
+        success: true, 
+        message: `Tier upgraded to ${tierInfo.name}`,
+        newTier: tierInfo.name,
+        remainingBalance: user.weparlayCashBalance - tierInfo.amount
+      });
     } catch (error) {
-      console.error('Stripe webhook error:', error);
-      res.status(400).json({ message: 'Webhook error' });
+      console.error('WeParlay Cash tier upgrade error:', error);
+      res.status(500).json({ message: 'Failed to upgrade tier' });
     }
   });
 
-  // Helper function for subscription changes
-  async function handleSubscriptionChange(subscription: any) {
+  // PayPal tier upgrade routes
+  app.post('/api/paypal/upgrade-tier', isAuthenticated, async (req: any, res) => {
     try {
-      const customerId = subscription.customer;
-      const priceId = subscription.items.data[0]?.price?.id;
-      const status = subscription.status;
+      const { tier } = req.body;
+      const userId = req.user.claims.sub;
 
-      // Auto-sync tier with WeParlay
-      await fetch('/api/stripe/sync-tier', {
+      const tierPricing = {
+        bronze: { amount: 9.99, name: 'Bronze' },
+        silver: { amount: 19.99, name: 'Silver' },
+        gold: { amount: 39.99, name: 'Gold' },
+        platinum: { amount: 79.99, name: 'Platinum' },
+        diamond: { amount: 159.99, name: 'Diamond' }
+      };
+
+      const tierInfo = tierPricing[tier.toLowerCase()];
+      if (!tierInfo) {
+        return res.status(400).json({ message: 'Invalid tier' });
+      }
+
+      // Create PayPal order for tier upgrade
+      const orderPayload = {
+        amount: tierInfo.amount.toString(),
+        currency: 'USD',
+        intent: 'CAPTURE'
+      };
+
+      const response = await fetch('/api/paypal/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customerId,
-          subscriptionId: subscription.id,
-          priceId,
-          status
-        })
+        body: JSON.stringify(orderPayload)
+      });
+
+      const orderData = await response.json();
+
+      res.json({
+        success: true,
+        orderId: orderData.id,
+        tier: tierInfo.name,
+        amount: tierInfo.amount
       });
     } catch (error) {
-      console.error('Error handling subscription change:', error);
+      console.error('PayPal tier upgrade error:', error);
+      res.status(500).json({ message: 'Failed to create PayPal order' });
     }
-  }
+  });
 
-  // Helper function for payment success
-  async function handlePaymentSuccess(invoice: any) {
+  // WeParlay Cash balance routes
+  app.get('/api/weparlay-cash/balance', isAuthenticated, async (req: any, res) => {
     try {
-      const customerId = invoice.customer;
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      res.json({
+        balance: user.weparlayCashBalance || 0,
+        currency: 'USD'
+      });
+    } catch (error) {
+      console.error('Error fetching WeParlay Cash balance:', error);
+      res.status(500).json({ message: 'Failed to fetch balance' });
+    }
+  });
+
+  // WeParlay Cash transaction history
+  app.get('/api/weparlay-cash/transactions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const transactions = await storage.getWeparlayCashTransactions(userId);
+      
+      res.json({
+        transactions: transactions.map(t => ({
+          id: t.id,
+          amount: t.amount,
+          type: t.type,
+          description: t.description,
+          status: t.status,
+          createdAt: t.createdAt
+        }))
+      });
+    } catch (error) {
+      console.error('Error fetching WeParlay Cash transactions:', error);
+      res.status(500).json({ message: 'Failed to fetch transactions' });
+    }
+  });
+
+  // Return the HTTP server
+  const httpServer = createServer(app);
+  return httpServer;
+}
       
       // Find user and award bonus tokens for successful payment
       const users = await storage.getAllUsers();
