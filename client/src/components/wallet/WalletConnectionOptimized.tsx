@@ -188,6 +188,7 @@ const WalletConnectionOptimized: React.FC<WalletConnectionProps> = ({ onConnect,
         chainId
       };
 
+      console.log('Sending wallet connection data:', connectionData);
       const response = await apiRequest('POST', '/api/wallet/connect', connectionData);
       
       if (response.ok) {
