@@ -20,7 +20,7 @@ import {
 import { ChevronDown, Menu, Wallet, Coins, Shield, ArrowRightLeft, History, CreditCard, Crown, Briefcase } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Logo from "@/components/WeParlay/Logo";
-import WalletConnect from "@/components/auth/WalletConnect";
+import WalletConnect from "@/components/wallet/WalletConnect";
 import WalletNotifications from "@/components/wallet/WalletNotifications";
 import { useBetting } from "@/contexts/BettingContext";
 import { useQuery } from "@tanstack/react-query";
