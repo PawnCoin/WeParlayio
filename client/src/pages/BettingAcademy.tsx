@@ -99,7 +99,7 @@ export default function BettingAcademy() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <Card 
             className="cursor-pointer hover:shadow-lg transition-shadow bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 hover:border-blue-500"
-            onClick={() => setLocation('/sports')}
+            onClick={() => setLocation('/')}
           >
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-blue-400">
@@ -110,7 +110,7 @@ export default function BettingAcademy() {
           </Card>
           <Card 
             className="cursor-pointer hover:shadow-lg transition-shadow bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 hover:border-green-500"
-            onClick={() => setLocation('/live-sports')}
+            onClick={() => setLocation('/live-scores')}
           >
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-green-400">
@@ -121,7 +121,7 @@ export default function BettingAcademy() {
           </Card>
           <Card 
             className="cursor-pointer hover:shadow-lg transition-shadow bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 hover:border-orange-500"
-            onClick={() => setLocation('/esports')}
+            onClick={() => setLocation('/esports-hub')}
           >
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-orange-400">
@@ -132,7 +132,7 @@ export default function BettingAcademy() {
           </Card>
           <Card 
             className="cursor-pointer hover:shadow-lg transition-shadow bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 hover:border-purple-500"
-            onClick={() => setLocation('/upcoming')}
+            onClick={() => setLocation('/tournaments')}
           >
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-purple-400">
@@ -209,7 +209,7 @@ export default function BettingAcademy() {
             <CardContent>
               {liveData && Array.isArray(liveData) && liveData.length > 0 ? (
                 <div className="space-y-4">
-                  <div className="text-center p-6 bg-green-50 rounded-lg">
+                  <div className="text-center p-6 bg-#0f172a-50 rounded-lg">
                     <h3 className="text-lg font-semibold text-green-800 mb-2">
                       {liveData.length} Live Opportunities Available
                     </h3>
@@ -217,7 +217,7 @@ export default function BettingAcademy() {
                       Perfect for practicing live betting analysis
                     </p>
                     <Button 
-                      className="bg-green-600 hover:bg-green-700"
+                      className="bg-#0f172a-600 hover:bg-#0f172a-700"
                       onClick={() => window.location.href = '/comprehensive-betting'}
                     >
                       Start Practice Session
@@ -265,7 +265,7 @@ export default function BettingAcademy() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {achievements.map((achievement, index) => (
               <Card key={index} className={`${
-                achievement.earned ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
+                achievement.earned ? 'bg-#0f172a-50 border-#0f172a-200' : 'bg-gray-50 border-gray-200'
               }`}>
                 <CardContent className="p-4">
                   <div className="flex items-center space-x-3 mb-3">
