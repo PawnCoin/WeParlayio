@@ -33,7 +33,7 @@ const HeadToHeadBetting: React.FC = () => {
   const [depositSuccess, setDepositSuccess] = useState(false);
   
   // Fetch real challenges from API
-  const { data: challenges, isLoading: challengesLoading } = useQuery({
+  const { data: challenges = [], isLoading: challengesLoading } = useQuery({
     queryKey: ['/api/challenges'],
     enabled: isAuthenticated
   });
@@ -117,8 +117,9 @@ const HeadToHeadBetting: React.FC = () => {
     }, 1500);
   };
   
-  // Filter challenges based on active tab
-  const filteredChallenges = challenges.filter(challenge => {
+  // Filter challenges based on active tab - use mock data if API data unavailable
+  const challengesToUse = challenges || mockChallenges;
+  const filteredChallenges = challengesToUse.filter(challenge => {
     if (activeTab === 'active') {
       return challenge.status === 'pending' || challenge.status === 'accepted';
     } else if (activeTab === 'history') {
