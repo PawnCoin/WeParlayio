@@ -48,6 +48,10 @@ import UserProfilePage from "@/pages/UserProfilePage";
 import FantasySportsEnhanced from "@/pages/FantasySportsEnhanced";
 import GamingIntegration from "@/pages/GamingIntegration";
 import SocialHub from "@/pages/SocialHub";
+import BlockchainPerformance from "@/pages/BlockchainPerformance";
+import WalletTutorial from "@/pages/WalletTutorial";
+import StreamingRecommendations from "@/pages/StreamingRecommendations";
+import SocialSharing from "@/pages/SocialSharing";
 
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
@@ -162,6 +166,12 @@ function Router() {
       
       {/* Twilio SMS Opt-in Demo */}
       <Route path="/twilio-opt-in-demo" component={TwilioOptInDemo} />
+
+      {/* Blockchain & Web3 Features */}
+      <Route path="/blockchain-performance" component={BlockchainPerformance} />
+      <Route path="/wallet-tutorial" component={WalletTutorial} />
+      <Route path="/streaming-recommendations" component={StreamingRecommendations} />
+      <Route path="/social-sharing" component={SocialSharing} />
 
       {/* Enhanced Features */}
       <Route path="/enhanced-features" component={EnhancedFeatures} />
