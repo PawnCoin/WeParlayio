@@ -280,11 +280,18 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                           <DropdownMenuItem asChild>
                             <Link href="/security-settings">Security</Link>
                           </DropdownMenuItem>
+                          <DropdownMenuSeparator />
                           <DropdownMenuItem asChild>
-                            <Link href="/banking">Traditional Banking</Link>
+                            <Link href="/banking" className="flex items-center">
+                              <CreditCard className="h-4 w-4 mr-2 text-green-600" />
+                              Traditional Banking
+                            </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
-                            <Link href="/crypto-wallet">Crypto Wallet</Link>
+                            <Link href="/crypto-wallet" className="flex items-center">
+                              <Wallet className="h-4 w-4 mr-2 text-blue-600" />
+                              Crypto Wallet
+                            </Link>
                           </DropdownMenuItem>
                         </>
                       )}
