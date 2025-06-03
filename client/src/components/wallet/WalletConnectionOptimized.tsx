@@ -183,8 +183,8 @@ const WalletConnectionOptimized: React.FC<WalletConnectionProps> = ({ onConnect,
 
       // Send connection data to server
       const connectionData = {
-        address: walletAddress,
-        type: walletType,
+        walletAddress: walletAddress,
+        walletType: walletType,
         chainId
       };
 
