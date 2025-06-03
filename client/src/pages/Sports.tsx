@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getTeamLogo, getLeagueLogo, TeamLogoFallback } from '@/utils/sportsLogos';
+import { getTeamLogo, getLeagueLogo, getTeamInitials } from '@/utils/sportsLogosSimple';
 import { Clock, Trophy, TrendingUp, Users } from 'lucide-react';
 
 interface Game {
