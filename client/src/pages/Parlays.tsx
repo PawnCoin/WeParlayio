@@ -22,6 +22,7 @@ import {
   Award
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { getLeagueLogo, getLeagueDisplayName } from '@/utils/sportsLogosSimple';
 
 interface ParlayLeg {
   id: string;
