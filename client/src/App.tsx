@@ -188,6 +188,7 @@ function Router() {
       <Route path="/onboarding-demo" component={OnboardingDemo} />
       <Route path="/notification-test" component={NotificationTest} />
       <Route path="/sms-challenge" component={SMSCenter} />
+      <Route path="/sms-center" component={SMSCenter} />
 
       {/* Academy */}
       <Route path="/betting-academy" component={BettingAcademy} />
