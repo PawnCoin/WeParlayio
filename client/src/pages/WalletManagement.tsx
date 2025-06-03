@@ -177,11 +177,11 @@ const WalletManagement: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Cryptocurrency Wallet Management</h1>
+    <div className="container mx-auto px-4 py-4">
+      <h1 className="text-2xl font-bold mb-4">Cryptocurrency Wallet Management</h1>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-3 mb-4">
+        <TabsList className="grid grid-cols-3 mb-3">
           <TabsTrigger value="wallets">My Wallets</TabsTrigger>
           <TabsTrigger value="transactions">Transaction History</TabsTrigger>
           <TabsTrigger value="deposit-withdraw">Deposit & Withdraw</TabsTrigger>
@@ -192,7 +192,7 @@ const WalletManagement: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {connectedWallets.map((wallet, index) => (
               <Card key={index} className="overflow-hidden">
-                <CardHeader className="bg-primary/5 pb-2">
+                <CardHeader className="bg-primary/5 pb-2 p-4">
                   <CardTitle className="flex justify-between items-center">
                     <div className="flex items-center">
                       <Wallet className="h-5 w-5 mr-2" />
@@ -209,12 +209,12 @@ const WalletManagement: React.FC = () => {
                   </CardTitle>
                   <CardDescription>{wallet.network}</CardDescription>
                 </CardHeader>
-                <CardContent className="pt-4">
+                <CardContent className="pt-3 p-4">
                   <div className="mb-2">
                     <Label className="text-xs text-muted-foreground">Wallet Address</Label>
                     <p className="text-sm font-mono break-all">{wallet.address.substring(0, 8)}...{wallet.address.substring(wallet.address.length - 6)}</p>
                   </div>
-                  <div className="mt-4">
+                  <div className="mt-3">
                     <Label className="text-xs text-muted-foreground">Balance</Label>
                     <div className="flex items-center font-medium mt-1">
                       <Coins className="h-4 w-4 mr-2" />
@@ -222,7 +222,7 @@ const WalletManagement: React.FC = () => {
                     </div>
                   </div>
                 </CardContent>
-                <CardFooter className="flex justify-between border-t pt-4">
+                <CardFooter className="flex justify-between border-t pt-3 p-4">
                   <Button 
                     variant="outline" 
                     size="sm"
@@ -252,13 +252,13 @@ const WalletManagement: React.FC = () => {
             ))}
             
             {/* Add Wallet Card */}
-            <Card className="flex flex-col items-center justify-center p-6 border-dashed cursor-pointer hover:bg-primary/5 transition-colors">
+            <Card className="flex flex-col items-center justify-center p-4 border-dashed cursor-pointer hover:bg-primary/5 transition-colors">
               <div 
                 className="text-center"
                 onClick={() => setIsWalletModalOpen(true)}
               >
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Plus className="h-6 w-6 text-primary" />
+                <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Plus className="h-5 w-5 text-primary" />
                 </div>
                 <h3 className="font-medium mb-2">Connect a Wallet</h3>
                 <p className="text-sm text-muted-foreground">Add a cryptocurrency wallet to deposit, withdraw and bet</p>
