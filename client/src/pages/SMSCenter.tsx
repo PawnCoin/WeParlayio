@@ -13,7 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import {
   MessageSquare, Send, Bell, Settings, Users, AlertTriangle,
   CheckCircle, Clock, Smartphone, Globe, Shield, Zap,
-  TrendingUp, DollarSign, Target, Crown, Star, Award
+  TrendingUp, DollarSign, Target, Crown, Star, Award, Lock
 } from "lucide-react";
 
 interface SMSMessage {
@@ -266,7 +266,7 @@ const SMSCenter: React.FC = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview" className="flex items-center gap-1">
             <TrendingUp className="h-4 w-4" />
             Overview
@@ -278,6 +278,10 @@ const SMSCenter: React.FC = () => {
           <TabsTrigger value="bulk" className="flex items-center gap-1">
             <Users className="h-4 w-4" />
             Bulk SMS
+          </TabsTrigger>
+          <TabsTrigger value="challenges" className="flex items-center gap-1">
+            <Target className="h-4 w-4" />
+            Challenges
           </TabsTrigger>
           <TabsTrigger value="history" className="flex items-center gap-1">
             <Clock className="h-4 w-4" />
@@ -528,6 +532,88 @@ const SMSCenter: React.FC = () => {
               </Button>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* SMS Challenge Tab */}
+        <TabsContent value="challenges">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5" />
+                  SMS Betting Challenges
+                  {user?.tier && ['gold', 'platinum'].includes(user.tier.toLowerCase()) && (
+                    <Crown className="h-4 w-4 text-yellow-500" />
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {user?.tier && ['gold', 'platinum'].includes(user.tier.toLowerCase()) ? (
+                  <div className="space-y-4">
+                    <div className="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/30 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Crown className="h-5 w-5 text-yellow-600" />
+                        <span className="font-semibold text-yellow-800 dark:text-yellow-200">VIP Challenge Access</span>
+                      </div>
+                      <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                        Send instant SMS challenges to friends for head-to-head betting with real-time notifications.
+                      </p>
+                    </div>
+                    
+                    <Button 
+                      onClick={() => window.location.href = '/sms-challenge'}
+                      className="w-full bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700"
+                    >
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Open Challenge Center
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="text-center space-y-4">
+                    <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg">
+                      <Lock className="h-8 w-8 text-gray-400 mx-auto mb-3" />
+                      <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                        VIP Feature Required
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
+                        SMS challenges are available to Gold and Platinum VIP members.
+                      </p>
+                      <Button variant="outline" onClick={() => window.location.href = '/vip'}>
+                        <Crown className="h-4 w-4 mr-2" />
+                        Upgrade to VIP
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Challenge Statistics</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Challenges Sent</span>
+                    <span className="font-medium">12</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Challenges Accepted</span>
+                    <span className="font-medium">8</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Win Rate</span>
+                    <span className="font-medium">62.5%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Total Winnings</span>
+                    <span className="font-medium text-green-600">$487.50</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         {/* History Tab */}
