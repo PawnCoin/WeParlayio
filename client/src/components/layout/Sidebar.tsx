@@ -339,31 +339,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
             </Link>
           </li>
 
-          <li>
-            <Link href="/banking">
-              <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
-                location === '/banking' 
-                  ? "bg-primary text-white" 
-                  : "bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 hover:from-green-100 hover:to-emerald-100 dark:hover:from-green-900/40 dark:hover:to-emerald-900/40"
-              }`}>
-                <CreditCard className="h-5 w-5 mr-3 text-green-600" />
-                <span className="text-green-700 dark:text-green-300 font-medium">Banking</span>
-              </div>
-            </Link>
-          </li>
 
-          <li>
-            <Link href="/crypto-wallet">
-              <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
-                location === '/crypto-wallet' 
-                  ? "bg-primary text-white" 
-                  : "bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 hover:from-blue-100 hover:to-cyan-100 dark:hover:from-blue-900/40 dark:hover:to-cyan-900/40"
-              }`}>
-                <Wallet className="h-5 w-5 mr-3 text-blue-600" />
-                <span className="text-blue-700 dark:text-blue-300 font-medium">Crypto Wallet</span>
-              </div>
-            </Link>
-          </li>
 
           <li>
             <Link href="/crypto-information">

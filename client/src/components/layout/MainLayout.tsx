@@ -171,15 +171,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 onCurrencyChange={handleCurrencySwitch}
               />
 
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="text-white hover:text-green-500 flex items-center"
-                onClick={() => window.location.href = '/wallet-management-enhanced'}
-              >
-                <Wallet className="h-4 w-4 mr-1" />
-                <span>Wallet</span>
-              </Button>
+              <WalletConnectionOptimized />
             </div>
 
             {/* User menu */}

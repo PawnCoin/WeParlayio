@@ -36,7 +36,7 @@ const WalletConnectionOptimized: React.FC<WalletConnectionProps> = ({ onConnect,
   const [currentNetwork, setCurrentNetwork] = useState<NetworkInfo | null>(null);
   const { toast } = useToast();
 
-  // 1. Wallet Detection - Detect if user has web3 wallet extensions installed
+  // Wallet Detection - Detect if user has web3 wallet extensions installed
   const walletOptions: WalletOption[] = [
     {
       id: 'metamask',
@@ -50,80 +50,63 @@ const WalletConnectionOptimized: React.FC<WalletConnectionProps> = ({ onConnect,
       id: 'phantom',
       name: 'Phantom',
       icon: '👻',
-      description: 'Solana wallet for Web3',
+      description: 'Popular Solana wallet',
       installed: typeof (window as any).solana !== 'undefined',
       provider: (window as any).solana
     },
     {
       id: 'coinbase',
       name: 'Coinbase Wallet',
-      icon: '🔵',
-      description: 'Coinbase Wallet extension',
-      installed: !!(window as any).coinbaseWalletExtension,
-      provider: (window as any).coinbaseWalletExtension
+      icon: '🟦',
+      description: 'User-friendly crypto wallet',
+      installed: typeof (window as any).ethereum?.isCoinbaseWallet !== 'undefined',
+      provider: (window as any).ethereum
     },
     {
-      id: 'trust',
-      name: 'Trust Wallet',
-      icon: '🛡️',
-      description: 'Multi-cryptocurrency wallet',
-      installed: !!(window as any).trustwallet,
-      provider: (window as any).trustwallet
+      id: 'walletconnect',
+      name: 'WalletConnect',
+      icon: '🔗',
+      description: 'Connect any wallet',
+      installed: true, // WalletConnect is always available
+      provider: null
     }
   ];
 
-  // Network configurations for different chains
-  const supportedNetworks = {
-    '0x1': { name: 'Ethereum Mainnet', symbol: 'ETH' },
-    '0x89': { name: 'Polygon', symbol: 'MATIC' },
-    '0xa': { name: 'Optimism', symbol: 'ETH' },
-    '0xa4b1': { name: 'Arbitrum', symbol: 'ETH' }
+  // Check for existing wallet connection on component mount
+  useEffect(() => {
+    checkExistingConnection();
+  }, []);
+
+  const checkExistingConnection = async () => {
+    try {
+      if (typeof (window as any).ethereum !== 'undefined') {
+        const accounts = await (window as any).ethereum.request({ method: 'eth_accounts' });
+        if (accounts.length > 0) {
+          const chainId = await (window as any).ethereum.request({ method: 'eth_chainId' });
+          setConnectedWallet({
+            address: accounts[0],
+            type: 'metamask',
+            chainId
+          });
+          updateNetworkInfo(chainId);
+        }
+      }
+    } catch (error) {
+      console.log('No existing wallet connection found');
+    }
   };
 
-  // 4. Account Handling - Subscribe to wallet events
-  useEffect(() => {
-    if (connectedWallet && (window as any).ethereum) {
-      const ethereum = (window as any).ethereum;
-      
-      const handleAccountsChanged = (accounts: string[]) => {
-        if (accounts.length === 0) {
-          // User disconnected
-          handleDisconnect();
-        } else if (accounts[0] !== connectedWallet.address) {
-          // User switched account
-          setConnectedWallet(prev => prev ? { ...prev, address: accounts[0] } : null);
-          toast({
-            title: "Account Changed",
-            description: `Switched to ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`,
-          });
-        }
-      };
+  const updateNetworkInfo = (chainId: string) => {
+    const networks: { [key: string]: NetworkInfo } = {
+      '0x1': { chainId: '0x1', name: 'Ethereum Mainnet', symbol: 'ETH' },
+      '0x89': { chainId: '0x89', name: 'Polygon', symbol: 'MATIC' },
+      '0xa86a': { chainId: '0xa86a', name: 'Avalanche', symbol: 'AVAX' },
+      '0x38': { chainId: '0x38', name: 'BSC', symbol: 'BNB' }
+    };
+    setCurrentNetwork(networks[chainId] || { chainId, name: 'Unknown Network', symbol: 'ETH' });
+  };
 
-      const handleChainChanged = (chainId: string) => {
-        const networkInfo = supportedNetworks[chainId as keyof typeof supportedNetworks];
-        if (networkInfo) {
-          setCurrentNetwork({ chainId, ...networkInfo });
-          setConnectedWallet(prev => prev ? { ...prev, chainId } : null);
-          toast({
-            title: "Network Changed",
-            description: `Switched to ${networkInfo.name}`,
-          });
-        }
-      };
-
-      // Subscribe to events
-      ethereum.on('accountsChanged', handleAccountsChanged);
-      ethereum.on('chainChanged', handleChainChanged);
-
-      return () => {
-        ethereum.removeListener('accountsChanged', handleAccountsChanged);
-        ethereum.removeListener('chainChanged', handleChainChanged);
-      };
-    }
-  }, [connectedWallet, toast]);
-
-  // 2. Connect Button Logic - Secure, user-triggered wallet connection
-  const handleWalletConnect = async (walletType: string) => {
+  const handleConnect = async (walletType: string) => {
     setIsConnecting(true);
     setConnectionError(null);
 
@@ -131,52 +114,34 @@ const WalletConnectionOptimized: React.FC<WalletConnectionProps> = ({ onConnect,
       let walletAddress = '';
       let chainId = '';
 
-      // 5. Security & Privacy - Only request permissions we need, never auto-connect
-      if (walletType === 'metamask' && (window as any).ethereum) {
-        try {
-          // Request account access - user must approve
-          const accounts = await (window as any).ethereum.request({
-            method: 'eth_requestAccounts'
-          });
-          walletAddress = accounts[0];
-
-          // 3. Network Detection & Switching - Get current network
-          chainId = await (window as any).ethereum.request({ method: 'eth_chainId' });
-          
-          const networkInfo = supportedNetworks[chainId as keyof typeof supportedNetworks];
-          if (networkInfo) {
-            setCurrentNetwork({ chainId, ...networkInfo });
-          } else {
-            // Prompt to switch to supported network
-            toast({
-              title: "Unsupported Network",
-              description: "Please switch to Ethereum, Polygon, Optimism, or Arbitrum",
-              variant: "destructive",
-            });
-            return;
-          }
-
-        } catch (error: any) {
-          // 6. UI Feedback - User-friendly error explanations
-          if (error.code === 4001) {
-            throw new Error('Please approve the connection in your MetaMask wallet');
-          }
-          throw new Error(`MetaMask connection failed: ${error.message}`);
+      if (walletType === 'metamask' || walletType === 'coinbase') {
+        if (!window.ethereum) {
+          throw new Error('MetaMask is not installed. Please install it to continue.');
         }
-      } else if (walletType === 'phantom' && (window as any).solana) {
-        try {
-          const response = await (window as any).solana.connect();
-          walletAddress = response.publicKey.toString();
-          chainId = 'solana-mainnet';
-        } catch (error: any) {
-          if (error.code === 4001) {
-            throw new Error('Please approve the connection in your Phantom wallet');
-          }
-          throw new Error(`Phantom connection failed: ${error.message}`);
+
+        // Request account access
+        const accounts = await window.ethereum.request({
+          method: 'eth_requestAccounts'
+        });
+        
+        if (accounts.length === 0) {
+          throw new Error('No accounts found. Please check your wallet.');
         }
-      } else if (!walletOptions.find(w => w.id === walletType)?.installed) {
-        // Fallback - guide user to install wallet
-        throw new Error(`${walletType} wallet not detected. Please install the ${walletType} extension first.`);
+
+        walletAddress = accounts[0];
+        chainId = await window.ethereum.request({ method: 'eth_chainId' });
+        updateNetworkInfo(chainId);
+
+      } else if (walletType === 'phantom') {
+        if (!(window as any).solana) {
+          throw new Error('Phantom wallet is not installed. Please install it to continue.');
+        }
+
+        const response = await (window as any).solana.connect();
+        walletAddress = response.publicKey.toString();
+        chainId = 'solana-mainnet';
+        setCurrentNetwork({ chainId: 'solana', name: 'Solana Mainnet', symbol: 'SOL' });
+
       } else {
         throw new Error(`${walletType} wallet connection not yet implemented`);
       }
@@ -224,6 +189,8 @@ const WalletConnectionOptimized: React.FC<WalletConnectionProps> = ({ onConnect,
   const handleDisconnect = () => {
     setConnectedWallet(null);
     setConnectionError(null);
+    setCurrentNetwork(null);
+    setIsOpen(false);
     
     toast({
       title: "Wallet Disconnected",
@@ -235,67 +202,87 @@ const WalletConnectionOptimized: React.FC<WalletConnectionProps> = ({ onConnect,
     }
   };
 
+  // If wallet is connected, show connected state
   if (connectedWallet) {
     return (
-      <Card className="w-full max-w-md">
-        <CardContent className="p-4">
-          <div className="space-y-3">
-            {/* 6. UI Feedback - Clear connection status */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <CheckCircle className="h-5 w-5 text-green-500" />
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogTrigger asChild>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="bg-green-600/20 border-green-500/30 text-green-100 hover:bg-green-600/30 flex items-center space-x-2"
+          >
+            <CheckCircle className="h-4 w-4 text-green-400" />
+            <span className="hidden sm:inline capitalize">{connectedWallet.type}</span>
+            <span className="text-xs font-mono">
+              {connectedWallet.address.slice(0, 4)}...{connectedWallet.address.slice(-4)}
+            </span>
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <CheckCircle className="h-5 w-5 text-green-500" />
+              <span>Wallet Connected</span>
+            </DialogTitle>
+            <DialogDescription>
+              Your {connectedWallet.type} wallet is successfully connected
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium capitalize">{connectedWallet.type}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {connectedWallet.address.slice(0, 6)}...{connectedWallet.address.slice(-4)}
+                  <p className="text-sm text-muted-foreground font-mono">
+                    {connectedWallet.address}
                   </p>
                 </div>
               </div>
-              <Button variant="outline" size="sm" onClick={handleDisconnect}>
-                Disconnect
-              </Button>
-            </div>
-
-            {/* Network Information */}
-            {currentNetwork && (
-              <div className="flex items-center justify-between pt-2 border-t">
-                <div className="flex items-center space-x-2">
-                  <Globe className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{currentNetwork.name}</span>
+              
+              {currentNetwork && (
+                <div className="mt-3 pt-3 border-t">
+                  <p className="text-sm font-medium">Network</p>
+                  <p className="text-sm text-muted-foreground">
+                    {currentNetwork.name} ({currentNetwork.symbol})
+                  </p>
                 </div>
-                <Badge variant="secondary" className="text-xs">
-                  {currentNetwork.symbol}
-                </Badge>
-              </div>
-            )}
-
-            {/* 10. Compliance - Privacy and security notice */}
-            <div className="text-xs text-muted-foreground border-t pt-2">
-              <div className="flex items-start space-x-2">
-                <Shield className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                <p>
-                  Your private keys never leave your wallet. WeParlay only requests permissions for 
-                  necessary transactions and account information.
-                </p>
-              </div>
+              )}
             </div>
+            
+            <Button 
+              variant="destructive" 
+              onClick={handleDisconnect} 
+              className="w-full"
+            >
+              Disconnect Wallet
+            </Button>
           </div>
-        </CardContent>
-      </Card>
+        </DialogContent>
+      </Dialog>
     );
   }
 
+  // If no wallet connected, show connection dialog
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="flex items-center space-x-2">
-          <Wallet className="h-4 w-4" />
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="text-white hover:text-green-500 flex items-center"
+        >
+          <Wallet className="h-4 w-4 mr-1" />
           <span>Connect Wallet</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Connect Your Wallet</DialogTitle>
+          <DialogTitle className="flex items-center space-x-2">
+            <Shield className="h-5 w-5" />
+            <span>Connect Your Wallet</span>
+          </DialogTitle>
           <DialogDescription>
             Choose a wallet to connect to WeParlay. Make sure you have the wallet extension installed.
           </DialogDescription>
@@ -308,81 +295,59 @@ const WalletConnectionOptimized: React.FC<WalletConnectionProps> = ({ onConnect,
           </Alert>
         )}
 
-        <div className="grid gap-3">
+        <div className="space-y-3">
           {walletOptions.map((wallet) => (
-            <Button
-              key={wallet.id}
-              variant="outline"
-              className="flex items-center justify-start space-x-3 p-4 h-auto"
-              disabled={isConnecting || !wallet.installed}
-              onClick={() => handleWalletConnect(wallet.id)}
+            <Card 
+              key={wallet.id} 
+              className={`cursor-pointer transition-all hover:shadow-md ${
+                !wallet.installed ? 'opacity-50' : ''
+              }`}
+              onClick={() => wallet.installed && handleConnect(wallet.id)}
             >
-              {isConnecting ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <span className="text-xl">{wallet.icon}</span>
-              )}
-              <div className="text-left flex-1">
+              <CardContent className="p-4">
                 <div className="flex items-center justify-between">
-                  <p className="font-medium">{wallet.name}</p>
-                  {wallet.installed && (
-                    <Badge variant="secondary" className="text-xs">Detected</Badge>
-                  )}
+                  <div className="flex items-center space-x-3">
+                    <span className="text-2xl">{wallet.icon}</span>
+                    <div>
+                      <p className="font-medium">{wallet.name}</p>
+                      <p className="text-sm text-muted-foreground">{wallet.description}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    {wallet.installed ? (
+                      <Badge variant="outline" className="text-green-600 border-green-600">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Installed
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-gray-500">
+                        Not Installed
+                      </Badge>
+                    )}
+                    {isConnecting && (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    )}
+                  </div>
                 </div>
-                <p className="text-sm text-muted-foreground">{wallet.description}</p>
-                {!wallet.installed && (
-                  <p className="text-xs text-red-500">Extension not detected</p>
-                )}
-              </div>
-            </Button>
+              </CardContent>
+            </Card>
           ))}
         </div>
 
-        {/* 7. Fallback Support - Guide users to install wallets */}
-        <div className="space-y-3">
-          <div className="text-sm text-muted-foreground">
-            Don't have a wallet? Install from official sources:
-          </div>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <a 
-              href="https://metamask.io" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:underline"
-            >
-              MetaMask →
-            </a>
-            <a 
-              href="https://phantom.app" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:underline"
-            >
-              Phantom →
-            </a>
-          </div>
-        </div>
+        {!walletOptions.some(w => w.installed) && (
+          <Alert>
+            <Globe className="h-4 w-4" />
+            <AlertDescription>
+              No supported wallets detected. Please install MetaMask, Phantom, or another supported wallet extension.
+            </AlertDescription>
+          </Alert>
+        )}
 
-        {/* 10. Compliance - Security and privacy disclaimers */}
-        <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-lg">
-          <div className="flex items-start space-x-2">
-            <Shield className="h-3 w-3 mt-0.5 flex-shrink-0" />
-            <div className="space-y-1">
-              <p className="font-medium">Security Notice:</p>
-              <p>
-                • Your private keys remain secure in your wallet
-              </p>
-              <p>
-                • WeParlay only requests necessary permissions
-              </p>
-              <p>
-                • No sensitive data is stored on our servers
-              </p>
-              <p>
-                • By connecting, you consent to transaction requests for betting activities
-              </p>
-            </div>
-          </div>
+        <div className="text-xs text-muted-foreground text-center">
+          <p>
+            By connecting your wallet, you agree to our Terms of Service and Privacy Policy.
+            Your wallet will be used to interact with the Pawn Coin ($PC) token.
+          </p>
         </div>
       </DialogContent>
     </Dialog>
