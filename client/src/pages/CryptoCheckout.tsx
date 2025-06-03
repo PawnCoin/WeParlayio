@@ -332,7 +332,7 @@ export default function CryptoCheckout() {
                       <Badge className={getTypeColor(crypto.type)}>
                         {crypto.type}
                       </Badge>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-gray-400">
                         Min: {crypto.minimumBet} {crypto.symbol}
                       </span>
                     </div>
@@ -343,34 +343,34 @@ export default function CryptoCheckout() {
           </Card>
 
           {/* Payment Details */}
-          <Card>
+          <Card className="bg-gray-800 border-gray-700">
             <CardHeader>
-              <CardTitle>Payment Details</CardTitle>
+              <CardTitle className="text-white">Payment Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {selectedCrypto ? (
                 <>
-                  <div className="p-4 bg-gray-50 rounded-lg">
+                  <div className="p-4 bg-gray-700 rounded-lg">
                     <div className="flex items-center gap-3 mb-3">
                       <div className="w-10 h-10 bg-gradient-to-r from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white font-bold">
                         {getCryptoIcon(selectedCrypto.symbol)}
                       </div>
                       <div>
-                        <div className="font-semibold">{selectedCrypto.name}</div>
-                        <div className="text-sm text-gray-600">{selectedCrypto.symbol}</div>
+                        <div className="font-semibold text-white">{selectedCrypto.name}</div>
+                        <div className="text-sm text-gray-400">{selectedCrypto.symbol}</div>
                       </div>
                     </div>
                     
                     <div className="space-y-2">
-                      <div className="flex justify-between">
+                      <div className="flex justify-between text-gray-300">
                         <span>Current Price:</span>
-                        <span className="font-medium">${selectedCrypto.currentPrice.toLocaleString()}</span>
+                        <span className="font-medium text-white">${selectedCrypto.currentPrice.toLocaleString()}</span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between text-gray-300">
                         <span>Tier Price:</span>
-                        <span className="font-medium">${tierPrice}</span>
+                        <span className="font-medium text-white">${tierPrice}</span>
                       </div>
-                      <div className="flex justify-between text-lg font-semibold border-t pt-2">
+                      <div className="flex justify-between text-lg font-semibold border-t border-gray-600 pt-2 text-white">
                         <span>Amount to Pay:</span>
                         <span>{(tierPrice / selectedCrypto.currentPrice).toFixed(selectedCrypto.decimals || 8)} {selectedCrypto.symbol}</span>
                       </div>
@@ -378,28 +378,29 @@ export default function CryptoCheckout() {
                   </div>
 
                   <div className="space-y-4">
-                    <Label htmlFor="amount">Payment Amount</Label>
+                    <Label htmlFor="amount" className="text-gray-300">Payment Amount</Label>
                     <Input
                       id="amount"
                       value={(tierPrice / selectedCrypto.currentPrice).toFixed(selectedCrypto.decimals || 8)}
                       readOnly
-                      className="text-lg font-medium"
+                      className="text-lg font-medium bg-gray-700 border-gray-600 text-white"
                     />
                   </div>
 
                   {paymentAddress && (
                     <div className="space-y-2">
-                      <Label>Payment Address</Label>
+                      <Label className="text-gray-300">Payment Address</Label>
                       <div className="flex items-center gap-2">
                         <Input
                           value={paymentAddress}
                           readOnly
-                          className="font-mono text-sm"
+                          className="font-mono text-sm bg-gray-700 border-gray-600 text-white"
                         />
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => copyToClipboard(paymentAddress)}
+                          className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
                         >
                           <Copy className="w-4 h-4" />
                         </Button>
@@ -428,7 +429,7 @@ export default function CryptoCheckout() {
               ) : (
                 <div className="text-center py-8">
                   <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">Please select a cryptocurrency to continue</p>
+                  <p className="text-gray-400">Please select a cryptocurrency to continue</p>
                 </div>
               )}
             </CardContent>
@@ -436,18 +437,18 @@ export default function CryptoCheckout() {
         </div>
 
         {/* Special Pawn Coin Notice */}
-        <Card className="mt-8 border-orange-200 bg-orange-50">
+        <Card className="mt-8 border-orange-500 bg-gray-800">
           <CardContent className="p-6">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 bg-gradient-to-r from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white text-lg font-bold">
                 $Pc
               </div>
               <div>
-                <h3 className="font-semibold text-orange-900 mb-2">Pawn Coin ($Pc) - Our Native Token</h3>
-                <p className="text-orange-800 mb-3">
+                <h3 className="font-semibold text-orange-400 mb-2">Pawn Coin ($Pc) - Our Native Token</h3>
+                <p className="text-gray-300 mb-3">
                   Pay with Pawn Coin ($Pc) and enjoy exclusive benefits including reduced fees, priority support, and bonus features.
                 </p>
-                <div className="text-sm text-orange-700">
+                <div className="text-sm text-gray-400">
                   <div>Contract: 0x2Fe269292f74F0a98C5786088317B4f86313C211</div>
                   <div>Official Site: pawncoinpc.com</div>
                 </div>
@@ -461,6 +462,7 @@ export default function CryptoCheckout() {
           <Button 
             variant="outline" 
             onClick={() => setLocation('/upgrade-tier')}
+            className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
           >
             ← Back to Tier Selection
           </Button>
