@@ -230,27 +230,27 @@ export default function CryptoCheckout() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-red-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-black">
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading cryptocurrency options...</p>
+          <p className="text-gray-300">Loading cryptocurrency options...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black p-4">
       <div className="container mx-auto max-w-4xl">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          <h1 className="text-4xl font-bold text-white mb-4">
             Crypto Payment
           </h1>
-          <p className="text-xl text-gray-600">
-            Complete your <span className="font-semibold text-orange-600">{tierName}</span> tier upgrade with cryptocurrency
+          <p className="text-xl text-gray-300">
+            Complete your <span className="font-semibold text-orange-400">{tierName}</span> tier upgrade with cryptocurrency
           </p>
           <div className="mt-4">
-            <Badge className="bg-orange-100 text-orange-800 text-lg px-4 py-2">
+            <Badge className="bg-orange-500 text-white text-lg px-4 py-2">
               ${tierPrice} USD
             </Badge>
           </div>
@@ -258,9 +258,9 @@ export default function CryptoCheckout() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Cryptocurrency Selection */}
-          <Card>
+          <Card className="bg-gray-800 border-gray-700">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-white">
                 <Wallet className="w-5 h-5" />
                 Select Cryptocurrency
               </CardTitle>
@@ -274,24 +274,24 @@ export default function CryptoCheckout() {
                     placeholder="Search cryptocurrencies..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                   />
                 </div>
                 
                 <Select value={filterType} onValueChange={setFilterType}>
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                     <Filter className="w-4 h-4 mr-2" />
                     <SelectValue placeholder="Filter by type" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="major">Major</SelectItem>
-                    <SelectItem value="native">Native ($Pc)</SelectItem>
-                    <SelectItem value="stablecoin">Stablecoin</SelectItem>
-                    <SelectItem value="defi">DeFi</SelectItem>
-                    <SelectItem value="layer2">Layer 2</SelectItem>
-                    <SelectItem value="meme">Meme</SelectItem>
-                    <SelectItem value="gaming">Gaming</SelectItem>
+                  <SelectContent className="bg-gray-700 border-gray-600">
+                    <SelectItem value="all" className="text-white hover:bg-gray-600">All Types</SelectItem>
+                    <SelectItem value="major" className="text-white hover:bg-gray-600">Major</SelectItem>
+                    <SelectItem value="native" className="text-white hover:bg-gray-600">Native ($Pc)</SelectItem>
+                    <SelectItem value="stablecoin" className="text-white hover:bg-gray-600">Stablecoin</SelectItem>
+                    <SelectItem value="defi" className="text-white hover:bg-gray-600">DeFi</SelectItem>
+                    <SelectItem value="layer2" className="text-white hover:bg-gray-600">Layer 2</SelectItem>
+                    <SelectItem value="meme" className="text-white hover:bg-gray-600">Meme</SelectItem>
+                    <SelectItem value="gaming" className="text-white hover:bg-gray-600">Gaming</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -304,8 +304,8 @@ export default function CryptoCheckout() {
                     onClick={() => handleCryptoSelect(crypto.symbol)}
                     className={`p-3 border rounded-lg cursor-pointer transition-all ${
                       selectedCrypto?.symbol === crypto.symbol
-                        ? 'border-orange-500 bg-orange-50'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-orange-500 bg-orange-900/30'
+                        : 'border-gray-600 hover:border-gray-500 bg-gray-700/50'
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -314,14 +314,14 @@ export default function CryptoCheckout() {
                           {getCryptoIcon(crypto.symbol)}
                         </div>
                         <div>
-                          <div className="font-medium">{crypto.name}</div>
-                          <div className="text-sm text-gray-500">{crypto.symbol}</div>
+                          <div className="font-medium text-white">{crypto.name}</div>
+                          <div className="text-sm text-gray-400">{crypto.symbol}</div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-medium">${crypto.currentPrice.toLocaleString()}</div>
+                        <div className="font-medium text-white">${crypto.currentPrice.toLocaleString()}</div>
                         <div className={`text-sm flex items-center ${
-                          crypto.change24h >= 0 ? 'text-green-600' : 'text-red-600'
+                          crypto.change24h >= 0 ? 'text-green-400' : 'text-red-400'
                         }`}>
                           {crypto.change24h >= 0 ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
                           {crypto.change24h.toFixed(2)}%
