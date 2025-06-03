@@ -99,6 +99,7 @@ import BankingSystem from "@/pages/BankingSystem";
 import CompleteBettingSystem from "@/pages/CompleteBettingSystem";
 import MultiCurrencyBetting from "@/pages/MultiCurrencyBetting";
 import UpgradeTier from "@/pages/UpgradeTier";
+import CryptoWallet from "@/pages/CryptoWallet";
 import { lazy } from 'react';
 
 function Router() {
@@ -122,6 +123,7 @@ function Router() {
       <Route path="/live-streaming" component={LiveSportsStreaming} />
       <Route path="/streaming" component={LiveStreaming} />
       <Route path="/banking" component={BankingSystem} />
+      <Route path="/crypto-wallet" component={CryptoWallet} />
       <Route path="/complete-betting" component={CompleteBettingSystem} />
       <Route path="/my-bets" component={MyBets} />
       <Route path="/results" component={Results} />
