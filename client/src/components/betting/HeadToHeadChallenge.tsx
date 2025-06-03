@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { apiRequest } from '@/lib/queryClient';
 import SocialShareOptions from '@/components/betting/SocialShareOptions';
 import { 
   DollarSign,
