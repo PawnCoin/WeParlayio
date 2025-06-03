@@ -54,19 +54,20 @@ export default function CryptoCheckout() {
   const loadSupportedCryptocurrencies = async () => {
     try {
       const response = await apiRequest('GET', '/api/crypto/supported');
-      console.log('Crypto API response:', response);
+      const data = await response.json();
+      console.log('Crypto API response:', data);
       
-      if (response && response.success && response.cryptocurrencies && Array.isArray(response.cryptocurrencies)) {
-        setSupportedCryptos(response.cryptocurrencies);
+      if (data && data.success && data.cryptocurrencies && Array.isArray(data.cryptocurrencies)) {
+        setSupportedCryptos(data.cryptocurrencies);
         
         // Auto-select Pawn Coin if available
-        const pawnCoin = response.cryptocurrencies.find((c: CryptoOption) => c.symbol === '$Pc');
+        const pawnCoin = data.cryptocurrencies.find((c: CryptoOption) => c.symbol === '$Pc');
         if (pawnCoin && pawnCoin.currentPrice > 0) {
           setSelectedCrypto(pawnCoin);
           setAmount((tierPrice / pawnCoin.currentPrice).toFixed(pawnCoin.decimals || 8));
         }
       } else {
-        console.error('Invalid response format:', response);
+        console.error('Invalid response format:', data);
         toast({
           title: "Error",
           description: "Invalid cryptocurrency data format received",
@@ -94,7 +95,8 @@ export default function CryptoCheckout() {
         toSymbol: selectedCrypto.symbol,
         amount: tierPrice
       });
-      setConversionRate(response.toAmount);
+      const data = await response.json();
+      setConversionRate(data.toAmount);
     } catch (error) {
       console.error('Error calculating conversion:', error);
     }
