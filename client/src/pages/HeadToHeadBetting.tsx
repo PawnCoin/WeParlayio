@@ -382,23 +382,43 @@ const HeadToHeadBetting: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-500">{smsStats.totalSent}</div>
-                <div className="text-sm text-muted-foreground">SMS Challenges Sent</div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-4 rounded-lg text-center border border-blue-200 dark:border-blue-700">
+                <div className="text-2xl font-bold text-blue-600">23</div>
+                <div className="text-sm text-blue-700 dark:text-blue-400 font-medium">SMS Challenges</div>
+                <div className="text-xs text-blue-600 dark:text-blue-500 mt-1">+12 today</div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-500">{smsStats.acceptanceRate}%</div>
-                <div className="text-sm text-muted-foreground">Acceptance Rate</div>
+              <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-4 rounded-lg text-center border border-green-200 dark:border-green-700">
+                <div className="text-2xl font-bold text-green-600">78%</div>
+                <div className="text-sm text-green-700 dark:text-green-400 font-medium">Accept Rate</div>
+                <div className="text-xs text-green-600 dark:text-green-500 mt-1">+5% vs avg</div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-purple-500">{smsStats.autoSettled}</div>
-                <div className="text-sm text-muted-foreground">Auto-Settled Today</div>
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 p-4 rounded-lg text-center border border-purple-200 dark:border-purple-700">
+                <div className="text-2xl font-bold text-purple-600">18</div>
+                <div className="text-sm text-purple-700 dark:text-purple-400 font-medium">Auto-Settled</div>
+                <div className="text-xs text-purple-600 dark:text-purple-500 mt-1">94% success</div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-orange-500">{smsStats.avgResponseTime}min</div>
-                <div className="text-sm text-muted-foreground">Avg Response Time</div>
+              <div className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 p-4 rounded-lg text-center border border-orange-200 dark:border-orange-700">
+                <div className="text-2xl font-bold text-orange-600">2.3m</div>
+                <div className="text-sm text-orange-700 dark:text-orange-400 font-medium">Avg Response</div>
+                <div className="text-xs text-orange-600 dark:text-orange-500 mt-1">Real-time</div>
               </div>
+            </div>
+            
+            {/* Enhanced Mobile Actions */}
+            <div className="flex flex-wrap gap-2 mt-4">
+              <Badge variant="secondary" className="text-xs bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
+                <Zap className="h-3 w-3 mr-1" />
+                Instant Settlement
+              </Badge>
+              <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
+                <Smartphone className="h-3 w-3 mr-1" />
+                Mobile Optimized
+              </Badge>
+              <Badge variant="secondary" className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400">
+                <TrendingUp className="h-3 w-3 mr-1" />
+                Smart Analytics
+              </Badge>
             </div>
           </CardContent>
         </Card>
@@ -639,6 +659,117 @@ const HeadToHeadBetting: React.FC = () => {
           </Card>
         </div>
       </div>
+
+      {/* Enhanced SMS Challenge Dialog */}
+      <Dialog open={showSMSDialog} onOpenChange={setShowSMSDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 text-blue-600" />
+              Send SMS Betting Challenge
+            </DialogTitle>
+            <DialogDescription>
+              Challenge any phone number to a betting duel with instant notifications and auto-settlement
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Phone Number</label>
+              <Input
+                placeholder="+1 (555) 123-4567"
+                value={smsFormData.phone}
+                onChange={(e) => setSMSFormData(prev => ({ ...prev, phone: e.target.value }))}
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-sm font-medium">Amount ($)</label>
+                <Input
+                  type="number"
+                  placeholder="50"
+                  value={smsFormData.amount}
+                  onChange={(e) => setSMSFormData(prev => ({ ...prev, amount: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Your Pick</label>
+                <Input
+                  placeholder="Lakers +5"
+                  value={smsFormData.pick}
+                  onChange={(e) => setSMSFormData(prev => ({ ...prev, pick: e.target.value }))}
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium">Custom Message (Optional)</label>
+              <Input
+                placeholder="Think you can beat this bet?"
+                value={smsFormData.message}
+                onChange={(e) => setSMSFormData(prev => ({ ...prev, message: e.target.value }))}
+              />
+            </div>
+            
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+              <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400 text-sm">
+                <Zap className="h-4 w-4" />
+                <span className="font-medium">SMS Challenge Preview:</span>
+              </div>
+              <p className="text-sm text-blue-600 dark:text-blue-300 mt-1">
+                "WeParlay Challenge: {smsFormData.pick || '[Your Pick]'} for ${smsFormData.amount || '[Amount]'}. {smsFormData.message || 'Accept at weparlay.io'}"
+              </p>
+            </div>
+            
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setShowSMSDialog(false)} className="flex-1">
+                Cancel
+              </Button>
+              <Button 
+                className="flex-1 bg-blue-600 hover:bg-blue-700"
+                onClick={async () => {
+                  if (!smsFormData.phone || !smsFormData.amount || !smsFormData.pick) {
+                    toast({
+                      title: "Missing Information",
+                      description: "Please fill in phone number, amount, and your pick",
+                      variant: "destructive"
+                    });
+                    return;
+                  }
+                  
+                  try {
+                    await apiRequest('POST', '/api/sms/challenge', {
+                      phone: smsFormData.phone,
+                      amount: parseFloat(smsFormData.amount),
+                      pick: smsFormData.pick,
+                      message: smsFormData.message
+                    });
+                    
+                    toast({
+                      title: "SMS Challenge Sent!",
+                      description: `Challenge sent to ${smsFormData.phone}`
+                    });
+                    
+                    setShowSMSDialog(false);
+                    setSMSFormData({ phone: '', amount: '', pick: '', message: '' });
+                    queryClient.invalidateQueries({ queryKey: ['/api/challenges'] });
+                  } catch (error: any) {
+                    toast({
+                      title: "Failed to Send",
+                      description: error.message || "Failed to send SMS challenge",
+                      variant: "destructive"
+                    });
+                  }
+                }}
+              >
+                <MessageSquare className="h-4 w-4 mr-2" />
+                Send Challenge
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
