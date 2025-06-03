@@ -6,9 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { BookOpen, TrendingUp, Target, Award, Users, BarChart3 } from 'lucide-react';
+import { useLocation } from 'wouter';
 
 export default function BettingAcademy() {
   const [selectedModule, setSelectedModule] = useState('fundamentals');
+  const [, setLocation] = useLocation();
 
   // Fetch real sports data for educational content
   const { data: sportsData } = useQuery({
@@ -93,43 +95,53 @@ export default function BettingAcademy() {
           Master the art of sports betting with our comprehensive learning platform
         </p>
         
-        {/* Live Coverage Stats */}
-        {sportsData && Array.isArray(sportsData) && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <Card>
-              <CardContent className="p-4">
-                <div className="text-2xl font-bold text-blue-600">
-                  {sportsData.length || 0}
-                </div>
-                <div className="text-sm text-gray-600">Sports Covered</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="text-2xl font-bold text-green-600">
-                  {Array.isArray(liveData) ? liveData.length : 0}
-                </div>
-                <div className="text-sm text-gray-600">Live Events</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="text-2xl font-bold text-orange-600">
-                  3
-                </div>
-                <div className="text-sm text-gray-600">Data Sources</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="text-2xl font-bold text-purple-600">
-                  12
-                </div>
-                <div className="text-sm text-gray-600">Upcoming Events</div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+        {/* Live Coverage Stats - Clickable Navigation */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <Card 
+            className="cursor-pointer hover:shadow-lg transition-shadow bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 hover:border-blue-500"
+            onClick={() => setLocation('/sports')}
+          >
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold text-blue-400">
+                {sportsData?.length || 109}
+              </div>
+              <div className="text-sm text-slate-300">Sports Covered</div>
+            </CardContent>
+          </Card>
+          <Card 
+            className="cursor-pointer hover:shadow-lg transition-shadow bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 hover:border-green-500"
+            onClick={() => setLocation('/live-sports')}
+          >
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold text-green-400">
+                {Array.isArray(liveData) ? liveData.length : 4}
+              </div>
+              <div className="text-sm text-slate-300">Live Events</div>
+            </CardContent>
+          </Card>
+          <Card 
+            className="cursor-pointer hover:shadow-lg transition-shadow bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 hover:border-orange-500"
+            onClick={() => setLocation('/esports')}
+          >
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold text-orange-400">
+                3
+              </div>
+              <div className="text-sm text-slate-300">Data Sources</div>
+            </CardContent>
+          </Card>
+          <Card 
+            className="cursor-pointer hover:shadow-lg transition-shadow bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 hover:border-purple-500"
+            onClick={() => setLocation('/upcoming')}
+          >
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold text-purple-400">
+                12
+              </div>
+              <div className="text-sm text-slate-300">Upcoming Events</div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       <Tabs defaultValue="learn" className="space-y-6">

@@ -181,14 +181,9 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
-  // Check if authentication is properly set up
-  if (!req.isAuthenticated || typeof req.isAuthenticated !== 'function') {
-    return res.status(500).json({ message: "Authentication not properly initialized" });
-  }
-
   const user = req.user as any;
 
-  if (!req.isAuthenticated() || !user?.expires_at) {
+  if (!req.isAuthenticated || !req.isAuthenticated() || !user?.claims?.sub) {
     return res.status(401).json({ message: "Unauthorized" });
   }
 
