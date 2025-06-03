@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, memo, useMemo, useCallback } from 'react';
 import { ArrowDownRight, ArrowUpRight, Pause, Play } from 'lucide-react';
 import { useWebSocket } from '@/hooks/useWebSocket';
+import { useLiveDataQuery } from '@/hooks/useOptimizedQuery';
 
 interface OddsItem {
   id: string;
@@ -13,37 +14,56 @@ interface OddsItem {
   bookmaker?: string;
 }
 
-const OddsTicker: React.FC = () => {
+// Memoized individual odds item component for optimal performance
+const MemoizedOddsItem = memo<{ item: OddsItem }>(({ item }) => {
+  const trendIcon = useMemo(() => {
+    if (!item.previousOdds) return null;
+    
+    if (item.currentOdds > item.previousOdds) {
+      return <ArrowUpRight className="w-4 h-4 text-green-500" />;
+    } else if (item.currentOdds < item.previousOdds) {
+      return <ArrowDownRight className="w-4 h-4 text-red-500" />;
+    }
+    return null;
+  }, [item.currentOdds, item.previousOdds]);
+
+  const formattedOdds = useMemo(() => {
+    return item.currentOdds > 0 ? `+${item.currentOdds}` : item.currentOdds.toString();
+  }, [item.currentOdds]);
+
+  return (
+    <div className="flex items-center space-x-4 p-2 border-r border-border/30 last:border-r-0 min-w-[200px]">
+      <div className="flex-1">
+        <div className="text-sm font-medium text-foreground">{item.teams}</div>
+        <div className="text-xs text-muted-foreground">{item.sport}</div>
+      </div>
+      <div className="flex items-center space-x-2">
+        <span className="text-sm font-mono">{formattedOdds}</span>
+        {trendIcon}
+      </div>
+    </div>
+  );
+});
+
+MemoizedOddsItem.displayName = 'MemoizedOddsItem';
+
+const OddsTicker: React.FC = memo(() => {
   const [isPaused, setIsPaused] = useState(false);
-  const [oddsData, setOddsData] = useState<OddsItem[]>([]);
   const { isConnected } = useWebSocket();
 
-  // Fetch initial odds data from ticker endpoint
-  useEffect(() => {
-    const fetchOddsData = async () => {
-      try {
-        const response = await fetch('/api/odds-ticker/live-ticker');
-        if (response.ok) {
-          const data = await response.json();
-          setOddsData(data.odds || []);
-        }
-      } catch (error) {
-        console.error('Failed to fetch odds data:', error);
-        // Fallback to ticker endpoint for demo data
-        try {
-          const fallbackResponse = await fetch('/api/odds-ticker/live-ticker');
-          if (fallbackResponse.ok) {
-            const fallbackData = await fallbackResponse.json();
-            setOddsData(fallbackData.odds || []);
-          }
-        } catch (fallbackError) {
-          console.error('Failed to fetch fallback data:', fallbackError);
-        }
-      }
-    };
+  // Use optimized query with intelligent caching for better performance
+  const { data: oddsResponse, isLoading } = useLiveDataQuery<{ odds: OddsItem[] }>('/api/odds-ticker/live-ticker', {
+    enabled: !isPaused,
+    refetchInterval: 45000, // Optimized from frequent polling to 45 seconds
+  });
 
-    fetchOddsData();
+  const oddsData = useMemo(() => oddsResponse?.odds || [], [oddsResponse]);
+
+  const togglePause = useCallback(() => {
+    setIsPaused(prev => !prev);
   }, []);
+
+  // Removed redundant manual fetching - now using optimized query hook
 
   // Real-time odds updates via WebSocket
   useEffect(() => {
@@ -179,7 +199,7 @@ const OddsTicker: React.FC = () => {
         {/* Pause/Play control */}
         <div className="flex items-center absolute top-0 right-0 z-41 bg-background dark:bg-background px-2 h-full">
           <button 
-            onClick={() => setIsPaused(!isPaused)}
+            onClick={togglePause}
             className="text-white p-1 hover:bg-gray-700 rounded transition-colors"
             aria-label={isPaused ? "Play ticker" : "Pause ticker"}
           >
@@ -245,35 +265,10 @@ const OddsTicker: React.FC = () => {
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        {/* Repeat the data twice to ensure continuous scrolling */}
-        {[...oddsData, ...oddsData].map((item, index) => {
-          const movement = getOddsMovement(item.currentOdds, item.previousOdds);
-          return (
-            <div key={`${item.id}-${index}`} className="inline-flex items-center mr-8">
-              <span className={`px-2 py-0.5 text-xs font-medium rounded ${getSportColor(item.sport)}`}>
-                {item.sport}
-              </span>
-
-              <span className="mx-2 text-gray-300 font-medium">
-                {item.teams}
-              </span>
-
-              <span className={`font-mono font-bold flex items-center ${
-                movement === 'improved' ? 'text-green-400' :
-                movement === 'worsened' ? 'text-red-400' : 'text-white'
-              }`}>
-                {item.currentOdds.toFixed(2)}
-                {renderOddsIndicator(movement)}
-              </span>
-
-              {item.bookmaker && (
-                <span className="ml-1 text-xs text-gray-500">
-                  {item.bookmaker}
-                </span>
-              )}
-            </div>
-          );
-        })}
+        {/* Optimized render using memoized components */}
+        {[...oddsData, ...oddsData].map((item, index) => (
+          <MemoizedOddsItem key={`${item.id}-${index}`} item={item} />
+        ))}
       </div>
 
       <style>{`
