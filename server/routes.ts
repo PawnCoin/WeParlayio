@@ -10203,20 +10203,22 @@ Join us: WeParlay.io 🎯
 
       // If credentials are available, use Twilio
       try {
-        const twilio = require('twilio');
-        const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-        
-        const twilioMessage = await client.messages.create({
-          body: message,
-          from: process.env.TWILIO_PHONE_NUMBER,
-          to: recipient
+        const { sendSMS } = await import('./services/smsService');
+        const smsResult = await sendSMS({
+          to: recipient,
+          message: message,
+          type: type || 'bet_confirmation'
         });
 
+        if (!smsResult) {
+          throw new Error('SMS service failed');
+        }
+
         const smsMessage = {
-          id: twilioMessage.sid,
+          id: Math.random().toString(36).substring(7),
           recipient,
           message,
-          status: twilioMessage.status,
+          status: 'sent',
           timestamp: new Date().toISOString(),
           type: type || 'promotional',
           cost: 0.0075
