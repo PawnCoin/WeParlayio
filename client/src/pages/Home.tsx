@@ -10,6 +10,7 @@ import { StatsCarousel } from "@/components/StatsCarousel";
 import WelcomeDashboard from "@/components/dashboard/WelcomeDashboard";
 import OnboardingExperience from "@/components/onboarding/OnboardingExperience";
 import BusinessProposalModal from "@/components/business/BusinessProposalModal";
+import CompleteBettingSystem from "@/pages/CompleteBettingSystem";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -149,10 +150,40 @@ const Home: React.FC = () => {
           <Tabs defaultValue="game-lines" value={selectedTab} onValueChange={setSelectedTab} className="w-full">
             <TabsList className="flex-wrap">
               <TabsTrigger value="game-lines">Game Lines</TabsTrigger>
+              <TabsTrigger value="complete-betting">Complete Betting</TabsTrigger>
               <TabsTrigger value="player-props">Player Props</TabsTrigger>
               <TabsTrigger value="team-props">Team Props</TabsTrigger>
               <TabsTrigger value="parlays">Parlays</TabsTrigger>
             </TabsList>
+            
+            <TabsContent value="complete-betting" className="mt-6">
+              <CompleteBettingSystem />
+            </TabsContent>
+            
+            <TabsContent value="game-lines" className="mt-6">
+              {/* Game Lines content will be shown when this tab is active */}
+            </TabsContent>
+            
+            <TabsContent value="player-props" className="mt-6">
+              <div className="text-center p-8">
+                <h3 className="text-lg font-semibold mb-2">Player Props</h3>
+                <p className="text-muted-foreground">Player props betting coming soon!</p>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="team-props" className="mt-6">
+              <div className="text-center p-8">
+                <h3 className="text-lg font-semibold mb-2">Team Props</h3>
+                <p className="text-muted-foreground">Team props betting coming soon!</p>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="parlays" className="mt-6">
+              <div className="text-center p-8">
+                <h3 className="text-lg font-semibold mb-2">Parlays</h3>
+                <p className="text-muted-foreground">Parlay betting coming soon!</p>
+              </div>
+            </TabsContent>
           </Tabs>
         </div>
       </div>

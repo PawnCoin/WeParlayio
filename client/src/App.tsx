@@ -46,6 +46,7 @@ import WalletTest from "@/pages/WalletTest";
 import UserProfilePage from "@/pages/UserProfilePage";
 import FantasySportsEnhanced from "@/pages/FantasySportsEnhanced";
 import GamingIntegration from "@/pages/GamingIntegration";
+import SocialHub from "@/pages/SocialHub";
 
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
@@ -147,6 +148,7 @@ function Router() {
       <Route path="/tournament/:id" component={Tournaments} />
 
       {/* Social Features */}
+      <Route path="/social" component={SocialHub} />
       <Route path="/social-betting" component={SocialBetting} />
       {/* <Route path="/head-to-head" component={HeadToHeadBetting} /> */}
 
