@@ -22,6 +22,9 @@ import { useToast } from "@/hooks/use-toast";
 import Logo from "@/components/WeParlay/Logo";
 import WalletConnectionOptimized from "@/components/wallet/WalletConnectionOptimized";
 import WalletNotifications from "@/components/wallet/WalletNotifications";
+import FaviconOptimization from "@/components/shared/FaviconOptimization";
+import SocialMediaOptimization from "@/components/shared/SocialMediaOptimization";
+import UserFriendlyDisconnection from "@/components/wallet/UserFriendlyDisconnection";
 import { useBetting } from "@/contexts/BettingContext";
 import { useQuery } from "@tanstack/react-query";
 import BusinessProposalModal from "@/components/business/BusinessProposalModal";
@@ -95,6 +98,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
   return (
     <div className="flex flex-col h-screen">
+      {/* Optimization Components */}
+      <FaviconOptimization />
+      <SocialMediaOptimization 
+        title="WeParlay - Premier Sports Betting Platform"
+        description="Experience the future of sports betting with WeParlay. Live odds, fantasy sports, esports, and more."
+        image="/weparlaylogo.png"
+      />
       {/* Header */}
       <header className="bg-black shadow-md px-4 text-white header-dark-bg">
         <div className="container mx-auto">
