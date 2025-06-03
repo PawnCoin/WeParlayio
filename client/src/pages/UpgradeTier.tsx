@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { useMutation } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Crown, Diamond, Star, Zap, ArrowLeft } from "lucide-react";
+import { CheckCircle, Crown, Diamond, Star, Zap, ArrowLeft, Loader2 } from "lucide-react";
 
 const tierPlans = [
   {
@@ -92,11 +95,35 @@ const tierPlans = [
 export default function UpgradeTier() {
   const [, setLocation] = useLocation();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const upgradeMutation = useMutation({
+    mutationFn: async (tierId: string) => {
+      const response = await apiRequest('POST', '/api/stripe/create-tier-subscription', { tierId });
+      return response;
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Upgrade Initiated",
+        description: `Starting upgrade to ${data.tierName} tier. Redirecting to payment...`,
+      });
+      
+      // Redirect to Stripe Checkout or handle payment flow
+      window.location.href = `/payment-checkout?subscription=${data.subscriptionId}&client_secret=${data.clientSecret}`;
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Upgrade Failed",
+        description: error.message || "Failed to initiate tier upgrade. Please try again.",
+        variant: "destructive",
+      });
+      setSelectedPlan(null);
+    },
+  });
 
   const handleUpgrade = (planId: string) => {
     setSelectedPlan(planId);
-    // Here you would integrate with your payment processor
-    console.log(`Upgrading to ${planId} plan`);
+    upgradeMutation.mutate(planId);
   };
 
   const handleGoBack = () => {

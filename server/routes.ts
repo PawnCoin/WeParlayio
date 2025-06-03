@@ -2861,7 +2861,84 @@ Start betting through text now!`;
     }
   });
 
-  // STRIPE TIER SYNCHRONIZATION ENDPOINTS
+  // STRIPE TIER UPGRADE ENDPOINTS
+
+  // Create Stripe subscription for tier upgrade
+  app.post('/api/stripe/create-tier-subscription', isAuthenticated, async (req, res) => {
+    try {
+      if (!process.env.STRIPE_SECRET_KEY) {
+        return res.status(500).json({ message: 'Stripe not configured' });
+      }
+
+      const userId = req.user?.claims?.sub;
+      const { tierId } = req.body;
+      const user = await storage.getUser(userId);
+
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Tier pricing mapping
+      const tierPricing = {
+        bronze: { priceId: 'price_bronze', amount: 999, name: 'Bronze' },
+        silver: { priceId: 'price_silver', amount: 1999, name: 'Silver' },
+        gold: { priceId: 'price_gold', amount: 3999, name: 'Gold' },
+        platinum: { priceId: 'price_platinum', amount: 7999, name: 'Platinum' },
+        diamond: { priceId: 'price_diamond', amount: 14999, name: 'Diamond' }
+      };
+
+      const tierData = tierPricing[tierId];
+      if (!tierData) {
+        return res.status(400).json({ message: 'Invalid tier' });
+      }
+
+      const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+      // Create or get Stripe customer
+      let stripeCustomerId = user.stripeCustomerId;
+      if (!stripeCustomerId) {
+        const customer = await stripe.customers.create({
+          email: user.email,
+          metadata: { userId: user.id }
+        });
+        stripeCustomerId = customer.id;
+        await storage.updateUserStripeCustomerId(user.id, stripeCustomerId);
+      }
+
+      // Create Stripe subscription
+      const subscription = await stripe.subscriptions.create({
+        customer: stripeCustomerId,
+        items: [{
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: `WeParlay ${tierData.name} Tier`,
+              description: `Monthly subscription for ${tierData.name} tier access`
+            },
+            unit_amount: tierData.amount,
+            recurring: { interval: 'month' }
+          }
+        }],
+        payment_behavior: 'default_incomplete',
+        expand: ['latest_invoice.payment_intent'],
+        metadata: { 
+          userId: user.id,
+          tierId: tierId,
+          tierName: tierData.name
+        }
+      });
+
+      res.json({
+        subscriptionId: subscription.id,
+        clientSecret: subscription.latest_invoice.payment_intent.client_secret,
+        tierName: tierData.name
+      });
+
+    } catch (error) {
+      console.error('Error creating tier subscription:', error);
+      res.status(500).json({ message: 'Failed to create subscription' });
+    }
+  });
 
   // Update WeParlay tier based on Stripe purchase
   app.post('/api/stripe/sync-tier', async (req, res) => {
