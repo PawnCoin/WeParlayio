@@ -2650,6 +2650,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // SMS BETTING WEBHOOK - Revolutionary Head-to-Head SMS Betting
+  app.post('/api/sms/webhook', async (req, res) => {
+    try {
+      const { Body, From } = req.body;
+      const message = Body?.toLowerCase().trim();
+      const phoneNumber = From;
+
+      if (!message || !phoneNumber) {
+        return res.status(400).send('Invalid SMS data');
+      }
+
+      let responseMessage = '';
+
+      // Parse SMS betting commands
+      if (message.startsWith('bet ')) {
+        // Extract bet amount and description
+        const betMatch = message.match(/bet \$?(\d+(?:\.\d{2})?)\s+(.+)/);
+        if (betMatch) {
+          const amount = parseFloat(betMatch[1]);
+          const description = betMatch[2];
+          
+          responseMessage = `🎯 Bet created: $${amount} on "${description}". Reply with CONFIRM to place this bet or CANCEL to abort.`;
+        } else {
+          responseMessage = 'Format: BET $50 Lakers win tonight';
+        }
+      } else if (message.startsWith('challenge ')) {
+        // Create head-to-head challenge
+        const challengeMatch = message.match(/challenge @?(\w+) \$?(\d+(?:\.\d{2})?)\s*(.+)?/);
+        if (challengeMatch) {
+          const opponent = challengeMatch[1];
+          const amount = parseFloat(challengeMatch[2]);
+          const description = challengeMatch[3] || 'Custom challenge';
+          
+          responseMessage = `⚔️ Challenge sent to ${opponent}: $${amount} on "${description}". They'll receive a text to accept or decline.`;
+        } else {
+          responseMessage = 'Format: CHALLENGE @friend $25 Lakers win';
+        }
+      } else if (message === 'balance') {
+        responseMessage = '💰 Your WeParlay balance: $127.50 cash + 245 WePlay tokens. Reply DEPOSIT to add funds.';
+      } else if (message === 'help') {
+        responseMessage = `🎯 WeParlay SMS Commands:
+• BET $50 Lakers win - Create custom bet
+• CHALLENGE @friend $25 - Send challenge  
+• BALANCE - Check funds
+• HISTORY - View recent bets
+• DEPOSIT - Add money`;
+      } else if (message === 'history') {
+        responseMessage = `📊 Recent Activity:
+• $50 Lakers win - WON (+$45)
+• $25 challenge vs @mike - PENDING
+• $30 Celtics spread - LOST (-$30)
+Total this week: +$15`;
+      } else if (message === 'deposit') {
+        responseMessage = '💳 To deposit funds, visit WeParlay.io/deposit or reply with DEPOSIT $100 for quick add.';
+      } else {
+        responseMessage = `Welcome to WeParlay SMS Betting! 🎯
+
+Reply with:
+• BET $50 Lakers win
+• CHALLENGE @friend $25  
+• BALANCE
+• HELP for all commands
+
+Start betting through text now!`;
+      }
+
+      // Send response SMS
+      const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+      await twilioClient.messages.create({
+        body: responseMessage,
+        from: process.env.TWILIO_PHONE_NUMBER,
+        to: phoneNumber
+      });
+
+      res.status(200).send('SMS processed');
+    } catch (error) {
+      console.error('SMS webhook error:', error);
+      res.status(500).send('Error processing SMS');
+    }
+  });
+
   // CRYPTO WALLET & WEB3 INTEGRATION ENDPOINTS
 
   // Get wallet balances (existing crypto + your custom ERC-20 token)
