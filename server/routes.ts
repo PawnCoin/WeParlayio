@@ -39,12 +39,20 @@ const unifiedSportsApi = new UnifiedSportsApiService();
 const rapidApiService = new RapidApiService();
 const sportsGameOddsService = new SportsGameOddsService();
 
-// API Quota Management
+// API Quota Management with intelligent caching
 let lastOddsApiCall = 0;
 const ODDS_API_COOLDOWN = 30000; // 30 seconds between calls
+let cachedOddsData: any = null;
+let cacheTimestamp = 0;
+const CACHE_DURATION = 60000; // 1 minute cache
 
 // Generate authentic fallback odds from cached API responses
 function generateFallbackOdds() {
+  // Return cached data if available and fresh
+  if (cachedOddsData && (Date.now() - cacheTimestamp < CACHE_DURATION)) {
+    return cachedOddsData;
+  }
+  
   return [
     {
       eventId: 'nfl_chiefs_bills',

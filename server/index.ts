@@ -11,9 +11,35 @@ import systemHealthRoutes from './routes/systemHealthRoutes';
 
 // Security middleware
 import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 
 // Export app for production use
 export const app = express();
+
+// Security middleware for production
+if (process.env.NODE_ENV === 'production') {
+  // HTTPS enforcement
+  app.use((req, res, next) => {
+    if (req.header('x-forwarded-proto') !== 'https') {
+      res.redirect(`https://${req.header('host')}${req.url}`);
+    } else {
+      next();
+    }
+  });
+}
+
+// Rate limiting for betting endpoints
+const bettingRateLimit = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10, // 10 bets per minute
+  message: 'Too many betting requests, please try again later',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Apply rate limiting to betting endpoints
+app.use('/api/bets', bettingRateLimit);
+app.use('/api/betting', bettingRateLimit);
 app.set('trust proxy', 1); // Trust first proxy - important for secure cookies with custom domain
 
 // Apply security middleware FIRST with relaxed CSP for development
