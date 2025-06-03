@@ -27,6 +27,7 @@ import oddsTickerRouter from "./routes/oddsTickerRoutes";
 import { apiTestRouter } from "./routes/apiTestRoutes";
 import { theTVAppService } from "./services/thetvappService";
 import { esportsApiService } from "./services/esportsApiService";
+import { cryptoService } from "./services/cryptoService";
 
 // Export the routes so they can be imported by index.ts
 export { notificationRoutes, websocketPollingRoutes };
@@ -2731,35 +2732,218 @@ Start betting through text now!`;
     }
   });
 
-  // CRYPTO WALLET & WEB3 INTEGRATION ENDPOINTS
+  // COMPREHENSIVE CRYPTOCURRENCY API ENDPOINTS
 
-  // Get wallet balances (existing crypto + your custom ERC-20 token)
+  // Get all supported cryptocurrencies with live prices
+  app.get('/api/crypto/supported', async (req, res) => {
+    try {
+      const supportedCryptos = await cryptoService.getSupportedCryptocurrencies();
+      res.json({
+        success: true,
+        cryptocurrencies: supportedCryptos,
+        count: supportedCryptos.length
+      });
+    } catch (error) {
+      console.error('Error fetching supported cryptocurrencies:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to fetch supported cryptocurrencies' 
+      });
+    }
+  });
+
+  // Get Pawn Coin ($Pc) specific data from official sources
+  app.get('/api/crypto/pawn-coin', async (req, res) => {
+    try {
+      const pawnCoinData = await cryptoService.getPawnCoinData();
+      if (!pawnCoinData) {
+        return res.status(404).json({
+          success: false,
+          message: 'Pawn Coin data not available'
+        });
+      }
+      
+      res.json({
+        success: true,
+        symbol: '$Pc',
+        name: 'Pawn Coin',
+        contract: '0x2Fe269292f74F0a98C5786088317B4f86313C211',
+        ...pawnCoinData
+      });
+    } catch (error) {
+      console.error('Error fetching Pawn Coin data:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to fetch Pawn Coin data' 
+      });
+    }
+  });
+
+  // Get cryptocurrency prices (batch)
+  app.get('/api/crypto/prices', async (req, res) => {
+    try {
+      const { symbols } = req.query;
+      const symbolList = symbols ? (symbols as string).split(',') : [];
+      
+      const prices = await cryptoService.getCryptoPrices(symbolList);
+      res.json({
+        success: true,
+        prices,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error fetching crypto prices:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to fetch cryptocurrency prices' 
+      });
+    }
+  });
+
+  // Get single cryptocurrency price
+  app.get('/api/crypto/price/:symbol', async (req, res) => {
+    try {
+      const { symbol } = req.params;
+      const price = await cryptoService.getCryptoPrice(symbol);
+      
+      if (!price) {
+        return res.status(404).json({
+          success: false,
+          message: `Price data not found for ${symbol}`
+        });
+      }
+      
+      res.json({
+        success: true,
+        ...price
+      });
+    } catch (error) {
+      console.error('Error fetching crypto price:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to fetch cryptocurrency price' 
+      });
+    }
+  });
+
+  // Convert between cryptocurrencies
+  app.post('/api/crypto/convert', async (req, res) => {
+    try {
+      const { fromSymbol, toSymbol, amount } = req.body;
+      
+      if (!fromSymbol || !toSymbol || !amount) {
+        return res.status(400).json({
+          success: false,
+          message: 'Missing required parameters: fromSymbol, toSymbol, amount'
+        });
+      }
+      
+      const convertedAmount = await cryptoService.convertCrypto(fromSymbol, toSymbol, amount);
+      
+      res.json({
+        success: true,
+        fromSymbol,
+        toSymbol,
+        fromAmount: amount,
+        toAmount: convertedAmount,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error converting cryptocurrency:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: error.message || 'Failed to convert cryptocurrency' 
+      });
+    }
+  });
+
+  // Validate cryptocurrency address
+  app.post('/api/crypto/validate-address', async (req, res) => {
+    try {
+      const { address, symbol } = req.body;
+      
+      if (!address || !symbol) {
+        return res.status(400).json({
+          success: false,
+          message: 'Missing required parameters: address, symbol'
+        });
+      }
+      
+      const isValid = cryptoService.isValidCryptoAddress(address, symbol);
+      
+      res.json({
+        success: true,
+        isValid,
+        address,
+        symbol
+      });
+    } catch (error) {
+      console.error('Error validating crypto address:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to validate cryptocurrency address' 
+      });
+    }
+  });
+
+  // Get minimum bet amounts for cryptocurrencies
+  app.get('/api/crypto/minimum-bets', async (req, res) => {
+    try {
+      const supportedCryptos = await cryptoService.getSupportedCryptocurrencies();
+      const minimumBets = supportedCryptos.map(crypto => ({
+        symbol: crypto.symbol,
+        name: crypto.name,
+        minimumBet: cryptoService.getMinimumBetAmount(crypto.symbol),
+        currentPrice: crypto.currentPrice
+      }));
+      
+      res.json({
+        success: true,
+        minimumBets
+      });
+    } catch (error) {
+      console.error('Error fetching minimum bet amounts:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to fetch minimum bet amounts' 
+      });
+    }
+  });
+
+  // Get wallet balances with live crypto prices
   app.get('/api/wallet/balances', isAuthenticated, async (req, res) => {
     try {
       const userId = req.user?.claims?.sub;
       const user = await storage.getUser(userId);
 
-      // Mock crypto balances for demonstration
-      const cryptoBalances = [
-        {
-          currency: 'Ethereum',
-          symbol: 'ETH',
-          balance: '2.4567',
-          usdValue: 4523.45,
-          change24h: 2.34,
-          address: '0x742D35...89AB'
-        },
-        {
-          currency: 'Bitcoin',
-          symbol: 'BTC',
-          balance: '0.15234',
-          usdValue: 6789.12,
-          change24h: -1.23,
-          address: 'bc1qxy2k...gh56'
-        }
+      // Get live crypto prices
+      const supportedCryptos = await cryptoService.getSupportedCryptocurrencies();
+      
+      // Sample user balances (in production, these would come from user's wallet)
+      const userBalances = [
+        { symbol: 'BTC', balance: '0.05' },
+        { symbol: 'ETH', balance: '1.25' },
+        { symbol: '$Pc', balance: '1000' },
+        { symbol: 'USDT', balance: '500' }
       ];
 
-      res.json(cryptoBalances);
+      const balancesWithPrices = userBalances.map(userBalance => {
+        const crypto = supportedCryptos.find(c => c.symbol === userBalance.symbol);
+        const balance = parseFloat(userBalance.balance);
+        const price = crypto?.currentPrice || 0;
+        
+        return {
+          currency: crypto?.name || userBalance.symbol,
+          symbol: userBalance.symbol,
+          balance: userBalance.balance,
+          usdValue: balance * price,
+          change24h: crypto?.change24h || 0,
+          currentPrice: price,
+          address: userBalance.symbol === 'BTC' ? 'bc1q...' : '0x...'
+        };
+      });
+
+      res.json(balancesWithPrices);
     } catch (error) {
       console.error('Error fetching wallet balances:', error);
       res.status(500).json({ message: 'Failed to fetch wallet balances' });
