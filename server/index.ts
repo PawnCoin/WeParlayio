@@ -16,19 +16,22 @@ import helmet from 'helmet';
 export const app = express();
 app.set('trust proxy', 1); // Trust first proxy - important for secure cookies with custom domain
 
-// Apply security middleware FIRST
+// Apply security middleware FIRST with relaxed CSP for development
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
-      imgSrc: ["'self'", "data:", "https:", "blob:"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://www.googletagmanager.com"],
-      connectSrc: ["'self'", "wss:", "https:", "ws:"],
-      frameSrc: ["'self'", "https:"],
+      defaultSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https:", "data:"],
+      fontSrc: ["'self'", "https:", "data:"],
+      imgSrc: ["'self'", "data:", "https:", "blob:", "*"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https:", "*"],
+      connectSrc: ["'self'", "wss:", "https:", "ws:", "*"],
+      frameSrc: ["'self'", "https:", "*"],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
+      mediaSrc: ["'self'", "https:", "blob:", "*"],
+      workerSrc: ["'self'", "blob:"],
+      childSrc: ["'self'", "https:", "blob:"],
     },
   },
 }));
