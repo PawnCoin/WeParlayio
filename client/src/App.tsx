@@ -95,11 +95,12 @@ import UnifiedGaming from "@/pages/system/UnifiedGaming";
 import SocialMediaDashboard from "@/pages/system/SocialMediaDashboard";
 import LiveSportsStreaming from "@/pages/system/LiveSportsStreaming";
 import LiveStreaming from "@/pages/LiveStreaming";
-// BankingSystem removed - now using unified CryptoWallet
+import BankingSystem from "@/pages/BankingSystem";
 import CompleteBettingSystem from "@/pages/CompleteBettingSystem";
 import MultiCurrencyBetting from "@/pages/MultiCurrencyBetting";
 import UpgradeTier from "@/pages/UpgradeTier";
 import CryptoWallet from "@/pages/CryptoWallet";
+import TwilioOptInDemo from "@/pages/TwilioOptInDemo";
 import { lazy } from 'react';
 
 function Router() {
@@ -122,7 +123,7 @@ function Router() {
       <Route path="/live-heatmap" component={LiveHeatmap} />
       <Route path="/live-streaming" component={LiveSportsStreaming} />
       <Route path="/streaming" component={LiveStreaming} />
-      <Route path="/banking" component={CryptoWallet} />
+      <Route path="/banking" component={BankingSystem} />
       <Route path="/crypto-wallet" component={CryptoWallet} />
       <Route path="/wallet" component={CryptoWallet} />
       <Route path="/complete-betting" component={CompleteBettingSystem} />
@@ -157,6 +158,9 @@ function Router() {
 
       {/* Trivia */}
       <Route path="/trivia" component={Trivia} />
+      
+      {/* Twilio SMS Opt-in Demo */}
+      <Route path="/twilio-opt-in-demo" component={TwilioOptInDemo} />
 
       {/* Enhanced Features */}
       <Route path="/enhanced-features" component={EnhancedFeatures} />
