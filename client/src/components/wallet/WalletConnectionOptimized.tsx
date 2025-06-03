@@ -90,8 +90,8 @@ const WalletConnectionOptimized: React.FC<WalletConnectionProps> = ({ onConnect,
 
       // Wallet Connection Performance Improvement
       const connectionData = {
-        walletAddress,
-        walletType
+        address: walletAddress,
+        type: walletType
       };
 
       const response = await apiRequest('POST', '/api/wallet/connect', connectionData);
