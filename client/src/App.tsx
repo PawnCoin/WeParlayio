@@ -159,7 +159,7 @@ function Router() {
       {/* Social Features */}
       <Route path="/social" component={SocialHub} />
       <Route path="/social-betting" component={SocialBetting} />
-      {/* <Route path="/head-to-head" component={HeadToHeadBetting} /> */}
+      <Route path="/head-to-head" component={HeadToHeadBetting} />
 
       {/* Trivia */}
       <Route path="/trivia" component={Trivia} />
