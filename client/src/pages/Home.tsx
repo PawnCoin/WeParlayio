@@ -150,15 +150,10 @@ const Home: React.FC = () => {
           <Tabs defaultValue="game-lines" value={selectedTab} onValueChange={setSelectedTab} className="w-full">
             <TabsList className="flex-wrap">
               <TabsTrigger value="game-lines">Game Lines</TabsTrigger>
-              <TabsTrigger value="complete-betting">Complete Betting</TabsTrigger>
               <TabsTrigger value="player-props">Player Props</TabsTrigger>
               <TabsTrigger value="team-props">Team Props</TabsTrigger>
               <TabsTrigger value="parlays">Parlays</TabsTrigger>
             </TabsList>
-            
-            <TabsContent value="complete-betting" className="mt-6">
-              <CompleteBettingSystem />
-            </TabsContent>
             
             <TabsContent value="game-lines" className="mt-6">
               {/* Game Lines content will be shown when this tab is active */}

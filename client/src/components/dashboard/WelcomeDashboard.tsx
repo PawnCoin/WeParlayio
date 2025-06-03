@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trophy, Calendar, Star, TrendingUp, Zap, Clock, ArrowRight, Flame, Gift, ThumbsUp } from 'lucide-react';
+import { Trophy, Calendar, Star, TrendingUp, Zap, Clock, ArrowRight, Flame, Gift, ThumbsUp, BarChart3 } from 'lucide-react';
 import { Link } from 'wouter';
+import CompleteBettingSystem from '@/pages/CompleteBettingSystem';
 
 interface RecommendationProps {
   id: string;
@@ -186,6 +187,10 @@ const WelcomeDashboard: React.FC = () => {
             <ThumbsUp className="h-4 w-4 mr-2" />
             Recommended For You
           </TabsTrigger>
+          <TabsTrigger value="odds" className="flex items-center">
+            <BarChart3 className="h-4 w-4 mr-2" />
+            Odds
+          </TabsTrigger>
           <TabsTrigger value="upcoming" className="flex items-center">
             <Calendar className="h-4 w-4 mr-2" />
             Upcoming Events
@@ -277,6 +282,11 @@ const WelcomeDashboard: React.FC = () => {
               </>
             )}
           </div>
+        </TabsContent>
+        
+        {/* Odds tab - Complete Betting System */}
+        <TabsContent value="odds" className="space-y-4">
+          <CompleteBettingSystem />
         </TabsContent>
         
         {/* Upcoming events tab */}
