@@ -357,7 +357,14 @@ const HeadToHeadBetting: React.FC = () => {
               </DialogContent>
             </Dialog>
             
-            <Button className="flex items-center">
+            <Button 
+              className="flex items-center bg-blue-600 hover:bg-blue-700"
+              onClick={() => setShowSMSDialog(true)}
+            >
+              <MessageSquare className="mr-2 h-4 w-4" />
+              SMS Challenge
+            </Button>
+            <Button variant="outline" className="flex items-center">
               <Plus className="mr-2 h-4 w-4" />
               Create Challenge
             </Button>
