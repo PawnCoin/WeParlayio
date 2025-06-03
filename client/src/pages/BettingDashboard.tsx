@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
+import { getLeagueLogo } from '@/utils/sportsLogosSimple';
 
 // Helper function to format game time
 const formatGameTime = (dateString: string) => {
@@ -192,7 +193,17 @@ const BettingDashboard: React.FC = () => {
                   variant={selectedLeagues.includes(league.key) ? "default" : "outline"}
                   size="sm"
                   onClick={() => toggleLeague(league.key)}
+                  className="flex items-center gap-2"
                 >
+                  <img
+                    src={getLeagueLogo(league.key)}
+                    alt={`${league.name} logo`}
+                    className="w-5 h-5 object-contain"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
+                  />
                   {league.displayName}
                 </Button>
               ))}

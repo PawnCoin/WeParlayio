@@ -11,6 +11,7 @@ import {
   DollarSign, Users, Globe, Flame, Star, Activity,
   Swords, Crown, Gamepad2
 } from "lucide-react";
+import { getLeagueLogo, getLeagueDisplayName } from '@/utils/sportsLogosSimple';
 
 export default function UnifiedSports() {
   const { toast } = useToast();

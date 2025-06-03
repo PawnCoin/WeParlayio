@@ -109,7 +109,7 @@ import CryptoCheckout from "@/pages/CryptoCheckout";
 import TierUpgradeSuccess from "@/pages/TierUpgradeSuccess";
 import CryptoWallet from "@/pages/CryptoWallet";
 import TwilioOptInDemo from "@/pages/TwilioOptInDemo";
-import Sports from "@/pages/Sports";
+
 import { lazy } from 'react';
 
 function Router() {
@@ -141,7 +141,6 @@ function Router() {
       <Route path="/parlays" component={Parlays} />
 
       {/* Sports Pages */}
-      <Route path="/sports" component={Sports} />
       <Route path="/sport/:sportKey" component={SportPage} />
       <Route path="/sports/:sportKey" component={SportPage} />
       <Route path="/unified-sports" component={UnifiedSports} />
