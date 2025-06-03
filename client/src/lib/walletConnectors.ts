@@ -1,6 +1,5 @@
 // Wallet connectors for blockchain integration
-import { InjectedConnector } from '@web3-react/injected-connector';
-import { Connection, PublicKey } from '@solana/web3.js';
+// Note: Using simplified approach to avoid compatibility issues
 
 // Ethereum chain IDs
 const ETHEREUM_CHAIN_IDS = [1, 3, 4, 5, 42, 56, 137, 43114]; // Mainnet, testnets, BSC, Polygon, Avalanche

@@ -20,7 +20,7 @@ import {
 import { ChevronDown, Menu, Wallet, Coins, Shield, ArrowRightLeft, History, CreditCard, Crown, Briefcase } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Logo from "@/components/WeParlay/Logo";
-import WalletConnect from "@/components/wallet/WalletConnect";
+import WalletConnectionOptimized from "@/components/wallet/WalletConnectionOptimized";
 import WalletNotifications from "@/components/wallet/WalletNotifications";
 import { useBetting } from "@/contexts/BettingContext";
 import { useQuery } from "@tanstack/react-query";
@@ -285,11 +285,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   </DropdownMenu>
                 </>
               ) : (
-                <WalletConnect 
-                  onConnect={(address, type) => {
-                    console.log(`Connected wallet: ${address} (${type})`);
+                <WalletConnectionOptimized 
+                  onConnect={(walletData) => {
+                    console.log(`Connected wallet: ${walletData.address} (${walletData.type})`);
                     // Connect the wallet using our authentication hook
-                    connectWallet(address, type);
+                    connectWallet(walletData.address, walletData.type);
                   }}
                 />
               )}
