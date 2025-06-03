@@ -281,7 +281,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                             <Link href="/security-settings">Security</Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
-                            <Link href="/wallet">Wallet Management</Link>
+                            <Link href="/banking">Traditional Banking</Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href="/crypto-wallet">Crypto Wallet</Link>
                           </DropdownMenuItem>
                         </>
                       )}

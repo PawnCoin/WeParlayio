@@ -172,8 +172,9 @@ function Router() {
       {/* WeParlay Cash */}
       <Route path="/weparlay-cash" component={WeParlayCash} />
 
-      {/* Wallet & Banking */}
-      <Route path="/wallet" component={WalletManagement} />
+      {/* Financial Management - Clear Separation */}
+      <Route path="/banking" component={BankingSystem} />
+      <Route path="/crypto-wallet" component={CryptoWallet} />
       <Route path="/wallet-management-enhancement" component={CryptoWallet} />
       <Route path="/wallet-test" component={WalletTest} />
       <Route path="/user-profile-banking" component={UserProfileBanking} />
