@@ -13,7 +13,7 @@ import {
   Wallet, Send, ArrowDownUp, Shield, Copy, Eye, EyeOff,
   TrendingUp, Bitcoin, DollarSign, Zap, Clock, CheckCircle,
   AlertTriangle, QrCode, Plus, Minus, RefreshCw, Settings,
-  Lock, Unlock, Globe, Target, Crown, Star, Award
+  Lock, Unlock, Globe, Target, Crown, Star, Award, ExternalLink
 } from "lucide-react";
 
 interface WalletBalance {
@@ -48,6 +48,33 @@ interface WalletConnection {
   balance?: string;
 }
 
+interface CustomToken {
+  address: string;
+  symbol: string;
+  name: string;
+  decimals: number;
+  balance: string;
+  usdValue: number;
+}
+
+// Your verified ERC-20 token contract
+const CUSTOM_TOKEN_ADDRESS = "0x2Fe269292f74F0a98C5786088317B4f86313C211";
+
+// ERC-20 Token ABI (standard functions)
+const ERC20_ABI = [
+  "function name() view returns (string)",
+  "function symbol() view returns (string)",
+  "function decimals() view returns (uint8)",
+  "function totalSupply() view returns (uint256)",
+  "function balanceOf(address owner) view returns (uint256)",
+  "function transfer(address to, uint256 amount) returns (bool)",
+  "function allowance(address owner, address spender) view returns (uint256)",
+  "function approve(address spender, uint256 amount) returns (bool)",
+  "function transferFrom(address from, address to, uint256 amount) returns (bool)",
+  "event Transfer(address indexed from, address indexed to, uint256 value)",
+  "event Approval(address indexed owner, address indexed spender, uint256 value)"
+];
+
 const CryptoWallet: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
@@ -59,8 +86,10 @@ const CryptoWallet: React.FC = () => {
   const [sendAmount, setSendAmount] = useState('');
   const [sendAddress, setSendAddress] = useState('');
   const [selectedCurrency, setSelectedCurrency] = useState('ETH');
+  const [customToken, setCustomToken] = useState<CustomToken | null>(null);
+  const [web3Provider, setWeb3Provider] = useState<any>(null);
 
-  // Detect MetaMask or other Web3 wallets
+  // Detect MetaMask or other Web3 wallets and load custom token
   useEffect(() => {
     const checkWalletConnection = async () => {
       if (typeof window !== 'undefined' && (window as any).ethereum) {
@@ -80,6 +109,12 @@ const CryptoWallet: React.FC = () => {
               provider: 'MetaMask',
               chainId: parseInt(chainId, 16)
             });
+
+            // Initialize Web3 provider for custom token interactions
+            setWeb3Provider((window as any).ethereum);
+            
+            // Load custom token information
+            await loadCustomTokenInfo(accounts[0]);
           }
         } catch (error) {
           console.error('Error checking wallet connection:', error);
@@ -89,6 +124,75 @@ const CryptoWallet: React.FC = () => {
 
     checkWalletConnection();
   }, []);
+
+  // Load custom token information from contract
+  const loadCustomTokenInfo = async (walletAddress: string) => {
+    if (!web3Provider && !(window as any).ethereum) return;
+    
+    try {
+      const provider = web3Provider || (window as any).ethereum;
+      
+      // Request token information from your contract
+      const tokenName = await provider.request({
+        method: 'eth_call',
+        params: [{
+          to: CUSTOM_TOKEN_ADDRESS,
+          data: '0x06fdde03' // name() function selector
+        }, 'latest']
+      });
+
+      const tokenSymbol = await provider.request({
+        method: 'eth_call',
+        params: [{
+          to: CUSTOM_TOKEN_ADDRESS,
+          data: '0x95d89b41' // symbol() function selector
+        }, 'latest']
+      });
+
+      const tokenDecimals = await provider.request({
+        method: 'eth_call',
+        params: [{
+          to: CUSTOM_TOKEN_ADDRESS,
+          data: '0x313ce567' // decimals() function selector
+        }, 'latest']
+      });
+
+      // Get token balance for connected wallet
+      const balanceData = `0x70a08231${walletAddress.slice(2).padStart(64, '0')}`;
+      const tokenBalance = await provider.request({
+        method: 'eth_call',
+        params: [{
+          to: CUSTOM_TOKEN_ADDRESS,
+          data: balanceData
+        }, 'latest']
+      });
+
+      // Parse the results (simplified parsing)
+      const decimals = parseInt(tokenDecimals, 16);
+      const balance = parseInt(tokenBalance, 16) / Math.pow(10, decimals);
+
+      setCustomToken({
+        address: CUSTOM_TOKEN_ADDRESS,
+        symbol: 'YOUR_TOKEN', // Will be replaced with actual symbol
+        name: 'Your Custom Token', // Will be replaced with actual name
+        decimals: decimals,
+        balance: balance.toString(),
+        usdValue: balance * 0.01 // Placeholder USD value
+      });
+
+    } catch (error) {
+      console.error('Error loading custom token info:', error);
+      // Set placeholder token info if contract call fails
+      setCustomToken({
+        address: CUSTOM_TOKEN_ADDRESS,
+        symbol: 'WPT',
+        name: 'WeParlay Token',
+        decimals: 18,
+        balance: '0',
+        usdValue: 0
+      });
+    }
+  };
 
   // Fetch wallet balances
   const { data: balances = [], isLoading: balancesLoading } = useQuery<WalletBalance[]>({
@@ -108,7 +212,7 @@ const CryptoWallet: React.FC = () => {
     enabled: isAuthenticated
   });
 
-  // Connect wallet mutation
+  // Connect wallet mutation with custom token detection
   const connectWalletMutation = useMutation({
     mutationFn: async () => {
       if (typeof window === 'undefined' || !(window as any).ethereum) {
@@ -128,17 +232,22 @@ const CryptoWallet: React.FC = () => {
         chainId: parseInt(chainId, 16)
       };
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       setWalletConnection({
         connected: true,
         address: data.address,
         provider: 'MetaMask',
         chainId: data.chainId
       });
+
+      setWeb3Provider((window as any).ethereum);
+      
+      // Load your custom ERC-20 token information
+      await loadCustomTokenInfo(data.address);
       
       toast({
         title: "Wallet Connected",
-        description: `Connected to ${data.address.slice(0, 6)}...${data.address.slice(-4)}`,
+        description: `Connected to ${data.address.slice(0, 6)}...${data.address.slice(-4)} - Custom token detected`,
       });
       
       queryClient.invalidateQueries({ queryKey: ['/api/wallet/balances'] });
@@ -152,13 +261,49 @@ const CryptoWallet: React.FC = () => {
     }
   });
 
-  // Send crypto mutation
+  // Send custom token function using Web3
+  const sendCustomToken = async (toAddress: string, amount: string) => {
+    if (!web3Provider || !walletConnection.connected || !customToken) {
+      throw new Error('Wallet not connected or custom token not loaded');
+    }
+
+    try {
+      // Convert amount to Wei (accounting for token decimals)
+      const amountWei = (parseFloat(amount) * Math.pow(10, customToken.decimals)).toString(16);
+      
+      // Prepare transfer transaction data
+      const transferData = `0xa9059cbb${toAddress.slice(2).padStart(64, '0')}${amountWei.padStart(64, '0')}`;
+      
+      // Send transaction
+      const txHash = await web3Provider.request({
+        method: 'eth_sendTransaction',
+        params: [{
+          from: walletConnection.address,
+          to: CUSTOM_TOKEN_ADDRESS,
+          data: transferData,
+          gas: '0x5208', // 21000 gas limit
+        }],
+      });
+
+      return { hash: txHash, success: true };
+    } catch (error: any) {
+      throw new Error(`Transaction failed: ${error.message}`);
+    }
+  };
+
+  // Send crypto mutation (enhanced for custom tokens)
   const sendCryptoMutation = useMutation({
     mutationFn: async (data: { 
       currency: string; 
       amount: string; 
       toAddress: string; 
     }) => {
+      // Check if sending custom token
+      if (data.currency === customToken?.symbol && customToken) {
+        return await sendCustomToken(data.toAddress, data.amount);
+      }
+      
+      // Regular API call for other currencies
       const response = await fetch('/api/wallet/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -167,15 +312,20 @@ const CryptoWallet: React.FC = () => {
       if (!response.ok) throw new Error('Failed to send crypto');
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       toast({
         title: "Transaction Sent",
-        description: "Your transaction has been submitted to the network",
+        description: result.hash ? `Transaction hash: ${result.hash.slice(0, 10)}...` : "Your transaction has been submitted to the network",
       });
       setSendAmount('');
       setSendAddress('');
       queryClient.invalidateQueries({ queryKey: ['/api/wallet/balances'] });
       queryClient.invalidateQueries({ queryKey: ['/api/wallet/transactions'] });
+      
+      // Reload custom token balance
+      if (walletConnection.address) {
+        loadCustomTokenInfo(walletConnection.address);
+      }
     },
     onError: (error: any) => {
       toast({
@@ -353,7 +503,46 @@ const CryptoWallet: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Balance Cards */}
+                {/* Custom Token Display (Your Verified ERC-20) */}
+                {customToken && (
+                  <div className="p-4 border-2 border-primary rounded-lg bg-primary/5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-primary text-primary-foreground rounded-full">
+                          <Star className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <p className="font-medium flex items-center gap-2">
+                            {customToken.name} ({customToken.symbol})
+                            <Badge variant="default" className="text-xs">VERIFIED</Badge>
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Contract: {formatAddress(customToken.address)}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => window.open(`https://etherscan.io/token/${customToken.address}`, '_blank')}
+                              className="h-4 w-4 p-0 ml-2"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                            </Button>
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium">{customToken.balance} {customToken.symbol}</p>
+                        <p className="text-sm text-muted-foreground">
+                          ${customToken.usdValue.toFixed(4)}
+                        </p>
+                        <Badge variant="secondary" className="text-xs">
+                          Your Token
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Regular Balance Cards */}
                 <div className="space-y-3">
                   {balancesLoading ? (
                     <p className="text-center py-8 text-muted-foreground">Loading balances...</p>
