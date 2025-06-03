@@ -57,7 +57,7 @@ interface CustomToken {
   usdValue: number;
 }
 
-// Your verified ERC-20 token contract
+// Your verified ERC-20 token contract - Pawn Coin ($PC)
 const CUSTOM_TOKEN_ADDRESS = "0x2Fe269292f74F0a98C5786088317B4f86313C211";
 
 // ERC-20 Token ABI (standard functions)
@@ -173,8 +173,8 @@ const CryptoWallet: React.FC = () => {
 
       setCustomToken({
         address: CUSTOM_TOKEN_ADDRESS,
-        symbol: 'YOUR_TOKEN', // Will be replaced with actual symbol
-        name: 'Your Custom Token', // Will be replaced with actual name
+        symbol: 'PC', // Pawn Coin symbol
+        name: 'Pawn Coin', // Your custom token name
         decimals: decimals,
         balance: balance.toString(),
         usdValue: balance * 0.01 // Placeholder USD value
@@ -182,11 +182,11 @@ const CryptoWallet: React.FC = () => {
 
     } catch (error) {
       console.error('Error loading custom token info:', error);
-      // Set placeholder token info if contract call fails
+      // Set Pawn Coin info if contract call fails
       setCustomToken({
         address: CUSTOM_TOKEN_ADDRESS,
-        symbol: 'WPT',
-        name: 'WeParlay Token',
+        symbol: 'PC',
+        name: 'Pawn Coin',
         decimals: 18,
         balance: '0',
         usdValue: 0
