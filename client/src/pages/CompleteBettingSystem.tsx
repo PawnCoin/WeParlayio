@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useBetSlip } from "@/contexts/BetSlipContext";
 import {
   TrendingUp, TrendingDown, DollarSign, Clock, CheckCircle, AlertCircle,
   Play, Target, Zap, Trophy, Calculator, BarChart3, Timer, Users,
@@ -91,6 +92,7 @@ const CompleteBettingSystem: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { betSlip: contextBetSlip, addToBetSlip: contextAddToBetSlip, clearBetSlip } = useBetSlip();
 
   const [activeTab, setActiveTab] = useState('events');
   const [selectedSport, setSelectedSport] = useState('all');
@@ -152,7 +154,7 @@ const CompleteBettingSystem: React.FC = () => {
     }
   });
 
-  // Add selection to bet slip
+  // Add selection to bet slip - using shared context
   const addToBetSlip = (event: BettingEvent, market: BettingMarket, option: BettingOption) => {
     if (!option.available) {
       toast({
@@ -163,6 +165,25 @@ const CompleteBettingSystem: React.FC = () => {
       return;
     }
 
+    // Add to shared bet slip context so it appears in all bet slip components
+    const bet = {
+      eventId: event.id,
+      gameTitle: `${event.homeTeam} vs ${event.awayTeam}`,
+      pick: option.name,
+      homeTeam: event.homeTeam,
+      awayTeam: event.awayTeam,
+      selection: option.name,
+      odds: option.odds,
+      betType: market.name,
+      point: option.line,
+      sport: event.sport,
+      amount: quickBetAmount,
+      potential: quickBetAmount * option.odds
+    };
+
+    contextAddToBetSlip(bet);
+
+    // Also update local state for this component's bet slip
     const selection: BetSelection = {
       eventId: event.id,
       marketId: market.id,
@@ -182,15 +203,12 @@ const CompleteBettingSystem: React.FC = () => {
 
       let newSelections;
       if (existingIndex >= 0) {
-        // Replace existing selection
         newSelections = [...prev.selections];
         newSelections[existingIndex] = selection;
       } else {
-        // Add new selection
         newSelections = [...prev.selections, selection];
       }
 
-      // Calculate total odds and potential payout
       const totalOdds = newSelections.reduce((acc, sel) => acc * sel.odds, 1);
       const totalStake = newSelections.reduce((acc, sel) => acc + sel.stake, 0);
       const potentialPayout = totalStake * totalOdds;
@@ -205,11 +223,6 @@ const CompleteBettingSystem: React.FC = () => {
     });
 
     setShowBetSlip(true);
-    
-    toast({
-      title: "Added to Bet Slip",
-      description: `${option.name} (${option.odds.toFixed(2)}) added`,
-    });
   };
 
   // Remove selection from bet slip
