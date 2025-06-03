@@ -5,6 +5,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -37,6 +38,9 @@ const HeadToHeadBetting: React.FC = () => {
     queryKey: ['/api/challenges'],
     enabled: isAuthenticated
   });
+
+  // Type-safe challenges array
+  const typedChallenges = (challenges as ChallengeProps[]) || [];
 
   // Fetch user balance
   const { data: userBalance } = useQuery({
@@ -278,7 +282,7 @@ const HeadToHeadBetting: React.FC = () => {
             <CardContent className="p-6">
               <h3 className="text-lg font-medium">Active Challenges</h3>
               <p className="text-3xl font-bold mt-2">
-                {challenges.filter(c => c.status === 'pending' || c.status === 'accepted').length}
+                {typedChallenges.filter((c: ChallengeProps) => c.status === 'pending' || c.status === 'accepted').length}
               </p>
               <Button variant="outline" size="sm" className="mt-4">
                 View All <ArrowRight className="ml-1 h-3 w-3" />
