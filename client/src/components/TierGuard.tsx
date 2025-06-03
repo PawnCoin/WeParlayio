@@ -1,8 +1,11 @@
 import { useEffect } from 'react';
 import { useLocation } from 'wouter';
+import { useMutation } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Crown, Diamond, Star, Zap } from 'lucide-react';
+import { Crown, Diamond, Star, Zap, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 interface TierGuardProps {
@@ -47,7 +50,8 @@ const tierFeatures = {
 
 export default function TierGuard({ children, requiredTier, userTier = 'none', feature }: TierGuardProps) {
   const [, setLocation] = useLocation();
-  const { isAdmin } = useAuth(); // Access isAdmin from useAuth hook
+  const { isAdmin } = useAuth();
+  const { toast } = useToast();
 
   const userTierLevel = tierHierarchy[userTier as keyof typeof tierHierarchy] || 0;
   const requiredTierLevel = tierHierarchy[requiredTier];
@@ -63,8 +67,31 @@ export default function TierGuard({ children, requiredTier, userTier = 'none', f
 
   const TierIcon = tierIcons[requiredTier];
 
+  const upgradeMutation = useMutation({
+    mutationFn: async (tierId: string) => {
+      const response = await apiRequest('POST', '/api/stripe/create-tier-subscription', { tierId });
+      return response.json();
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "Upgrade Initiated",
+        description: `Starting upgrade to ${data.tierName} tier. Redirecting to payment...`,
+      });
+      
+      // Redirect to Stripe Checkout or handle payment flow
+      window.location.href = `/payment-checkout?subscription=${data.subscriptionId}&client_secret=${data.clientSecret}`;
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Upgrade Failed",
+        description: error.message || "Failed to initiate tier upgrade. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleUpgrade = () => {
-    setLocation('/upgrade-tier');
+    upgradeMutation.mutate(requiredTier);
   };
 
   return (
@@ -104,8 +131,19 @@ export default function TierGuard({ children, requiredTier, userTier = 'none', f
           </div>
 
           <div className="space-y-2">
-            <Button onClick={handleUpgrade} className="w-full">
-              Upgrade to {requiredTier.charAt(0).toUpperCase() + requiredTier.slice(1)}
+            <Button 
+              onClick={handleUpgrade} 
+              disabled={upgradeMutation.isPending}
+              className="w-full"
+            >
+              {upgradeMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                `Upgrade to ${requiredTier.charAt(0).toUpperCase() + requiredTier.slice(1)}`
+              )}
             </Button>
             <Button variant="outline" onClick={() => setLocation('/')} className="w-full">
               Return to Home

@@ -100,9 +100,9 @@ export default function UpgradeTier() {
   const upgradeMutation = useMutation({
     mutationFn: async (tierId: string) => {
       const response = await apiRequest('POST', '/api/stripe/create-tier-subscription', { tierId });
-      return response;
+      return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       toast({
         title: "Upgrade Initiated",
         description: `Starting upgrade to ${data.tierName} tier. Redirecting to payment...`,

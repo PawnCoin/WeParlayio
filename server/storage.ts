@@ -48,6 +48,7 @@ export interface IStorage {
   getUpcomingEvents(limit?: number): Promise<Event[]>;
   updateUserPreferences(userId: string, preferences: any): Promise<User>;
   updateUserGamertag(userId: string, gamertag: string): Promise<User>;
+  updateUserStripeCustomerId(userId: string, stripeCustomerId: string): Promise<User>;
   getUserByGamertag(gamertag: string): Promise<User | undefined>;
   createSupportTicket(ticket: InsertSupportTicket): Promise<SupportTicket>;
   getSupportTicketByNumber(ticketNumber: string): Promise<SupportTicket | undefined>;
@@ -238,6 +239,17 @@ export class MemStorage implements IStorage {
       createdAt: new Date()
     } as SupportTicketMessage;
     return newMessage;
+  }
+
+  async updateUserStripeCustomerId(userId: string, stripeCustomerId: string): Promise<User> {
+    const user = this.users.get(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    
+    const updatedUser = { ...user, stripeCustomerId };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
   }
 }
 
