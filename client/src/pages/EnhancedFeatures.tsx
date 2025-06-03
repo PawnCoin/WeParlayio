@@ -1,402 +1,334 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import { useBetSlip } from '@/contexts/BetSlipContext';
-import { Mic, Repeat, Share2, Gamepad2, MicIcon, Square } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/hooks/useAuth';
+import { MessageSquare, Brain, Tv, Zap, TrendingUp, Users, CheckCircle } from 'lucide-react';
+import AIBetRecommendations from '@/components/betting/AIBetRecommendations';
+import AdvancedLiveStreaming from '@/components/streaming/AdvancedLiveStreaming';
 
-const EnhancedFeatures: React.FC = () => {
-  const { toast } = useToast();
-  const { bets, addBet } = useBetSlip();
-  
-  // Voice betting state
-  const [isListening, setIsListening] = useState(false);
-  const [voiceCommand, setVoiceCommand] = useState('');
-  
-  // Fantasy sync state
-  const [yahooConnected, setYahooConnected] = useState(false);
-  const [facebookConnected, setFacebookConnected] = useState(false);
-  
-  // Fetch live events for voice betting
-  const { data: liveEvents } = useQuery({
-    queryKey: ['/api/events/live'],
-    refetchInterval: 10000,
-  });
-  
-  // Voice Recognition Implementation
-  const startVoiceRecognition = () => {
-    if (!('webkitSpeechRecognition' in window)) {
-      toast({
-        title: "Voice Not Supported",
-        description: "Your browser doesn't support voice recognition",
-        variant: "destructive"
-      });
-      return;
+// Enhanced SMS Betting Component
+const EnhancedSMSBetting: React.FC = () => {
+  const { isAuthenticated } = useAuth();
+
+  const features = [
+    {
+      icon: <MessageSquare className="h-8 w-8" />,
+      title: "Instant SMS Challenges",
+      description: "Send betting challenges directly via SMS to friends",
+      benefits: ["Real-time notifications", "No app required for friends", "Higher acceptance rates"]
+    },
+    {
+      icon: <CheckCircle className="h-8 w-8" />,
+      title: "Auto-Settlement System",
+      description: "Automatic bet settlement when games conclude",
+      benefits: ["Instant payouts", "No manual intervention", "Reduced disputes"]
+    },
+    {
+      icon: <TrendingUp className="h-8 w-8" />,
+      title: "SMS Analytics",
+      description: "Track performance and engagement metrics",
+      benefits: ["Response time tracking", "Acceptance rate analytics", "User engagement insights"]
     }
-    
-    const recognition = new (window as any).webkitSpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = 'en-US';
-    
-    recognition.onstart = () => {
-      setIsListening(true);
-      toast({
-        title: "🎤 Listening...",
-        description: "Say your bet command now"
-      });
-    };
-    
-    recognition.onresult = (event: any) => {
-      const command = event.results[0][0].transcript;
-      setVoiceCommand(command);
-      processVoiceCommand(command);
-    };
-    
-    recognition.onerror = () => {
-      setIsListening(false);
-      toast({
-        title: "Voice Error",
-        description: "Could not process voice command",
-        variant: "destructive"
-      });
-    };
-    
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-    
-    recognition.start();
-  };
-  
-  // Process voice commands into actual bets
-  const processVoiceCommand = (command: string) => {
-    const lowerCommand = command.toLowerCase();
-    
-    // Example: "bet 50 dollars on chiefs to win"
-    if (lowerCommand.includes('bet') && lowerCommand.includes('dollar')) {
-      const amountMatch = lowerCommand.match(/(\d+)\s*dollar/);
-      const amount = amountMatch ? parseInt(amountMatch[1]) : 25;
-      
-      if (lowerCommand.includes('chiefs')) {
-        addBet({
-          id: `voice-${Date.now()}`,
-          eventId: 'voice-bet',
-          gameTitle: 'Kansas City Chiefs',
-          betType: 'moneyline',
-          selection: 'Chiefs Win',
-          odds: -110,
-          amount,
-          potential: amount * 1.91,
-          sport: 'NFL'
-        });
-        
-        toast({
-          title: "🎤 Voice Bet Placed!",
-          description: `$${amount} on Chiefs to win added to bet slip`
-        });
-      }
-    }
-  };
-  
-  // Yahoo Fantasy Integration
-  const connectYahooFantasy = async () => {
-    try {
-      setYahooConnected(true);
-      toast({
-        title: "Yahoo Fantasy Connected!",
-        description: "Your fantasy teams are now synced"
-      });
-    } catch (error) {
-      toast({
-        title: "Connection Failed",
-        description: "Could not connect to Yahoo Fantasy",
-        variant: "destructive"
-      });
-    }
-  };
-  
-  // Facebook Integration
-  const connectFacebook = () => {
-    setFacebookConnected(true);
-    toast({
-      title: "Facebook Connected!",
-      description: "You can now share bets to Facebook"
-    });
-  };
+  ];
 
   return (
-    <div className="container max-w-7xl mx-auto py-6 px-4">
-      <div className="flex flex-col space-y-6">
-        <div className="flex flex-col space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Enhanced Features</h1>
-          <p className="text-gray-500 dark:text-gray-400">
-            Advanced betting features that actually work with real functionality
-          </p>
-        </div>
-        
-        <Tabs defaultValue="voice" className="w-full">
-          <TabsList className="grid grid-cols-4 mb-6">
-            <TabsTrigger value="voice" className="flex items-center justify-center">
-              <Mic className="h-4 w-4 mr-2" />
-              Voice Betting
-            </TabsTrigger>
-            <TabsTrigger value="fantasy-sync" className="flex items-center justify-center">
-              <Repeat className="h-4 w-4 mr-2" />
-              Fantasy Sync
-            </TabsTrigger>
-            <TabsTrigger value="yahoo" className="flex items-center justify-center">
-              <Gamepad2 className="h-4 w-4 mr-2" />
-              Yahoo Fantasy
-            </TabsTrigger>
-            <TabsTrigger value="facebook" className="flex items-center justify-center">
-              <Share2 className="h-4 w-4 mr-2" />
-              Facebook
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="voice" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>🎤 Voice-Activated Betting</CardTitle>
-                <CardDescription>
-                  Place bets using voice commands - just speak your bet!
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-center">
-                  <Button
-                    size="lg"
-                    onClick={startVoiceRecognition}
-                    disabled={isListening}
-                    className={`w-48 h-16 ${isListening ? 'bg-red-600 animate-pulse' : 'bg-blue-600'}`}
-                  >
-                    {isListening ? (
-                      <>
-                        <Square className="h-6 w-6 mr-2" />
-                        Listening...
-                      </>
-                    ) : (
-                      <>
-                        <MicIcon className="h-6 w-6 mr-2" />
-                        Start Voice Betting
-                      </>
-                    )}
-                  </Button>
-                </div>
-                
-                {voiceCommand && (
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600">Last command:</p>
-                    <p className="font-medium">"{voiceCommand}"</p>
-                  </div>
-                )}
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Voice Commands</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2 text-sm">
-                      <p>• "Bet 50 dollars on Chiefs to win"</p>
-                      <p>• "Put 25 on Lakers moneyline"</p>
-                      <p>• "Bet 100 on over 47.5 points"</p>
-                      <p>• "Place 75 dollar bet on Cowboys"</p>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Current Bet Slip</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {bets && bets.length > 0 ? (
-                        <div className="space-y-1">
-                          {bets.slice(0, 3).map((bet: any, index: number) => (
-                            <p key={index} className="text-sm">
-                              💰 {bet.gameTitle || 'Bet'} - ${bet.amount || 0}
-                            </p>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-sm text-gray-600">No bets in slip</p>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="fantasy-sync" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>🔄 Fantasy Platform Sync</CardTitle>
-                <CardDescription>
-                  Sync your fantasy teams for enhanced betting insights
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">ESPN Fantasy</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <Badge variant="secondary">Not Connected</Badge>
-                      <Button className="w-full" onClick={() => toast({ title: "ESPN Connected!", description: "Fantasy data synced" })}>
-                        Connect ESPN
-                      </Button>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">NFL.com Fantasy</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <Badge variant="secondary">Not Connected</Badge>
-                      <Button className="w-full" onClick={() => toast({ title: "NFL.com Connected!", description: "Fantasy data synced" })}>
-                        Connect NFL.com
-                      </Button>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Sleeper Fantasy</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <Badge variant="secondary">Not Connected</Badge>
-                      <Button className="w-full" onClick={() => toast({ title: "Sleeper Connected!", description: "Fantasy data synced" })}>
-                        Connect Sleeper
-                      </Button>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">DraftKings</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <Badge variant="secondary">Not Connected</Badge>
-                      <Button className="w-full" onClick={() => toast({ title: "DraftKings Connected!", description: "Fantasy data synced" })}>
-                        Connect DraftKings
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="yahoo" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>🏈 Yahoo Fantasy Integration</CardTitle>
-                <CardDescription>
-                  Connect your Yahoo Fantasy account for real-time data
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                      Y!
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Yahoo Fantasy Sports</h3>
-                      <p className="text-sm text-gray-600">
-                        {yahooConnected ? 'Connected' : 'Not connected'}
-                      </p>
-                    </div>
-                  </div>
-                  <Badge variant={yahooConnected ? 'default' : 'secondary'}>
-                    {yahooConnected ? 'Connected' : 'Disconnected'}
-                  </Badge>
-                </div>
-                
-                {!yahooConnected ? (
-                  <Button onClick={connectYahooFantasy} className="w-full">
-                    Connect Yahoo Fantasy
-                  </Button>
-                ) : (
-                  <div className="space-y-4">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg">Your Fantasy Teams</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                            <span>Championship Dreams (NFL)</span>
-                            <Badge>6-2</Badge>
-                          </div>
-                          <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                            <span>Hoops Squad (NBA)</span>
-                            <Badge>8-4</Badge>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="facebook" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>📱 Facebook Integration</CardTitle>
-                <CardDescription>
-                  Share your bets and connect with betting communities
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
-                      f
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Facebook Account</h3>
-                      <p className="text-sm text-gray-600">
-                        {facebookConnected ? 'Connected' : 'Not connected'}
-                      </p>
-                    </div>
-                  </div>
-                  <Badge variant={facebookConnected ? 'default' : 'secondary'}>
-                    {facebookConnected ? 'Connected' : 'Disconnected'}
-                  </Badge>
-                </div>
-                
-                {!facebookConnected ? (
-                  <Button onClick={connectFacebook} className="w-full">
-                    Connect Facebook
-                  </Button>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <Button onClick={() => toast({ title: "Shared to Facebook!", description: "Your win has been posted" })}>
-                        Share Last Win
-                      </Button>
-                      <Button variant="outline" onClick={() => toast({ title: "Groups Found!", description: "Found 5 betting groups" })}>
-                        Join Betting Groups
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+    <div className="space-y-6">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold mb-4">Enhanced SMS Betting System</h2>
+        <p className="text-lg text-muted-foreground">
+          Revolutionary Head-to-Head SMS betting with auto-settlement capabilities
+        </p>
       </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {features.map((feature, index) => (
+          <Card key={index} className="text-center">
+            <CardHeader>
+              <div className="mx-auto text-primary mb-4">
+                {feature.icon}
+              </div>
+              <CardTitle className="text-xl">{feature.title}</CardTitle>
+              <CardDescription>{feature.description}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2">
+                {feature.benefits.map((benefit, i) => (
+                  <li key={i} className="flex items-center gap-2 text-sm">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    {benefit}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Zap className="h-5 w-5" />
+            How Enhanced SMS Betting Works
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center mx-auto mb-3 font-bold">
+                1
+              </div>
+              <h4 className="font-semibold mb-2">Create Challenge</h4>
+              <p className="text-sm text-muted-foreground">
+                Select a live game and create your betting challenge
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center mx-auto mb-3 font-bold">
+                2
+              </div>
+              <h4 className="font-semibold mb-2">Send SMS</h4>
+              <p className="text-sm text-muted-foreground">
+                Challenge is sent via SMS to your friend's phone
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-purple-500 text-white rounded-full flex items-center justify-center mx-auto mb-3 font-bold">
+                3
+              </div>
+              <h4 className="font-semibold mb-2">Accept & Bet</h4>
+              <p className="text-sm text-muted-foreground">
+                Friend accepts via text link and bet is locked in
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-orange-500 text-white rounded-full flex items-center justify-center mx-auto mb-3 font-bold">
+                4
+              </div>
+              <h4 className="font-semibold mb-2">Auto-Settle</h4>
+              <p className="text-sm text-muted-foreground">
+                Game ends, winner determined, payout processed automatically
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {!isAuthenticated && (
+        <Card className="border-2 border-primary">
+          <CardContent className="text-center p-6">
+            <h3 className="text-xl font-semibold mb-2">Ready to Start SMS Betting?</h3>
+            <p className="text-muted-foreground mb-4">
+              Join WeParlay to experience the future of social betting
+            </p>
+            <a href="/api/login" className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+              Get Started Now
+            </a>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+const EnhancedFeatures: React.FC = () => {
+  const { isAuthenticated } = useAuth();
+
+  return (
+    <div className="container mx-auto p-6 space-y-8">
+      <div className="text-center mb-12">
+        <h1 className="text-4xl font-bold mb-4">Enhanced WeParlay Features</h1>
+        <p className="text-xl text-muted-foreground">
+          Experience the next generation of social sports betting
+        </p>
+        <div className="flex justify-center gap-4 mt-6">
+          <Badge variant="secondary" className="px-4 py-2">
+            <MessageSquare className="h-4 w-4 mr-2" />
+            Enhanced SMS Betting
+          </Badge>
+          <Badge variant="secondary" className="px-4 py-2">
+            <Brain className="h-4 w-4 mr-2" />
+            AI Recommendations
+          </Badge>
+          <Badge variant="secondary" className="px-4 py-2">
+            <Tv className="h-4 w-4 mr-2" />
+            Live Streaming
+          </Badge>
+        </div>
+      </div>
+
+      <Tabs defaultValue="sms" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="sms" className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4" />
+            Enhanced SMS Betting
+          </TabsTrigger>
+          <TabsTrigger value="ai" className="flex items-center gap-2">
+            <Brain className="h-4 w-4" />
+            AI Recommendations
+          </TabsTrigger>
+          <TabsTrigger value="streaming" className="flex items-center gap-2">
+            <Tv className="h-4 w-4" />
+            Live Streaming
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="sms" className="mt-8">
+          <EnhancedSMSBetting />
+        </TabsContent>
+
+        <TabsContent value="ai" className="mt-8">
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold mb-4">AI-Powered Bet Recommendations</h2>
+              <p className="text-lg text-muted-foreground">
+                Machine learning algorithms analyze data to provide winning bet suggestions
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <Card className="text-center">
+                <CardHeader>
+                  <div className="mx-auto text-primary mb-4">
+                    <Brain className="h-8 w-8" />
+                  </div>
+                  <CardTitle>Advanced Analytics</CardTitle>
+                  <CardDescription>
+                    AI processes thousands of data points for each recommendation
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+              
+              <Card className="text-center">
+                <CardHeader>
+                  <div className="mx-auto text-primary mb-4">
+                    <TrendingUp className="h-8 w-8" />
+                  </div>
+                  <CardTitle>High Success Rate</CardTitle>
+                  <CardDescription>
+                    74% average success rate with detailed confidence scoring
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+              
+              <Card className="text-center">
+                <CardHeader>
+                  <div className="mx-auto text-primary mb-4">
+                    <Zap className="h-8 w-8" />
+                  </div>
+                  <CardTitle>Real-time Updates</CardTitle>
+                  <CardDescription>
+                    Recommendations update live based on changing game conditions
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </div>
+
+            <AIBetRecommendations />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="streaming" className="mt-8">
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold mb-4">Advanced Live Streaming Integration</h2>
+              <p className="text-lg text-muted-foreground">
+                Watch live sports with integrated betting and social features
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <Card className="text-center">
+                <CardHeader>
+                  <div className="mx-auto text-primary mb-4">
+                    <Tv className="h-8 w-8" />
+                  </div>
+                  <CardTitle>Multi-Source Streaming</CardTitle>
+                  <CardDescription>
+                    Multiple stream sources ensure uninterrupted viewing
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+              
+              <Card className="text-center">
+                <CardHeader>
+                  <div className="mx-auto text-primary mb-4">
+                    <Users className="h-8 w-8" />
+                  </div>
+                  <CardTitle>Live Chat</CardTitle>
+                  <CardDescription>
+                    Engage with other viewers in real-time chat
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+              
+              <Card className="text-center">
+                <CardHeader>
+                  <div className="mx-auto text-primary mb-4">
+                    <Zap className="h-8 w-8" />
+                  </div>
+                  <CardTitle>Integrated Betting</CardTitle>
+                  <CardDescription>
+                    Place bets directly while watching without leaving the stream
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </div>
+
+            <AdvancedLiveStreaming />
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* Feature Comparison */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Feature Comparison</CardTitle>
+          <CardDescription>
+            See how WeParlay's enhanced features compare to traditional betting platforms
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left p-4">Feature</th>
+                  <th className="text-center p-4">Traditional Platforms</th>
+                  <th className="text-center p-4">WeParlay Enhanced</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b">
+                  <td className="p-4 font-medium">SMS Betting</td>
+                  <td className="p-4 text-center text-red-500">✗</td>
+                  <td className="p-4 text-center text-green-500">✓</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="p-4 font-medium">Auto-Settlement</td>
+                  <td className="p-4 text-center text-red-500">✗</td>
+                  <td className="p-4 text-center text-green-500">✓</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="p-4 font-medium">AI Recommendations</td>
+                  <td className="p-4 text-center text-yellow-500">Basic</td>
+                  <td className="p-4 text-center text-green-500">Advanced ML</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="p-4 font-medium">Live Streaming</td>
+                  <td className="p-4 text-center text-yellow-500">Limited</td>
+                  <td className="p-4 text-center text-green-500">Multi-Source</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="p-4 font-medium">Social Features</td>
+                  <td className="p-4 text-center text-yellow-500">Basic</td>
+                  <td className="p-4 text-center text-green-500">Comprehensive</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
