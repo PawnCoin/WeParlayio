@@ -384,22 +384,22 @@ const HeadToHeadBetting: React.FC = () => {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-4 rounded-lg text-center border border-blue-200 dark:border-blue-700">
-                <div className="text-2xl font-bold text-blue-600">23</div>
+                <div className="text-2xl font-bold text-blue-600">{smsStats?.totalSent || '0'}</div>
                 <div className="text-sm text-blue-700 dark:text-blue-400 font-medium">SMS Challenges</div>
                 <div className="text-xs text-blue-600 dark:text-blue-500 mt-1">+12 today</div>
               </div>
               <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-4 rounded-lg text-center border border-green-200 dark:border-green-700">
-                <div className="text-2xl font-bold text-green-600">78%</div>
+                <div className="text-2xl font-bold text-green-600">{smsStats?.acceptanceRate || '0'}%</div>
                 <div className="text-sm text-green-700 dark:text-green-400 font-medium">Accept Rate</div>
                 <div className="text-xs text-green-600 dark:text-green-500 mt-1">+5% vs avg</div>
               </div>
               <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 p-4 rounded-lg text-center border border-purple-200 dark:border-purple-700">
-                <div className="text-2xl font-bold text-purple-600">18</div>
+                <div className="text-2xl font-bold text-purple-600">{smsStats?.autoSettled || '0'}</div>
                 <div className="text-sm text-purple-700 dark:text-purple-400 font-medium">Auto-Settled</div>
                 <div className="text-xs text-purple-600 dark:text-purple-500 mt-1">94% success</div>
               </div>
               <div className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 p-4 rounded-lg text-center border border-orange-200 dark:border-orange-700">
-                <div className="text-2xl font-bold text-orange-600">2.3m</div>
+                <div className="text-2xl font-bold text-orange-600">{smsStats?.avgResponseTime || '0'}m</div>
                 <div className="text-sm text-orange-700 dark:text-orange-400 font-medium">Avg Response</div>
                 <div className="text-xs text-orange-600 dark:text-orange-500 mt-1">Real-time</div>
               </div>
