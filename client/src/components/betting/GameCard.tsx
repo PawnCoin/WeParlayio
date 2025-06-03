@@ -37,21 +37,23 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
   const [selectedBet, setSelectedBet] = useState<string | null>(null);
   const { addBet } = useBetting();
 
-  const formatOdds = (odds: number): string => {
+  const formatOdds = (odds: number | undefined): string => {
+    if (!odds || odds === undefined || odds === null) return '+100';
     if (odds > 0) return `+${odds}`;
     return odds.toString();
   };
 
   const handleBetSelect = (betType: string, team: string, odds: number) => {
     const teamName = team || 'unknown';
-    const betId = `${game.id}-${betType}-${teamName.toLowerCase()}`;
+    const safeTeamName = typeof teamName === 'string' ? teamName : 'unknown';
+    const betId = `${game.id}-${betType}-${safeTeamName.toLowerCase()}`;
 
     const bet = {
       id: betId,
       gameId: game.id,
       betType,
-      team,
-      odds,
+      team: safeTeamName,
+      odds: odds || 0,
       sport: game.sportName || 'Unknown Sport',
     };
     addBet(bet);
@@ -106,7 +108,7 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
             <div className="text-right">
               <div
                 className="bg-primary/10 hover:bg-primary/20 px-3 py-2 rounded-md cursor-pointer transition-colors"
-                onClick={() => handleBetSelect('moneyline', game.awayTeam.name, game.odds?.away)}
+                onClick={() => handleBetSelect('moneyline', game.awayTeam?.name || 'Away Team', game.odds?.away)}
               >
                 <span className="font-medium text-primary">{formatOdds(game.odds?.away)}</span>
               </div>
@@ -134,7 +136,7 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
             <div className="text-right">
               <div
                 className="bg-primary/10 hover:bg-primary/20 px-3 py-2 rounded-md cursor-pointer transition-colors"
-                onClick={() => handleBetSelect('moneyline', game.homeTeam.name, game.odds?.home)}
+                onClick={() => handleBetSelect('moneyline', game.homeTeam?.name || 'Home Team', game.odds?.home)}
               >
                 <span className="font-medium text-primary">{formatOdds(game.odds?.home)}</span>
               </div>
