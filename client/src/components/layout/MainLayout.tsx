@@ -215,13 +215,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem asChild>
-                        <Link href="/wallet-management-enhanced" className="flex items-center w-full">
+                        <Link href="/wallet" className="flex items-center w-full">
                           <Wallet className="mr-2 h-4 w-4" />
                           Manage Wallets
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link href="/wallet-management-enhanced?tab=deposit-withdraw" className="flex items-center w-full">
+                        <Link href="/user-profile-banking" className="flex items-center w-full">
                           <Coins className="mr-2 h-4 w-4" />
                           Deposit/Withdraw
                         </Link>
@@ -234,7 +234,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link href="/wallet-management-enhanced?tab=transactions" className="flex items-center w-full">
+                        <Link href="/my-bets" className="flex items-center w-full">
                           <CreditCard className="mr-2 h-4 w-4" />
                           Transaction History
                         </Link>
@@ -281,7 +281,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                             <Link href="/security-settings">Security</Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
-                            <Link href="/wallet-management-enhanced">Wallet Management</Link>
+                            <Link href="/wallet">Wallet Management</Link>
                           </DropdownMenuItem>
                         </>
                       )}

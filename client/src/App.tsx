@@ -70,7 +70,7 @@ import LiveBettingEnhanced from "@/pages/LiveBettingEnhanced";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ThemeColorManager from "@/pages/ThemeColorManager";
 import SignUpEnhanced from "@/pages/SignUpEnhanced";
-import WalletManagementEnhanced from "@/pages/WalletManagementEnhanced";
+
 import BettingChallenges from './components/betting/BettingChallenges';
 import SiteNavigation from './pages/SiteNavigation';
 import PageStatusChecker from './pages/PageStatusChecker';
@@ -159,7 +159,6 @@ function Router() {
 
       {/* Wallet & Banking */}
       <Route path="/wallet" component={WalletManagement} />
-      <Route path="/wallet-management-enhanced" component={WalletManagementEnhanced} />
       <Route path="/wallet-test" component={WalletTest} />
       <Route path="/user-profile-banking" component={UserProfileBanking} />
       <Route path="/user-profile" component={UserProfilePage} />
