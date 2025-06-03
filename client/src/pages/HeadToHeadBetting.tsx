@@ -250,7 +250,7 @@ const HeadToHeadBetting: React.FC = () => {
             Challenge friends directly in real-money betting contests with enhanced SMS features
           </p>
           
-          {/* Enhanced Features Indicators */}
+          {/* Enhanced SMS Features Indicators */}
           <div className="flex flex-wrap gap-2 mt-3">
             <Badge variant="outline" className="border-green-500 text-green-700">
               <CheckCircle className="h-3 w-3 mr-1" />
@@ -258,11 +258,19 @@ const HeadToHeadBetting: React.FC = () => {
             </Badge>
             <Badge variant="outline" className="border-blue-500 text-blue-700">
               <MessageSquare className="h-3 w-3 mr-1" />
-              SMS Alerts
+              SMS Challenges
             </Badge>
             <Badge variant="outline" className="border-purple-500 text-purple-700">
               <Zap className="h-3 w-3 mr-1" />
-              Real-time Updates
+              Instant Notifications
+            </Badge>
+            <Badge variant="outline" className="border-orange-500 text-orange-700">
+              <Smartphone className="h-3 w-3 mr-1" />
+              Mobile First
+            </Badge>
+            <Badge variant="outline" className="border-pink-500 text-pink-700">
+              <TrendingUp className="h-3 w-3 mr-1" />
+              Smart Analytics
             </Badge>
           </div>
         </div>
@@ -392,9 +400,9 @@ const HeadToHeadBetting: React.FC = () => {
       {/* Currency Options Notice */}
       <Alert variant="default" className="bg-blue-50 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200 border-blue-200 dark:border-blue-800">
         <AlertTriangle className="h-4 w-4" />
-        <AlertTitle>Enhanced Features Active</AlertTitle>
+        <AlertTitle>🚀 SMS Betting Revolution Active</AlertTitle>
         <AlertDescription>
-          Head-to-head challenges now include auto-settlement, SMS notifications, and real-time updates. Choose between real money and WeParlay Cash when creating challenges.
+          Revolutionary SMS betting system with instant challenges, auto-settlement, smart analytics, and mobile-first design. Send betting challenges to any phone number with real-time tracking and automated payouts.
         </AlertDescription>
       </Alert>
       
