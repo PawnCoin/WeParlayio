@@ -47,7 +47,7 @@ const MemoizedOddsItem = memo<{ item: OddsItem }>(({ item }) => {
 
 MemoizedOddsItem.displayName = 'MemoizedOddsItem';
 
-const OddsTicker: React.FC = memo(() => {
+const OddsTicker = memo(() => {
   const [isPaused, setIsPaused] = useState(false);
   const { isConnected } = useWebSocket();
 
@@ -199,7 +199,7 @@ const OddsTicker: React.FC = memo(() => {
         {/* Pause/Play control */}
         <div className="flex items-center absolute top-0 right-0 z-41 bg-background dark:bg-background px-2 h-full">
           <button 
-            onClick={togglePause}
+            onClick={() => setIsPaused(!isPaused)}
             className="text-white p-1 hover:bg-gray-700 rounded transition-colors"
             aria-label={isPaused ? "Play ticker" : "Pause ticker"}
           >
@@ -286,6 +286,8 @@ const OddsTicker: React.FC = memo(() => {
       `}</style>
     </footer>
   );
-};
+});
+
+OddsTicker.displayName = 'OddsTicker';
 
 export default OddsTicker;
