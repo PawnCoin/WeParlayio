@@ -53,13 +53,23 @@ export default function CryptoCheckout() {
   const loadSupportedCryptocurrencies = async () => {
     try {
       const response = await apiRequest('GET', '/api/crypto/supported');
-      setSupportedCryptos(response.cryptocurrencies);
       
-      // Auto-select Pawn Coin if available
-      const pawnCoin = response.cryptocurrencies.find((c: CryptoOption) => c.symbol === '$Pc');
-      if (pawnCoin) {
-        setSelectedCrypto(pawnCoin);
-        setAmount((tierPrice / pawnCoin.currentPrice).toFixed(2));
+      if (response && response.cryptocurrencies && Array.isArray(response.cryptocurrencies)) {
+        setSupportedCryptos(response.cryptocurrencies);
+        
+        // Auto-select Pawn Coin if available
+        const pawnCoin = response.cryptocurrencies.find((c: CryptoOption) => c.symbol === '$Pc');
+        if (pawnCoin && pawnCoin.currentPrice > 0) {
+          setSelectedCrypto(pawnCoin);
+          setAmount((tierPrice / pawnCoin.currentPrice).toFixed(2));
+        }
+      } else {
+        console.error('Invalid response format:', response);
+        toast({
+          title: "Error",
+          description: "Invalid cryptocurrency data format received",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error('Error loading cryptocurrencies:', error);
