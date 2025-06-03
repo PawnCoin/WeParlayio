@@ -203,25 +203,47 @@ export default function CryptoCheckout() {
       return <img src={pcLogoPath} alt="Pawn Coin" className="w-6 h-6 rounded-full object-cover" />;
     }
     
-    const icons: { [key: string]: string } = {
-      'BTC': '₿',
-      'ETH': 'Ξ',
-      'USDT': '₮',
-      'BNB': 'BNB',
-      'SOL': 'SOL',
-      'XRP': 'XRP',
-      'ADA': 'ADA',
-      'DOGE': 'Ð',
-      'MATIC': 'MATIC',
-      'DOT': '●',
-      'LINK': 'LINK',
-      'UNI': '🦄',
-      'LTC': 'Ł',
-      'ATOM': 'ATOM'
+    // Real cryptocurrency logos from CoinGecko CDN
+    const cryptoLogos: { [key: string]: string } = {
+      'BTC': 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png',
+      'ETH': 'https://assets.coingecko.com/coins/images/279/large/ethereum.png',
+      'USDT': 'https://assets.coingecko.com/coins/images/325/large/Tether.png',
+      'BNB': 'https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png',
+      'SOL': 'https://assets.coingecko.com/coins/images/4128/large/solana.png',
+      'XRP': 'https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png',
+      'USDC': 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png',
+      'ADA': 'https://assets.coingecko.com/coins/images/975/large/cardano.png',
+      'AVAX': 'https://assets.coingecko.com/coins/images/12559/large/Avalanche_Circle_RedWhite_Trans.png',
+      'DOGE': 'https://assets.coingecko.com/coins/images/5/large/dogecoin.png',
+      'MATIC': 'https://assets.coingecko.com/coins/images/4713/large/matic-token-icon.png',
+      'DOT': 'https://assets.coingecko.com/coins/images/12171/large/polkadot.png',
+      'TRX': 'https://assets.coingecko.com/coins/images/1094/large/tron-logo.png',
+      'LINK': 'https://assets.coingecko.com/coins/images/877/large/chainlink-new-logo.png',
+      'UNI': 'https://assets.coingecko.com/coins/images/12504/large/uni.jpg',
+      'LTC': 'https://assets.coingecko.com/coins/images/2/large/litecoin.png',
+      'ATOM': 'https://assets.coingecko.com/coins/images/1481/large/cosmos_hub.png',
+      'XLM': 'https://assets.coingecko.com/coins/images/100/large/Stellar_symbol_black_RGB.png',
+      'BCH': 'https://assets.coingecko.com/coins/images/780/large/bitcoin-cash-circle.png',
+      'VET': 'https://assets.coingecko.com/coins/images/1077/large/vechain.png'
     };
     
-    const iconText = icons[symbol] || symbol;
-    return <span className="w-6 h-6 flex items-center justify-center text-sm font-bold">{iconText}</span>;
+    const logoUrl = cryptoLogos[symbol];
+    if (logoUrl) {
+      return (
+        <img 
+          src={logoUrl} 
+          alt={symbol} 
+          className="w-6 h-6 rounded-full object-cover"
+          onError={(e) => {
+            // Fallback to text if image fails to load
+            e.currentTarget.style.display = 'none';
+            e.currentTarget.nextElementSibling?.classList.remove('hidden');
+          }}
+        />
+      );
+    }
+    
+    return <span className="w-6 h-6 flex items-center justify-center text-sm font-bold bg-gray-600 rounded-full text-white">{symbol.slice(0, 2)}</span>;
   };
 
   const getTypeColor = (type: string) => {
