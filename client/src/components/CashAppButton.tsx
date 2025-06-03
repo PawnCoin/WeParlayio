@@ -128,7 +128,7 @@ export default function CashAppButton({
             Cash App Payment
           </CardTitle>
           <CardDescription>
-            Complete your ${amount.toFixed(2)} payment using Cash App
+            Send ${amount.toFixed(2)} to $Lusterenllc via Cash App
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

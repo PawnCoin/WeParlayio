@@ -4,6 +4,7 @@ import { Request, Response } from "express";
 const CASH_APP_CLIENT_ID = process.env.CASH_APP_CLIENT_ID;
 const CASH_APP_CLIENT_SECRET = process.env.CASH_APP_CLIENT_SECRET;
 const CASH_APP_ENVIRONMENT = process.env.NODE_ENV === 'production' ? 'production' : 'sandbox';
+const WEPARLAY_CASHAPP_ACCOUNT = '$Lusterenllc'; // WeParlay's official Cash App account
 
 if (!CASH_APP_CLIENT_ID || !CASH_APP_CLIENT_SECRET) {
   console.warn('Cash App credentials not configured. Cash App payments will be disabled.');
@@ -39,21 +40,23 @@ export async function createCashAppPayment(req: Request, res: Response) {
       });
     }
 
-    // For sandbox/demo mode, return mock response
-    if (!CASH_APP_CLIENT_ID || CASH_APP_ENVIRONMENT === 'sandbox') {
-      const mockPayment: CashAppPaymentResponse = {
-        payment_id: `ca_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        status: 'pending',
-        payment_url: `https://cash.app/pay/demo?amount=${amount}&note=${encodeURIComponent(description)}`,
-        qr_code_url: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`https://cash.app/pay/demo?amount=${amount}`)}`
-      };
+    // Generate Cash App payment URL with your account
+    const cashAppPaymentUrl = `https://cash.app/${WEPARLAY_CASHAPP_ACCOUNT}/${amount}`;
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(cashAppPaymentUrl)}`;
+    
+    const payment: CashAppPaymentResponse = {
+      payment_id: `ca_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      status: 'pending',
+      payment_url: cashAppPaymentUrl,
+      qr_code_url: qrCodeUrl
+    };
 
-      return res.json({
-        success: true,
-        payment: mockPayment,
-        message: 'Demo mode: Use Cash App mobile to complete payment'
-      });
-    }
+    return res.json({
+      success: true,
+      payment: payment,
+      message: `Send $${amount} to ${WEPARLAY_CASHAPP_ACCOUNT} via Cash App`,
+      recipient: WEPARLAY_CASHAPP_ACCOUNT
+    });
 
     // Real Cash App API integration would go here
     // Note: Cash App doesn't have a public API for merchant payments yet
@@ -127,24 +130,34 @@ export async function initiateCashAppPayout(req: Request, res: Response) {
       });
     }
 
-    // For demo mode, return mock payout response
-    if (!CASH_APP_CLIENT_ID || CASH_APP_ENVIRONMENT === 'sandbox') {
-      const mockPayout = {
-        payout_id: `po_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        status: 'processing',
-        amount: amount,
-        currency: currency,
-        recipient: recipient,
-        description: description || 'WeParlay payout',
-        estimated_completion: new Date(Date.now() + 5 * 60 * 1000).toISOString() // 5 minutes
-      };
+    // Create payout request for manual processing
+    const payout = {
+      payout_id: `po_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      status: 'pending_approval',
+      amount: amount,
+      currency: currency,
+      recipient: recipient,
+      from_account: WEPARLAY_CASHAPP_ACCOUNT,
+      description: description || 'WeParlay payout',
+      created_at: new Date().toISOString(),
+      estimated_completion: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
+    };
 
-      return res.json({
-        success: true,
-        payout: mockPayout,
-        message: 'Demo mode: Payout initiated successfully'
-      });
-    }
+    // Log payout request for manual processing
+    console.log(`🏦 Cash App Payout Request:
+    ID: ${payout.payout_id}
+    Amount: $${amount}
+    To: ${recipient}
+    From: ${WEPARLAY_CASHAPP_ACCOUNT}
+    Reason: ${description}
+    `);
+
+    return res.json({
+      success: true,
+      payout: payout,
+      message: `Payout request submitted. Send $${amount} from ${WEPARLAY_CASHAPP_ACCOUNT} to ${recipient}`,
+      instructions: `Manual action required: Use Cash App to send $${amount} to ${recipient}`
+    });
 
     // Real payout API would go here
     res.status(501).json({

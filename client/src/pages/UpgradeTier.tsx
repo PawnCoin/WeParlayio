@@ -258,7 +258,7 @@ export default function UpgradeTier() {
                     <Button 
                       className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                       onClick={() => handleUpgrade(plan.id, 'paypal')}
-                      disabled={selectedPlan === plan.id && paymentMethod === 'paypal'}
+                      disabled={selectedPlan === plan.id}
                     >
                       {selectedPlan === plan.id && paymentMethod === 'paypal' ? (
                         <>
