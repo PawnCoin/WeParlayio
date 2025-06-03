@@ -1,4 +1,5 @@
 import type { Express } from "express";
+import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import authRoutes from "./routes/authRoutes";
@@ -2648,6 +2649,276 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: 'Failed to send SMS' });
     }
   });
+
+  // CRYPTO WALLET & WEB3 INTEGRATION ENDPOINTS
+
+  // Get wallet balances (existing crypto + your custom ERC-20 token)
+  app.get('/api/wallet/balances', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const user = await storage.getUser(userId);
+
+      // Mock crypto balances for demonstration
+      const cryptoBalances = [
+        {
+          currency: 'Ethereum',
+          symbol: 'ETH',
+          balance: '2.4567',
+          usdValue: 4523.45,
+          change24h: 2.34,
+          address: '0x742D35...89AB'
+        },
+        {
+          currency: 'Bitcoin',
+          symbol: 'BTC',
+          balance: '0.15234',
+          usdValue: 6789.12,
+          change24h: -1.23,
+          address: 'bc1qxy2k...gh56'
+        }
+      ];
+
+      res.json(cryptoBalances);
+    } catch (error) {
+      console.error('Error fetching wallet balances:', error);
+      res.status(500).json({ message: 'Failed to fetch wallet balances' });
+    }
+  });
+
+  // Get wallet transaction history
+  app.get('/api/wallet/transactions', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      
+      // Mock transaction history
+      const transactions = [
+        {
+          id: '1',
+          type: 'receive',
+          currency: 'WPT',
+          amount: '100.0',
+          usdValue: 1.00,
+          status: 'confirmed',
+          timestamp: new Date().toISOString(),
+          hash: '0xabc123...',
+          fromAddress: '0x123...',
+          toAddress: '0x456...'
+        },
+        {
+          id: '2',
+          type: 'send',
+          currency: 'ETH',
+          amount: '0.5',
+          usdValue: 925.50,
+          status: 'confirmed',
+          timestamp: new Date(Date.now() - 86400000).toISOString(),
+          hash: '0xdef456...',
+          fromAddress: '0x456...',
+          toAddress: '0x789...'
+        }
+      ];
+
+      res.json(transactions);
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
+      res.status(500).json({ message: 'Failed to fetch transactions' });
+    }
+  });
+
+  // Send crypto transaction
+  app.post('/api/wallet/send', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { currency, amount, toAddress } = req.body;
+
+      if (!currency || !amount || !toAddress) {
+        return res.status(400).json({ message: 'Currency, amount, and recipient address are required' });
+      }
+
+      // Validate Ethereum address format
+      if (!/^0x[a-fA-F0-9]{40}$/.test(toAddress)) {
+        return res.status(400).json({ message: 'Invalid Ethereum address format' });
+      }
+
+      // For your custom token (contract: 0x2Fe269292f74F0a98C5786088317B4f86313C211)
+      // This would normally interact with Web3 provider
+      const mockTxHash = `0x${Math.random().toString(16).substr(2, 64)}`;
+      
+      // Create transaction record
+      const transaction = {
+        id: Date.now().toString(),
+        type: 'send',
+        currency,
+        amount,
+        status: 'pending',
+        timestamp: new Date().toISOString(),
+        hash: mockTxHash,
+        toAddress
+      };
+
+      res.json({ success: true, transaction, hash: mockTxHash });
+    } catch (error) {
+      console.error('Error sending crypto:', error);
+      res.status(500).json({ message: 'Failed to send transaction' });
+    }
+  });
+
+  // Get wallet analytics
+  app.get('/api/wallet/analytics', isAuthenticated, async (req, res) => {
+    try {
+      const analytics = {
+        totalValue: 11312.57,
+        change24h: 1.11,
+        totalTransactions: 47,
+        successRate: 98.9
+      };
+
+      res.json(analytics);
+    } catch (error) {
+      console.error('Error fetching wallet analytics:', error);
+      res.status(500).json({ message: 'Failed to fetch wallet analytics' });
+    }
+  });
+
+  // STRIPE TIER SYNCHRONIZATION ENDPOINTS
+
+  // Update WeParlay tier based on Stripe purchase
+  app.post('/api/stripe/sync-tier', async (req, res) => {
+    try {
+      const { customerId, subscriptionId, priceId, status } = req.body;
+
+      // Find user by Stripe customer ID
+      const users = await storage.getAllUsers();
+      const user = users.find(u => u.stripeCustomerId === customerId);
+
+      if (!user) {
+        return res.status(404).json({ message: 'User not found for Stripe customer' });
+      }
+
+      // Map Stripe price IDs to WeParlay tiers
+      const tierMapping = {
+        'price_bronze': 'Bronze',
+        'price_silver': 'Silver', 
+        'price_gold': 'Gold',
+        'price_platinum': 'Platinum'
+      };
+
+      const newTier = tierMapping[priceId] || 'Bronze';
+
+      // Update user tier
+      if (status === 'active') {
+        await storage.updateUserTier(user.id, newTier);
+        
+        // Send notification
+        await storage.createNotification({
+          userId: user.id,
+          type: 'tier_upgrade',
+          title: `Tier Upgraded to ${newTier}`,
+          message: `Your WeParlay tier has been automatically upgraded to ${newTier} based on your Stripe subscription.`,
+          read: false
+        });
+
+        res.json({ 
+          success: true, 
+          message: `User tier updated to ${newTier}`,
+          userId: user.id,
+          tier: newTier
+        });
+      } else {
+        res.json({ success: true, message: 'Subscription not active, tier unchanged' });
+      }
+    } catch (error) {
+      console.error('Error syncing Stripe tier:', error);
+      res.status(500).json({ message: 'Failed to sync tier with Stripe' });
+    }
+  });
+
+  // Stripe webhook for automatic tier updates
+  app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+    try {
+      const sig = req.headers['stripe-signature'];
+      const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+      if (!endpointSecret) {
+        console.error('Stripe webhook secret not configured');
+        return res.status(400).json({ message: 'Webhook secret not configured' });
+      }
+
+      // Verify Stripe webhook signature
+      // const event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+
+      // For now, process webhook data directly
+      const event = JSON.parse(req.body.toString());
+
+      switch (event.type) {
+        case 'customer.subscription.created':
+        case 'customer.subscription.updated':
+          const subscription = event.data.object;
+          await handleSubscriptionChange(subscription);
+          break;
+        case 'invoice.payment_succeeded':
+          const invoice = event.data.object;
+          await handlePaymentSuccess(invoice);
+          break;
+        default:
+          console.log(`Unhandled event type: ${event.type}`);
+      }
+
+      res.json({ received: true });
+    } catch (error) {
+      console.error('Stripe webhook error:', error);
+      res.status(400).json({ message: 'Webhook error' });
+    }
+  });
+
+  // Helper function for subscription changes
+  async function handleSubscriptionChange(subscription: any) {
+    try {
+      const customerId = subscription.customer;
+      const priceId = subscription.items.data[0]?.price?.id;
+      const status = subscription.status;
+
+      // Auto-sync tier with WeParlay
+      await fetch('/api/stripe/sync-tier', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerId,
+          subscriptionId: subscription.id,
+          priceId,
+          status
+        })
+      });
+    } catch (error) {
+      console.error('Error handling subscription change:', error);
+    }
+  }
+
+  // Helper function for payment success
+  async function handlePaymentSuccess(invoice: any) {
+    try {
+      const customerId = invoice.customer;
+      
+      // Find user and award bonus tokens for successful payment
+      const users = await storage.getAllUsers();
+      const user = users.find(u => u.stripeCustomerId === customerId);
+
+      if (user) {
+        // Award 10 WeParlay tokens for successful payment
+        await storage.updateUserWeplayTokenBalance(user.id, 10);
+        
+        await storage.createNotification({
+          userId: user.id,
+          type: 'payment_bonus',
+          title: 'Payment Bonus Awarded',
+          message: 'You received 10 WeParlay tokens for your successful payment!',
+          read: false
+        });
+      }
+    } catch (error) {
+      console.error('Error handling payment success:', error);
+    }
+  }
 
   // CRITICAL: User preferences and settings management
   app.post('/api/users/preferences', isAuthenticated, async (req, res) => {
