@@ -3351,6 +3351,27 @@ Start betting through text now!`;
     await capturePaypalOrder(req, res);
   });
 
+  // Cash App payment routes
+  app.post("/api/cashapp/payment", async (req, res) => {
+    const { createCashAppPayment } = await import('./cashapp');
+    await createCashAppPayment(req, res);
+  });
+
+  app.get("/api/cashapp/payment/:paymentId/status", async (req, res) => {
+    const { getCashAppPaymentStatus } = await import('./cashapp');
+    await getCashAppPaymentStatus(req, res);
+  });
+
+  app.post("/api/cashapp/payout", isAuthenticated, async (req, res) => {
+    const { initiateCashAppPayout } = await import('./cashapp');
+    await initiateCashAppPayout(req, res);
+  });
+
+  app.get("/api/cashapp/config", async (req, res) => {
+    const { getCashAppConfig } = await import('./cashapp');
+    res.json(getCashAppConfig());
+  });
+
   // WeParlay Cash tier upgrade routes
   app.post('/api/weparlay-cash/upgrade-tier', isAuthenticated, async (req: any, res) => {
     try {

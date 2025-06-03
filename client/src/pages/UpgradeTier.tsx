@@ -6,7 +6,8 @@ import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Crown, Diamond, Star, Zap, ArrowLeft, Loader2 } from "lucide-react";
+import { CheckCircle, Crown, Diamond, Star, Zap, ArrowLeft, Loader2, CreditCard, DollarSign, Coins } from "lucide-react";
+import CashAppButton from "@/components/CashAppButton";
 
 const tierPlans = [
   {
@@ -97,50 +98,88 @@ export default function UpgradeTier() {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const upgradeMutation = useMutation({
-    mutationFn: async ({ tierId, paymentMethod }: { tierId: string, paymentMethod: 'stripe' | 'crypto' }) => {
-      if (paymentMethod === 'stripe') {
-        const response = await apiRequest('POST', '/api/stripe/create-tier-subscription', { tierId });
-        return { ...await response.json(), paymentMethod: 'stripe' };
-      } else {
-        // For crypto payments, we'll redirect directly with tier info
-        const plan = tierPlans.find(p => p.id === tierId);
-        return { 
-          tierName: plan?.name,
-          amount: parseFloat(plan?.price.replace('$', '') || '0'),
-          currency: 'PC',
-          paymentMethod: 'crypto'
-        };
-      }
+  const [paymentMethod, setPaymentMethod] = useState<'paypal' | 'cashapp' | 'weparlay' | null>(null);
+
+  const paypalUpgradeMutation = useMutation({
+    mutationFn: async (tierId: string) => {
+      const plan = tierPlans.find(p => p.id === tierId);
+      const amount = parseFloat(plan?.price.replace('$', '') || '0');
+      const response = await apiRequest('POST', '/api/paypal/order', {
+        intent: 'CAPTURE',
+        amount: amount.toString(),
+        currency: 'USD'
+      });
+      return await response.json();
     },
     onSuccess: (data: any) => {
-      if (data.paymentMethod === 'stripe') {
-        toast({
-          title: "Upgrade Initiated",
-          description: `Starting upgrade to ${data.tierName} tier. Redirecting to payment...`,
-        });
-        window.location.href = `/payment-checkout?subscription=${data.subscriptionId}&client_secret=${data.clientSecret}`;
-      } else {
-        toast({
-          title: "Crypto Payment Selected",
-          description: `Redirecting to crypto checkout for ${data.tierName} tier...`,
-        });
-        window.location.href = `/crypto-checkout?tier=${data.tierName}&amount=${data.amount}&currency=${data.currency}`;
+      if (data.id) {
+        window.open(data.links?.find((link: any) => link.rel === 'approve')?.href, '_blank');
       }
     },
     onError: (error: any) => {
       toast({
-        title: "Upgrade Failed",
-        description: error.message || "Failed to initiate tier upgrade. Please try again.",
+        title: "PayPal Payment Failed",
+        description: error.message || "Failed to create PayPal payment.",
         variant: "destructive",
       });
       setSelectedPlan(null);
+      setPaymentMethod(null);
     },
   });
 
-  const handleUpgrade = (planId: string, paymentMethod: 'stripe' | 'crypto' = 'stripe') => {
+  const weparlayCashUpgradeMutation = useMutation({
+    mutationFn: async (tierId: string) => {
+      const response = await apiRequest('POST', '/api/weparlay-cash/upgrade-tier', { tier: tierId });
+      return await response.json();
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "Tier Upgraded Successfully",
+        description: `Welcome to ${data.tier} tier! Your upgrade is now active.`,
+      });
+      setSelectedPlan(null);
+      setPaymentMethod(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "WeParlay Cash Payment Failed",
+        description: error.message || "Insufficient WeParlay Cash balance or upgrade failed.",
+        variant: "destructive",
+      });
+      setSelectedPlan(null);
+      setPaymentMethod(null);
+    },
+  });
+
+  const handleUpgrade = (planId: string, method: 'paypal' | 'cashapp' | 'weparlay') => {
     setSelectedPlan(planId);
-    upgradeMutation.mutate({ tierId: planId, paymentMethod });
+    setPaymentMethod(method);
+    
+    if (method === 'paypal') {
+      paypalUpgradeMutation.mutate(planId);
+    } else if (method === 'weparlay') {
+      weparlayCashUpgradeMutation.mutate(planId);
+    }
+    // Cash App will be handled by the CashAppButton component
+  };
+
+  const handleCashAppSuccess = (paymentId: string) => {
+    toast({
+      title: "Cash App Payment Successful",
+      description: "Your tier upgrade has been processed successfully!",
+    });
+    setSelectedPlan(null);
+    setPaymentMethod(null);
+  };
+
+  const handleCashAppError = (error: string) => {
+    toast({
+      title: "Cash App Payment Failed",
+      description: error,
+      variant: "destructive",
+    });
+    setSelectedPlan(null);
+    setPaymentMethod(null);
   };
 
   const handleGoBack = () => {
@@ -214,30 +253,64 @@ export default function UpgradeTier() {
                     ))}
                   </ul>
 
-                  <div className="space-y-2">
+                  <div className="space-y-3">
+                    {/* PayPal Payment */}
                     <Button 
-                      className="w-full"
-                      variant={plan.popular || plan.elite ? "default" : "outline"}
-                      onClick={() => handleUpgrade(plan.id, 'stripe')}
-                      disabled={selectedPlan === plan.id}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                      onClick={() => handleUpgrade(plan.id, 'paypal')}
+                      disabled={selectedPlan === plan.id && paymentMethod === 'paypal'}
                     >
-                      {selectedPlan === plan.id ? (
+                      {selectedPlan === plan.id && paymentMethod === 'paypal' ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Processing...
+                          Processing PayPal...
                         </>
                       ) : (
-                        `Pay with Card - ${plan.name}`
+                        <>
+                          <CreditCard className="w-4 h-4 mr-2" />
+                          Pay with PayPal - {plan.price}
+                        </>
                       )}
                     </Button>
                     
+                    {/* Cash App Payment */}
+                    {selectedPlan === plan.id && paymentMethod === 'cashapp' ? (
+                      <CashAppButton
+                        amount={parseFloat(plan.price.replace('$', ''))}
+                        description={`WeParlay ${plan.name} Tier Upgrade`}
+                        onSuccess={handleCashAppSuccess}
+                        onError={handleCashAppError}
+                        className="w-full"
+                      />
+                    ) : (
+                      <Button 
+                        className="w-full bg-green-600 hover:bg-green-700 text-white"
+                        onClick={() => handleUpgrade(plan.id, 'cashapp')}
+                        disabled={selectedPlan === plan.id}
+                      >
+                        <DollarSign className="w-4 h-4 mr-2" />
+                        Pay with Cash App - {plan.price}
+                      </Button>
+                    )}
+                    
+                    {/* WeParlay Cash Payment */}
                     <Button 
-                      className="w-full"
+                      className="w-full bg-orange-600 hover:bg-orange-700 text-white"
                       variant="outline"
-                      onClick={() => handleUpgrade(plan.id, 'crypto')}
-                      disabled={selectedPlan === plan.id}
+                      onClick={() => handleUpgrade(plan.id, 'weparlay')}
+                      disabled={selectedPlan === plan.id && paymentMethod === 'weparlay'}
                     >
-                      Pay with Pawn Coin ($PC)
+                      {selectedPlan === plan.id && paymentMethod === 'weparlay' ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Processing WeParlay Cash...
+                        </>
+                      ) : (
+                        <>
+                          <Coins className="w-4 h-4 mr-2" />
+                          Pay with WeParlay Cash - {plan.price}
+                        </>
+                      )}
                     </Button>
                   </div>
                 </CardContent>
