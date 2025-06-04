@@ -51,6 +51,7 @@ import BlockchainPerformance from "@/pages/BlockchainPerformance";
 import WalletTutorial from "@/pages/WalletTutorial";
 import StreamingRecommendations from "@/pages/StreamingRecommendations";
 import SocialSharing from "@/pages/SocialSharing";
+import LiveStreaming from "@/pages/LiveStreaming";
 
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
@@ -129,7 +130,7 @@ function Router() {
       <Route path="/live-betting" component={BettingExperience} />
       <Route path="/live-betting-enhanced" component={LiveBettingEnhanced} />
       <Route path="/live-heatmap" component={LiveHeatmap} />
-      <Route path="/live-streaming" component={LiveSportsStreaming} />
+      <Route path="/live-streaming" component={LiveStreaming} />
       <Route path="/streaming" component={LiveStreaming} />
       <Route path="/banking" component={BankingSystem} />
       <Route path="/crypto-wallet" component={CryptoWallet} />

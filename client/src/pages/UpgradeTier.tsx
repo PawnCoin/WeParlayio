@@ -253,65 +253,77 @@ export default function UpgradeTier() {
                     ))}
                   </ul>
 
-                  <div className="space-y-3">
-                    {/* PayPal Payment */}
-                    <Button 
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                      onClick={() => handleUpgrade(plan.id, 'paypal')}
-                      disabled={selectedPlan === plan.id}
-                    >
-                      {selectedPlan === plan.id && paymentMethod === 'paypal' ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Processing PayPal...
-                        </>
-                      ) : (
-                        <>
-                          <CreditCard className="w-4 h-4 mr-2" />
-                          Pay with PayPal - {plan.price}
-                        </>
-                      )}
-                    </Button>
+                  <div className="space-y-4">
+                    <div className="text-center mb-4">
+                      <h4 className="text-lg font-semibold text-white mb-2">Choose Payment Method</h4>
+                      <p className="text-sm text-gray-400">Secure payment processing with instant activation</p>
+                    </div>
                     
-                    {/* Cash App Payment */}
-                    {selectedPlan === plan.id && paymentMethod === 'cashapp' ? (
-                      <CashAppButton
-                        amount={parseFloat(plan.price.replace('$', ''))}
-                        description={`WeParlay ${plan.name} Tier Upgrade`}
-                        onSuccess={handleCashAppSuccess}
-                        onError={handleCashAppError}
-                        className="w-full"
-                      />
-                    ) : (
+                    <div className="grid grid-cols-1 gap-3">
+                      {/* PayPal Payment */}
                       <Button 
-                        className="w-full bg-green-600 hover:bg-green-700 text-white"
-                        onClick={() => handleUpgrade(plan.id, 'cashapp')}
+                        className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all duration-200 hover:scale-[1.02] shadow-lg"
+                        onClick={() => handleUpgrade(plan.id, 'paypal')}
                         disabled={selectedPlan === plan.id}
                       >
-                        <DollarSign className="w-4 h-4 mr-2" />
-                        Pay with Cash App - {plan.price}
+                        {selectedPlan === plan.id && paymentMethod === 'paypal' ? (
+                          <>
+                            <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                            Processing PayPal...
+                          </>
+                        ) : (
+                          <>
+                            <CreditCard className="w-5 h-5 mr-3" />
+                            PayPal • {plan.price}
+                          </>
+                        )}
                       </Button>
-                    )}
                     
-                    {/* WeParlay Cash Payment */}
-                    <Button 
-                      className="w-full bg-orange-600 hover:bg-orange-700 text-white"
-                      variant="outline"
-                      onClick={() => handleUpgrade(plan.id, 'weparlay')}
-                      disabled={selectedPlan === plan.id && paymentMethod === 'weparlay'}
-                    >
-                      {selectedPlan === plan.id && paymentMethod === 'weparlay' ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Processing WeParlay Cash...
-                        </>
+                      {/* Cash App Payment */}
+                      {selectedPlan === plan.id && paymentMethod === 'cashapp' ? (
+                        <CashAppButton
+                          amount={parseFloat(plan.price.replace('$', ''))}
+                          description={`WeParlay ${plan.name} Tier Upgrade`}
+                          onSuccess={handleCashAppSuccess}
+                          onError={handleCashAppError}
+                          className="w-full h-14"
+                        />
                       ) : (
-                        <>
-                          <Coins className="w-4 h-4 mr-2" />
-                          Pay with WeParlay Cash - {plan.price}
-                        </>
+                        <Button 
+                          className="w-full h-14 bg-green-600 hover:bg-green-700 text-white font-medium transition-all duration-200 hover:scale-[1.02] shadow-lg"
+                          onClick={() => handleUpgrade(plan.id, 'cashapp')}
+                          disabled={selectedPlan === plan.id}
+                        >
+                          <DollarSign className="w-5 h-5 mr-3" />
+                          Cash App • {plan.price}
+                        </Button>
                       )}
-                    </Button>
+                      
+                      {/* WeParlay Cash Payment */}
+                      <Button 
+                        className="w-full h-14 bg-orange-600 hover:bg-orange-700 text-white font-medium transition-all duration-200 hover:scale-[1.02] shadow-lg"
+                        onClick={() => handleUpgrade(plan.id, 'weparlay')}
+                        disabled={selectedPlan === plan.id && paymentMethod === 'weparlay'}
+                      >
+                        {selectedPlan === plan.id && paymentMethod === 'weparlay' ? (
+                          <>
+                            <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                            Processing WeParlay Cash...
+                          </>
+                        ) : (
+                          <>
+                            <Coins className="w-5 h-5 mr-3" />
+                            WeParlay Cash • {plan.price}
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                    
+                    <div className="mt-4 pt-3 border-t border-gray-600">
+                      <p className="text-xs text-gray-400 text-center">
+                        ✓ Secure payment processing • ✓ Instant activation • ✓ 30-day money-back guarantee
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
