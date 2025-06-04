@@ -36,11 +36,11 @@ export class TheTVAppService {
   private password: string;
   
   constructor() {
-    this.username = process.env.THETVAPP_USERNAME || '686140897';
-    this.password = process.env.THETVAPP_PASSWORD || '80274761';
+    this.username = process.env.THETVAPP_USERNAME || '';
+    this.password = process.env.THETVAPP_PASSWORD || '';
     this.m3uUrl = process.env.M3U_PLAYLIST_URL || 
-      `https://thetv.to:443/get.php?username=${this.username}&password=${this.password}&type=m3u_plus&output=ts`;
-    console.log(`M3U Streaming service configured: ${this.m3uUrl}`);
+      `http://thetvapp.tv:80/get.php?username=${this.username}&password=${this.password}&type=m3u_plus&output=ts`;
+    console.log(`M3U Streaming service configured for user: ${this.username}`);
   }
 
   /**

@@ -3671,42 +3671,7 @@ Start betting through text now!`;
         console.error('Error loading YouTube Gaming streams:', error);
       }
 
-      // Add demo streams if no authentic streams are available
-      if (liveGames.length === 0) {
-        const demoStreams = [
-          {
-            id: 'demo-sports-1',
-            title: 'NFL RedZone Live',
-            homeTeam: { name: 'Multiple Games', score: 0, logo: '/api/placeholder/40/40' },
-            awayTeam: { name: 'Live Coverage', score: 0, logo: '/api/placeholder/40/40' },
-            sport: 'American Football',
-            league: 'NFL',
-            status: 'live' as const,
-            startTime: new Date().toISOString(),
-            streamUrl: 'https://demo.unified.streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8',
-            odds: { homeWin: 110, awayWin: 120 },
-            viewers: 125000,
-            period: 'RedZone',
-            timeRemaining: 'Live'
-          },
-          {
-            id: 'demo-sports-2', 
-            title: 'NBA Game of the Week',
-            homeTeam: { name: 'Lakers', score: 89, logo: '/api/placeholder/40/40' },
-            awayTeam: { name: 'Celtics', score: 92, logo: '/api/placeholder/40/40' },
-            sport: 'Basketball',
-            league: 'NBA',
-            status: 'live' as const,
-            startTime: new Date().toISOString(),
-            streamUrl: 'https://demo.unified.streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8',
-            odds: { homeWin: 105, awayWin: 115 },
-            viewers: 98500,
-            period: '4th Quarter',
-            timeRemaining: '8:42'
-          }
-        ];
-        liveGames.push(...demoStreams);
-      }
+
 
       res.json(liveGames);
     } catch (error) {
