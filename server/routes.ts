@@ -3568,42 +3568,144 @@ Start betting through text now!`;
         console.log('The Odds API unavailable, using backup sources');
       }
 
-      // Get authentic live streams from thetvapp.tv service
+      // Get authentic live streams from Twitch API for esports
       try {
-        const sportsStreams = await theTVAppService.getSportsStreams();
-        console.log(`thetvapp.tv streams loaded: ${sportsStreams.length} channels`);
-        
-        // Convert sports streams to live games format
-        sportsStreams.slice(0, 8).forEach((stream, index) => {
-          liveGames.push({
-            id: stream.eventId,
-            title: stream.title,
-            homeTeam: { 
-              name: stream.homeTeam || stream.title.split(' vs ')[0] || 'Home Team', 
-              score: Math.floor(Math.random() * 30), 
-              logo: '/api/placeholder/40/40' 
-            },
-            awayTeam: { 
-              name: stream.awayTeam || stream.title.split(' vs ')[1] || 'Away Team', 
-              score: Math.floor(Math.random() * 30), 
-              logo: '/api/placeholder/40/40' 
-            },
-            sport: stream.sportType,
-            league: stream.league,
-            status: 'live' as const,
-            startTime: stream.startTime,
-            streamUrl: stream.sources[0]?.url,
-            odds: { 
-              homeWin: Math.floor(Math.random() * 200) + 100, 
-              awayWin: Math.floor(Math.random() * 200) + 100 
-            },
-            viewers: stream.sources[0]?.viewers || Math.floor(Math.random() * 50000) + 10000,
-            period: index % 2 === 0 ? '3rd Quarter' : '2nd Half',
-            timeRemaining: `${Math.floor(Math.random() * 15) + 1}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`
+        if (process.env.TWITCH_CLIENT_ID && process.env.TWITCH_CLIENT_SECRET) {
+          // Get Twitch OAuth token
+          const tokenResponse = await fetch('https://id.twitch.tv/oauth2/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `client_id=${process.env.TWITCH_CLIENT_ID}&client_secret=${process.env.TWITCH_CLIENT_SECRET}&grant_type=client_credentials`
           });
-        });
+          
+          if (tokenResponse.ok) {
+            const tokenData = await tokenResponse.json();
+            
+            // Get live gaming streams
+            const streamsResponse = await fetch('https://api.twitch.tv/helix/streams?game_id=509658&game_id=515025&game_id=21779&first=10', {
+              headers: {
+                'Client-ID': process.env.TWITCH_CLIENT_ID,
+                'Authorization': `Bearer ${tokenData.access_token}`
+              }
+            });
+            
+            if (streamsResponse.ok) {
+              const streamsData = await streamsResponse.json();
+              console.log(`Twitch streams loaded: ${streamsData.data.length} channels`);
+              
+              streamsData.data.forEach((stream: any, index: number) => {
+                liveGames.push({
+                  id: `twitch-${stream.id}`,
+                  title: stream.title,
+                  homeTeam: { 
+                    name: stream.user_name, 
+                    score: Math.floor(Math.random() * 30), 
+                    logo: '/api/placeholder/40/40' 
+                  },
+                  awayTeam: { 
+                    name: 'Opponent', 
+                    score: Math.floor(Math.random() * 30), 
+                    logo: '/api/placeholder/40/40' 
+                  },
+                  sport: 'Esports',
+                  league: stream.game_name,
+                  status: 'live' as const,
+                  startTime: stream.started_at,
+                  streamUrl: `https://player.twitch.tv/?channel=${stream.user_login}&parent=localhost`,
+                  odds: { 
+                    homeWin: Math.floor(Math.random() * 200) + 100, 
+                    awayWin: Math.floor(Math.random() * 200) + 100 
+                  },
+                  viewers: stream.viewer_count,
+                  period: 'Live',
+                  timeRemaining: 'Live'
+                });
+              });
+            }
+          }
+        }
       } catch (error) {
-        console.error('Error loading thetvapp.tv streams:', error);
+        console.error('Error loading Twitch streams:', error);
+      }
+
+      // Get YouTube Gaming live streams
+      try {
+        if (process.env.YOUTUBE_API_KEY) {
+          const youtubeResponse = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&eventType=live&type=video&videoCategoryId=20&maxResults=10&key=${process.env.YOUTUBE_API_KEY}`);
+          
+          if (youtubeResponse.ok) {
+            const youtubeData = await youtubeResponse.json();
+            console.log(`YouTube Gaming streams loaded: ${youtubeData.items?.length || 0} channels`);
+            
+            youtubeData.items?.forEach((video: any, index: number) => {
+              liveGames.push({
+                id: `youtube-${video.id.videoId}`,
+                title: video.snippet.title,
+                homeTeam: { 
+                  name: video.snippet.channelTitle, 
+                  score: Math.floor(Math.random() * 30), 
+                  logo: video.snippet.thumbnails.default.url 
+                },
+                awayTeam: { 
+                  name: 'Opponent', 
+                  score: Math.floor(Math.random() * 30), 
+                  logo: '/api/placeholder/40/40' 
+                },
+                sport: 'Esports',
+                league: 'YouTube Gaming',
+                status: 'live' as const,
+                startTime: video.snippet.publishedAt,
+                streamUrl: `https://www.youtube.com/embed/${video.id.videoId}?autoplay=1`,
+                odds: { 
+                  homeWin: Math.floor(Math.random() * 200) + 100, 
+                  awayWin: Math.floor(Math.random() * 200) + 100 
+                },
+                viewers: Math.floor(Math.random() * 50000) + 1000,
+                period: 'Live',
+                timeRemaining: 'Live'
+              });
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error loading YouTube Gaming streams:', error);
+      }
+
+      // Add demo streams if no authentic streams are available
+      if (liveGames.length === 0) {
+        const demoStreams = [
+          {
+            id: 'demo-sports-1',
+            title: 'NFL RedZone Live',
+            homeTeam: { name: 'Multiple Games', score: 0, logo: '/api/placeholder/40/40' },
+            awayTeam: { name: 'Live Coverage', score: 0, logo: '/api/placeholder/40/40' },
+            sport: 'American Football',
+            league: 'NFL',
+            status: 'live' as const,
+            startTime: new Date().toISOString(),
+            streamUrl: 'https://demo.unified.streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8',
+            odds: { homeWin: 110, awayWin: 120 },
+            viewers: 125000,
+            period: 'RedZone',
+            timeRemaining: 'Live'
+          },
+          {
+            id: 'demo-sports-2', 
+            title: 'NBA Game of the Week',
+            homeTeam: { name: 'Lakers', score: 89, logo: '/api/placeholder/40/40' },
+            awayTeam: { name: 'Celtics', score: 92, logo: '/api/placeholder/40/40' },
+            sport: 'Basketball',
+            league: 'NBA',
+            status: 'live' as const,
+            startTime: new Date().toISOString(),
+            streamUrl: 'https://demo.unified.streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8',
+            odds: { homeWin: 105, awayWin: 115 },
+            viewers: 98500,
+            period: '4th Quarter',
+            timeRemaining: '8:42'
+          }
+        ];
+        liveGames.push(...demoStreams);
       }
 
       res.json(liveGames);
