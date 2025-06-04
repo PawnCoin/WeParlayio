@@ -163,15 +163,48 @@ export default function LiveStreaming() {
       // Clear any existing source
       video.src = '';
       
+      // Add video event listeners
+      const handleLoadedData = () => {
+        console.log('Video data loaded, ready to play');
+      };
+      
+      const handleCanPlay = () => {
+        console.log('Video can start playing');
+      };
+      
+      const handlePlay = () => {
+        setIsPlaying(true);
+        console.log('Video started playing');
+      };
+      
+      const handlePause = () => {
+        setIsPlaying(false);
+        console.log('Video paused');
+      };
+      
+      const handleError = (e: Event) => {
+        console.error('Video element error:', e);
+      };
+      
+      video.addEventListener('loadeddata', handleLoadedData);
+      video.addEventListener('canplay', handleCanPlay);
+      video.addEventListener('play', handlePlay);
+      video.addEventListener('pause', handlePause);
+      video.addEventListener('error', handleError);
+      
       // For thetv.to streams, try direct playback first
       if (selectedGame.streamUrl.includes('/api/stream-proxy')) {
         if (Hls.isSupported()) {
           const hls = new Hls({
             enableWorker: false,
-            lowLatencyMode: true,
+            lowLatencyMode: false,
             debug: true,
+            maxLoadingDelay: 4,
+            maxBufferLength: 30,
+            maxBufferSize: 60 * 1000 * 1000,
             xhrSetup: (xhr, url) => {
               xhr.withCredentials = false;
+              xhr.timeout = 30000;
             }
           });
           
@@ -180,19 +213,42 @@ export default function LiveStreaming() {
           
           hls.on(Hls.Events.MANIFEST_PARSED, () => {
             console.log('Manifest parsed, ready to play');
-            // Don't autoplay - wait for user interaction
+            video.load(); // Ensure video is ready
+          });
+
+          hls.on(Hls.Events.LEVEL_LOADED, () => {
+            console.log('Level loaded, video should be ready');
           });
           
           hls.on(Hls.Events.ERROR, (event, data) => {
             console.error('HLS error:', data);
             if (data.fatal) {
-              // Try fallback: direct video element
-              video.src = selectedGame.streamUrl;
+              switch (data.type) {
+                case Hls.ErrorTypes.NETWORK_ERROR:
+                  console.log('Network error, trying to recover...');
+                  hls.startLoad();
+                  break;
+                case Hls.ErrorTypes.MEDIA_ERROR:
+                  console.log('Media error, trying to recover...');
+                  hls.recoverMediaError();
+                  break;
+                default:
+                  // Cannot recover, fallback to direct video
+                  console.log('Fatal error, falling back to direct video');
+                  hls.destroy();
+                  video.src = selectedGame.streamUrl;
+                  break;
+              }
             }
           });
           
           return () => {
             hls.destroy();
+            video.removeEventListener('loadeddata', handleLoadedData);
+            video.removeEventListener('canplay', handleCanPlay);
+            video.removeEventListener('play', handlePlay);
+            video.removeEventListener('pause', handlePause);
+            video.removeEventListener('error', handleError);
           };
         } else {
           // Native HLS support or direct video
@@ -202,6 +258,15 @@ export default function LiveStreaming() {
         // Regular video streams
         video.src = selectedGame.streamUrl;
       }
+      
+      return () => {
+        // Cleanup event listeners
+        video.removeEventListener('loadeddata', handleLoadedData);
+        video.removeEventListener('canplay', handleCanPlay);
+        video.removeEventListener('play', handlePlay);
+        video.removeEventListener('pause', handlePause);
+        video.removeEventListener('error', handleError);
+      };
     }
   }, [selectedGame]);
 

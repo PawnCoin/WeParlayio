@@ -4042,7 +4042,18 @@ Start betting through text now!`;
                 res.setHeader('Cache-Control', 'no-cache');
                 
                 if (fallbackResponse.body) {
-                  return fallbackResponse.body.pipe(res);
+                  const reader = fallbackResponse.body.getReader();
+                  const pump = () => {
+                    return reader.read().then(({ done, value }) => {
+                      if (done) {
+                        res.end();
+                        return;
+                      }
+                      res.write(value);
+                      return pump();
+                    });
+                  };
+                  return pump();
                 }
               }
             }
