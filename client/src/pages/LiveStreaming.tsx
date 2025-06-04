@@ -80,7 +80,7 @@ export default function LiveStreaming() {
     refetchInterval: 10000,
   });
 
-  const { data: upcomingEvents = [] } = useQuery({
+  const { data: upcomingEvents = [] } = useQuery<any[]>({
     queryKey: ['/api/events/upcoming'],
     refetchInterval: 60000,
   });
@@ -577,38 +577,43 @@ export default function LiveStreaming() {
         </div>
 
         {/* Upcoming Live Events Section */}
-        {upcomingEvents.length > 0 && (
-          <div className="mt-8">
-            <Card className="bg-gray-900 border-gray-800">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Clock className="h-5 w-5" />
-                  <span>Upcoming Live Events</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+        <div className="mt-8">
+          <Card className="bg-gray-900 border-gray-800">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Clock className="h-5 w-5" />
+                <span>Upcoming Live Events</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {upcomingEvents && upcomingEvents.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {upcomingEvents.slice(0, 6).map((event: any) => (
-                    <div key={event.id} className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors">
+                  {upcomingEvents.slice(0, 6).map((event: any, index: number) => (
+                    <div key={event.id || index} className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors">
                       <div className="flex items-center justify-between mb-3">
                         <Badge variant="outline" className="text-xs">
-                          {event.sport_title || event.sport}
+                          {event.sport_title || event.sport || 'Sports'}
                         </Badge>
                         <span className="text-xs text-gray-400">
-                          {new Date(event.commence_time).toLocaleDateString()}
+                          {event.commence_time ? new Date(event.commence_time).toLocaleDateString() : 'TBD'}
                         </span>
                       </div>
                       
                       <h4 className="font-medium text-sm mb-2 line-clamp-2">
-                        {event.home_team} vs {event.away_team}
+                        {event.home_team && event.away_team ? 
+                          `${event.home_team} vs ${event.away_team}` : 
+                          event.title || 'Upcoming Event'
+                        }
                       </h4>
                       
                       <div className="flex items-center justify-between text-xs text-gray-400">
                         <span>
-                          {new Date(event.commence_time).toLocaleTimeString([], { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })}
+                          {event.commence_time ? 
+                            new Date(event.commence_time).toLocaleTimeString([], { 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            }) : 'Time TBD'
+                          }
                         </span>
                         {event.bookmakers && event.bookmakers.length > 0 && (
                           <span className="text-green-400">
@@ -619,10 +624,15 @@ export default function LiveStreaming() {
                     </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+              ) : (
+                <div className="text-center py-8">
+                  <Clock className="h-12 w-12 mx-auto mb-4 text-gray-600" />
+                  <p className="text-gray-400">Loading upcoming events...</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
