@@ -167,14 +167,41 @@ export default function LiveStreaming() {
                 {selectedGame ? (
                   <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
                     {/* Video Element */}
-                    <video
-                      ref={videoRef}
-                      className="w-full h-full object-cover"
-                      src={selectedGame.streamUrl}
-                      autoPlay={isPlaying}
-                      muted={isMuted}
-                      controls={false}
-                    />
+                    {selectedGame.streamUrl ? (
+                      selectedGame.streamUrl.includes('youtube.com') || selectedGame.streamUrl.includes('twitch.tv') ? (
+                        <iframe
+                          className="w-full h-full"
+                          src={selectedGame.streamUrl}
+                          frameBorder="0"
+                          allowFullScreen
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        />
+                      ) : (
+                        <video
+                          ref={videoRef}
+                          className="w-full h-full object-cover"
+                          autoPlay={isPlaying}
+                          muted={isMuted}
+                          controls={true}
+                          onError={(e) => {
+                            console.error('Video stream error:', e);
+                          }}
+                        >
+                          <source src={selectedGame.streamUrl} type="application/x-mpegURL" />
+                          <source src={selectedGame.streamUrl} type="video/mp4" />
+                          <source src={selectedGame.streamUrl} type="application/vnd.apple.mpegurl" />
+                          Your browser does not support the video tag.
+                        </video>
+                      )
+                    ) : (
+                      <div className="w-full h-full bg-gray-900 flex items-center justify-center">
+                        <div className="text-center">
+                          <Play className="h-16 w-16 mx-auto mb-4 text-gray-600" />
+                          <p className="text-white text-lg font-semibold">{selectedGame.title}</p>
+                          <p className="text-gray-400">Stream loading...</p>
+                        </div>
+                      </div>
+                    )}
                     
                     {/* Video Controls Overlay */}
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
