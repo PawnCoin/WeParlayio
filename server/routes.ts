@@ -3545,8 +3545,29 @@ Start betting through text now!`;
               const groupMatch = info.match(/group-title="([^"]+)"/);
               const category = groupMatch ? groupMatch[1] : 'Sports';
               
-              // Focus on sports channels for live streaming
-              if (category.toLowerCase().includes('sport') || name.toLowerCase().includes('sport') || name.toLowerCase().includes('espn') || name.toLowerCase().includes('fox')) {
+              // Include all sports and entertainment channels
+              const isSportsOrEntertainment = category.toLowerCase().includes('sport') || 
+                                            name.toLowerCase().includes('sport') || 
+                                            name.toLowerCase().includes('espn') || 
+                                            name.toLowerCase().includes('fox') ||
+                                            name.toLowerCase().includes('nfl') ||
+                                            name.toLowerCase().includes('nba') ||
+                                            name.toLowerCase().includes('mlb') ||
+                                            name.toLowerCase().includes('nhl') ||
+                                            name.toLowerCase().includes('soccer') ||
+                                            name.toLowerCase().includes('football') ||
+                                            name.toLowerCase().includes('basketball') ||
+                                            name.toLowerCase().includes('baseball') ||
+                                            name.toLowerCase().includes('tennis') ||
+                                            name.toLowerCase().includes('golf') ||
+                                            name.toLowerCase().includes('cbs') ||
+                                            name.toLowerCase().includes('nbc') ||
+                                            name.toLowerCase().includes('abc') ||
+                                            category.toLowerCase().includes('usa') ||
+                                            category.toLowerCase().includes('premier') ||
+                                            category.toLowerCase().includes('entertainment');
+              
+              if (isSportsOrEntertainment) {
                 currentChannel = {
                   name: name,
                   category: category,
