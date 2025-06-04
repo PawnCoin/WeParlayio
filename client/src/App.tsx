@@ -131,7 +131,8 @@ function Router() {
       <Route path="/live-betting-enhanced" component={LiveBettingEnhanced} />
       <Route path="/live-heatmap" component={LiveHeatmap} />
       {/* VIP Access Features */}
-      <Route path="/vip" component={UpgradeTier} />
+      <Route path="/vip-dashboard" component={VIPDashboard} />
+      <Route path="/vip" component={VIPDashboard} />
       <Route path="/vip/live-streaming" component={LiveStreaming} />
       <Route path="/vip/streaming" component={LiveStreaming} />
       <Route path="/vip/fantasy" component={FantasySportsEnhanced} />
