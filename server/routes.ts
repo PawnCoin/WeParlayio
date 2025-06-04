@@ -28,6 +28,7 @@ import { apiTestRouter } from "./routes/apiTestRoutes";
 import { theTVAppService } from "./services/thetvappService";
 import { esportsApiService } from "./services/esportsApiService";
 import { cryptoService } from "./services/cryptoService";
+import { allSportsApiService } from "./services/allSportsApiService";
 import { createCashAppPayment, getCashAppPaymentStatus, initiateCashAppPayout } from "./cashapp";
 
 // Export the routes so they can be imported by index.ts
@@ -1235,7 +1236,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // ===== The Odds API Routes =====
+  // ===== AllSportsAPI Routes (Primary Data Source) =====
+  
+  // Get sports from AllSportsAPI - PRIMARY SOURCE
+  app.get("/api/allsports/sports", async (req, res) => {
+    try {
+      console.log("Fetching sports from AllSportsAPI...");
+      const sports = await allSportsApiService.getSports();
+      const convertedSports = sports.map(sport => allSportsApiService.convertToInternalSport(sport));
+      res.json(convertedSports);
+    } catch (error: any) {
+      console.error("AllSportsAPI sports error:", error);
+      res.status(500).json({ message: error.message || "Failed to fetch sports from AllSportsAPI" });
+    }
+  });
+
+  // Get odds from AllSportsAPI
+  app.get("/api/allsports/odds/:sportKey", async (req, res) => {
+    try {
+      const { sportKey } = req.params;
+      console.log(`Fetching odds for ${sportKey} from AllSportsAPI...`);
+      const games = await allSportsApiService.getOdds(sportKey);
+      const convertedGames = games.map(game => allSportsApiService.convertToInternalGame(game));
+      res.json(convertedGames);
+    } catch (error: any) {
+      console.error(`AllSportsAPI odds error for ${req.params.sportKey}:`, error);
+      res.status(500).json({ message: error.message || "Failed to fetch odds from AllSportsAPI" });
+    }
+  });
+
+  // Get upcoming games from AllSportsAPI
+  app.get("/api/allsports/upcoming", async (req, res) => {
+    try {
+      const { sport } = req.query;
+      console.log("Fetching upcoming games from AllSportsAPI...");
+      const games = await allSportsApiService.getUpcomingGames(sport as string);
+      const convertedGames = games.map(game => allSportsApiService.convertToInternalGame(game));
+      res.json(convertedGames);
+    } catch (error: any) {
+      console.error("AllSportsAPI upcoming games error:", error);
+      res.status(500).json({ message: error.message || "Failed to fetch upcoming games from AllSportsAPI" });
+    }
+  });
+
+  // Get live games from AllSportsAPI
+  app.get("/api/allsports/live", async (req, res) => {
+    try {
+      console.log("Fetching live games from AllSportsAPI...");
+      const games = await allSportsApiService.getLiveGames();
+      const convertedGames = games.map(game => allSportsApiService.convertToInternalGame(game));
+      res.json(convertedGames);
+    } catch (error: any) {
+      console.error("AllSportsAPI live games error:", error);
+      res.status(500).json({ message: error.message || "Failed to fetch live games from AllSportsAPI" });
+    }
+  });
+
+  // ===== The Odds API Routes (Fallback) =====
   
   // Get sports from The Odds API
   app.get("/api/odds-sports", async (req, res) => {

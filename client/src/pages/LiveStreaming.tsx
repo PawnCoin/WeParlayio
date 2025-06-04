@@ -22,6 +22,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { allSportsApiClient, type AllSportsGame } from '@/services/allSportsApiClient';
 
 interface LiveGame {
   id: string;
