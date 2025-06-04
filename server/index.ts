@@ -42,21 +42,21 @@ app.use('/api/bets', bettingRateLimit);
 app.use('/api/betting', bettingRateLimit);
 app.set('trust proxy', 1); // Trust first proxy - important for secure cookies with custom domain
 
-// Apply security middleware FIRST with relaxed CSP for development
+// Apply security middleware FIRST with relaxed CSP for development and streaming
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https:", "data:"],
-      fontSrc: ["'self'", "https:", "data:"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https:", "data:", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
+      fontSrc: ["'self'", "https:", "data:", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
       imgSrc: ["'self'", "data:", "https:", "blob:", "*"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https:", "*"],
-      connectSrc: ["'self'", "wss:", "https:", "ws:", "*"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https:", "*", "blob:"],
+      connectSrc: ["'self'", "wss:", "https:", "ws:", "*", "blob:"],
       frameSrc: ["'self'", "https:", "*"],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
-      mediaSrc: ["'self'", "https:", "blob:", "*"],
-      workerSrc: ["'self'", "blob:"],
+      mediaSrc: ["'self'", "https:", "blob:", "*", "data:"],
+      workerSrc: ["'self'", "blob:", "'unsafe-inline'"],
       childSrc: ["'self'", "https:", "blob:"],
     },
   },

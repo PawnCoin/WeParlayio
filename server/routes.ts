@@ -4014,11 +4014,38 @@ Start betting through text now!`;
         try {
           const response = await fetch(streamUrl, { 
             headers,
-            signal: AbortSignal.timeout(15000)
+            signal: AbortSignal.timeout(30000),
+            redirect: 'follow'
           });
 
           if (!response.ok) {
             console.error(`thetv.to stream failed: ${response.status} ${response.statusText}`);
+            // Try without auth headers as fallback
+            if (headers['Authorization']) {
+              delete headers['Authorization'];
+              const fallbackResponse = await fetch(streamUrl, { 
+                headers,
+                signal: AbortSignal.timeout(30000),
+                redirect: 'follow'
+              });
+              if (fallbackResponse.ok) {
+                // Handle fallback response inline
+                const fallbackContentType = fallbackResponse.headers.get('content-type') || 'video/mp2t';
+                res.setHeader('Content-Type', fallbackContentType);
+                
+                const fallbackContentLength = fallbackResponse.headers.get('content-length');
+                if (fallbackContentLength) {
+                  res.setHeader('Content-Length', fallbackContentLength);
+                }
+                
+                res.setHeader('Accept-Ranges', 'bytes');
+                res.setHeader('Cache-Control', 'no-cache');
+                
+                if (fallbackResponse.body) {
+                  return fallbackResponse.body.pipe(res);
+                }
+              }
+            }
             return res.status(502).json({ error: 'Stream unavailable' });
           }
 
