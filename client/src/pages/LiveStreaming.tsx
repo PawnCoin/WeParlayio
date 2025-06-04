@@ -80,6 +80,11 @@ export default function LiveStreaming() {
     refetchInterval: 10000,
   });
 
+  const { data: upcomingEvents = [] } = useQuery({
+    queryKey: ['/api/events/upcoming'],
+    refetchInterval: 60000,
+  });
+
   const handleGameSelect = (game: LiveGame) => {
     setSelectedGame(game);
     setIsPlaying(true);
@@ -155,31 +160,43 @@ export default function LiveStreaming() {
     if (selectedGame && selectedGame.streamUrl && videoRef.current) {
       const video = videoRef.current;
       
-      // Check if it's an m3u8 stream or thetv.to stream
-      if (selectedGame.streamUrl.includes('.m3u8') || selectedGame.streamUrl.includes('thetv.to')) {
+      // Clear any existing source
+      video.src = '';
+      
+      // For thetv.to streams, try direct playback first
+      if (selectedGame.streamUrl.includes('/api/stream-proxy')) {
         if (Hls.isSupported()) {
           const hls = new Hls({
             enableWorker: false,
             lowLatencyMode: true,
-            debug: false,
+            debug: true,
+            xhrSetup: (xhr, url) => {
+              xhr.withCredentials = false;
+            }
           });
           
           hls.loadSource(selectedGame.streamUrl);
           hls.attachMedia(video);
           
           hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            video.play().catch(console.error);
+            console.log('Manifest parsed, attempting to play');
+            video.play().catch(e => console.error('Play failed:', e));
           });
           
           hls.on(Hls.Events.ERROR, (event, data) => {
             console.error('HLS error:', data);
+            if (data.fatal) {
+              // Try fallback: direct video element
+              video.src = selectedGame.streamUrl;
+              video.play().catch(console.error);
+            }
           });
           
           return () => {
             hls.destroy();
           };
-        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-          // Native HLS support (Safari)
+        } else {
+          // Native HLS support or direct video
           video.src = selectedGame.streamUrl;
           video.play().catch(console.error);
         }
@@ -558,6 +575,54 @@ export default function LiveStreaming() {
             </Card>
           </div>
         </div>
+
+        {/* Upcoming Live Events Section */}
+        {upcomingEvents.length > 0 && (
+          <div className="mt-8">
+            <Card className="bg-gray-900 border-gray-800">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Clock className="h-5 w-5" />
+                  <span>Upcoming Live Events</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {upcomingEvents.slice(0, 6).map((event: any) => (
+                    <div key={event.id} className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors">
+                      <div className="flex items-center justify-between mb-3">
+                        <Badge variant="outline" className="text-xs">
+                          {event.sport_title || event.sport}
+                        </Badge>
+                        <span className="text-xs text-gray-400">
+                          {new Date(event.commence_time).toLocaleDateString()}
+                        </span>
+                      </div>
+                      
+                      <h4 className="font-medium text-sm mb-2 line-clamp-2">
+                        {event.home_team} vs {event.away_team}
+                      </h4>
+                      
+                      <div className="flex items-center justify-between text-xs text-gray-400">
+                        <span>
+                          {new Date(event.commence_time).toLocaleTimeString([], { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })}
+                        </span>
+                        {event.bookmakers && event.bookmakers.length > 0 && (
+                          <span className="text-green-400">
+                            Odds Available
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );
