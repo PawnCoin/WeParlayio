@@ -158,25 +158,45 @@ export default function LiveStreaming() {
         <div className="flex-1 bg-black flex flex-col">
           {selectedGame ? (
             <>
-              <div className="flex-1 relative">
-                <iframe
-                  src={selectedGame.streamUrl}
-                  className="w-full h-full"
-                  frameBorder="0"
-                  allowFullScreen
-                  title={selectedGame.title}
-                />
+              <div className="flex-1 relative bg-gray-900">
+                {/* Custom Video Player */}
+                <div className="w-full h-full flex items-center justify-center">
+                  <div className="w-full h-full max-w-full">
+                    <iframe
+                      src={selectedGame.streamUrl + '?autoplay=1&mute=1'}
+                      className="w-full h-full"
+                      frameBorder="0"
+                      allowFullScreen
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      title={selectedGame.title}
+                      sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+                    />
+                  </div>
+                </div>
                 
                 {/* Video Controls Overlay */}
-                <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2 bg-black/70 px-3 py-2 rounded">
-                    <Wifi className="w-4 h-4 text-red-500" />
-                    <span className="text-sm font-medium">Live</span>
+                <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between pointer-events-none">
+                  <div className="flex items-center gap-2 bg-black/70 px-3 py-2 rounded backdrop-blur-sm">
+                    <Wifi className="w-4 h-4 text-red-500 animate-pulse" />
+                    <span className="text-sm font-medium">LIVE</span>
                   </div>
                   
-                  <div className="flex items-center gap-2 bg-black/70 px-3 py-2 rounded">
+                  <div className="flex items-center gap-2 bg-black/70 px-3 py-2 rounded backdrop-blur-sm">
                     <Users className="w-4 h-4" />
                     <span className="text-sm">{selectedGame.viewers.toLocaleString()} viewers</span>
+                  </div>
+                </div>
+                
+                {/* Fallback for blocked content */}
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-800 opacity-0 hover:opacity-100 transition-opacity">
+                  <div className="text-center text-white p-8">
+                    <Play className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                    <h3 className="text-xl font-bold mb-2">{selectedGame.title}</h3>
+                    <p className="text-gray-300 mb-4">Live gaming stream from {selectedGame.homeTeam.name}</p>
+                    <div className="flex items-center justify-center gap-2 text-sm text-gray-400">
+                      <Wifi className="w-4 h-4 text-red-500" />
+                      <span>Live • {selectedGame.viewers.toLocaleString()} viewers</span>
+                    </div>
                   </div>
                 </div>
               </div>
