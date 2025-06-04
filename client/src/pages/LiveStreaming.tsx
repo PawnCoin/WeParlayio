@@ -16,7 +16,9 @@ import {
   Users,
   DollarSign,
   Target,
-  Zap
+  Zap,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -65,10 +67,11 @@ export default function LiveStreaming() {
   const [betAmount, setBetAmount] = useState<number>(10);
   const { toast } = useToast();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
 
   const { data: liveGames = [], isLoading } = useQuery<LiveGame[]>({
     queryKey: ['/api/live-games'],
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: 30000,
   });
 
   const { data: userBalance = 0 } = useQuery<number>({
@@ -82,7 +85,7 @@ export default function LiveStreaming() {
   };
 
   const handleBetPlace = (gameId: string, betType: string, odds: number) => {
-    const potentialWin = betAmount * odds;
+    const potentialWin = betAmount * (odds / 100);
     setBetSlip({
       gameId,
       betType,
@@ -99,18 +102,13 @@ export default function LiveStreaming() {
       const response = await fetch('/api/bets/place', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          gameId: betSlip.gameId,
-          betType: betSlip.betType,
-          amount: betSlip.amount,
-          odds: betSlip.odds
-        }),
+        body: JSON.stringify(betSlip),
       });
 
       if (response.ok) {
         toast({
-          title: "Bet Placed Successfully!",
-          description: `$${betSlip.amount} bet placed. Potential win: $${betSlip.potentialWin.toFixed(2)}`,
+          title: "Bet Placed Successfully",
+          description: `$${betSlip.amount} bet placed on ${betSlip.betType}`,
         });
         setBetSlip(null);
       } else {
@@ -127,7 +125,7 @@ export default function LiveStreaming() {
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen();
+      videoRef.current?.requestFullscreen();
       setIsFullscreen(true);
     } else {
       document.exitFullscreen();
@@ -135,306 +133,350 @@ export default function LiveStreaming() {
     }
   };
 
+  const scrollCarousel = (direction: 'left' | 'right') => {
+    if (carouselRef.current) {
+      const scrollAmount = 280;
+      carouselRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (liveGames.length > 0 && !selectedGame) {
+      setSelectedGame(liveGames[0]);
+    }
+  }, [liveGames, selectedGame]);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
-      <div className="container mx-auto px-4 py-6">
+    <div className="min-h-screen bg-gray-950 text-white p-4">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-white mb-2">Live Sports Streaming</h1>
-          <p className="text-gray-300">Watch live games and place bets in real-time</p>
+          <h1 className="text-3xl font-bold mb-2">Live Sports Streaming</h1>
+          <p className="text-gray-400">Watch live games and place bets in real-time</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Live Games Sidebar */}
-          <div className="lg:col-span-1">
-            <Card className="bg-gray-800 border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center">
-                  <Zap className="w-5 h-5 mr-2 text-red-500" />
-                  Live Games
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {isLoading ? (
-                  <div className="space-y-3">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="bg-gray-700 rounded-lg p-3 animate-pulse">
-                        <div className="h-4 bg-gray-600 rounded mb-2"></div>
-                        <div className="h-3 bg-gray-600 rounded"></div>
+          {/* Main Video Player - Takes 3 columns */}
+          <div className="lg:col-span-3 space-y-6">
+            {/* Video Player */}
+            <Card className="bg-gray-900 border-gray-800">
+              <CardContent className="p-0">
+                {selectedGame ? (
+                  <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
+                    {/* Video Element */}
+                    <video
+                      ref={videoRef}
+                      className="w-full h-full object-cover"
+                      src={selectedGame.streamUrl}
+                      autoPlay={isPlaying}
+                      muted={isMuted}
+                      controls={false}
+                    />
+                    
+                    {/* Video Controls Overlay */}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setIsPlaying(!isPlaying)}
+                            className="text-white hover:bg-white/20"
+                          >
+                            {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+                          </Button>
+                          
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setIsMuted(!isMuted)}
+                            className="text-white hover:bg-white/20"
+                          >
+                            {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+                          </Button>
+                          
+                          <div className="flex items-center space-x-2">
+                            <Users className="h-4 w-4" />
+                            <span className="text-sm">{selectedGame.viewers.toLocaleString()} viewers</span>
+                          </div>
+                        </div>
+                        
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={toggleFullscreen}
+                          className="text-white hover:bg-white/20"
+                        >
+                          <Maximize className="h-5 w-5" />
+                        </Button>
                       </div>
+                    </div>
+                    
+                    {/* Game Info Overlay */}
+                    <div className="absolute top-4 left-4 right-4">
+                      <div className="bg-black/60 backdrop-blur-sm rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="text-lg font-semibold">{selectedGame.title}</h3>
+                            <p className="text-sm text-gray-300">{selectedGame.league}</p>
+                          </div>
+                          <div className="text-right">
+                            <Badge className="bg-red-600 hover:bg-red-700">
+                              <div className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></div>
+                              LIVE
+                            </Badge>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between mt-4">
+                          <div className="flex items-center space-x-4">
+                            <div className="text-center">
+                              <p className="text-sm font-medium">{selectedGame.homeTeam.name}</p>
+                              <p className="text-2xl font-bold">{selectedGame.homeTeam.score}</p>
+                            </div>
+                            <div className="text-center">
+                              <p className="text-xs text-gray-400">VS</p>
+                            </div>
+                            <div className="text-center">
+                              <p className="text-sm font-medium">{selectedGame.awayTeam.name}</p>
+                              <p className="text-2xl font-bold">{selectedGame.awayTeam.score}</p>
+                            </div>
+                          </div>
+                          
+                          <div className="text-right">
+                            <p className="text-sm text-gray-300">{selectedGame.period}</p>
+                            <p className="text-sm text-gray-300">{selectedGame.timeRemaining}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="aspect-video bg-gray-800 rounded-lg flex items-center justify-center">
+                    <div className="text-center">
+                      <Play className="h-16 w-16 mx-auto mb-4 text-gray-600" />
+                      <p className="text-gray-400">Select a game to start watching</p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Live Betting Panel */}
+            {selectedGame && (
+              <Card className="bg-gray-900 border-gray-800">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Target className="h-5 w-5" />
+                    <span>Live Betting</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <Button
+                      variant="outline"
+                      className="h-16 border-green-600 hover:bg-green-600/20"
+                      onClick={() => handleBetPlace(selectedGame.id, 'home_win', selectedGame.odds.homeWin)}
+                    >
+                      <div className="text-center">
+                        <p className="text-sm">{selectedGame.homeTeam.name} Win</p>
+                        <p className="text-lg font-bold">+{selectedGame.odds.homeWin}</p>
+                      </div>
+                    </Button>
+                    
+                    {selectedGame.odds.draw && (
+                      <Button
+                        variant="outline"
+                        className="h-16 border-gray-600 hover:bg-gray-600/20"
+                        onClick={() => handleBetPlace(selectedGame.id, 'draw', selectedGame.odds.draw!)}
+                      >
+                        <div className="text-center">
+                          <p className="text-sm">Draw</p>
+                          <p className="text-lg font-bold">+{selectedGame.odds.draw}</p>
+                        </div>
+                      </Button>
+                    )}
+                    
+                    <Button
+                      variant="outline"
+                      className="h-16 border-green-600 hover:bg-green-600/20"
+                      onClick={() => handleBetPlace(selectedGame.id, 'away_win', selectedGame.odds.awayWin)}
+                    >
+                      <div className="text-center">
+                        <p className="text-sm">{selectedGame.awayTeam.name} Win</p>
+                        <p className="text-lg font-bold">+{selectedGame.odds.awayWin}</p>
+                      </div>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Games Carousel at Bottom */}
+            <Card className="bg-gray-900 border-gray-800">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center space-x-2">
+                    <Zap className="h-5 w-5" />
+                    <span>Live Games</span>
+                  </CardTitle>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => scrollCarousel('left')}
+                      className="text-gray-400 hover:text-white"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => scrollCarousel('right')}
+                      className="text-gray-400 hover:text-white"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="flex space-x-4 overflow-x-auto pb-2">
+                    {[...Array(5)].map((_, i) => (
+                      <div key={i} className="flex-shrink-0 w-64 h-32 bg-gray-800 rounded-lg animate-pulse"></div>
                     ))}
                   </div>
                 ) : (
-                  liveGames.map((game) => (
-                    <Card 
-                      key={game.id}
-                      className={`cursor-pointer transition-all duration-200 ${
-                        selectedGame?.id === game.id 
-                          ? 'bg-blue-600 border-blue-500' 
-                          : 'bg-gray-700 border-gray-600 hover:bg-gray-600'
-                      }`}
-                      onClick={() => handleGameSelect(game)}
-                    >
-                      <CardContent className="p-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <Badge variant={game.status === 'live' ? 'destructive' : 'secondary'}>
-                            {game.status === 'live' ? 'LIVE' : game.status.toUpperCase()}
-                          </Badge>
-                          <div className="flex items-center text-xs text-gray-400">
-                            <Users className="w-3 h-3 mr-1" />
-                            {game.viewers?.toLocaleString() || '0'}
+                  <div 
+                    ref={carouselRef}
+                    className="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide"
+                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                  >
+                    {liveGames.map((game) => (
+                      <button
+                        key={game.id}
+                        onClick={() => handleGameSelect(game)}
+                        className={`flex-shrink-0 w-64 p-3 rounded-lg border transition-colors ${
+                          selectedGame?.id === game.id
+                            ? 'border-blue-600 bg-blue-600/20'
+                            : 'border-gray-700 hover:border-gray-600 bg-gray-800'
+                        }`}
+                      >
+                        <div className="text-left">
+                          <div className="flex items-center justify-between mb-2">
+                            <Badge className="text-xs bg-red-600">
+                              <div className="w-1.5 h-1.5 bg-white rounded-full mr-1 animate-pulse"></div>
+                              LIVE
+                            </Badge>
+                            <div className="flex items-center text-xs text-gray-400">
+                              <Users className="h-3 w-3 mr-1" />
+                              {game.viewers.toLocaleString()}
+                            </div>
+                          </div>
+                          
+                          <p className="text-sm font-medium truncate">{game.title}</p>
+                          <p className="text-xs text-gray-400 mb-2">{game.league}</p>
+                          
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2 text-xs">
+                              <span>{game.homeTeam.name} {game.homeTeam.score}</span>
+                              <span className="text-gray-500">-</span>
+                              <span>{game.awayTeam.score} {game.awayTeam.name}</span>
+                            </div>
+                            <div className="text-xs text-gray-400">
+                              {game.period}
+                            </div>
                           </div>
                         </div>
-                        
-                        <div className="text-sm font-medium text-white mb-1">
-                          {game.homeTeam.name} vs {game.awayTeam.name}
-                        </div>
-                        
-                        {game.status === 'live' && (
-                          <div className="flex justify-between text-xs text-gray-300">
-                            <span>{game.homeTeam.score} - {game.awayTeam.score}</span>
-                            <span>{game.period} • {game.timeRemaining}</span>
-                          </div>
-                        )}
-                        
-                        <div className="text-xs text-gray-400 mt-1">
-                          {game.league} • {game.sport}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))
+                      </button>
+                    ))}
+                    
+                    {liveGames.length === 0 && (
+                      <div className="flex-shrink-0 w-full text-center py-8">
+                        <Clock className="h-8 w-8 mx-auto mb-2 text-gray-600" />
+                        <p className="text-gray-400">No live games available</p>
+                      </div>
+                    )}
+                  </div>
                 )}
               </CardContent>
             </Card>
           </div>
 
-          {/* Main Content */}
-          <div className="lg:col-span-3">
-            {selectedGame ? (
-              <div className="space-y-6">
-                {/* Video Player */}
-                <Card className="bg-gray-800 border-gray-700">
-                  <CardContent className="p-0">
-                    <div className="relative bg-black rounded-lg overflow-hidden" style={{ aspectRatio: '16/9' }}>
-                      {/* Actual Video Stream */}
-                      {selectedGame.streamUrl ? (
-                        <video
-                          ref={videoRef}
-                          className="w-full h-full object-cover"
-                          autoPlay
-                          muted={isMuted}
-                          controls={false}
-                          onLoadStart={() => setIsPlaying(true)}
-                          onError={(e) => {
-                            console.error('Video stream error:', e);
-                            toast({
-                              title: "Stream Error",
-                              description: "Unable to load video stream. Trying backup source...",
-                              variant: "destructive",
-                            });
-                          }}
-                        >
-                          <source src={selectedGame.streamUrl} type="application/x-mpegURL" />
-                          <source src={selectedGame.streamUrl} type="video/mp4" />
-                          Your browser does not support the video tag.
-                        </video>
-                      ) : (
-                        <div className="absolute inset-0 bg-gray-900 flex items-center justify-center">
-                          <div className="text-center">
-                            <Play className="w-16 h-16 text-white mx-auto mb-4" />
-                            <h3 className="text-xl font-semibold text-white mb-2">
-                              {selectedGame.homeTeam.name} vs {selectedGame.awayTeam.name}
-                            </h3>
-                            <p className="text-gray-400">{selectedGame.league} • {selectedGame.sport}</p>
-                            <p className="text-red-400 mt-2">Stream loading...</p>
-                            {selectedGame.status === 'live' && (
-                              <div className="mt-4 space-y-2">
-                                <div className="text-2xl font-bold text-white">
-                                  {selectedGame.homeTeam.score} - {selectedGame.awayTeam.score}
-                                </div>
-                                <div className="text-sm text-gray-300">
-                                  {selectedGame.period} • {selectedGame.timeRemaining}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Video Controls */}
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-4">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setIsPlaying(!isPlaying)}
-                              className="text-white hover:bg-white/20"
-                            >
-                              {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-                            </Button>
-                            
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setIsMuted(!isMuted)}
-                              className="text-white hover:bg-white/20"
-                            >
-                              {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-                            </Button>
-                          </div>
-
-                          <div className="flex items-center space-x-2">
-                            <div className="flex items-center text-white text-sm">
-                              <Users className="w-4 h-4 mr-1" />
-                              {selectedGame.viewers?.toLocaleString() || '0'} viewers
-                            </div>
-                            
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={toggleFullscreen}
-                              className="text-white hover:bg-white/20"
-                            >
-                              <Maximize className="w-5 h-5" />
-                            </Button>
-                          </div>
-                        </div>
+          {/* Right Sidebar - Bet Slip */}
+          <div className="lg:col-span-1">
+            <Card className="bg-gray-900 border-gray-800 sticky top-4">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <TrendingUp className="h-5 w-5" />
+                  <span>Bet Slip</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {betSlip ? (
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-sm text-gray-400">Balance: <span className="text-green-400">${userBalance.toFixed(2)}</span></p>
+                    </div>
+                    
+                    <div className="bg-gray-800 p-3 rounded-lg">
+                      <p className="text-sm font-medium text-white">{betSlip.betType.replace('_', ' ').toUpperCase()}</p>
+                      <p className="text-xs text-gray-400">Odds: +{betSlip.odds}</p>
+                      <div className="flex justify-between mt-2">
+                        <span className="text-sm text-gray-300">Stake:</span>
+                        <span className="text-sm font-bold text-white">${betSlip.amount}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-300">Potential Win:</span>
+                        <span className="text-sm font-bold text-green-400">${betSlip.potentialWin.toFixed(2)}</span>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-
-                {/* Betting Interface */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  {/* Live Odds */}
-                  <div className="lg:col-span-2">
-                    <Card className="bg-gray-800 border-gray-700">
-                      <CardHeader>
-                        <CardTitle className="text-white flex items-center">
-                          <Target className="w-5 h-5 mr-2 text-green-500" />
-                          Live Betting Odds
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          {/* Home Team Win */}
-                          <Button
-                            className="h-20 bg-blue-600 hover:bg-blue-700 text-white flex flex-col justify-center"
-                            onClick={() => handleBetPlace(selectedGame.id, 'home_win', selectedGame.odds.homeWin)}
-                          >
-                            <div className="text-sm font-medium">{selectedGame.homeTeam.name}</div>
-                            <div className="text-lg font-bold">+{selectedGame.odds.homeWin}</div>
-                            <div className="text-xs opacity-80">Win</div>
-                          </Button>
-
-                          {/* Draw (if applicable) */}
-                          {selectedGame.odds.draw && (
-                            <Button
-                              className="h-20 bg-gray-600 hover:bg-gray-700 text-white flex flex-col justify-center"
-                              onClick={() => handleBetPlace(selectedGame.id, 'draw', selectedGame.odds.draw!)}
-                            >
-                              <div className="text-sm font-medium">Draw</div>
-                              <div className="text-lg font-bold">+{selectedGame.odds.draw}</div>
-                              <div className="text-xs opacity-80">Tie</div>
-                            </Button>
-                          )}
-
-                          {/* Away Team Win */}
-                          <Button
-                            className="h-20 bg-red-600 hover:bg-red-700 text-white flex flex-col justify-center"
-                            onClick={() => handleBetPlace(selectedGame.id, 'away_win', selectedGame.odds.awayWin)}
-                          >
-                            <div className="text-sm font-medium">{selectedGame.awayTeam.name}</div>
-                            <div className="text-lg font-bold">+{selectedGame.odds.awayWin}</div>
-                            <div className="text-xs opacity-80">Win</div>
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-gray-300">Bet Amount ($)</label>
+                      <input
+                        type="number"
+                        value={betAmount}
+                        onChange={(e) => {
+                          const newAmount = Number(e.target.value);
+                          setBetAmount(newAmount);
+                          if (betSlip) {
+                            setBetSlip({
+                              ...betSlip,
+                              amount: newAmount,
+                              potentialWin: newAmount * (betSlip.odds / 100)
+                            });
+                          }
+                        }}
+                        className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
+                        min="1"
+                        max={userBalance}
+                      />
+                    </div>
+                    
+                    <Button 
+                      onClick={confirmBet}
+                      className="w-full bg-green-600 hover:bg-green-700"
+                      disabled={betAmount > userBalance || betAmount < 1}
+                    >
+                      Confirm Bet
+                    </Button>
                   </div>
-
-                  {/* Bet Slip */}
-                  <div className="lg:col-span-1">
-                    <Card className="bg-gray-800 border-gray-700">
-                      <CardHeader>
-                        <CardTitle className="text-white flex items-center">
-                          <DollarSign className="w-5 h-5 mr-2 text-yellow-500" />
-                          Bet Slip
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="text-sm text-gray-300">
-                          Balance: <span className="text-green-400 font-semibold">${userBalance.toFixed(2)}</span>
-                        </div>
-
-                        {betSlip ? (
-                          <div className="space-y-4">
-                            <div className="bg-gray-700 rounded-lg p-3">
-                              <div className="text-sm text-white mb-2">{betSlip.betType.replace('_', ' ').toUpperCase()}</div>
-                              <div className="text-xs text-gray-400 mb-2">Odds: +{betSlip.odds}</div>
-                              
-                              <div className="space-y-2">
-                                <div className="flex justify-between text-sm">
-                                  <span className="text-gray-300">Stake:</span>
-                                  <span className="text-white">${betSlip.amount}</span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                  <span className="text-gray-300">Potential Win:</span>
-                                  <span className="text-green-400 font-semibold">${betSlip.potentialWin.toFixed(2)}</span>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="space-y-2">
-                              <label className="text-sm text-gray-300">Bet Amount ($)</label>
-                              <input
-                                type="number"
-                                value={betAmount}
-                                onChange={(e) => setBetAmount(Number(e.target.value))}
-                                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
-                                min="1"
-                                max={userBalance}
-                              />
-                            </div>
-
-                            <Button
-                              onClick={confirmBet}
-                              className="w-full bg-green-600 hover:bg-green-700 text-white"
-                              disabled={betAmount > userBalance || betAmount < 1}
-                            >
-                              Confirm Bet
-                            </Button>
-
-                            <Button
-                              onClick={() => setBetSlip(null)}
-                              variant="outline"
-                              className="w-full border-gray-600 text-gray-300 hover:bg-gray-700"
-                            >
-                              Clear Slip
-                            </Button>
-                          </div>
-                        ) : (
-                          <div className="text-center text-gray-400 py-8">
-                            <Target className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                            <p>Select odds to place a bet</p>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
+                ) : (
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-800 flex items-center justify-center">
+                      <Target className="h-8 w-8 text-gray-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2">Your bet slip is empty</h3>
+                    <p className="text-gray-400 text-sm">Click on odds to add bets to your slip</p>
                   </div>
-                </div>
-              </div>
-            ) : (
-              <Card className="bg-gray-800 border-gray-700">
-                <CardContent className="flex items-center justify-center py-20">
-                  <div className="text-center">
-                    <Play className="w-16 h-16 text-gray-500 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-white mb-2">Select a Live Game</h3>
-                    <p className="text-gray-400">Choose a game from the sidebar to start watching and betting</p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
