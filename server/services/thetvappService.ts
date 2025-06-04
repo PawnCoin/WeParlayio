@@ -36,11 +36,11 @@ export class TheTVAppService {
   private password: string;
   
   constructor() {
-    this.username = process.env.THETVAPP_USERNAME || '';
-    this.password = process.env.THETVAPP_PASSWORD || '';
+    this.username = process.env.THETVAPP_USERNAME || '686140897';
+    this.password = process.env.THETVAPP_PASSWORD || '80274761';
     this.m3uUrl = process.env.M3U_PLAYLIST_URL || 
-      `http://thetvapp.tv:80/get.php?username=${this.username}&password=${this.password}&type=m3u_plus&output=ts`;
-    console.log(`M3U Streaming service configured for user: ${this.username}`);
+      `http://thetv.to:80/get.php?username=${this.username}&password=${this.password}&type=m3u_plus&output=ts`;
+    console.log(`TheTVSub streaming service configured for user: ${this.username}`);
   }
 
   /**
@@ -85,8 +85,13 @@ export class TheTVAppService {
         const parts = info.split(',');
         const name = parts[parts.length - 1];
         
-        // Check if this is a sports channel
-        const sportsKeywords = ['sport', 'espn', 'fox sports', 'nfl', 'nba', 'mlb', 'nhl', 'soccer', 'football', 'basketball', 'baseball', 'hockey', 'tennis', 'golf', 'racing', 'motorsport', 'ufc', 'boxing', 'mma'];
+        // Check if this is a sports channel - expanded keywords for international coverage
+        const sportsKeywords = [
+          'sport', 'espn', 'fox sports', 'nfl', 'nba', 'mlb', 'nhl', 'soccer', 'football', 'basketball', 'baseball', 'hockey', 'tennis', 'golf', 'racing', 'motorsport', 'ufc', 'boxing', 'mma',
+          'deportes', 'futbol', 'liga', 'champions', 'premier league', 'laliga', 'bundesliga', 'serie a', 'ligue 1',
+          'usa | ', 'uk | ', 'ca | ', 'sports', 'athletic', 'olympics', 'fifa', 'uefa', 'nascar', 'f1', 'formula',
+          'cricket', 'rugby', 'volleyball', 'swimming', 'track', 'wrestling', 'martial arts', 'esports', 'gaming'
+        ];
         const isSports = sportsKeywords.some(keyword => 
           name.toLowerCase().includes(keyword) || 
           info.toLowerCase().includes(keyword)

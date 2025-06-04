@@ -3680,6 +3680,100 @@ Start betting through text now!`;
     }
   });
 
+  // Live channels browsing endpoint
+  app.get('/api/live-channels', async (req, res) => {
+    try {
+      const { category } = req.query;
+      
+      // Get all available channels from thetv.to
+      const response = await fetch(`http://thetv.to:80/get.php?username=686140897&password=80274761&type=m3u_plus&output=ts`);
+      
+      if (!response.ok) {
+        return res.status(503).json({ message: 'Streaming service unavailable' });
+      }
+      
+      const m3uContent = await response.text();
+      const channels = [];
+      const lines = m3uContent.split('\n');
+      let currentChannel = null;
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        
+        if (line.startsWith('#EXTINF:')) {
+          const info = line.substring(8);
+          const parts = info.split(',');
+          const name = parts[parts.length - 1];
+          
+          // Extract group-title for categorization
+          const groupMatch = info.match(/group-title="([^"]+)"/);
+          const channelCategory = groupMatch ? groupMatch[1] : 'General';
+          
+          currentChannel = {
+            name: name,
+            category: channelCategory,
+            info: info
+          };
+        } else if (line.startsWith('http') && currentChannel) {
+          channels.push({
+            id: `channel_${channels.length + 1}`,
+            name: currentChannel.name,
+            category: currentChannel.category,
+            streamUrl: line,
+            isLive: true
+          });
+          currentChannel = null;
+        }
+      }
+      
+      // Filter by category if specified
+      let filteredChannels = channels;
+      if (category && category !== 'all') {
+        filteredChannels = channels.filter(channel => 
+          channel.category.toLowerCase().includes(category.toLowerCase()) ||
+          channel.name.toLowerCase().includes(category.toLowerCase())
+        );
+      }
+      
+      res.json({
+        total: filteredChannels.length,
+        channels: filteredChannels.slice(0, 50) // Limit to 50 channels per request
+      });
+    } catch (error) {
+      console.error('Error fetching live channels:', error);
+      res.status(500).json({ message: 'Failed to fetch channels' });
+    }
+  });
+
+  // Channel categories endpoint
+  app.get('/api/channel-categories', async (req, res) => {
+    try {
+      const response = await fetch(`http://thetv.to:80/get.php?username=686140897&password=80274761&type=m3u_plus&output=ts`);
+      
+      if (!response.ok) {
+        return res.status(503).json({ message: 'Streaming service unavailable' });
+      }
+      
+      const m3uContent = await response.text();
+      const categories = new Set();
+      const lines = m3uContent.split('\n');
+      
+      for (const line of lines) {
+        if (line.startsWith('#EXTINF:')) {
+          const groupMatch = line.match(/group-title="([^"]+)"/);
+          if (groupMatch) {
+            categories.add(groupMatch[1]);
+          }
+        }
+      }
+      
+      res.json(Array.from(categories).sort());
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      res.status(500).json({ message: 'Failed to fetch categories' });
+    }
+  });
+
   // User cash balance endpoint
   app.get('/api/user/cash-balance', isAuthenticated, async (req: any, res) => {
     try {
