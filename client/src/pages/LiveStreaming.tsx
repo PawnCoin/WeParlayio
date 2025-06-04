@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Hls from 'hls.js';
 import { 
   Play, 
   Pause, 
@@ -175,6 +176,35 @@ export default function LiveStreaming() {
                           frameBorder="0"
                           allowFullScreen
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        />
+                      ) : selectedGame.streamUrl.includes('.m3u8') ? (
+                        <video
+                          ref={videoRef}
+                          className="w-full h-full object-cover"
+                          controls
+                          autoPlay
+                          muted
+                          playsInline
+                          onLoadStart={() => {
+                            if (videoRef.current && selectedGame.streamUrl) {
+                              // Initialize HLS.js for m3u8 streams
+                              if (Hls.isSupported()) {
+                                const hls = new Hls({
+                                  enableWorker: false,
+                                  lowLatencyMode: true,
+                                });
+                                hls.loadSource(selectedGame.streamUrl);
+                                hls.attachMedia(videoRef.current);
+                                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                                  videoRef.current?.play();
+                                });
+                              } else if (videoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
+                                // Native HLS support (Safari)
+                                videoRef.current.src = selectedGame.streamUrl;
+                                videoRef.current.play();
+                              }
+                            }
+                          }}
                         />
                       ) : (
                         <video

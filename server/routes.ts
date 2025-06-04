@@ -3545,29 +3545,38 @@ Start betting through text now!`;
               const groupMatch = info.match(/group-title="([^"]+)"/);
               const category = groupMatch ? groupMatch[1] : 'Sports';
               
-              // Include all sports and entertainment channels
-              const isSportsOrEntertainment = category.toLowerCase().includes('sport') || 
-                                            name.toLowerCase().includes('sport') || 
-                                            name.toLowerCase().includes('espn') || 
-                                            name.toLowerCase().includes('fox') ||
-                                            name.toLowerCase().includes('nfl') ||
-                                            name.toLowerCase().includes('nba') ||
-                                            name.toLowerCase().includes('mlb') ||
-                                            name.toLowerCase().includes('nhl') ||
-                                            name.toLowerCase().includes('soccer') ||
-                                            name.toLowerCase().includes('football') ||
-                                            name.toLowerCase().includes('basketball') ||
-                                            name.toLowerCase().includes('baseball') ||
-                                            name.toLowerCase().includes('tennis') ||
-                                            name.toLowerCase().includes('golf') ||
-                                            name.toLowerCase().includes('cbs') ||
-                                            name.toLowerCase().includes('nbc') ||
-                                            name.toLowerCase().includes('abc') ||
-                                            category.toLowerCase().includes('usa') ||
-                                            category.toLowerCase().includes('premier') ||
-                                            category.toLowerCase().includes('entertainment');
+              // Ultra-strict sports-only filtering - exclude all generic channels
+              const nameLower = name.toLowerCase();
+              const categoryLower = category.toLowerCase();
               
-              if (isSportsOrEntertainment) {
+              const isSportsOnly = (
+                // Dedicated sports networks only
+                nameLower.includes('espn') ||
+                nameLower.includes('fox sports') ||
+                nameLower.includes('nfl network') ||
+                nameLower.includes('nba tv') ||
+                nameLower.includes('mlb network') ||
+                nameLower.includes('nhl network') ||
+                nameLower.includes('tennis channel') ||
+                nameLower.includes('golf channel') ||
+                nameLower.includes('beinsports') ||
+                nameLower.includes('eurosport') ||
+                nameLower.includes('sky sports') ||
+                nameLower.includes('premier sports') ||
+                nameLower.includes('motorsport') ||
+                // Only sport-specific categories
+                categoryLower === 'sports' ||
+                categoryLower === 'sport'
+              ) && (
+                // Exclude generic channels
+                !nameLower.includes('pt |') &&
+                !nameLower.includes('fox') || nameLower.includes('fox sports') &&
+                !nameLower.includes('news') &&
+                !nameLower.includes('weather') &&
+                !nameLower.includes('movie')
+              );
+              
+              if (isSportsOnly) {
                 currentChannel = {
                   name: name,
                   category: category,
