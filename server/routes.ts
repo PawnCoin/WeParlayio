@@ -3985,20 +3985,92 @@ Start betting through text now!`;
       // Set CORS headers first
       res.setHeader('Access-Control-Allow-Origin', '*');
       res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Range');
+      res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Range');
 
-      // For thetv.to streams, try alternative approaches
+      // Handle preflight requests
+      if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+      }
+
+      // For thetv.to streams, proxy the actual content with authentication
       if (streamUrl.includes('thetv.to')) {
-        // Return a simple m3u8 playlist that redirects to the original stream
-        const playlistContent = `#EXTM3U
+        const tvUsername = process.env.THETVAPP_USERNAME;
+        const tvPassword = process.env.THETVAPP_PASSWORD;
+        
+        const headers: Record<string, string> = {
+          'User-Agent': 'VLC/3.0.16 LibVLC/3.0.16',
+          'Accept': '*/*',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Range': req.headers.range || 'bytes=0-',
+        };
+
+        // Add basic auth if credentials are available
+        if (tvUsername && tvPassword) {
+          const auth = Buffer.from(`${tvUsername}:${tvPassword}`).toString('base64');
+          headers['Authorization'] = `Basic ${auth}`;
+        }
+
+        try {
+          const response = await fetch(streamUrl, { 
+            headers,
+            signal: AbortSignal.timeout(15000)
+          });
+
+          if (!response.ok) {
+            console.error(`thetv.to stream failed: ${response.status} ${response.statusText}`);
+            return res.status(502).json({ error: 'Stream unavailable' });
+          }
+
+          // Forward headers
+          const contentType = response.headers.get('content-type') || 'video/mp2t';
+          res.setHeader('Content-Type', contentType);
+          
+          const contentLength = response.headers.get('content-length');
+          if (contentLength) {
+            res.setHeader('Content-Length', contentLength);
+          }
+
+          const contentRange = response.headers.get('content-range');
+          if (contentRange) {
+            res.setHeader('Content-Range', contentRange);
+            res.status(206); // Partial content
+          }
+
+          // Stream the response
+          if (response.body) {
+            const reader = response.body.getReader();
+            const pump = async () => {
+              try {
+                while (true) {
+                  const { done, value } = await reader.read();
+                  if (done) break;
+                  res.write(value);
+                }
+                res.end();
+              } catch (error) {
+                console.error('Stream pipe error:', error);
+                res.end();
+              }
+            };
+            pump();
+          } else {
+            res.end();
+          }
+        } catch (error) {
+          console.error('thetv.to stream error:', error);
+          // Fallback: return a simple m3u8 playlist
+          const playlistContent = `#EXTM3U
 #EXT-X-VERSION:3
 #EXT-X-TARGETDURATION:10
 #EXTINF:10.0,
 ${streamUrl}
 #EXT-X-ENDLIST`;
-        
-        res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
-        return res.send(playlistContent);
+          
+          res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
+          return res.send(playlistContent);
+        }
+        return;
       }
 
       // For other streams, proceed with normal proxying
@@ -4012,7 +4084,7 @@ ${streamUrl}
 
       const response = await fetch(streamUrl, { 
         headers,
-        signal: AbortSignal.timeout(10000) // 10 second timeout
+        signal: AbortSignal.timeout(10000)
       });
 
       if (!response.ok) {
