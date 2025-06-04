@@ -3603,7 +3603,7 @@ Start betting through text now!`;
                 league: currentChannel.name,
                 status: 'live' as const,
                 startTime: new Date().toISOString(),
-                streamUrl: streamUrl,
+                streamUrl: `/api/stream-proxy?url=${encodeURIComponent(streamUrl)}`,
                 odds: {
                   homeWin: Math.floor(Math.random() * 200) + 100,
                   awayWin: Math.floor(Math.random() * 200) + 100
@@ -3961,6 +3961,79 @@ Start betting through text now!`;
 
   app.post('/api/cashapp/payout', isAuthenticated, async (req, res) => {
     await initiateCashAppPayout(req, res);
+  });
+
+  // Stream proxy endpoint for handling CORS and authentication
+  app.get('/api/stream-proxy', async (req, res) => {
+    try {
+      const streamUrl = req.query.url as string;
+      if (!streamUrl) {
+        return res.status(400).json({ error: 'Stream URL required' });
+      }
+
+      // Add authentication headers for thetv.to
+      const headers: Record<string, string> = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': '*/*',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+        'Referer': 'https://thetv.to/',
+        'Origin': 'https://thetv.to'
+      };
+
+      // Add authentication if thetv.to stream
+      if (streamUrl.includes('thetv.to')) {
+        const tvUsername = process.env.THETVAPP_USERNAME;
+        const tvPassword = process.env.THETVAPP_PASSWORD;
+        if (tvUsername && tvPassword) {
+          const auth = Buffer.from(`${tvUsername}:${tvPassword}`).toString('base64');
+          headers['Authorization'] = `Basic ${auth}`;
+        }
+      }
+
+      const response = await fetch(streamUrl, { headers });
+
+      if (!response.ok) {
+        console.error(`Stream fetch failed: ${response.status} ${response.statusText}`);
+        return res.status(response.status).json({ error: 'Stream not available' });
+      }
+
+      // Set CORS headers
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+      
+      // Forward content type
+      const contentType = response.headers.get('content-type');
+      if (contentType) {
+        res.setHeader('Content-Type', contentType);
+      }
+
+      // Stream the response
+      if (response.body) {
+        const reader = response.body.getReader();
+        const pump = async () => {
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              res.write(value);
+            }
+            res.end();
+          } catch (error) {
+            console.error('Stream pipe error:', error);
+            res.end();
+          }
+        };
+        pump();
+      } else {
+        res.end();
+      }
+    } catch (error) {
+      console.error('Stream proxy error:', error);
+      res.status(500).json({ error: 'Proxy error' });
+    }
   });
 
   // Return the HTTP server
