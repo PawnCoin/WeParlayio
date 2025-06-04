@@ -187,7 +187,7 @@ export default function UpgradeTier() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black p-4">
       <div className="container mx-auto max-w-7xl">
         <div className="mb-8">
           <Button 
@@ -200,8 +200,8 @@ export default function UpgradeTier() {
           </Button>
           
           <div className="text-center">
-            <h1 className="text-4xl font-bold mb-4">Upgrade Your WeParlay Experience</h1>
-            <p className="text-xl text-gray-600 mb-8">
+            <h1 className="text-4xl font-bold text-white mb-4">Upgrade Your WeParlay Experience</h1>
+            <p className="text-xl text-gray-300 mb-8">
               Choose the perfect plan to unlock advanced features and take your betting to the next level
             </p>
           </div>
@@ -213,7 +213,7 @@ export default function UpgradeTier() {
             return (
               <Card 
                 key={plan.id}
-                className={`relative transition-all duration-300 hover:scale-105 ${
+                className={`relative transition-all duration-300 hover:scale-105 bg-gray-800 border-gray-700 ${
                   plan.popular ? 'ring-2 ring-orange-500 shadow-lg' : ''
                 } ${
                   plan.elite ? 'ring-2 ring-blue-500 shadow-xl' : ''
@@ -320,28 +320,28 @@ export default function UpgradeTier() {
         </div>
 
         <div className="mt-12 text-center">
-          <Card className="max-w-2xl mx-auto">
+          <Card className="max-w-2xl mx-auto bg-gray-800 border-gray-700">
             <CardContent className="p-6">
-              <h3 className="text-xl font-semibold mb-4">Why Upgrade?</h3>
+              <h3 className="text-xl font-semibold text-white mb-4">Why Upgrade?</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div>
-                  <h4 className="font-medium mb-2">Enhanced Features</h4>
-                  <p className="text-gray-600">Access advanced betting tools and exclusive content</p>
+                  <h4 className="font-medium text-white mb-2">Enhanced Features</h4>
+                  <p className="text-gray-300">Access advanced betting tools and exclusive content</p>
                 </div>
                 <div>
-                  <h4 className="font-medium mb-2">Priority Support</h4>
-                  <p className="text-gray-600">Get faster response times and dedicated assistance</p>
+                  <h4 className="font-medium text-white mb-2">Priority Support</h4>
+                  <p className="text-gray-300">Get faster response times and dedicated assistance</p>
                 </div>
                 <div>
-                  <h4 className="font-medium mb-2">Exclusive Access</h4>
-                  <p className="text-gray-600">Early access to new features and beta testing</p>
+                  <h4 className="font-medium text-white mb-2">Exclusive Access</h4>
+                  <p className="text-gray-300">Early access to new features and beta testing</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        <div className="mt-8 text-center text-sm text-gray-500">
+        <div className="mt-8 text-center text-sm text-gray-400">
           <p>All plans include a 30-day money-back guarantee. Cancel anytime.</p>
           <p className="mt-2">Questions? Contact our support team at support@weparlay.io</p>
         </div>
