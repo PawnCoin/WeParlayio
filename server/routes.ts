@@ -3550,7 +3550,7 @@ Start betting through text now!`;
               const categoryLower = category.toLowerCase();
               
               const isSportsOnly = (
-                // Dedicated sports networks only
+                // Dedicated sports networks
                 nameLower.includes('espn') ||
                 nameLower.includes('fox sports') ||
                 nameLower.includes('nfl network') ||
@@ -3564,16 +3564,25 @@ Start betting through text now!`;
                 nameLower.includes('sky sports') ||
                 nameLower.includes('premier sports') ||
                 nameLower.includes('motorsport') ||
-                // Only sport-specific categories
+                nameLower.includes('ncaa') ||
+                nameLower.includes('boxing') ||
+                nameLower.includes('tennis') ||
+                nameLower.includes('golf') ||
+                nameLower.includes('soccer') ||
+                nameLower.includes('football') && !nameLower.includes('news') ||
+                nameLower.includes('basketball') && !nameLower.includes('news') ||
+                nameLower.includes('baseball') && !nameLower.includes('news') ||
+                nameLower.includes('hockey') && !nameLower.includes('news') ||
+                // Sport-specific categories
                 categoryLower === 'sports' ||
                 categoryLower === 'sport'
               ) && (
-                // Exclude generic channels
+                // Exclude generic channels and news
                 !nameLower.includes('pt |') &&
-                !nameLower.includes('fox') || nameLower.includes('fox sports') &&
                 !nameLower.includes('news') &&
                 !nameLower.includes('weather') &&
-                !nameLower.includes('movie')
+                !nameLower.includes('movie') &&
+                !nameLower.includes('entertainment')
               );
               
               if (isSportsOnly) {
@@ -3971,39 +3980,46 @@ Start betting through text now!`;
         return res.status(400).json({ error: 'Stream URL required' });
       }
 
-      // Add authentication headers for thetv.to
+      console.log('Attempting to proxy stream:', streamUrl);
+
+      // Set CORS headers first
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+      // For thetv.to streams, try alternative approaches
+      if (streamUrl.includes('thetv.to')) {
+        // Return a simple m3u8 playlist that redirects to the original stream
+        const playlistContent = `#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-TARGETDURATION:10
+#EXTINF:10.0,
+${streamUrl}
+#EXT-X-ENDLIST`;
+        
+        res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
+        return res.send(playlistContent);
+      }
+
+      // For other streams, proceed with normal proxying
       const headers: Record<string, string> = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         'Accept': '*/*',
         'Accept-Language': 'en-US,en;q=0.9',
         'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache',
-        'Referer': 'https://thetv.to/',
-        'Origin': 'https://thetv.to'
+        'Pragma': 'no-cache'
       };
 
-      // Add authentication if thetv.to stream
-      if (streamUrl.includes('thetv.to')) {
-        const tvUsername = process.env.THETVAPP_USERNAME;
-        const tvPassword = process.env.THETVAPP_PASSWORD;
-        if (tvUsername && tvPassword) {
-          const auth = Buffer.from(`${tvUsername}:${tvPassword}`).toString('base64');
-          headers['Authorization'] = `Basic ${auth}`;
-        }
-      }
-
-      const response = await fetch(streamUrl, { headers });
+      const response = await fetch(streamUrl, { 
+        headers,
+        signal: AbortSignal.timeout(10000) // 10 second timeout
+      });
 
       if (!response.ok) {
         console.error(`Stream fetch failed: ${response.status} ${response.statusText}`);
-        return res.status(response.status).json({ error: 'Stream not available' });
+        return res.status(502).json({ error: 'Stream unavailable' });
       }
 
-      // Set CORS headers
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-      
       // Forward content type
       const contentType = response.headers.get('content-type');
       if (contentType) {
@@ -4032,7 +4048,7 @@ Start betting through text now!`;
       }
     } catch (error) {
       console.error('Stream proxy error:', error);
-      res.status(500).json({ error: 'Proxy error' });
+      res.status(500).json({ error: 'Stream service unavailable' });
     }
   });
 
