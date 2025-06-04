@@ -58,6 +58,10 @@ class AllSportsApiService {
       });
 
       if (!response.ok) {
+        console.error(`AllSportsAPI: HTTP ${response.status} ${response.statusText}`);
+        console.error(`AllSportsAPI: Response headers:`, Object.fromEntries(response.headers.entries()));
+        const errorText = await response.text();
+        console.error(`AllSportsAPI: Error response:`, errorText);
         throw new Error(`AllSportsAPI: HTTP ${response.status} ${response.statusText}`);
       }
 
@@ -71,9 +75,42 @@ class AllSportsApiService {
 
   async getSports(): Promise<AllSportsSport[]> {
     try {
-      const data = await this.makeRequest('/sports');
-      console.log(`AllSportsAPI: Retrieved ${data.length} sports`);
-      return data;
+      // Try different possible endpoints and hosts for sports
+      const endpointConfigs = [
+        { host: 'allsportsapi2.p.rapidapi.com', endpoint: '/sports' },
+        { host: 'allsportsapi2.p.rapidapi.com', endpoint: '/api/sports' },
+        { host: 'allsportsapi2.p.rapidapi.com', endpoint: '/v1/sports' },
+        { host: 'allsportsapi.p.rapidapi.com', endpoint: '/sports' },
+        { host: 'api-football-v1.p.rapidapi.com', endpoint: '/v3/leagues' },
+        { host: 'odds.p.rapidapi.com', endpoint: '/v4/sports' }
+      ];
+      
+      for (const config of endpointConfigs) {
+        try {
+          console.log(`AllSportsAPI: Trying ${config.host}${config.endpoint}`);
+          const response = await fetch(`https://${config.host}${config.endpoint}`, {
+            headers: {
+              'X-RapidAPI-Key': this.apiKey,
+              'X-RapidAPI-Host': config.host,
+              'Accept': 'application/json'
+            }
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            console.log(`AllSportsAPI: Success with ${config.host}${config.endpoint}`);
+            return Array.isArray(data) ? data : [];
+          } else {
+            console.log(`AllSportsAPI: ${config.host}${config.endpoint} returned ${response.status}`);
+          }
+        } catch (error) {
+          console.log(`AllSportsAPI: ${config.host}${config.endpoint} failed, trying next...`);
+          continue;
+        }
+      }
+      
+      console.warn('AllSportsAPI: All endpoints failed - API key or host configuration may need verification');
+      return [];
     } catch (error) {
       console.error('AllSportsAPI: Failed to get sports:', error);
       return [];
