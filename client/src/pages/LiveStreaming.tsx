@@ -214,11 +214,18 @@ export default function LiveStreaming() {
           
           hls.on(Hls.Events.MANIFEST_PARSED, () => {
             console.log('Manifest parsed, ready to play');
-            video.load(); // Ensure video is ready
+            // Don't auto-play, wait for user interaction
+            setShowPlayButton(true);
           });
 
           hls.on(Hls.Events.LEVEL_LOADED, () => {
             console.log('Level loaded, video should be ready');
+            setShowPlayButton(true);
+          });
+
+          hls.on(Hls.Events.FRAG_LOADED, () => {
+            console.log('Fragment loaded, content available');
+            setShowPlayButton(true);
           });
           
           hls.on(Hls.Events.ERROR, (event, data) => {
