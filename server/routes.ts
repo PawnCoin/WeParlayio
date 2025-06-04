@@ -1305,95 +1305,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Live games endpoint with working video streams
+  // Live games endpoint - authentic data only (no AllSportsAPI integration to preserve video streaming)
   app.get("/api/live-games", async (req, res) => {
     try {
-      // Create live games with working video streams
-      const liveGames = [
-        {
-          id: 'lakers-warriors',
-          title: 'Lakers vs Warriors',
-          homeTeam: {
-            name: 'Golden State Warriors',
-            score: 84,
-            logo: 'https://ui-avatars.com/api/?name=GSW&background=1d428a&color=fff'
-          },
-          awayTeam: {
-            name: 'Los Angeles Lakers', 
-            score: 78,
-            logo: 'https://ui-avatars.com/api/?name=LAL&background=8b1538&color=fff'
-          },
-          sport: 'Basketball',
-          league: 'NBA',
-          status: 'live' as const,
-          startTime: new Date().toISOString(),
-          streamUrl: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
-          odds: {
-            homeWin: -105,
-            awayWin: -115
-          },
-          viewers: 15420,
-          period: '3rd Quarter',
-          timeRemaining: '8:42'
-        },
-        {
-          id: 'chiefs-broncos',
-          title: 'Chiefs vs Broncos',
-          homeTeam: {
-            name: 'Denver Broncos',
-            score: 14,
-            logo: 'https://ui-avatars.com/api/?name=DEN&background=fb4f14&color=fff'
-          },
-          awayTeam: {
-            name: 'Kansas City Chiefs',
-            score: 21,
-            logo: 'https://ui-avatars.com/api/?name=KC&background=e31837&color=fff'
-          },
-          sport: 'Football',
-          league: 'NFL',
-          status: 'live' as const,
-          startTime: new Date().toISOString(),
-          streamUrl: 'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8',
-          odds: {
-            homeWin: +140,
-            awayWin: -165
-          },
-          viewers: 22800,
-          period: '2nd Quarter',
-          timeRemaining: '5:23'
-        },
-        {
-          id: 'arsenal-chelsea',
-          title: 'Arsenal vs Chelsea',
-          homeTeam: {
-            name: 'Chelsea FC',
-            score: 1,
-            logo: 'https://ui-avatars.com/api/?name=CHE&background=034694&color=fff'
-          },
-          awayTeam: {
-            name: 'Arsenal FC',
-            score: 2,
-            logo: 'https://ui-avatars.com/api/?name=ARS&background=ef0107&color=fff'
-          },
-          sport: 'Soccer',
-          league: 'Premier League',
-          status: 'live' as const,
-          startTime: new Date().toISOString(),
-          streamUrl: 'https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8',
-          odds: {
-            homeWin: +180,
-            awayWin: +120,
-            draw: +240
-          },
-          viewers: 18300,
-          period: '2nd Half',
-          timeRemaining: '67:12'
+      // Get authentic streaming data from thetv.to service
+      const thetvService = await import('./services/thetvappService');
+      
+      try {
+        const availableStreams = await thetvService.getAvailableStreams();
+        
+        if (availableStreams && availableStreams.length > 0) {
+          const authenticGames = availableStreams.map((stream: any, index: number) => ({
+            id: `stream-${stream.id || index + 1}`,
+            title: stream.title || `Live Stream ${index + 1}`,
+            homeTeam: {
+              name: stream.homeTeam || 'Home',
+              score: stream.homeScore || 0,
+              logo: stream.homeLogo || 'https://ui-avatars.com/api/?name=H&background=333&color=fff'
+            },
+            awayTeam: {
+              name: stream.awayTeam || 'Away',
+              score: stream.awayScore || 0,
+              logo: stream.awayLogo || 'https://ui-avatars.com/api/?name=A&background=666&color=fff'
+            },
+            sport: stream.sport || 'Sports',
+            league: stream.league || 'Live',
+            status: 'live' as const,
+            startTime: stream.startTime || new Date().toISOString(),
+            streamUrl: stream.url,
+            viewers: stream.viewers || 0,
+            period: stream.period || 'Live',
+            timeRemaining: stream.timeRemaining || ''
+          }));
+          
+          res.json(authenticGames);
+        } else {
+          // No authentic streams available
+          res.json([]);
         }
-      ];
-
-      res.json(liveGames);
+      } catch (streamError) {
+        console.error('Streaming service unavailable:', streamError);
+        res.json([]);
+      }
     } catch (error: any) {
-      console.error("Error fetching live games:", error);
+      console.error('Error fetching live games:', error);
       res.json([]);
     }
   });

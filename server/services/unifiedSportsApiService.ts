@@ -7,29 +7,48 @@ import { RapidApiService } from './rapidApiService';
 import { SportsGameOddsService } from './sportsGameOddsService';
 import { OddsApiService } from './oddsApiService';
 import { GridApiService } from './gridApiService';
-import { AllSportsApiService } from './allSportsApiService';
+import { allSportsApiService } from './allSportsApiService';
 
 export class UnifiedSportsApiService {
   private rapidApi: RapidApiService;
   private sportsGameOdds: SportsGameOddsService;
   private oddsApi: OddsApiService;
   private gridApi: GridApiService;
+  private allSportsApi: typeof allSportsApiService;
 
   constructor() {
     this.rapidApi = new RapidApiService();
     this.sportsGameOdds = new SportsGameOddsService();
     this.oddsApi = new OddsApiService();
     this.gridApi = new GridApiService();
+    this.allSportsApi = allSportsApiService;
   }
 
   /**
-   * Get comprehensive sports list from all APIs - 110+ sports coverage
+   * Get comprehensive sports list prioritizing AllSportsAPI unlimited subscription
    */
   async getMassiveSportsList(): Promise<any> {
-    const allSports = [];
-    
     try {
-      // Primary sports from The Odds API
+      console.log('Fetching sports from AllSportsAPI unlimited subscription...');
+      
+      // Primary source: AllSportsAPI unlimited subscription
+      const allSportsSports = await this.allSportsApi.getSports();
+      
+      if (allSportsSports.length > 0) {
+        console.log(`✅ AllSportsAPI: Retrieved ${allSportsSports.length} sports`);
+        return allSportsSports.map((sport: any, index: number) => ({
+          id: index + 1,
+          name: sport.title,
+          key: sport.key,
+          group: sport.group || 'General',
+          active: sport.active !== false,
+          category: sport.group || 'General',
+          description: sport.description || `Live ${sport.title} betting`
+        }));
+      }
+      
+      // Fallback to other APIs only if AllSportsAPI fails
+      console.log('AllSportsAPI unavailable, using fallback sources...');
       const primarySports = [
         { id: 1, name: 'American Football', key: 'americanfootball_general', category: 'American Football', active: true },
         { id: 2, name: 'NFL', key: 'americanfootball_nfl', category: 'American Football', active: true },
