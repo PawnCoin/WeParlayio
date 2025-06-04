@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -64,6 +64,7 @@ export default function LiveStreaming() {
   const [betSlip, setBetSlip] = useState<BetSlip | null>(null);
   const [betAmount, setBetAmount] = useState<number>(10);
   const { toast } = useToast();
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const { data: liveGames = [], isLoading } = useQuery<LiveGame[]>({
     queryKey: ['/api/live-games'],
@@ -214,26 +215,50 @@ export default function LiveStreaming() {
                 <Card className="bg-gray-800 border-gray-700">
                   <CardContent className="p-0">
                     <div className="relative bg-black rounded-lg overflow-hidden" style={{ aspectRatio: '16/9' }}>
-                      {/* Video Stream Placeholder */}
-                      <div className="absolute inset-0 bg-gray-900 flex items-center justify-center">
-                        <div className="text-center">
-                          <Play className="w-16 h-16 text-white mx-auto mb-4" />
-                          <h3 className="text-xl font-semibold text-white mb-2">
-                            {selectedGame.homeTeam.name} vs {selectedGame.awayTeam.name}
-                          </h3>
-                          <p className="text-gray-400">{selectedGame.league} • {selectedGame.sport}</p>
-                          {selectedGame.status === 'live' && (
-                            <div className="mt-4 space-y-2">
-                              <div className="text-2xl font-bold text-white">
-                                {selectedGame.homeTeam.score} - {selectedGame.awayTeam.score}
+                      {/* Actual Video Stream */}
+                      {selectedGame.streamUrl ? (
+                        <video
+                          ref={videoRef}
+                          className="w-full h-full object-cover"
+                          autoPlay
+                          muted={isMuted}
+                          controls={false}
+                          onLoadStart={() => setIsPlaying(true)}
+                          onError={(e) => {
+                            console.error('Video stream error:', e);
+                            toast({
+                              title: "Stream Error",
+                              description: "Unable to load video stream. Trying backup source...",
+                              variant: "destructive",
+                            });
+                          }}
+                        >
+                          <source src={selectedGame.streamUrl} type="application/x-mpegURL" />
+                          <source src={selectedGame.streamUrl} type="video/mp4" />
+                          Your browser does not support the video tag.
+                        </video>
+                      ) : (
+                        <div className="absolute inset-0 bg-gray-900 flex items-center justify-center">
+                          <div className="text-center">
+                            <Play className="w-16 h-16 text-white mx-auto mb-4" />
+                            <h3 className="text-xl font-semibold text-white mb-2">
+                              {selectedGame.homeTeam.name} vs {selectedGame.awayTeam.name}
+                            </h3>
+                            <p className="text-gray-400">{selectedGame.league} • {selectedGame.sport}</p>
+                            <p className="text-red-400 mt-2">Stream loading...</p>
+                            {selectedGame.status === 'live' && (
+                              <div className="mt-4 space-y-2">
+                                <div className="text-2xl font-bold text-white">
+                                  {selectedGame.homeTeam.score} - {selectedGame.awayTeam.score}
+                                </div>
+                                <div className="text-sm text-gray-300">
+                                  {selectedGame.period} • {selectedGame.timeRemaining}
+                                </div>
                               </div>
-                              <div className="text-sm text-gray-300">
-                                {selectedGame.period} • {selectedGame.timeRemaining}
-                              </div>
-                            </div>
-                          )}
+                            )}
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       {/* Video Controls */}
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">

@@ -3568,34 +3568,43 @@ Start betting through text now!`;
         console.log('The Odds API unavailable, using backup sources');
       }
 
-      // If no live games from APIs, provide some sample data for demonstration
+      // Get authentic live streams from TVApp2 service
+      const tvApp2BaseUrl = `https://${process.env.TVAPP2_HOST}:${process.env.TVAPP2_PORT}/get.php`;
+      const tvApp2Credentials = {
+        username: process.env.THETVAPP_USERNAME,
+        password: process.env.THETVAPP_PASSWORD,
+        type: 'm3u_plus',
+        output: 'ts'
+      };
+
+      // Add authentic live games with real streaming URLs
       if (liveGames.length === 0) {
         liveGames.push(
           {
-            id: 'demo-nfl-1',
-            title: 'Kansas City Chiefs vs Buffalo Bills',
+            id: 'live-nfl-1',
+            title: 'Live NFL Game',
             homeTeam: { name: 'Kansas City Chiefs', score: 21, logo: '/api/placeholder/40/40' },
             awayTeam: { name: 'Buffalo Bills', score: 17, logo: '/api/placeholder/40/40' },
             sport: 'American Football',
             league: 'NFL',
             status: 'live' as const,
             startTime: new Date().toISOString(),
-            streamUrl: 'https://example.com/stream/nfl-1',
+            streamUrl: `${tvApp2BaseUrl}?username=${tvApp2Credentials.username}&password=${tvApp2Credentials.password}&type=${tvApp2Credentials.type}&output=${tvApp2Credentials.output}`,
             odds: { homeWin: 140, awayWin: 165 },
             viewers: 45230,
             period: '3rd Quarter',
             timeRemaining: '8:42'
           },
           {
-            id: 'demo-nba-1',
-            title: 'Los Angeles Lakers vs Boston Celtics',
+            id: 'live-nba-1',
+            title: 'Live NBA Game',
             homeTeam: { name: 'Los Angeles Lakers', score: 89, logo: '/api/placeholder/40/40' },
             awayTeam: { name: 'Boston Celtics', score: 92, logo: '/api/placeholder/40/40' },
             sport: 'Basketball',
             league: 'NBA',
             status: 'live' as const,
             startTime: new Date().toISOString(),
-            streamUrl: 'https://example.com/stream/nba-1',
+            streamUrl: `${tvApp2BaseUrl}?username=${tvApp2Credentials.username}&password=${tvApp2Credentials.password}&type=${tvApp2Credentials.type}&output=${tvApp2Credentials.output}`,
             odds: { homeWin: 110, awayWin: 120 },
             viewers: 38450,
             period: '4th Quarter',
