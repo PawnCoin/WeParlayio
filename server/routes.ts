@@ -898,36 +898,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ===== Sports Routes =====
+  // ===== Sports Routes (AllSportsAPI Primary) =====
   app.get("/api/sports", async (req, res) => {
     try {
-      // Get comprehensive sports list from unified API service
-      const { UnifiedSportsApiService } = await import('./services/unifiedSportsApiService');
-      const unifiedSportsAPI = new UnifiedSportsApiService();
+      console.log("Fetching sports from AllSportsAPI unlimited subscription...");
       
-      // Get the massive sports list (110+ sports)
-      const massiveSportsList = await unifiedSportsAPI.getMassiveSportsList();
+      // Primary source: AllSportsAPI unlimited subscription
+      const allSportsSports = await allSportsApiService.getSports();
       
-      // Combine storage sports with massive API sports list
-      const storageSports = await storage.getAllSports();
-      
-      // Merge with massive sports list, prioritizing API data
-      const allSports = [...massiveSportsList];
-      
-      // Add any storage sports that aren't in the massive list
-      for (const storageSport of storageSports) {
-        const exists = allSports.find(sport => sport.key === storageSport.key);
-        if (!exists) {
-          allSports.push(storageSport);
-        }
+      if (allSportsSports.length > 0) {
+        // Format AllSportsAPI sports to match internal structure
+        const formattedSports = allSportsSports.map((sport, index) => ({
+          id: index + 1,
+          name: sport.title,
+          key: sport.key,
+          group: sport.group || 'General',
+          active: sport.active !== false,
+          iconName: getSportIcon(sport.key),
+          description: sport.description || `Live ${sport.title} betting and streaming`
+        }));
+        
+        console.log(`✅ AllSportsAPI: Retrieved ${formattedSports.length} sports`);
+        res.json(formattedSports);
+      } else {
+        // Only fallback to storage if AllSportsAPI returns no data
+        console.log("AllSportsAPI returned no sports, using storage fallback");
+        const sports = await storage.getAllSports();
+        res.json(sports);
       }
-      
-      // Return the comprehensive sports list with real data
-      res.json(allSports);
     } catch (error) {
-      console.error("Error fetching comprehensive sports:", error);
-      
-      // Fallback to storage sports if unified API fails
+      console.error("AllSportsAPI sports error:", error);
+      // Fallback to storage only on error
       const sports = await storage.getAllSports();
       res.json(sports);
     }
@@ -1226,13 +1227,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return iconMap[sportKey] || '🏆';
   }
 
-  // ===== Events Routes =====
+  // ===== Events Routes (AllSportsAPI Primary) =====
   app.get("/api/events", async (req, res) => {
     try {
+      console.log("Fetching events from AllSportsAPI unlimited subscription...");
+      
+      // Get upcoming games from AllSportsAPI
+      const allSportsEvents = await allSportsApiService.getUpcomingGames();
+      
+      if (allSportsEvents.length > 0) {
+        console.log(`✅ AllSportsAPI: Retrieved ${allSportsEvents.length} events`);
+        res.json(allSportsEvents);
+      } else {
+        // Fallback to storage only if no data
+        const events = await storage.getAllEvents();
+        res.json(events);
+      }
+    } catch (error: any) {
+      console.error("AllSportsAPI events error:", error);
       const events = await storage.getAllEvents();
       res.json(events);
-    } catch (error: any) {
-      res.status(500).json({ message: error.message });
     }
   });
   

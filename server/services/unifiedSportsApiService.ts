@@ -7,6 +7,7 @@ import { RapidApiService } from './rapidApiService';
 import { SportsGameOddsService } from './sportsGameOddsService';
 import { OddsApiService } from './oddsApiService';
 import { GridApiService } from './gridApiService';
+import { AllSportsApiService } from './allSportsApiService';
 
 export class UnifiedSportsApiService {
   private rapidApi: RapidApiService;
