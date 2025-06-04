@@ -1310,30 +1310,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Get authentic streaming data from thetv.to service
       try {
-        const availableStreams = await theTVAppService.getAvailableStreams();
+        const availableStreams = await theTVAppService.getSportsStreams();
         
         if (availableStreams && availableStreams.length > 0) {
           const authenticGames = availableStreams.map((stream: any, index: number) => ({
-            id: `stream-${stream.id || index + 1}`,
+            id: `stream-${stream.eventId || index + 1}`,
             title: stream.title || `Live Stream ${index + 1}`,
             homeTeam: {
               name: stream.homeTeam || 'Home',
-              score: stream.homeScore || 0,
-              logo: stream.homeLogo || 'https://ui-avatars.com/api/?name=H&background=333&color=fff'
+              score: 0,
+              logo: 'https://ui-avatars.com/api/?name=H&background=333&color=fff'
             },
             awayTeam: {
               name: stream.awayTeam || 'Away',
-              score: stream.awayScore || 0,
+              score: 0,
               logo: stream.awayLogo || 'https://ui-avatars.com/api/?name=A&background=666&color=fff'
             },
-            sport: stream.sport || 'Sports',
+            sport: stream.sportType || 'Sports',
             league: stream.league || 'Live',
             status: 'live' as const,
             startTime: stream.startTime || new Date().toISOString(),
-            streamUrl: stream.url,
-            viewers: stream.viewers || 0,
-            period: stream.period || 'Live',
-            timeRemaining: stream.timeRemaining || ''
+            streamUrl: stream.sources?.[0]?.url || '',
+            viewers: stream.sources?.[0]?.viewers || 0,
+            period: 'Live',
+            timeRemaining: ''
           }));
           
           res.json(authenticGames);
