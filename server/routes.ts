@@ -1309,10 +1309,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/live-games", async (req, res) => {
     try {
       // Get authentic streaming data from thetv.to service
-      const thetvService = await import('./services/thetvappService');
-      
       try {
-        const availableStreams = await thetvService.getAvailableStreams();
+        const availableStreams = await theTVAppService.getAvailableStreams();
         
         if (availableStreams && availableStreams.length > 0) {
           const authenticGames = availableStreams.map((stream: any, index: number) => ({

@@ -191,6 +191,35 @@ export class TheTVAppService {
     }
   }
 
+  /**
+   * Get available streams for live games endpoint
+   */
+  async getAvailableStreams(): Promise<any[]> {
+    try {
+      const streams = await this.getSportsStreams();
+      return streams.map(stream => ({
+        id: stream.eventId,
+        title: stream.title,
+        homeTeam: stream.homeTeam || 'Home',
+        awayTeam: stream.awayTeam || 'Away',
+        homeScore: 0,
+        awayScore: 0,
+        sport: stream.sportType,
+        league: stream.league,
+        startTime: stream.startTime,
+        url: stream.sources[0]?.url,
+        viewers: stream.sources[0]?.viewers || 0,
+        period: 'Live',
+        timeRemaining: '',
+        homeLogo: `https://ui-avatars.com/api/?name=H&background=333&color=fff`,
+        awayLogo: `https://ui-avatars.com/api/?name=A&background=666&color=fff`
+      }));
+    } catch (error) {
+      console.error('Error getting available streams:', error);
+      return [];
+    }
+  }
+
 
 
   /**
