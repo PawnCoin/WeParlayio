@@ -65,12 +65,12 @@ export default function LiveStreaming() {
   const [betAmount, setBetAmount] = useState<number>(10);
   const { toast } = useToast();
 
-  const { data: liveGames = [], isLoading } = useQuery({
+  const { data: liveGames = [], isLoading } = useQuery<LiveGame[]>({
     queryKey: ['/api/live-games'],
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
-  const { data: userBalance = 0 } = useQuery({
+  const { data: userBalance = 0 } = useQuery<number>({
     queryKey: ['/api/user/cash-balance'],
     refetchInterval: 10000,
   });
@@ -163,7 +163,7 @@ export default function LiveStreaming() {
                     ))}
                   </div>
                 ) : (
-                  liveGames.map((game: LiveGame) => (
+                  liveGames.map((game) => (
                     <Card 
                       key={game.id}
                       className={`cursor-pointer transition-all duration-200 ${
