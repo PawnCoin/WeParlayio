@@ -150,6 +150,47 @@ export default function LiveStreaming() {
     }
   }, [liveGames, selectedGame]);
 
+  // Initialize HLS.js when selected game changes
+  useEffect(() => {
+    if (selectedGame && selectedGame.streamUrl && videoRef.current) {
+      const video = videoRef.current;
+      
+      // Check if it's an m3u8 stream or thetv.to stream
+      if (selectedGame.streamUrl.includes('.m3u8') || selectedGame.streamUrl.includes('thetv.to')) {
+        if (Hls.isSupported()) {
+          const hls = new Hls({
+            enableWorker: false,
+            lowLatencyMode: true,
+            debug: false,
+          });
+          
+          hls.loadSource(selectedGame.streamUrl);
+          hls.attachMedia(video);
+          
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            video.play().catch(console.error);
+          });
+          
+          hls.on(Hls.Events.ERROR, (event, data) => {
+            console.error('HLS error:', data);
+          });
+          
+          return () => {
+            hls.destroy();
+          };
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          // Native HLS support (Safari)
+          video.src = selectedGame.streamUrl;
+          video.play().catch(console.error);
+        }
+      } else {
+        // Regular video streams
+        video.src = selectedGame.streamUrl;
+        video.play().catch(console.error);
+      }
+    }
+  }, [selectedGame]);
+
   return (
     <div className="min-h-screen bg-gray-950 text-white p-4">
       <div className="max-w-7xl mx-auto">
@@ -177,7 +218,7 @@ export default function LiveStreaming() {
                           allowFullScreen
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         />
-                      ) : selectedGame.streamUrl.includes('.m3u8') ? (
+                      ) : selectedGame.streamUrl.includes('.m3u8') || selectedGame.streamUrl.includes('thetv.to') ? (
                         <video
                           ref={videoRef}
                           className="w-full h-full object-cover"
@@ -185,26 +226,7 @@ export default function LiveStreaming() {
                           autoPlay
                           muted
                           playsInline
-                          onLoadStart={() => {
-                            if (videoRef.current && selectedGame.streamUrl) {
-                              // Initialize HLS.js for m3u8 streams
-                              if (Hls.isSupported()) {
-                                const hls = new Hls({
-                                  enableWorker: false,
-                                  lowLatencyMode: true,
-                                });
-                                hls.loadSource(selectedGame.streamUrl);
-                                hls.attachMedia(videoRef.current);
-                                hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                                  videoRef.current?.play();
-                                });
-                              } else if (videoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
-                                // Native HLS support (Safari)
-                                videoRef.current.src = selectedGame.streamUrl;
-                                videoRef.current.play();
-                              }
-                            }
-                          }}
+                          crossOrigin="anonymous"
                         />
                       ) : (
                         <video
