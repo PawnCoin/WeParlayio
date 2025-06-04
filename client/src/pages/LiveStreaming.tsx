@@ -179,8 +179,8 @@ export default function LiveStreaming() {
           hls.attachMedia(video);
           
           hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            console.log('Manifest parsed, attempting to play');
-            video.play().catch(e => console.error('Play failed:', e));
+            console.log('Manifest parsed, ready to play');
+            // Don't autoplay - wait for user interaction
           });
           
           hls.on(Hls.Events.ERROR, (event, data) => {
@@ -188,7 +188,6 @@ export default function LiveStreaming() {
             if (data.fatal) {
               // Try fallback: direct video element
               video.src = selectedGame.streamUrl;
-              video.play().catch(console.error);
             }
           });
           
@@ -198,15 +197,30 @@ export default function LiveStreaming() {
         } else {
           // Native HLS support or direct video
           video.src = selectedGame.streamUrl;
-          video.play().catch(console.error);
         }
       } else {
         // Regular video streams
         video.src = selectedGame.streamUrl;
-        video.play().catch(console.error);
       }
     }
   }, [selectedGame]);
+
+  const handlePlayPause = async () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    try {
+      if (isPlaying) {
+        video.pause();
+        setIsPlaying(false);
+      } else {
+        await video.play();
+        setIsPlaying(true);
+      }
+    } catch (error) {
+      console.error('Video play/pause error:', error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-4">
@@ -236,15 +250,26 @@ export default function LiveStreaming() {
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         />
                       ) : selectedGame.streamUrl.includes('.m3u8') || selectedGame.streamUrl.includes('thetv.to') ? (
-                        <video
-                          ref={videoRef}
-                          className="w-full h-full object-cover"
-                          controls
-                          autoPlay
-                          muted
-                          playsInline
-                          crossOrigin="anonymous"
-                        />
+                        <>
+                          <video
+                            ref={videoRef}
+                            className="w-full h-full object-cover"
+                            controls
+                            muted
+                            playsInline
+                            crossOrigin="anonymous"
+                          />
+                          {!isPlaying && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                              <button
+                                onClick={handlePlayPause}
+                                className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full transition-colors"
+                              >
+                                <Play className="h-8 w-8" />
+                              </button>
+                            </div>
+                          )}
+                        </>
                       ) : (
                         <video
                           ref={videoRef}
