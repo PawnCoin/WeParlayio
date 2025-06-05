@@ -1,4 +1,4 @@
-import axios from 'axios';
+import fetch from 'node-fetch';
 
 interface AllSportsGame {
   id: string;
@@ -36,54 +36,80 @@ class AllSportsApiService {
   constructor() {
     this.apiKey = process.env.RAPIDAPI_KEY || '';
     if (!this.apiKey) {
-      console.warn('AllSportsAPI: RAPIDAPI_KEY not found in environment variables');
+      console.warn('AllSportsAPI: RAPIDAPI_KEY not configured');
     }
   }
 
   private async makeRequest(endpoint: string): Promise<any> {
+    if (!this.apiKey) {
+      throw new Error('AllSportsAPI: API key not configured');
+    }
+
+    const url = `${this.baseUrl}${endpoint}`;
+    console.log(`AllSportsAPI: Fetching ${url}`);
+
     try {
-      console.log(`AllSportsAPI: Making request to ${this.baseUrl}${endpoint}`);
-      
-      const response = await axios.get(`${this.baseUrl}${endpoint}`, {
+      const response = await fetch(url, {
         headers: {
           'X-RapidAPI-Key': this.apiKey,
           'X-RapidAPI-Host': 'allsportsapi2.p.rapidapi.com',
           'Accept': 'application/json'
-        },
-        params: {
-          apiKey: this.apiKey
         }
       });
 
-      console.log(`AllSportsAPI: Successfully fetched data`);
-      return response.data;
-    } catch (error: any) {
-      console.error('AllSportsAPI: Request failed:', error.response?.data || error.message);
+      if (!response.ok) {
+        console.error(`AllSportsAPI: HTTP ${response.status} ${response.statusText}`);
+        console.error(`AllSportsAPI: Response headers:`, Object.fromEntries(response.headers.entries()));
+        const errorText = await response.text();
+        console.error(`AllSportsAPI: Error response:`, errorText);
+        throw new Error(`AllSportsAPI: HTTP ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('AllSportsAPI request failed:', error);
       throw error;
     }
   }
 
   async getSports(): Promise<AllSportsSport[]> {
     try {
-      console.log('AllSportsAPI: Fetching sports list');
+      // Try different possible endpoints and hosts for sports
+      const endpointConfigs = [
+        { host: 'allsportsapi2.p.rapidapi.com', endpoint: '/sports' },
+        { host: 'allsportsapi2.p.rapidapi.com', endpoint: '/api/sports' },
+        { host: 'allsportsapi2.p.rapidapi.com', endpoint: '/v1/sports' },
+        { host: 'allsportsapi.p.rapidapi.com', endpoint: '/sports' },
+        { host: 'api-football-v1.p.rapidapi.com', endpoint: '/v3/leagues' },
+        { host: 'odds.p.rapidapi.com', endpoint: '/v4/sports' }
+      ];
       
-      // Use the correct AllSportsAPI endpoint for sports list
-      const response = await this.makeRequest('/api/american-football/games/live');
-      
-      if (response && response.length > 0) {
-        console.log(`AllSportsAPI: Retrieved ${response.length} sports from API`);
-        return response.map((sport: any) => ({
-          key: sport.key || sport.sport_key,
-          title: sport.title || sport.name,
-          group: sport.group || 'General',
-          description: sport.description || `Live ${sport.title || sport.name} betting`,
-          active: sport.active !== false,
-          has_outrights: sport.has_outrights || false
-        }));
+      for (const config of endpointConfigs) {
+        try {
+          console.log(`AllSportsAPI: Trying ${config.host}${config.endpoint}`);
+          const response = await fetch(`https://${config.host}${config.endpoint}`, {
+            headers: {
+              'X-RapidAPI-Key': this.apiKey,
+              'X-RapidAPI-Host': config.host,
+              'Accept': 'application/json'
+            }
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            console.log(`AllSportsAPI: Success with ${config.host}${config.endpoint}`);
+            return Array.isArray(data) ? data : [];
+          } else {
+            console.log(`AllSportsAPI: ${config.host}${config.endpoint} returned ${response.status}`);
+          }
+        } catch (error) {
+          console.log(`AllSportsAPI: ${config.host}${config.endpoint} failed, trying next...`);
+          continue;
+        }
       }
       
-      // If API fails, return empty array - no mock data
-      console.warn('AllSportsAPI: No data from API, returning empty');
+      console.warn('AllSportsAPI: All endpoints failed - API key or host configuration may need verification');
       return [];
     } catch (error) {
       console.error('AllSportsAPI: Failed to get sports:', error);
@@ -91,171 +117,142 @@ class AllSportsApiService {
     }
   }
 
-  async getLiveEvents(): Promise<AllSportsGame[]> {
-    try {
-      const sports = ['americanfootball_nfl', 'basketball_nba', 'baseball_mlb', 'icehockey_nhl', 'soccer_epl'];
-      const allGames: AllSportsGame[] = [];
-
-      for (const sport of sports) {
-        try {
-          const data = await this.makeRequest(`/sports/${sport}/odds?regions=us&markets=h2h`);
-          if (data && Array.isArray(data)) {
-            const games = data.map((game: any) => this.convertToInternalGame(game));
-            allGames.push(...games);
-          }
-        } catch (error) {
-          console.warn(`AllSportsAPI: Failed to fetch live events for ${sport}:`, error);
-        }
-      }
-
-      console.log(`AllSportsAPI: Retrieved ${allGames.length} live events`);
-      return allGames.slice(0, 50); // Limit to 50 games
-    } catch (error) {
-      console.error('AllSportsAPI: Failed to get live events:', error);
-      return [];
-    }
-  }
-
-  async getUpcomingEvents(): Promise<AllSportsGame[]> {
-    try {
-      const sports = ['americanfootball_nfl', 'basketball_nba', 'baseball_mlb', 'icehockey_nhl', 'soccer_epl'];
-      const allGames: AllSportsGame[] = [];
-
-      for (const sport of sports) {
-        try {
-          const data = await this.makeRequest(`/sports/${sport}/odds?regions=us&markets=h2h`);
-          if (data && Array.isArray(data)) {
-            const games = data
-              .filter((game: any) => new Date(game.commence_time) > new Date())
-              .map((game: any) => this.convertToInternalGame(game));
-            allGames.push(...games);
-          }
-        } catch (error) {
-          console.warn(`AllSportsAPI: Failed to fetch upcoming events for ${sport}:`, error);
-        }
-      }
-
-      console.log(`AllSportsAPI: Retrieved ${allGames.length} upcoming events`);
-      return allGames.slice(0, 50); // Limit to 50 games
-    } catch (error) {
-      console.error('AllSportsAPI: Failed to get upcoming events:', error);
-      return [];
-    }
-  }
-
-  async getSportData(sportKey: string): Promise<AllSportsGame[]> {
-    try {
-      const data = await this.makeRequest(`/sports/${sportKey}/odds?regions=us&markets=h2h`);
-      if (data && Array.isArray(data)) {
-        const games = data.map((game: any) => this.convertToInternalGame(game));
-        console.log(`AllSportsAPI: Retrieved ${games.length} games for ${sportKey}`);
-        return games;
-      }
-      return [];
-    } catch (error) {
-      console.error(`AllSportsAPI: Failed to get sport data for ${sportKey}:`, error);
-      return [];
-    }
-  }
-
   async getOdds(sportKey: string, regions = 'us', markets = 'h2h'): Promise<AllSportsGame[]> {
-    return this.getSportData(sportKey);
+    try {
+      const endpoint = `/odds?sport=${sportKey}&regions=${regions}&markets=${markets}`;
+      const data = await this.makeRequest(endpoint);
+      console.log(`AllSportsAPI: Retrieved odds for ${sportKey}: ${data.length} games`);
+      return data;
+    } catch (error) {
+      console.error(`AllSportsAPI: Failed to get odds for ${sportKey}:`, error);
+      return [];
+    }
   }
 
   async getUpcomingGames(sportKey?: string): Promise<AllSportsGame[]> {
-    if (sportKey) {
-      return this.getSportData(sportKey);
+    try {
+      const endpoint = sportKey ? `/odds?sport=${sportKey}` : '/odds';
+      const data = await this.makeRequest(endpoint);
+      console.log(`AllSportsAPI: Retrieved ${data.length} upcoming games`);
+      return data;
+    } catch (error) {
+      console.error('AllSportsAPI: Failed to get upcoming games:', error);
+      return [];
     }
-    return this.getUpcomingEvents();
   }
 
   async getLiveGames(): Promise<AllSportsGame[]> {
-    return this.getLiveEvents();
+    try {
+      // AllSportsAPI doesn't have a specific live endpoint, so we filter by commence_time
+      const allGames = await this.getUpcomingGames();
+      const now = new Date();
+      const liveGames = allGames.filter(game => {
+        const gameTime = new Date(game.commence_time);
+        const timeDiff = now.getTime() - gameTime.getTime();
+        // Consider games live if they started within the last 4 hours
+        return timeDiff > 0 && timeDiff < 4 * 60 * 60 * 1000;
+      });
+      
+      console.log(`AllSportsAPI: Filtered ${liveGames.length} live games from ${allGames.length} total`);
+      return liveGames;
+    } catch (error) {
+      console.error('AllSportsAPI: Failed to get live games:', error);
+      return [];
+    }
   }
 
+  // Convert AllSportsAPI data to our internal format
   convertToInternalSport(sport: AllSportsSport) {
     return {
       id: sport.key,
       name: sport.title,
-      slug: sport.key,
+      key: sport.key,
+      group: sport.group,
+      active: sport.active,
       iconName: this.getSportIcon(sport.key)
     };
   }
 
-  convertToInternalGame(game: any) {
-    const homeTeam = game.home_team || 'Home Team';
-    const awayTeam = game.away_team || 'Away Team';
+  convertToInternalGame(game: AllSportsGame) {
+    const homeOdds = this.extractOdds(game, game.home_team);
+    const awayOdds = this.extractOdds(game, game.away_team);
     
     return {
-      id: game.id || `${homeTeam}-${awayTeam}-${Date.now()}`,
-      sportId: game.sport_key || 'unknown',
-      title: `${awayTeam} vs ${homeTeam}`,
+      id: `allsports-${game.id}`,
+      sportId: game.sport,
+      title: `${game.away_team} vs ${game.home_team}`,
       homeTeam: {
-        id: homeTeam.toLowerCase().replace(/\s+/g, '-'),
-        name: homeTeam,
+        id: game.home_team.toLowerCase().replace(/\s+/g, '-'),
+        name: game.home_team,
         score: 0
       },
       awayTeam: {
-        id: awayTeam.toLowerCase().replace(/\s+/g, '-'),
-        name: awayTeam,
+        id: game.away_team.toLowerCase().replace(/\s+/g, '-'),
+        name: game.away_team,
         score: 0
       },
-      startTime: game.commence_time || new Date().toISOString(),
-      status: this.getGameStatus(game.commence_time || new Date().toISOString()),
-      leagueName: game.sport_title || 'Unknown League',
+      startTime: game.commence_time,
+      status: this.getGameStatus(game.commence_time),
+      leagueName: game.league,
       odds: {
-        homeWin: this.extractOdds(game, homeTeam),
-        awayWin: this.extractOdds(game, awayTeam),
+        homeWin: homeOdds,
+        awayWin: awayOdds,
         draw: this.extractDrawOdds(game)
       },
       isEsport: false
     };
   }
 
-  private extractOdds(game: any, teamName: string): number {
-    if (game.bookmakers && game.bookmakers.length > 0) {
-      const bookmaker = game.bookmakers[0];
-      const market = bookmaker.markets?.find((m: any) => m.key === 'h2h');
-      if (market) {
-        const outcome = market.outcomes?.find((o: any) => o.name === teamName);
-        if (outcome) return outcome.price;
-      }
-    }
-    return 2.0 + Math.random() * 2.0; // Fallback odds
+  private extractOdds(game: AllSportsGame, teamName: string): number {
+    if (!game.bookmakers || game.bookmakers.length === 0) return 2.0;
+    
+    const bookmaker = game.bookmakers[0];
+    const market = bookmaker.markets.find(m => m.key === 'h2h');
+    if (!market) return 2.0;
+    
+    const outcome = market.outcomes.find(o => o.name === teamName);
+    return outcome ? outcome.price : 2.0;
   }
 
-  private extractDrawOdds(game: any): number | undefined {
-    if (game.bookmakers && game.bookmakers.length > 0) {
-      const bookmaker = game.bookmakers[0];
-      const market = bookmaker.markets?.find((m: any) => m.key === 'h2h');
-      if (market) {
-        const drawOutcome = market.outcomes?.find((o: any) => o.name === 'Draw');
-        if (drawOutcome) return drawOutcome.price;
-      }
-    }
-    return game.sport_key?.includes('soccer') ? 3.0 + Math.random() : undefined;
+  private extractDrawOdds(game: AllSportsGame): number | undefined {
+    if (!game.bookmakers || game.bookmakers.length === 0) return undefined;
+    
+    const bookmaker = game.bookmakers[0];
+    const market = bookmaker.markets.find(m => m.key === 'h2h');
+    if (!market) return undefined;
+    
+    const drawOutcome = market.outcomes.find(o => o.name === 'Draw');
+    return drawOutcome ? drawOutcome.price : undefined;
   }
 
-  private getGameStatus(eventTime: string): 'live' | 'scheduled' | 'completed' {
+  private getGameStatus(commenceTime: string): 'live' | 'scheduled' | 'completed' {
     const now = new Date();
-    const gameTime = new Date(eventTime);
+    const gameTime = new Date(commenceTime);
     const timeDiff = now.getTime() - gameTime.getTime();
     
-    if (timeDiff > 0 && timeDiff < 4 * 60 * 60 * 1000) return 'live';
-    if (timeDiff > 4 * 60 * 60 * 1000) return 'completed';
-    return 'scheduled';
+    if (timeDiff > 0 && timeDiff < 4 * 60 * 60 * 1000) {
+      return 'live';
+    } else if (timeDiff > 4 * 60 * 60 * 1000) {
+      return 'completed';
+    } else {
+      return 'scheduled';
+    }
   }
 
   private getSportIcon(sportKey: string): string {
     const iconMap: Record<string, string> = {
       'americanfootball_nfl': 'football',
       'basketball_nba': 'basketball',
-      'baseball_mlb': 'baseball',
       'icehockey_nhl': 'hockey',
+      'baseball_mlb': 'baseball',
       'soccer_epl': 'soccer',
-      'tennis_atp': 'tennis'
+      'soccer_uefa_champs_league': 'soccer',
+      'tennis_atp': 'tennis',
+      'golf_pga': 'golf',
+      'mma_mixed_martial_arts': 'mma',
+      'boxing': 'boxing'
     };
-    return iconMap[sportKey] || 'sports';
+    return iconMap[sportKey] || 'sport';
   }
 }
 

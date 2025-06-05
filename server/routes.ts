@@ -30,7 +30,6 @@ import { esportsApiService } from "./services/esportsApiService";
 import { cryptoService } from "./services/cryptoService";
 import { allSportsApiService } from "./services/allSportsApiService";
 import { createCashAppPayment, getCashAppPaymentStatus, initiateCashAppPayout } from "./cashapp";
-import { streamingIntegrationService } from "./services/streamingIntegrationService";
 
 // Export the routes so they can be imported by index.ts
 export { notificationRoutes, websocketPollingRoutes };
@@ -899,37 +898,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ===== Sports Routes (AllSportsAPI Primary) =====
+  // ===== Sports Routes =====
   app.get("/api/sports", async (req, res) => {
     try {
-      console.log("Fetching sports from AllSportsAPI unlimited subscription...");
+      // Get comprehensive sports list from unified API service
+      const { UnifiedSportsApiService } = await import('./services/unifiedSportsApiService');
+      const unifiedSportsAPI = new UnifiedSportsApiService();
       
-      // Primary source: AllSportsAPI unlimited subscription
-      const allSportsSports = await allSportsApiService.getSports();
+      // Get the massive sports list (110+ sports)
+      const massiveSportsList = await unifiedSportsAPI.getMassiveSportsList();
       
-      if (allSportsSports.length > 0) {
-        // Format AllSportsAPI sports to match internal structure
-        const formattedSports = allSportsSports.map((sport, index) => ({
-          id: index + 1,
-          name: sport.title,
-          key: sport.key,
-          group: sport.group || 'General',
-          active: sport.active !== false,
-          iconName: getSportIcon(sport.key),
-          description: sport.description || `Live ${sport.title} betting and streaming`
-        }));
-        
-        console.log(`✅ AllSportsAPI: Retrieved ${formattedSports.length} sports`);
-        res.json(formattedSports);
-      } else {
-        // Only fallback to storage if AllSportsAPI returns no data
-        console.log("AllSportsAPI returned no sports, using storage fallback");
-        const sports = await storage.getAllSports();
-        res.json(sports);
+      // Combine storage sports with massive API sports list
+      const storageSports = await storage.getAllSports();
+      
+      // Merge with massive sports list, prioritizing API data
+      const allSports = [...massiveSportsList];
+      
+      // Add any storage sports that aren't in the massive list
+      for (const storageSport of storageSports) {
+        const exists = allSports.find(sport => sport.key === storageSport.key);
+        if (!exists) {
+          allSports.push(storageSport);
+        }
       }
+      
+      // Return the comprehensive sports list with real data
+      res.json(allSports);
     } catch (error) {
-      console.error("AllSportsAPI sports error:", error);
-      // Fallback to storage only on error
+      console.error("Error fetching comprehensive sports:", error);
+      
+      // Fallback to storage sports if unified API fails
       const sports = await storage.getAllSports();
       res.json(sports);
     }
@@ -1228,26 +1226,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return iconMap[sportKey] || '🏆';
   }
 
-  // ===== Events Routes (AllSportsAPI Primary) =====
+  // ===== Events Routes =====
   app.get("/api/events", async (req, res) => {
     try {
-      console.log("Fetching events from AllSportsAPI unlimited subscription...");
-      
-      // Get upcoming games from AllSportsAPI
-      const allSportsEvents = await allSportsApiService.getUpcomingGames();
-      
-      if (allSportsEvents.length > 0) {
-        console.log(`✅ AllSportsAPI: Retrieved ${allSportsEvents.length} events`);
-        res.json(allSportsEvents);
-      } else {
-        // Fallback to storage only if no data
-        const events = await storage.getAllEvents();
-        res.json(events);
-      }
-    } catch (error: any) {
-      console.error("AllSportsAPI events error:", error);
       const events = await storage.getAllEvents();
       res.json(events);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
     }
   });
   
@@ -1294,401 +1279,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get live games from AllSportsAPI with streaming URLs
+  // Get live games from AllSportsAPI
   app.get("/api/allsports/live", async (req, res) => {
     try {
       console.log("Fetching live games from AllSportsAPI...");
       const games = await allSportsApiService.getLiveGames();
-      res.json(games);
+      const convertedGames = games.map(game => allSportsApiService.convertToInternalGame(game));
+      res.json(convertedGames);
     } catch (error: any) {
       console.error("AllSportsAPI live games error:", error);
-      res.json([]);
-    }
-  });
-
-  // Comprehensive live games with user streams, esports, and sports channels
-  app.get("/api/live-games", async (req, res) => {
-    try {
-      console.log("Fetching comprehensive live games including srjrgamingllc streams...");
-      
-      const allGames = [];
-      
-      // Get user's Twitch and YouTube streams (srjrgamingllc) with fallback
-      try {
-        const userStreams = await streamingIntegrationService.getAllUserStreams();
-        userStreams.forEach(stream => {
-          allGames.push({
-            id: stream.id,
-            title: `${stream.channelName} - ${stream.title}`,
-            homeTeam: {
-              name: stream.channelName,
-              score: 0,
-              logo: `https://ui-avatars.com/api/?name=${stream.channelName.substring(0, 2)}&background=4285f4&color=fff`
-            },
-            awayTeam: {
-              name: stream.gameCategory,
-              score: 0,
-              logo: `https://ui-avatars.com/api/?name=${stream.gameCategory.substring(0, 2)}&background=ea4335&color=fff`
-            },
-            sport: 'Gaming',
-            league: `${stream.platform.toUpperCase()} - Personal Channel`,
-            status: 'live' as const,
-            startTime: stream.startedAt,
-            streamUrl: stream.embedUrl,
-            odds: { homeWin: 150, awayWin: 180 },
-            viewers: stream.viewerCount,
-            period: 'Live',
-            timeRemaining: 'Live'
-          });
-        });
-        
-        // Add srjrgamingllc fallback content when API authentication fails
-        if (userStreams.length === 0) {
-          const domain = process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost';
-          const srjrFallback = [
-            {
-              id: 'srjrgamingllc-twitch-live',
-              title: 'srjrgamingllc - Live Gaming Stream',
-              homeTeam: {
-                name: 'srjrgamingllc',
-                score: 0,
-                logo: 'https://ui-avatars.com/api/?name=SRJ&background=9146ff&color=fff'
-              },
-              awayTeam: {
-                name: 'Gaming',
-                score: 0,
-                logo: 'https://ui-avatars.com/api/?name=GAME&background=4285f4&color=fff'
-              },
-              sport: 'Gaming',
-              league: 'TWITCH - Personal Channel',
-              status: 'live' as const,
-              startTime: new Date().toISOString(),
-              streamUrl: `https://player.twitch.tv/?channel=srjrgamingllc&parent=${domain}&autoplay=false`,
-              odds: { homeWin: 150, awayWin: 180 },
-              viewers: 1247,
-              period: 'Live',
-              timeRemaining: 'Live'
-            },
-            {
-              id: 'srjrgamingllc-youtube-live',
-              title: 'srjrgamingllc - YouTube Live Stream',
-              homeTeam: {
-                name: 'srjrgamingllc',
-                score: 0,
-                logo: 'https://ui-avatars.com/api/?name=SRJ&background=ff0000&color=fff'
-              },
-              awayTeam: {
-                name: 'Content',
-                score: 0,
-                logo: 'https://ui-avatars.com/api/?name=YT&background=ff0000&color=fff'
-              },
-              sport: 'Gaming',
-              league: 'YOUTUBE - Personal Channel',
-              status: 'live' as const,
-              startTime: new Date().toISOString(),
-              streamUrl: `https://www.youtube.com/embed/live_stream?channel=UCsrjrgamingllc`,
-              odds: { homeWin: 140, awayWin: 190 },
-              viewers: 892,
-              period: 'Live',
-              timeRemaining: 'Live'
-            }
-          ];
-          allGames.push(...srjrFallback);
-        }
-        
-        if (userStreams.length > 0) {
-          console.log(`✅ Found ${userStreams.length} live streams from srjrgamingllc`);
-        }
-      } catch (error) {
-        console.error('Error fetching user streams:', error);
-      }
-      
-      // Get live esports streams with comprehensive fallback
-      try {
-        const esportsStreams = await streamingIntegrationService.getEsportsStreams();
-        esportsStreams.slice(0, 10).forEach(stream => {
-          allGames.push({
-            id: stream.id,
-            title: `${stream.gameCategory} - ${stream.title}`,
-            homeTeam: {
-              name: stream.channelName,
-              score: Math.floor(Math.random() * 20),
-              logo: `https://ui-avatars.com/api/?name=${stream.channelName.substring(0, 2)}&background=ff9800&color=fff`
-            },
-            awayTeam: {
-              name: 'Opponent',
-              score: Math.floor(Math.random() * 20),
-              logo: `https://ui-avatars.com/api/?name=VS&background=9c27b0&color=fff`
-            },
-            sport: 'Esports',
-            league: stream.gameCategory,
-            status: 'live' as const,
-            startTime: stream.startedAt,
-            streamUrl: stream.embedUrl,
-            odds: { 
-              homeWin: Math.floor(Math.random() * 200) + 100, 
-              awayWin: Math.floor(Math.random() * 200) + 100 
-            },
-            viewers: stream.viewerCount,
-            period: 'Live',
-            timeRemaining: 'Live'
-          });
-        });
-        
-        // Add popular esports channels when API fails
-        if (esportsStreams.length === 0) {
-          const domain = process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost';
-          const popularEsports = [
-            {
-              id: 'riot-games-official',
-              title: 'Riot Games - League of Legends Championship',
-              homeTeam: { name: 'Team Alpha', score: 2, logo: 'https://ui-avatars.com/api/?name=TA&background=c89b3c&color=000' },
-              awayTeam: { name: 'Team Beta', score: 1, logo: 'https://ui-avatars.com/api/?name=TB&background=0f2027&color=fff' },
-              sport: 'Esports',
-              league: 'League of Legends',
-              status: 'live' as const,
-              startTime: new Date().toISOString(),
-              streamUrl: `https://player.twitch.tv/?channel=riotgames&parent=${domain}&autoplay=false`,
-              odds: { homeWin: 165, awayWin: 145 },
-              viewers: 125000,
-              period: 'Game 3',
-              timeRemaining: 'Live'
-            },
-            {
-              id: 'esl-csgo-official',
-              title: 'ESL - Counter-Strike Tournament',
-              homeTeam: { name: 'FaZe Clan', score: 16, logo: 'https://ui-avatars.com/api/?name=FC&background=e31837&color=fff' },
-              awayTeam: { name: 'Team Liquid', score: 12, logo: 'https://ui-avatars.com/api/?name=TL&background=1e3a8a&color=fff' },
-              sport: 'Esports',
-              league: 'Counter-Strike',
-              status: 'live' as const,
-              startTime: new Date().toISOString(),
-              streamUrl: `https://player.twitch.tv/?channel=esl_csgo&parent=${domain}&autoplay=false`,
-              odds: { homeWin: 180, awayWin: 120 },
-              viewers: 87000,
-              period: 'Map 2',
-              timeRemaining: 'Live'
-            },
-            {
-              id: 'overwatchleague-official',
-              title: 'Overwatch League - Championship Finals',
-              homeTeam: { name: 'Shock', score: 3, logo: 'https://ui-avatars.com/api/?name=SF&background=fc4c02&color=fff' },
-              awayTeam: { name: 'Fusion', score: 2, logo: 'https://ui-avatars.com/api/?name=PF&background=f99e1a&color=000' },
-              sport: 'Esports',
-              league: 'Overwatch',
-              status: 'live' as const,
-              startTime: new Date().toISOString(),
-              streamUrl: `https://player.twitch.tv/?channel=overwatchleague&parent=${domain}&autoplay=false`,
-              odds: { homeWin: 155, awayWin: 165 },
-              viewers: 95000,
-              period: 'Map 6',
-              timeRemaining: 'Live'
-            }
-          ];
-          allGames.push(...popularEsports);
-        }
-        
-        console.log(`✅ Found ${esportsStreams.length} live esports streams`);
-      } catch (error) {
-        console.error('Error fetching esports streams:', error);
-        // Add fallback esports content when service fails
-        const domain = process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost';
-        const fallbackEsports = [
-          {
-            id: 'valorant-champions-live',
-            title: 'VALORANT Champions Tour - Live Match',
-            homeTeam: { name: 'Sentinels', score: 13, logo: 'https://ui-avatars.com/api/?name=SEN&background=000000&color=fff' },
-            awayTeam: { name: 'OpTic', score: 8, logo: 'https://ui-avatars.com/api/?name=OPT&background=6ab04c&color=fff' },
-            sport: 'Esports',
-            league: 'VALORANT',
-            status: 'live' as const,
-            startTime: new Date().toISOString(),
-            streamUrl: `https://player.twitch.tv/?channel=valorant&parent=${domain}&autoplay=false`,
-            odds: { homeWin: 175, awayWin: 135 },
-            viewers: 78000,
-            period: 'Round 22',
-            timeRemaining: 'Live'
-          }
-        ];
-        allGames.push(...fallbackEsports);
-      }
-      
-      // Add major sports channels with Twitch embed URLs for better compatibility
-      const domain = process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost';
-      const sportsChannels = [
-        {
-          id: 'espn-main',
-          title: 'ESPN - Live Sports Coverage',
-          homeTeam: {
-            name: 'ESPN',
-            score: 0,
-            logo: 'https://ui-avatars.com/api/?name=ESPN&background=e31837&color=fff'
-          },
-          awayTeam: {
-            name: 'Live Sports',
-            score: 0,
-            logo: 'https://ui-avatars.com/api/?name=LIVE&background=000000&color=fff'
-          },
-          sport: 'Multi-Sport',
-          league: 'ESPN Network',
-          status: 'live' as const,
-          startTime: new Date().toISOString(),
-          streamUrl: `https://player.twitch.tv/?channel=espn&parent=${domain}&autoplay=false`,
-          odds: { homeWin: 100, awayWin: 100 },
-          viewers: 45000,
-          period: 'Live',
-          timeRemaining: '24/7'
-        },
-        {
-          id: 'fox-sports-main',
-          title: 'FOX Sports - Live Coverage',
-          homeTeam: {
-            name: 'FOX Sports',
-            score: 0,
-            logo: 'https://ui-avatars.com/api/?name=FOX&background=003f7f&color=fff'
-          },
-          awayTeam: {
-            name: 'Live Events',
-            score: 0,
-            logo: 'https://ui-avatars.com/api/?name=LIVE&background=ff6b35&color=fff'
-          },
-          sport: 'Multi-Sport',
-          league: 'FOX Sports Network',
-          status: 'live' as const,
-          startTime: new Date().toISOString(),
-          streamUrl: `https://player.twitch.tv/?channel=foxsports&parent=${domain}&autoplay=false`,
-          odds: { homeWin: 100, awayWin: 100 },
-          viewers: 38000,
-          period: 'Live',
-          timeRemaining: '24/7'
-        },
-        {
-          id: 'nba-official',
-          title: 'NBA Official Channel',
-          homeTeam: {
-            name: 'NBA',
-            score: 0,
-            logo: 'https://ui-avatars.com/api/?name=NBA&background=1d428a&color=fff'
-          },
-          awayTeam: {
-            name: 'Basketball',
-            score: 0,
-            logo: 'https://ui-avatars.com/api/?name=BBL&background=c8102e&color=fff'
-          },
-          sport: 'Basketball',
-          league: 'NBA Official',
-          status: 'live' as const,
-          startTime: new Date().toISOString(),
-          streamUrl: `https://player.twitch.tv/?channel=nba&parent=${domain}&autoplay=false`,
-          odds: { homeWin: 100, awayWin: 100 },
-          viewers: 32000,
-          period: 'Live',
-          timeRemaining: '24/7'
-        },
-        {
-          id: 'nfl-official',
-          title: 'NFL Official Channel',
-          homeTeam: {
-            name: 'NFL',
-            score: 0,
-            logo: 'https://ui-avatars.com/api/?name=NFL&background=013369&color=fff'
-          },
-          awayTeam: {
-            name: 'Football',
-            score: 0,
-            logo: 'https://ui-avatars.com/api/?name=FB&background=d50a0a&color=fff'
-          },
-          sport: 'Football',
-          league: 'NFL Official',
-          status: 'live' as const,
-          startTime: new Date().toISOString(),
-          streamUrl: `https://player.twitch.tv/?channel=nfl&parent=${domain}&autoplay=false`,
-          odds: { homeWin: 100, awayWin: 100 },
-          viewers: 55000,
-          period: 'Live',
-          timeRemaining: '24/7'
-        },
-        {
-          id: 'mlb-official',
-          title: 'MLB Official Channel',
-          homeTeam: {
-            name: 'MLB',
-            score: 0,
-            logo: 'https://ui-avatars.com/api/?name=MLB&background=041e42&color=fff'
-          },
-          awayTeam: {
-            name: 'Baseball',
-            score: 0,
-            logo: 'https://ui-avatars.com/api/?name=BB&background=ba0c2f&color=fff'
-          },
-          sport: 'Baseball',
-          league: 'MLB Official',
-          status: 'live' as const,
-          startTime: new Date().toISOString(),
-          streamUrl: `https://player.twitch.tv/?channel=mlb&parent=${domain}&autoplay=false`,
-          odds: { homeWin: 100, awayWin: 100 },
-          viewers: 28000,
-          period: 'Live',
-          timeRemaining: '24/7'
-        },
-        {
-          id: 'ufc-official',
-          title: 'UFC Official Channel',
-          homeTeam: {
-            name: 'UFC',
-            score: 0,
-            logo: 'https://ui-avatars.com/api/?name=UFC&background=d20a0a&color=fff'
-          },
-          awayTeam: {
-            name: 'MMA',
-            score: 0,
-            logo: 'https://ui-avatars.com/api/?name=MMA&background=000000&color=fff'
-          },
-          sport: 'MMA',
-          league: 'UFC Official',
-          status: 'live' as const,
-          startTime: new Date().toISOString(),
-          streamUrl: `https://player.twitch.tv/?channel=ufc&parent=${domain}&autoplay=false`,
-          odds: { homeWin: 100, awayWin: 100 },
-          viewers: 42000,
-          period: 'Live',
-          timeRemaining: '24/7'
-        }
-      ];
-      
-      allGames.push(...sportsChannels);
-      
-      console.log(`✅ Retrieved ${allGames.length} total live streams`);
-      res.json(allGames);
-    } catch (error: any) {
-      console.error('Error fetching comprehensive live games:', error);
-      res.status(500).json({ message: 'Failed to fetch live games' });
-    }
-  });
-
-  // ===== Streaming Integration Routes =====
-  
-  // Get user's live streams from Twitch and YouTube (srjrgamingllc)
-  app.get("/api/streams/user", async (req, res) => {
-    try {
-      console.log("Fetching srjrgamingllc streams from Twitch and YouTube...");
-      const userStreams = await streamingIntegrationService.getAllUserStreams();
-      res.json(userStreams);
-    } catch (error) {
-      console.error("Error fetching user streams:", error);
-      res.status(500).json({ message: "Failed to fetch user streams" });
-    }
-  });
-
-  // Get live esports streams
-  app.get("/api/streams/esports", async (req, res) => {
-    try {
-      console.log("Fetching live esports streams...");
-      const esportsStreams = await streamingIntegrationService.getEsportsStreams();
-      res.json(esportsStreams);
-    } catch (error) {
-      console.error("Error fetching esports streams:", error);
-      res.status(500).json({ message: "Failed to fetch esports streams" });
+      res.status(500).json({ message: error.message || "Failed to fetch live games from AllSportsAPI" });
     }
   });
 
@@ -3982,7 +3582,7 @@ Start betting through text now!`;
       
       // Get authentic live streams from thetv.to with your verified credentials
       try {
-        const response = await fetch(`https://thetv.to:443/get.php?username=686140897&password=80274761&type=m3u_plus&output=ts`);
+        const response = await fetch(`http://thetv.to:80/get.php?username=686140897&password=80274761&type=m3u_plus&output=ts`);
         
         if (response.ok) {
           const m3uContent = await response.text();

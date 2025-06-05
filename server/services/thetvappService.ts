@@ -36,12 +36,11 @@ export class TheTVAppService {
   private password: string;
   
   constructor() {
-    this.username = '686140897';
-    this.password = '80274761';
-    const host = 'thetv.to';
-    const port = '443';
-    this.m3uUrl = `https://${host}:${port}/get.php?username=${this.username}&password=${this.password}&type=m3u_plus&output=ts`;
-    console.log(`TheTVApp streaming service configured for user: ${this.username} on ${host}:${port}`);
+    this.username = process.env.THETVAPP_USERNAME || '686140897';
+    this.password = process.env.THETVAPP_PASSWORD || '80274761';
+    this.m3uUrl = process.env.M3U_PLAYLIST_URL || 
+      `http://thetv.to:80/get.php?username=${this.username}&password=${this.password}&type=m3u_plus&output=ts`;
+    console.log(`TheTVSub streaming service configured for user: ${this.username}`);
   }
 
   /**
@@ -58,23 +57,14 @@ export class TheTVAppService {
 
       if (!response.ok) {
         console.log(`M3U playlist response: ${response.status}`);
-        // Return authentic YouTube Sports streams as fallback
-        return this.getYouTubeSportsStreams();
+        return [];
       }
 
       const m3uContent = await response.text();
-      const streams = this.parseM3UForSports(m3uContent);
-      
-      if (streams.length === 0) {
-        // Return authentic YouTube Sports streams as fallback
-        return this.getYouTubeSportsStreams();
-      }
-      
-      return streams;
+      return this.parseM3UForSports(m3uContent);
     } catch (error) {
       console.error('M3U playlist connection error:', error);
-      // Return authentic YouTube Sports streams as fallback
-      return this.getYouTubeSportsStreams();
+      return [];
     }
   }
 
@@ -197,112 +187,6 @@ export class TheTVAppService {
       );
     } catch (error) {
       console.error('Sports content search error:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Get authentic YouTube Sports streams as fallback
-   */
-  private getYouTubeSportsStreams(): SportStream[] {
-    return [
-      {
-        eventId: 'youtube_espn_live',
-        sportType: 'football',
-        title: 'ESPN Live Sports Coverage',
-        homeTeam: 'Live Coverage',
-        awayTeam: '',
-        league: 'ESPN',
-        startTime: new Date().toISOString(),
-        status: 'live',
-        sources: [{
-          id: 'espn_youtube',
-          name: 'ESPN',
-          url: 'https://www.youtube.com/embed/live_stream?channel=UCiWLfSweyRNmLpgEHekhoAg',
-          quality: 'HD',
-          language: 'en',
-          region: 'US',
-          isLive: true,
-          viewers: 15000
-        }],
-        thumbnailUrl: '',
-        description: 'Live ESPN Sports Coverage',
-        tags: ['live', 'sports', 'espn']
-      },
-      {
-        eventId: 'youtube_fox_sports',
-        sportType: 'general',
-        title: 'FOX Sports Live',
-        homeTeam: 'Live Sports',
-        awayTeam: '',
-        league: 'FOX Sports',
-        startTime: new Date().toISOString(),
-        status: 'live',
-        sources: [{
-          id: 'fox_youtube',
-          name: 'FOX Sports',
-          url: 'https://www.youtube.com/embed/live_stream?channel=UCwWhs_6x42TyRM4Wstoq8HA',
-          quality: 'HD',
-          language: 'en',
-          region: 'US',
-          isLive: true,
-          viewers: 12000
-        }],
-        thumbnailUrl: '',
-        description: 'Live FOX Sports Coverage',
-        tags: ['live', 'sports', 'fox']
-      },
-      {
-        eventId: 'youtube_nba_live',
-        sportType: 'basketball',
-        title: 'NBA Official Live Stream',
-        homeTeam: 'NBA Games',
-        awayTeam: '',
-        league: 'NBA',
-        startTime: new Date().toISOString(),
-        status: 'live',
-        sources: [{
-          id: 'nba_youtube',
-          name: 'NBA',
-          url: 'https://www.youtube.com/embed/live_stream?channel=UCWJ2lWNubArHWmf3FIHbfcQ',
-          quality: 'HD',
-          language: 'en',
-          region: 'US',
-          isLive: true,
-          viewers: 25000
-        }],
-        thumbnailUrl: '',
-        description: 'Official NBA Live Coverage',
-        tags: ['live', 'basketball', 'nba']
-      }
-    ];
-  }
-
-  /**
-   * Get available streams for live games endpoint
-   */
-  async getAvailableStreams(): Promise<any[]> {
-    try {
-      const streams = await this.getSportsStreams();
-      return streams.map(stream => ({
-        id: stream.eventId,
-        title: stream.title,
-        homeTeam: stream.homeTeam || 'Home',
-        awayTeam: stream.awayTeam || 'Away',
-        homeScore: 0,
-        awayScore: 0,
-        sport: stream.sportType,
-        league: stream.league,
-        startTime: stream.startTime,
-        url: stream.sources[0]?.url,
-        viewers: stream.sources[0]?.viewers || 0,
-        period: 'Live',
-        timeRemaining: '',
-        homeLogo: `https://ui-avatars.com/api/?name=H&background=333&color=fff`,
-        awayLogo: `https://ui-avatars.com/api/?name=A&background=666&color=fff`
-      }));
-    } catch (error) {
-      console.error('Error getting available streams:', error);
       return [];
     }
   }

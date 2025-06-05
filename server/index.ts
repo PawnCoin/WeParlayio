@@ -42,9 +42,24 @@ app.use('/api/bets', bettingRateLimit);
 app.use('/api/betting', bettingRateLimit);
 app.set('trust proxy', 1); // Trust first proxy - important for secure cookies with custom domain
 
-// Disable CSP completely to allow authentic sports data display
+// Apply security middleware FIRST with relaxed CSP for development and streaming
 app.use(helmet({
-  contentSecurityPolicy: false,
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https:", "data:", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
+      fontSrc: ["'self'", "https:", "data:", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
+      imgSrc: ["'self'", "data:", "https:", "blob:", "*"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https:", "*", "blob:"],
+      connectSrc: ["'self'", "wss:", "https:", "ws:", "*", "blob:"],
+      frameSrc: ["'self'", "https:", "*"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      mediaSrc: ["'self'", "https:", "blob:", "*", "data:"],
+      workerSrc: ["'self'", "blob:", "'unsafe-inline'"],
+      childSrc: ["'self'", "https:", "blob:"],
+    },
+  },
 }));
 
 // Enhanced Security Headers
@@ -138,7 +153,7 @@ app.use((req, res, next) => {
     try {
       server = createSSLServer(app, sslConfig);
       log(`🔒 SSL/TLS encryption enabled for weparlay.io`);
-    } catch (error: any) {
+    } catch (error) {
       log(`❌ SSL certificate error: ${error.message}`);
       log(`🔄 Falling back to HTTP server`);
       server = app;
