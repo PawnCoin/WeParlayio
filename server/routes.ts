@@ -25,7 +25,7 @@ import { bankingRouter } from "./routes/bankingRoutes";
 import websocketPollingRoutes from "./routes/websocketPollingRoutes";
 import oddsTickerRouter from "./routes/oddsTickerRoutes";
 import { apiTestRouter } from "./routes/apiTestRoutes";
-import { theTVAppService } from "./services/thetvappService";
+
 import { esportsApiService } from "./services/esportsApiService";
 import { cryptoService } from "./services/cryptoService";
 import { allSportsApiService } from "./services/allSportsApiService";
@@ -2378,63 +2378,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Live sports streaming from M3U playlist
-  app.get('/api/streaming/sports-channels', async (req, res) => {
+  // AllSportsAPI integration - get authentic sports data
+  app.get('/api/allsports/sports', async (req, res) => {
     try {
-      const streams = await theTVAppService.getSportsStreams();
+      const sports = await allSportsApiService.getSports();
       res.json({
         success: true,
-        channels: streams,
-        total: streams.length
+        sports,
+        total: sports.length
       });
     } catch (error) {
-      console.error('Sports streaming error:', error);
+      console.error('AllSportsAPI sports error:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to fetch sports channels',
-        channels: []
+        message: 'Failed to fetch sports from AllSportsAPI',
+        sports: []
       });
     }
   });
 
-  // Search sports streaming content
-  app.get('/api/streaming/search', async (req, res) => {
+  // Get live events from AllSportsAPI
+  app.get('/api/allsports/events', async (req, res) => {
     try {
-      const { q } = req.query;
-      if (!q || typeof q !== 'string') {
-        return res.status(400).json({
-          success: false,
-          message: 'Search query required'
-        });
-      }
-
-      const streams = await theTVAppService.searchSportsContent(q);
+      const { sport } = req.query;
+      const events = await allSportsApiService.getLiveEvents(sport as string);
       res.json({
         success: true,
-        channels: streams,
-        total: streams.length,
-        query: q
+        events,
+        total: events.length
       });
     } catch (error) {
-      console.error('Sports streaming search error:', error);
+      console.error('AllSportsAPI events error:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to search sports channels',
-        channels: []
-      });
-    }
-  });
-
-  // Get streaming service status
-  app.get('/api/streaming/status', async (req, res) => {
-    try {
-      const status = await theTVAppService.getServiceStatus();
-      res.json(status);
-    } catch (error) {
-      console.error('Streaming status error:', error);
-      res.status(500).json({
-        available: false,
-        message: 'Failed to check streaming service status'
+        message: 'Failed to fetch events from AllSportsAPI',
+        events: []
       });
     }
   });
