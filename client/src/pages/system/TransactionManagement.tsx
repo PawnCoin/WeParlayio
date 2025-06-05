@@ -38,7 +38,7 @@ export default function TransactionManagement() {
   });
 
   // Fetch transactions
-  const { data: transactions, isLoading } = useQuery({
+  const { data: transactions, isLoading } = useQuery<Transaction[]>({
     queryKey: ['/api/transactions/list', filters],
     staleTime: 30 * 1000,
   });
