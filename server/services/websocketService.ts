@@ -20,12 +20,12 @@ class WebSocketService {
   private clients: Map<string, ConnectedClient> = new Map();
   private subscriptions: Map<string, Set<string>> = new Map();
   private server: Server | null = null;
-  private isInitialized = false;
+  private initialized = false;
   private heartbeatInterval: NodeJS.Timeout | null = null;
 
   public initialize(server: Server): boolean {
     try {
-      if (this.isInitialized) {
+      if (this.initialized) {
         console.log('🔄 WebSocket service already initialized');
         return true;
       }
@@ -43,7 +43,7 @@ class WebSocketService {
 
       this.setupWebSocketServer();
       this.startHeartbeat();
-      this.isInitialized = true;
+      this.initialized = true;
 
       console.log('✅ WebSocket service initialized successfully');
       return true;
@@ -137,7 +137,7 @@ class WebSocketService {
       this.wss.clients.forEach((ws: any) => {
         if (ws.isAlive === false) {
           // Find and remove dead connection
-          for (const [clientId, client] of this.clients.entries()) {
+          for (const [clientId, client] of Array.from(this.clients.entries())) {
             if (client.ws === ws) {
               this.handleDisconnect(clientId);
               break;
@@ -258,7 +258,7 @@ class WebSocketService {
 
   public getStats(): { totalClients: number, subscriptions: any, apiHealth?: any } {
     const subscriptionStats: any = {};
-    for (const [channel, clients] of this.subscriptions) {
+    for (const [channel, clients] of Array.from(this.subscriptions.entries())) {
       subscriptionStats[channel] = clients.size;
     }
 
@@ -273,7 +273,7 @@ class WebSocketService {
         critical: validation.criticalFailure
       };
     } catch (error) {
-      console.warn('Could not check API health:', error.message);
+      console.warn('Could not check API health:', (error as Error).message);
     }
 
     return {
@@ -284,7 +284,7 @@ class WebSocketService {
   }
 
   public isInitialized(): boolean {
-    return this.isInitialized;
+    return this.initialized;
   }
 
   public close(): void {

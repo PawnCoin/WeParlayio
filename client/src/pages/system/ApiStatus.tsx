@@ -20,8 +20,6 @@ interface ApiService {
 
 export default function ApiStatus() {
   const { user } = useAuth();
-  const [services, setServices] = useState<ApiService[]>([]);
-
   // Restrict access to admin users only
   if (!user?.isAdmin) {
     return (
@@ -36,7 +34,7 @@ export default function ApiStatus() {
   }
 
   // Fetch API statuses
-  const { data: services, isLoading, refetch } = useQuery({
+  const { data: apiServices, isLoading, refetch } = useQuery({
     queryKey: ['/api/system/api-status'],
     staleTime: 30 * 1000,
     refetchInterval: 30 * 1000, // Auto-refresh every 30 seconds
