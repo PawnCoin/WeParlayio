@@ -34,9 +34,10 @@ class AllSportsApiService {
   private baseUrl = 'https://allsportsapi2.p.rapidapi.com';
 
   constructor() {
-    this.apiKey = process.env.RAPIDAPI_KEY || '';
+    this.apiKey = process.env.ALLSPORTS_API_KEY || process.env.RAPIDAPI_KEY || '';
+    this.baseUrl = `https://${process.env.ALLSPORTS_API_HOST || 'allsportsapi2.p.rapidapi.com'}`;
     if (!this.apiKey) {
-      console.warn('AllSportsAPI: RAPIDAPI_KEY not configured');
+      console.warn('AllSportsAPI: API key not configured');
     }
   }
 
@@ -52,7 +53,7 @@ class AllSportsApiService {
       const response = await fetch(url, {
         headers: {
           'X-RapidAPI-Key': this.apiKey,
-          'X-RapidAPI-Host': 'allsportsapi2.p.rapidapi.com',
+          'X-RapidAPI-Host': process.env.ALLSPORTS_API_HOST || 'allsportsapi2.p.rapidapi.com',
           'Accept': 'application/json'
         }
       });
