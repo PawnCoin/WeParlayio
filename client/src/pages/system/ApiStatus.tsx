@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CheckCircle, XCircle, AlertTriangle, Clock, Wifi, Server, Database, Globe } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ApiService {
   name: string;
@@ -18,6 +19,22 @@ interface ApiService {
 }
 
 export default function ApiStatus() {
+  const { user } = useAuth();
+  const [services, setServices] = useState<ApiService[]>([]);
+
+  // Restrict access to admin users only
+  if (!user?.isAdmin) {
+    return (
+      <div className="container mx-auto p-6">
+        <Card>
+          <CardContent className="p-6 text-center">
+            <p className="text-muted-foreground">Access denied. Admin privileges required.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   // Fetch API statuses
   const { data: services, isLoading, refetch } = useQuery({
     queryKey: ['/api/system/api-status'],

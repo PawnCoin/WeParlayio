@@ -37,10 +37,12 @@ export default function TransactionManagement() {
     dateTo: ''
   });
 
-  // Fetch transactions
-  const { data: transactions, isLoading } = useQuery<Transaction[]>({
+  // Fetch transactions with proper error handling
+  const { data: transactions, isLoading, error } = useQuery<Transaction[]>({
     queryKey: ['/api/transactions/list', filters],
     staleTime: 30 * 1000,
+    retry: 3,
+    refetchOnWindowFocus: false,
   });
 
   // Fetch transaction statistics
