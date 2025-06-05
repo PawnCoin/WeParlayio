@@ -25,30 +25,65 @@ export class UnifiedSportsApiService {
   }
 
   /**
-   * Get comprehensive sports list prioritizing AllSportsAPI unlimited subscription
+   * Get comprehensive sports list prioritizing AllSportsAPI first with fallbacks
    */
   async getMassiveSportsList(): Promise<any> {
     try {
-      console.log('Fetching sports from AllSportsAPI unlimited subscription...');
+      console.log('Fetching sports from AllSportsAPI...');
       
-      // Primary source: AllSportsAPI unlimited subscription
-      const allSportsSports = await this.allSportsApi.getSports();
-      
-      if (allSportsSports.length > 0) {
-        console.log(`✅ AllSportsAPI: Retrieved ${allSportsSports.length} sports`);
-        return allSportsSports.map((sport: any, index: number) => ({
-          id: index + 1,
-          name: sport.title,
-          key: sport.key,
-          group: sport.group || 'General',
-          active: sport.active !== false,
-          category: sport.group || 'General',
-          description: sport.description || `Live ${sport.title} betting`
-        }));
+      // Primary source: AllSportsAPI
+      try {
+        const allSportsSports = await this.allSportsApi.getSports();
+        if (allSportsSports.length > 0) {
+          console.log(`✅ AllSportsAPI: Retrieved ${allSportsSports.length} sports`);
+          return allSportsSports.map((sport: any, index: number) => ({
+            id: index + 1,
+            name: sport.title,
+            key: sport.key,
+            group: sport.group || 'General',
+            active: sport.active !== false,
+            category: sport.group || 'General',
+            description: sport.description || `Live ${sport.title} betting`
+          }));
+        }
+      } catch (error) {
+        console.warn('AllSportsAPI failed, trying fallbacks:', error);
       }
       
-      // No fallback data - only authentic AllSportsAPI data allowed
-      console.log('AllSportsAPI unavailable - returning empty data set');
+      // Fallback 1: RapidAPI
+      try {
+        const rapidSports = await this.rapidApi.getSports();
+        if (rapidSports.length > 0) {
+          console.log(`✅ RapidAPI fallback: Retrieved ${rapidSports.length} sports`);
+          return rapidSports;
+        }
+      } catch (error) {
+        console.warn('RapidAPI fallback failed:', error);
+      }
+      
+      // Fallback 2: SportsGameOdds
+      try {
+        const sportsGameSports = await this.sportsGameOdds.getSports();
+        if (sportsGameSports.length > 0) {
+          console.log(`✅ SportsGameOdds fallback: Retrieved ${sportsGameSports.length} sports`);
+          return sportsGameSports;
+        }
+      } catch (error) {
+        console.warn('SportsGameOdds fallback failed:', error);
+      }
+      
+      // Fallback 3: Grid API
+      try {
+        const gridSports = await this.gridApi.getSports();
+        if (gridSports.length > 0) {
+          console.log(`✅ Grid API fallback: Retrieved ${gridSports.length} sports`);
+          return gridSports;
+        }
+      } catch (error) {
+        console.warn('Grid API fallback failed:', error);
+      }
+      
+      console.log('All sports APIs failed - no data available');
       return [];
     } catch (error) {
       console.error('Error in getMassiveSportsList:', error);
@@ -57,19 +92,44 @@ export class UnifiedSportsApiService {
   }
 
   /**
-   * Get unified odds prioritizing AllSportsAPI
+   * Get unified odds prioritizing AllSportsAPI with fallbacks
    */
   async getUnifiedOdds(sport?: string): Promise<any> {
     try {
       // Primary source: AllSportsAPI
-      const allSportsOdds = await this.allSportsApi.getOdds(sport);
-      
-      if (allSportsOdds.length > 0) {
-        console.log(`✅ AllSportsAPI odds: ${allSportsOdds.length} events`);
-        return allSportsOdds;
+      try {
+        const allSportsOdds = await this.allSportsApi.getOdds(sport || 'americanfootball_nfl');
+        if (allSportsOdds.length > 0) {
+          console.log(`✅ AllSportsAPI odds: ${allSportsOdds.length} events`);
+          return allSportsOdds;
+        }
+      } catch (error) {
+        console.warn('AllSportsAPI odds failed, trying fallbacks:', error);
       }
       
-      // No fallback - only authentic data
+      // Fallback 1: OddsAPI
+      try {
+        const oddsApiData = await this.oddsApi.getOdds(sport);
+        if (oddsApiData.length > 0) {
+          console.log(`✅ OddsAPI fallback: ${oddsApiData.length} events`);
+          return oddsApiData;
+        }
+      } catch (error) {
+        console.warn('OddsAPI fallback failed:', error);
+      }
+      
+      // Fallback 2: RapidAPI
+      try {
+        const rapidOdds = await this.rapidApi.getOdds(sport);
+        if (rapidOdds.length > 0) {
+          console.log(`✅ RapidAPI fallback: ${rapidOdds.length} events`);
+          return rapidOdds;
+        }
+      } catch (error) {
+        console.warn('RapidAPI fallback failed:', error);
+      }
+      
+      console.log('All odds APIs failed - no data available');
       return [];
     } catch (error) {
       console.error('Error fetching unified odds:', error);
@@ -78,19 +138,44 @@ export class UnifiedSportsApiService {
   }
 
   /**
-   * Get live events prioritizing AllSportsAPI
+   * Get live events prioritizing AllSportsAPI with fallbacks
    */
   async getUnifiedLiveEvents(): Promise<any> {
     try {
       // Primary source: AllSportsAPI
-      const liveEvents = await this.allSportsApi.getLiveEvents();
-      
-      if (liveEvents.length > 0) {
-        console.log(`✅ AllSportsAPI live events: ${liveEvents.length} events`);
-        return liveEvents;
+      try {
+        const liveEvents = await this.allSportsApi.getLiveEvents();
+        if (liveEvents.length > 0) {
+          console.log(`✅ AllSportsAPI live events: ${liveEvents.length} events`);
+          return liveEvents;
+        }
+      } catch (error) {
+        console.warn('AllSportsAPI live events failed, trying fallbacks:', error);
       }
       
-      // No fallback - only authentic data
+      // Fallback 1: OddsAPI
+      try {
+        const oddsLiveEvents = await this.oddsApi.getLiveEvents();
+        if (oddsLiveEvents.length > 0) {
+          console.log(`✅ OddsAPI fallback: ${oddsLiveEvents.length} events`);
+          return oddsLiveEvents;
+        }
+      } catch (error) {
+        console.warn('OddsAPI live events fallback failed:', error);
+      }
+      
+      // Fallback 2: Grid API
+      try {
+        const gridLiveEvents = await this.gridApi.getLiveEvents();
+        if (gridLiveEvents.length > 0) {
+          console.log(`✅ Grid API fallback: ${gridLiveEvents.length} events`);
+          return gridLiveEvents;
+        }
+      } catch (error) {
+        console.warn('Grid API live events fallback failed:', error);
+      }
+      
+      console.log('All live events APIs failed - no data available');
       return [];
     } catch (error) {
       console.error('Error fetching live events:', error);
