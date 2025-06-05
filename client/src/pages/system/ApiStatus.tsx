@@ -34,14 +34,21 @@ export default function ApiStatus() {
   }
 
   // Fetch API statuses
-  const { data: apiServices, isLoading, refetch } = useQuery({
+  const { data: apiData, isLoading, refetch } = useQuery<{
+    services: any[];
+    overallStatus: string;
+    operationalServices: number;
+    totalServices: number;
+    avgResponseTime: number;
+    systemUptime: number;
+  }>({
     queryKey: ['/api/system/api-status'],
     staleTime: 30 * 1000,
     refetchInterval: 30 * 1000, // Auto-refresh every 30 seconds
   });
 
   // Fetch overall system health from the same endpoint
-  const systemHealth = services;
+  const systemHealth = apiData;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -115,13 +122,13 @@ export default function ApiStatus() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Overall Status"
-          value={services?.overallStatus || 'Unknown'}
-          icon={getStatusIcon(services?.overallStatus)}
-          status={services?.overallStatus === 'healthy' ? 'online' : 'offline'}
+          value={apiData?.overallStatus || 'Unknown'}
+          icon={getStatusIcon(apiData?.overallStatus)}
+          status={apiData?.overallStatus === 'operational' ? 'online' : 'offline'}
         />
         <StatCard
           title="Services Online"
-          value={`${services?.services?.length || 0}/${services?.services?.length || 0}`}
+          value={`${apiServices?.operationalServices || 0}/${apiServices?.totalServices || 0}`}
           icon={CheckCircle}
           status="online"
         />
@@ -159,12 +166,12 @@ export default function ApiStatus() {
                 {isLoading ? (
                   <div className="text-center py-8">Loading service status...</div>
                 ) : services?.services?.length > 0 ? (
-                  services.services.map((service: any) => {
-                    const mappedStatus = service.status === 'healthy' ? 'online' : service.status === 'degraded' ? 'degraded' : 'offline';
+                  apiServices?.apiServices?.map((service: any) => {
+                    const mappedStatus = apiServices?.status === 'healthy' ? 'online' : apiServices?.status === 'degraded' ? 'degraded' : 'offline';
                     const StatusIcon = getStatusIcon(mappedStatus);
                     const serviceType = 'external'; // Map all services as external for now
                     return (
-                      <div key={service.name} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div key={apiServices?.name} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-2">
                             <StatusIcon className={`h-5 w-5 ${
@@ -176,24 +183,24 @@ export default function ApiStatus() {
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <h3 className="font-medium">{service.name}</h3>
+                              <h3 className="font-medium">{apiServices?.name}</h3>
                               <Badge variant={getStatusColor(mappedStatus) as any}>
                                 {mappedStatus}
                               </Badge>
                               <Badge variant="outline">external</Badge>
                             </div>
-                            <p className="text-sm text-muted-foreground">Response time: {service.responseTime}ms</p>
-                            <p className="text-xs text-muted-foreground">Uptime: {service.uptime}%</p>
+                            <p className="text-sm text-muted-foreground">Response time: {apiServices?.responseTime}ms</p>
+                            <p className="text-xs text-muted-foreground">Uptime: {apiServices?.uptime}%</p>
                           </div>
                         </div>
                         <div className="text-right">
                           <div className="flex items-center gap-4">
                             <div>
-                              <p className={`text-sm font-medium ${getResponseTimeColor(service.responseTime)}`}>
-                                {service.responseTime}ms
+                              <p className={`text-sm font-medium ${getResponseTimeColor(apiServices?.responseTime)}`}>
+                                {apiServices?.responseTime}ms
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                {service.uptime}% uptime
+                                {apiServices?.uptime}% uptime
                               </p>
                             </div>
                             <div>
@@ -201,7 +208,7 @@ export default function ApiStatus() {
                                 Last checked
                               </p>
                               <p className="text-xs">
-                                {new Date(service.lastChecked).toLocaleTimeString()}
+                                {new Date(apiServices?.lastChecked).toLocaleTimeString()}
                               </p>
                             </div>
                           </div>
@@ -228,25 +235,25 @@ export default function ApiStatus() {
             <CardContent>
               <div className="space-y-4">
                 {services?.services?.map((service: any) => {
-                  const mappedStatus = service.status === 'healthy' ? 'online' : service.status === 'degraded' ? 'degraded' : 'offline';
+                  const mappedStatus = apiServices?.status === 'healthy' ? 'online' : apiServices?.status === 'degraded' ? 'degraded' : 'offline';
                   const StatusIcon = getStatusIcon(mappedStatus);
                   return (
-                    <div key={service.name} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div key={apiServices?.name} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center gap-4">
                         <StatusIcon className={`h-6 w-6 ${
                           mappedStatus === 'online' ? 'text-green-500' : 'text-red-500'
                         }`} />
                         <div>
-                          <h3 className="font-medium">{service.name}</h3>
-                          <p className="text-sm text-muted-foreground">Response: {service.responseTime}ms | Uptime: {service.uptime}%</p>
+                          <h3 className="font-medium">{apiServices?.name}</h3>
+                          <p className="text-sm text-muted-foreground">Response: {apiServices?.responseTime}ms | Uptime: {apiServices?.uptime}%</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge variant={getStatusColor(mappedStatus) as any}>
                           {mappedStatus}
                         </Badge>
-                        <span className={`text-sm ${getResponseTimeColor(service.responseTime)}`}>
-                          {service.responseTime}ms
+                        <span className={`text-sm ${getResponseTimeColor(apiServices?.responseTime)}`}>
+                          {apiServices?.responseTime}ms
                         </span>
                       </div>
                     </div>
@@ -270,24 +277,24 @@ export default function ApiStatus() {
             <CardContent>
               <div className="space-y-4">
                 {services?.services?.map((service: any) => {
-                  const StatusIcon = getStatusIcon(service.status);
+                  const StatusIcon = getStatusIcon(apiServices?.status);
                   return (
-                    <div key={service.name} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div key={apiServices?.name} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center gap-4">
                         <StatusIcon className={`h-6 w-6 ${
-                          service.status === 'online' ? 'text-green-500' : 'text-red-500'
+                          apiServices?.status === 'online' ? 'text-green-500' : 'text-red-500'
                         }`} />
                         <div>
-                          <h3 className="font-medium">{service.name}</h3>
-                          <p className="text-sm text-muted-foreground">{service.description}</p>
+                          <h3 className="font-medium">{apiServices?.name}</h3>
+                          <p className="text-sm text-muted-foreground">{apiServices?.description}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant={getStatusColor(service.status) as any}>
-                          {service.status}
+                        <Badge variant={getStatusColor(apiServices?.status) as any}>
+                          {apiServices?.status}
                         </Badge>
-                        <span className={`text-sm ${getResponseTimeColor(service.responseTime)}`}>
-                          {service.responseTime}ms
+                        <span className={`text-sm ${getResponseTimeColor(apiServices?.responseTime)}`}>
+                          {apiServices?.responseTime}ms
                         </span>
                       </div>
                     </div>
@@ -311,24 +318,24 @@ export default function ApiStatus() {
             <CardContent>
               <div className="space-y-4">
                 {services?.services?.map((service: any) => {
-                  const StatusIcon = getStatusIcon(service.status);
+                  const StatusIcon = getStatusIcon(apiServices?.status);
                   return (
-                    <div key={service.name} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div key={apiServices?.name} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center gap-4">
                         <StatusIcon className={`h-6 w-6 ${
-                          service.status === 'online' ? 'text-green-500' : 'text-red-500'
+                          apiServices?.status === 'online' ? 'text-green-500' : 'text-red-500'
                         }`} />
                         <div>
-                          <h3 className="font-medium">{service.name}</h3>
-                          <p className="text-sm text-muted-foreground">{service.description}</p>
+                          <h3 className="font-medium">{apiServices?.name}</h3>
+                          <p className="text-sm text-muted-foreground">{apiServices?.description}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant={getStatusColor(service.status) as any}>
-                          {service.status}
+                        <Badge variant={getStatusColor(apiServices?.status) as any}>
+                          {apiServices?.status}
                         </Badge>
-                        <span className={`text-sm ${getResponseTimeColor(service.responseTime)}`}>
-                          {service.responseTime}ms
+                        <span className={`text-sm ${getResponseTimeColor(apiServices?.responseTime)}`}>
+                          {apiServices?.responseTime}ms
                         </span>
                       </div>
                     </div>
@@ -352,24 +359,24 @@ export default function ApiStatus() {
             <CardContent>
               <div className="space-y-4">
                 {services?.services?.map((service: any) => {
-                  const StatusIcon = getStatusIcon(service.status);
+                  const StatusIcon = getStatusIcon(apiServices?.status);
                   return (
-                    <div key={service.name} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div key={apiServices?.name} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center gap-4">
                         <StatusIcon className={`h-6 w-6 ${
-                          service.status === 'online' ? 'text-green-500' : 'text-red-500'
+                          apiServices?.status === 'online' ? 'text-green-500' : 'text-red-500'
                         }`} />
                         <div>
-                          <h3 className="font-medium">{service.name}</h3>
-                          <p className="text-sm text-muted-foreground">{service.description}</p>
+                          <h3 className="font-medium">{apiServices?.name}</h3>
+                          <p className="text-sm text-muted-foreground">{apiServices?.description}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant={getStatusColor(service.status) as any}>
-                          {service.status}
+                        <Badge variant={getStatusColor(apiServices?.status) as any}>
+                          {apiServices?.status}
                         </Badge>
-                        <span className={`text-sm ${getResponseTimeColor(service.responseTime)}`}>
-                          {service.responseTime}ms
+                        <span className={`text-sm ${getResponseTimeColor(apiServices?.responseTime)}`}>
+                          {apiServices?.responseTime}ms
                         </span>
                       </div>
                     </div>
