@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Play, Users, Wifi } from 'lucide-react';
+import { Play, Users, Wifi, ChevronUp, ChevronDown, Maximize, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -86,8 +86,8 @@ export default function LiveStreaming() {
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       <div className="flex h-screen">
-        {/* Left Sidebar - Live Games List */}
-        <div className="w-80 bg-gray-800 border-r border-gray-700 overflow-y-auto">
+        {/* Left Sidebar - Live Games Carousel */}
+        <div className="w-80 bg-gray-800 border-r border-gray-700 flex flex-col">
           <div className="p-4 border-b border-gray-700">
             <div className="flex items-center gap-2 mb-2">
               <Wifi className="w-5 h-5 text-red-500" />
@@ -96,61 +96,98 @@ export default function LiveStreaming() {
             <p className="text-sm text-gray-400">Watch live games and place bets in real-time</p>
           </div>
           
-          <div className="p-2">
-            {liveGames.map((game) => (
-              <Card 
-                key={game.id}
-                className={`mb-2 cursor-pointer transition-all ${
-                  selectedGame?.id === game.id 
-                    ? 'bg-blue-600 border-blue-500' 
-                    : 'bg-gray-700 hover:bg-gray-600 border-gray-600'
-                }`}
-                onClick={() => setSelectedGame(game)}
-              >
-                <CardContent className="p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <Badge variant="destructive" className="bg-red-600">
-                      LIVE
-                    </Badge>
-                    <div className="flex items-center gap-1 text-xs text-gray-300">
-                      <Users className="w-3 h-3" />
-                      {game.viewers.toLocaleString()}
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <img 
-                          src={game.homeTeam.logo} 
-                          alt={game.homeTeam.name}
-                          className="w-6 h-6 rounded"
-                        />
-                        <span className="text-sm font-medium">{game.homeTeam.name}</span>
+          <div className="flex-1 relative">
+            {/* Scroll Up Button */}
+            <button 
+              onClick={() => {
+                const container = document.getElementById('games-carousel');
+                if (container) container.scrollTop -= 300;
+              }}
+              className="absolute top-2 left-1/2 transform -translate-x-1/2 z-10 bg-gray-700 hover:bg-gray-600 text-white p-2 rounded-full transition-colors shadow-lg"
+            >
+              <ChevronUp className="w-4 h-4" />
+            </button>
+            
+            {/* Games Carousel Container */}
+            <div 
+              id="games-carousel"
+              className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 pt-12 pb-12 px-2"
+              style={{ scrollBehavior: 'smooth' }}
+            >
+              <div className="space-y-3">
+                {liveGames.map((game) => (
+                  <Card 
+                    key={game.id}
+                    className={`cursor-pointer transition-all transform hover:scale-[1.02] ${
+                      selectedGame?.id === game.id 
+                        ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/20' 
+                        : 'bg-gray-700 hover:bg-gray-600 border-gray-600'
+                    }`}
+                    onClick={() => setSelectedGame(game)}
+                  >
+                    <CardContent className="p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <Badge variant="destructive" className="bg-red-600 animate-pulse">
+                          LIVE
+                        </Badge>
+                        <div className="flex items-center gap-1 text-xs text-gray-300">
+                          <Users className="w-3 h-3" />
+                          {game.viewers.toLocaleString()}
+                        </div>
                       </div>
-                      <span className="text-lg font-bold">{game.homeTeam.score}</span>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <img 
-                          src={game.awayTeam.logo} 
-                          alt={game.awayTeam.name}
-                          className="w-6 h-6 rounded"
-                        />
-                        <span className="text-sm font-medium">{game.awayTeam.name}</span>
+                      
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <img 
+                              src={game.homeTeam.logo} 
+                              alt={game.homeTeam.name}
+                              className="w-6 h-6 rounded"
+                              onError={(e) => {
+                                e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjNEY0RjRGIi8+CjxwYXRoIGQ9Ik0xMiAxNkM5Ljc5IDIwIDYgMTYuMjEgNiAxNFM5Ljc5IDggMTIgOFMxOCAxMC43OSAxOCA4UzE0LjIxIDEyIDEyIDEyWiIgZmlsbD0iIzIzMjMyMyIvPgo8L3N2Zz4K';
+                              }}
+                            />
+                            <span className="text-sm font-medium">{game.homeTeam.name}</span>
+                          </div>
+                          <span className="text-lg font-bold">{game.homeTeam.score}</span>
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <img 
+                              src={game.awayTeam.logo} 
+                              alt={game.awayTeam.name}
+                              className="w-6 h-6 rounded"
+                              onError={(e) => {
+                                e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjNEY0RjRGIi8+CjxwYXRoIGQ9Ik0xMiAxNkM5Ljc5IDIwIDYgMTYuMjEgNiAxNFM5Ljc5IDggMTIgOFMxOCAxMC43OSAxOCA4UzE0LjIxIDEyIDEyIDEyWiIgZmlsbD0iIzIzMjMyMyIvPgo8L3N2Zz4K';
+                              }}
+                            />
+                            <span className="text-sm font-medium">{game.awayTeam.name}</span>
+                          </div>
+                          <span className="text-lg font-bold">{game.awayTeam.score}</span>
+                        </div>
                       </div>
-                      <span className="text-lg font-bold">{game.awayTeam.score}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-600">
-                    <span className="text-xs text-gray-400">{game.period} • {game.league}</span>
-                    <span className="text-xs text-gray-400">{game.sport}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                      
+                      <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-600">
+                        <span className="text-xs text-gray-400">{game.period} • {game.league}</span>
+                        <span className="text-xs text-gray-400">{game.sport}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+            
+            {/* Scroll Down Button */}
+            <button 
+              onClick={() => {
+                const container = document.getElementById('games-carousel');
+                if (container) container.scrollTop += 300;
+              }}
+              className="absolute bottom-2 left-1/2 transform -translate-x-1/2 z-10 bg-gray-700 hover:bg-gray-600 text-white p-2 rounded-full transition-colors shadow-lg"
+            >
+              <ChevronDown className="w-4 h-4" />
+            </button>
           </div>
         </div>
 
@@ -159,57 +196,47 @@ export default function LiveStreaming() {
           {selectedGame ? (
             <>
               <div className="flex-1 relative bg-black">
-                {/* Professional Live Stream Player */}
-                <div className="w-full h-full">
-                  {/* Stream Container */}
-                  <div id="live-stream-player" className="w-full h-full bg-gray-900 flex items-center justify-center relative">
-                    {/* Live Stream Display */}
-                    <div className="w-full h-full max-w-full relative">
-                      {/* Stream Quality Controls */}
-                      <div className="absolute top-4 right-4 z-10 flex gap-2">
-                        <button className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors">
-                          HD
-                        </button>
-                        <button className="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700 transition-colors">
-                          SD
-                        </button>
+                {/* Embedded Video Player */}
+                <div className="w-full h-full relative">
+                  {/* Video Controls Overlay */}
+                  <div className="absolute top-4 right-4 z-20 flex gap-2">
+                    <button className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors">
+                      HD
+                    </button>
+                    <button className="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700 transition-colors">
+                      SD
+                    </button>
+                    <button className="p-2 bg-gray-800 hover:bg-gray-700 text-white rounded transition-colors">
+                      <Maximize className="w-4 h-4" />
+                    </button>
+                    <button className="p-2 bg-gray-800 hover:bg-gray-700 text-white rounded transition-colors">
+                      <Volume2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                  
+                  {/* Main Video Stream */}
+                  <iframe
+                    src={selectedGame.streamUrl}
+                    className="w-full h-full border-0"
+                    allowFullScreen
+                    allow="autoplay; encrypted-media; picture-in-picture"
+                    title={`Live Stream: ${selectedGame.title}`}
+                    sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-presentation"
+                    style={{
+                      border: 'none',
+                      outline: 'none',
+                      backgroundColor: '#000'
+                    }}
+                  />
+                  
+                  {/* Video Loading Fallback */}
+                  <div className="absolute inset-0 bg-gray-900 flex items-center justify-center pointer-events-none opacity-0 hover:opacity-0 transition-opacity">
+                    <div className="text-center text-white">
+                      <div className="w-16 h-16 mx-auto mb-4 bg-red-600 rounded-full flex items-center justify-center">
+                        <Play className="w-8 h-8 text-white ml-1" />
                       </div>
-                      
-                      {/* Main Video Area */}
-                      <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
-                        <div className="text-center text-white">
-                          <div className="w-24 h-24 mx-auto mb-4 bg-red-600 rounded-full flex items-center justify-center">
-                            <Play className="w-12 h-12 text-white ml-1" />
-                          </div>
-                          <h3 className="text-2xl font-bold mb-2">{selectedGame.title}</h3>
-                          <p className="text-gray-300 mb-4">Live Gaming Stream</p>
-                          
-                          {/* Live Stats */}
-                          <div className="flex items-center justify-center gap-6 mb-6">
-                            <div className="flex items-center gap-2">
-                              <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                              <span className="text-sm font-medium">LIVE</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Users className="w-4 h-4" />
-                              <span className="text-sm">{selectedGame.viewers.toLocaleString()} viewers</span>
-                            </div>
-                          </div>
-                          
-                          {/* Stream Controls */}
-                          <div className="flex justify-center gap-3">
-                            <button 
-                              onClick={() => window.open(selectedGame.streamUrl, '_blank')}
-                              className="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg transition-colors font-semibold"
-                            >
-                              Watch Live Stream
-                            </button>
-                            <button className="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors">
-                              Fullscreen
-                            </button>
-                          </div>
-                        </div>
-                      </div>
+                      <h3 className="text-xl font-bold mb-2">Loading Stream...</h3>
+                      <p className="text-gray-300">{selectedGame.title}</p>
                     </div>
                   </div>
                 </div>
