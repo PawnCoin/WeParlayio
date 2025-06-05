@@ -35,7 +35,7 @@ export default function ApiStatus() {
 
   // Fetch API statuses
   const { data: apiData, isLoading, refetch } = useQuery<{
-    services: any[];
+    apiData: any[];
     overallStatus: string;
     operationalServices: number;
     totalServices: number;
@@ -123,24 +123,24 @@ export default function ApiStatus() {
         <StatCard
           title="Overall Status"
           value={apiData?.overallStatus || 'Unknown'}
-          icon={getStatusIcon(apiData?.overallStatus)}
+          icon={getStatusIcon(apiData?.overallStatus || 'unknown')}
           status={apiData?.overallStatus === 'operational' ? 'online' : 'offline'}
         />
         <StatCard
           title="Services Online"
-          value={`${apiServices?.operationalServices || 0}/${apiServices?.totalServices || 0}`}
+          value={`${apiData?.operationalServices || 0}/${apiData?.totalServices || 0}`}
           icon={CheckCircle}
           status="online"
         />
         <StatCard
           title="Avg Response Time"
-          value={`${services?.avgResponseTime || 0}ms`}
+          value={`${apiData?.avgResponseTime || 0}ms`}
           icon={Clock}
           status="online"
         />
         <StatCard
           title="Total Services"
-          value={services?.services?.length || 0}
+          value={apiData?.apiData?.length || 0}
           icon={Server}
           status="online"
         />
@@ -159,19 +159,19 @@ export default function ApiStatus() {
           <Card>
             <CardHeader>
               <CardTitle>All API Services</CardTitle>
-              <CardDescription>Complete overview of all system services and their current status</CardDescription>
+              <CardDescription>Complete overview of all system apiData and their current status</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {isLoading ? (
                   <div className="text-center py-8">Loading service status...</div>
-                ) : services?.services?.length > 0 ? (
-                  apiServices?.apiServices?.map((service: any) => {
-                    const mappedStatus = apiServices?.status === 'healthy' ? 'online' : apiServices?.status === 'degraded' ? 'degraded' : 'offline';
+                ) : apiData?.services?.length > 0 ? (
+                  apiData.services.map((service: any) => {
+                    const mappedStatus = service.status === 'operational' ? 'online' : service.status === 'degraded' ? 'degraded' : 'offline';
                     const StatusIcon = getStatusIcon(mappedStatus);
-                    const serviceType = 'external'; // Map all services as external for now
+                    const serviceType = service.type || 'external';
                     return (
-                      <div key={apiServices?.name} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div key={service.name} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-2">
                             <StatusIcon className={`h-5 w-5 ${
@@ -183,24 +183,24 @@ export default function ApiStatus() {
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <h3 className="font-medium">{apiServices?.name}</h3>
+                              <h3 className="font-medium">{apiData?.name}</h3>
                               <Badge variant={getStatusColor(mappedStatus) as any}>
                                 {mappedStatus}
                               </Badge>
                               <Badge variant="outline">external</Badge>
                             </div>
-                            <p className="text-sm text-muted-foreground">Response time: {apiServices?.responseTime}ms</p>
-                            <p className="text-xs text-muted-foreground">Uptime: {apiServices?.uptime}%</p>
+                            <p className="text-sm text-muted-foreground">Response time: {apiData?.responseTime}ms</p>
+                            <p className="text-xs text-muted-foreground">Uptime: {apiData?.uptime}%</p>
                           </div>
                         </div>
                         <div className="text-right">
                           <div className="flex items-center gap-4">
                             <div>
-                              <p className={`text-sm font-medium ${getResponseTimeColor(apiServices?.responseTime)}`}>
-                                {apiServices?.responseTime}ms
+                              <p className={`text-sm font-medium ${getResponseTimeColor(apiData?.responseTime)}`}>
+                                {apiData?.responseTime}ms
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                {apiServices?.uptime}% uptime
+                                {apiData?.uptime}% uptime
                               </p>
                             </div>
                             <div>
@@ -208,7 +208,7 @@ export default function ApiStatus() {
                                 Last checked
                               </p>
                               <p className="text-xs">
-                                {new Date(apiServices?.lastChecked).toLocaleTimeString()}
+                                {new Date(apiData?.lastChecked).toLocaleTimeString()}
                               </p>
                             </div>
                           </div>
@@ -218,7 +218,7 @@ export default function ApiStatus() {
                   })
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
-                    No services configured
+                    No apiData configured
                   </div>
                 )}
               </div>
@@ -234,33 +234,33 @@ export default function ApiStatus() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {services?.services?.map((service: any) => {
-                  const mappedStatus = apiServices?.status === 'healthy' ? 'online' : apiServices?.status === 'degraded' ? 'degraded' : 'offline';
+                {apiData?.apiData?.map((service: any) => {
+                  const mappedStatus = apiData?.status === 'healthy' ? 'online' : apiData?.status === 'degraded' ? 'degraded' : 'offline';
                   const StatusIcon = getStatusIcon(mappedStatus);
                   return (
-                    <div key={apiServices?.name} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div key={apiData?.name} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center gap-4">
                         <StatusIcon className={`h-6 w-6 ${
                           mappedStatus === 'online' ? 'text-green-500' : 'text-red-500'
                         }`} />
                         <div>
-                          <h3 className="font-medium">{apiServices?.name}</h3>
-                          <p className="text-sm text-muted-foreground">Response: {apiServices?.responseTime}ms | Uptime: {apiServices?.uptime}%</p>
+                          <h3 className="font-medium">{apiData?.name}</h3>
+                          <p className="text-sm text-muted-foreground">Response: {apiData?.responseTime}ms | Uptime: {apiData?.uptime}%</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge variant={getStatusColor(mappedStatus) as any}>
                           {mappedStatus}
                         </Badge>
-                        <span className={`text-sm ${getResponseTimeColor(apiServices?.responseTime)}`}>
-                          {apiServices?.responseTime}ms
+                        <span className={`text-sm ${getResponseTimeColor(apiData?.responseTime)}`}>
+                          {apiData?.responseTime}ms
                         </span>
                       </div>
                     </div>
                   );
                 }) || (
                   <div className="text-center py-8 text-muted-foreground">
-                    No external services configured
+                    No external apiData configured
                   </div>
                 )}
               </div>
@@ -276,32 +276,32 @@ export default function ApiStatus() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {services?.services?.map((service: any) => {
-                  const StatusIcon = getStatusIcon(apiServices?.status);
+                {apiData?.apiData?.map((service: any) => {
+                  const StatusIcon = getStatusIcon(apiData?.status);
                   return (
-                    <div key={apiServices?.name} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div key={apiData?.name} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center gap-4">
                         <StatusIcon className={`h-6 w-6 ${
-                          apiServices?.status === 'online' ? 'text-green-500' : 'text-red-500'
+                          apiData?.status === 'online' ? 'text-green-500' : 'text-red-500'
                         }`} />
                         <div>
-                          <h3 className="font-medium">{apiServices?.name}</h3>
-                          <p className="text-sm text-muted-foreground">{apiServices?.description}</p>
+                          <h3 className="font-medium">{apiData?.name}</h3>
+                          <p className="text-sm text-muted-foreground">{apiData?.description}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant={getStatusColor(apiServices?.status) as any}>
-                          {apiServices?.status}
+                        <Badge variant={getStatusColor(apiData?.status) as any}>
+                          {apiData?.status}
                         </Badge>
-                        <span className={`text-sm ${getResponseTimeColor(apiServices?.responseTime)}`}>
-                          {apiServices?.responseTime}ms
+                        <span className={`text-sm ${getResponseTimeColor(apiData?.responseTime)}`}>
+                          {apiData?.responseTime}ms
                         </span>
                       </div>
                     </div>
                   );
                 }) || (
                   <div className="text-center py-8 text-muted-foreground">
-                    No internal services configured
+                    No internal apiData configured
                   </div>
                 )}
               </div>
@@ -313,36 +313,36 @@ export default function ApiStatus() {
           <Card>
             <CardHeader>
               <CardTitle>Database Services</CardTitle>
-              <CardDescription>Database connections and storage services</CardDescription>
+              <CardDescription>Database connections and storage apiData</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {services?.services?.map((service: any) => {
-                  const StatusIcon = getStatusIcon(apiServices?.status);
+                {apiData?.apiData?.map((service: any) => {
+                  const StatusIcon = getStatusIcon(apiData?.status);
                   return (
-                    <div key={apiServices?.name} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div key={apiData?.name} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center gap-4">
                         <StatusIcon className={`h-6 w-6 ${
-                          apiServices?.status === 'online' ? 'text-green-500' : 'text-red-500'
+                          apiData?.status === 'online' ? 'text-green-500' : 'text-red-500'
                         }`} />
                         <div>
-                          <h3 className="font-medium">{apiServices?.name}</h3>
-                          <p className="text-sm text-muted-foreground">{apiServices?.description}</p>
+                          <h3 className="font-medium">{apiData?.name}</h3>
+                          <p className="text-sm text-muted-foreground">{apiData?.description}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant={getStatusColor(apiServices?.status) as any}>
-                          {apiServices?.status}
+                        <Badge variant={getStatusColor(apiData?.status) as any}>
+                          {apiData?.status}
                         </Badge>
-                        <span className={`text-sm ${getResponseTimeColor(apiServices?.responseTime)}`}>
-                          {apiServices?.responseTime}ms
+                        <span className={`text-sm ${getResponseTimeColor(apiData?.responseTime)}`}>
+                          {apiData?.responseTime}ms
                         </span>
                       </div>
                     </div>
                   );
                 }) || (
                   <div className="text-center py-8 text-muted-foreground">
-                    No database services configured
+                    No database apiData configured
                   </div>
                 )}
               </div>
@@ -358,32 +358,32 @@ export default function ApiStatus() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {services?.services?.map((service: any) => {
-                  const StatusIcon = getStatusIcon(apiServices?.status);
+                {apiData?.apiData?.map((service: any) => {
+                  const StatusIcon = getStatusIcon(apiData?.status);
                   return (
-                    <div key={apiServices?.name} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div key={apiData?.name} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center gap-4">
                         <StatusIcon className={`h-6 w-6 ${
-                          apiServices?.status === 'online' ? 'text-green-500' : 'text-red-500'
+                          apiData?.status === 'online' ? 'text-green-500' : 'text-red-500'
                         }`} />
                         <div>
-                          <h3 className="font-medium">{apiServices?.name}</h3>
-                          <p className="text-sm text-muted-foreground">{apiServices?.description}</p>
+                          <h3 className="font-medium">{apiData?.name}</h3>
+                          <p className="text-sm text-muted-foreground">{apiData?.description}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant={getStatusColor(apiServices?.status) as any}>
-                          {apiServices?.status}
+                        <Badge variant={getStatusColor(apiData?.status) as any}>
+                          {apiData?.status}
                         </Badge>
-                        <span className={`text-sm ${getResponseTimeColor(apiServices?.responseTime)}`}>
-                          {apiServices?.responseTime}ms
+                        <span className={`text-sm ${getResponseTimeColor(apiData?.responseTime)}`}>
+                          {apiData?.responseTime}ms
                         </span>
                       </div>
                     </div>
                   );
                 }) || (
                   <div className="text-center py-8 text-muted-foreground">
-                    No payment services configured
+                    No payment apiData configured
                   </div>
                 )}
               </div>
