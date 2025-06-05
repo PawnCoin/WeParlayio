@@ -206,21 +206,6 @@ export default function LiveStreaming() {
                   platform={selectedGame.streamUrl.includes('twitch.tv') ? 'twitch' : 
                            selectedGame.streamUrl.includes('youtube.com') ? 'youtube' : 'iptv'}
                 />
-                
-                {/* Live Stream Info Overlay */}
-                <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between pointer-events-none z-20">
-                  <div className="flex items-center gap-2 bg-black/80 px-4 py-2 rounded-lg backdrop-blur-sm">
-                    <Wifi className="w-4 h-4 text-red-500 animate-pulse" />
-                    <span className="text-sm font-bold text-white">LIVE</span>
-                    <span className="text-xs text-gray-300">•</span>
-                    <span className="text-xs text-gray-300">{selectedGame.league}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 bg-black/80 px-4 py-2 rounded-lg backdrop-blur-sm">
-                    <Users className="w-4 h-4 text-white" />
-                    <span className="text-sm text-white font-medium">{selectedGame.viewers.toLocaleString()}</span>
-                  </div>
-                </div>
               </div>
               
               {/* Game Info Bar */}
