@@ -44,7 +44,14 @@ export default function TransactionManagement() {
   });
 
   // Fetch transaction statistics
-  const { data: stats } = useQuery({
+  const { data: stats } = useQuery<{
+    totalVolume24h?: number;
+    volumeChange?: number;
+    transactionsToday?: number;
+    transactionChange?: number;
+    pendingCount?: number;
+    failedRate?: number;
+  }>({
     queryKey: ['/api/transactions/statistics'],
     staleTime: 60 * 1000,
   });
@@ -151,15 +158,15 @@ export default function TransactionManagement() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Total Volume (24h)"
-          value={`$${stats?.totalVolume24h?.toLocaleString() || 0}`}
+          value={`$${(stats?.totalVolume24h || 0).toLocaleString()}`}
           icon={DollarSign}
-          change={stats?.volumeChange}
+          change={stats?.volumeChange || 0}
         />
         <StatCard
           title="Transactions Today"
           value={stats?.transactionsToday || 0}
           icon={CreditCard}
-          change={stats?.transactionChange}
+          change={stats?.transactionChange || 0}
         />
         <StatCard
           title="Pending Transactions"
@@ -283,7 +290,7 @@ export default function TransactionManagement() {
               <div className="space-y-4">
                 {isLoading ? (
                   <div className="text-center py-8">Loading transactions...</div>
-                ) : transactions?.length > 0 ? (
+                ) : (transactions && transactions.length > 0) ? (
                   <div className="space-y-2">
                     {transactions.map((transaction: Transaction) => {
                       const CurrencyIcon = getCurrencyIcon(transaction.currency);
