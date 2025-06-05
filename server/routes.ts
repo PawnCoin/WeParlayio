@@ -1493,7 +1493,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CRITICAL: Real bet placement endpoint
   app.post('/api/bets/place', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ message: 'User not authenticated' });
       }
