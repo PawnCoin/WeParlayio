@@ -366,7 +366,7 @@ export default function TransactionManagement() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {transactions?.filter((t: Transaction) => t.status === 'pending').length > 0 ? (
+                {transactions && transactions.filter((t: Transaction) => t.status === 'pending').length > 0 ? (
                   transactions.filter((t: Transaction) => t.status === 'pending').map((transaction: Transaction) => {
                     const CurrencyIcon = getCurrencyIcon(transaction.currency);
                     return (
