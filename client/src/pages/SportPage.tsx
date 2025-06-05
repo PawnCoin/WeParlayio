@@ -88,64 +88,6 @@ const SportPage = () => {
     }
     return teamType === 'home' ? 'Home Team' : 'Away Team';
   };
-        case 7: return "Bengals";
-        case 8: return "Packers";
-        case 9: return "Lions";
-        case 10: return "Steelers";
-        default: return `Team ${teamId}`;
-      }
-    }
-    // Baseball (MLB) team names
-    else if (sportKey === 'baseball') {
-      switch (teamId) {
-        case 1: return "Yankees";
-        case 2: return "Red Sox";
-        case 3: return "Dodgers";
-        case 4: return "Cubs";
-        case 5: return "Braves";
-        case 6: return "Astros";
-        case 7: return "Phillies";
-        case 8: return "Giants";
-        case 9: return "Padres";
-        case 10: return "Blue Jays";
-        default: return `Team ${teamId}`;
-      }
-    }
-    // Hockey (NHL) team names
-    else if (sportKey === 'hockey') {
-      switch (teamId) {
-        case 1: return "Maple Leafs";
-        case 2: return "Bruins";
-        case 3: return "Rangers";
-        case 4: return "Oilers";
-        case 5: return "Avalanche";
-        case 6: return "Golden Knights";
-        case 7: return "Capitals";
-        case 8: return "Lightning";
-        case 9: return "Panthers";
-        case 10: return "Stars";
-        default: return `Team ${teamId}`;
-      }
-    }
-    // Soccer (MLS) team names
-    else if (sportKey === 'soccer') {
-      switch (teamId) {
-        case 1: return "Inter Miami";
-        case 2: return "LAFC";
-        case 3: return "LA Galaxy";
-        case 4: return "Atlanta United";
-        case 5: return "Sounders";
-        case 6: return "NYCFC";
-        case 7: return "Columbus";
-        case 8: return "Toronto FC";
-        case 9: return "Austin FC";
-        case 10: return "Orlando City";
-        default: return `Team ${teamId}`;
-      }
-    }
-    // Default fallback
-    return `Team ${teamId}`;
-  };
 
   // Helper function to add bet to slip
   const handleAddBet = (
@@ -155,9 +97,9 @@ const SportPage = () => {
     odds: number,
     point?: number
   ) => {
-    // Get team names
-    const homeTeam = event.homeTeamId ? getTeamName(event.homeTeamId) : 'Home Team';
-    const awayTeam = event.awayTeamId ? getTeamName(event.awayTeamId) : 'Away Team';
+    // Get team names from authentic API data
+    const homeTeam = getTeamName(event, 'home');
+    const awayTeam = getTeamName(event, 'away');
 
     addToBetSlip({
       pick: selection,
