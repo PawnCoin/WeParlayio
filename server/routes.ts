@@ -226,7 +226,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         balance: 1000000, // 1 million WeParlay Cash
         weplayTokenBalance: 1000000,
         totalBets: 0,
-        wins: 0,
+        winsCount: 0,
         winRate: 0,
         totalWinnings: 0,
         subscriptionTier: 'platinum',
@@ -256,7 +256,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         balance: 1000000, // 1 million WeParlay Cash
         weplayTokenBalance: 1000000,
         totalBets: 0,
-        wins: 0,
+        winsCount: 0,
         winRate: 0,
         totalWinnings: 0,
         subscriptionTier: 'platinum',
@@ -1589,7 +1589,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CRITICAL: Accept head-to-head challenges
   app.post('/api/challenges/accept/:id', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ message: 'User not authenticated' });
       }
@@ -1621,7 +1621,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CRITICAL: Real crypto deposit processing
   app.post('/api/wallet/deposit', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ message: 'User not authenticated' });
       }
@@ -1665,7 +1665,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CRITICAL: Real crypto withdrawal processing
   app.post('/api/wallet/withdraw', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ message: 'User not authenticated' });
       }
@@ -1720,7 +1720,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CRITICAL: Get real wallet balances
   app.get('/api/wallet/balance', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ message: 'User not authenticated' });
       }
@@ -1744,7 +1744,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CRITICAL: Real transaction history
   app.get('/api/transactions/history', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ message: 'User not authenticated' });
       }
@@ -1765,7 +1765,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CRITICAL: Update user profiles  
   app.post('/api/users/profile/update', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ message: 'User not authenticated' });
       }
@@ -1800,7 +1800,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CRITICAL: Handle VIP tier upgrades
   app.post('/api/users/tier/upgrade', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ message: 'User not authenticated' });
       }
@@ -1856,7 +1856,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CRITICAL: Referral system tracking
   app.get('/api/users/referrals', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ message: 'User not authenticated' });
       }
@@ -1912,7 +1912,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CRITICAL: Create head-to-head challenges with real database storage
   app.post('/api/challenges', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ message: 'User not authenticated' });
       }
@@ -2022,7 +2022,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CRITICAL: Support ticket system endpoints
   app.post('/api/support/tickets', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ message: 'User not authenticated' });
       }
@@ -2051,7 +2051,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/support/tickets/:ticketNumber', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const { ticketNumber } = req.params;
 
       const ticket = await storage.getSupportTicketByNumber(ticketNumber);
@@ -2075,7 +2075,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/support/tickets/:ticketId/messages', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const { ticketId } = req.params;
       const { message } = req.body;
 
@@ -2100,7 +2100,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CRITICAL: Yahoo Fantasy Sports integration endpoints
   app.get('/api/yahoo/status', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const user = await storage.getUser(userId);
       
       const authenticated = !!(user?.yahooAccessToken && user?.yahooRefreshToken);
@@ -2117,7 +2117,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/yahoo/connect', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const { accessToken, refreshToken, expiry } = req.body;
 
       if (!accessToken || !refreshToken) {
@@ -2137,7 +2137,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/tournaments/:id/bets', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ message: 'User not authenticated' });
       }
@@ -2196,7 +2196,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/fantasy/teams/:teamId/players/:playerId', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const { teamId, playerId } = req.params;
 
       // Verify team ownership
@@ -2220,7 +2220,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CRITICAL: User notification system
   app.get('/api/notifications', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const { unreadOnly } = req.query;
       
       const notifications = await storage.getUserNotifications(userId, unreadOnly === 'true');
@@ -2233,7 +2233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/notifications/:id/read', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const { id } = req.params;
 
       const notification = await storage.markNotificationAsRead(parseInt(id), userId);
@@ -2247,7 +2247,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CRITICAL: User gamertag management (premium feature)
   app.post('/api/users/gamertag', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const { gamertag } = req.body;
 
       if (!gamertag) {
@@ -2476,7 +2476,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CRITICAL: Challenge acceptance and management
   app.post('/api/challenges/:uuid/accept', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const { uuid } = req.params;
 
       const challenge = await storage.acceptBettingChallenge(uuid, userId);
@@ -2529,7 +2529,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CRITICAL: WeParlay Cash earning system
   app.post('/api/users/earn-weparlay-cash', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const { amount, reason } = req.body;
 
       if (!amount || amount <= 0) {
@@ -2620,7 +2620,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CRITICAL: Admin dashboard and financial reporting
   app.get('/api/admin/financial-summary', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const user = await storage.getUser(userId);
       
       if (!user || user.role !== 'admin') {
@@ -2637,7 +2637,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/admin/transactions', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const user = await storage.getUser(userId);
       
       if (!user || user.role !== 'admin') {
@@ -2656,7 +2656,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CRITICAL: Platform revenue tracking
   app.post('/api/admin/revenue', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const user = await storage.getUser(userId);
       
       if (!user || user.role !== 'admin') {
@@ -2680,7 +2680,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CRITICAL: Bank account management for payouts
   app.post('/api/users/bank-account', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const { accountName, bankName, accountNumber, routingNumber, isDefault } = req.body;
 
       if (!accountName || !bankName || !accountNumber || !routingNumber) {
@@ -2706,7 +2706,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CRITICAL: Email notifications for bets and events
   app.post('/api/users/send-bet-notification', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const { betId, type, message } = req.body;
 
       const user = await storage.getUser(userId);
@@ -2728,7 +2728,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CRITICAL: SMS notifications via Twilio
   app.post('/api/users/send-sms-notification', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const { message, type } = req.body;
 
       const user = await storage.getUser(userId);
@@ -3061,7 +3061,7 @@ Start betting through text now!`;
   // Get wallet balances with live crypto prices
   app.get('/api/wallet/balances', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const user = await storage.getUser(userId);
 
       // Get live crypto prices
@@ -3101,7 +3101,7 @@ Start betting through text now!`;
   // Get wallet transaction history
   app.get('/api/wallet/transactions', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       
       // Mock transaction history
       const transactions = [
@@ -3141,7 +3141,7 @@ Start betting through text now!`;
   // Send crypto transaction
   app.post('/api/wallet/send', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const { currency, amount, toAddress } = req.body;
 
       if (!currency || !amount || !toAddress) {
@@ -3198,7 +3198,7 @@ Start betting through text now!`;
   // PayPal tier upgrade endpoint
   app.post('/api/paypal/create-tier-payment', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const { tierId } = req.body;
       const user = await storage.getUser(userId);
 
@@ -3246,7 +3246,7 @@ Start betting through text now!`;
   // WeParlay Cash tier upgrade endpoint
   app.post('/api/weparlay-cash/upgrade-tier', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const { tierId } = req.body;
       const user = await storage.getUser(userId);
 
@@ -3338,7 +3338,7 @@ Start betting through text now!`;
   // WeParlay Cash deposit endpoint
   app.post('/api/weparlay-cash/deposit', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const { amount, source } = req.body;
 
       if (!amount || amount <= 0) {
@@ -3376,7 +3376,7 @@ Start betting through text now!`;
   // SMS Statistics endpoint with real data integration
   app.get('/api/sms/statistics', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       
       // Get actual SMS statistics from database
       const smsStats = {
