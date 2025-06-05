@@ -67,6 +67,7 @@ export default function LiveStreaming() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [betSlip, setBetSlip] = useState<BetSlip | null>(null);
   const [betAmount, setBetAmount] = useState<number>(10);
+  const [showPlayButton, setShowPlayButton] = useState(false);
   const { toast } = useToast();
   const videoRef = useRef<HTMLVideoElement>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
@@ -214,7 +215,6 @@ export default function LiveStreaming() {
           
           hls.on(Hls.Events.MANIFEST_PARSED, () => {
             console.log('Manifest parsed, ready to play');
-            // Don't auto-play, wait for user interaction
             setShowPlayButton(true);
           });
 
