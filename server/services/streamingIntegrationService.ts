@@ -62,6 +62,10 @@ export class StreamingIntegrationService {
       return this.twitchAccessToken;
     }
 
+    if (!process.env.TWITCH_CLIENT_ID || !process.env.TWITCH_CLIENT_SECRET) {
+      throw new Error('Twitch API credentials not configured');
+    }
+
     try {
       const response = await axios.post('https://id.twitch.tv/oauth2/token', {
         client_id: process.env.TWITCH_CLIENT_ID,
@@ -70,10 +74,12 @@ export class StreamingIntegrationService {
       });
 
       this.twitchAccessToken = response.data.access_token;
+      console.log('✅ Twitch authentication successful');
       return this.twitchAccessToken;
-    } catch (error) {
-      console.error('Failed to get Twitch access token:', error);
-      throw new Error('Twitch authentication failed');
+    } catch (error: any) {
+      console.error('Twitch authentication failed:', error.response?.data || error.message);
+      // Return empty string to allow fallback behavior instead of throwing
+      return '';
     }
   }
 

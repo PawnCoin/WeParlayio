@@ -4,6 +4,7 @@ import { Play, Users, Wifi, ChevronUp, ChevronDown, Maximize, Volume2, VolumeX }
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import EnhancedVideoPlayer from '@/components/streaming/EnhancedVideoPlayer';
 
 interface LiveGame {
   id: string;
@@ -196,50 +197,15 @@ export default function LiveStreaming() {
           {selectedGame ? (
             <>
               <div className="flex-1 relative bg-black">
-                {/* Embedded Video Player */}
-                <div className="w-full h-full relative">
-                  {/* Video Controls Overlay */}
-                  <div className="absolute top-4 right-4 z-20 flex gap-2">
-                    <button className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors">
-                      HD
-                    </button>
-                    <button className="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700 transition-colors">
-                      SD
-                    </button>
-                    <button className="p-2 bg-gray-800 hover:bg-gray-700 text-white rounded transition-colors">
-                      <Maximize className="w-4 h-4" />
-                    </button>
-                    <button className="p-2 bg-gray-800 hover:bg-gray-700 text-white rounded transition-colors">
-                      <Volume2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                  
-                  {/* Main Video Stream */}
-                  <iframe
-                    src={selectedGame.streamUrl}
-                    className="w-full h-full border-0"
-                    allowFullScreen
-                    allow="autoplay; encrypted-media; picture-in-picture"
-                    title={`Live Stream: ${selectedGame.title}`}
-                    sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-presentation"
-                    style={{
-                      border: 'none',
-                      outline: 'none',
-                      backgroundColor: '#000'
-                    }}
-                  />
-                  
-                  {/* Video Loading Fallback */}
-                  <div className="absolute inset-0 bg-gray-900 flex items-center justify-center pointer-events-none opacity-0 hover:opacity-0 transition-opacity">
-                    <div className="text-center text-white">
-                      <div className="w-16 h-16 mx-auto mb-4 bg-red-600 rounded-full flex items-center justify-center">
-                        <Play className="w-8 h-8 text-white ml-1" />
-                      </div>
-                      <h3 className="text-xl font-bold mb-2">Loading Stream...</h3>
-                      <p className="text-gray-300">{selectedGame.title}</p>
-                    </div>
-                  </div>
-                </div>
+                {/* Enhanced Video Player with IPTV Support */}
+                <EnhancedVideoPlayer
+                  streamUrl={selectedGame.streamUrl}
+                  title={selectedGame.title}
+                  onClose={() => {}}
+                  autoplay={true}
+                  platform={selectedGame.streamUrl.includes('twitch.tv') ? 'twitch' : 
+                           selectedGame.streamUrl.includes('youtube.com') ? 'youtube' : 'iptv'}
+                />
                 
                 {/* Live Stream Info Overlay */}
                 <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between pointer-events-none z-20">
