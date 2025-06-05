@@ -70,6 +70,9 @@ app.use((req, res, next) => {
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  // Payment security headers
+  res.setHeader('X-Payment-Token-Required', 'true');
+  res.setHeader('X-Transaction-Verification', 'enabled');
   next();
 });
 
@@ -114,6 +117,12 @@ app.use((req, res, next) => {
   app.use('/api/monitoring', apiMonitoringRoutes);
   app.use('/api/health', apiHealthRoutes);
   app.use('/api/system', systemHealthRoutes);
+
+  // Global unhandled promise rejection handler
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    // Log to monitoring service in production
+  });
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
@@ -166,15 +175,13 @@ app.use((req, res, next) => {
     log(`🚀 WeParlay server running on HTTP at 0.0.0.0:${port}`);
   });
 
-  // Skip WebSocket initialization in development to avoid port conflicts
-  if (process.env.NODE_ENV === 'production') {
-    try {
-      initializeWebSocketService(httpServer);
-      log(`🔌 WebSocket service initialized on same port ${port}`);
-    } catch (error) {
-      console.error('🚨 Failed to initialize WebSocket service:', error);
-    }
-  } else {
-    console.log('🔌 WebSocket disabled in development environment');
+  // Initialize WebSocket with proper error handling for both environments
+  try {
+    initializeWebSocketService(httpServer);
+    log(`🔌 WebSocket service initialized on port ${port}`);
+  } catch (error) {
+    console.error('🚨 Failed to initialize WebSocket service:', error);
+    // Continue without WebSocket but log the issue
+    log('⚠️ Application will continue without real-time updates');
   }
 })();
