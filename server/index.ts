@@ -153,7 +153,7 @@ app.use((req, res, next) => {
     try {
       server = createSSLServer(app, sslConfig);
       log(`🔒 SSL/TLS encryption enabled for weparlay.io`);
-    } catch (error) {
+    } catch (error: any) {
       log(`❌ SSL certificate error: ${error.message}`);
       log(`🔄 Falling back to HTTP server`);
       server = app;

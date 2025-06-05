@@ -80,7 +80,7 @@ export class StreamingIntegrationService {
 
       this.twitchAccessToken = response.data.access_token;
       console.log('✅ Twitch OAuth authentication successful');
-      return this.twitchAccessToken;
+      return this.twitchAccessToken || '';
     } catch (error: any) {
       console.error('Twitch authentication failed:', error.response?.data || error.message);
       return '';
