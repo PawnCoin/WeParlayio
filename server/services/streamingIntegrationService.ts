@@ -67,18 +67,22 @@ export class StreamingIntegrationService {
     }
 
     try {
-      const response = await axios.post('https://id.twitch.tv/oauth2/token', {
-        client_id: process.env.TWITCH_CLIENT_ID,
-        client_secret: process.env.TWITCH_CLIENT_SECRET,
-        grant_type: 'client_credentials'
+      const params = new URLSearchParams();
+      params.append('client_id', process.env.TWITCH_CLIENT_ID!);
+      params.append('client_secret', process.env.TWITCH_CLIENT_SECRET!);
+      params.append('grant_type', 'client_credentials');
+
+      const response = await axios.post('https://id.twitch.tv/oauth2/token', params, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
       });
 
       this.twitchAccessToken = response.data.access_token;
-      console.log('✅ Twitch authentication successful');
+      console.log('✅ Twitch OAuth authentication successful');
       return this.twitchAccessToken;
     } catch (error: any) {
       console.error('Twitch authentication failed:', error.response?.data || error.message);
-      // Return empty string to allow fallback behavior instead of throwing
       return '';
     }
   }
