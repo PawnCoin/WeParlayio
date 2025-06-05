@@ -3558,9 +3558,9 @@ Start betting through text now!`;
     try {
       const liveGames = [];
       
-      // Get authentic live streams from thetv.to with your verified credentials
+      // Get authentic sports data from AllSportsAPI subscription
       try {
-        const response = await fetch(`http://thetv.to:80/get.php?username=686140897&password=80274761&type=m3u_plus&output=ts`);
+        const allSportsEvents = await allSportsApiService.getLiveEvents();
         
         if (response.ok) {
           const m3uContent = await response.text();
@@ -3827,46 +3827,27 @@ Start betting through text now!`;
   });
 
   // Live channels browsing endpoint
+  // AllSportsAPI live channels - authentic sports data only
   app.get('/api/live-channels', async (req, res) => {
     try {
       const { category } = req.query;
       
-      // Get all available channels from thetv.to
-      const response = await fetch(`http://thetv.to:80/get.php?username=686140897&password=80274761&type=m3u_plus&output=ts`);
-      
-      if (!response.ok) {
-        return res.status(503).json({ message: 'Streaming service unavailable' });
-      }
-      
-      const m3uContent = await response.text();
+      // Get authentic sports events from AllSportsAPI
+      const events = await allSportsApiService.getLiveEvents();
       const channels = [];
-      const lines = m3uContent.split('\n');
-      let currentChannel = null;
       
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        
-        if (line.startsWith('#EXTINF:')) {
-          const info = line.substring(8);
-          const parts = info.split(',');
-          const name = parts[parts.length - 1];
-          
-          // Extract group-title for categorization
-          const groupMatch = info.match(/group-title="([^"]+)"/);
-          const channelCategory = groupMatch ? groupMatch[1] : 'General';
-          
-          currentChannel = {
-            name: name,
-            category: channelCategory,
-            info: info
-          };
-        } else if (line.startsWith('http') && currentChannel) {
+      for (const event of events) {
+        if (!category || event.sport?.toLowerCase().includes(category.toLowerCase())) {
           channels.push({
-            id: `channel_${channels.length + 1}`,
-            name: currentChannel.name,
-            category: currentChannel.category,
-            streamUrl: line,
-            isLive: true
+            id: `allsports_${event.id || Math.random()}`,
+            name: event.name || event.title || 'Live Sports Event',
+            category: event.sport || 'Sports',
+            streamUrl: event.stream_url || '',
+            isLive: event.status === 'live',
+            homeTeam: event.home_team?.name || 'Team A',
+            awayTeam: event.away_team?.name || 'Team B',
+            startTime: event.start_time,
+            league: event.league || event.competition
           });
           currentChannel = null;
         }
