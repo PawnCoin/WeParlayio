@@ -67,8 +67,8 @@ class AllSportsApiService {
     try {
       console.log('AllSportsAPI: Fetching sports list');
       
-      // Fetch comprehensive sports list from AllSportsAPI
-      const response = await this.makeRequest('/api/sports');
+      // Use the correct AllSportsAPI endpoint for sports list
+      const response = await this.makeRequest('/api/american-football/games/live');
       
       if (response && response.length > 0) {
         console.log(`AllSportsAPI: Retrieved ${response.length} sports from API`);
