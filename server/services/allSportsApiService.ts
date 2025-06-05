@@ -31,7 +31,7 @@ interface AllSportsSport {
 
 class AllSportsApiService {
   private apiKey: string;
-  private baseUrl = 'https://api.the-odds-api.com/v4';
+  private baseUrl = 'https://allsportsapi2.p.rapidapi.com';
 
   constructor() {
     this.apiKey = process.env.RAPIDAPI_KEY || '';
@@ -47,7 +47,7 @@ class AllSportsApiService {
       const response = await axios.get(`${this.baseUrl}${endpoint}`, {
         headers: {
           'X-RapidAPI-Key': this.apiKey,
-          'X-RapidAPI-Host': 'api.the-odds-api.com',
+          'X-RapidAPI-Host': 'allsportsapi2.p.rapidapi.com',
           'Accept': 'application/json'
         },
         params: {
@@ -67,17 +67,24 @@ class AllSportsApiService {
     try {
       console.log('AllSportsAPI: Fetching sports list');
       
-      const authenticSports: AllSportsSport[] = [
-        { key: 'americanfootball_nfl', title: 'NFL', group: 'American Football', description: 'National Football League', active: true, has_outrights: false },
-        { key: 'basketball_nba', title: 'NBA', group: 'Basketball', description: 'National Basketball Association', active: true, has_outrights: false },
-        { key: 'baseball_mlb', title: 'MLB', group: 'Baseball', description: 'Major League Baseball', active: true, has_outrights: false },
-        { key: 'icehockey_nhl', title: 'NHL', group: 'Ice Hockey', description: 'National Hockey League', active: true, has_outrights: false },
-        { key: 'soccer_epl', title: 'Premier League', group: 'Soccer', description: 'English Premier League', active: true, has_outrights: false },
-        { key: 'tennis_atp', title: 'ATP Tennis', group: 'Tennis', description: 'ATP Tennis Tour', active: true, has_outrights: false }
-      ];
+      // Fetch comprehensive sports list from AllSportsAPI
+      const response = await this.makeRequest('/api/sports');
       
-      console.log(`AllSportsAPI: Configured ${authenticSports.length} sports`);
-      return authenticSports;
+      if (response && response.length > 0) {
+        console.log(`AllSportsAPI: Retrieved ${response.length} sports from API`);
+        return response.map((sport: any) => ({
+          key: sport.key || sport.sport_key,
+          title: sport.title || sport.name,
+          group: sport.group || 'General',
+          description: sport.description || `Live ${sport.title || sport.name} betting`,
+          active: sport.active !== false,
+          has_outrights: sport.has_outrights || false
+        }));
+      }
+      
+      // If API fails, return empty array - no mock data
+      console.warn('AllSportsAPI: No data from API, returning empty');
+      return [];
     } catch (error) {
       console.error('AllSportsAPI: Failed to get sports:', error);
       return [];

@@ -3982,7 +3982,7 @@ Start betting through text now!`;
       
       // Get authentic live streams from thetv.to with your verified credentials
       try {
-        const response = await fetch(`http://thetv.to:80/get.php?username=686140897&password=80274761&type=m3u_plus&output=ts`);
+        const response = await fetch(`https://thetv.to:443/get.php?username=686140897&password=80274761&type=m3u_plus&output=ts`);
         
         if (response.ok) {
           const m3uContent = await response.text();

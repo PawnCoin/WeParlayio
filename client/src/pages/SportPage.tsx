@@ -71,33 +71,23 @@ const SportPage = () => {
     return odds.find((odd: Odds) => odd.id === eventId.toString());
   };
 
-  // Get team name helper function based on sport
-  const getTeamName = (teamId: number): string => {
-    // Basketball (NBA) team names
-    if (sportKey === 'basketball') {
-      switch (teamId) {
-        case 1: return "Lakers";
-        case 2: return "Celtics";
-        case 3: return "Warriors";
-        case 4: return "Bucks";
-        case 5: return "Heat";
-        case 6: return "Bulls";
-        case 7: return "Nets";
-        case 8: return "Clippers";
-        case 9: return "Suns";
-        case 10: return "76ers";
-        default: return `Team ${teamId}`;
+  // Get team name helper function - use authentic data from API only
+  const getTeamName = (event: any, teamType: 'home' | 'away'): string => {
+    if (event.homeTeam && event.awayTeam) {
+      return teamType === 'home' ? event.homeTeam.name : event.awayTeam.name;
+    }
+    if (event.home_team && event.away_team) {
+      return teamType === 'home' ? event.home_team : event.away_team;
+    }
+    // Use title parsing for authentic data
+    if (event.title) {
+      const teams = event.title.split(' vs ');
+      if (teams.length === 2) {
+        return teamType === 'home' ? teams[0] : teams[1];
       }
     }
-    // Football (NFL) team names
-    else if (sportKey === 'football') {
-      switch (teamId) {
-        case 1: return "Chiefs";
-        case 2: return "Eagles";
-        case 3: return "49ers";
-        case 4: return "Cowboys";
-        case 5: return "Bills";
-        case 6: return "Ravens";
+    return teamType === 'home' ? 'Home Team' : 'Away Team';
+  };
         case 7: return "Bengals";
         case 8: return "Packers";
         case 9: return "Lions";

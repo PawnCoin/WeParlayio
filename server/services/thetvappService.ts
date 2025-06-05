@@ -36,13 +36,12 @@ export class TheTVAppService {
   private password: string;
   
   constructor() {
-    this.username = process.env.THETVAPP_USERNAME || process.env.TVAPP2_USERNAME || '686140897';
-    this.password = process.env.THETVAPP_PASSWORD || process.env.TVAPP2_PASSWORD || '80274761';
-    const host = process.env.TVAPP2_HOST || 'thetv.to';
-    const port = process.env.TVAPP2_PORT || '80';
-    this.m3uUrl = process.env.M3U_PLAYLIST_URL || 
-      `http://${host}:${port}/get.php?username=${this.username}&password=${this.password}&type=m3u_plus&output=ts`;
-    console.log(`TheTVSub streaming service configured for user: ${this.username} on ${host}:${port}`);
+    this.username = '686140897';
+    this.password = '80274761';
+    const host = 'thetv.to';
+    const port = '443';
+    this.m3uUrl = `https://${host}:${port}/get.php?username=${this.username}&password=${this.password}&type=m3u_plus&output=ts`;
+    console.log(`TheTVApp streaming service configured for user: ${this.username} on ${host}:${port}`);
   }
 
   /**
