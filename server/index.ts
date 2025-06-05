@@ -42,26 +42,9 @@ app.use('/api/bets', bettingRateLimit);
 app.use('/api/betting', bettingRateLimit);
 app.set('trust proxy', 1); // Trust first proxy - important for secure cookies with custom domain
 
-// Apply security middleware FIRST with open CSP for sports data and streaming
+// Disable CSP completely to allow authentic sports data display
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https:", "data:", "*"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https:", "data:", "*"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https:", "data:", "*"],
-      connectSrc: ["'self'", "https:", "wss:", "ws:", "*"],
-      imgSrc: ["'self'", "https:", "data:", "*"],
-      fontSrc: ["'self'", "https:", "data:", "*"],
-      frameSrc: ["'self'", "https:", "*"],
-      mediaSrc: ["'self'", "https:", "data:", "*"],
-      frameSrc: ["'self'", "https:", "*"],
-      objectSrc: ["'none'"],
-      baseUri: ["'self'"],
-      mediaSrc: ["'self'", "https:", "blob:", "*", "data:"],
-      workerSrc: ["'self'", "blob:", "'unsafe-inline'"],
-      childSrc: ["'self'", "https:", "blob:"],
-    },
-  },
+  contentSecurityPolicy: false,
 }));
 
 // Enhanced Security Headers
