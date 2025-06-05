@@ -177,7 +177,7 @@ function Router() {
 
       {/* Trivia */}
       <Route path="/trivia" component={Trivia} />
-      
+
       {/* Twilio SMS Opt-in Demo */}
       <Route path="/twilio-opt-in-demo" component={TwilioOptInDemo} />
 

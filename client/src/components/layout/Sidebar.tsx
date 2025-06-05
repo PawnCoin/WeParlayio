@@ -402,6 +402,19 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                     </div>
                   </Link>
                 </li>
+                <li>
+                  <Link href="/api-status">
+                    <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${
+                      location === '/api-status' 
+                        ? "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300" 
+                        : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}>
+                      <Activity className="h-4 w-4 mr-2 text-amber-500" />
+                      <span>API Status</span>
+                      <span className="ml-auto text-xs bg-blue-100 text-blue-700 dark:bg-blue-800 dark:text-blue-300 px-2 py-0.5 rounded-full">LIVE</span>
+                    </div>
+                  </Link>
+                </li>
               </ul>
             </details>
           </li>
