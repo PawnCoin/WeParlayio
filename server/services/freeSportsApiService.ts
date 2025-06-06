@@ -163,7 +163,26 @@ export class FreeSportsApiService {
             console.log('✅ Tennis API: Using RapidAPI comprehensive service');
             const { comprehensiveRapidApi } = await import('./comprehensiveRapidApi');
             const tennisData = await comprehensiveRapidApi.getTennisMatches();
-            return this.formatRapidApiTennis(tennisData);
+            
+            // Format RapidAPI Tennis data
+            return tennisData.map((match, index) => ({
+                id: match.id || `rapidapi-tennis-${index}`,
+                sport_title: 'Tennis',
+                commence_time: new Date(Date.now() + (index + 1) * 3600000).toISOString(),
+                home_team: match.player1 || 'Player 1',
+                away_team: match.player2 || 'Player 2',
+                bookmakers: [{
+                    key: 'rapidapi_tennis',
+                    title: 'RapidAPI Tennis',
+                    markets: [{
+                        key: 'h2h',
+                        outcomes: [
+                            { name: match.player1 || 'Player 1', price: match.odds?.player1 || 1.85 },
+                            { name: match.player2 || 'Player 2', price: match.odds?.player2 || 1.95 }
+                        ]
+                    }]
+                }]
+            }));
         } catch (error) {
             console.warn('Tennis API error:', error);
             return this.generateFallbackTennis();
@@ -215,7 +234,26 @@ export class FreeSportsApiService {
             console.log('✅ Golf API: Using RapidAPI comprehensive service');
             const { comprehensiveRapidApi } = await import('./comprehensiveRapidApi');
             const golfData = await comprehensiveRapidApi.getGolfTournaments();
-            return this.formatRapidApiGolf(golfData);
+            
+            // Format RapidAPI Golf data
+            return golfData.map((tournament, index) => ({
+                id: tournament.id || `rapidapi-golf-${index}`,
+                sport_title: 'Golf',
+                commence_time: new Date(Date.now() + (index + 1) * 3600000).toISOString(),
+                home_team: tournament.player || 'Golfer',
+                away_team: 'Field',
+                position: tournament.position || index + 1,
+                bookmakers: [{
+                    key: 'rapidapi_golf',
+                    title: 'RapidAPI Golf',
+                    markets: [{
+                        key: 'outright',
+                        outcomes: [
+                            { name: tournament.player || 'Golfer', price: tournament.odds || 8.5 }
+                        ]
+                    }]
+                }]
+            }));
         } catch (error) {
             console.warn('Golf API error:', error);
             return this.generateFallbackGolf();
@@ -384,6 +422,48 @@ export class FreeSportsApiService {
         }]
       };
     });
+  }
+
+  private formatRapidApiTennis(tennisData: any[]): any[] {
+    return tennisData.map((match, index) => ({
+      id: match.id || `rapidapi-tennis-${index}`,
+      sport_title: 'Tennis',
+      commence_time: new Date(Date.now() + (index + 1) * 3600000).toISOString(),
+      home_team: match.player1 || 'Player 1',
+      away_team: match.player2 || 'Player 2',
+      bookmakers: [{
+        key: 'rapidapi_tennis',
+        title: 'RapidAPI Tennis',
+        markets: [{
+          key: 'h2h',
+          outcomes: [
+            { name: match.player1 || 'Player 1', price: match.odds?.player1 || 1.85 },
+            { name: match.player2 || 'Player 2', price: match.odds?.player2 || 1.95 }
+          ]
+        }]
+      }]
+    }));
+  }
+
+  private formatRapidApiGolf(golfData: any[]): any[] {
+    return golfData.map((tournament, index) => ({
+      id: tournament.id || `rapidapi-golf-${index}`,
+      sport_title: 'Golf',
+      commence_time: new Date(Date.now() + (index + 1) * 3600000).toISOString(),
+      home_team: tournament.player || 'Golfer',
+      away_team: 'Field',
+      position: tournament.position || index + 1,
+      bookmakers: [{
+        key: 'rapidapi_golf',
+        title: 'RapidAPI Golf',
+        markets: [{
+          key: 'outright',
+          outcomes: [
+            { name: tournament.player || 'Golfer', price: tournament.odds || 8.5 }
+          ]
+        }]
+      }]
+    }));
   }
 
   private generateFallbackNFL(): any[] {
@@ -664,6 +744,50 @@ export const freeSportsApiService = new FreeSportsApiService();
 
 // Enhanced service with better error handling and more data sources
 export class EnhancedFreeSportsService extends FreeSportsApiService {
+  // Override formatRapidApiTennis in enhanced class
+  protected formatRapidApiTennis(tennisData: any[]): any[] {
+    return tennisData.map((match, index) => ({
+      id: match.id || `rapidapi-tennis-${index}`,
+      sport_title: 'Tennis',
+      commence_time: new Date(Date.now() + (index + 1) * 3600000).toISOString(),
+      home_team: match.player1 || 'Player 1',
+      away_team: match.player2 || 'Player 2',
+      bookmakers: [{
+        key: 'rapidapi_tennis',
+        title: 'RapidAPI Tennis',
+        markets: [{
+          key: 'h2h',
+          outcomes: [
+            { name: match.player1 || 'Player 1', price: match.odds?.player1 || 1.85 },
+            { name: match.player2 || 'Player 2', price: match.odds?.player2 || 1.95 }
+          ]
+        }]
+      }]
+    }));
+  }
+
+  // Override formatRapidApiGolf in enhanced class
+  protected formatRapidApiGolf(golfData: any[]): any[] {
+    return golfData.map((tournament, index) => ({
+      id: tournament.id || `rapidapi-golf-${index}`,
+      sport_title: 'Golf',
+      commence_time: new Date(Date.now() + (index + 1) * 3600000).toISOString(),
+      home_team: tournament.player || 'Golfer',
+      away_team: 'Field',
+      position: tournament.position || index + 1,
+      bookmakers: [{
+        key: 'rapidapi_golf',
+        title: 'RapidAPI Golf',
+        markets: [{
+          key: 'outright',
+          outcomes: [
+            { name: tournament.player || 'Golfer', price: tournament.odds || 8.5 }
+          ]
+        }]
+      }]
+    }));
+  }
+
   async getComprehensiveOdds(): Promise<any[]> {
     const allOdds = [];
 
