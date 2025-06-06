@@ -285,6 +285,7 @@ function Router() {
       <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/force-admin" component={AdminDashboard} />
       <Route path="/owner-access" component={OwnerAccess} />
+      <Route path="/api-test" component={lazy(() => import("./pages/ApiTestPage"))} />
 
       {/* Default route */}
       <Route path="/" component={Home} />

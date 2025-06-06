@@ -244,6 +244,10 @@ export default function AdminDashboard() {
                     <Database className="h-6 w-6 mb-2" />
                     API Status
                   </Button>
+                  <Button className="h-20 flex-col" onClick={() => window.open('/api-test', '_blank')}>
+                    <Server className="h-6 w-6 mb-2" />
+                    RapidAPI Testing
+                  </Button>
                   <Button className="h-20 flex-col" onClick={() => window.open('/admin/logs', '_blank')}>
                     <Eye className="h-6 w-6 mb-2" />
                     System Logs

@@ -70,6 +70,113 @@ router.get('/golf', async (req, res) => {
   }
 });
 
+// Basketball specific endpoint
+router.get('/basketball', async (req, res) => {
+  try {
+    const basketballGames = await comprehensiveRapidApi.getBasketballGames();
+    console.log(`✅ Basketball API: ${basketballGames.length} games retrieved`);
+    
+    res.json({
+      success: true,
+      sport: 'Basketball',
+      games: basketballGames,
+      count: basketballGames.length,
+      source: 'RapidAPI'
+    });
+  } catch (error) {
+    console.error('Basketball API error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch basketball data'
+    });
+  }
+});
+
+// Football specific endpoint
+router.get('/football', async (req, res) => {
+  try {
+    const footballFixtures = await comprehensiveRapidApi.getFootballFixtures();
+    console.log(`✅ Football API: ${footballFixtures.length} fixtures retrieved`);
+    
+    res.json({
+      success: true,
+      sport: 'Football',
+      fixtures: footballFixtures,
+      count: footballFixtures.length,
+      source: 'RapidAPI'
+    });
+  } catch (error) {
+    console.error('Football API error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch football data'
+    });
+  }
+});
+
+// Baseball specific endpoint
+router.get('/baseball', async (req, res) => {
+  try {
+    const baseballGames = await comprehensiveRapidApi.getBaseballGames();
+    console.log(`✅ Baseball API: ${baseballGames.length} games retrieved`);
+    
+    res.json({
+      success: true,
+      sport: 'Baseball',
+      games: baseballGames,
+      count: baseballGames.length,
+      source: 'RapidAPI'
+    });
+  } catch (error) {
+    console.error('Baseball API error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch baseball data'
+    });
+  }
+});
+
+// Hockey specific endpoint
+router.get('/hockey', async (req, res) => {
+  try {
+    const hockeyGames = await comprehensiveRapidApi.getHockeyGames();
+    console.log(`✅ Hockey API: ${hockeyGames.length} games retrieved`);
+    
+    res.json({
+      success: true,
+      sport: 'Hockey',
+      games: hockeyGames,
+      count: hockeyGames.length,
+      source: 'RapidAPI'
+    });
+  } catch (error) {
+    console.error('Hockey API error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch hockey data'
+    });
+  }
+});
+
+// API Status endpoint
+router.get('/status', async (req, res) => {
+  try {
+    const status = await comprehensiveRapidApi.checkApiStatus();
+    
+    res.json({
+      success: true,
+      apiStatus: status,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('RapidAPI status error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to check API status'
+    });
+  }
+});
+
 // Basketball endpoint
 router.get('/basketball', async (req, res) => {
   try {
