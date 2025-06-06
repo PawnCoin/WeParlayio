@@ -8,11 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useBetSlip } from '@/contexts/BetSlipContext';
-import { Trophy, Users, Target, Zap, Star, DollarSign } from "lucide-react";
+import { Trophy, Users, Target, Zap, Star, DollarSign, Link, ExternalLink, Settings } from "lucide-react";
+import { useLocation } from "wouter";
 
 const FantasySportsEnhanced: React.FC = () => {
   const { toast } = useToast();
   const { addBet } = useBetSlip();
+  const [, setLocation] = useLocation();
   
   const [yahooConnected, setYahooConnected] = useState(false);
   const [espnConnected, setEspnConnected] = useState(false);

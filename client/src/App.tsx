@@ -54,6 +54,7 @@ import SocialSharing from "@/pages/SocialSharing";
 import LiveStreaming from "@/pages/LiveStreaming";
 import FantasyFootball from "@/pages/FantasyFootball";
 import YahooFantasyFootball from "@/pages/YahooFantasyFootball";
+import FantasySportsHub from "@/pages/FantasySportsHub";
 
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
@@ -166,7 +167,8 @@ function Router() {
         <Route path="/betting-challenge" component={BettingChallenges} />
 
       {/* Fantasy Sports */}
-      <Route path="/fantasy" component={FantasySportsEnhanced} />
+      <Route path="/fantasy" component={FantasySportsHub} />
+      <Route path="/fantasy-legacy" component={FantasySportsEnhanced} />
       <Route path="/fantasy-football" component={FantasyFootball} />
       <Route path="/yahoo-fantasy" component={YahooFantasyFootball} />
 
