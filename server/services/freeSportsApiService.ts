@@ -160,8 +160,10 @@ export class FreeSportsApiService {
                 }
             }
 
-            console.log('Tennis API not implemented, using fallback data.');
-            return this.generateFallbackTennis();
+            console.log('✅ Tennis API: Using RapidAPI comprehensive service');
+            const { comprehensiveRapidApi } = await import('./comprehensiveRapidApi');
+            const tennisData = await comprehensiveRapidApi.getTennisMatches();
+            return this.formatRapidApiTennis(tennisData);
         } catch (error) {
             console.warn('Tennis API error:', error);
             return this.generateFallbackTennis();
@@ -210,8 +212,10 @@ export class FreeSportsApiService {
                 }
             }
 
-            console.log('Golf API not implemented, using fallback data.');
-            return this.generateFallbackGolf();
+            console.log('✅ Golf API: Using RapidAPI comprehensive service');
+            const { comprehensiveRapidApi } = await import('./comprehensiveRapidApi');
+            const golfData = await comprehensiveRapidApi.getGolfTournaments();
+            return this.formatRapidApiGolf(golfData);
         } catch (error) {
             console.warn('Golf API error:', error);
             return this.generateFallbackGolf();

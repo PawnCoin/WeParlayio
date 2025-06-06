@@ -25,6 +25,7 @@ import { bankingRouter } from "./routes/bankingRoutes";
 import websocketPollingRoutes from "./routes/websocketPollingRoutes";
 import oddsTickerRouter from "./routes/oddsTickerRoutes";
 import { apiTestRouter } from "./routes/apiTestRoutes";
+import { comprehensiveRapidApi } from "./services/comprehensiveRapidApi";
 
 import { esportsApiService } from "./services/esportsApiService";
 import { cryptoService } from "./services/cryptoService";
