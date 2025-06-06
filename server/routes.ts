@@ -27,6 +27,7 @@ import oddsTickerRouter from "./routes/oddsTickerRoutes";
 import { apiTestRouter } from "./routes/apiTestRoutes";
 import { comprehensiveRapidApi } from "./services/comprehensiveRapidApi";
 import rapidApiRoutes from "./routes/rapidApiRoutes";
+import espnFantasyRoutes from "./routes/espnFantasyRoutes";
 
 import { esportsApiService } from "./services/esportsApiService";
 import { cryptoService } from "./services/cryptoService";
@@ -4179,6 +4180,9 @@ ${streamUrl}
       res.status(500).json({ error: 'Stream service unavailable' });
     }
   });
+
+  // ESPN Fantasy Football API routes
+  app.use('/api/espn-fantasy', espnFantasyRoutes);
 
   // Return the HTTP server
   const httpServer = createServer(app);
