@@ -65,10 +65,6 @@ const Home: React.FC = () => {
     queryKey: ["/api/tournaments/1"],
     queryFn: () => sportsBetAPI.getTournament(1),
     retry: false,
-    // Silently handle tournament not found error
-    onError: (error) => {
-      console.log("Active tournament not found", error);
-    }
   });
 
   return (

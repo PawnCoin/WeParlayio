@@ -55,11 +55,21 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       staleTime: 5 * 60 * 1000, // 5 minutes
       retry: (failureCount, error: any) => {
-        // Don't retry on 4xx errors but retry on network errors
+        // Disable retries for odds and events endpoints to prevent system crashes
+        const errorMessage = error?.message?.toLowerCase() || '';
+        const isProblematicEndpoint = errorMessage.includes('odds') || 
+                                     errorMessage.includes('events') ||
+                                     errorMessage.includes('unified-sports');
+        
+        if (isProblematicEndpoint || failureCount >= 1) {
+          return false; // No retries to prevent console flooding
+        }
+        
+        // Don't retry on 4xx errors
         if (error?.status >= 400 && error?.status < 500) {
           return false;
         }
-        return failureCount < 3;
+        return false; // Disable all retries temporarily
       },
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     },
