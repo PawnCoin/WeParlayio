@@ -28,6 +28,7 @@ import { apiTestRouter } from "./routes/apiTestRoutes";
 import { comprehensiveRapidApi } from "./services/comprehensiveRapidApi";
 import rapidApiRoutes from "./routes/rapidApiRoutes";
 import espnFantasyRoutes from "./routes/espnFantasyRoutes";
+import yahooFantasyRoutes from "./routes/yahooFantasyRoutes";
 
 import { esportsApiService } from "./services/esportsApiService";
 import { cryptoService } from "./services/cryptoService";
@@ -4183,6 +4184,9 @@ ${streamUrl}
 
   // ESPN Fantasy Football API routes
   app.use('/api/espn-fantasy', espnFantasyRoutes);
+  
+  // Yahoo Fantasy Football API routes
+  app.use('/api/yahoo-fantasy', yahooFantasyRoutes);
 
   // Return the HTTP server
   const httpServer = createServer(app);
