@@ -110,6 +110,7 @@ MemoizedOddsItem.displayName = 'MemoizedOddsItem';
 
 const OddsTicker = memo(() => {
   const [isPaused, setIsPaused] = useState(false);
+  const [errorCount, setErrorCount] = useState(0);
   const { isConnected } = useWebSocket();
 
   // Use optimized query with intelligent caching for better performance
@@ -202,12 +203,17 @@ const OddsTicker = memo(() => {
           }
         }
       } catch (error) {
-        console.error('Failed to fetch odds updates:', error);
+        // Silently handle error to prevent console flooding
+        // Only log on first few failures
+        if (errorCount < 3) {
+          console.warn('Odds API temporarily unavailable, using cached data');
+          setErrorCount(prev => prev + 1);
+        }
       }
     }, 30000); // Reduced from 5 seconds to 30 seconds
 
     return () => clearInterval(updateInterval);
-  }, [isConnected, isPaused]);
+  }, [isConnected, isPaused, errorCount]);
 
 
 

@@ -53,7 +53,7 @@ const Home: React.FC = () => {
         }
         return [];
       } catch (error) {
-        console.error('Failed to fetch upcoming events:', error);
+        // Return empty array silently to prevent console flooding
         return [];
       }
     },
