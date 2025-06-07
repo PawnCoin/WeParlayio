@@ -117,7 +117,7 @@ const LoginEnhanced: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-orange-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-orange-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-4">
         {/* Logo and Title */}
         <div className="text-center">
@@ -129,7 +129,7 @@ const LoginEnhanced: React.FC = () => {
               WeParlay
             </h1>
           </div>
-          <p className="text-gray-600">The Ultimate Sports Betting Experience</p>
+          <p className="text-gray-600 dark:text-gray-300">The Ultimate Sports Betting Experience</p>
         </div>
 
         <Tabs defaultValue="login" className="space-y-4">
@@ -204,9 +204,9 @@ const LoginEnhanced: React.FC = () => {
                 <CardDescription>Get betting in seconds with just your email</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <h3 className="font-medium text-green-800 mb-1">Instant Account Includes:</h3>
-                  <ul className="text-sm text-green-700 space-y-1">
+                <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                  <h3 className="font-medium text-green-800 dark:text-green-200 mb-1">Instant Account Includes:</h3>
+                  <ul className="text-sm text-green-700 dark:text-green-300 space-y-1">
                     <li>• $25 Welcome Bonus</li>
                     <li>• 50 WePlay Tokens</li>
                     <li>• Full betting access</li>
@@ -257,9 +257,9 @@ const LoginEnhanced: React.FC = () => {
                 <CardDescription>Explore WeParlay with demo money - no signup required</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h3 className="font-medium text-blue-800 mb-1">Demo Mode Features:</h3>
-                  <ul className="text-sm text-blue-700 space-y-1">
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                  <h3 className="font-medium text-blue-800 dark:text-blue-200 mb-1">Demo Mode Features:</h3>
+                  <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
                     <li>• $1000 Demo Money</li>
                     <li>• 500 WePlay Tokens</li>
                     <li>• Full platform access</li>
@@ -286,7 +286,7 @@ const LoginEnhanced: React.FC = () => {
                   )}
                 </Button>
 
-                <p className="text-xs text-gray-500 text-center">
+                <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
                   Demo session expires in 24 hours. Create an account to save your progress.
                 </p>
               </CardContent>
@@ -300,7 +300,7 @@ const LoginEnhanced: React.FC = () => {
                 <div className="w-full border-t border-gray-200"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">Or continue with</span>
               </div>
             </div>
 
@@ -362,7 +362,7 @@ const LoginEnhanced: React.FC = () => {
 
       {/* Footer */}
       <div className="text-center space-y-3">
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-gray-300">
           New to WeParlay? Start betting in seconds with Quick Registration!
         </p>
 
@@ -372,12 +372,12 @@ const LoginEnhanced: React.FC = () => {
             Admin Login
           </a>
           <span className="text-gray-300">•</span>
-          <a href="/admin-login" className="text-gray-600 hover:underline">
+          <a href="/admin-login" className="text-gray-600 dark:text-gray-400 hover:underline">
             Forgot Password?
           </a>
         </div>
 
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-500 dark:text-gray-400">
           By using WeParlay, you agree to our <a href="/privacy-policy" className="text-blue-600 hover:underline">Privacy Policy</a> and <a href="/terms-of-service" className="text-blue-600 hover:underline">Terms of Service</a>.
         </p>
       </div>
