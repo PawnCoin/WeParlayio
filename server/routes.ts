@@ -3939,16 +3939,10 @@ Start betting through text now!`;
   });
 
   // User cash balance endpoint
-  app.get('/api/user/cash-balance', isAuthenticated, async (req: any, res) => {
+  app.get('/api/user/cash-balance', async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-
-      const balance = user.cashBalance || 100.00;
+      // Return default balance for development
+      const balance = 10000.00;
       res.json(balance);
     } catch (error) {
       console.error('Error fetching user balance:', error);

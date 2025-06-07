@@ -258,8 +258,8 @@ router.post('/subscribe', async (req, res) => {
   try {
     const { clientId } = req.body;
 
-    // WebSocket service disabled - using polling instead
-    // websocketService.subscribeToChannel(clientId, 'odds_ticker');
+    // Subscribe client to odds updates
+    websocketService.subscribeToChannel(clientId, 'odds_ticker');
 
     res.json({ 
       success: true, 
@@ -278,9 +278,7 @@ router.post('/subscribe', async (req, res) => {
 // Fetch odds from RapidAPI
 async function fetchFromRapidApi(): Promise<TickerOdds[]> {
   try {
-    // RapidAPI service disabled for development
-    // const sportsData = await rapidApiOddsService.getLiveOdds();
-    const sportsData: any[] = [];
+    const sportsData = await rapidApiOddsService.getLiveOdds();
     return sportsData.map((item: any) => ({
       id: `rapid-${item.id || Math.random().toString(36).substr(2, 9)}`,
       sport: item.sport || 'Unknown',
@@ -302,9 +300,7 @@ async function fetchFromTheOddsApi(): Promise<TickerOdds[]> {
   try {
     // Use valid sport keys from The Odds API
     const sports = ['soccer_epl', 'basketball_nba', 'americanfootball_nfl', 'baseball_mlb', 'icehockey_nhl'];
-    // The Odds API service disabled for development
-    // const oddsData = await theOddsApiService.getUpcomingOdds(sports);
-    const oddsData: any[] = [];
+    const oddsData = await theOddsApiService.getUpcomingOdds(sports);
     return oddsData.slice(0, 10).map((item: any) => ({
       id: `odds-api-${item.id || Math.random().toString(36).substr(2, 9)}`,
       sport: item.sport_title || 'Sports',
@@ -410,12 +406,12 @@ setInterval(async () => {
   try {
     const updates = await fetchOddsUpdates();
 
-    // WebSocket service disabled - using polling instead
-    // websocketService.broadcastToChannel('odds_ticker', {
-    //   type: 'odds_update',
-    //   updates,
-    //   timestamp: new Date().toISOString()
-    // });
+    // Broadcast updates via WebSocket
+    websocketService.broadcastToChannel('odds_ticker', {
+      type: 'odds_update',
+      updates,
+      timestamp: new Date().toISOString()
+    });
 
   } catch (error) {
     console.error('Error in periodic odds update:', error);

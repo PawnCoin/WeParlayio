@@ -103,7 +103,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <SocialMediaOptimization 
         title="WeParlay - Premier Sports Betting Platform"
         description="Experience the future of sports betting with WeParlay. Live odds, fantasy sports, esports, and more."
-        image="/weparlay.png"
+        image="/weparlaylogo.png"
       />
       {/* Header */}
       <header className="bg-black shadow-md px-4 text-white header-dark-bg">
@@ -112,7 +112,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             {/* Logo - Enhanced with tagline and hover effects */}
             <div className="flex items-center">
               <Link href="/">
-                <Logo size="md" className="cursor-pointer transform hover:scale-105 transition-transform duration-300" />
+                <Logo size="md" withTagline={true} className="cursor-pointer transform hover:scale-105 transition-transform duration-300" />
               </Link>
             </div>
 

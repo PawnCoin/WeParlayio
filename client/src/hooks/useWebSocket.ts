@@ -20,9 +20,6 @@ interface UseWebSocketOptions {
 type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error' | 'disabled';
 
 export const useWebSocket = (options: UseWebSocketOptions = {}) => {
-  // WebSocket disabled to prevent port conflicts with Replit infrastructure
-  console.log('⚠️ WebSocket disabled - Using polling fallback for real-time features');
-  
   const {
     url = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`,
     reconnectAttempts = 5,
@@ -43,10 +40,6 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
   const isConnectingRef = useRef(false);
 
   const connect = useCallback(() => {
-    // WebSocket completely disabled to prevent port conflicts
-    console.log('🔌 WebSocket disabled - using polling fallback');
-    return;
-
     // Prevent multiple simultaneous connection attempts
     if (isConnectingRef.current || (wsRef.current && wsRef.current.readyState === WebSocket.CONNECTING)) {
       console.log('⏳ Connection attempt already in progress');

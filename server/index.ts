@@ -8,34 +8,6 @@ import apiMonitoringRoutes from './routes/apiMonitoringRoutes';
 import apiHealthRoutes from './routes/apiHealthRoutes';
 import systemHealthRoutes from './routes/systemHealthRoutes';
 
-// Prevent any WebSocket server from starting on port 24678 to avoid conflicts with Replit infrastructure
-process.env.DISABLE_WEBSOCKET_SERVER = 'true';
-process.env.NO_WEBSOCKET = 'true';
-
-// Completely disable WebSocket functionality to prevent port conflicts
-import http from 'http';
-
-// Override Node.js net.Server.listen to block port 24678
-import net from 'net';
-const originalListen = net.Server.prototype.listen;
-net.Server.prototype.listen = function(port?: any, ...args: any[]) {
-  if (port === 24678 || port === '24678') {
-    console.log('🚫 Blocked server attempt on port 24678 (Replit infrastructure conflict)');
-    // Return the server instance without actually listening
-    process.nextTick(() => this.emit('listening'));
-    return this;
-  }
-  return originalListen.call(this, port, ...args);
-};
-
-// Mock WebSocket constructor to prevent any WebSocket server creation
-global.WebSocket = class MockWebSocket {
-  constructor() {
-    console.log('⚠️ WebSocket blocked - Using polling fallback');
-    throw new Error('WebSocket disabled to prevent port conflicts');
-  }
-} as any;
-
 // Security middleware
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
