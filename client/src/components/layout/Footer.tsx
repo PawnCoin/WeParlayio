@@ -1,6 +1,5 @@
 import React from "react";
 import { Link } from "wouter";
-import Logo from "@/components/WeParlay/Logo";
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
@@ -12,12 +11,8 @@ const Footer: React.FC = () => {
           {/* Logo Section */}
           <div className="flex items-center mb-0 md:mb-0">
             <Link href="/">
-              <div className="h-16 w-auto">
-                <img 
-                  src="/weparlaylogo.png" 
-                  alt="WeParlay" 
-                  className="h-16 w-auto object-contain hover:scale-105 transition-transform duration-300"
-                />
+              <div className="h-12 w-auto">
+                <span className="text-green-500 font-bold text-lg">WeParlay</span>
               </div>
             </Link>
           </div>
