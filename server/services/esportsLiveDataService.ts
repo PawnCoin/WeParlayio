@@ -1,7 +1,7 @@
 
 import axios from 'axios';
 import NodeCache from 'node-cache';
-import { WebSocketService } from './websocketService';
+import { websocketService } from './websocketService';
 
 interface EsportsMatch {
   id: string;
@@ -41,14 +41,14 @@ interface PlayerStats {
 const cache = new NodeCache({ stdTTL: 30 }); // 30 second cache for live data
 
 export class EsportsLiveDataService {
-  private wsService: WebSocketService;
+  private wsService: any;
   private updateInterval: NodeJS.Timeout | null = null;
   
   private readonly GRID_API_KEY = process.env.GRID_API_KEY;
   private readonly RIOT_API_KEY = process.env.RIOT_API_KEY;
   private readonly PANDASCORE_API_KEY = process.env.PANDA_API_KEY;
 
-  constructor(wsService: WebSocketService) {
+  constructor(wsService: any) {
     this.wsService = wsService;
     // WebSocket service disabled to prevent port conflicts
     // this.startLiveUpdates();

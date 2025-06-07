@@ -286,7 +286,15 @@ class WebSocketService {
   }
 }
 
-export const websocketService = new WebSocketService();
+// WebSocket service disabled to prevent port conflicts
+// export const websocketService = new WebSocketService();
+export const websocketService = {
+  initialize: () => false,
+  isInitialized: () => false,
+  broadcast: () => {},
+  subscribeToChannel: () => {},
+  broadcastToChannel: () => {}
+};
 
 export const initializeWebSocketService = (server: Server): void => {
   if (websocketService.isInitialized()) {
