@@ -14,7 +14,7 @@ const Footer: React.FC = () => {
             <Link href="/">
               <div className="h-8 w-auto">
                 <img 
-                  src="/weparlay.png" 
+                  src="/weparlaylogo.png" 
                   alt="WeParlay" 
                   className="h-8 w-auto object-contain hover:scale-105 transition-transform duration-300"
                 />
