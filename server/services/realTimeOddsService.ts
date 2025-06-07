@@ -149,19 +149,13 @@ export class RealTimeOddsService {
   }
 
   private broadcastToClients(message: any) {
-    this.wsConnections.forEach(ws => {
-      if (ws.readyState === 1) { // WebSocket.OPEN
-        ws.send(JSON.stringify(message));
-      }
-    });
+    // WebSocket broadcasting disabled to prevent port conflicts
+    console.log('📡 Real-time odds update queued for polling fallback');
   }
 
   addClient(ws: any) {
-    this.wsConnections.add(ws);
-    
-    ws.on('close', () => {
-      this.wsConnections.delete(ws);
-    });
+    // WebSocket client connections disabled to prevent port conflicts
+    console.log('⚠️ WebSocket client connection blocked - Using polling fallback');
   }
 
   // Sharp money detection
