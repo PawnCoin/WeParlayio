@@ -83,7 +83,6 @@ export const users = pgTable("users", {
   mobileOptimizedView: boolean("mobile_optimized_view").default(true), // Toggle for mobile optimized views
   // Additional fields to fix TypeScript errors
   realMoneyBalance: doublePrecision("real_money_balance").default(0),
-  tier: varchar("tier").default("bronze"),
   claims: jsonb("claims"),
   winsCount: integer("wins_count").default(0),
   isAdmin: boolean("is_admin").default(false),
