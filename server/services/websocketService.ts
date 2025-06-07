@@ -1,5 +1,5 @@
-import { WebSocketServer, WebSocket } from 'ws';
-import { Server } from 'http';
+// WebSocket functionality completely disabled to prevent port conflicts with Replit infrastructure
+// Using polling-based fallback for real-time features
 
 interface WebSocketMessage {
   type: string;
@@ -8,7 +8,7 @@ interface WebSocketMessage {
 }
 
 interface ConnectedClient {
-  ws: WebSocket;
+  ws: any;
   userId?: string;
   subscriptions: Set<string>;
   lastPing: number;
@@ -16,7 +16,7 @@ interface ConnectedClient {
 }
 
 class WebSocketService {
-  private wss: WebSocketServer | null = null;
+  private wss: any = null;
   private clients: Map<string, ConnectedClient> = new Map();
   private subscriptions: Map<string, Set<string>> = new Map();
   private server: Server | null = null;
@@ -30,9 +30,11 @@ class WebSocketService {
   }
 
   private setupWebSocketServer(): void {
-    if (!this.wss) return;
+    // WebSocket server completely disabled to prevent port conflicts
+    return;
 
-    this.wss.on('connection', (ws: WebSocket, request: any) => {
+    // Disabled WebSocket connection code
+    // this.wss.on('connection', (ws: WebSocket, request: any) => {
       const clientId = this.generateClientId();
       const client: ConnectedClient = {
         ws,
