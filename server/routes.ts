@@ -29,6 +29,7 @@ import { comprehensiveRapidApi } from "./services/comprehensiveRapidApi";
 import rapidApiRoutes from "./routes/rapidApiRoutes";
 import espnFantasyRoutes from "./routes/espnFantasyRoutes";
 import yahooFantasyRoutes from "./routes/yahooFantasyRoutes";
+import { apiQuotaManager } from "./services/apiQuotaManager";
 import { 
   getPlayerAnalytics, 
   getWeeklyMatchups, 
