@@ -2,7 +2,6 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { createSSLServer, getSSLConfig } from "./ssl";
-import { initializeWebSocketService, websocketService } from './services/websocketService.js';
 import notificationRoutes from './routes/notificationRoutes';
 import websocketPollingRoutes from './routes/websocketPollingRoutes';
 import apiMonitoringRoutes from './routes/apiMonitoringRoutes';
@@ -175,17 +174,5 @@ app.use((req, res, next) => {
     log(`🚀 WeParlay server running on HTTP at 0.0.0.0:${port}`);
   });
 
-  // Initialize WebSocket with graceful error handling
-  setTimeout(() => {
-    try {
-      if (!websocketService.isInitialized()) {
-        initializeWebSocketService(httpServer);
-        log(`🔌 WebSocket service initialized successfully`);
-      }
-    } catch (error: any) {
-      // Log but don't fail the server startup
-      console.warn('WebSocket initialization skipped:', error?.message || 'Port conflict');
-      log('⚠️ Application running without real-time features');
-    }
-  }, 1000); // Delay WebSocket initialization to allow server to fully start
+  log('✅ WeParlay Fantasy Analytics Dashboard ready');
 })();
