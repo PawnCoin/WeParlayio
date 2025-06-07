@@ -316,7 +316,7 @@ const SocialBetting: React.FC = () => {
                           </Badge>
                         </div>
                       </div>
-                      {challenge.status === 'pending' && challenge.createdBy !== user?.id && (
+                      {challenge.status === 'pending' && challenge.createdBy !== (user?.id || '') && (
                         <Button 
                           onClick={() => handleAcceptChallenge(challenge.uuid)}
                           disabled={acceptChallengeMutation.isPending}
@@ -344,7 +344,7 @@ const SocialBetting: React.FC = () => {
 
         <TabsContent value="activity" className="space-y-6">
           <div className="grid gap-4">
-            {socialActivity && socialActivity.length > 0 ? (
+            {Array.isArray(socialActivity) && socialActivity.length > 0 ? (
               socialActivity.map((activity: any) => (
                 <Card key={activity.id}>
                   <CardContent className="p-6">
@@ -447,7 +447,7 @@ const SocialBetting: React.FC = () => {
           </Card>
 
           {/* Friend Requests Section */}
-          {friendRequestsData?.requests?.length > 0 && (
+          {friendRequestsData && typeof friendRequestsData === 'object' && 'requests' in friendRequestsData && Array.isArray(friendRequestsData.requests) && friendRequestsData.requests.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -458,7 +458,7 @@ const SocialBetting: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {friendRequestsData.requests.map((request: any) => (
+                  {Array.isArray(friendRequestsData.requests) && friendRequestsData.requests.map((request: any) => (
                     <div key={request.id} className="flex items-center justify-between p-3 border rounded-lg">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8">
@@ -508,7 +508,7 @@ const SocialBetting: React.FC = () => {
               <CardDescription>Your current friends</CardDescription>
             </CardHeader>
             <CardContent>
-              {friendsData?.friends?.length > 0 ? (
+              {friendsData && typeof friendsData === 'object' && 'friends' in friendsData && Array.isArray(friendsData.friends) && friendsData.friends.length > 0 ? (
                 <div className="space-y-3">
                   {friendsData.friends.map((friend: any) => (
                     <div key={friend.id} className="flex items-center justify-between p-3 border rounded-lg">
