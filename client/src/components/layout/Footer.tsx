@@ -12,7 +12,13 @@ const Footer: React.FC = () => {
           {/* Logo Section */}
           <div className="flex items-center mb-0 md:mb-0">
             <Link href="/">
-              <Logo size="sm" className="transform hover:scale-105 transition-transform duration-300" />
+              <div className="h-8 w-auto">
+                <img 
+                  src="/weparlay.png" 
+                  alt="WeParlay" 
+                  className="h-8 w-auto object-contain hover:scale-105 transition-transform duration-300"
+                />
+              </div>
             </Link>
           </div>
           
