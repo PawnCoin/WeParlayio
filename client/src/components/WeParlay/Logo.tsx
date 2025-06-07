@@ -12,25 +12,21 @@ interface LogoProps {
 const Logo: React.FC<LogoProps> = ({ size = 'md', className = '', withTagline = false }) => {
   // Size mappings for the logo image
   const sizeClasses = {
-    sm: 'h-8 w-auto',
-    md: 'h-12 w-auto',
-    lg: 'h-16 w-auto',
-    xl: 'h-20 w-auto'
+    sm: 'h-10 w-auto',
+    md: 'h-14 w-auto',
+    lg: 'h-18 w-auto',
+    xl: 'h-24 w-auto'
   };
 
   return (
     <div className={`flex flex-col items-center ${className}`}>
       <div className="relative">
         <img 
-          src={weparlayLogoP1} 
-          alt="WeParlay.io" 
+          src={weparlayLogo} 
+          alt="WeParlay" 
           className={`${sizeClasses[size]} object-contain drop-shadow-md hover:drop-shadow-lg transition-all duration-300 hover:scale-105`}
         />
-        {withTagline && (
-          <div className="text-orange-500 font-bold text-sm mt-1 text-center tracking-wide">
-            Sports Betting Platform
-          </div>
-        )}
+
       </div>
     </div>
   );
