@@ -258,8 +258,8 @@ router.post('/subscribe', async (req, res) => {
   try {
     const { clientId } = req.body;
 
-    // Subscribe client to odds updates
-    websocketService.subscribeToChannel(clientId, 'odds_ticker');
+    // WebSocket service disabled - using polling instead
+    // websocketService.subscribeToChannel(clientId, 'odds_ticker');
 
     res.json({ 
       success: true, 
@@ -278,7 +278,9 @@ router.post('/subscribe', async (req, res) => {
 // Fetch odds from RapidAPI
 async function fetchFromRapidApi(): Promise<TickerOdds[]> {
   try {
-    const sportsData = await rapidApiOddsService.getLiveOdds();
+    // RapidAPI service disabled for development
+    // const sportsData = await rapidApiOddsService.getLiveOdds();
+    const sportsData: any[] = [];
     return sportsData.map((item: any) => ({
       id: `rapid-${item.id || Math.random().toString(36).substr(2, 9)}`,
       sport: item.sport || 'Unknown',
@@ -300,7 +302,9 @@ async function fetchFromTheOddsApi(): Promise<TickerOdds[]> {
   try {
     // Use valid sport keys from The Odds API
     const sports = ['soccer_epl', 'basketball_nba', 'americanfootball_nfl', 'baseball_mlb', 'icehockey_nhl'];
-    const oddsData = await theOddsApiService.getUpcomingOdds(sports);
+    // The Odds API service disabled for development
+    // const oddsData = await theOddsApiService.getUpcomingOdds(sports);
+    const oddsData: any[] = [];
     return oddsData.slice(0, 10).map((item: any) => ({
       id: `odds-api-${item.id || Math.random().toString(36).substr(2, 9)}`,
       sport: item.sport_title || 'Sports',
