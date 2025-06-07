@@ -58,15 +58,23 @@ export class GridApiService {
   async getSports(): Promise<any[]> {
     const query = `
       query GetSeries {
-        allSeries(first: 50) {
+        series(first: 50) {
           totalCount
           edges {
             node {
               id
-              startTimeScheduled
+              name
+              scheduledAt
               tournament {
                 id
                 name
+                serie {
+                  videogame {
+                    id
+                    name
+                    slug
+                  }
+                }
               }
             }
           }
@@ -76,8 +84,8 @@ export class GridApiService {
 
     try {
       const data = await this.makeGraphQLRequest(query);
-      if (data && data.allSeries && data.allSeries.edges) {
-        return this.formatSports(data.allSeries.edges);
+      if (data && data.series && data.series.edges) {
+        return this.formatSports(data.series.edges);
       }
       return [];
     } catch (error) {
@@ -100,21 +108,32 @@ export class GridApiService {
           filter: { status: LIVE }
           first: 50
         ) {
-          data {
-            id
-            name
-            status
-            begin_at
-            tournament {
+          edges {
+            node {
+              id
               name
-              videogame {
+              status
+              scheduledAt
+              tournament {
+                id
                 name
+                serie {
+                  videogame {
+                    id
+                    name
+                    slug
+                  }
+                }
               }
-            }
-            opponents {
-              opponent {
+              matches {
+                id
                 name
-                image_url
+                status
+                opponents {
+                  id
+                  name
+                  imageUrl
+                }
               }
             }
           }
@@ -124,7 +143,7 @@ export class GridApiService {
 
     try {
       const response = await this.makeGraphQLRequest(query);
-      return response.data.series?.data || [];
+      return response.series?.edges || [];
     } catch (error) {
       console.error('Failed to fetch live matches from GRID:', error);
       return this.getDemoLiveMatches();
