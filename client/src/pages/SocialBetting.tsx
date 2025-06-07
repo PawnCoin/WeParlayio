@@ -31,6 +31,12 @@ const SocialBetting: React.FC = () => {
   });
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Search users query
+  const { data: userSearchResults } = useQuery({
+    queryKey: ['/api/users/search', searchQuery],
+    enabled: isAuthenticated && searchQuery.length >= 2,
+  });
+
   // Fetch user's betting challenges
   const { data: challenges = [], isLoading: challengesLoading } = useQuery({
     queryKey: ['/api/challenges'],
@@ -96,8 +102,8 @@ const SocialBetting: React.FC = () => {
     }
   });
 
-  // User search query
-  const { data: searchResults } = useQuery({
+  // User search query for friend search
+  const { data: friendSearchResults } = useQuery({
     queryKey: ['/api/friends/search', searchQuery],
     enabled: searchQuery.length >= 2,
     staleTime: 5000
@@ -406,9 +412,9 @@ const SocialBetting: React.FC = () => {
                 </Button>
               </div>
               
-              {searchQuery.length >= 2 && searchResults && (
+              {searchQuery.length >= 2 && userSearchResults && typeof userSearchResults === 'object' && 'users' in userSearchResults && (
                 <div className="mt-4 space-y-2">
-                  {searchResults.users?.map((user: any) => (
+                  {Array.isArray(userSearchResults.users) && userSearchResults.users.map((user: any) => (
                     <div key={user.id} className="flex items-center justify-between p-3 border rounded-lg">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8">
@@ -432,7 +438,7 @@ const SocialBetting: React.FC = () => {
                       </Button>
                     </div>
                   ))}
-                  {searchResults.users?.length === 0 && (
+                  {userSearchResults.users?.length === 0 && (
                     <p className="text-center text-muted-foreground py-4">No users found</p>
                   )}
                 </div>
