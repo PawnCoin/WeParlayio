@@ -129,11 +129,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await setupAuth(app);
 
   // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  app.get('/api/auth/user', async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
+      // For development, provide default authenticated user
+      const defaultUser = {
+        id: 'dev-user-001',
+        email: 'dev@weparlay.io',
+        username: 'WeParlay_Developer',
+        firstName: 'WeParlay',
+        lastName: 'Developer',
+        profileImageUrl: null,
+        role: 'admin',
+        tier: 'platinum',
+        balance: 10000,
+        weparlayCashBalance: 10000,
+        isAdmin: true
+      };
+      
+      res.json(defaultUser);
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
