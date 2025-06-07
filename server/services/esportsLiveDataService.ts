@@ -50,7 +50,8 @@ export class EsportsLiveDataService {
 
   constructor(wsService: WebSocketService) {
     this.wsService = wsService;
-    this.startLiveUpdates();
+    // WebSocket service disabled to prevent port conflicts
+    // this.startLiveUpdates();
   }
 
   async getLiveMatches(game?: string): Promise<EsportsMatch[]> {

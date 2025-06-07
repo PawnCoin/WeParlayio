@@ -410,12 +410,12 @@ setInterval(async () => {
   try {
     const updates = await fetchOddsUpdates();
 
-    // Broadcast updates via WebSocket
-    websocketService.broadcastToChannel('odds_ticker', {
-      type: 'odds_update',
-      updates,
-      timestamp: new Date().toISOString()
-    });
+    // WebSocket service disabled - using polling instead
+    // websocketService.broadcastToChannel('odds_ticker', {
+    //   type: 'odds_update',
+    //   updates,
+    //   timestamp: new Date().toISOString()
+    // });
 
   } catch (error) {
     console.error('Error in periodic odds update:', error);
