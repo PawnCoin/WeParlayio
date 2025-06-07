@@ -1,32 +1,37 @@
-
 import React from 'react';
+import weparlayLogo from '/weparlaylogo.png';
 
 interface LogoProps {
-  className?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl';
-  showText?: boolean;
+  className?: string;
+  withTagline?: boolean;
 }
 
-export default function Logo({ className = '', size = 'md', showText = true }: LogoProps) {
+const Logo: React.FC<LogoProps> = ({ size = 'md', className = '', withTagline = false }) => {
+  // Size mappings - increased sizes to make logo and text more visible
   const sizeClasses = {
-    sm: 'w-8 h-8',
-    md: 'w-12 h-12', 
-    lg: 'w-16 h-16',
-    xl: 'w-24 h-24'
+    sm: 'h-12',
+    md: 'h-16',
+    lg: 'h-20',
+    xl: 'h-24'
   };
 
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
-      <img 
-        src="/weparlaylogo.png"
-        alt="WeParlay Logo"
-        className={`${sizeClasses[size]} object-contain`}
-      />
-      {showText && (
-        <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-orange-600 bg-clip-text text-transparent">
-          WeParlay
-        </span>
-      )}
+    <div className={`flex flex-col items-center ${className}`}>
+      <div className="relative">
+        <img 
+          src={weparlayLogo} 
+          alt="WeParlay.io Logo" 
+          className={`${sizeClasses[size]} object-contain drop-shadow-md hover:drop-shadow-lg transition-all duration-300`} 
+        />
+        {withTagline && (
+          <div className="text-orange-500 font-bold text-sm mt-1 text-center tracking-wide">
+           
+          </div>
+        )}
+      </div>
     </div>
   );
-}
+};
+
+export default Logo;
