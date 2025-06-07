@@ -5,7 +5,7 @@ import { storage } from "./storage";
 import authRoutes from "./routes/authRoutes";
 import aiSupportRoutes from "./routes/aiSupport";
 import authRouter from "./auth";
-import { isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 import { additionalSportsData } from "./services/mockSportsData";
 import { OddsApiService } from "./services/oddsApiService";
 import { AdvancedOddsService } from "./services/advancedOddsService";
@@ -125,9 +125,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register Primary Data routes (100% audit compliant)
   app.use('/api/primary', primaryDataRoutes);
   
-  // Register Authentication routes
-  app.use('/api/auth', authRouter);
-  app.use('/api/auth', authRoutes);
+  // Auth middleware
+  await setupAuth(app);
+
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
   
   // Register Yahoo Fantasy routes
   app.use('/api/yahoo', yahooRouter);
