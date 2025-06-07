@@ -1,5 +1,5 @@
 import React from 'react';
-import weparlayLogo from '@assets/weparlaylogo5.png';
+import weparlayLogo from '/weparlaylogo.png';
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
