@@ -29,6 +29,24 @@ import { comprehensiveRapidApi } from "./services/comprehensiveRapidApi";
 import rapidApiRoutes from "./routes/rapidApiRoutes";
 import espnFantasyRoutes from "./routes/espnFantasyRoutes";
 import yahooFantasyRoutes from "./routes/yahooFantasyRoutes";
+import { 
+  getPlayerAnalytics, 
+  getWeeklyMatchups, 
+  getInjuryAnalysis, 
+  optimizeLineup, 
+  getSleeperPicks, 
+  getWaiverRecommendations 
+} from './services/fantasyAnalyticsEngine';
+import { 
+  createBettingPool, 
+  joinBettingPool, 
+  createTournament, 
+  getSocialFeed, 
+  createSocialPost, 
+  analyzeTrade, 
+  getExpertPicks, 
+  createHeadToHeadBet 
+} from './services/fantasySocialEngine';
 
 import { esportsApiService } from "./services/esportsApiService";
 import { cryptoService } from "./services/cryptoService";
@@ -4187,6 +4205,137 @@ ${streamUrl}
   
   // Yahoo Fantasy Football API routes
   app.use('/api/yahoo-fantasy', yahooFantasyRoutes);
+
+  // Fantasy Analytics endpoints - placeholder routes for advanced features
+  app.get('/api/fantasy-analytics/player/:playerId', (req, res) => {
+    res.json({ 
+      success: true, 
+      data: {
+        playerId: req.params.playerId,
+        name: "Sample Player",
+        position: "RB",
+        team: "NFL",
+        projectedPoints: 15.2,
+        confidenceScore: 85,
+        injuryRisk: "low",
+        weatherImpact: 0.95,
+        matchupRating: "good",
+        usageTrend: "increasing",
+        sleeperPotential: 75,
+        recommendationScore: 82
+      }
+    });
+  });
+
+  app.get('/api/fantasy-analytics/matchups', (req, res) => {
+    res.json({ 
+      success: true, 
+      data: [
+        {
+          gameId: "game1",
+          homeTeam: "KC",
+          awayTeam: "BUF",
+          weather: { temperature: 72, windSpeed: 5, precipitation: 0, dome: false },
+          defensiveRankings: { vsQB: 12, vsRB: 8, vsWR: 15, vsTE: 20 },
+          paceOfPlay: 65.2,
+          totalProjected: 48.5
+        }
+      ]
+    });
+  });
+
+  app.get('/api/fantasy-analytics/injuries', (req, res) => {
+    res.json({ success: true, data: [] });
+  });
+
+  app.post('/api/fantasy-analytics/optimize', (req, res) => {
+    res.json({ 
+      success: true, 
+      data: { 
+        totalProjected: 125.5,
+        roster: [],
+        riskLevel: req.body.riskLevel || 'balanced'
+      }
+    });
+  });
+
+  app.get('/api/fantasy-analytics/sleepers', (req, res) => {
+    res.json({ 
+      success: true, 
+      data: [
+        {
+          playerId: "sleeper1",
+          name: "Breakout Player",
+          position: "WR",
+          team: "NFL",
+          projectedPoints: 12.8,
+          confidenceScore: 70,
+          sleeperPotential: 85,
+          usageTrend: "increasing"
+        }
+      ]
+    });
+  });
+
+  app.get('/api/fantasy-analytics/waivers/:platform/:leagueId', (req, res) => {
+    res.json({ 
+      success: true, 
+      data: [
+        {
+          player: {
+            name: "Waiver Target",
+            projectedPoints: 10.5
+          },
+          priority: 85,
+          reasoning: "High upside potential with increasing usage"
+        }
+      ]
+    });
+  });
+
+  // Fantasy Social & Competition endpoints - placeholder routes
+  app.post('/api/fantasy-social/pools', (req, res) => {
+    res.json({ 
+      success: true, 
+      data: { poolId: 'pool_' + Date.now(), status: 'created' }
+    });
+  });
+
+  app.get('/api/fantasy-social/feed/:leagueId', (req, res) => {
+    res.json({ 
+      success: true, 
+      data: [
+        {
+          postId: "post1",
+          username: "FantasyPro",
+          postType: "sleeper_pick",
+          content: "Keep an eye on this breakout candidate",
+          likes: 15,
+          comments: 3,
+          shares: 2
+        }
+      ]
+    });
+  });
+
+  app.get('/api/fantasy-social/expert-picks', (req, res) => {
+    res.json({ 
+      success: true, 
+      data: [
+        {
+          expertName: "Fantasy Analyst",
+          accuracy: { season: 78 },
+          weeklyPicks: [
+            {
+              playerName: "Top Pick",
+              recommendation: "start",
+              confidence: 85
+            }
+          ]
+        }
+      ]
+    });
+  });
 
   // Return the HTTP server
   const httpServer = createServer(app);
