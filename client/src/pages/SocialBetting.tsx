@@ -92,6 +92,13 @@ const SocialBetting: React.FC = () => {
     }
   });
 
+  // User search query
+  const { data: searchResults } = useQuery({
+    queryKey: ['/api/friends/search', searchQuery],
+    enabled: searchQuery.length >= 2,
+    staleTime: 5000
+  });
+
   // Create new challenge mutation
   const createChallengeMutation = useMutation({
     mutationFn: async (challengeData: any) => {
@@ -356,48 +363,168 @@ const SocialBetting: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="friends" className="space-y-6">
-          <div className="grid gap-4">
-            {friends && friends.length > 0 ? (
-              friends.map((friend: any) => (
-                <Card key={friend.id}>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <Avatar>
+          {/* Search Users Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Search className="h-5 w-5" />
+                Find Friends
+              </CardTitle>
+              <CardDescription>Search for users to add as friends</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Search by username or name..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="flex-1"
+                />
+                <Button variant="outline" size="sm">
+                  <Search className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              {searchQuery.length >= 2 && searchResults && (
+                <div className="mt-4 space-y-2">
+                  {searchResults.users?.map((user: any) => (
+                    <div key={user.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={user.profileImageUrl} />
+                          <AvatarFallback>{user.username?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium">{user.username}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {user.firstName} {user.lastName} • {user.tier || 'Bronze'} tier
+                          </p>
+                        </div>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        onClick={() => sendFriendRequestMutation.mutate(user.id)}
+                        disabled={sendFriendRequestMutation.isPending}
+                      >
+                        <UserPlus className="h-3 w-3 mr-1" />
+                        Add Friend
+                      </Button>
+                    </div>
+                  ))}
+                  {searchResults.users?.length === 0 && (
+                    <p className="text-center text-muted-foreground py-4">No users found</p>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Friend Requests Section */}
+          {friendRequestsData?.requests?.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Heart className="h-5 w-5" />
+                  Friend Requests
+                </CardTitle>
+                <CardDescription>Pending friend requests</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {friendRequestsData.requests.map((request: any) => (
+                    <div key={request.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={request.profileImageUrl} />
+                          <AvatarFallback>{request.username?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium">{request.username}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {request.firstName} {request.lastName} • {request.tier || 'Bronze'} tier
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          onClick={() => acceptFriendRequestMutation.mutate(request.id)}
+                          disabled={acceptFriendRequestMutation.isPending}
+                        >
+                          <Check className="h-3 w-3 mr-1" />
+                          Accept
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => removeFriendMutation.mutate(request.id)}
+                          disabled={removeFriendMutation.isPending}
+                        >
+                          <X className="h-3 w-3 mr-1" />
+                          Decline
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Friends List Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                My Friends
+              </CardTitle>
+              <CardDescription>Your current friends</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {friendsData?.friends?.length > 0 ? (
+                <div className="space-y-3">
+                  {friendsData.friends.map((friend: any) => (
+                    <div key={friend.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8">
                           <AvatarImage src={friend.profileImageUrl} />
                           <AvatarFallback>{friend.username?.[0]?.toUpperCase() || 'F'}</AvatarFallback>
                         </Avatar>
                         <div>
-                          <h4 className="font-semibold">{friend.username}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            {friend.wins || 0} wins • {friend.tier || 'Bronze'} tier
+                          <p className="font-medium">{friend.username}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {friend.firstName} {friend.lastName} • {friend.wins || 0} wins • {friend.tier || 'Bronze'} tier
                           </p>
                         </div>
                       </div>
-                      <Button size="sm">
-                        <MessageSquare className="h-4 w-4 mr-2" />
-                        Challenge
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline">
+                          <MessageSquare className="h-3 w-3 mr-1" />
+                          Challenge
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="ghost"
+                          onClick={() => removeFriendMutation.mutate(friend.id)}
+                          disabled={removeFriendMutation.isPending}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))
-            ) : (
-              <Card>
-                <CardContent className="p-6">
-                  <div className="text-center space-y-2">
-                    <Users className="h-12 w-12 mx-auto text-muted-foreground" />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center space-y-3 py-8">
+                  <Users className="h-12 w-12 mx-auto text-muted-foreground" />
+                  <div>
                     <h3 className="font-semibold">No Friends Yet</h3>
-                    <p className="text-muted-foreground">Add friends to start social betting!</p>
-                    <Button>
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Find Friends
-                    </Button>
+                    <p className="text-muted-foreground">Search for users above to add your first friend!</p>
                   </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
