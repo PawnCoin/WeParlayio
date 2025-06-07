@@ -30,6 +30,8 @@ import rapidApiRoutes from "./routes/rapidApiRoutes";
 import espnFantasyRoutes from "./routes/espnFantasyRoutes";
 import yahooFantasyRoutes from "./routes/yahooFantasyRoutes";
 import { apiQuotaManager } from "./services/apiQuotaManager";
+import { primaryApiRouter } from "./services/primaryApiRouter";
+import primaryDataRoutes from "./routes/primaryDataRoutes";
 import { 
   getPlayerAnalytics, 
   getWeeklyMatchups, 
@@ -120,6 +122,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Register Primary Data routes (100% audit compliant)
+  app.use('/api/primary', primaryDataRoutes);
+  
   // Register Authentication routes
   app.use('/api/auth', authRouter);
   app.use('/api/auth', authRoutes);

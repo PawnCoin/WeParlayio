@@ -19,7 +19,7 @@ export class ComprehensiveRapidApiService {
   constructor() {
     this.apiKey = process.env.RAPIDAPI_KEY!;
     if (!this.apiKey) {
-      console.warn('RAPIDAPI_KEY not configured - will use backup data sources');
+      console.error('RAPIDAPI_KEY required for 100% audit compliance - no fallback data allowed');
     }
   }
 
