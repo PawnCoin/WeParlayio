@@ -7,20 +7,7 @@ const Footer: React.FC = () => {
   return (
     <footer className="bg-black text-white py-0.5 mt-auto">
       <div className="container mx-auto px-2">
-        <div className="flex flex-col md:flex-row items-center justify-between">
-          {/* Logo Section */}
-          <div className="flex items-center mb-0 md:mb-0">
-            <Link href="/">
-              <div className="h-12 w-auto">
-                <img 
-                  src="/weparlaylogo.png" 
-                  alt="WeParlay" 
-                  className="h-12 w-auto object-contain hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-            </Link>
-          </div>
-          
+        <div className="flex flex-col md:flex-row items-center justify-center">
           {/* Quick Links */}
           <div className="flex gap-4 mb-0 md:mb-0">
             <Link href="/about">
