@@ -10,12 +10,12 @@ interface LogoProps {
 }
 
 const Logo: React.FC<LogoProps> = ({ size = 'md', className = '', withTagline = false }) => {
-  // Size mappings for the logo image
+  // Size mappings for the logo image - 5x larger
   const sizeClasses = {
-    sm: 'h-50 w-auto',
-    md: 'h-70 w-auto',
-    lg: 'h-90 w-auto',
-    xl: 'h-120 w-auto'
+    sm: 'h-40 w-auto',
+    md: 'h-60 w-auto',
+    lg: 'h-80 w-auto',
+    xl: 'h-96 w-auto'
   };
 
   return (
