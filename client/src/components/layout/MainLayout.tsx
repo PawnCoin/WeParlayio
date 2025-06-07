@@ -103,7 +103,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <SocialMediaOptimization 
         title="WeParlay - Premier Sports Betting Platform"
         description="Experience the future of sports betting with WeParlay. Live odds, fantasy sports, esports, and more."
-        image="/weparlaylogo.png"
+        image="/weparlaylogoP1.png"
       />
       {/* Header */}
       <header className="bg-black shadow-md px-4 text-white header-dark-bg">

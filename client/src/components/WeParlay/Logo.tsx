@@ -1,6 +1,7 @@
 import React from 'react';
-// Using a simple text logo since image file is missing
-const weparlayLogo = null;
+import weparlayLogoP1 from '@/assets/weparlaylogoP1.png';
+import weparlayLogo5 from '@/assets/weparlaylogo5.png';
+import weparlayLogo from '@/assets/weparlaylogo.png';
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
@@ -9,20 +10,22 @@ interface LogoProps {
 }
 
 const Logo: React.FC<LogoProps> = ({ size = 'md', className = '', withTagline = false }) => {
-  // Size mappings - increased sizes to make logo and text more visible
+  // Size mappings for the logo image
   const sizeClasses = {
-    sm: 'h-12',
-    md: 'h-16',
-    lg: 'h-20',
-    xl: 'h-24'
+    sm: 'h-8 w-auto',
+    md: 'h-12 w-auto',
+    lg: 'h-16 w-auto',
+    xl: 'h-20 w-auto'
   };
 
   return (
     <div className={`flex flex-col items-center ${className}`}>
       <div className="relative">
-        <div className={`${sizeClasses[size]} flex items-center justify-center bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold rounded-lg px-4 py-2 drop-shadow-md hover:drop-shadow-lg transition-all duration-300`}>
-          <span className={size === 'sm' ? 'text-sm' : size === 'lg' ? 'text-2xl' : size === 'xl' ? 'text-3xl' : 'text-xl'}>WeParlay.io</span>
-        </div>
+        <img 
+          src={weparlayLogoP1} 
+          alt="WeParlay.io" 
+          className={`${sizeClasses[size]} object-contain drop-shadow-md hover:drop-shadow-lg transition-all duration-300 hover:scale-105`}
+        />
         {withTagline && (
           <div className="text-orange-500 font-bold text-sm mt-1 text-center tracking-wide">
             Sports Betting Platform
