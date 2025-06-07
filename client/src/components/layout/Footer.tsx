@@ -6,18 +6,18 @@ const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-black text-white py-1 mt-auto">
-      <div className="container mx-auto">
+    <footer className="bg-black text-white py-0.5 mt-auto">
+      <div className="container mx-auto px-2">
         <div className="flex flex-col md:flex-row items-center justify-between">
           {/* Logo Section */}
-          <div className="flex items-center mb-1 md:mb-0">
+          <div className="flex items-center mb-0 md:mb-0">
             <Link href="/">
               <Logo size="sm" className="transform hover:scale-105 transition-transform duration-300" />
             </Link>
           </div>
           
           {/* Quick Links */}
-          <div className="flex gap-6 mb-1 md:mb-0">
+          <div className="flex gap-4 mb-0 md:mb-0">
             <Link href="/about">
               <span className="text-gray-300 hover:text-green-500 transition-colors text-sm">About</span>
             </Link>
@@ -37,7 +37,7 @@ const Footer: React.FC = () => {
               </p>
             </div>
             
-            <div className="flex gap-4 mt-0.5">
+            <div className="flex gap-3 mt-0">
               <Link href="/terms-of-service">
                 <span className="text-gray-400 hover:text-green-500 transition-colors text-xs">Terms</span>
               </Link>
