@@ -4302,6 +4302,96 @@ ${streamUrl}
     });
   });
 
+  // ==================== Friends System API Routes ====================
+  
+  // Get user's friends list
+  app.get('/api/friends', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const friends = await storage.getUserFriends(userId);
+      res.json({ success: true, friends });
+    } catch (error) {
+      console.error('Error fetching friends:', error);
+      res.status(500).json({ success: false, message: 'Failed to fetch friends' });
+    }
+  });
+
+  // Get pending friend requests
+  app.get('/api/friends/requests', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const requests = await storage.getPendingFriendRequests(userId);
+      res.json({ success: true, requests });
+    } catch (error) {
+      console.error('Error fetching friend requests:', error);
+      res.status(500).json({ success: false, message: 'Failed to fetch friend requests' });
+    }
+  });
+
+  // Send friend request
+  app.post('/api/friends/request', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { friendId } = req.body;
+
+      if (userId === friendId) {
+        return res.status(400).json({ success: false, message: 'Cannot send friend request to yourself' });
+      }
+
+      const friendship = await storage.sendFriendRequest(userId, friendId);
+      res.json({ success: true, friendship });
+    } catch (error) {
+      console.error('Error sending friend request:', error);
+      res.status(500).json({ success: false, message: 'Failed to send friend request' });
+    }
+  });
+
+  // Accept friend request
+  app.post('/api/friends/accept', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { friendId } = req.body;
+
+      const friendship = await storage.acceptFriendRequest(userId, friendId);
+      res.json({ success: true, friendship });
+    } catch (error) {
+      console.error('Error accepting friend request:', error);
+      res.status(500).json({ success: false, message: 'Failed to accept friend request' });
+    }
+  });
+
+  // Remove friend
+  app.delete('/api/friends/:friendId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { friendId } = req.params;
+
+      await storage.removeFriend(userId, friendId);
+      res.json({ success: true, message: 'Friend removed successfully' });
+    } catch (error) {
+      console.error('Error removing friend:', error);
+      res.status(500).json({ success: false, message: 'Failed to remove friend' });
+    }
+  });
+
+  // Search for users to add as friends
+  app.get('/api/friends/search', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { q: query } = req.query;
+
+      if (!query || typeof query !== 'string' || query.trim().length < 2) {
+        return res.status(400).json({ success: false, message: 'Search query must be at least 2 characters' });
+      }
+
+      const users = await storage.searchUsers(query.trim(), userId);
+      res.json({ success: true, users });
+    } catch (error) {
+      console.error('Error searching users:', error);
+      res.status(500).json({ success: false, message: 'Failed to search users' });
+    }
+  });
+
   // Fantasy Social & Competition endpoints - placeholder routes
   app.post('/api/fantasy-social/pools', (req, res) => {
     res.json({ 

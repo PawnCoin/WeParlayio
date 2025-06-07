@@ -16,7 +16,8 @@ import {
   supportTicketLogs, SupportTicketLog,
   knownIssues, KnownIssue, InsertKnownIssue,
   bettingChallenges, BettingChallenge, InsertBettingChallenge,
-  notifications, Notification, InsertNotification
+  notifications, Notification, InsertNotification,
+  friendships, Friendship, InsertFriendship
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gt, lt, desc, sql, or } from "drizzle-orm";
@@ -1422,5 +1423,175 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return newBet;
+  }
+
+  // ==================== Friends System Operations ====================
+
+  async sendFriendRequest(userId: string, friendId: string): Promise<Friendship> {
+    const [friendship] = await db
+      .insert(friendships)
+      .values({
+        userId,
+        friendId,
+        status: 'pending'
+      })
+      .returning();
+    
+    // Create notification for the friend request
+    await this.createNotification({
+      userId: friendId,
+      type: 'friend_request',
+      title: 'New Friend Request',
+      message: `You have received a new friend request`,
+      link: '/friends'
+    });
+    
+    return friendship;
+  }
+
+  async acceptFriendRequest(userId: string, friendId: string): Promise<Friendship> {
+    const [friendship] = await db
+      .update(friendships)
+      .set({ 
+        status: 'accepted',
+        acceptedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(
+        and(
+          eq(friendships.userId, friendId),
+          eq(friendships.friendId, userId),
+          eq(friendships.status, 'pending')
+        )
+      )
+      .returning();
+    
+    // Create reciprocal friendship
+    await db
+      .insert(friendships)
+      .values({
+        userId,
+        friendId,
+        status: 'accepted',
+        acceptedAt: new Date()
+      });
+    
+    // Notify the original requester
+    await this.createNotification({
+      userId: friendId,
+      type: 'friend_accepted',
+      title: 'Friend Request Accepted',
+      message: `Your friend request has been accepted`,
+      link: '/friends'
+    });
+    
+    return friendship;
+  }
+
+  async removeFriend(userId: string, friendId: string): Promise<boolean> {
+    await db
+      .delete(friendships)
+      .where(
+        or(
+          and(eq(friendships.userId, userId), eq(friendships.friendId, friendId)),
+          and(eq(friendships.userId, friendId), eq(friendships.friendId, userId))
+        )
+      );
+    
+    return true;
+  }
+
+  async getUserFriends(userId: string): Promise<any[]> {
+    const friendRelations = await db
+      .select()
+      .from(friendships)
+      .where(
+        and(
+          or(eq(friendships.userId, userId), eq(friendships.friendId, userId)),
+          eq(friendships.status, 'accepted')
+        )
+      );
+    
+    const friendIds = friendRelations.map(f => 
+      f.userId === userId ? f.friendId : f.userId
+    );
+    
+    if (friendIds.length === 0) return [];
+    
+    const friends = await db
+      .select()
+      .from(users)
+      .where(
+        or(...friendIds.map(id => eq(users.id, id)))
+      );
+    
+    return friends.map(friend => ({
+      id: friend.id,
+      username: friend.username,
+      firstName: friend.firstName,
+      lastName: friend.lastName,
+      profileImageUrl: friend.profileImageUrl,
+      tier: friend.tier,
+      wins: friend.wins,
+      status: 'accepted'
+    }));
+  }
+
+  async getPendingFriendRequests(userId: string): Promise<any[]> {
+    const pendingRequests = await db
+      .select()
+      .from(friendships)
+      .where(
+        and(
+          eq(friendships.friendId, userId),
+          eq(friendships.status, 'pending')
+        )
+      );
+    
+    if (pendingRequests.length === 0) return [];
+    
+    const requesterIds = pendingRequests.map(f => f.userId);
+    const requesters = await db
+      .select()
+      .from(users)
+      .where(
+        or(...requesterIds.map(id => eq(users.id, id)))
+      );
+    
+    return requesters.map(requester => ({
+      id: requester.id,
+      username: requester.username,
+      firstName: requester.firstName,
+      lastName: requester.lastName,
+      profileImageUrl: requester.profileImageUrl,
+      tier: requester.tier,
+      requestedAt: pendingRequests.find(p => p.userId === requester.id)?.requestedAt
+    }));
+  }
+
+  async searchUsers(query: string, currentUserId: string): Promise<any[]> {
+    const searchResults = await db
+      .select()
+      .from(users)
+      .where(
+        and(
+          or(
+            sql`${users.username} ILIKE ${`%${query}%`}`,
+            sql`${users.firstName} ILIKE ${`%${query}%`}`,
+            sql`${users.lastName} ILIKE ${`%${query}%`}`
+          ),
+          sql`${users.id} != ${currentUserId}`
+        )
+      )
+      .limit(10);
+    
+    return searchResults.map(user => ({
+      id: user.id,
+      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      profileImageUrl: user.profileImageUrl,
+      tier: user.tier
+    }));
   }
 }

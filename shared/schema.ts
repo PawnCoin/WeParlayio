@@ -547,6 +547,24 @@ export const insertSupportTicketMessageSchema = createInsertSchema(supportTicket
   isFromUser: true,
 });
 
+// Friends system for social betting
+export const friendships = pgTable("friendships", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  friendId: varchar("friend_id").notNull().references(() => users.id),
+  status: text("status").default("pending"), // 'pending', 'accepted', 'blocked'
+  requestedAt: timestamp("requested_at").defaultNow(),
+  acceptedAt: timestamp("accepted_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertFriendshipSchema = createInsertSchema(friendships).pick({
+  userId: true,
+  friendId: true,
+  status: true,
+});
+
 export const insertKnownIssueSchema = createInsertSchema(knownIssues).pick({
   title: true,
   description: true,
@@ -642,3 +660,6 @@ export type InsertBettingChallenge = z.infer<typeof insertBettingChallengeSchema
 
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+
+export type Friendship = typeof friendships.$inferSelect;
+export type InsertFriendship = z.infer<typeof insertFriendshipSchema>;
