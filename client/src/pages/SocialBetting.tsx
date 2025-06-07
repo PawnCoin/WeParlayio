@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Users, Trophy, Share2, MessageSquare, Globe, Activity, UserPlus, Heart, Plus, DollarSign, Search, Check, X } from 'lucide-react';
+import { Users, Trophy, Share2, MessageSquare, Globe, Activity, UserPlus, Heart, Plus, DollarSign, Search, Check, X, Crown, Lock } from 'lucide-react';
+import logoPath from "@assets/weparlaylogo4.png";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
@@ -18,6 +19,9 @@ const SocialBetting: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<string>("challenges");
+  
+  // Check if user has VIP access for messaging features
+  const isVIP = user?.tier && ['gold', 'platinum', 'diamond'].includes(user.tier.toLowerCase());
   const [newChallengeOpen, setNewChallengeOpen] = useState(false);
   const [challengeForm, setChallengeForm] = useState({
     eventName: '',
@@ -183,19 +187,35 @@ const SocialBetting: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Social Betting</h1>
-          <p className="text-muted-foreground">Challenge friends and compete in betting</p>
+        <div className="flex items-center gap-4">
+          <img 
+            src={logoPath} 
+            alt="WeParlay.io" 
+            className="h-12 w-auto object-contain"
+          />
+          <div>
+            <h1 className="text-3xl font-bold">Social Betting</h1>
+            <p className="text-muted-foreground">Challenge friends and compete in betting</p>
+          </div>
         </div>
         
-        <Dialog open={newChallengeOpen} onOpenChange={setNewChallengeOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Challenge
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
+        <div className="flex items-center gap-3">
+          {!isVIP && (
+            <div className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white px-3 py-1 rounded-lg text-sm">
+              <div className="flex items-center gap-2">
+                <Crown className="h-4 w-4" />
+                <span>Upgrade to VIP for messaging</span>
+              </div>
+            </div>
+          )}
+          <Dialog open={newChallengeOpen} onOpenChange={setNewChallengeOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Challenge
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
             <DialogHeader>
               <DialogTitle>Create Betting Challenge</DialogTitle>
               <DialogDescription>
@@ -249,7 +269,8 @@ const SocialBetting: React.FC = () => {
               </Button>
             </div>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -498,10 +519,17 @@ const SocialBetting: React.FC = () => {
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline">
-                          <MessageSquare className="h-3 w-3 mr-1" />
-                          Challenge
-                        </Button>
+                        {isVIP ? (
+                          <Button size="sm" variant="outline">
+                            <MessageSquare className="h-3 w-3 mr-1" />
+                            Challenge
+                          </Button>
+                        ) : (
+                          <Button size="sm" variant="outline" disabled>
+                            <Lock className="h-3 w-3 mr-1" />
+                            VIP Only
+                          </Button>
+                        )}
                         <Button 
                           size="sm" 
                           variant="ghost"
