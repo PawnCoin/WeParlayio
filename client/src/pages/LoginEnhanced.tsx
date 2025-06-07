@@ -135,9 +135,11 @@ const LoginEnhanced: React.FC = () => {
         {/* Logo and Title */}
         <div className="text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-orange-500 rounded-lg flex items-center justify-center">
-              <LogIn className="h-7 w-7 text-white" />
-            </div>
+            <img 
+              src="/weparlaylogo.png" 
+              alt="WeParlay Logo" 
+              className="w-12 h-12 object-contain"
+            />
             <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-orange-600 bg-clip-text text-transparent">
               WeParlay
             </h1>
