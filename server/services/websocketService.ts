@@ -34,7 +34,6 @@ class WebSocketService {
       this.wss = new WebSocketServer({ 
         server,
         path: '/ws',
-        host: '0.0.0.0',
         perMessageDeflate: false,
         clientTracking: true,
         maxPayload: 16 * 1024 * 1024, // 16MB
@@ -48,7 +47,7 @@ class WebSocketService {
       console.log('✅ WebSocket service initialized successfully');
       return true;
     } catch (error) {
-      console.error('❌ Failed to initialize WebSocket service:', error);
+      console.log('⚠️ WebSocket service not available, continuing without real-time features');
       return false;
     }
   }

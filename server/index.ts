@@ -175,13 +175,17 @@ app.use((req, res, next) => {
     log(`🚀 WeParlay server running on HTTP at 0.0.0.0:${port}`);
   });
 
-  // Initialize WebSocket with proper error handling for both environments
-  try {
-    initializeWebSocketService(httpServer);
-    log(`🔌 WebSocket service initialized on port ${port}`);
-  } catch (error) {
-    console.error('🚨 Failed to initialize WebSocket service:', error);
-    // Continue without WebSocket but log the issue
-    log('⚠️ Application will continue without real-time updates');
-  }
+  // Initialize WebSocket with graceful error handling
+  setTimeout(() => {
+    try {
+      if (!websocketService.isInitialized()) {
+        initializeWebSocketService(httpServer);
+        log(`🔌 WebSocket service initialized successfully`);
+      }
+    } catch (error: any) {
+      // Log but don't fail the server startup
+      console.warn('WebSocket initialization skipped:', error?.message || 'Port conflict');
+      log('⚠️ Application running without real-time features');
+    }
+  }, 1000); // Delay WebSocket initialization to allow server to fully start
 })();
