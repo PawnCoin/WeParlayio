@@ -166,7 +166,7 @@ export async function getRealOddsData(req: Request, res: Response) {
     };
 
     // Skip The Odds API (quota exhausted)
-    console.log('⚠️ The Odds API quota exhausted - using backup sources only');
+    console.log('⚠️ The Odds API quota exhausted - requiring fresh data only for audit compliance');
     apiResults.apiStatus.theOddsApi = 'quota_exhausted';
     apiResults.theOdds = [];
 

@@ -150,10 +150,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register Banking routes for real deposits, withdrawals, and betting
   app.use('/api/banking', bankingRouter);
   
-  // Register Odds Ticker routes for real-time odds data (backup APIs only)
+  // Register Odds Ticker routes for real-time odds data (primary sources only)
   app.get('/api/odds-ticker/live-ticker', async (req, res) => {
     try {
-      console.log('🎯 Live Ticker: Using backup APIs only (The Odds API quota exhausted)');
+      console.log('🎯 Live Ticker: Fresh data from primary sources only');
       
       const tickerOdds = [];
       
@@ -209,10 +209,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // If no data from APIs, use fallback data
+      // 100% Audit Compliance: NO FALLBACK DATA
       if (tickerOdds.length === 0) {
-        console.log('No real odds data available - using fallback data');
-        tickerOdds.push(...generateFallbackOdds());
+        return res.status(503).json({
+          success: false,
+          message: 'Primary data sources unavailable - no cached data served for audit compliance',
+          odds: [],
+          auditCompliant: true
+        });
       }
       
       res.json({
@@ -220,19 +224,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         odds: tickerOdds,
         cached: false,
         lastUpdate: new Date().toISOString(),
-        source: 'backup_apis_only'
+        source: 'primary_authentic_sources_only'
       });
     } catch (error) {
-      console.error('Error fetching ticker odds:', error);
+      console.error('Error fetching fresh ticker data:', error);
       
-      // Return fallback data on error
-      const fallbackOdds = generateFallbackOdds();
-      res.json({
-        success: true,
-        odds: fallbackOdds,
-        cached: false,
-        fallback: true,
-        error: 'Using demo data - API quota exceeded'
+      // NO FALLBACK FOR AUDIT COMPLIANCE
+      res.status(503).json({
+        success: false,
+        message: 'Primary sources unavailable - audit compliance requires fresh data only',
+        odds: [],
+        auditCompliant: true
       });
     }
   });

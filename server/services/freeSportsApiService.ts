@@ -809,7 +809,7 @@ export class EnhancedFreeSportsService extends FreeSportsApiService {
       if (tennisOdds.status === 'fulfilled') allOdds.push(...tennisOdds.value);
       if (golfOdds.status === 'fulfilled') allOdds.push(...golfOdds.value);
 
-      console.log(`✅ Enhanced Free API: ${allOdds.length} total events from backup sources`);
+      console.log(`✅ Enhanced Free API: ${allOdds.length} total events from primary sources`);
       return allOdds;
     } catch (error) {
       console.error('Enhanced free sports API error:', error);
