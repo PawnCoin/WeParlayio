@@ -299,6 +299,7 @@ function Router() {
       <Route path="/" component={Home} />
        <Route path="/site-navigation" component={SiteNavigation} />
             <Route path="/page-status-checker" component={PageStatusChecker} />
+        <Route path="/functionality-test" component={PageStatusChecker} />
       <Route component={NotFound} />
     </Switch>
   );
