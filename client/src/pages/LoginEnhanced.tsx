@@ -31,12 +31,25 @@ const LoginEnhanced: React.FC = () => {
       localStorage.setItem('weparlay-user', JSON.stringify(data.user));
       localStorage.setItem('weparlay-token', data.token);
 
-      toast({
-        title: "Welcome back!",
-        description: `Good to see you again, ${data.user.username}!`,
-      });
+      // Check if admin and auto-redirect
+      if (data.isAdmin || data.user.isAdmin) {
+        localStorage.setItem('weparlay-admin-access', 'true');
+        localStorage.setItem('weparlay-admin-expiry', (Date.now() + 24 * 60 * 60 * 1000).toString());
+        
+        toast({
+          title: "Admin Access Granted!",
+          description: `Welcome ${data.user.username}! Redirecting to admin dashboard...`,
+        });
 
-      navigate('/');
+        navigate('/admin');
+      } else {
+        toast({
+          title: "Welcome back!",
+          description: `Good to see you again, ${data.user.username}!`,
+        });
+
+        navigate('/');
+      }
     },
     onError: (error: any) => {
       toast({
@@ -366,13 +379,13 @@ const LoginEnhanced: React.FC = () => {
           New to WeParlay? Start betting in seconds with Quick Registration!
         </p>
 
-        {/* Admin & Password Reset Links */}
+        {/* Footer Links */}
         <div className="flex justify-center space-x-4 text-sm">
-          <a href="/admin-login" className="text-blue-600 hover:underline font-medium">
-            Admin Login
+          <a href="/support" className="text-gray-600 dark:text-gray-400 hover:underline">
+            Need Help?
           </a>
-          <span className="text-gray-300">•</span>
-          <a href="/admin-login" className="text-gray-600 dark:text-gray-400 hover:underline">
+          <span className="text-gray-300 dark:text-gray-600">•</span>
+          <a href="/forgot-password" className="text-gray-600 dark:text-gray-400 hover:underline">
             Forgot Password?
           </a>
         </div>

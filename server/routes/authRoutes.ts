@@ -70,27 +70,77 @@ router.post('/register', async (req, res) => {
 // User Login
 router.post('/login', async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
-    // Find user by username or email
-    let user = await storage.getUserByUsername(username);
-    if (!user && username.includes('@')) {
-      user = await storage.getUserByEmail?.(username);
-    }
+    // Check for admin credentials first
+    const adminCredentials = [
+      { email: 'support@weparlay.io', password: 'Baysides3!' },
+      { email: 'admin@weparlay.io', password: 'Baysides3!' },
+      { email: 'weparlay@admin.com', password: 'Baysides3!' }
+    ];
 
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid username or password' });
-    }
+    const normalizedEmail = email.toLowerCase();
+    const adminCred = adminCredentials.find(cred => cred.email.toLowerCase() === normalizedEmail);
 
-    // Check password
-    const isValidPassword = await bcrypt.compare(password, user.password);
-    if (!isValidPassword) {
-      return res.status(401).json({ message: 'Invalid username or password' });
+    let user;
+    let isAdmin = false;
+
+    if (adminCred && password === adminCred.password) {
+      // Admin login detected
+      isAdmin = true;
+      user = await storage.getUserByEmail?.(adminCred.email);
+
+      // Create admin user if doesn't exist
+      if (!user) {
+        const hashedPassword = await bcrypt.hash(adminCred.password, 12);
+        const adminUserData = {
+          id: `admin-${email.split('@')[0]}-${Date.now()}`,
+          email: adminCred.email,
+          username: email === 'support@weparlay.io' ? 'WeParlay' : 'Admin',
+          firstName: 'WeParlay',
+          lastName: 'Admin',
+          role: 'admin',
+          tier: 'platinum',
+          isAdmin: true,
+          status: 'active',
+          balance: 1000000,
+          weplayTokenBalance: 1000000,
+          password: hashedPassword,
+          createdAt: new Date(),
+        };
+        user = await storage.upsertUser(adminUserData);
+      }
+    } else {
+      // Regular user login
+      user = await storage.getUserByEmail?.(email);
+
+      if (!user) {
+        return res.status(401).json({ 
+          success: false,
+          message: 'Invalid credentials' 
+        });
+      }
+
+      // Verify password
+      const isValidPassword = await bcrypt.compare(password, user.password);
+
+      if (!isValidPassword) {
+        return res.status(401).json({ 
+          success: false,
+          message: 'Invalid credentials' 
+        });
+      }
     }
 
     // Generate JWT token
     const token = jwt.sign(
-      { userId: user.id, username: user.username },
+      { 
+        userId: user.id, 
+        username: user.username || user.email?.split('@')[0] || 'Anonymous',
+        email: user.email,
+        role: isAdmin ? 'admin' : 'user',
+        isAdmin: isAdmin
+      },
       process.env.JWT_SECRET || 'weparlay-secret-key',
       { expiresIn: '7d' }
     );
@@ -100,14 +150,24 @@ router.post('/login', async (req, res) => {
     delete userResponse.password;
 
     res.json({
-      message: 'Login successful',
-      user: userResponse,
+      success: true,
+      message: isAdmin ? 'Admin login successful' : 'Login successful',
+      user: {
+        ...userResponse,
+        isAdmin: isAdmin,
+        role: isAdmin ? 'admin' : 'user'
+      },
       token,
+      isAdmin
     });
 
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Login failed', error: error.message });
+    res.status(500).json({ 
+      success: false,
+      message: 'Login failed', 
+      error: error.message 
+    });
   }
 });
 
@@ -115,12 +175,12 @@ router.post('/login', async (req, res) => {
 router.post('/quick-register', async (req, res) => {
   try {
     const { email } = req.body;
-    
+
     // Generate random username and password
     const randomId = Math.random().toString(36).substring(2, 8);
     const username = `player_${randomId}`;
     const tempPassword = Math.random().toString(36).substring(2, 12);
-    
+
     // Hash password
     const hashedPassword = await bcrypt.hash(tempPassword, 12);
 
@@ -150,7 +210,7 @@ router.post('/quick-register', async (req, res) => {
           userId: newUser.id,
           tempPassword
         });
-        
+
         // Notify admin of new registration
         await sendAdminAlert({
           alertType: 'New Quick Registration',
@@ -159,7 +219,7 @@ router.post('/quick-register', async (req, res) => {
           amount: `$${newUser.balance} WeParlay Cash`,
           time: new Date().toLocaleString()
         });
-        
+
         console.log('✅ Welcome email sent to:', email);
       } catch (emailError) {
         console.error('❌ Failed to send welcome email:', emailError);
@@ -234,13 +294,13 @@ router.post('/admin-login', async (req, res) => {
       { email: 'admin@weparlay.io', password: 'Baysides3!' },
       { email: 'weparlay@admin.com', password: 'Baysides3!' }
     ];
-    
+
     // Normalize email to lowercase for comparison
     const normalizedEmail = email.toLowerCase();
-    
+
     // Check if this is a valid admin email
     const adminCred = validAdminCredentials.find(cred => cred.email.toLowerCase() === normalizedEmail);
-    
+
     if (!adminCred) {
       return res.status(401).json({ 
         success: false,
@@ -260,12 +320,12 @@ router.post('/admin-login', async (req, res) => {
 
     // Get or create admin user
     let adminUser = await storage.getUserByEmail?.(adminCred.email);
-    
+
     // Create admin user if doesn't exist
     if (!adminUser) {
       // Hash the password for storage
       const hashedPassword = await bcrypt.hash(adminCred.password, 12);
-      
+
       const adminUserData = {
         id: `admin-${email.split('@')[0]}-${Date.now()}`,
         email: adminCred.email,
@@ -281,7 +341,7 @@ router.post('/admin-login', async (req, res) => {
         password: hashedPassword,
         createdAt: new Date(),
       };
-      
+
       adminUser = await storage.upsertUser(adminUserData);
     }
 
@@ -323,17 +383,17 @@ router.post('/admin-login', async (req, res) => {
 router.post('/admin-reset-password', async (req, res) => {
   try {
     const { email } = req.body;
-    
+
     if (email === 'support@weparlay.io') {
       // In a real system, you'd send an actual email here
       console.log(`Admin password reset requested for: ${email}`);
-      
+
       return res.json({
         success: true,
         message: 'Password reset instructions sent to your email'
       });
     }
-    
+
     return res.status(404).json({
       success: false,
       message: 'Admin email address not found'
@@ -351,13 +411,13 @@ router.post('/admin-reset-password', async (req, res) => {
 router.get('/me', async (req, res) => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
-    
+
     if (!token) {
       return res.status(401).json({ message: 'No token provided' });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'weparlay-secret-key') as any;
-    
+
     // If it's a demo user, return demo data
     if (decoded.isDemo) {
       return res.json({
