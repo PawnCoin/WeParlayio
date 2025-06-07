@@ -1,5 +1,6 @@
 import React from 'react';
-import weparlayLogo from '/weparlaylogo.png';
+// Using a simple text logo since image file is missing
+const weparlayLogo = null;
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
@@ -19,14 +20,12 @@ const Logo: React.FC<LogoProps> = ({ size = 'md', className = '', withTagline = 
   return (
     <div className={`flex flex-col items-center ${className}`}>
       <div className="relative">
-        <img 
-          src={weparlayLogo} 
-          alt="WeParlay.io Logo" 
-          className={`${sizeClasses[size]} object-contain drop-shadow-md hover:drop-shadow-lg transition-all duration-300`} 
-        />
+        <div className={`${sizeClasses[size]} flex items-center justify-center bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold rounded-lg px-4 py-2 drop-shadow-md hover:drop-shadow-lg transition-all duration-300`}>
+          <span className={size === 'sm' ? 'text-sm' : size === 'lg' ? 'text-2xl' : size === 'xl' ? 'text-3xl' : 'text-xl'}>WeParlay.io</span>
+        </div>
         {withTagline && (
           <div className="text-orange-500 font-bold text-sm mt-1 text-center tracking-wide">
-           
+            Sports Betting Platform
           </div>
         )}
       </div>
