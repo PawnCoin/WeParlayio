@@ -53,10 +53,6 @@ export const sendSMS = async (options: SMSOptions): Promise<boolean> => {
   }
 };
 
-export const smsService = {
-  sendSMS
-};
-
 // Convenience functions for common SMS notifications
 export const sendWelcomeSMS = (to: string, userData: any) => {
   return sendSMS({
@@ -78,7 +74,7 @@ export const sendWinNotificationSMS = (to: string, winData: any) => {
   return sendSMS({
     to,
     type: 'win_notification',
-    message: `You won $${winData.winAmount} on ${winData.event}!`
+    message: `Congratulations! You won $${winData.amount} on ${winData.event}`
   });
 };
 
@@ -86,6 +82,14 @@ export const sendSecurityAlertSMS = (to: string, alertData: any) => {
   return sendSMS({
     to,
     type: 'security_alert',
-    message: `Security alert: ${alertData.action} detected`
+    message: `Security Alert: ${alertData.action} detected on your WeParlay account`
   });
+};
+
+export const smsService = {
+  sendSMS,
+  sendWelcomeSMS,
+  sendBetConfirmationSMS,
+  sendWinNotificationSMS,
+  sendSecurityAlertSMS
 };

@@ -44,7 +44,6 @@ export const users = pgTable("users", {
   tier: varchar("tier").default("bronze"), // User tier system
   betsCount: integer("bets_count").default(0),
   wins: integer("wins").default(0),
-  winsCount: integer("wins_count").default(0),
   // User consent fields
   smsConsent: boolean("sms_consent").default(false),
   marketingConsent: boolean("marketing_consent").default(false),
@@ -86,7 +85,7 @@ export const users = pgTable("users", {
   realMoneyBalance: doublePrecision("real_money_balance").default(0),
   tier: varchar("tier").default("bronze"),
   claims: jsonb("claims"),
-  yahooAccessToken: text("yahoo_access_token"),
+  winsCount: integer("wins_count").default(0),
   isAdmin: boolean("is_admin").default(false),
   totalBets: integer("total_bets").default(0),
   winRate: doublePrecision("win_rate").default(0),
@@ -113,13 +112,10 @@ export const insertUserSchema = createInsertSchema(users).pick({
   subscriptionTier: true,
   inviteCode: true,
   referredBy: true,
-  createdAt: true,
-  updatedAt: true,
   emailVerified: true,
   realMoneyBalance: true,
   tier: true,
-  claims: true,
-  yahooAccessToken: true,
+  winsCount: true,
   isAdmin: true,
   totalBets: true,
   winRate: true,
@@ -396,16 +392,13 @@ export type User = typeof users.$inferSelect & {
   lastActivity?: Date;
   preferences?: any;
   socialLinks?: any;
-  claims?: any;
   phoneNumber?: string;
   walletAddress?: string;
   walletType?: string;
   wins?: number;
   password?: string;
-  tier?: string;
-  isAdmin?: boolean;
-  totalBets?: number;
-  winRate?: number;
+  subscriptionExpiry?: Date;
+  yahooAccessToken?: string;
 };
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type UpsertUser = InsertUser;

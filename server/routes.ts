@@ -445,6 +445,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdBy: userId,
         eventName: gameData?.event || 'Custom Challenge',
         amount: parseFloat(challengeAmount),
+        pick: gameData?.pick || 'Custom Pick',
         isVirtual: true,
         notificationPhone: friendPhone,
         customMessage: customMessage || `${user.username || 'A friend'} challenged you to a bet on WeParlay!`,
