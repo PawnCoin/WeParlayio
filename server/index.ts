@@ -8,6 +8,10 @@ import apiMonitoringRoutes from './routes/apiMonitoringRoutes';
 import apiHealthRoutes from './routes/apiHealthRoutes';
 import systemHealthRoutes from './routes/systemHealthRoutes';
 
+// Prevent any WebSocket server from starting on port 24678 to avoid conflicts with Replit infrastructure
+process.env.DISABLE_WEBSOCKET_SERVER = 'true';
+process.env.NO_WEBSOCKET = 'true';
+
 // Security middleware
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
