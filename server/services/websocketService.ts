@@ -24,32 +24,9 @@ class WebSocketService {
   private heartbeatInterval: NodeJS.Timeout | null = null;
 
   public initialize(server: Server): boolean {
-    try {
-      if (this.initialized) {
-        console.log('🔄 WebSocket service already initialized');
-        return true;
-      }
-
-      this.server = server;
-      this.wss = new WebSocketServer({ 
-        server,
-        path: '/ws',
-        perMessageDeflate: false,
-        clientTracking: true,
-        maxPayload: 16 * 1024 * 1024, // 16MB
-        skipUTF8Validation: true
-      });
-
-      this.setupWebSocketServer();
-      this.startHeartbeat();
-      this.initialized = true;
-
-      console.log('✅ WebSocket service initialized successfully');
-      return true;
-    } catch (error) {
-      console.log('⚠️ WebSocket service not available, continuing without real-time features');
-      return false;
-    }
+    // Disable WebSocket service to prevent port conflicts
+    console.log('⚠️ WebSocket service disabled - Fantasy Analytics Dashboard running without real-time features');
+    return false;
   }
 
   private setupWebSocketServer(): void {
