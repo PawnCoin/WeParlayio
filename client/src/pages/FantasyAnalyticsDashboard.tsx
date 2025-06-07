@@ -71,49 +71,58 @@ export default function FantasyAnalyticsDashboard() {
   const [optimizationRisk, setOptimizationRisk] = useState<'conservative' | 'balanced' | 'aggressive'>('balanced');
 
   // Fetch player analytics
-  const { data: playerAnalytics, isLoading: playerLoading } = useQuery({
+  const { data: playerAnalyticsResponse, isLoading: playerLoading } = useQuery({
     queryKey: ['/api/fantasy-analytics/player', selectedPlayer],
     enabled: !!selectedPlayer,
     refetchInterval: 300000, // 5 minutes
   });
 
   // Fetch weekly matchups
-  const { data: weeklyMatchups, isLoading: matchupsLoading } = useQuery({
+  const { data: weeklyMatchupsResponse, isLoading: matchupsLoading } = useQuery({
     queryKey: ['/api/fantasy-analytics/matchups'],
     refetchInterval: 1800000, // 30 minutes
   });
 
   // Fetch injury analysis
-  const { data: injuryAnalysis, isLoading: injuryLoading } = useQuery({
+  const { data: injuryAnalysisResponse, isLoading: injuryLoading } = useQuery({
     queryKey: ['/api/fantasy-analytics/injuries'],
     refetchInterval: 900000, // 15 minutes
   });
 
   // Fetch sleeper picks
-  const { data: sleeperPicks, isLoading: sleepersLoading } = useQuery({
+  const { data: sleeperPicksResponse, isLoading: sleepersLoading } = useQuery({
     queryKey: ['/api/fantasy-analytics/sleepers'],
     refetchInterval: 3600000, // 1 hour
   });
 
   // Fetch waiver recommendations
-  const { data: waiverRecommendations, isLoading: waiversLoading } = useQuery({
+  const { data: waiverRecommendationsResponse, isLoading: waiversLoading } = useQuery({
     queryKey: ['/api/fantasy-analytics/waivers', platform, leagueId],
     enabled: !!platform && !!leagueId,
     refetchInterval: 1800000, // 30 minutes
   });
 
   // Fetch expert picks
-  const { data: expertPicks, isLoading: expertsLoading } = useQuery({
+  const { data: expertPicksResponse, isLoading: expertsLoading } = useQuery({
     queryKey: ['/api/fantasy-social/expert-picks'],
     refetchInterval: 3600000, // 1 hour
   });
 
   // Fetch social feed
-  const { data: socialFeed, isLoading: feedLoading } = useQuery({
+  const { data: socialFeedResponse, isLoading: feedLoading } = useQuery({
     queryKey: ['/api/fantasy-social/feed', leagueId],
     enabled: !!leagueId,
     refetchInterval: 120000, // 2 minutes
   });
+
+  // Extract data with proper typing
+  const playerAnalytics = (playerAnalyticsResponse as any)?.data as PlayerAnalytics;
+  const weeklyMatchups = (weeklyMatchupsResponse as any)?.data as MatchupAnalysis[];
+  const injuryAnalysis = (injuryAnalysisResponse as any)?.data as any[];
+  const sleeperPicks = (sleeperPicksResponse as any)?.data as PlayerAnalytics[];
+  const waiverRecommendations = (waiverRecommendationsResponse as any)?.data as any[];
+  const expertPicks = (expertPicksResponse as any)?.data as any[];
+  const socialFeed = (socialFeedResponse as any)?.data as any[];
 
   const optimizeLineup = async () => {
     if (!platform || !leagueId) {

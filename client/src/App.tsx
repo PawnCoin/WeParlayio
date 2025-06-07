@@ -55,6 +55,7 @@ import LiveStreaming from "@/pages/LiveStreaming";
 import FantasyFootball from "@/pages/FantasyFootball";
 import YahooFantasyFootball from "@/pages/YahooFantasyFootball";
 import FantasySportsHub from "@/pages/FantasySportsHub";
+import FantasyAnalyticsDashboard from "@/pages/FantasyAnalyticsDashboard";
 
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
@@ -171,6 +172,7 @@ function Router() {
       <Route path="/fantasy-legacy" component={FantasySportsEnhanced} />
       <Route path="/fantasy-football" component={FantasyFootball} />
       <Route path="/yahoo-fantasy" component={YahooFantasyFootball} />
+      <Route path="/fantasy/analytics" component={FantasyAnalyticsDashboard} />
 
       {/* Tournaments */}
       <Route path="/tournaments" component={Tournaments} />
