@@ -53,6 +53,10 @@ export const sendSMS = async (options: SMSOptions): Promise<boolean> => {
   }
 };
 
+export const smsService = {
+  sendSMS
+};
+
 // Convenience functions for common SMS notifications
 export const sendWelcomeSMS = (to: string, userData: any) => {
   return sendSMS({

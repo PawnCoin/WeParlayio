@@ -48,6 +48,25 @@ export interface IStorage {
   getUpcomingEvents(limit?: number): Promise<Event[]>;
   updateUserPreferences(userId: string, preferences: any): Promise<User>;
   updateUserGamertag(userId: string, gamertag: string): Promise<User>;
+  
+  // WeParlay Cash system methods
+  updateUserTier(userId: string, tier: string): Promise<User>;
+  createWeparlayCashTransaction(transactionData: {
+    userId: string;
+    amount: number;
+    type: string;
+    description: string;
+    metadata?: any;
+  }): Promise<any>;
+  getWeparlayCashTransactions(userId: string): Promise<any[]>;
+  
+  // User consent and profile methods
+  updateUserConsent(userId: string, consentData: {
+    smsConsent?: boolean;
+    marketingConsent?: boolean;
+    emailConsent?: boolean;
+    lastConsentUpdate?: Date;
+  }): Promise<User>;
   getSport(id: number): Promise<Sport | undefined>;
   getSportByKey(key: string): Promise<Sport | undefined>;
   getAllTeams(): Promise<Team[]>;
@@ -397,6 +416,76 @@ export class MemStorage implements IStorage {
 
   async getBettingChallengeByUuid(uuid: string): Promise<BettingChallenge | undefined> {
     return this.challenges.get(uuid);
+  }
+
+  // WeParlay Cash system implementations
+  async updateUserTier(userId: string, tier: string): Promise<User> {
+    const user = this.users.get(userId);
+    if (!user) throw new Error('User not found');
+    
+    const updatedUser = { ...user, tier };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+
+  async createWeparlayCashTransaction(transactionData: {
+    userId: string;
+    amount: number;
+    type: string;
+    description: string;
+    metadata?: any;
+  }): Promise<any> {
+    const transaction = {
+      id: this.nextId++,
+      ...transactionData,
+      timestamp: new Date(),
+      status: 'completed'
+    };
+    
+    // Update user balance if this is a credit/debit
+    const user = this.users.get(transactionData.userId);
+    if (user) {
+      const balanceChange = transactionData.type === 'credit' ? transactionData.amount : -transactionData.amount;
+      const updatedUser = { ...user, weparlayCashBalance: (user.weparlayCashBalance || 0) + balanceChange };
+      this.users.set(transactionData.userId, updatedUser);
+    }
+    
+    return transaction;
+  }
+
+  async getWeparlayCashTransactions(userId: string): Promise<any[]> {
+    // Mock implementation - in real app would query transaction history
+    return [
+      {
+        id: 1,
+        userId,
+        amount: 100,
+        type: 'credit',
+        description: 'Tier upgrade bonus',
+        timestamp: new Date(),
+        status: 'completed'
+      }
+    ];
+  }
+
+  async updateUserConsent(userId: string, consentData: {
+    smsConsent?: boolean;
+    marketingConsent?: boolean;
+    emailConsent?: boolean;
+    lastConsentUpdate?: Date;
+  }): Promise<User> {
+    const user = this.users.get(userId);
+    if (!user) throw new Error('User not found');
+    
+    const updatedUser = { 
+      ...user, 
+      smsConsent: consentData.smsConsent ?? user.smsConsent,
+      marketingConsent: consentData.marketingConsent ?? user.marketingConsent,
+      emailConsent: consentData.emailConsent ?? user.emailConsent,
+      lastConsentUpdate: consentData.lastConsentUpdate ?? new Date()
+    };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
   }
 }
 

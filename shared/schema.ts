@@ -38,10 +38,18 @@ export const users = pgTable("users", {
   role: varchar("role").default("user"),
   status: varchar("status").default("active"),
   balance: doublePrecision("balance").default(1000), // Default WeParlay Cash amount for new users
+  weparlayCashBalance: doublePrecision("weparlay_cash_balance").default(0), // WeParlay Cash system
+  cashBalance: doublePrecision("cash_balance").default(0), // User cash balance
   subscriptionTier: varchar("subscription_tier").default("wood"), // Default to free Wood tier
+  tier: varchar("tier").default("bronze"), // User tier system
   betsCount: integer("bets_count").default(0),
   wins: integer("wins").default(0),
   winsCount: integer("wins_count").default(0),
+  // User consent fields
+  smsConsent: boolean("sms_consent").default(false),
+  marketingConsent: boolean("marketing_consent").default(false),
+  emailConsent: boolean("email_consent").default(false),
+  lastConsentUpdate: timestamp("last_consent_update"),
   lastLogin: timestamp("last_login"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -596,6 +604,7 @@ export const bettingChallenges = pgTable("betting_challenges", {
   winnerId: varchar("winner_id").references(() => users.id),
   isDraw: boolean("is_draw").default(false),
   customMessage: text("custom_message"),
+  metadata: json("metadata"), // Additional challenge metadata
 });
 
 export const insertBettingChallengeSchema = createInsertSchema(bettingChallenges)
