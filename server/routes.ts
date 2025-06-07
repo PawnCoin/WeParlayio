@@ -260,16 +260,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         winRate: 0,
         totalWinnings: 0,
         subscriptionTier: 'platinum',
-        subscriptionExpiry: new Date('2030-12-31'),
-        emailVerified: true,
-        phoneVerified: true,
-        kycVerified: true,
-        preferences: {
-          oddsFormat: 'decimal',
-          useVirtualCurrency: false,
-          withdrawalSpeed: 'instant',
-          mobileOptimizedView: true
-        }
+        emailVerified: true
       });
 
       // Create WeParlay.io admin account  
@@ -290,16 +281,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         winRate: 0,
         totalWinnings: 0,
         subscriptionTier: 'platinum',
-        subscriptionExpiry: new Date('2030-12-31'),
-        emailVerified: true,
-        phoneVerified: true,
-        kycVerified: true,
-        preferences: {
-          oddsFormat: 'decimal',
-          useVirtualCurrency: false,
-          withdrawalSpeed: 'instant',
-          mobileOptimizedView: true
-        }
+        emailVerified: true
       });
 
       res.json({
