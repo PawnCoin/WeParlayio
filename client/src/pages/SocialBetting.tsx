@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Users, Trophy, Share2, MessageSquare, Globe, Activity, UserPlus, Heart, Plus, DollarSign } from 'lucide-react';
+import { Users, Trophy, Share2, MessageSquare, Globe, Activity, UserPlus, Heart, Plus, DollarSign, Search, Check, X } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
@@ -25,6 +25,7 @@ const SocialBetting: React.FC = () => {
     pick: '',
     customMessage: ''
   });
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Fetch user's betting challenges
   const { data: challenges, isLoading: challengesLoading } = useQuery({
@@ -33,8 +34,14 @@ const SocialBetting: React.FC = () => {
   });
 
   // Fetch friends for social features
-  const { data: friends } = useQuery({
-    queryKey: ['/api/social-betting/friends'],
+  const { data: friendsData } = useQuery({
+    queryKey: ['/api/friends'],
+    enabled: isAuthenticated
+  });
+
+  // Fetch pending friend requests
+  const { data: friendRequestsData } = useQuery({
+    queryKey: ['/api/friends/requests'],
     enabled: isAuthenticated
   });
 
@@ -42,6 +49,47 @@ const SocialBetting: React.FC = () => {
   const { data: socialActivity } = useQuery({
     queryKey: ['/api/social-betting/activity'],
     enabled: isAuthenticated
+  });
+
+  // Friend request mutations
+  const sendFriendRequestMutation = useMutation({
+    mutationFn: async (friendId: string) => {
+      return apiRequest('POST', '/api/friends/request', { friendId });
+    },
+    onSuccess: () => {
+      toast({ title: "Success", description: "Friend request sent!" });
+      queryClient.invalidateQueries({ queryKey: ['/api/friends'] });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  });
+
+  const acceptFriendRequestMutation = useMutation({
+    mutationFn: async (friendId: string) => {
+      return apiRequest('POST', '/api/friends/accept', { friendId });
+    },
+    onSuccess: () => {
+      toast({ title: "Success", description: "Friend request accepted!" });
+      queryClient.invalidateQueries({ queryKey: ['/api/friends'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/friends/requests'] });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  });
+
+  const removeFriendMutation = useMutation({
+    mutationFn: async (friendId: string) => {
+      return apiRequest('DELETE', `/api/friends/${friendId}`);
+    },
+    onSuccess: () => {
+      toast({ title: "Success", description: "Friend removed" });
+      queryClient.invalidateQueries({ queryKey: ['/api/friends'] });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
   });
 
   // Create new challenge mutation

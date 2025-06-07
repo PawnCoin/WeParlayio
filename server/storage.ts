@@ -97,6 +97,14 @@ export interface IStorage {
   getSupportTicketByNumber(ticketNumber: string): Promise<SupportTicket | undefined>;
   getTicketMessages(ticketId: number): Promise<SupportTicketMessage[]>;
   addTicketMessage(message: InsertSupportTicketMessage): Promise<SupportTicketMessage>;
+  
+  // Friends system methods
+  sendFriendRequest(userId: string, friendId: string): Promise<any>;
+  acceptFriendRequest(userId: string, friendId: string): Promise<any>;
+  removeFriend(userId: string, friendId: string): Promise<boolean>;
+  getUserFriends(userId: string): Promise<any[]>;
+  getPendingFriendRequests(userId: string): Promise<any[]>;
+  searchUsers(query: string, currentUserId: string): Promise<any[]>;
 }
 
 // Simple memory storage implementation
@@ -486,6 +494,104 @@ export class MemStorage implements IStorage {
     };
     this.users.set(userId, updatedUser);
     return updatedUser;
+  }
+
+  // Friends system methods
+  async sendFriendRequest(userId: string, friendId: string): Promise<any> {
+    const friendship = {
+      id: Date.now(),
+      userId,
+      friendId,
+      status: 'pending',
+      requestedAt: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    return friendship;
+  }
+
+  async acceptFriendRequest(userId: string, friendId: string): Promise<any> {
+    const friendship = {
+      id: Date.now(),
+      userId: friendId,
+      friendId: userId,
+      status: 'accepted',
+      acceptedAt: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    return friendship;
+  }
+
+  async removeFriend(userId: string, friendId: string): Promise<boolean> {
+    return true;
+  }
+
+  async getUserFriends(userId: string): Promise<any[]> {
+    // Return sample friends for demo purposes
+    return [
+      {
+        id: 'friend-1',
+        username: 'sportsfan2024',
+        firstName: 'Alex',
+        lastName: 'Johnson',
+        profileImageUrl: null,
+        tier: 'silver',
+        wins: 42,
+        status: 'accepted'
+      },
+      {
+        id: 'friend-2',
+        username: 'betmaster99',
+        firstName: 'Sarah',
+        lastName: 'Williams',
+        profileImageUrl: null,
+        tier: 'gold',
+        wins: 67,
+        status: 'accepted'
+      }
+    ];
+  }
+
+  async getPendingFriendRequests(userId: string): Promise<any[]> {
+    // Return sample pending requests for demo purposes
+    return [
+      {
+        id: 'pending-1',
+        username: 'newplayer123',
+        firstName: 'Mike',
+        lastName: 'Davis',
+        profileImageUrl: null,
+        tier: 'bronze',
+        requestedAt: new Date(Date.now() - 86400000) // 1 day ago
+      }
+    ];
+  }
+
+  async searchUsers(query: string, currentUserId: string): Promise<any[]> {
+    // Return sample search results for demo purposes
+    return [
+      {
+        id: 'search-1',
+        username: 'sportsexpert',
+        firstName: 'Jordan',
+        lastName: 'Smith',
+        profileImageUrl: null,
+        tier: 'platinum'
+      },
+      {
+        id: 'search-2',
+        username: 'oddsmaster',
+        firstName: 'Taylor',
+        lastName: 'Brown',
+        profileImageUrl: null,
+        tier: 'diamond'
+      }
+    ].filter(user => 
+      user.username.toLowerCase().includes(query.toLowerCase()) ||
+      user.firstName.toLowerCase().includes(query.toLowerCase()) ||
+      user.lastName.toLowerCase().includes(query.toLowerCase())
+    );
   }
 }
 
