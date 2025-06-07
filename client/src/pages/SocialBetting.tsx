@@ -21,7 +21,7 @@ const SocialBetting: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("challenges");
   
   // Check if user has VIP access for messaging features
-  const isVIP = user?.tier && ['gold', 'platinum', 'diamond'].includes(user.tier.toLowerCase());
+  const isVIP = user && typeof user === 'object' && 'tier' in user && user.tier && typeof user.tier === 'string' && ['gold', 'platinum', 'diamond'].includes(user.tier.toLowerCase());
   const [newChallengeOpen, setNewChallengeOpen] = useState(false);
   const [challengeForm, setChallengeForm] = useState({
     eventName: '',
@@ -32,25 +32,25 @@ const SocialBetting: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   // Fetch user's betting challenges
-  const { data: challenges, isLoading: challengesLoading } = useQuery({
+  const { data: challenges = [], isLoading: challengesLoading } = useQuery({
     queryKey: ['/api/challenges'],
     enabled: isAuthenticated
   });
 
   // Fetch friends for social features
-  const { data: friendsData } = useQuery({
+  const { data: friendsData = { friends: [] } } = useQuery({
     queryKey: ['/api/friends'],
     enabled: isAuthenticated
   });
 
   // Fetch pending friend requests
-  const { data: friendRequestsData } = useQuery({
+  const { data: friendRequestsData = { requests: [] } } = useQuery({
     queryKey: ['/api/friends/requests'],
     enabled: isAuthenticated
   });
 
   // Fetch social activity feed
-  const { data: socialActivity } = useQuery({
+  const { data: socialActivity = [] } = useQuery({
     queryKey: ['/api/social-betting/activity'],
     enabled: isAuthenticated
   });
@@ -288,7 +288,7 @@ const SocialBetting: React.FC = () => {
                   <div className="text-center">Loading challenges...</div>
                 </CardContent>
               </Card>
-            ) : challenges && challenges.length > 0 ? (
+            ) : challenges && Array.isArray(challenges) && challenges.length > 0 ? (
               challenges.map((challenge: any) => (
                 <Card key={challenge.uuid}>
                   <CardContent className="p-6">
