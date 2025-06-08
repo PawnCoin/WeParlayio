@@ -128,6 +128,13 @@ export const insertUserSchema = createInsertSchema(users).pick({
   walletAddress: z.string().optional(),
   phoneNumber: z.string().optional(),
   walletType: z.string().optional(),
+  lastActivity: z.date().optional(),
+  preferences: z.any().optional(),
+  socialLinks: z.any().optional(),
+  wins: z.number().optional(),
+  password: z.string().optional(),
+  subscriptionExpiry: z.date().optional(),
+  yahooAccessToken: z.string().optional(),
 });
 
 // Bank accounts for owner's deposits
