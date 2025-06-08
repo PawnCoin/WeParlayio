@@ -281,23 +281,8 @@ export class GridApiService {
       return response.data.series?.data || [];
     } catch (error) {
       console.error('Failed to fetch series from GRID:', error);
-      // Return mock data to show API is working
-      return [
-        {
-          id: 'demo-series-1',
-          name: 'Demo Esports Series',
-          status: 'live',
-          begin_at: new Date().toISOString(),
-          tournament: {
-            name: 'Demo Tournament',
-            videogame: { name: 'League of Legends' }
-          },
-          opponents: [
-            { opponent: { name: 'Team Alpha', image_url: null } },
-            { opponent: { name: 'Team Beta', image_url: null } }
-          ]
-        }
-      ];
+      // No mock data allowed - require real API credentials
+      throw new Error('GRID API authentication required - please provide valid API key');
     }
   }
 

@@ -109,43 +109,7 @@ export default function SocialSharing() {
     }
   });
 
-  const mockEsportsContent: EsportsContent[] = [
-    {
-      id: '1',
-      type: 'match_result',
-      title: 'Team Liquid defeats FaZe Clan 16-14',
-      description: 'Incredible comeback victory in CS:GO Major Championship semifinals',
-      teams: ['Team Liquid', 'FaZe Clan'],
-      score: '16-14',
-      tournament: 'CS:GO Major Championship',
-      date: new Date(),
-      thumbnailUrl: '/api/placeholder/400/300',
-      videoUrl: 'https://example.com/highlight.mp4',
-      stats: { duration: '47 minutes', viewers: '2.3M' }
-    },
-    {
-      id: '2',
-      type: 'highlight',
-      title: 'Faker\'s Legendary Outplay',
-      description: '1v3 clutch that secured the championship for T1',
-      players: ['Faker'],
-      tournament: 'League of Legends World Championship',
-      date: new Date(Date.now() - 3600000),
-      thumbnailUrl: '/api/placeholder/400/300',
-      videoUrl: 'https://example.com/faker-play.mp4',
-      stats: { duration: '45 seconds', viewers: '5.7M' }
-    },
-    {
-      id: '3',
-      type: 'tournament',
-      title: 'WeParlay Esports Championship 2025',
-      description: 'Join the biggest esports tournament of the year with $1M prize pool',
-      tournament: 'WeParlay Championship',
-      date: new Date(Date.now() + 86400000),
-      thumbnailUrl: '/api/placeholder/400/300',
-      stats: { teams: 32, prizePool: '$1,000,000' }
-    }
-  ];
+  // Real esports content fetched via useQuery above
 
   const platforms = [
     { id: 'twitter', name: 'Twitter/X', icon: Twitter, color: 'text-blue-500', connected: true },

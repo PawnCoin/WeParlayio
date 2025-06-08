@@ -326,23 +326,8 @@ adminRouter.get('/user-analytics', isAuthenticated, isAdmin, async (req: Request
       }
     ];
 
-    // Generate realistic user growth data
-    const userGrowthData = [];
-    const weeks = range === '7d' ? 1 : range === '30d' ? 4 : 12;
-    let cumulativeUsers = Math.max(1, totalUsers - weeks * 2);
-    
-    for (let i = 0; i < weeks; i++) {
-      const newUsers = Math.floor(Math.random() * 4) + 1;
-      cumulativeUsers += newUsers;
-      const activeInWeek = Math.floor(cumulativeUsers * 0.8);
-      
-      userGrowthData.push({
-        date: range === '7d' ? `Day ${i + 1}` : range === '30d' ? `Week ${i + 1}` : `Month ${i + 1}`,
-        newUsers,
-        totalUsers: Math.min(cumulativeUsers, totalUsers),
-        activeUsers: Math.min(activeInWeek, activeUsers)
-      });
-    }
+    // Real user growth data from database
+    const userGrowthData = await storage.getUserGrowthMetrics(range);
 
     // Generate recent activity from bot users
     const recentActivity = comprehensiveBotUsers

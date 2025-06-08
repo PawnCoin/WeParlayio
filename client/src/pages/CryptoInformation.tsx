@@ -35,56 +35,24 @@ export default function CryptoInformation() {
   const [selectedCrypto, setSelectedCrypto] = useState<string>('BTC');
 
   // Enhanced crypto data with gambling-specific information
-  const enhancedCryptoData: CryptoData[] = [
-    {
-      symbol: 'BTC',
-      name: 'Bitcoin',
-      price: 43250.00,
-      change24h: 2.45,
-      volume: 28500000000,
-      marketCap: 847000000000,
-      networkFee: 15.50,
-      confirmations: 3,
-      minDeposit: 0.001,
-      maxWithdrawal: 10
-    },
-    {
-      symbol: 'ETH',
-      name: 'Ethereum',
-      price: 2580.50,
-      change24h: -1.25,
-      volume: 15200000000,
-      marketCap: 310000000000,
-      networkFee: 12.75,
-      confirmations: 15,
-      minDeposit: 0.01,
-      maxWithdrawal: 50
-    },
-    {
-      symbol: 'USDC',
-      name: 'USD Coin',
-      price: 1.00,
-      change24h: 0.02,
-      volume: 4800000000,
-      marketCap: 32000000000,
-      networkFee: 3.25,
-      confirmations: 15,
-      minDeposit: 10,
-      maxWithdrawal: 100000
-    },
-    {
-      symbol: 'SOL',
-      name: 'Solana',
-      price: 125.30,
-      change24h: 5.8,
-      volume: 2100000000,
-      marketCap: 55000000000,
-      networkFee: 0.025,
-      confirmations: 32,
-      minDeposit: 0.1,
-      maxWithdrawal: 1000
-    }
-  ];
+  // Real crypto data fetched from API
+    const [cryptoData, setCryptoData] = useState<CryptoData[]>([]);
+    
+    useEffect(() => {
+      const fetchRealCryptoData = async () => {
+        try {
+          const response = await fetch('/api/crypto/live-prices');
+          const data = await response.json();
+          setCryptoData(data);
+        } catch (error) {
+          console.error('Failed to fetch real crypto data:', error);
+        }
+      };
+      
+      fetchRealCryptoData();
+      const interval = setInterval(fetchRealCryptoData, 30000); // Update every 30 seconds
+      return () => clearInterval(interval);
+    }, []);
 
   const networkInfo: NetworkInfo[] = [
     {

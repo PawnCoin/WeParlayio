@@ -175,7 +175,7 @@ export class DatabaseStorage implements IStorage {
         )
       );
     
-    return result[0]?.total || 0;
+    return Number(result[0]?.total || 0);
   }
 
   async updateUserWeplayTokenBalance(userId: string, amount: number): Promise<User> {
