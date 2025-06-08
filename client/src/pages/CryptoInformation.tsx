@@ -34,25 +34,25 @@ export default function CryptoInformation() {
   const [error, setError] = useState<string | null>(null);
   const [selectedCrypto, setSelectedCrypto] = useState<string>('BTC');
 
-  // Enhanced crypto data with gambling-specific information
-  // Real crypto data fetched from API
-    const [cryptoData, setCryptoData] = useState<CryptoData[]>([]);
+  // Fetch real crypto data on component mount
+  useEffect(() => {
+    const fetchRealCryptoData = async () => {
+      try {
+        const response = await fetch('/api/crypto/live-prices');
+        const data = await response.json();
+        setCryptoData(data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Failed to fetch real crypto data:', error);
+        setError('Failed to load crypto data');
+        setLoading(false);
+      }
+    };
     
-    useEffect(() => {
-      const fetchRealCryptoData = async () => {
-        try {
-          const response = await fetch('/api/crypto/live-prices');
-          const data = await response.json();
-          setCryptoData(data);
-        } catch (error) {
-          console.error('Failed to fetch real crypto data:', error);
-        }
-      };
-      
-      fetchRealCryptoData();
-      const interval = setInterval(fetchRealCryptoData, 30000); // Update every 30 seconds
-      return () => clearInterval(interval);
-    }, []);
+    fetchRealCryptoData();
+    const interval = setInterval(fetchRealCryptoData, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const networkInfo: NetworkInfo[] = [
     {
@@ -92,13 +92,10 @@ export default function CryptoInformation() {
     }
   ];
 
-  useEffect(() => {
-    setLoading(false);
-    setCryptoData(enhancedCryptoData);
-  }, []);
+  // Real crypto data loaded via the useEffect above
 
   const getSelectedCryptoData = () => {
-    return enhancedCryptoData.find(crypto => crypto.symbol === selectedCrypto) || enhancedCryptoData[0];
+    return cryptoData.find((crypto: any) => crypto.symbol === selectedCrypto) || cryptoData[0];
   };
 
   if (loading) {
@@ -147,7 +144,7 @@ export default function CryptoInformation() {
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {enhancedCryptoData.map((crypto) => (
+            {cryptoData.map((crypto: any) => (
               <Card 
                 key={crypto.symbol} 
                 className={`cursor-pointer transition-all hover:shadow-lg ${selectedCrypto === crypto.symbol ? 'ring-2 ring-primary' : ''}`}

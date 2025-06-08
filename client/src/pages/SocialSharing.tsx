@@ -254,7 +254,7 @@ export default function SocialSharing() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {mockEsportsContent.map((content) => (
+                {Array.isArray(esportsContent) ? esportsContent.map((content: any) => (
                   <div
                     key={content.id}
                     className={`p-4 rounded-lg border cursor-pointer transition-all ${
