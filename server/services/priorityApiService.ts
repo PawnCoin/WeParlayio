@@ -23,9 +23,17 @@ export class PriorityApiService {
     // Initialize APIs in priority order (1 = highest priority)
     this.apiServices = [
       {
+        name: 'Pinnacle Odds (RapidAPI)',
+        service: null, // Premium RapidAPI service
+        priority: 1,
+        healthCheck: async () => this.checkPinnacleOddsApi(),
+        getOdds: async (sport) => this.getPinnacleOddsData(sport),
+        rateLimit: 100 // Premium, fastest response
+      },
+      {
         name: 'The Odds API',
         service: new OddsApiService(),
-        priority: 1,
+        priority: 2,
         healthCheck: async () => this.checkTheOddsApi(),
         getOdds: async (sport) => this.getTheOddsApiData(sport),
         rateLimit: 500
@@ -33,7 +41,7 @@ export class PriorityApiService {
       {
         name: 'GRID API',
         service: null, // Will use environment variables directly
-        priority: 2,
+        priority: 3,
         healthCheck: async () => this.checkGridApi(),
         getOdds: async (sport) => this.getGridApiData(sport),
         rateLimit: 1000
@@ -41,7 +49,7 @@ export class PriorityApiService {
       {
         name: 'SportsGameOdds API',
         service: new SportsGameOddsService(),
-        priority: 3,
+        priority: 4,
         healthCheck: async () => this.checkSportsGameOddsApi(),
         getOdds: async (sport) => this.getSportsGameOddsData(sport),
         rateLimit: 600
@@ -49,7 +57,7 @@ export class PriorityApiService {
       {
         name: 'RapidAPI Sports',
         service: new RapidApiService(),
-        priority: 4,
+        priority: 5,
         healthCheck: async () => this.checkRapidApiSports(),
         getOdds: async (sport) => this.getRapidApiSportsData(sport),
         rateLimit: 1000
@@ -279,6 +287,19 @@ export class PriorityApiService {
   }
 
   // Health check methods for each API
+  private async checkPinnacleOddsApi(): Promise<boolean> {
+    if (!process.env.RAPIDAPI_KEY) return false;
+    try {
+      const response = await fetch('https://pinnacle-odds.p.rapidapi.com/kit/v1/markets', {
+        headers: { 
+          'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
+          'X-RapidAPI-Host': 'pinnacle-odds.p.rapidapi.com'
+        }
+      });
+      return response.ok;
+    } catch { return false; }
+  }
+
   private async checkTheOddsApi(): Promise<boolean> {
     if (!process.env.THE_ODDS_API_KEY) return false;
     try {
@@ -441,6 +462,56 @@ export class PriorityApiService {
   }
 
   // Data fetching methods (implement for each API)
+  private async getPinnacleOddsData(sport?: string): Promise<any[]> {
+    if (!process.env.RAPIDAPI_KEY) return [];
+    try {
+      const sportKey = sport || 'football';
+      const response = await fetch(`https://pinnacle-odds.p.rapidapi.com/kit/v1/markets?sport_id=1&is_have_odds=true`, {
+        headers: {
+          'X-RapidAPI-Key': process.env.RAPIDAPI_KEY,
+          'X-RapidAPI-Host': 'pinnacle-odds.p.rapidapi.com'
+        }
+      });
+      
+      if (!response.ok) return [];
+      const data = await response.json();
+      
+      // Transform Pinnacle data to standard format
+      return this.transformPinnacleData(data);
+    } catch (error) {
+      console.error('Pinnacle Odds API error:', error);
+      return [];
+    }
+  }
+
+  private transformPinnacleData(data: any): any[] {
+    if (!data || !Array.isArray(data)) return [];
+    
+    return data.map((event: any) => ({
+      id: event.id?.toString() || Math.random().toString(),
+      sport: 'NFL',
+      homeTeam: {
+        name: event.home || 'Home Team',
+        logo: null,
+        score: null
+      },
+      awayTeam: {
+        name: event.away || 'Away Team', 
+        logo: null,
+        score: null
+      },
+      startTime: event.starts || new Date().toISOString(),
+      status: 'scheduled',
+      odds: {
+        homeWin: event.home_odds || 2.0,
+        awayWin: event.away_odds || 2.0,
+        draw: event.draw_odds || null
+      },
+      source: 'Pinnacle (Premium)',
+      premium: true
+    }));
+  }
+
   private async getTheOddsApiData(sport?: string): Promise<any[]> {
     const oddsService = new OddsApiService();
     return await oddsService.getOdds(sport || 'americanfootball_nfl');
