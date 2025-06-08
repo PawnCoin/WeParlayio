@@ -61,12 +61,8 @@ export interface IStorage {
   getWeparlayCashTransactions(userId: string): Promise<any[]>;
   
   // User consent and profile methods
-  updateUserConsent(userId: string, consentData: {
-    smsConsent?: boolean;
-    marketingConsent?: boolean;
-    emailConsent?: boolean;
-    lastConsentUpdate?: Date;
-  }): Promise<User>;
+  updateUserConsent(userId: string, consents: any): Promise<User>;
+  updateUserStripeCustomerId(userId: string, customerId: string): Promise<User>;
   getSport(id: number): Promise<Sport | undefined>;
   getSportByKey(key: string): Promise<Sport | undefined>;
   getAllTeams(): Promise<Team[]>;

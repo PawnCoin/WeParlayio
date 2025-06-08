@@ -20,7 +20,7 @@ import {
   friendships, Friendship, InsertFriendship
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, gt, lt, desc, sql, or } from "drizzle-orm";
+import { eq, and, gt, lt, desc, sql, or, ne, ilike, inArray } from "drizzle-orm";
 import { IStorage } from "./storage";
 
 /**
@@ -1388,30 +1388,6 @@ export class DatabaseStorage implements IStorage {
     
     return allTransactions;
   }
-    betId?: number | null;
-  }): Promise<any> {
-    const transaction = {
-      id: Date.now(),
-      ...transactionData,
-      balanceAfter: transactionData.balanceBefore + (transactionData.type === 'credit' ? transactionData.amount : -Math.abs(transactionData.amount)),
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    
-    // Create a standard transaction record as well
-    await this.createTransaction({
-      userId: transactionData.userId,
-      type: transactionData.type === 'credit' ? 'weparlay_credit' : 'weparlay_debit',
-      amount: transactionData.type === 'credit' ? transactionData.amount : -Math.abs(transactionData.amount),
-      currency: 'WeParlayCash',
-      status: 'completed',
-      method: 'internal',
-      description: transactionData.reason,
-      timestamp: new Date()
-    });
-    
-    return transaction;
-  }
 
   async getWeparlayCashTransactions(userId: string): Promise<any[]> {
     const allTransactions = await this.getTransactions(1000, 0);
@@ -1643,5 +1619,32 @@ export class DatabaseStorage implements IStorage {
       profileImageUrl: user.profileImageUrl,
       tier: user.tier
     }));
+  }
+
+  async updateUserConsent(userId: string, consents: any): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ 
+        smsConsent: consents.sms,
+        marketingConsent: consents.marketing,
+        emailConsent: consents.email,
+        lastConsentUpdate: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return updatedUser;
+  }
+
+  async updateUserStripeCustomerId(userId: string, customerId: string): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ 
+        stripeCustomerId: customerId,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return updatedUser;
   }
 }
