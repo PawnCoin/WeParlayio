@@ -175,7 +175,7 @@ export class DatabaseStorage implements IStorage {
         )
       );
     
-    return Number(result[0]?.total || 0);
+    return Number(result[0]?.total ?? 0);
   }
 
   async updateUserWeplayTokenBalance(userId: string, amount: number): Promise<User> {
@@ -1369,23 +1369,17 @@ export class DatabaseStorage implements IStorage {
 
   
 
-  async getAllWeparlayCashTransactions(): Promise<any[]> {
-    const allTransactions = await db
+  async getWeparlayCashTransactions(userId: string): Promise<any[]> {
+    const userTransactions = await db
       .select()
       .from(transactions)
-      .where(eq(transactions.currency, 'WeParlay Cash'))
+      .where(and(
+        eq(transactions.userId, userId),
+        eq(transactions.currency, 'WeParlay Cash')
+      ))
       .orderBy(desc(transactions.createdAt));
     
-    return allTransactions;
-  }
-
-  
-
-  async getAllWeparlayCashTransactions(): Promise<any[]> {
-    const allTransactions = await this.getTransactions(10000, 0);
-    return allTransactions.filter(t => 
-      t.currency === 'WeParlayCash' || t.type?.includes('weparlay')
-    );
+    return userTransactions;
   }
 
   // Additional methods needed for TypeScript completion

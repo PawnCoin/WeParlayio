@@ -295,7 +295,11 @@ export default function SocialSharing() {
                       </div>
                     </div>
                   </div>
-                ))}
+                )) : (
+                  <div className="text-center text-muted-foreground">
+                    No esports content available
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
