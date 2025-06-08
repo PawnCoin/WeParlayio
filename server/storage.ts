@@ -265,7 +265,7 @@ export class MemStorage implements IStorage {
   async updateUserWeplayTokenBalance(userId: string, amount: number): Promise<User> {
     const user = await this.getUser(userId);
     if (user) {
-      const updatedUser = { ...user, weplayTokens: (user.weplayTokens || 0) + amount };
+      const updatedUser = { ...user, weplayTokens: (user.weplayTokenBalance || 0) + amount };
       this.users.set(userId, updatedUser);
       return updatedUser;
     }
@@ -274,7 +274,7 @@ export class MemStorage implements IStorage {
 
   async createNotification(notification: InsertNotification): Promise<Notification> {
     const id = this.nextId++;
-    const newNotification: Notification = { ...notification, id, read: false, createdAt: new Date() };
+    const newNotification: Notification = { ...notification, id, read: false, updatedAt: new Date(), readAt: null, createdAt: new Date(), updatedAt: new Date(), resolvedAt: null, updatedAt: new Date() };
     return newNotification;
   }
 
@@ -320,13 +320,13 @@ export class MemStorage implements IStorage {
   }
 
   async markNotificationAsRead(id: number, userId: string): Promise<Notification> {
-    const notification: Notification = { id, userId, title: 'Mock', content: 'Mock', read: true, createdAt: new Date() };
+    const notification: Notification = { id, userId, title: 'Mock', message: 'Mock', read: true, createdAt: new Date(), updatedAt: new Date(), resolvedAt: null, updatedAt: new Date() };
     return notification;
   }
 
   async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
     const id = this.nextId++;
-    const newTransaction: Transaction = { ...transaction, id, createdAt: new Date() };
+    const newTransaction: Transaction = { ...transaction, id, createdAt: new Date(), updatedAt: new Date(), resolvedAt: null, updatedAt: new Date() };
     return newTransaction;
   }
 
@@ -427,7 +427,7 @@ export class MemStorage implements IStorage {
 
   async createSupportTicket(ticket: InsertSupportTicket): Promise<SupportTicket> {
     const id = this.nextId++;
-    return { ...ticket, id, ticketNumber: `TICKET-${id}`, status: 'open', createdAt: new Date() };
+    return { ...ticket, id, ticketNumber: `TICKET-${id}`, status: 'open', createdAt: new Date(), updatedAt: new Date(), resolvedAt: null, updatedAt: new Date() };
   }
 
   async getSupportTicketByNumber(ticketNumber: string): Promise<SupportTicket | undefined> {
@@ -436,7 +436,7 @@ export class MemStorage implements IStorage {
 
   async addTicketMessage(message: InsertSupportTicketMessage): Promise<SupportTicketMessage> {
     const id = this.nextId++;
-    return { ...message, id, createdAt: new Date() };
+    return { ...message, id, createdAt: new Date(), updatedAt: new Date(), resolvedAt: null, updatedAt: new Date() };
   }
 
   async getTicketMessages(ticketId: number): Promise<SupportTicketMessage[]> {
@@ -449,7 +449,7 @@ export class MemStorage implements IStorage {
       ...challenge,
       uuid,
       status: challenge.status || 'pending',
-      createdAt: new Date(),
+      createdAt: new Date(), updatedAt: new Date(), resolvedAt: null, updatedAt: new Date(),
       updatedAt: new Date()
     };
     this.challenges.set(uuid, newChallenge);
@@ -538,7 +538,7 @@ export class MemStorage implements IStorage {
       friendId,
       status: 'pending',
       requestedAt: new Date(),
-      createdAt: new Date(),
+      createdAt: new Date(), updatedAt: new Date(), resolvedAt: null, updatedAt: new Date(),
       updatedAt: new Date()
     };
     return friendship;
@@ -551,7 +551,7 @@ export class MemStorage implements IStorage {
       friendId: userId,
       status: 'accepted',
       acceptedAt: new Date(),
-      createdAt: new Date(),
+      createdAt: new Date(), updatedAt: new Date(), resolvedAt: null, updatedAt: new Date(),
       updatedAt: new Date()
     };
     return friendship;

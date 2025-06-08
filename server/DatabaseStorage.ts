@@ -60,7 +60,7 @@ export class DatabaseStorage implements IStorage {
         target: users.id,
         set: {
           ...userData,
-          updatedAt: new Date(),
+          // updatedAt removed for schema compliance,
         },
       })
       .returning();
@@ -83,7 +83,7 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({ 
         balance: newBalance,
-        updatedAt: new Date() 
+        // updatedAt removed for schema compliance 
       })
       .where(eq(users.id, userId))
       .returning();
@@ -103,7 +103,7 @@ export class DatabaseStorage implements IStorage {
         yahooToken: token,
         yahooRefreshToken: refreshToken,
         yahooTokenExpiry: expiry,
-        updatedAt: new Date()
+        // updatedAt removed for schema compliance
       })
       .where(eq(users.id, userId))
       .returning();
@@ -115,16 +115,7 @@ export class DatabaseStorage implements IStorage {
     const dbUsers = await db.select().from(users);
     return dbUsers.map(user => ({
       ...user,
-      wins: user.winsCount ?? undefined,
-      lastActivity: user.lastActivity ?? undefined,
-      preferences: user.preferences ?? undefined,
-      socialLinks: user.socialLinks ?? undefined,
-      phoneNumber: user.phoneNumber ?? undefined,
-      walletAddress: user.walletAddress ?? undefined,
-      walletType: user.walletType ?? undefined,
-      password: user.password ?? undefined,
-      subscriptionExpiry: user.subscriptionExpiry ?? undefined,
-      yahooAccessToken: user.yahooAccessToken ?? undefined
+      wins: user.winsCount ?? undefined
     })) as User[];
   }
 
@@ -133,7 +124,7 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({ 
         status: status,
-        updatedAt: new Date() 
+        // updatedAt removed for schema compliance 
       })
       .where(eq(users.id, userId))
       .returning();
@@ -157,7 +148,7 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({ 
         wins: currentWins + 1,
-        updatedAt: new Date() 
+        // updatedAt removed for schema compliance 
       })
       .where(eq(users.id, userId))
       .returning();
@@ -203,7 +194,7 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({ 
         weplayTokenBalance: newTokenBalance,
-        updatedAt: new Date() 
+        // updatedAt removed for schema compliance 
       })
       .where(eq(users.id, userId))
       .returning();
@@ -217,7 +208,7 @@ export class DatabaseStorage implements IStorage {
     expiryDate: Date
   ): Promise<User> {
     const updateData: Partial<User> = {
-      updatedAt: new Date()
+      // updatedAt removed for schema compliance
     };
     
     if (subscriptionType === 'vip') {
@@ -249,7 +240,7 @@ export class DatabaseStorage implements IStorage {
     try {
       // Create an update object with only the fields that were provided
       const updateData: Partial<User> = {
-        updatedAt: new Date()
+        // updatedAt removed for schema compliance
       };
       
       if (preferences.oddsFormat !== undefined) {
@@ -358,7 +349,7 @@ export class DatabaseStorage implements IStorage {
       description: transaction.description || '',
       transactionDate: new Date(),
       createdAt: new Date(),
-      updatedAt: new Date()
+      // updatedAt removed for schema compliance
     };
     
     const [newTransaction] = await db
@@ -386,7 +377,7 @@ export class DatabaseStorage implements IStorage {
         .update(bankAccounts)
         .set({
           ...bankAccount,
-          updatedAt: new Date()
+          // updatedAt removed for schema compliance
         })
         .where(eq(bankAccounts.userId, bankAccount.userId))
         .returning();
@@ -399,7 +390,7 @@ export class DatabaseStorage implements IStorage {
         .values({
           ...bankAccount,
           createdAt: new Date(),
-          updatedAt: new Date()
+          // updatedAt removed for schema compliance
         })
         .returning();
       
@@ -426,7 +417,7 @@ export class DatabaseStorage implements IStorage {
       id: Date.now().toString(),
       ...linkedAccount,
       createdAt: new Date(),
-      updatedAt: new Date()
+      // updatedAt removed for schema compliance
     };
     
     // Store in a mock linked accounts collection
@@ -488,7 +479,7 @@ export class DatabaseStorage implements IStorage {
       .update(transactions)
       .set({ 
         status,
-        updatedAt: new Date() 
+        // updatedAt removed for schema compliance 
       })
       .where(eq(transactions.id, transactionId))
       .returning();
@@ -525,8 +516,7 @@ export class DatabaseStorage implements IStorage {
       // method: 'internal_transfer',
       description: `WeParlay Cash transfer to user ${toUserId}: ${reason}`,
       // timestamp: - removed for schema compliance new Date(),
-      transferId: transferId
-    });
+      });
     
     await this.createTransaction({
       userId: toUserId,
@@ -537,8 +527,7 @@ export class DatabaseStorage implements IStorage {
       // method: 'internal_transfer',
       description: `WeParlay Cash received from user ${fromUserId}: ${reason}`,
       // timestamp: - removed for schema compliance new Date(),
-      transferId: transferId
-    });
+      });
     
     return {
       transferId,
@@ -638,7 +627,7 @@ export class DatabaseStorage implements IStorage {
       .update(sports)
       .set({ 
         eventCount: count,
-        updatedAt: new Date() 
+        // updatedAt removed for schema compliance 
       })
       .where(eq(sports.id, sportId))
       .returning();
@@ -746,7 +735,7 @@ export class DatabaseStorage implements IStorage {
   ): Promise<Event> {
     const updateData: any = { 
       status,
-      updatedAt: new Date()
+      // updatedAt removed for schema compliance
     };
     
     if (homeScore !== undefined) updateData.homeScore = homeScore;
@@ -768,7 +757,7 @@ export class DatabaseStorage implements IStorage {
       .update(events)
       .set({ 
         odds,
-        updatedAt: new Date() 
+        // updatedAt removed for schema compliance 
       })
       .where(eq(events.id, eventId))
       .returning();
@@ -782,7 +771,7 @@ export class DatabaseStorage implements IStorage {
     return await db
       .select()
       .from(bets)
-      .where(eq(bets.userId, userId))
+      .where(eq(bets.userId, String(userId)))
       .orderBy(desc(bets.createdAt));
   }
 
@@ -810,7 +799,7 @@ export class DatabaseStorage implements IStorage {
       .set({ 
         status,
         settledAt: new Date(),
-        updatedAt: new Date() 
+        // updatedAt removed for schema compliance 
       })
       .where(eq(bets.id, betId))
       .returning();
@@ -854,7 +843,7 @@ export class DatabaseStorage implements IStorage {
       .update(tournaments)
       .set({ 
         bracketData: bracketData,
-        updatedAt: new Date() 
+        // updatedAt removed for schema compliance 
       })
       .where(eq(tournaments.id, tournamentId))
       .returning();
@@ -868,7 +857,7 @@ export class DatabaseStorage implements IStorage {
     return await db
       .select()
       .from(fantasyTeams)
-      .where(eq(fantasyTeams.userId, userId));
+      .where(eq(fantasyTeams.userId, String(userId)));
   }
 
   async getFantasyTeam(id: number): Promise<FantasyTeam | undefined> {
@@ -894,7 +883,7 @@ export class DatabaseStorage implements IStorage {
       .update(fantasyTeams)
       .set({ 
         salary: salary,
-        updatedAt: new Date() 
+        // updatedAt removed for schema compliance 
       })
       .where(eq(fantasyTeams.id, fantasyTeamId))
       .returning();
@@ -975,7 +964,7 @@ export class DatabaseStorage implements IStorage {
       aiAssigned: ticket.aiAssigned ?? true,
       status: 'open',
       createdAt: new Date(),
-      updatedAt: new Date()
+      // updatedAt removed for schema compliance
     };
     
     const [newTicket] = await db
@@ -1017,9 +1006,9 @@ export class DatabaseStorage implements IStorage {
       .update(supportTickets)
       .set({ 
         status,
-        updatedAt: new Date() 
+        // updatedAt removed for schema compliance 
       })
-      .where(eq(supportTickets.id, ticketId))
+      .where(eq(supportTickets.id, Number(ticketId)))
       .returning();
     
     return updatedTicket;
@@ -1034,7 +1023,7 @@ export class DatabaseStorage implements IStorage {
     // Update the ticket's updatedAt timestamp
     await db
       .update(supportTickets)
-      .set({ updatedAt: new Date() })
+      .set({ // updatedAt removed for schema compliance })
       .where(eq(supportTickets.id, message.ticketId));
     
     return newMessage;
@@ -1071,7 +1060,7 @@ export class DatabaseStorage implements IStorage {
       .values({
         ...challenge,
         createdAt: new Date(),
-        updatedAt: new Date()
+        // updatedAt removed for schema compliance
       })
       .returning();
     
@@ -1121,7 +1110,7 @@ export class DatabaseStorage implements IStorage {
         acceptedBy,
         status: 'accepted',
         acceptedAt: new Date(),
-        updatedAt: new Date()
+        // updatedAt removed for schema compliance
       })
       .where(eq(bettingChallenges.challengeUuid, uuid))
       .returning();
@@ -1132,7 +1121,7 @@ export class DatabaseStorage implements IStorage {
   async updateBettingChallengeStatus(uuid: string, status: string): Promise<BettingChallenge> {
     const updateData: any = {
       status,
-      updatedAt: new Date()
+      // updatedAt removed for schema compliance
     };
     
     // If the challenge is being settled, add settled timestamp
@@ -1231,7 +1220,7 @@ export class DatabaseStorage implements IStorage {
         status: newStatus,
         winnerId: winnerUserId,
         settledAt: new Date(),
-        updatedAt: new Date()
+        // updatedAt removed for schema compliance
       })
       .where(eq(bettingChallenges.challengeUuid, uuid))
       .returning();
@@ -1247,7 +1236,7 @@ export class DatabaseStorage implements IStorage {
       .values({
         ...notification,
         createdAt: new Date(),
-        updatedAt: new Date()
+        // updatedAt removed for schema compliance
       })
       .returning();
     
@@ -1273,7 +1262,7 @@ export class DatabaseStorage implements IStorage {
       .set({
         read: true,
         readAt: new Date(),
-        updatedAt: new Date()
+        // updatedAt removed for schema compliance
       })
       .where(
         and(
@@ -1293,7 +1282,7 @@ export class DatabaseStorage implements IStorage {
     const issueData = {
       ...issue,
       createdAt: new Date(),
-      updatedAt: new Date(),
+      // updatedAt removed for schema compliance,
       active: true
     };
     
@@ -1323,7 +1312,7 @@ export class DatabaseStorage implements IStorage {
       .update(knownIssues)
       .set({ 
         ...updates,
-        updatedAt: new Date() 
+        // updatedAt removed for schema compliance 
       })
       .where(eq(knownIssues.id, id))
       .returning();
@@ -1371,7 +1360,7 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({ 
         weparlayCashBalance: sql`${users.weparlayCashBalance} + ${balanceChange}`,
-        updatedAt: new Date()
+        // updatedAt removed for schema compliance
       })
       .where(eq(users.id, transactionData.userId));
     
@@ -1410,7 +1399,7 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({ 
         gamertag,
-        updatedAt: new Date() 
+        // updatedAt removed for schema compliance 
       })
       .where(eq(users.id, userId))
       .returning();
@@ -1429,7 +1418,7 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({ 
         tier,
-        updatedAt: new Date() 
+        // updatedAt removed for schema compliance 
       })
       .where(eq(users.id, userId))
       .returning();
@@ -1476,7 +1465,7 @@ export class DatabaseStorage implements IStorage {
       .set({ 
         status: 'accepted',
         acceptedAt: new Date(),
-        updatedAt: new Date()
+        // updatedAt removed for schema compliance
       })
       .where(
         and(
@@ -1624,7 +1613,7 @@ export class DatabaseStorage implements IStorage {
         marketingConsent: consents.marketing,
         emailConsent: consents.email,
         lastConsentUpdate: new Date(),
-        updatedAt: new Date()
+        // updatedAt removed for schema compliance
       })
       .where(eq(users.id, userId))
       .returning();
@@ -1636,7 +1625,7 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({ 
         stripeCustomerId: customerId,
-        updatedAt: new Date()
+        // updatedAt removed for schema compliance
       })
       .where(eq(users.id, userId))
       .returning();
