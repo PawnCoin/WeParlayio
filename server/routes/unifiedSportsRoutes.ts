@@ -53,16 +53,23 @@ router.get('/upcoming/:hours?', async (req, res) => {
 // Get upcoming events (alternative endpoint for frontend compatibility)
 router.get('/upcoming-events', async (req, res) => {
   try {
-    const { UnifiedSportsApiService } = await import('../services/unifiedSportsApiService');
-    const unifiedService = new UnifiedSportsApiService();
-    
-    // Get unified upcoming events from authentic sources only
-    const upcomingEvents = await unifiedService.getUnifiedUpcomingEvents(7);
-    
+    const { sport } = req.query;
+    const upcomingEvents = await unifiedSportsAPI.getRealSportsData(sport as string);
+
+    if (!upcomingEvents.authentic) {
+      return res.status(503).json({ 
+        error: 'Only authentic data provided - no synthetic data available',
+        availableApis: unifiedSportsAPI.getApiStatus()
+      });
+    }
+
     res.json(upcomingEvents);
   } catch (error) {
-    console.error('Error fetching upcoming events:', error);
-    res.json([]); // Return empty array instead of error for frontend stability
+    console.error('Error fetching real upcoming events:', error);
+    res.status(503).json({ 
+      error: 'All real APIs unavailable - no fallback data provided',
+      apiStatus: unifiedSportsAPI.getApiStatus()
+    });
   }
 });
 
@@ -74,7 +81,7 @@ router.get('/best-odds/:sport/:teams', async (req, res) => {
     const gameOdds = sportOdds.find(game => 
       game.event.toLowerCase().includes(teams.toLowerCase())
     );
-    
+
     if (!gameOdds) {
       return res.status(404).json({ message: 'Game not found' });
     }
@@ -103,12 +110,12 @@ router.get('/sports/american', async (req, res) => {
   try {
     const americanSports = ['americanfootball_nfl', 'basketball_nba', 'baseball_mlb', 'icehockey_nhl'];
     const allOdds = [];
-    
+
     for (const sport of americanSports) {
       const odds = await unifiedSportsAPI.getSportOdds(sport);
       allOdds.push({ sport, games: odds });
     }
-    
+
     res.json(allOdds);
   } catch (error) {
     console.error('Error fetching American sports:', error);
@@ -120,12 +127,12 @@ router.get('/sports/international', async (req, res) => {
   try {
     const internationalSports = ['soccer_epl', 'tennis_wta', 'tennis_atp'];
     const allOdds = [];
-    
+
     for (const sport of internationalSports) {
       const odds = await unifiedSportsAPI.getSportOdds(sport);
       allOdds.push({ sport, games: odds });
     }
-    
+
     res.json(allOdds);
   } catch (error) {
     console.error('Error fetching international sports:', error);
@@ -137,12 +144,12 @@ router.get('/sports/combat', async (req, res) => {
   try {
     const combatSports = ['mma_mixed_martial_arts', 'boxing_heavyweight'];
     const allOdds = [];
-    
+
     for (const sport of combatSports) {
       const odds = await unifiedSportsAPI.getSportOdds(sport);
       allOdds.push({ sport, games: odds });
     }
-    
+
     res.json(allOdds);
   } catch (error) {
     console.error('Error fetching combat sports:', error);
@@ -155,16 +162,16 @@ router.get('/markets/popular', async (req, res) => {
   try {
     const popularSports = ['americanfootball_nfl', 'basketball_nba', 'soccer_epl', 'tennis_wta'];
     const popularGames = [];
-    
+
     for (const sport of popularSports) {
       const odds = await unifiedSportsAPI.getSportOdds(sport);
       const upcoming = odds.filter(game => !game.live).slice(0, 3);
       popularGames.push(...upcoming);
     }
-    
+
     // Sort by start time
     popularGames.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
-    
+
     res.json(popularGames.slice(0, 10));
   } catch (error) {
     console.error('Error fetching popular markets:', error);
@@ -177,13 +184,13 @@ router.get('/search/:query', async (req, res) => {
   try {
     const { query } = req.params;
     const allOdds = await unifiedSportsAPI.getAllSportsOdds();
-    
+
     const results = allOdds.filter(game => 
       game.event.toLowerCase().includes(query.toLowerCase()) ||
       game.teams.some(team => team.toLowerCase().includes(query.toLowerCase())) ||
       game.sport.toLowerCase().includes(query.toLowerCase())
     );
-    
+
     res.json(results);
   } catch (error) {
     console.error('Error searching sports:', error);
