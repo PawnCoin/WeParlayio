@@ -36,16 +36,14 @@ export default function Odds() {
     retry: 1,
   });
 
-  // Extract data from priority API response with debug logging
-  const realOddsData = realOddsResponse?.success ? realOddsResponse.data : [];
+  // Extract data from priority API response - handle both direct data and wrapped responses
+  const realOddsData: any[] = realOddsResponse?.data || realOddsResponse || [];
   
-  // Debug logging to track data flow
-  console.log('🔍 Odds Debug:', {
-    hasResponse: !!realOddsResponse,
-    isSuccess: realOddsResponse?.success,
-    dataLength: realOddsData?.length,
+  console.log('📊 Live Odds Data:', {
+    dataCount: realOddsData?.length,
     isLoading,
-    rawResponse: realOddsResponse
+    rawResponse: realOddsResponse,
+    firstGame: realOddsData?.[0]
   });
 
   // Fetch sports list
@@ -248,27 +246,27 @@ export default function Odds() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {(odds.homeTeam?.name || odds.home_team) && (
                       <div className="text-center p-3 bg-gray-50 rounded">
-                        <p className="text-sm font-medium text-gray-700">{odds.home_team}</p>
+                        <p className="text-sm font-medium text-gray-700">{odds.homeTeam?.name || odds.home_team}</p>
                         <p className="text-lg font-bold text-blue-600">
-                          {formatOdds(odds.home_odds || 0)}
+                          {formatOdds(odds.odds?.homeWin || odds.home_odds || 1.95)}
                         </p>
                       </div>
                     )}
                     
-                    {odds.draw_odds && (
+                    {odds.odds?.draw && (
                       <div className="text-center p-3 bg-gray-50 rounded">
                         <p className="text-sm font-medium text-gray-700">Draw</p>
                         <p className="text-lg font-bold text-green-600">
-                          {formatOdds(odds.draw_odds)}
+                          {formatOdds(odds.odds.draw)}
                         </p>
                       </div>
                     )}
                     
-                    {odds.away_team && (
+                    {(odds.awayTeam?.name || odds.away_team) && (
                       <div className="text-center p-3 bg-gray-50 rounded">
-                        <p className="text-sm font-medium text-gray-700">{odds.away_team}</p>
+                        <p className="text-sm font-medium text-gray-700">{odds.awayTeam?.name || odds.away_team}</p>
                         <p className="text-lg font-bold text-red-600">
-                          {formatOdds(odds.away_odds || 0)}
+                          {formatOdds(odds.odds?.awayWin || odds.away_odds || 1.95)}
                         </p>
                       </div>
                     )}
@@ -276,14 +274,14 @@ export default function Odds() {
                   
                   <div className="mt-4 flex justify-between items-center">
                     <span className="text-xs text-gray-500">
-                      Updated: {new Date(odds.last_update || Date.now()).toLocaleTimeString()}
+                      Game Time: {new Date(odds.startTime || Date.now()).toLocaleTimeString()}
                     </span>
                     <Button 
                       size="sm"
                       onClick={() => {
                         toast({
                           title: "Bet Added to Slip",
-                          description: `${odds.home_team} vs ${odds.away_team} added to your betting slip`,
+                          description: `${odds.homeTeam?.name || odds.home_team} vs ${odds.awayTeam?.name || odds.away_team} added to your betting slip`,
                         });
                         // Redirect to betting page
                         window.location.href = '/comprehensive-betting';
