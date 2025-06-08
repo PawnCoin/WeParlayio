@@ -25,15 +25,28 @@ export default function Odds() {
   const [refreshing, setRefreshing] = useState(false);
   const { toast } = useToast();
 
-  // Fetch real odds data from the priority API system
+  // Fetch real odds data from the priority API system - with cache busting
   const { data: realOddsResponse, refetch: refetchRealOdds, isLoading } = useQuery({
     queryKey: ["/api/odds"],
-    refetchInterval: 30000, // Update every 30 seconds
-    staleTime: 10000,
+    refetchInterval: 10000, // Update every 10 seconds
+    staleTime: 0, // Never use stale data
+    gcTime: 0, // TanStack Query v5 - don't cache
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    retry: 1,
   });
 
-  // Extract data from priority API response
+  // Extract data from priority API response with debug logging
   const realOddsData = realOddsResponse?.success ? realOddsResponse.data : [];
+  
+  // Debug logging to track data flow
+  console.log('🔍 Odds Debug:', {
+    hasResponse: !!realOddsResponse,
+    isSuccess: realOddsResponse?.success,
+    dataLength: realOddsData?.length,
+    isLoading,
+    rawResponse: realOddsResponse
+  });
 
   // Fetch sports list
   const { data: sports } = useQuery({
@@ -221,19 +234,19 @@ export default function Odds() {
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-3">
-                      <CardTitle className="text-lg">{odds.sport_title}</CardTitle>
+                      <CardTitle className="text-lg">{odds.sport || 'NFL'}</CardTitle>
                       <p className="text-sm text-gray-600 mt-1">
-                        {odds.home_team} vs {odds.away_team}
+                        {odds.homeTeam?.name || odds.home_team} vs {odds.awayTeam?.name || odds.away_team}
                       </p>
                     </div>
-                    <Badge className="bg-blue-100 text-blue-800">
-                      {odds.bookmaker || 'Live'}
+                    <Badge className="bg-green-100 text-green-800">
+                      {odds.status || 'Live'}
                     </Badge>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {odds.home_team && (
+                    {(odds.homeTeam?.name || odds.home_team) && (
                       <div className="text-center p-3 bg-gray-50 rounded">
                         <p className="text-sm font-medium text-gray-700">{odds.home_team}</p>
                         <p className="text-lg font-bold text-blue-600">
