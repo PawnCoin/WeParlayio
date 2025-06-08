@@ -1334,10 +1334,60 @@ export class DatabaseStorage implements IStorage {
   async createWeparlayCashTransaction(transactionData: {
     userId: string;
     amount: number;
-    type: 'credit' | 'debit';
-    reason: string;
-    adminUserId?: string | null;
-    balanceBefore: number;
+    type: string;
+    description: string;
+    metadata?: any;
+  }): Promise<any> {
+    const [transaction] = await db
+      .insert(transactions)
+      .values({
+        userId: transactionData.userId,
+        type: transactionData.type,
+        amount: transactionData.amount,
+        currency: 'WeParlay Cash',
+        description: transactionData.description,
+        status: 'completed',
+        details: transactionData.metadata || {}
+      })
+      .returning();
+    
+    // Update user WeParlay Cash balance
+    const balanceChange = transactionData.type === 'credit' ? transactionData.amount : -transactionData.amount;
+    await db
+      .update(users)
+      .set({ 
+        weparlayCashBalance: sql`${users.weparlayCashBalance} + ${balanceChange}`,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, transactionData.userId));
+    
+    return transaction;
+  }
+
+  async getWeparlayCashTransactions(userId: string): Promise<any[]> {
+    const userTransactions = await db
+      .select()
+      .from(transactions)
+      .where(
+        and(
+          eq(transactions.userId, userId),
+          eq(transactions.currency, 'WeParlay Cash')
+        )
+      )
+      .orderBy(desc(transactions.createdAt));
+    
+    return userTransactions;
+  }
+
+  async getAllWeparlayCashTransactions(): Promise<any[]> {
+    const allTransactions = await db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.currency, 'WeParlay Cash'))
+      .orderBy(desc(transactions.createdAt));
+    
+    return allTransactions;
+  }
     betId?: number | null;
   }): Promise<any> {
     const transaction = {
