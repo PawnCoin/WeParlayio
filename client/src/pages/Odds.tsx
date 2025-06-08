@@ -107,13 +107,16 @@ export default function Odds() {
         odds.sport?.toLowerCase() === selectedSport.toLowerCase()
       );
   
-  console.log('🎯 FINAL DEBUG - Should show 16 NFL games:', {
+  console.log('🎯 CRITICAL DEBUG - Data Structure Analysis:', {
     selectedSport,
-    realOddsDataLength: realOddsData.length,
+    realOddsDataType: typeof realOddsData,
+    realOddsDataIsArray: Array.isArray(realOddsData),
+    realOddsDataLength: realOddsData?.length,
     oddsArrayLength: oddsArray.length,
     filteredOddsLength: filteredOdds.length,
-    firstGame: filteredOdds[0],
-    allGamesCount: totalLiveMarkets
+    firstThreeGames: filteredOdds.slice(0, 3),
+    willShowNoDataMessage: (filteredOdds.length === 0 && oddsArray.length === 0),
+    shouldShowOdds: filteredOdds.length > 0
   });
 
   return (
