@@ -174,6 +174,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register Banking routes for real deposits, withdrawals, and betting
   app.use('/api/banking', bankingRouter);
   
+  // Main odds endpoint - connects to priority API system
+  app.get('/api/odds', async (req, res) => {
+    try {
+      console.log('📊 Main Odds Endpoint: Getting data from priority system');
+      
+      // Get data from the priority API service
+      const { PriorityApiService } = await import('./services/priorityApiService');
+      const priorityService = new PriorityApiService();
+      
+      // Get odds for major sports using priority system
+      const priorityResults = await priorityService.getOddsWithFallback('all');
+      
+      // Extract data array from priority results
+      const oddsData = priorityResults?.data || [];
+      
+      if (oddsData && oddsData.length > 0) {
+        console.log(`✅ Priority System: Serving ${oddsData.length} odds from authenticated sources`);
+        return res.json({
+          success: true,
+          data: oddsData,
+          source: 'priority_api_system',
+          timestamp: new Date().toISOString(),
+          count: oddsData.length
+        });
+      }
+      
+      // If priority system returns empty, return empty array (no synthetic data)
+      console.log('⚠️ Priority System: No data available from authenticated sources');
+      res.json({
+        success: true,
+        data: [],
+        source: 'priority_api_system',
+        timestamp: new Date().toISOString(),
+        count: 0,
+        message: 'No authentic odds data currently available'
+      });
+      
+    } catch (error) {
+      console.error('Main odds endpoint error:', error);
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to fetch odds data',
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
   // Register Odds Ticker routes for real-time odds data (primary sources only)
   app.get('/api/odds-ticker/live-ticker', async (req, res) => {
     try {

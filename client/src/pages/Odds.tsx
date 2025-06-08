@@ -25,12 +25,15 @@ export default function Odds() {
   const [refreshing, setRefreshing] = useState(false);
   const { toast } = useToast();
 
-  // Fetch real odds data from your working endpoints
-  const { data: realOddsData, refetch: refetchRealOdds, isLoading } = useQuery({
+  // Fetch real odds data from the priority API system
+  const { data: realOddsResponse, refetch: refetchRealOdds, isLoading } = useQuery({
     queryKey: ["/api/odds"],
     refetchInterval: 30000, // Update every 30 seconds
     staleTime: 10000,
   });
+
+  // Extract data from priority API response
+  const realOddsData = realOddsResponse?.success ? realOddsResponse.data : [];
 
   // Fetch sports list
   const { data: sports } = useQuery({
