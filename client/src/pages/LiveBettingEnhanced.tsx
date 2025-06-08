@@ -38,10 +38,10 @@ const LiveBettingEnhanced: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-6 bg-background text-foreground">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>Loading live events...</p>
+          <p className="text-foreground">Loading live events...</p>
         </div>
       </div>
     );
@@ -52,13 +52,13 @@ const LiveBettingEnhanced: React.FC = () => {
   ) : [];
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="container mx-auto px-4 py-6 bg-background text-foreground min-h-screen">
       <div className="flex items-center gap-3 mb-6">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-          <h1 className="text-3xl font-bold">Live Betting</h1>
+          <h1 className="text-3xl font-bold text-foreground">Live Betting</h1>
         </div>
-        <Badge variant="secondary" className="animate-pulse">
+        <Badge variant="secondary" className="animate-pulse bg-secondary text-secondary-foreground">
           {filteredEvents.length} Live Games
         </Badge>
       </div>
@@ -87,21 +87,21 @@ const LiveBettingEnhanced: React.FC = () => {
           <div className="grid grid-cols-1 gap-4">
             {filteredEvents.length > 0 ? (
               filteredEvents.map((event: any, index: number) => (
-                <Card key={event.id || index} className="border-l-4 border-l-red-500">
+                <Card key={event.id || index} className="border-l-4 border-l-red-500 bg-card text-card-foreground">
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-start">
                       <div>
-                        <CardTitle className="text-lg">
+                        <CardTitle className="text-lg text-card-foreground">
                           {event.awayTeam || 'Away Team'} vs {event.homeTeam || 'Home Team'}
                         </CardTitle>
                         <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="outline">{event.sport_title || 'Live Event'}</Badge>
-                          <Badge variant="secondary" className="animate-pulse">LIVE</Badge>
+                          <Badge variant="outline" className="border-border text-foreground">{event.sport_title || 'Live Event'}</Badge>
+                          <Badge variant="secondary" className="animate-pulse bg-red-600 text-white">LIVE</Badge>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm text-gray-600">Quarter 2</p>
-                        <p className="font-mono text-lg">14:23</p>
+                        <p className="text-sm text-muted-foreground">Quarter 2</p>
+                        <p className="font-mono text-lg text-card-foreground">14:23</p>
                       </div>
                     </div>
                   </CardHeader>
@@ -109,12 +109,12 @@ const LiveBettingEnhanced: React.FC = () => {
                     <div className="grid grid-cols-3 gap-4">
                       {/* Money Line */}
                       <div className="space-y-2">
-                        <h4 className="font-medium text-sm">Money Line</h4>
+                        <h4 className="font-medium text-sm text-card-foreground">Money Line</h4>
                         <div className="space-y-1">
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-full justify-between"
+                            className="w-full justify-between bg-background border-border text-foreground hover:bg-accent hover:text-accent-foreground"
                             onClick={() => handleBet(event, 'moneyline', event.awayTeam || 'Away', -110)}
                           >
                             <span>{event.awayTeam || 'Away'}</span>
@@ -123,7 +123,7 @@ const LiveBettingEnhanced: React.FC = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-full justify-between"
+                            className="w-full justify-between bg-background border-border text-foreground hover:bg-accent hover:text-accent-foreground"
                             onClick={() => handleBet(event, 'moneyline', event.homeTeam || 'Home', +120)}
                           >
                             <span>{event.homeTeam || 'Home'}</span>
@@ -134,12 +134,12 @@ const LiveBettingEnhanced: React.FC = () => {
 
                       {/* Spread */}
                       <div className="space-y-2">
-                        <h4 className="font-medium text-sm">Spread</h4>
+                        <h4 className="font-medium text-sm text-card-foreground">Spread</h4>
                         <div className="space-y-1">
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-full justify-between"
+                            className="w-full justify-between bg-background border-border text-foreground hover:bg-accent hover:text-accent-foreground"
                             onClick={() => handleBet(event, 'spread', `${event.awayTeam || 'Away'} +3.5`, -110)}
                           >
                             <span>+3.5</span>
@@ -148,7 +148,7 @@ const LiveBettingEnhanced: React.FC = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-full justify-between"
+                            className="w-full justify-between bg-background border-border text-foreground hover:bg-accent hover:text-accent-foreground"
                             onClick={() => handleBet(event, 'spread', `${event.homeTeam || 'Home'} -3.5`, -110)}
                           >
                             <span>-3.5</span>
@@ -159,12 +159,12 @@ const LiveBettingEnhanced: React.FC = () => {
 
                       {/* Total */}
                       <div className="space-y-2">
-                        <h4 className="font-medium text-sm">Total</h4>
+                        <h4 className="font-medium text-sm text-card-foreground">Total</h4>
                         <div className="space-y-1">
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-full justify-between"
+                            className="w-full justify-between bg-background border-border text-foreground hover:bg-accent hover:text-accent-foreground"
                             onClick={() => handleBet(event, 'total', 'Over 47.5', -110)}
                           >
                             <span>O 47.5</span>
@@ -173,7 +173,7 @@ const LiveBettingEnhanced: React.FC = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-full justify-between"
+                            className="w-full justify-between bg-background border-border text-foreground hover:bg-accent hover:text-accent-foreground"
                             onClick={() => handleBet(event, 'total', 'Under 47.5', -110)}
                           >
                             <span>U 47.5</span>
@@ -186,11 +186,11 @@ const LiveBettingEnhanced: React.FC = () => {
                 </Card>
               ))
             ) : (
-              <Card>
+              <Card className="bg-card text-card-foreground">
                 <CardContent className="py-12 text-center">
-                  <Play className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Live Games</h3>
-                  <p className="text-gray-600">Check back when games are in progress</p>
+                  <Play className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2 text-card-foreground">No Live Games</h3>
+                  <p className="text-muted-foreground">Check back when games are in progress</p>
                 </CardContent>
               </Card>
             )}
@@ -199,52 +199,52 @@ const LiveBettingEnhanced: React.FC = () => {
 
         <TabsContent value="in-play" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card>
+            <Card className="bg-card text-card-foreground">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-card-foreground">
                   <Zap className="h-5 w-5 text-orange-500" />
                   Hot In-Play Bets
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
+                <div className="flex justify-between items-center p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
                   <div>
-                    <p className="font-medium">Next Touchdown</p>
-                    <p className="text-sm text-gray-600">Chiefs vs Bills</p>
+                    <p className="font-medium text-card-foreground">Next Touchdown</p>
+                    <p className="text-sm text-muted-foreground">Chiefs vs Bills</p>
                   </div>
-                  <Button size="sm" onClick={() => handleBet({id: 'live-1'}, 'prop', 'Chiefs TD', +150)}>
+                  <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => handleBet({id: 'live-1'}, 'prop', 'Chiefs TD', +150)}>
                     +150
                   </Button>
                 </div>
-                <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                <div className="flex justify-between items-center p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
                   <div>
-                    <p className="font-medium">Next 3-Pointer</p>
-                    <p className="text-sm text-gray-600">Lakers vs Warriors</p>
+                    <p className="font-medium text-card-foreground">Next 3-Pointer</p>
+                    <p className="text-sm text-muted-foreground">Lakers vs Warriors</p>
                   </div>
-                  <Button size="sm" onClick={() => handleBet({id: 'live-2'}, 'prop', 'Lakers 3PT', +200)}>
+                  <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => handleBet({id: 'live-2'}, 'prop', 'Lakers 3PT', +200)}>
                     +200
                   </Button>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-card text-card-foreground">
               <CardHeader>
-                <CardTitle>Live Trends</CardTitle>
+                <CardTitle className="text-card-foreground">Live Trends</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span>Home Teams Covering</span>
-                    <span className="font-mono">67%</span>
+                    <span className="text-card-foreground">Home Teams Covering</span>
+                    <span className="font-mono text-card-foreground">67%</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Overs Hitting</span>
-                    <span className="font-mono">52%</span>
+                    <span className="text-card-foreground">Overs Hitting</span>
+                    <span className="font-mono text-card-foreground">52%</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Favorites Winning</span>
-                    <span className="font-mono">71%</span>
+                    <span className="text-card-foreground">Favorites Winning</span>
+                    <span className="font-mono text-card-foreground">71%</span>
                   </div>
                 </div>
               </CardContent>
