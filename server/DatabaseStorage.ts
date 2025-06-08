@@ -326,7 +326,7 @@ export class DatabaseStorage implements IStorage {
       totalFees: feesResult[0]?.total || 0,
       userCount: userCount[0]?.count || 0,
       transactionCounts: transactionCounts.reduce((acc, item) => {
-        acc[item.type] = item.count;
+        acc[item.type] = Number(item.count);
         return acc;
       }, {} as Record<string, number>)
     };
@@ -573,17 +573,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updatePlatformRevenue(amount: number, feeType: string): Promise<any> {
-    // In a real application, this would update platform revenue records
-    // For demonstration, we'll create a fee transaction
+    // Create a platform revenue transaction
+    const transactionData = {
+      userId: 'system',
+      type: 'platform_revenue',
+      amount: amount,
+      currency: 'USD',
+      description: `Platform fee: ${feeType}`,
+      status: 'completed',
+      details: { feeType },
+      method: 'internal'
+    };
+    
     const [feeTransaction] = await db
       .insert(transactions)
-      .values({
-        type: 'fee',
-        amount: amount,
-        currency: 'USD',
-        description: `Platform fee: ${feeType}`,
-        status: 'completed'
-      })
+      .values(transactionData)
       .returning();
     
     return { success: true, transaction: feeTransaction };

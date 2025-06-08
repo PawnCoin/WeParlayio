@@ -110,7 +110,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         <div className="container mx-auto">
           <div className="flex items-center justify-between h-16">
             {/* Logo - Enhanced with tagline and hover effects */}
-            <div className="flex items-center">
+            <div className="flex items-center -ml-24">
               <Link href="/">
                 <Logo size="md" withTagline={true} className="cursor-pointer transform hover:scale-105 transition-transform duration-300" />
               </Link>
