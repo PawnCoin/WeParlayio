@@ -172,6 +172,8 @@ export const transactions = pgTable("transactions", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
   details: jsonb("details"),
+  plaidTransferId: text("plaid_transfer_id"),
+  method: text("method"), // 'plaid_transfer', 'cash_app', 'stripe', etc.
 });
 
 export const insertTransactionSchema = createInsertSchema(transactions).pick({
@@ -181,7 +183,10 @@ export const insertTransactionSchema = createInsertSchema(transactions).pick({
   currency: true,
   description: true,
   status: true,
+  transactionDate: true,
   details: true,
+  plaidTransferId: true,
+  method: true,
   transactionDate: true,
 });
 
