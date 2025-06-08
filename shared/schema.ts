@@ -187,7 +187,6 @@ export const insertTransactionSchema = createInsertSchema(transactions).pick({
   details: true,
   plaidTransferId: true,
   method: true,
-  transactionDate: true,
 });
 
 // Transaction Types

@@ -113,8 +113,8 @@ export class MemStorage implements IStorage {
 
   constructor() {
     // Initialize with basic sports data
-    this.createSport({ name: "Football", key: "americanfootball_nfl", isActive: true, eventCount: 0 });
-    this.createSport({ name: "Basketball", key: "basketball_nba", isActive: true, eventCount: 0 });
+    this.createSport({ name: "Football", key: "americanfootball_nfl", isActive: true });
+    this.createSport({ name: "Basketball", key: "basketball_nba", isActive: true });
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -127,7 +127,45 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = insertUser.id || String(this.nextId++);
-    const user: User = { ...insertUser, id, balance: 1000 };
+    const user: User = { 
+      ...insertUser, 
+      id, 
+      balance: 1000,
+      gamertag: null,
+      weparlayCashBalance: 0,
+      cashBalance: 0,
+      betsCount: 0,
+      winsCount: 0,
+      totalBets: 0,
+      totalWinnings: 0,
+      winRate: 0,
+      averageBet: 0,
+      biggestWin: 0,
+      role: "user",
+      tier: "bronze",
+      phoneNumber: null,
+      walletAddress: null,
+      walletType: null,
+      lastActivity: null,
+      preferences: null,
+      socialLinks: null,
+      password: null,
+      subscriptionExpiry: null,
+      yahooAccessToken: null,
+      yahooRefreshToken: null,
+      yahooTokenExpiry: null,
+      stripeCustomerId: null,
+      stripeSubscriptionId: null,
+      plaidAccessToken: null,
+      plaidItemId: null,
+      consentGiven: false,
+      consentTimestamp: null,
+      privacySettings: null,
+      twoFactorEnabled: false,
+      emailVerified: false,
+      createdAt: null,
+      updatedAt: null
+    };
     this.users.set(id, user);
     return user;
   }
@@ -220,7 +258,7 @@ export class MemStorage implements IStorage {
   }
 
   async settleBet(betId: number, status: string): Promise<Bet> {
-    const bet: Bet = { id: betId, userId: 'system', eventId: 1, amount: 0, odds: 0, potential: 0, status };
+    const bet: Bet = { id: betId, userId: 'system', eventId: 1, amount: 0, odds: 0, potentialPayout: 0, status };
     return bet;
   }
 
@@ -236,7 +274,7 @@ export class MemStorage implements IStorage {
 
   async createNotification(notification: InsertNotification): Promise<Notification> {
     const id = this.nextId++;
-    const newNotification: Notification = { ...notification, id, isRead: false, createdAt: new Date() };
+    const newNotification: Notification = { ...notification, id, read: false, createdAt: new Date() };
     return newNotification;
   }
 
@@ -282,7 +320,7 @@ export class MemStorage implements IStorage {
   }
 
   async markNotificationAsRead(id: number, userId: string): Promise<Notification> {
-    const notification: Notification = { id, userId, title: 'Mock', content: 'Mock', isRead: true, createdAt: new Date() };
+    const notification: Notification = { id, userId, title: 'Mock', content: 'Mock', read: true, createdAt: new Date() };
     return notification;
   }
 

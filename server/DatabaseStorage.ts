@@ -112,7 +112,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllUsers(): Promise<User[]> {
-    return await db.select().from(users);
+    const dbUsers = await db.select().from(users);
+    return dbUsers.map(user => ({
+      ...user,
+      wins: user.winsCount ?? undefined,
+      lastActivity: user.lastActivity ?? undefined,
+      preferences: user.preferences ?? undefined,
+      socialLinks: user.socialLinks ?? undefined,
+      phoneNumber: user.phoneNumber ?? undefined,
+      walletAddress: user.walletAddress ?? undefined,
+      walletType: user.walletType ?? undefined,
+      password: user.password ?? undefined,
+      subscriptionExpiry: user.subscriptionExpiry ?? undefined,
+      yahooAccessToken: user.yahooAccessToken ?? undefined
+    })) as User[];
   }
 
   async updateUserStatus(userId: string, status: string): Promise<User> {
@@ -511,7 +524,7 @@ export class DatabaseStorage implements IStorage {
       status: 'completed',
       // method: 'internal_transfer',
       description: `WeParlay Cash transfer to user ${toUserId}: ${reason}`,
-      timestamp: new Date(),
+      // timestamp: - removed for schema compliance new Date(),
       transferId: transferId
     });
     
@@ -523,7 +536,7 @@ export class DatabaseStorage implements IStorage {
       status: 'completed',
       // method: 'internal_transfer',
       description: `WeParlay Cash received from user ${fromUserId}: ${reason}`,
-      timestamp: new Date(),
+      // timestamp: - removed for schema compliance new Date(),
       transferId: transferId
     });
     
@@ -549,7 +562,7 @@ export class DatabaseStorage implements IStorage {
       status: 'completed',
       // method: 'reward_system',
       description: reason,
-      timestamp: new Date()
+      // timestamp: - removed for schema compliance new Date()
     });
     
     return {
@@ -840,7 +853,7 @@ export class DatabaseStorage implements IStorage {
     const [updatedTournament] = await db
       .update(tournaments)
       .set({ 
-        bracket: bracketData,
+        bracketData: bracketData,
         updatedAt: new Date() 
       })
       .where(eq(tournaments.id, tournamentId))
@@ -880,7 +893,7 @@ export class DatabaseStorage implements IStorage {
     const [updatedFantasyTeam] = await db
       .update(fantasyTeams)
       .set({ 
-        salaryCap: salary,
+        salary: salary,
         updatedAt: new Date() 
       })
       .where(eq(fantasyTeams.id, fantasyTeamId))
@@ -1302,7 +1315,7 @@ export class DatabaseStorage implements IStorage {
     return await db
       .select()
       .from(knownIssues)
-      .where(eq(knownIssues.status, 'active'));
+      .where(eq(knownIssues.active, 'active'));
   }
 
   async updateKnownIssue(id: number, updates: Partial<KnownIssue>): Promise<KnownIssue> {
@@ -1365,20 +1378,7 @@ export class DatabaseStorage implements IStorage {
     return transaction;
   }
 
-  async getWeparlayCashTransactions(userId: string): Promise<any[]> {
-    const userTransactions = await db
-      .select()
-      .from(transactions)
-      .where(
-        and(
-          eq(transactions.userId, userId),
-          eq(transactions.currency, 'WeParlay Cash')
-        )
-      )
-      .orderBy(desc(transactions.createdAt));
-    
-    return userTransactions;
-  }
+  
 
   async getAllWeparlayCashTransactions(): Promise<any[]> {
     const allTransactions = await db
@@ -1390,13 +1390,7 @@ export class DatabaseStorage implements IStorage {
     return allTransactions;
   }
 
-  async getWeparlayCashTransactions(userId: string): Promise<any[]> {
-    const allTransactions = await this.getTransactions(1000, 0);
-    return allTransactions.filter(t => 
-      t.userId === userId && 
-      (t.currency === 'WeParlayCash' || t.type?.includes('weparlay'))
-    );
-  }
+  
 
   async getAllWeparlayCashTransactions(): Promise<any[]> {
     const allTransactions = await this.getTransactions(10000, 0);
