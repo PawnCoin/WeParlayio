@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Trophy, Play, Share2 } from "lucide-react";
 import { getTeamLogoPath } from "@/assets/teams/team-logos";
 import { getSportIconPath } from "@/assets/sports/sports-icons";
+import { nbaTeamLogos } from "@/lib/teamLogos";
 
 interface BracketViewProps {
   tournamentId: number;
@@ -126,7 +127,7 @@ const BracketView: React.FC<BracketViewProps> = ({ tournamentId }) => {
         <div className="flex justify-between items-center mb-2">
           <div className="flex items-center">
             <img 
-              src={`https://a.espncdn.com/i/teamlogos/nba/500/${match.team1.name.toLowerCase().replace(' ', '')}.png`}
+              src={nbaTeamLogos[match.team1.name] || `https://a.espncdn.com/i/teamlogos/nba/500/default.png`}
               alt={match.team1.name}
               className="w-6 h-6 object-contain mr-2"
               onError={(e) => {
@@ -146,7 +147,7 @@ const BracketView: React.FC<BracketViewProps> = ({ tournamentId }) => {
         <div className="flex justify-between items-center">
           <div className="flex items-center">
             <img 
-              src={`https://a.espncdn.com/i/teamlogos/nba/500/${match.team2.name.toLowerCase().replace(' ', '')}.png`}
+              src={nbaTeamLogos[match.team2.name] || `https://a.espncdn.com/i/teamlogos/nba/500/default.png`}
               alt={match.team2.name}
               className="w-6 h-6 object-contain mr-2"
               onError={(e) => {
