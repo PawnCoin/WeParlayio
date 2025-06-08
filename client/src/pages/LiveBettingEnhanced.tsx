@@ -58,13 +58,13 @@ const LiveBettingEnhanced: React.FC = () => {
           <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
           <h1 className="text-3xl font-bold text-foreground">Live Betting</h1>
         </div>
-        <Badge variant="secondary" className="animate-pulse bg-secondary text-secondary-foreground border border-border">
+        <Badge variant="secondary" className="animate-pulse bg-secondary text-secondary-foreground">
           {filteredEvents.length} Live Games
         </Badge>
       </div>
 
       <Tabs defaultValue="live" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4 bg-muted border border-border"
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="live" className="flex items-center gap-2">
             <Play className="h-4 w-4" />
             Live Now
@@ -95,8 +95,8 @@ const LiveBettingEnhanced: React.FC = () => {
                           {event.awayTeam || 'Away Team'} vs {event.homeTeam || 'Home Team'}
                         </CardTitle>
                         <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="outline" className="border-border text-foreground bg-background">{event.sport_title || 'Live Event'}</Badge>
-                          <Badge className="animate-pulse bg-red-600 text-white border border-red-500">LIVE</Badge>
+                          <Badge variant="outline" className="border-border text-foreground">{event.sport_title || 'Live Event'}</Badge>
+                          <Badge variant="secondary" className="animate-pulse bg-red-600 text-white">LIVE</Badge>
                         </div>
                       </div>
                       <div className="text-right">
@@ -114,7 +114,7 @@ const LiveBettingEnhanced: React.FC = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-full justify-between bg-card border-border text-card-foreground hover:bg-accent hover:text-accent-foreground"
+                            className="w-full justify-between bg-background border-border text-foreground hover:bg-accent hover:text-accent-foreground"
                             onClick={() => handleBet(event, 'moneyline', event.awayTeam || 'Away', -110)}
                           >
                             <span>{event.awayTeam || 'Away'}</span>
@@ -123,7 +123,7 @@ const LiveBettingEnhanced: React.FC = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-full justify-between bg-card border-border text-card-foreground hover:bg-accent hover:text-accent-foreground"
+                            className="w-full justify-between bg-background border-border text-foreground hover:bg-accent hover:text-accent-foreground"
                             onClick={() => handleBet(event, 'moneyline', event.homeTeam || 'Home', +120)}
                           >
                             <span>{event.homeTeam || 'Home'}</span>
@@ -139,7 +139,7 @@ const LiveBettingEnhanced: React.FC = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-full justify-between bg-card border-border text-card-foreground hover:bg-accent hover:text-accent-foreground"
+                            className="w-full justify-between bg-background border-border text-foreground hover:bg-accent hover:text-accent-foreground"
                             onClick={() => handleBet(event, 'spread', `${event.awayTeam || 'Away'} +3.5`, -110)}
                           >
                             <span>+3.5</span>
@@ -148,7 +148,7 @@ const LiveBettingEnhanced: React.FC = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-full justify-between bg-card border-border text-card-foreground hover:bg-accent hover:text-accent-foreground"
+                            className="w-full justify-between bg-background border-border text-foreground hover:bg-accent hover:text-accent-foreground"
                             onClick={() => handleBet(event, 'spread', `${event.homeTeam || 'Home'} -3.5`, -110)}
                           >
                             <span>-3.5</span>
@@ -164,7 +164,7 @@ const LiveBettingEnhanced: React.FC = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-full justify-between bg-card border-border text-card-foreground hover:bg-accent hover:text-accent-foreground"
+                            className="w-full justify-between bg-background border-border text-foreground hover:bg-accent hover:text-accent-foreground"
                             onClick={() => handleBet(event, 'total', 'Over 47.5', -110)}
                           >
                             <span>O 47.5</span>
@@ -173,7 +173,7 @@ const LiveBettingEnhanced: React.FC = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-full justify-between bg-card border-border text-card-foreground hover:bg-accent hover:text-accent-foreground"
+                            className="w-full justify-between bg-background border-border text-foreground hover:bg-accent hover:text-accent-foreground"
                             onClick={() => handleBet(event, 'total', 'Under 47.5', -110)}
                           >
                             <span>U 47.5</span>
@@ -212,7 +212,7 @@ const LiveBettingEnhanced: React.FC = () => {
                     <p className="font-medium text-card-foreground">Next Touchdown</p>
                     <p className="text-sm text-muted-foreground">Chiefs vs Bills</p>
                   </div>
-                  <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 border border-primary/20" onClick={() => handleBet({id: 'live-1'}, 'prop', 'Chiefs TD', +150)}>
+                  <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => handleBet({id: 'live-1'}, 'prop', 'Chiefs TD', +150)}>
                     +150
                   </Button>
                 </div>
