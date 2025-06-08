@@ -54,7 +54,7 @@ router.get('/upcoming/:hours?', async (req, res) => {
 router.get('/upcoming-events', async (req, res) => {
   try {
     const { sport } = req.query;
-    const upcomingEvents = await unifiedSportsAPI.getRealSportsData(sport as string);
+    const upcomingEvents = await unifiedSportsAPI.getUnifiedUpcomingEvents();
 
     if (!upcomingEvents.authentic) {
       return res.status(503).json({ 

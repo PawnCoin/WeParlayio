@@ -62,7 +62,7 @@ export { notificationRoutes, websocketPollingRoutes };
 // Initialize The Odds API services
 const oddsApiService = new OddsApiService();
 const advancedOddsService = new AdvancedOddsService();
-const unifiedSportsApi = new UnifiedSportsApiService();
+const unifiedSportsApi = unifiedSportsApiService;
 const rapidApiService = new RapidApiService();
 const sportsGameOddsService = new SportsGameOddsService();
 
@@ -964,11 +964,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/sports", async (req, res) => {
     try {
       // Get comprehensive sports list from unified API service
-      const { UnifiedSportsApiService } = await import('./services/unifiedSportsApiService');
-      const unifiedSportsAPI = new UnifiedSportsApiService();
-      
       // Get the massive sports list (110+ sports)
-      const massiveSportsList = await unifiedSportsAPI.getMassiveSportsList();
+      const massiveSportsList = await unifiedSportsApi.getAllSportsOdds();
       
       // Combine storage sports with massive API sports list
       const storageSports = await storage.getAllSports();
