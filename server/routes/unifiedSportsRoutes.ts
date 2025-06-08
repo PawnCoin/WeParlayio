@@ -1,7 +1,8 @@
 import { Router } from 'express';
-import { unifiedSportsAPI } from '../services/unifiedSportsAPI';
+import { UnifiedSportsApiService } from '../services/unifiedSportsApiService';
 
 const router = Router();
+const unifiedSportsAPI = new UnifiedSportsApiService();
 
 // Get all sports odds from multiple sources
 router.get('/odds/all', async (req, res) => {
@@ -46,6 +47,22 @@ router.get('/upcoming/:hours?', async (req, res) => {
   } catch (error) {
     console.error('Error fetching upcoming games:', error);
     res.status(500).json({ message: 'Failed to fetch upcoming games' });
+  }
+});
+
+// Get upcoming events (alternative endpoint for frontend compatibility)
+router.get('/upcoming-events', async (req, res) => {
+  try {
+    const { UnifiedSportsApiService } = await import('../services/unifiedSportsApiService');
+    const unifiedService = new UnifiedSportsApiService();
+    
+    // Get unified upcoming events from authentic sources only
+    const upcomingEvents = await unifiedService.getUnifiedUpcomingEvents(7);
+    
+    res.json(upcomingEvents);
+  } catch (error) {
+    console.error('Error fetching upcoming events:', error);
+    res.json([]); // Return empty array instead of error for frontend stability
   }
 });
 
