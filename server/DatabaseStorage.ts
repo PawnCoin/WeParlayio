@@ -1090,21 +1090,22 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getUserChallenges(userId: string, status?: string): Promise<BettingChallenge[]> {
-    let query = db
-      .select()
-      .from(bettingChallenges)
-      .where(
-        or(
-          eq(bettingChallenges.createdBy, userId),
-          eq(bettingChallenges.acceptedBy, userId)
-        )
-      );
+    const conditions = [
+      or(
+        eq(bettingChallenges.createdBy, userId),
+        eq(bettingChallenges.acceptedBy, userId)
+      )
+    ];
     
     if (status) {
-      query = query.where(eq(bettingChallenges.status, status));
+      conditions.push(eq(bettingChallenges.status, status));
     }
     
-    return await query.orderBy(desc(bettingChallenges.createdAt));
+    return await db
+      .select()
+      .from(bettingChallenges)
+      .where(and(...conditions))
+      .orderBy(desc(bettingChallenges.createdAt));
   }
   
   async acceptBettingChallenge(uuid: string, acceptedBy: string): Promise<BettingChallenge> {
@@ -1248,16 +1249,17 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getUserNotifications(userId: string, unreadOnly: boolean = false): Promise<Notification[]> {
-    let query = db
-      .select()
-      .from(notifications)
-      .where(eq(notifications.userId, userId));
+    const conditions = [eq(notifications.userId, userId)];
     
     if (unreadOnly) {
-      query = query.where(eq(notifications.read, false));
+      conditions.push(eq(notifications.read, false));
     }
     
-    return await query.orderBy(desc(notifications.createdAt));
+    return await db
+      .select()
+      .from(notifications)
+      .where(and(...conditions))
+      .orderBy(desc(notifications.createdAt));
   }
   
   async markNotificationAsRead(id: number, userId: string): Promise<Notification> {
@@ -1308,7 +1310,7 @@ export class DatabaseStorage implements IStorage {
     return await db
       .select()
       .from(knownIssues)
-      .where(eq(knownIssues.active, 'active'));
+      .where(eq(knownIssues.active, true));
   }
 
   async updateKnownIssue(id: number, updates: Partial<KnownIssue>): Promise<KnownIssue> {
