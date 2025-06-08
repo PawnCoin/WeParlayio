@@ -65,7 +65,7 @@ export class PriorityApiService {
       {
         name: 'Comprehensive RapidAPI',
         service: comprehensiveRapidApi,
-        priority: 5,
+        priority: 6,
         healthCheck: async () => this.checkComprehensiveRapidApi(),
         getOdds: async (sport) => this.getComprehensiveRapidApiData(sport),
         rateLimit: 500
@@ -73,7 +73,7 @@ export class PriorityApiService {
       {
         name: 'AllSports API',
         service: null,
-        priority: 6,
+        priority: 7,
         healthCheck: async () => this.checkAllSportsApi(),
         getOdds: async (sport) => this.getAllSportsApiData(sport),
         rateLimit: 200
@@ -81,7 +81,7 @@ export class PriorityApiService {
       {
         name: 'ESPN API',
         service: new FreeSportsApiService(),
-        priority: 7,
+        priority: 8,
         healthCheck: async () => this.checkEspnApi(),
         getOdds: async (sport) => this.getEspnApiData(sport),
         rateLimit: 100
