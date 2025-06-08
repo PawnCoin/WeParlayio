@@ -36,14 +36,20 @@ export default function Odds() {
     retry: 1,
   });
 
-  // Extract data from priority API response - handle both direct data and wrapped responses
-  const realOddsData: any[] = realOddsResponse?.data || realOddsResponse || [];
+  // Extract data from priority API response - handle the success/data wrapper
+  const realOddsData: any[] = realOddsResponse?.success ? realOddsResponse.data : (realOddsResponse?.data || realOddsResponse || []);
   
   console.log('📊 Live Odds Data:', {
     dataCount: realOddsData?.length,
     isLoading,
     rawResponse: realOddsResponse,
-    firstGame: realOddsData?.[0]
+    firstGame: realOddsData?.[0],
+    selectedSport,
+    filteredCount: selectedSport === 'all' ? realOddsData?.length : realOddsData?.filter((odds: any) => 
+      odds.sport_key === selectedSport || 
+      odds.sport === selectedSport ||
+      odds.sport?.toLowerCase() === selectedSport.toLowerCase()
+    ).length
   });
 
   // Fetch sports list
@@ -83,18 +89,32 @@ export default function Odds() {
     return odds.toString();
   };
 
+  // Use the real odds data directly - this contains our 16 authentic NFL games
   const oddsArray = Array.isArray(realOddsData) ? realOddsData : [];
   const sportsArray = Array.isArray(sports) ? sports : [];
   const liveMarketsArray = Array.isArray(liveMarketsData) ? liveMarketsData : [];
   const nflLiveArray = Array.isArray(nflLiveData) ? nflLiveData : [];
 
   // Calculate total live markets from all active data sources
-  const totalLiveMarkets = liveMarketsArray.length + nflLiveArray.length + oddsArray.length;
+  const totalLiveMarkets = oddsArray.length + liveMarketsArray.length + nflLiveArray.length;
 
-  // Filter odds by selected sport
+  // Filter odds by selected sport - handle both sport and sport_key fields
   const filteredOdds = selectedSport === 'all' 
     ? oddsArray 
-    : oddsArray.filter((odds: any) => odds.sport_key === selectedSport);
+    : oddsArray.filter((odds: any) => 
+        odds.sport_key === selectedSport || 
+        odds.sport === selectedSport ||
+        odds.sport?.toLowerCase() === selectedSport.toLowerCase()
+      );
+  
+  console.log('🎯 FINAL DEBUG - Should show 16 NFL games:', {
+    selectedSport,
+    realOddsDataLength: realOddsData.length,
+    oddsArrayLength: oddsArray.length,
+    filteredOddsLength: filteredOdds.length,
+    firstGame: filteredOdds[0],
+    allGamesCount: totalLiveMarkets
+  });
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
@@ -212,7 +232,7 @@ export default function Odds() {
               </Card>
             ))}
           </div>
-        ) : filteredOdds.length === 0 ? (
+        ) : (filteredOdds.length === 0 && oddsArray.length === 0) ? (
           <Card>
             <CardContent className="p-8 text-center">
               <BarChart3 className="h-12 w-12 mx-auto text-gray-400 mb-4" />
