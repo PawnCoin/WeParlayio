@@ -5,33 +5,40 @@ import { User } from "@shared/schema";
  * Resolves null vs undefined type mismatches for 100/100 audit quality
  */
 export function transformDatabaseUser(dbUser: any): User {
-  return {
-    ...dbUser,
-    // Transform null to undefined for type compatibility
-    wins: dbUser.wins ?? undefined,
-    winsCount: dbUser.winsCount ?? undefined,
-    balance: dbUser.balance ?? 0,
-    weplayTokenBalance: dbUser.weplayTokenBalance ?? 0,
-    realMoneyBalance: dbUser.realMoneyBalance ?? 0,
-    weparlayCashBalance: dbUser.weparlayCashBalance ?? 0,
-    totalBets: dbUser.totalBets ?? 0,
-    totalWinnings: dbUser.totalWinnings ?? 0,
-    winRate: dbUser.winRate ?? 0,
-    averageBet: dbUser.averageBet ?? 0,
-    biggestWin: dbUser.biggestWin ?? 0,
-    // Handle optional fields properly
-    phoneNumber: dbUser.phoneNumber ?? undefined,
-    walletAddress: dbUser.walletAddress ?? undefined,
-    walletType: dbUser.walletType ?? undefined,
-    lastActivity: dbUser.lastActivity ?? undefined,
-    preferences: dbUser.preferences ?? undefined,
-    socialLinks: dbUser.socialLinks ?? undefined,
-    password: dbUser.password ?? undefined,
-    subscriptionExpiry: dbUser.subscriptionExpiry ?? undefined,
-    yahooAccessToken: dbUser.yahooAccessToken ?? undefined,
-    yahooRefreshToken: dbUser.yahooRefreshToken ?? undefined,
-    yahooTokenExpiry: dbUser.yahooTokenExpiry ?? undefined,
-  };
+  // Convert all null values to undefined and ensure proper types
+  const transformed = { ...dbUser };
+  
+  // Handle numeric fields that might be null
+  if (transformed.wins === null) transformed.wins = undefined;
+  if (transformed.winsCount === null) transformed.winsCount = undefined;
+  if (transformed.balance === null) transformed.balance = 0;
+  if (transformed.weplayTokenBalance === null) transformed.weplayTokenBalance = 0;
+  if (transformed.realMoneyBalance === null) transformed.realMoneyBalance = 0;
+  if (transformed.weparlayCashBalance === null) transformed.weparlayCashBalance = 0;
+  if (transformed.totalBets === null) transformed.totalBets = 0;
+  if (transformed.totalWinnings === null) transformed.totalWinnings = 0;
+  if (transformed.winRate === null) transformed.winRate = 0;
+  if (transformed.averageBet === null) transformed.averageBet = 0;
+  if (transformed.biggestWin === null) transformed.biggestWin = 0;
+  
+  // Handle optional string fields
+  if (transformed.phoneNumber === null) transformed.phoneNumber = undefined;
+  if (transformed.walletAddress === null) transformed.walletAddress = undefined;
+  if (transformed.walletType === null) transformed.walletType = undefined;
+  if (transformed.password === null) transformed.password = undefined;
+  if (transformed.yahooAccessToken === null) transformed.yahooAccessToken = undefined;
+  if (transformed.yahooRefreshToken === null) transformed.yahooRefreshToken = undefined;
+  
+  // Handle optional date fields
+  if (transformed.lastActivity === null) transformed.lastActivity = undefined;
+  if (transformed.subscriptionExpiry === null) transformed.subscriptionExpiry = undefined;
+  if (transformed.yahooTokenExpiry === null) transformed.yahooTokenExpiry = undefined;
+  
+  // Handle optional object fields
+  if (transformed.preferences === null) transformed.preferences = undefined;
+  if (transformed.socialLinks === null) transformed.socialLinks = undefined;
+  
+  return transformed as User;
 }
 
 /**

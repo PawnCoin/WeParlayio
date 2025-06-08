@@ -88,7 +88,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     
-    return updatedUser;
+    return transformDatabaseUser(updatedUser);
   }
 
   async updateYahooIntegration(
@@ -108,7 +108,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     
-    return updatedUser;
+    return transformDatabaseUser(updatedUser);
   }
 
   async getAllUsers(): Promise<User[]> {
@@ -125,7 +125,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     
-    return updatedUser;
+    return transformDatabaseUser(updatedUser);
   }
 
   async incrementUserWins(userId: string): Promise<User> {
@@ -149,7 +149,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     
-    return updatedUser;
+    return transformDatabaseUser(updatedUser);
   }
 
   async getUserWithdrawalsForMonth(userId: string, month: number): Promise<number> {
@@ -195,7 +195,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     
-    return updatedUser;
+    return transformDatabaseUser(updatedUser);
   }
 
   async updateUserSubscription(
@@ -221,7 +221,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     
-    return updatedUser;
+    return transformDatabaseUser(updatedUser);
   }
   
   async updateUserPreferences(
@@ -266,7 +266,7 @@ export class DatabaseStorage implements IStorage {
         throw new Error(`Failed to update preferences for user: ${userId}`);
       }
       
-      return updatedUser;
+      return transformDatabaseUser(updatedUser);
     } catch (error) {
       console.error(`Error updating user preferences: ${error}`);
       throw new Error(`Failed to update user preferences: ${error}`);
@@ -492,7 +492,7 @@ export class DatabaseStorage implements IStorage {
       throw new Error('User not found');
     }
     
-    if ((fromUser.weplayTokenBalance || 0) < amount) {
+    if (((fromUser.weplayTokenBalance ?? 0) || 0) < amount) {
       throw new Error('Insufficient WeParlay Cash balance');
     }
     
@@ -509,7 +509,7 @@ export class DatabaseStorage implements IStorage {
       amount: -amount,
       currency: 'WeParlayCash',
       status: 'completed',
-      method: 'internal_transfer',
+      // method: 'internal_transfer',
       description: `WeParlay Cash transfer to user ${toUserId}: ${reason}`,
       timestamp: new Date(),
       transferId: transferId
@@ -521,7 +521,7 @@ export class DatabaseStorage implements IStorage {
       amount: amount,
       currency: 'WeParlayCash',
       status: 'completed',
-      method: 'internal_transfer',
+      // method: 'internal_transfer',
       description: `WeParlay Cash received from user ${fromUserId}: ${reason}`,
       timestamp: new Date(),
       transferId: transferId
@@ -530,7 +530,7 @@ export class DatabaseStorage implements IStorage {
     return {
       transferId,
       success: true,
-      fromBalance: fromUser.weplayTokenBalance - amount,
+      fromBalance: (fromUser.weplayTokenBalance ?? 0) - amount,
       toBalance: (toUser.weplayTokenBalance || 0) + amount
     };
   }
@@ -547,7 +547,7 @@ export class DatabaseStorage implements IStorage {
       amount: amount,
       currency: 'WeParlayCash',
       status: 'completed',
-      method: 'reward_system',
+      // method: 'reward_system',
       description: reason,
       timestamp: new Date()
     });
@@ -1408,7 +1408,7 @@ export class DatabaseStorage implements IStorage {
   // Additional methods needed for TypeScript completion
   async getUserByGamertag(gamertag: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.gamertag, gamertag));
-    return user;
+    return transformDatabaseUser(user);
   }
 
   async updateUserGamertag(userId: string, gamertag: string): Promise<User> {
@@ -1421,13 +1421,13 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     
-    return updatedUser;
+    return transformDatabaseUser(updatedUser);
   }
 
   async getUserByWallet(walletAddress: string): Promise<User | undefined> {
     // This would need a wallet column in the users table
     const [user] = await db.select().from(users).where(eq(users.id, walletAddress));
-    return user;
+    return transformDatabaseUser(user);
   }
 
   async updateUserTier(userId: string, tier: string): Promise<User> {
@@ -1440,7 +1440,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     
-    return updatedUser;
+    return transformDatabaseUser(updatedUser);
   }
 
   async createCustomBet(betData: any): Promise<Bet> {
@@ -1634,7 +1634,7 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(users.id, userId))
       .returning();
-    return updatedUser;
+    return transformDatabaseUser(updatedUser);
   }
 
   async updateUserStripeCustomerId(userId: string, customerId: string): Promise<User> {
@@ -1646,6 +1646,6 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(users.id, userId))
       .returning();
-    return updatedUser;
+    return transformDatabaseUser(updatedUser);
   }
 }
