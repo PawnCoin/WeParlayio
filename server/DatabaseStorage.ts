@@ -1023,8 +1023,8 @@ export class DatabaseStorage implements IStorage {
     // Update the ticket's updatedAt timestamp
     await db
       .update(supportTickets)
-      .set({ // updatedAt removed for schema compliance })
-      .where(eq(supportTickets.id, message.ticketId));
+      .set({ updatedAt: new Date() })
+      .where(eq(supportTickets.id, message.ticketId as any));
     
     return newMessage;
   }

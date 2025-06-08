@@ -143,15 +143,15 @@ export class MemStorage implements IStorage {
       biggestWin: 0,
       role: "user",
       tier: "bronze",
-      phoneNumber: null,
-      walletAddress: null,
-      walletType: null,
-      lastActivity: null,
+      phoneNumber: undefined,
+      walletAddress: undefined,
+      walletType: undefined,
+      lastActivity: undefined,
       preferences: null,
       socialLinks: null,
-      password: null,
-      subscriptionExpiry: null,
-      yahooAccessToken: null,
+      password: undefined,
+      subscriptionExpiry: undefined,
+      yahooAccessToken: undefined,
       yahooRefreshToken: null,
       yahooTokenExpiry: null,
       stripeCustomerId: null,
@@ -274,182 +274,13 @@ export class MemStorage implements IStorage {
 
   async createNotification(notification: InsertNotification): Promise<Notification> {
     const id = this.nextId++;
-    const newNotification: Notification = { ...notification, id, read: false, updatedAt: new Date(), readAt: null, createdAt: new Date(), updatedAt: new Date(), resolvedAt: null, updatedAt: new Date() };
-    return newNotification;
-  }
-
-  async getUserChallenges(userId: string, status?: string): Promise<BettingChallenge[]> {
-    return Array.from(this.challenges.values()).filter(challenge => 
-      (challenge.createdBy === userId || challenge.acceptedBy === userId) &&
-      (!status || challenge.status === status)
-    );
-  }
-
-  async acceptBettingChallenge(uuid: string, acceptedBy: string): Promise<BettingChallenge> {
-    const challenge = this.challenges.get(uuid);
-    if (challenge) {
-      const updatedChallenge = { ...challenge, acceptedBy, status: 'accepted' };
-      this.challenges.set(uuid, updatedChallenge);
-      return updatedChallenge;
-    }
-    throw new Error('Challenge not found');
-  }
-
-  async updateBettingChallengeStatus(uuid: string, status: string): Promise<BettingChallenge> {
-    const challenge = this.challenges.get(uuid);
-    if (challenge) {
-      const updatedChallenge = { ...challenge, status };
-      this.challenges.set(uuid, updatedChallenge);
-      return updatedChallenge;
-    }
-    throw new Error('Challenge not found');
-  }
-
-  async settleBettingChallenge(uuid: string, winnerId?: string, isDraw: boolean = false): Promise<BettingChallenge> {
-    const challenge = this.challenges.get(uuid);
-    if (challenge) {
-      const updatedChallenge = { ...challenge, status: 'settled', winnerId };
-      this.challenges.set(uuid, updatedChallenge);
-      return updatedChallenge;
-    }
-    throw new Error('Challenge not found');
-  }
-
-  async getUserNotifications(userId: string, unreadOnly: boolean = false): Promise<Notification[]> {
-    return []; // Notifications not implemented in memory storage
-  }
-
-  async markNotificationAsRead(id: number, userId: string): Promise<Notification> {
-    const notification: Notification = { id, userId, title: 'Mock', message: 'Mock', read: true, createdAt: new Date(), updatedAt: new Date(), resolvedAt: null, updatedAt: new Date() };
+    const newNotification: Notification = { ...notification, id, read: false, updatedAt: new Date(), resolvedAt: null, updatedAt: new Date() };
     return notification;
   }
 
   async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
     const id = this.nextId++;
-    const newTransaction: Transaction = { ...transaction, id, createdAt: new Date(), updatedAt: new Date(), resolvedAt: null, updatedAt: new Date() };
-    return newTransaction;
-  }
-
-  async getTransactions(limit: number, offset: number): Promise<Transaction[]> {
-    return []; // Transactions not implemented in memory storage
-  }
-
-  async incrementUserWins(userId: string): Promise<User> {
-    const user = await this.getUser(userId);
-    if (user) {
-      const updatedUser = { ...user, wins: (user.wins || 0) + 1 };
-      this.users.set(userId, updatedUser);
-      return updatedUser;
-    }
-    throw new Error('User not found');
-  }
-
-  async updateYahooIntegration(userId: string, accessToken: string, refreshToken: string, expiry: Date): Promise<User> {
-    const user = await this.getUser(userId);
-    if (user) {
-      const updatedUser = { ...user, yahooAccessToken: accessToken, yahooRefreshToken: refreshToken };
-      this.users.set(userId, updatedUser);
-      return updatedUser;
-    }
-    throw new Error('User not found');
-  }
-
-  async getFantasyTeam(id: number): Promise<FantasyTeam | undefined> {
-    return undefined; // Fantasy teams not implemented in memory storage
-  }
-
-  async addPlayerToFantasyTeam(fantasyTeamPlayer: InsertFantasyTeamPlayer): Promise<FantasyTeamPlayer> {
-    const id = this.nextId++;
-    return { ...fantasyTeamPlayer, id };
-  }
-
-  async updatePlatformRevenue(amount: number, feeType: string): Promise<any> {
-    return { success: true, amount, feeType };
-  }
-
-  async updateBankAccount(bankAccount: InsertBankAccount): Promise<BankAccount> {
-    const id = this.nextId++;
-    return { ...bankAccount, id };
-  }
-
-  // Additional required methods
-  async updateUserBalance(userId: string, amount: number): Promise<User> {
-    const user = await this.getUser(userId);
-    if (user) {
-      const updatedUser = { ...user, balance: (user.balance || 0) + amount };
-      this.users.set(userId, updatedUser);
-      return updatedUser;
-    }
-    throw new Error('User not found');
-  }
-
-  async getUserWithdrawalsForMonth(userId: string, month: number): Promise<number> {
-    return 0; // Mock implementation
-  }
-
-  async getFinancialSummary(): Promise<any> {
-    return { totalRevenue: 0, totalUsers: this.users.size };
-  }
-
-  async updateUserPreferences(userId: string, preferences: any): Promise<User> {
-    const user = await this.getUser(userId);
-    if (user) {
-      const updatedUser = { ...user, preferences };
-      this.users.set(userId, updatedUser);
-      return updatedUser;
-    }
-    throw new Error('User not found');
-  }
-
-  async updateUserGamertag(userId: string, gamertag: string): Promise<User> {
-    const user = await this.getUser(userId);
-    if (user) {
-      const updatedUser = { ...user, gamertag };
-      this.users.set(userId, updatedUser);
-      return updatedUser;
-    }
-    throw new Error('User not found');
-  }
-
-  async updateUserStripeCustomerId(userId: string, stripeCustomerId: string): Promise<User> {
-    const user = await this.getUser(userId);
-    if (user) {
-      const updatedUser = { ...user, stripeCustomerId };
-      this.users.set(userId, updatedUser);
-      return updatedUser;
-    }
-    throw new Error('User not found');
-  }
-
-  async getUserByGamertag(gamertag: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.gamertag === gamertag);
-  }
-
-  async createSupportTicket(ticket: InsertSupportTicket): Promise<SupportTicket> {
-    const id = this.nextId++;
-    return { ...ticket, id, ticketNumber: `TICKET-${id}`, status: 'open', createdAt: new Date(), updatedAt: new Date(), resolvedAt: null, updatedAt: new Date() };
-  }
-
-  async getSupportTicketByNumber(ticketNumber: string): Promise<SupportTicket | undefined> {
-    return undefined; // Mock implementation
-  }
-
-  async addTicketMessage(message: InsertSupportTicketMessage): Promise<SupportTicketMessage> {
-    const id = this.nextId++;
-    return { ...message, id, createdAt: new Date(), updatedAt: new Date(), resolvedAt: null, updatedAt: new Date() };
-  }
-
-  async getTicketMessages(ticketId: number): Promise<SupportTicketMessage[]> {
-    return []; // Mock implementation
-  }
-
-  async createBettingChallenge(challenge: InsertBettingChallenge): Promise<BettingChallenge> {
-    const uuid = `challenge-${this.nextId++}`;
-    const newChallenge: BettingChallenge = {
-      ...challenge,
-      uuid,
-      status: challenge.status || 'pending',
-      createdAt: new Date(), updatedAt: new Date(), resolvedAt: null, updatedAt: new Date(),
+    const newTransaction: Transaction = { ...transaction, id, createdAt: new Date(), updatedAt: new Date(),
       updatedAt: new Date()
     };
     this.challenges.set(uuid, newChallenge);
@@ -538,20 +369,7 @@ export class MemStorage implements IStorage {
       friendId,
       status: 'pending',
       requestedAt: new Date(),
-      createdAt: new Date(), updatedAt: new Date(), resolvedAt: null, updatedAt: new Date(),
-      updatedAt: new Date()
-    };
-    return friendship;
-  }
-
-  async acceptFriendRequest(userId: string, friendId: string): Promise<any> {
-    const friendship = {
-      id: Date.now(),
-      userId: friendId,
-      friendId: userId,
-      status: 'accepted',
-      acceptedAt: new Date(),
-      createdAt: new Date(), updatedAt: new Date(), resolvedAt: null, updatedAt: new Date(),
+      createdAt: new Date(), updatedAt: new Date(),
       updatedAt: new Date()
     };
     return friendship;
