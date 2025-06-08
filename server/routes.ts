@@ -181,26 +181,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const tickerOdds = [];
       
-      // Get data from enhanced free sports service
-      try {
-        const { enhancedFreeSportsService } = await import('./services/freeSportsApiService');
-        const freeApiData = await enhancedFreeSportsService.getComprehensiveOdds();
-        
-        if (freeApiData.length > 0) {
-          const formattedOdds = freeApiData.slice(0, 10).map((event: any, index: number) => ({
-            id: `free_api_${event.id}`,
-            sport: event.sport_title || 'Sports',
-            teams: `${event.home_team} vs ${event.away_team}`,
-            currentOdds: event.bookmakers?.[0]?.markets?.[0]?.outcomes?.[0]?.price || (1.85 + index * 0.05),
-            previousOdds: (event.bookmakers?.[0]?.markets?.[0]?.outcomes?.[0]?.price || (1.85 + index * 0.05)) - 0.05,
-            timestamp: new Date().toISOString(),
-            eventId: event.id,
-            bookmaker: event.bookmakers?.[0]?.title || 'Free API'
-          }));
-          tickerOdds.push(...formattedOdds);
+      // Priority 1: The Odds API (Premium betting odds)
+      if (process.env.THE_ODDS_API_KEY) {
+        try {
+          // First get active sports
+          const sportsResponse = await fetch(`https://api.the-odds-api.com/v4/sports/?apiKey=${process.env.THE_ODDS_API_KEY}`);
+          if (sportsResponse.ok) {
+            const sportsData = await sportsResponse.json();
+            const activeSports = sportsData.filter((sport: any) => sport.active).slice(0, 5);
+            
+            // Get odds for each active sport
+            for (const sport of activeSports) {
+              try {
+                const oddsResponse = await fetch(`https://api.the-odds-api.com/v4/sports/${sport.key}/odds/?apiKey=${process.env.THE_ODDS_API_KEY}&regions=us&markets=h2h&oddsFormat=decimal&dateFormat=iso&limit=3`);
+                if (oddsResponse.ok) {
+                  const oddsData = await oddsResponse.json();
+                  if (oddsData && oddsData.length > 0) {
+                    const authenticOdds = oddsData.map((event: any) => ({
+                      id: `odds_api_${event.id}`,
+                      sport: event.sport_title,
+                      teams: `${event.home_team} vs ${event.away_team}`,
+                      currentOdds: event.bookmakers?.[0]?.markets?.[0]?.outcomes?.[0]?.price || 0,
+                      previousOdds: null,
+                      timestamp: new Date().toISOString(),
+                      eventId: event.id,
+                      bookmaker: event.bookmakers?.[0]?.title || 'Premium Sportsbook'
+                    }));
+                    tickerOdds.push(...authenticOdds);
+                  }
+                }
+              } catch (sportError) {
+                continue; // Try next sport
+              }
+            }
+            
+            if (tickerOdds.length > 0) {
+              console.log(`✅ The Odds API: ${tickerOdds.length} live betting odds retrieved`);
+            }
+          }
+        } catch (oddsError) {
+          console.log('The Odds API unavailable for ticker');
         }
-      } catch (freeApiError) {
-        console.log('Free API unavailable for ticker');
       }
       
       // Add RapidAPI data if available
