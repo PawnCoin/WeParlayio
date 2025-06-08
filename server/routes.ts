@@ -9,7 +9,7 @@ import { setupAuth, isAuthenticated } from "./replitAuth";
 import { additionalSportsData } from "./services/mockSportsData";
 import { OddsApiService } from "./services/oddsApiService";
 import { AdvancedOddsService } from "./services/advancedOddsService";
-import { UnifiedSportsApiService } from "./services/unifiedSportsApiService";
+import { unifiedSportsApiService } from "./services/unifiedSportsApiService";
 import { RapidApiService } from "./services/rapidApiService";
 import { SportsGameOddsService } from "./services/sportsGameOddsService";
 import { freeApiService } from "./services/freeApiService";
