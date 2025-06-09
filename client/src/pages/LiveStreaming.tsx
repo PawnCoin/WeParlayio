@@ -344,7 +344,7 @@ export default function LiveStreaming() {
                           title={selectedGame.title}
                           frameBorder="0"
                           allowFullScreen
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                         />
                       ) : selectedGame.streamUrl.includes('twitch.tv') ? (
                         <iframe
@@ -353,7 +353,7 @@ export default function LiveStreaming() {
                           title={selectedGame.title}
                           frameBorder="0"
                           allowFullScreen
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allow="accelerometer; autoplay; encrypted-media; fullscreen"
                         />
                       ) : selectedGame.streamUrl.includes('.m3u8') || selectedGame.streamUrl.includes('thetv.to') ? (
                         <video
