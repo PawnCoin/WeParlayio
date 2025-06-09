@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import WalletConnector from '@/components/crypto/WalletConnector';
 import CryptoBettingPanel from '@/components/crypto/CryptoBettingPanel';
+import PawnCoinIntegration from '@/components/crypto/PawnCoinIntegration';
 
 export default function CryptoBetting() {
   const [stats, setStats] = useState({

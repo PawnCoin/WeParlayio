@@ -26,10 +26,10 @@ interface UnifiedBetSlipProps {
   onClearAll: () => void;
 }
 
-export default function UnifiedBetSlip({ bets, onRemoveBet, onClearAll }: UnifiedBetSlipProps) {
+export default function UnifiedBetSlip({ bets = [], onRemoveBet, onClearAll }: UnifiedBetSlipProps) {
   const [paymentMethod, setPaymentMethod] = useState<'crypto' | 'fiat'>('crypto');
 
-  if (bets.length === 0) {
+  if (!bets || bets.length === 0) {
     return (
       <Card className="bg-slate-900 border-slate-700">
         <CardHeader>
