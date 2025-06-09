@@ -54,7 +54,6 @@ const BettingDashboard: React.FC = () => {
   const liveEvents: any[] = liveEventsResponse?.success ? liveEventsResponse.data : (liveEventsResponse?.data || liveEventsResponse || []);
 
   // Use same data for upcoming events since they're from the same authentic source
-  const upcomingEvents = liveEvents;
   const isLoadingUpcoming = isLoadingLive;
 
   // Helper to safely get team name from real API data
@@ -120,7 +119,7 @@ const BettingDashboard: React.FC = () => {
     return selectedLeagues.includes(event.sport_key);
   }) : [];
   
-  const filteredUpcomingEvents = Array.isArray(upcomingEvents) ? upcomingEvents.filter((event: any) => {
+  const filteredUpcomingEvents = Array.isArray(liveEvents) ? liveEvents.filter((event: any) => {
     if (selectedLeagues.length === 0) return true;
     // Map real sport names to our league keys
     const sportMapping: any = {

@@ -12,22 +12,21 @@ export default function LiveHeatmap() {
   const [refreshInterval, setRefreshInterval] = useState(30000); // 30 seconds
   const [lastUpdate, setLastUpdate] = useState(new Date());
 
-  // Fetch comprehensive sports coverage with GRID integration
-  const { data: coverageData, isLoading: coverageLoading } = useQuery({
-    queryKey: ['/api/sports'],
+  // Fetch authentic multi-sport data from priority API system (same as odds/parlays pages)
+  const { data: sportsDataResponse, isLoading: coverageLoading, refetch: refetchLive } = useQuery({
+    queryKey: ['/api/odds'],
     refetchInterval: refreshInterval,
   });
 
-  // Fetch enhanced live events
-  const { data: liveEvents, isLoading: liveLoading, refetch: refetchLive } = useQuery({
-    queryKey: ['/api/events/live'],
-    refetchInterval: refreshInterval,
-  });
-
-  // Fetch GRID live matches specifically
-  const { data: gridMatches } = useQuery({
-    queryKey: ['/api/grid/live-matches'],
-    refetchInterval: refreshInterval,
+  // Extract authentic data from priority API response
+  const sportsData: any[] = sportsDataResponse?.success ? sportsDataResponse.data : (sportsDataResponse?.data || sportsDataResponse || []);
+  
+  console.log('🎯 Live Heatmap - Authentic Data:', {
+    totalEvents: sportsData.length,
+    sportBreakdown: sportsData.reduce((acc: any, event: any) => {
+      acc[event.sport] = (acc[event.sport] || 0) + 1;
+      return acc;
+    }, {})
   });
 
   // Auto-refresh effect

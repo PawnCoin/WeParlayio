@@ -60,28 +60,22 @@ export default function Parlays() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch unified sports data (same as rest of site)
-  const { data: sportsData } = useQuery({
-    queryKey: ["/api/sports"],
+  // Fetch authentic multi-sport data from priority API system (same as odds page)
+  const { data: sportsDataResponse } = useQuery({
+    queryKey: ["/api/odds"],
     refetchInterval: 30000,
   });
 
-  // Fetch real odds data (integrated with all site data)
-  const { data: realOddsData } = useQuery({
-    queryKey: ["/api/real-odds"],
-    refetchInterval: 30000,
-  });
-
-  // Fetch live events (same source as other pages)
-  const { data: liveEvents } = useQuery({
-    queryKey: ["/api/events/live"],
-    refetchInterval: 15000,
-  });
-
-  // Fetch upcoming events (integrated data)
-  const { data: upcomingEvents } = useQuery({
-    queryKey: ["/api/unified-sports/upcoming-events"],
-    refetchInterval: 30000,
+  // Extract authentic data from priority API response
+  const sportsData: any[] = sportsDataResponse?.success ? sportsDataResponse.data : (sportsDataResponse?.data || sportsDataResponse || []);
+  
+  console.log('🎯 Parlays Page - Authentic Data:', {
+    totalEvents: sportsData.length,
+    sampleEvents: sportsData.slice(0, 3).map(e => ({ 
+      sport: e.sport, 
+      homeTeam: e.homeTeam?.name, 
+      awayTeam: e.awayTeam?.name 
+    }))
   });
 
   // Fetch user's cash balance (integrated with betting system)
@@ -90,12 +84,8 @@ export default function Parlays() {
     refetchInterval: 10000,
   });
 
-  // Combine all sports data sources into unified matchups
-  const combinedSportsData = [
-    ...(realOddsData?.data || []),
-    ...(liveEvents?.data || []),
-    ...(upcomingEvents?.data || [])
-  ];
+  // Use authentic multi-sport data (45 events across NFL, NBA, MLB, NHL, Soccer, WNBA)
+  const combinedSportsData = sportsData || [];
 
   // Transform unified sports data into sportsbook-style matchups
   const sportsbookMatchups: ParlayMatchup[] = combinedSportsData.slice(0, 50).map((event: any, index: number) => {
