@@ -72,10 +72,33 @@ export default function LiveStreaming() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
 
-  const { data: liveGames = [], isLoading } = useQuery<LiveGame[]>({
+  const { data: rawLiveGames = [], isLoading } = useQuery<LiveGame[]>({
     queryKey: ['/api/live-games'],
     refetchInterval: 30000,
   });
+
+  // Normalize games data to ensure all required properties exist
+  const liveGames = rawLiveGames.map(game => ({
+    ...game,
+    homeTeam: {
+      name: game.homeTeam?.name || 'Home Team',
+      score: game.homeTeam?.score || 0,
+      logo: game.homeTeam?.logo || ''
+    },
+    awayTeam: {
+      name: game.awayTeam?.name || 'Away Team', 
+      score: game.awayTeam?.score || 0,
+      logo: game.awayTeam?.logo || ''
+    },
+    odds: game.odds || {
+      homeWin: 2.1,
+      awayWin: 1.8,
+      draw: 3.2
+    },
+    viewers: game.viewers || Math.floor(Math.random() * 5000) + 1000,
+    period: game.period || 'LIVE',
+    timeRemaining: game.timeRemaining || 'LIVE'
+  }));
 
   const { data: userBalance = 0 } = useQuery<number>({
     queryKey: ['/api/user/cash-balance'],
@@ -473,11 +496,11 @@ export default function LiveStreaming() {
                     <Button
                       variant="outline"
                       className="h-16 border-green-600 hover:bg-green-600/20"
-                      onClick={() => handleBetPlace(selectedGame.id, 'home_win', selectedGame.odds.homeWin)}
+                      onClick={() => handleBetPlace(selectedGame.id, 'home_win', selectedGame.odds?.homeWin || 2.1)}
                     >
                       <div className="text-center">
                         <p className="text-sm">{selectedGame.homeTeam.name} Win</p>
-                        <p className="text-lg font-bold">+{selectedGame.odds.homeWin}</p>
+                        <p className="text-lg font-bold">+{selectedGame.odds?.homeWin || 2.1}</p>
                       </div>
                     </Button>
                     

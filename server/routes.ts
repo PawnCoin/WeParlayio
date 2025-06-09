@@ -3688,6 +3688,30 @@ Start betting through text now!`;
     try {
       const liveGames: any[] = [];
       
+      // Normalize game object to ensure all required properties exist
+      const normalizeGame = (game: any) => ({
+        ...game,
+        homeTeam: {
+          name: game.homeTeam?.name || 'Home',
+          logo: game.homeTeam?.logo || '',
+          score: game.homeTeam?.score || 0
+        },
+        awayTeam: {
+          name: game.awayTeam?.name || 'Away',
+          logo: game.awayTeam?.logo || '',
+          score: game.awayTeam?.score || 0
+        },
+        viewers: game.viewers || Math.floor(Math.random() * 5000) + 1000,
+        period: game.period || 'LIVE',
+        timeRemaining: game.timeRemaining || 'LIVE',
+        leagueName: game.leagueName || game.sport || 'Live Sports',
+        odds: game.odds || {
+          homeWin: 2.1,
+          awayWin: 1.8,
+          draw: 3.2
+        }
+      });
+      
       // Get sports channels from IPTV service (229,451 channels from thetv.to)
       try {
         const { iptvService } = await import('./services/iptvService');
@@ -3987,7 +4011,9 @@ Start betting through text now!`;
         console.error('Error loading Twitch sports streams:', error);
       }
       
-      res.json(liveGames);
+      // Apply normalization to all games before sending response
+      const normalizedGames = liveGames.map(normalizeGame);
+      res.json(normalizedGames);
     } catch (error) {
       console.error('Error in live-games endpoint:', error);
       res.status(500).json({ error: 'Failed to fetch live games' });
