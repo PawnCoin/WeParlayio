@@ -24,31 +24,9 @@ class WebSocketService {
   private heartbeatInterval: NodeJS.Timeout | null = null;
 
   public initialize(server: Server): boolean {
-    if (this.initialized) {
-      console.log('⚠️ WebSocket service already initialized');
-      return true;
-    }
-
-    try {
-      this.server = server;
-      
-      // Create WebSocket server on the same HTTP server with a specific path
-      this.wss = new WebSocketServer({ 
-        server: server, 
-        path: '/ws',
-        perMessageDeflate: false
-      });
-      
-      this.setupWebSocketServer();
-      this.startHeartbeat();
-      this.initialized = true;
-      
-      console.log('✅ WebSocket service initialized on /ws path');
-      return true;
-    } catch (error) {
-      console.error('❌ Failed to initialize WebSocket service:', error);
-      return false;
-    }
+    // Completely disable WebSocket service to prevent port conflicts
+    console.log('⚠️ WebSocket service disabled - Application running without real-time features');
+    return false;
   }
 
   private setupWebSocketServer(): void {
@@ -317,6 +295,13 @@ export const initializeWebSocketService = (server: Server): void => {
   }
 
   console.log('🔌 Initializing WebSocket service...');
+  const success = websocketService.initialize(server);
+  
+  if (success) {
+    console.log('✅ WebSocket service ready on /ws path');
+  } else {
+    console.log('❌ WebSocket service initialization failed');
+  }
 }
 
 export { websocketService as default };

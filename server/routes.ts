@@ -4756,13 +4756,8 @@ ${streamUrl}
   // Return the HTTP server
   const httpServer = createServer(app);
   
-  // Initialize WebSocket service on the same HTTP server
-  try {
-    const { initializeWebSocketService } = await import('./services/websocketService');
-    initializeWebSocketService(httpServer);
-  } catch (error) {
-    console.log('WebSocket service initialization skipped:', error.message);
-  }
+  // WebSocket service temporarily disabled to resolve port conflicts
+  console.log('⚠️ WebSocket service disabled - Live streaming will work without real-time features');
   
   return httpServer;
 }
