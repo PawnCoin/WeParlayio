@@ -394,7 +394,7 @@ export default function LiveStreaming() {
                           
                           <div className="flex items-center space-x-2">
                             <Users className="h-4 w-4" />
-                            <span className="text-sm">{selectedGame.viewers.toLocaleString()} viewers</span>
+                            <span className="text-sm">{selectedGame.viewers?.toLocaleString() || '0'} viewers</span>
                           </div>
                         </div>
                         
@@ -415,7 +415,7 @@ export default function LiveStreaming() {
                         <div className="flex items-center justify-between">
                           <div>
                             <h3 className="text-lg font-semibold">{selectedGame.title}</h3>
-                            <p className="text-sm text-gray-300">{selectedGame.league}</p>
+                            <p className="text-sm text-gray-300">{selectedGame.leagueName || 'Live Sports'}</p>
                           </div>
                           <div className="text-right">
                             <Badge className="bg-red-600 hover:bg-red-700">
@@ -441,8 +441,8 @@ export default function LiveStreaming() {
                           </div>
                           
                           <div className="text-right">
-                            <p className="text-sm text-gray-300">{selectedGame.period}</p>
-                            <p className="text-sm text-gray-300">{selectedGame.timeRemaining}</p>
+                            <p className="text-sm text-gray-300">{selectedGame.period || 'LIVE'}</p>
+                            <p className="text-sm text-gray-300">{selectedGame.timeRemaining || 'LIVE'}</p>
                           </div>
                         </div>
                       </div>
@@ -568,7 +568,7 @@ export default function LiveStreaming() {
                             </Badge>
                             <div className="flex items-center text-xs text-gray-400">
                               <Users className="h-3 w-3 mr-1" />
-                              {game.viewers.toLocaleString()}
+                              {game.viewers?.toLocaleString() || '0'}
                             </div>
                           </div>
                           

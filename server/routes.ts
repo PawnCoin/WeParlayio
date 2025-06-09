@@ -3867,14 +3867,17 @@ Start betting through text now!`;
             id: `iptv-${channel.id}`,
             title: channel.name,
             sport: 'Live Sports',
-            homeTeam: { name: 'Live', logo: channel.logo },
-            awayTeam: { name: 'Sports', logo: channel.logo },
+            homeTeam: { name: 'Live', logo: channel.logo, score: 0 },
+            awayTeam: { name: 'Sports', logo: channel.logo, score: 0 },
             status: 'live',
             streamUrl: channel.url,
             thumbnailUrl: channel.logo,
             leagueName: channel.group,
             isEsport: false,
-            source: 'IPTV'
+            source: 'IPTV',
+            viewers: Math.floor(Math.random() * 5000) + 1000,
+            period: 'LIVE',
+            timeRemaining: 'LIVE'
           });
         });
         
@@ -3900,14 +3903,17 @@ Start betting through text now!`;
                   id: `youtube-${item.id.videoId}`,
                   title: item.snippet.title,
                   sport: keyword,
-                  homeTeam: { name: 'Live', logo: item.snippet.thumbnails?.default?.url },
-                  awayTeam: { name: 'Stream', logo: item.snippet.thumbnails?.default?.url },
+                  homeTeam: { name: 'Live', logo: item.snippet.thumbnails?.default?.url, score: 0 },
+                  awayTeam: { name: 'Stream', logo: item.snippet.thumbnails?.default?.url, score: 0 },
                   status: 'live',
                   streamUrl: `https://www.youtube.com/watch?v=${item.id.videoId}`,
                   thumbnailUrl: item.snippet.thumbnails?.medium?.url,
                   leagueName: 'YouTube Sports',
                   isEsport: false,
-                  source: 'YouTube'
+                  source: 'YouTube',
+                  viewers: Math.floor(Math.random() * 10000) + 2000,
+                  period: 'LIVE',
+                  timeRemaining: 'LIVE'
                 });
               });
             }
