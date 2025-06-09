@@ -3692,6 +3692,12 @@ Start betting through text now!`;
       try {
         const { iptvService } = await import('./services/iptvService');
         const allChannels = iptvService.getAllChannels();
+        console.log(`🔍 IPTV Debug: Total channels available: ${allChannels.length}`);
+        
+        if (allChannels.length > 0) {
+          console.log(`🔍 Sample channel names:`, allChannels.slice(0, 10).map(c => c.name));
+          console.log(`🔍 Sample categories:`, [...new Set(allChannels.slice(0, 100).map(c => c.category))]);
+        }
         
         // Filter for ALL SPORTS - comprehensive sports filtering
         const sportsChannels = allChannels.filter(channel => {
