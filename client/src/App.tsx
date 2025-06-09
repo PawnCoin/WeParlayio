@@ -113,6 +113,7 @@ import PaymentCheckout from "@/pages/PaymentCheckout";
 import CryptoCheckout from "@/pages/CryptoCheckout";
 import TierUpgradeSuccess from "@/pages/TierUpgradeSuccess";
 import CryptoWallet from "@/pages/CryptoWallet";
+import CryptoBetting from "@/pages/CryptoBetting";
 import TwilioOptInDemo from "@/pages/TwilioOptInDemo";
 
 import { lazy } from 'react';
@@ -150,6 +151,8 @@ function Router() {
       <Route path="/banking" component={BankingSystem} />
       <Route path="/crypto-wallet" component={CryptoWallet} />
       <Route path="/wallet" component={CryptoWallet} />
+      <Route path="/crypto-betting" component={CryptoBetting} />
+      <Route path="/crypto" component={CryptoBetting} />
       <Route path="/complete-betting" component={CompleteBettingSystem} />
       <Route path="/my-bets" component={MyBets} />
       <Route path="/results" component={Results} />

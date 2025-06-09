@@ -3192,6 +3192,121 @@ Start betting through text now!`;
     }
   });
 
+  // Place cryptocurrency bet
+  app.post('/api/crypto/place-bet', isAuthenticated, async (req, res) => {
+    try {
+      const { eventId, selection, amount, cryptocurrency, odds, potentialPayout, walletAddress } = req.body;
+      const userId = req.user?.claims?.sub;
+
+      if (!eventId || !selection || !amount || !cryptocurrency || !odds || !walletAddress) {
+        return res.status(400).json({
+          success: false,
+          message: 'Missing required bet parameters'
+        });
+      }
+
+      // Validate cryptocurrency
+      const supportedCryptos = await cryptoService.getSupportedCryptocurrencies();
+      const cryptoInfo = supportedCryptos.find(c => c.symbol === cryptocurrency);
+      if (!cryptoInfo) {
+        return res.status(400).json({
+          success: false,
+          message: 'Unsupported cryptocurrency'
+        });
+      }
+
+      // Validate minimum bet amount
+      const minBet = cryptoService.getMinimumBetAmount(cryptocurrency);
+      if (amount < minBet) {
+        return res.status(400).json({
+          success: false,
+          message: `Minimum bet amount is ${minBet} ${cryptocurrency}`
+        });
+      }
+
+      // Generate mock transaction hash for demonstration
+      const transactionHash = `0x${Math.random().toString(16).slice(2)}${Math.random().toString(16).slice(2)}`;
+
+      // Create bet record
+      const bet = await storage.createBet({
+        userId: parseInt(userId),
+        eventId: parseInt(eventId),
+        amount: amount,
+        odds: odds,
+        selection: selection,
+        status: 'pending',
+        betType: 'crypto',
+        metadata: {
+          cryptocurrency,
+          walletAddress,
+          transactionHash,
+          potentialPayout,
+          networkFee: cryptoInfo.networkFee || 0
+        }
+      });
+
+      // Send confirmation email
+      try {
+        const user = await storage.getUser(userId);
+        if (user?.email) {
+          await emailService.sendBetConfirmation(user.email, {
+            betId: bet.id,
+            amount: `${amount} ${cryptocurrency}`,
+            selection,
+            odds,
+            potentialPayout: `${potentialPayout} ${cryptocurrency}`,
+            transactionHash
+          });
+        }
+      } catch (emailError) {
+        console.error('Failed to send bet confirmation email:', emailError);
+      }
+
+      res.json({
+        success: true,
+        bet: {
+          id: bet.id,
+          transactionHash,
+          amount,
+          cryptocurrency,
+          selection,
+          odds,
+          potentialPayout,
+          status: 'pending'
+        },
+        message: 'Crypto bet placed successfully'
+      });
+
+    } catch (error) {
+      console.error('Error placing crypto bet:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to place crypto bet'
+      });
+    }
+  });
+
+  // Get user's crypto bets
+  app.get('/api/user/crypto-bets', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const bets = await storage.getUserBets(parseInt(userId));
+      
+      const cryptoBets = bets.filter(bet => bet.betType === 'crypto');
+      
+      res.json({
+        success: true,
+        bets: cryptoBets
+      });
+    } catch (error) {
+      console.error('Error fetching crypto bets:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to fetch crypto bets'
+      });
+    }
+  });
+
   // Get wallet balances with live crypto prices
   app.get('/api/wallet/balances', isAuthenticated, async (req, res) => {
     try {
