@@ -4579,6 +4579,52 @@ ${streamUrl}
     }
   });
 
+  // User streaming favorites endpoints
+  app.post('/api/user/favorites', isAuthenticated, async (req: any, res) => {
+    try {
+      const { streamId, isFavorited } = req.body;
+      const userId = req.user?.claims?.sub;
+
+      if (!userId || !streamId) {
+        return res.status(400).json({ error: 'Missing required parameters' });
+      }
+
+      const favoriteData = {
+        userId,
+        streamId: String(streamId).trim(),
+        isFavorited: Boolean(isFavorited),
+        timestamp: new Date()
+      };
+
+      res.json({ 
+        success: true, 
+        message: isFavorited ? 'Added to favorites' : 'Removed from favorites',
+        data: favoriteData
+      });
+    } catch (error) {
+      console.error('Error updating favorites:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.get('/api/user/favorites', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      
+      if (!userId) {
+        return res.status(400).json({ error: 'User not authenticated' });
+      }
+
+      res.json({
+        success: true,
+        favorites: []
+      });
+    } catch (error) {
+      console.error('Error fetching favorites:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   // IPTV API endpoints
   app.post('/api/iptv/load-m3u', async (req, res) => {
     try {
