@@ -3802,9 +3802,17 @@ Start betting through text now!`;
             const tokenData = await tokenResponse.json();
             const accessToken = tokenData.access_token;
             
-            const sportsGameId = '518203'; // Sports category on Twitch
+            // Multiple sports game IDs on Twitch
+            const sportsGameIds = [
+              '518203', // Sports
+              '509658', // Just Chatting (often has sports talk)
+              '21779',  // League of Legends (esports)
+              '515025', // Valorant (esports)
+              '32982'   // Grand Theft Auto V (often has sports content)
+            ];
+            
             const streamsResponse = await fetch(
-              `https://api.twitch.tv/helix/streams?game_id=${sportsGameId}&first=5`,
+              `https://api.twitch.tv/helix/streams?game_id=${sportsGameIds[0]}&game_id=${sportsGameIds[1]}&first=5`,
               {
                 headers: {
                   'Client-ID': twitchClientId,
