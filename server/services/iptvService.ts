@@ -268,3 +268,18 @@ export class IPTVService {
 }
 
 export const iptvService = new IPTVService();
+
+// Initialize IPTV service with thetv.to credentials on startup
+(async () => {
+  try {
+    console.log('🔄 Initializing IPTV service with thetv.to (229,451 channels)...');
+    
+    // Load channels from M3U playlist
+    const playlistUrl = 'https://thetv.to:443/get.php?username=686140897&password=80274761&type=m3u_plus&output=ts';
+    await iptvService.parseM3UPlaylist(playlistUrl);
+    
+    console.log(`✅ IPTV service initialized with ${iptvService.getAllChannels().length} channels from thetv.to`);
+  } catch (error) {
+    console.error('❌ Failed to initialize IPTV service:', error);
+  }
+})();

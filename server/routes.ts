@@ -3850,24 +3850,54 @@ Start betting through text now!`;
     try {
       const { category } = req.query;
       
-      // Get authentic sports events from AllSportsAPI
-      const events = await allSportsApiService.getLiveEvents();
+      // Get sports channels from IPTV service  
+      const { iptvService } = await import('./services/iptvService');
+      const allChannels = iptvService.getAllChannels();
+      
+      // Filter for sports-only channels
+      const sportsChannels = allChannels.filter(channel => {
+        const nameLower = channel.name.toLowerCase();
+        const categoryLower = channel.category.toLowerCase();
+        
+        return (
+          nameLower.includes('espn') ||
+          nameLower.includes('fox sports') ||
+          nameLower.includes('nfl') ||
+          nameLower.includes('nba') ||
+          nameLower.includes('mlb') ||
+          nameLower.includes('nhl') ||
+          nameLower.includes('tennis') ||
+          nameLower.includes('golf') ||
+          nameLower.includes('beinsports') ||
+          nameLower.includes('eurosport') ||
+          nameLower.includes('sky sports') ||
+          categoryLower === 'sports' ||
+          categoryLower === 'sport'
+        ) && (
+          !nameLower.includes('news') &&
+          !nameLower.includes('weather') &&
+          !nameLower.includes('music') &&
+          !nameLower.includes('movie')
+        );
+      });
+      
+      const events = sportsChannels;
       const channels = [];
       
-      for (const event of events) {
-        if (!category || event.sport?.toLowerCase().includes(category.toLowerCase())) {
+      for (const channel of events) {
+        const categoryStr = typeof category === 'string' ? category : '';
+        if (!categoryStr || channel.category.toLowerCase().includes(categoryStr.toLowerCase())) {
           channels.push({
-            id: `allsports_${event.id || Math.random()}`,
-            name: event.name || event.title || 'Live Sports Event',
-            category: event.sport || 'Sports',
-            streamUrl: event.stream_url || '',
-            isLive: event.status === 'live',
-            homeTeam: event.home_team?.name || 'Team A',
-            awayTeam: event.away_team?.name || 'Team B',
-            startTime: event.start_time,
-            league: event.league || event.competition
+            id: `iptv_${channel.id}`,
+            name: channel.name,
+            category: channel.category,
+            streamUrl: channel.url,
+            isLive: true,
+            homeTeam: 'Live Event',
+            awayTeam: 'Broadcasting',
+            startTime: new Date().toISOString(),
+            league: channel.group
           });
-          currentChannel = null;
         }
       }
       
