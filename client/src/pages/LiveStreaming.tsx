@@ -64,7 +64,7 @@ export default function LiveStreaming() {
     refetchInterval: 60000,
   });
 
-  const iptvChannels = iptvResponse?.channels || iptvResponse || [];
+  const iptvChannels = (iptvResponse as any)?.channels || [];
 
   const isLoading = eventsLoading || channelsLoading;
 
@@ -77,49 +77,49 @@ export default function LiveStreaming() {
   const liveGames = useMemo((): StreamingGame[] => {
     const streamingGames: StreamingGame[] = [];
 
-    // Convert sports events to streaming games
-    if (Array.isArray(sportsEvents)) {
+    // Convert sports events to streaming games (ESPN API data)
+    if (Array.isArray(sportsEvents) && sportsEvents.length > 0) {
       sportsEvents.forEach((event: any) => {
         streamingGames.push({
-          id: event.id || `event-${Date.now()}-${Math.random()}`,
-          title: `${event.homeTeam?.name || 'Home'} vs ${event.awayTeam?.name || 'Away'}`,
+          id: event.id || `event-${Math.random()}`,
+          title: `${event.homeTeam?.name || event.competitors?.[0]?.name || 'Home'} vs ${event.awayTeam?.name || event.competitors?.[1]?.name || 'Away'}`,
           homeTeam: {
-            name: event.homeTeam?.name || 'Home Team',
-            score: event.homeTeam?.score || 0,
-            logo: event.homeTeam?.logo
+            name: event.homeTeam?.name || event.competitors?.[0]?.name || 'Home Team',
+            score: event.homeTeam?.score || event.competitors?.[0]?.score || 0,
+            logo: event.homeTeam?.logo || event.competitors?.[0]?.logo
           },
           awayTeam: {
-            name: event.awayTeam?.name || 'Away Team', 
-            score: event.awayTeam?.score || 0,
-            logo: event.awayTeam?.logo
+            name: event.awayTeam?.name || event.competitors?.[1]?.name || 'Away Team', 
+            score: event.awayTeam?.score || event.competitors?.[1]?.score || 0,
+            logo: event.awayTeam?.logo || event.competitors?.[1]?.logo
           },
-          sport: event.sport || 'Sports',
-          league: event.league || 'Professional League',
-          status: event.status === 'in_progress' ? 'live' : 'upcoming',
-          startTime: event.startTime || new Date().toISOString(),
-          streamUrl: `https://thetv.to:443/live/${event.sport?.toLowerCase()}/stream.m3u8`,
+          sport: event.sport || event.league?.name || 'Sports',
+          league: event.league || event.competition?.name || 'Professional League',
+          status: event.status === 'in_progress' || event.status === 'STATUS_IN_PROGRESS' ? 'live' : 'upcoming',
+          startTime: event.startTime || event.date || new Date().toISOString(),
+          streamUrl: `https://thetv.to:443/live/${(event.sport || 'sports').toLowerCase()}/stream.m3u8`,
           odds: {
-            homeWin: event.odds?.homeWin || 2.1,
-            awayWin: event.odds?.awayWin || 1.8,
-            draw: event.odds?.draw || 3.2
+            homeWin: 2.1 + Math.random() * 0.5,
+            awayWin: 1.8 + Math.random() * 0.5,
+            draw: 3.2 + Math.random() * 0.8
           },
           viewers: Math.floor(Math.random() * 50000) + 1000,
-          period: event.status === 'in_progress' ? 'LIVE' : 'Upcoming',
-          timeRemaining: event.status === 'in_progress' ? 'LIVE' : 'Starting Soon'
+          period: event.status === 'in_progress' || event.status === 'STATUS_IN_PROGRESS' ? 'LIVE' : 'Upcoming',
+          timeRemaining: event.status === 'in_progress' || event.status === 'STATUS_IN_PROGRESS' ? 'LIVE' : 'Starting Soon'
         });
       });
     }
 
-    // Add IPTV channels as streaming options
-    if (Array.isArray(iptvChannels)) {
-      iptvChannels.slice(0, 20).forEach((channel: any) => {
+    // Add IPTV channels from the endpoint
+    if (Array.isArray(iptvChannels) && iptvChannels.length > 0) {
+      iptvChannels.slice(0, 10).forEach((channel: any) => {
         streamingGames.push({
           id: `iptv-${channel.id || Math.random()}`,
-          title: channel.name || 'Live Channel',
-          homeTeam: { name: 'Live Sports', score: 0 },
-          awayTeam: { name: 'Broadcasting', score: 0 },
+          title: channel.name || 'Live Sports Channel',
+          homeTeam: { name: 'Live TV', score: 0 },
+          awayTeam: { name: channel.category || 'Sports', score: 0 },
           sport: channel.category || 'Sports',
-          league: 'Live TV',
+          league: 'IPTV Network',
           status: 'live',
           startTime: new Date().toISOString(),
           streamUrl: channel.url || `https://thetv.to:443/live/${channel.id}/stream.m3u8`,
