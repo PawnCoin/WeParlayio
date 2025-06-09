@@ -3693,39 +3693,165 @@ Start betting through text now!`;
         const { iptvService } = await import('./services/iptvService');
         const allChannels = iptvService.getAllChannels();
         
-        // Filter for sports-only channels
+        // Filter for ALL SPORTS - comprehensive sports filtering
         const sportsChannels = allChannels.filter(channel => {
           const nameLower = channel.name.toLowerCase();
           const categoryLower = channel.category.toLowerCase();
           
           return (
-            // Dedicated sports networks
+            // Major Sports Networks
             nameLower.includes('espn') ||
             nameLower.includes('fox sports') ||
+            nameLower.includes('sky sports') ||
+            nameLower.includes('beinsports') ||
+            nameLower.includes('eurosport') ||
+            nameLower.includes('premier sports') ||
+            nameLower.includes('bt sport') ||
+            nameLower.includes('eleven sports') ||
+            nameLower.includes('dazn') ||
+            nameLower.includes('sport tv') ||
+            nameLower.includes('tsn') ||
+            nameLower.includes('sportsnet') ||
+            
+            // American Sports
             nameLower.includes('nfl') ||
             nameLower.includes('nba') ||
             nameLower.includes('mlb') ||
             nameLower.includes('nhl') ||
+            nameLower.includes('mls') ||
+            nameLower.includes('ncaa') ||
+            nameLower.includes('college') ||
+            
+            // Global Sports
+            nameLower.includes('football') && !nameLower.includes('news') ||
+            nameLower.includes('soccer') ||
+            nameLower.includes('basketball') && !nameLower.includes('news') ||
+            nameLower.includes('baseball') && !nameLower.includes('news') ||
+            nameLower.includes('hockey') && !nameLower.includes('news') ||
             nameLower.includes('tennis') ||
             nameLower.includes('golf') ||
-            nameLower.includes('beinsports') ||
-            nameLower.includes('eurosport') ||
-            nameLower.includes('sky sports') ||
+            nameLower.includes('rugby') ||
+            nameLower.includes('cricket') ||
+            nameLower.includes('volleyball') ||
+            nameLower.includes('handball') ||
+            nameLower.includes('waterpolo') ||
+            nameLower.includes('athletics') ||
+            nameLower.includes('swimming') ||
+            nameLower.includes('diving') ||
+            nameLower.includes('gymnastics') ||
+            nameLower.includes('cycling') ||
+            nameLower.includes('running') ||
+            nameLower.includes('marathon') ||
+            
+            // Racing & Motorsports
+            nameLower.includes('formula') ||
+            nameLower.includes('f1') ||
+            nameLower.includes('nascar') ||
+            nameLower.includes('indycar') ||
+            nameLower.includes('motogp') ||
+            nameLower.includes('moto2') ||
+            nameLower.includes('moto3') ||
+            nameLower.includes('superbike') ||
+            nameLower.includes('rally') ||
+            nameLower.includes('racing') ||
             nameLower.includes('motorsport') ||
+            
+            // Combat Sports
             nameLower.includes('boxing') ||
-            nameLower.includes('soccer') ||
-            nameLower.includes('football') ||
-            nameLower.includes('basketball') ||
-            nameLower.includes('baseball') ||
-            nameLower.includes('hockey') ||
+            nameLower.includes('mma') ||
+            nameLower.includes('ufc') ||
+            nameLower.includes('bellator') ||
+            nameLower.includes('wrestling') ||
+            nameLower.includes('martial arts') ||
+            nameLower.includes('karate') ||
+            nameLower.includes('judo') ||
+            nameLower.includes('taekwondo') ||
+            
+            // Winter Sports
+            nameLower.includes('skiing') ||
+            nameLower.includes('snowboard') ||
+            nameLower.includes('ice skating') ||
+            nameLower.includes('curling') ||
+            nameLower.includes('bobsled') ||
+            nameLower.includes('luge') ||
+            nameLower.includes('biathlon') ||
+            
+            // Olympic Sports
+            nameLower.includes('olympics') ||
+            nameLower.includes('olympic') ||
+            nameLower.includes('weightlifting') ||
+            nameLower.includes('rowing') ||
+            nameLower.includes('sailing') ||
+            nameLower.includes('archery') ||
+            nameLower.includes('shooting') ||
+            nameLower.includes('fencing') ||
+            nameLower.includes('badminton') ||
+            nameLower.includes('table tennis') ||
+            nameLower.includes('ping pong') ||
+            nameLower.includes('squash') ||
+            
+            // Extreme Sports
+            nameLower.includes('surfing') ||
+            nameLower.includes('skateboard') ||
+            nameLower.includes('bmx') ||
+            nameLower.includes('extreme') ||
+            nameLower.includes('x games') ||
+            nameLower.includes('snowmobile') ||
+            
+            // League/Tournament Names
+            nameLower.includes('premier league') ||
+            nameLower.includes('champions league') ||
+            nameLower.includes('europa league') ||
+            nameLower.includes('serie a') ||
+            nameLower.includes('bundesliga') ||
+            nameLower.includes('la liga') ||
+            nameLower.includes('ligue 1') ||
+            nameLower.includes('world cup') ||
+            nameLower.includes('euros') ||
+            nameLower.includes('copa america') ||
+            nameLower.includes('copa del rey') ||
+            nameLower.includes('fa cup') ||
+            nameLower.includes('carabao cup') ||
+            nameLower.includes('stanley cup') ||
+            nameLower.includes('super bowl') ||
+            nameLower.includes('world series') ||
+            nameLower.includes('playoffs') ||
+            
+            // Sports Categories (Multiple Languages)
             categoryLower === 'sports' ||
-            categoryLower === 'sport'
+            categoryLower === 'sport' ||
+            categoryLower === 'deportes' ||
+            categoryLower === 'esporte' ||
+            categoryLower === 'sports hd' ||
+            categoryLower === 'sports fhd' ||
+            categoryLower === 'sports 4k' ||
+            categoryLower.includes('sport') ||
+            categoryLower.includes('deportes') ||
+            categoryLower.includes('esporte') ||
+            
+            // Additional Sports Terms
+            nameLower.includes('match') && categoryLower.includes('sport') ||
+            nameLower.includes('game') && categoryLower.includes('sport') ||
+            nameLower.includes('live') && categoryLower.includes('sport') ||
+            nameLower.includes('hd') && categoryLower.includes('sport') ||
+            nameLower.includes('4k') && categoryLower.includes('sport')
           ) && (
             // Exclude non-sports content
             !nameLower.includes('news') &&
             !nameLower.includes('weather') &&
             !nameLower.includes('music') &&
-            !nameLower.includes('movie')
+            !nameLower.includes('movie') &&
+            !nameLower.includes('entertainment') &&
+            !nameLower.includes('drama') &&
+            !nameLower.includes('comedy') &&
+            !nameLower.includes('cartoon') &&
+            !nameLower.includes('kids') &&
+            !nameLower.includes('cooking') &&
+            !nameLower.includes('reality') &&
+            !nameLower.includes('documentary') &&
+            !categoryLower.includes('news') &&
+            !categoryLower.includes('entertainment') &&
+            !categoryLower.includes('movies')
           );
         });
         
