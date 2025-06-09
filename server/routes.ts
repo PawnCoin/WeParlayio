@@ -929,6 +929,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Streaming favorites endpoint
+  app.post('/api/streams/:streamId/favorite', async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const { streamId } = req.params;
+      const { isFavorited } = req.body;
+      const userId = req.user.claims.sub;
+      
+      // For now, return success - in production, this would update user favorites in database
+      res.json({ 
+        success: true, 
+        streamId, 
+        isFavorited,
+        message: isFavorited ? "Added to favorites" : "Removed from favorites"
+      });
+    } catch (error) {
+      console.error("Error updating stream favorite:", error);
+      res.status(500).json({ message: "Failed to update stream favorite" });
+    }
+  });
+
   // User preferences endpoint
   app.post('/api/user/preferences', async (req: any, res) => {
     try {

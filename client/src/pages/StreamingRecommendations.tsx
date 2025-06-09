@@ -165,20 +165,20 @@ export default function StreamingRecommendations() {
       category: 'Live Sports',
       sport: event.sport || 'Sports',
       league: event.leagueName || event.sport || 'League',
-    teams: [event.homeTeam?.name || 'Home', event.awayTeam?.name || 'Away'],
-    startTime: new Date(event.startTime || event.date || Date.now()),
-    duration: 180,
-    thumbnailUrl: '/api/placeholder/300/200',
-    streamUrl: `https://stream.weparlay.io/${event.id}`,
-    quality: '4K HDR',
-    viewers: Math.floor(Math.random() * 100000) + 50000,
-    rating: 4.5 + Math.random() * 0.5,
-    tags: [event.sport?.toLowerCase() || 'sports', 'live', 'hd'],
-    aiScore: 85 + Math.floor(Math.random() * 15),
-    reason: `Live ${event.sport} match based on your preferences`,
-    isLive: true,
-    isFavorited: false
-  }));
+      teams: [event.homeTeam?.name || 'Home', event.awayTeam?.name || 'Away'],
+      startTime: new Date(event.startTime || event.date || Date.now()),
+      duration: 180,
+      thumbnailUrl: '/api/placeholder/300/200',
+      streamUrl: `https://stream.weparlay.io/${event.id}`,
+      quality: '4K HDR',
+      viewers: Math.floor(Math.random() * 100000) + 50000,
+      rating: 4.5 + Math.random() * 0.5,
+      tags: [event.sport?.toLowerCase() || 'sports', 'live', 'hd'],
+      aiScore: 85 + Math.floor(Math.random() * 15),
+      reason: `Live ${event.sport} match based on your preferences`,
+      isLive: true,
+      isFavorited: false
+  })), [sportsData]);
 
   const filteredRecommendations = authenticStreamingRecommendations.filter(rec => {
     const matchesSearch = rec.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -189,12 +189,7 @@ export default function StreamingRecommendations() {
     return matchesSearch && matchesCategory && matchesRating;
   });
 
-  const handleFavorite = (streamId: string, currentState: boolean) => {
-    favoriteMutation.mutate({ 
-      streamId, 
-      isFavorited: !currentState 
-    });
-  };
+
 
   const formatViewers = (count: number) => {
     if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
@@ -322,10 +317,11 @@ export default function StreamingRecommendations() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => handleFavorite(stream.id, stream.isFavorited)}
-                      className={`w-8 h-8 p-0 ${stream.isFavorited ? 'text-red-500' : 'text-white'}`}
+                      onClick={() => handleToggleFavorite(stream.id)}
+                      className={`w-8 h-8 p-0 ${favoriteStreams.has(stream.id) ? 'text-red-500' : 'text-white'}`}
+                      disabled={favoriteMutation.isPending}
                     >
-                      <Heart className={`h-4 w-4 ${stream.isFavorited ? 'fill-current' : ''}`} />
+                      <Heart className={`h-4 w-4 ${favoriteStreams.has(stream.id) ? 'fill-current' : ''}`} />
                     </Button>
                   </div>
                   <div className="absolute bottom-2 right-2">
@@ -370,11 +366,32 @@ export default function StreamingRecommendations() {
                   </div>
 
                   <div className="flex gap-2">
-                    <Button className="flex-1" size="sm">
+                    <Button 
+                      className="flex-1" 
+                      size="sm"
+                      onClick={() => handleWatchStream(stream)}
+                      disabled={favoriteMutation.isPending}
+                    >
                       <Play className="h-4 w-4 mr-2" />
                       Watch Now
                     </Button>
-                    <Button size="sm" variant="outline">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => handleToggleFavorite(stream.id)}
+                      disabled={favoriteMutation.isPending}
+                    >
+                      {favoriteStreams.has(stream.id) ? (
+                        <Heart className="h-4 w-4 fill-current" />
+                      ) : (
+                        <Heart className="h-4 w-4" />
+                      )}
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => handleShareStream(stream)}
+                    >
                       <Share2 className="h-4 w-4" />
                     </Button>
                   </div>
