@@ -356,40 +356,36 @@ export default function LiveStreaming() {
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         />
                       ) : selectedGame.streamUrl.includes('.m3u8') || selectedGame.streamUrl.includes('thetv.to') ? (
-                        <>
-                          <video
-                            ref={videoRef}
-                            className="w-full h-full object-cover"
-                            controls
-                            muted
-                            playsInline
-                            crossOrigin="anonymous"
-                          />
-                          {!isPlaying && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                              <button
-                                onClick={handlePlayPause}
-                                className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full transition-colors"
-                              >
-                                <Play className="h-8 w-8" />
-                              </button>
-                            </div>
-                          )}
-                        </>
+                        <video
+                          ref={videoRef}
+                          className="w-full h-full object-cover"
+                          controls
+                          muted={isMuted}
+                          playsInline
+                          crossOrigin="anonymous"
+                          onError={(e) => {
+                            console.error('M3U8 stream error:', e);
+                          }}
+                        >
+                          <source src={selectedGame.streamUrl} type="application/x-mpegURL" />
+                          <source src={selectedGame.streamUrl} type="application/vnd.apple.mpegurl" />
+                          Your browser does not support HLS streaming.
+                        </video>
                       ) : (
                         <video
                           ref={videoRef}
                           className="w-full h-full object-cover"
-                          autoPlay={isPlaying}
+                          controls
                           muted={isMuted}
-                          controls={true}
+                          playsInline
+                          crossOrigin="anonymous"
                           onError={(e) => {
                             console.error('Video stream error:', e);
                           }}
                         >
-                          <source src={selectedGame.streamUrl} type="application/x-mpegURL" />
                           <source src={selectedGame.streamUrl} type="video/mp4" />
-                          <source src={selectedGame.streamUrl} type="application/vnd.apple.mpegurl" />
+                          <source src={selectedGame.streamUrl} type="video/webm" />
+                          <source src={selectedGame.streamUrl} type="video/ogg" />
                           Your browser does not support the video tag.
                         </video>
                       )
@@ -403,42 +399,13 @@ export default function LiveStreaming() {
                       </div>
                     )}
                     
-                    {/* Video Controls Overlay */}
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setIsPlaying(!isPlaying)}
-                            className="text-white hover:bg-white/20"
-                          >
-                            {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
-                          </Button>
-                          
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setIsMuted(!isMuted)}
-                            className="text-white hover:bg-white/20"
-                          >
-                            {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-                          </Button>
-                          
-                          <div className="flex items-center space-x-2">
-                            <Users className="h-4 w-4" />
-                            <span className="text-sm">{selectedGame.viewers?.toLocaleString() || '0'} viewers</span>
-                          </div>
+                    {/* Viewer Count Overlay */}
+                    <div className="absolute bottom-4 right-4">
+                      <div className="bg-black/60 backdrop-blur-sm rounded-lg px-3 py-1">
+                        <div className="flex items-center space-x-2 text-white">
+                          <Users className="h-4 w-4" />
+                          <span className="text-sm">{selectedGame.viewers?.toLocaleString() || '0'} viewers</span>
                         </div>
-                        
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={toggleFullscreen}
-                          className="text-white hover:bg-white/20"
-                        >
-                          <Maximize className="h-5 w-5" />
-                        </Button>
                       </div>
                     </div>
                     
