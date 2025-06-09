@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -6,6 +6,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { queryClient } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 import { 
   Play, 
   Star, 
@@ -22,7 +25,9 @@ import {
   Eye,
   Calendar,
   MapPin,
-  Trophy
+  Trophy,
+  ExternalLink,
+  Loader2
 } from 'lucide-react';
 
 interface StreamRecommendation {
@@ -58,119 +63,108 @@ interface UserPreferences {
 export default function StreamingRecommendations() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [favoriteStreams, setFavoriteStreams] = useState<Set<string>>(new Set());
   const [userPreferences, setUserPreferences] = useState<UserPreferences>({
-    favoriteTeams: ['Lakers', 'Warriors', 'Celtics'],
-    favoriteSports: ['Basketball', 'Football', 'Soccer'],
+    favoriteTeams: ['Eagles', 'Chargers', 'Falcons'],
+    favoriteSports: ['NFL', 'NBA', 'MLB', 'NHL', 'Soccer'],
     preferredTime: 'evening',
     minRating: 4.0,
     excludeGenres: []
   });
 
+  const { toast } = useToast();
+
   // Fetch authentic multi-sport data for streaming recommendations
-  const { data: sportsDataResponse, isLoading } = useQuery({
-    queryKey: ['/api/odds'],
+  const { data: sportsDataResponse, isLoading, error } = useQuery({
+    queryKey: ['/api/sports'],
     refetchInterval: 30000,
+    select: (data: any) => {
+      if (data?.success && Array.isArray(data.data)) {
+        return data.data;
+      }
+      return Array.isArray(data) ? data : [];
+    }
   });
 
-  // Extract authentic data from priority API response
-  const sportsData: any[] = sportsDataResponse?.success ? sportsDataResponse.data : (sportsDataResponse?.data || sportsDataResponse || []);
+  const sportsData = sportsDataResponse || [];
   
   console.log('🎯 Streaming Recommendations - Authentic Data:', {
     totalEvents: sportsData.length,
-    sampleEvents: sportsData.slice(0, 3).map(e => ({ 
+    sampleEvents: sportsData.slice(0, 3).map((e: any) => ({ 
       sport: e.sport, 
       homeTeam: e.homeTeam?.name, 
       awayTeam: e.awayTeam?.name 
     }))
   });
 
+  // Mutation for favoriting streams
   const favoriteMutation = useMutation({
     mutationFn: async ({ streamId, isFavorited }: { streamId: string; isFavorited: boolean }) => {
-      return fetch(`/api/streams/${streamId}/favorite`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isFavorited })
-      });
+      return apiRequest('POST', `/api/streams/${streamId}/favorite`, { isFavorited });
+    },
+    onSuccess: (data, variables) => {
+      const { streamId, isFavorited } = variables;
+      if (isFavorited) {
+        setFavoriteStreams(prev => new Set(Array.from(prev).concat(streamId)));
+        toast({ title: "Added to favorites", description: "Stream saved to your favorites list" });
+      } else {
+        setFavoriteStreams(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(streamId);
+          return newSet;
+        });
+        toast({ title: "Removed from favorites", description: "Stream removed from your favorites" });
+      }
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to update favorites", variant: "destructive" });
     }
   });
 
-  const mockRecommendations: StreamRecommendation[] = [
-    {
-      id: '1',
-      title: 'Lakers vs Warriors - NBA Finals Game 7',
-      description: 'Epic showdown between two legendary teams in the decisive game 7',
-      category: 'Live Sports',
-      sport: 'Basketball',
-      league: 'NBA',
-      teams: ['Lakers', 'Warriors'],
-      startTime: new Date(),
-      duration: 180,
-      thumbnailUrl: '/api/placeholder/300/200',
-      streamUrl: 'https://example.com/stream1',
-      quality: '4K HDR',
-      viewers: 2847592,
-      rating: 4.9,
-      tags: ['playoffs', 'championship', 'rivalry'],
-      aiScore: 98,
-      reason: 'Perfect match: Your favorite teams playing in championship game',
-      isLive: true,
-      isFavorited: false
-    },
-    {
-      id: '2',
-      title: 'Real Madrid vs Barcelona - El Clasico',
-      description: 'The most anticipated soccer match of the season',
-      category: 'Live Sports',
-      sport: 'Soccer',
-      league: 'La Liga',
-      teams: ['Real Madrid', 'Barcelona'],
-      startTime: new Date(Date.now() + 3600000),
-      duration: 120,
-      thumbnailUrl: '/api/placeholder/300/200',
-      streamUrl: 'https://example.com/stream2',
-      quality: '4K',
-      viewers: 1245890,
-      rating: 4.8,
-      tags: ['el-clasico', 'rivalry', 'messi'],
-      aiScore: 95,
-      reason: 'High-rated match in your preferred sport',
-      isLive: false,
-      isFavorited: true
-    },
-    {
-      id: '3',
-      title: 'CS:GO Major Championship Finals',
-      description: 'The ultimate esports showdown with $1M prize pool',
-      category: 'Esports',
-      sport: 'CS:GO',
-      league: 'Major Championship',
-      teams: ['Team Liquid', 'FaZe Clan'],
-      startTime: new Date(Date.now() + 7200000),
-      duration: 240,
-      thumbnailUrl: '/api/placeholder/300/200',
-      streamUrl: 'https://example.com/stream3',
-      quality: '1080p',
-      viewers: 892456,
-      rating: 4.7,
-      tags: ['major', 'finals', 'fps'],
-      aiScore: 88,
-      reason: 'Trending in esports with high viewer engagement',
-      isLive: false,
-      isFavorited: false
+  // Button handlers with real functionality
+  const handleWatchStream = useCallback((stream: StreamRecommendation) => {
+    if (stream.streamUrl && stream.streamUrl !== '#') {
+      window.open(stream.streamUrl, '_blank', 'noopener,noreferrer');
+      toast({ title: "Opening Stream", description: `Launching ${stream.title}` });
+    } else {
+      toast({ title: "Stream Unavailable", description: "Stream link not available at this time", variant: "destructive" });
     }
-  ];
+  }, [toast]);
+
+  const handleToggleFavorite = useCallback((streamId: string) => {
+    const isFavorited = favoriteStreams.has(streamId);
+    favoriteMutation.mutate({ streamId, isFavorited: !isFavorited });
+  }, [favoriteStreams, favoriteMutation]);
+
+  const handleShareStream = useCallback((stream: StreamRecommendation) => {
+    const shareUrl = `${window.location.origin}/streaming-recommendations?stream=${stream.id}`;
+    if (navigator.share) {
+      navigator.share({
+        title: stream.title,
+        text: stream.description,
+        url: shareUrl
+      }).catch(() => {
+        navigator.clipboard.writeText(shareUrl);
+        toast({ title: "Link Copied", description: "Stream link copied to clipboard" });
+      });
+    } else {
+      navigator.clipboard.writeText(shareUrl);
+      toast({ title: "Link Copied", description: "Stream link copied to clipboard" });
+    }
+  }, [toast]);
 
   const categories = ['all', 'Live Sports', 'Esports', 'Highlights', 'Documentaries'];
   const sports = ['Basketball', 'Football', 'Soccer', 'Baseball', 'Tennis', 'CS:GO', 'League of Legends'];
 
   // Transform authentic sports data into streaming recommendations
-  const authenticStreamingRecommendations: StreamRecommendation[] = sportsData.map((event: any, index: number) => ({
-    id: event.id || `stream-${index}`,
-    title: `${event.homeTeam?.name || 'Home'} vs ${event.awayTeam?.name || 'Away'}`,
-    description: `Live ${event.sport} match - ${event.leagueName || event.sport} coverage`,
-    category: 'Live Sports',
-    sport: event.sport || 'Sports',
-    league: event.leagueName || event.sport || 'League',
+  const authenticStreamingRecommendations: StreamRecommendation[] = useMemo(() => 
+    sportsData.map((event: any, index: number) => ({
+      id: event.id || `stream-${index}`,
+      title: `${event.homeTeam?.name || 'Home'} vs ${event.awayTeam?.name || 'Away'}`,
+      description: `Live ${event.sport} match featuring ${event.homeTeam?.name} and ${event.awayTeam?.name}`,
+      category: 'Live Sports',
+      sport: event.sport || 'Sports',
+      league: event.leagueName || event.sport || 'League',
     teams: [event.homeTeam?.name || 'Home', event.awayTeam?.name || 'Away'],
     startTime: new Date(event.startTime || event.date || Date.now()),
     duration: 180,
