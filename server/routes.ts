@@ -4485,6 +4485,136 @@ ${streamUrl}
     }
   });
 
+  // IPTV API endpoints
+  app.post('/api/iptv/load-m3u', async (req, res) => {
+    try {
+      const { playlistUrl } = req.body;
+      
+      if (!playlistUrl) {
+        return res.status(400).json({ success: false, message: 'Playlist URL is required' });
+      }
+
+      const { iptvService } = await import('./services/iptvService');
+      const channels = await iptvService.parseM3UPlaylist(playlistUrl);
+      
+      res.json({ 
+        success: true, 
+        channels,
+        totalChannels: channels.length,
+        message: `Successfully loaded ${channels.length} channels` 
+      });
+    } catch (error) {
+      console.error('Error loading M3U playlist:', error);
+      res.status(500).json({ success: false, message: 'Failed to load M3U playlist' });
+    }
+  });
+
+  app.post('/api/iptv/connect-xtream', async (req, res) => {
+    try {
+      const { host, username, password, port } = req.body;
+      
+      if (!host || !username || !password) {
+        return res.status(400).json({ success: false, message: 'Host, username, and password are required' });
+      }
+
+      const { iptvService } = await import('./services/iptvService');
+      const result = await iptvService.connectXtreamCodes({ host, username, password, port });
+      
+      const totalChannels = result.channels.length + result.movies.length + result.series.length;
+      
+      res.json({ 
+        success: true, 
+        ...result,
+        totalChannels,
+        message: `Successfully connected to Xtream Codes` 
+      });
+    } catch (error) {
+      console.error('Error connecting to Xtream Codes:', error);
+      res.status(500).json({ success: false, message: 'Failed to connect to Xtream Codes' });
+    }
+  });
+
+  app.get('/api/iptv/channels', async (req, res) => {
+    try {
+      const { iptvService } = await import('./services/iptvService');
+      const channels = iptvService.getAllChannels();
+      const categories = iptvService.getCategories();
+      
+      res.json({ 
+        success: true, 
+        channels,
+        categories,
+        totalChannels: channels.length
+      });
+    } catch (error) {
+      console.error('Error getting channels:', error);
+      res.status(500).json({ success: false, message: 'Failed to get channels' });
+    }
+  });
+
+  app.get('/api/iptv/epg/:channelId', async (req, res) => {
+    try {
+      const { channelId } = req.params;
+      const { date } = req.query;
+      
+      const { iptvService } = await import('./services/iptvService');
+      const programs = iptvService.getChannelEPG(channelId, date ? new Date(date as string) : undefined);
+      
+      res.json({ 
+        success: true, 
+        programs,
+        channelId
+      });
+    } catch (error) {
+      console.error('Error getting EPG:', error);
+      res.status(500).json({ success: false, message: 'Failed to get EPG data' });
+    }
+  });
+
+  app.post('/api/iptv/load-thetv-credentials', async (req, res) => {
+    try {
+      // Use the provided thetv.to credentials
+      const credentials = {
+        host: 'https://thetv.to:443',
+        username: '686140897',
+        password: '80274761',
+        port: '443'
+      };
+
+      const { iptvService } = await import('./services/iptvService');
+      
+      // First try to load via M3U playlist
+      const m3uUrl = 'https://thetv.to:443/get.php?username=686140897&password=80274761&type=m3u_plus&output=ts';
+      
+      try {
+        const channels = await iptvService.parseM3UPlaylist(m3uUrl);
+        res.json({ 
+          success: true, 
+          channels,
+          totalChannels: channels.length,
+          source: 'M3U Playlist',
+          message: `Successfully loaded ${channels.length} channels from thetv.to via M3U` 
+        });
+      } catch (m3uError) {
+        // Fallback to Xtream Codes API
+        console.log('M3U failed, trying Xtream Codes API...');
+        const result = await iptvService.connectXtreamCodes(credentials);
+        const totalChannels = result.channels.length + result.movies.length + result.series.length;
+        
+        res.json({ 
+          success: true, 
+          ...result,
+          totalChannels,
+          source: 'Xtream Codes API',
+          message: `Successfully connected to thetv.to via Xtream Codes API` 
+        });
+      }
+    } catch (error) {
+      console.error('Error loading thetv.to credentials:', error);
+      res.status(500).json({ success: false, message: 'Failed to connect to thetv.to service' });
+    }
+  });
+
   // Fantasy Social & Competition endpoints - placeholder routes
   app.post('/api/fantasy-social/pools', (req, res) => {
     res.json({ 

@@ -69,6 +69,7 @@ import InteractiveOnboardingWizard from "./components/onboarding/InteractiveOnbo
 import { initGA } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
 import OnboardingDemo from "@/pages/OnboardingDemo";
+import IPTVPlayer from "@/pages/IPTVPlayer";
 
 import UnifiedSports from "@/pages/UnifiedSports";
 import ComprehensiveBetting from "@/pages/ComprehensiveBetting";
@@ -189,10 +190,14 @@ function Router() {
       {/* Twilio SMS Opt-in Demo */}
       <Route path="/twilio-opt-in-demo" component={TwilioOptInDemo} />
 
+      {/* Streaming & IPTV */}
+      <Route path="/live-streaming" component={LiveStreaming} />
+      <Route path="/streaming-recommendations" component={StreamingRecommendations} />
+      <Route path="/iptv-player" component={IPTVPlayer} />
+      
       {/* Blockchain & Web3 Features */}
       <Route path="/blockchain-performance" component={BlockchainPerformance} />
       <Route path="/wallet-tutorial" component={WalletTutorial} />
-      <Route path="/streaming-recommendations" component={StreamingRecommendations} />
       <Route path="/social-sharing" component={SocialSharing} />
 
       {/* Enhanced Features */}
