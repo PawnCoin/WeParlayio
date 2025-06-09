@@ -132,9 +132,12 @@ export default function CryptoBetting() {
       </div>
 
       <Tabs defaultValue="betting" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 bg-slate-900">
+        <TabsList className="grid w-full grid-cols-5 bg-slate-900">
           <TabsTrigger value="betting" className="text-white data-[state=active]:bg-blue-600">
             Place Bets
+          </TabsTrigger>
+          <TabsTrigger value="pawncoin" className="text-white data-[state=active]:bg-amber-600">
+            Pawn Coin ($Pc)
           </TabsTrigger>
           <TabsTrigger value="wallet" className="text-white data-[state=active]:bg-blue-600">
             Connect Wallet
@@ -150,6 +153,11 @@ export default function CryptoBetting() {
         {/* Betting Tab */}
         <TabsContent value="betting" className="space-y-6">
           <CryptoBettingPanel />
+        </TabsContent>
+
+        {/* Pawn Coin Tab */}
+        <TabsContent value="pawncoin" className="space-y-6">
+          <PawnCoinIntegration />
         </TabsContent>
 
         {/* Wallet Tab */}

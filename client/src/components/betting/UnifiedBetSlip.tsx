@@ -10,6 +10,7 @@ import {
   DollarSign
 } from 'lucide-react';
 import CryptoBetSlip from './CryptoBetSlip';
+import PawnCoinIntegration from '@/components/crypto/PawnCoinIntegration';
 
 interface Bet {
   id: string;
@@ -27,7 +28,7 @@ interface UnifiedBetSlipProps {
 }
 
 export default function UnifiedBetSlip({ bets = [], onRemoveBet, onClearAll }: UnifiedBetSlipProps) {
-  const [paymentMethod, setPaymentMethod] = useState<'crypto' | 'fiat'>('crypto');
+  const [paymentMethod, setPaymentMethod] = useState<'crypto' | 'fiat' | 'pawncoin'>('crypto');
 
   if (!bets || bets.length === 0) {
     return (
@@ -74,11 +75,15 @@ export default function UnifiedBetSlip({ bets = [], onRemoveBet, onClearAll }: U
         </div>
       </CardHeader>
       <CardContent>
-        <Tabs value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as 'crypto' | 'fiat')}>
-          <TabsList className="grid w-full grid-cols-2 bg-slate-800">
+        <Tabs value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as 'crypto' | 'fiat' | 'pawncoin')}>
+          <TabsList className="grid w-full grid-cols-3 bg-slate-800">
             <TabsTrigger value="crypto" className="text-white data-[state=active]:bg-blue-600">
               <Wallet className="h-4 w-4 mr-2" />
               Crypto
+            </TabsTrigger>
+            <TabsTrigger value="pawncoin" className="text-white data-[state=active]:bg-amber-600">
+              <DollarSign className="h-4 w-4 mr-2" />
+              Pawn Coin
             </TabsTrigger>
             <TabsTrigger value="fiat" className="text-white data-[state=active]:bg-green-600">
               <CreditCard className="h-4 w-4 mr-2" />
@@ -92,6 +97,20 @@ export default function UnifiedBetSlip({ bets = [], onRemoveBet, onClearAll }: U
                 bets={bets}
                 onRemoveBet={onRemoveBet}
                 onClearAll={onClearAll}
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="pawncoin" className="mt-4">
+            <div className="mt-[-16px]">
+              <PawnCoinIntegration 
+                betAmount={bets.reduce((total, bet) => total + 50, 0)}
+                eventId={bets[0]?.eventId}
+                selection={bets[0]?.selection}
+                odds={bets[0]?.odds}
+                onBetPlaced={(amount, transactionHash) => {
+                  console.log('Pawn Coin bet placed:', { amount, transactionHash });
+                }}
               />
             </div>
           </TabsContent>
