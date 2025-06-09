@@ -278,9 +278,12 @@ export default function StreamingRecommendations() {
   const handleWatchStream = useCallback((stream: StreamRecommendation) => {
     if (!stream?.streamUrl) return;
     
-    // Navigate to streaming page
-    window.location.href = stream.streamUrl;
-  }, []);
+    setSelectedStream(stream);
+    toast({
+      title: "Loading Stream",
+      description: `Starting ${stream.title}...`,
+    });
+  }, [toast]);
 
   // Utility functions
   const formatViewers = (count: number) => {
@@ -569,6 +572,15 @@ export default function StreamingRecommendations() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Stream Player Modal */}
+      {selectedStream && (
+        <StreamPlayer
+          streamUrl={selectedStream.streamUrl}
+          title={selectedStream.title}
+          onClose={() => setSelectedStream(null)}
+        />
+      )}
     </div>
   );
 }
