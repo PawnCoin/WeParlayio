@@ -543,7 +543,22 @@ export class PriorityApiService {
 
   private async getEspnApiData(sport?: string): Promise<any[]> {
     const service = new FreeSportsApiService();
-    return await service.getNFLOdds();
+    
+    // Fetch ALL sports data - critical for user engagement since football is out of season
+    const [nflData, nbaData, mlbData, nhlData, soccerData, wnbaData] = await Promise.all([
+      service.getNFLOdds(),
+      service.getNBAOdds(), 
+      service.getMLBOdds(),
+      service.getNHLOdds(),
+      service.getSoccerOdds(),
+      service.getWNBAOdds()
+    ]);
+    
+    // Combine all sports data for comprehensive coverage
+    const allSportsData = [...nflData, ...nbaData, ...mlbData, ...nhlData, ...soccerData, ...wnbaData];
+    console.log(`✅ ESPN API returned ${allSportsData.length} events across all sports (NFL: ${nflData.length}, NBA: ${nbaData.length}, MLB: ${mlbData.length}, NHL: ${nhlData.length}, Soccer: ${soccerData.length}, WNBA: ${wnbaData.length})`);
+    
+    return allSportsData;
   }
 
   private async getYahooApiData(sport?: string): Promise<any[]> {

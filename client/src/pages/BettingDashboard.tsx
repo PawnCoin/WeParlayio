@@ -44,17 +44,18 @@ const BettingDashboard: React.FC = () => {
   // Mock user tier for demonstration
   const userTier = user?.tier || 'Bronze';
 
-  // Fetch live events
-  const { data: liveEvents = [], isLoading: isLoadingLive, error: liveError } = useQuery({
-    queryKey: ['/api/events/live'],
+  // Fetch live events from priority API system (same as odds page)
+  const { data: liveEventsResponse, isLoading: isLoadingLive, error: liveError } = useQuery({
+    queryKey: ['/api/odds'],
     refetchInterval: 30000,
   });
 
-  // Fetch upcoming events
-  const { data: upcomingEventsData, isLoading: isLoadingUpcoming } = useQuery({
-    queryKey: ['/api/unified-sports/upcoming-events'],
-    refetchInterval: 60000,
-  }) as { data: { events: any[] } | undefined; isLoading: boolean };
+  // Extract authentic data from priority API response
+  const liveEvents: any[] = liveEventsResponse?.success ? liveEventsResponse.data : (liveEventsResponse?.data || liveEventsResponse || []);
+
+  // Use same data for upcoming events since they're from the same authentic source
+  const upcomingEvents = liveEvents;
+  const isLoadingUpcoming = isLoadingLive;
 
   // Helper to safely get team name from real API data
   const getTeamName = (event: any, isHome: boolean = true) => {
@@ -112,7 +113,7 @@ const BettingDashboard: React.FC = () => {
   };
 
   // Process and filter events - handle real API response structure
-  const upcomingEvents = upcomingEventsData?.events || [];
+  // upcomingEvents already declared above from authentic data
   
   const filteredLiveEvents = Array.isArray(liveEvents) ? liveEvents.filter((event: any) => {
     if (selectedLeagues.length === 0) return true;
