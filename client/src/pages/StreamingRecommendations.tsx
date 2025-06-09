@@ -9,6 +9,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
+import StreamPlayer from '@/components/streaming/StreamPlayer';
 import { 
   Play, 
   Star, 
@@ -64,6 +65,7 @@ interface UserPreferences {
 export default function StreamingRecommendations() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedStream, setSelectedStream] = useState<StreamRecommendation | null>(null);
   const [favoriteStreams, setFavoriteStreams] = useState<Set<string>>(new Set());
   const [userPreferences, setUserPreferences] = useState<UserPreferences>({
     favoriteTeams: ['Eagles', 'Chiefs', 'Lakers', 'Yankees'],
