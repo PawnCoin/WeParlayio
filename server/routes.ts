@@ -3823,21 +3823,25 @@ Start betting through text now!`;
             
             if (streamsResponse.ok) {
               const streamsData = await streamsResponse.json();
+              console.log(`Twitch streams loaded: ${streamsData.data?.length || 0} channels`);
+              
               streamsData.data?.forEach((stream: any) => {
                 liveGames.push({
                   id: `twitch-${stream.id}`,
                   title: stream.title,
-                  sport: 'Sports',
+                  sport: 'Esports',
                   homeTeam: { name: stream.user_name, logo: stream.thumbnail_url },
                   awayTeam: { name: 'Live', logo: stream.thumbnail_url },
                   status: 'live',
                   streamUrl: `https://www.twitch.tv/${stream.user_login}`,
                   thumbnailUrl: stream.thumbnail_url?.replace('{width}', '320').replace('{height}', '180'),
                   leagueName: 'Twitch Sports',
-                  isEsport: false,
+                  isEsport: true,
                   source: 'Twitch'
                 });
               });
+            } else {
+              console.log('Twitch API response not ok:', streamsResponse.status);
             }
           }
         }
