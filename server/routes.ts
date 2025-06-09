@@ -3061,6 +3061,57 @@ Start betting through text now!`;
     }
   });
 
+  // Crypto betting endpoint
+  app.post('/api/crypto/place-bet', isAuthenticated, async (req, res) => {
+    try {
+      const { eventId, selection, amount, cryptocurrency, odds, potentialPayout, walletAddress, betType } = req.body;
+      const user = req.user as any;
+
+      // Validate bet data
+      if (!eventId || !selection || !amount || !cryptocurrency || !odds || !walletAddress) {
+        return res.status(400).json({ error: 'Missing required bet information' });
+      }
+
+      if (amount <= 0) {
+        return res.status(400).json({ error: 'Bet amount must be positive' });
+      }
+
+      // Create crypto bet record
+      const bet = await storage.createBet({
+        userId: parseInt(user.claims.sub),
+        eventId: parseInt(eventId),
+        amount: amount,
+        odds: odds,
+        status: 'pending',
+        betType: betType || 'crypto',
+        selection: selection,
+        potentialPayout: potentialPayout || amount * (odds > 0 ? (odds / 100) + 1 : (100 / Math.abs(odds)) + 1),
+        metadata: {
+          cryptocurrency,
+          walletAddress,
+          transactionType: 'crypto',
+          placedAt: new Date().toISOString()
+        }
+      });
+
+      // Simulate blockchain transaction hash for demo
+      const transactionHash = `0x${Math.random().toString(16).substr(2, 64)}`;
+
+      res.json({
+        success: true,
+        betId: bet.id,
+        transactionHash,
+        cryptocurrency,
+        amount,
+        potentialPayout,
+        message: 'Crypto bet placed successfully'
+      });
+    } catch (error) {
+      console.error('Error placing crypto bet:', error);
+      res.status(500).json({ error: 'Failed to place crypto bet' });
+    }
+  });
+
   // Get cryptocurrency prices (batch)
   app.get('/api/crypto/prices', async (req, res) => {
     try {

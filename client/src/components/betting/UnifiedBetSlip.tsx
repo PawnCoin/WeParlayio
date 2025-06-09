@@ -87,11 +87,13 @@ export default function UnifiedBetSlip({ bets, onRemoveBet, onClearAll }: Unifie
           </TabsList>
 
           <TabsContent value="crypto" className="mt-4">
-            <CryptoBetSlip 
-              bets={bets}
-              onRemoveBet={onRemoveBet}
-              onClearAll={onClearAll}
-            />
+            <div className="mt-[-16px]">
+              <CryptoBetSlip 
+                bets={bets}
+                onRemoveBet={onRemoveBet}
+                onClearAll={onClearAll}
+              />
+            </div>
           </TabsContent>
 
           <TabsContent value="fiat" className="mt-4">

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { getLeagueLogo } from '@/utils/sportsLogosSimple';
+import UnifiedBetSlip from '@/components/betting/UnifiedBetSlip';
 
 // Helper function to format game time
 const formatGameTime = (dateString: string) => {
@@ -152,32 +153,14 @@ const BettingDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Bet Slip Summary */}
-      {betSlip.length > 0 && (
-        <div className="mb-6">
-          <Card className="border-green-200">
-            <CardHeader>
-              <CardTitle className="text-green-700">Bet Slip ({betSlip.length} selections)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {betSlip.map((bet) => (
-                  <div key={bet.id} className="flex justify-between items-center p-2 bg-green-50 rounded">
-                    <span className="text-sm">{bet.gameTitle} - {bet.selection}</span>
-                    <span className="text-sm font-medium">{bet.odds > 0 ? '+' : ''}{bet.odds}</span>
-                  </div>
-                ))}
-              </div>
-              <Button 
-                className="w-full mt-4" 
-                onClick={() => setBetSlip([])}
-              >
-                Clear Bet Slip
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      {/* Unified Crypto Bet Slip */}
+      <div className="mb-6">
+        <UnifiedBetSlip 
+          bets={betSlip}
+          onRemoveBet={(betId) => setBetSlip(prev => prev.filter(bet => bet.id !== betId))}
+          onClearAll={() => setBetSlip([])}
+        />
+      </div>
 
       {/* League Filter */}
       <div className="mb-6">
