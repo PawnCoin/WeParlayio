@@ -128,9 +128,9 @@ const Home: React.FC = () => {
                 <SelectValue placeholder="All Sports" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="All Sports">All Sports</SelectItem>
-                {sports && sports.map((sport: any) => (
-                  <SelectItem key={sport.key} value={sport.key}>
+                <SelectItem key="all-sports" value="All Sports">All Sports</SelectItem>
+                {sports && sports.map((sport: any, index: number) => (
+                  <SelectItem key={sport.key || `sport-${index}`} value={sport.key}>
                     {sport.name}
                   </SelectItem>
                 ))}

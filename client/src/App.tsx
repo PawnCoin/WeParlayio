@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Switch, Route } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { WebSocketHandler } from "@/lib/websocketHandler";
+import { initGA } from "@/lib/analytics";
+import { useAnalytics } from "@/hooks/use-analytics";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import Tournaments from "@/pages/Tournaments";
@@ -340,8 +343,12 @@ function AppContent() {
 }
 
 function App() {
-  // Initialize Google Analytics when app loads
+  // Initialize Google Analytics and WebSocket error handling when app loads
   React.useEffect(() => {
+    // Initialize WebSocket error handler
+    WebSocketHandler.getInstance().preventUnhandledRejection();
+    console.log('🔌 WebSocket disabled in development environment');
+    
     // Verify required environment variable is present
     if (!import.meta.env.VITE_GA_MEASUREMENT_ID) {
       console.warn('Missing required Google Analytics key: VITE_GA_MEASUREMENT_ID');
