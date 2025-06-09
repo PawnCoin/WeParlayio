@@ -242,8 +242,8 @@ const Home: React.FC = () => {
           <div className="space-y-4">
             {liveEvents
               .filter((event: any) => sportFilter === "All Sports" || event.sport_key === sportFilter)
-              .map((event: any) => (
-                <GameCard key={event.id} game={{
+              .map((event: any, index: number) => (
+                <GameCard key={`live-${event.id}-${index}`} game={{
                   id: event.id,
                   homeTeam: {
                     id: event.home_team_id,
@@ -292,8 +292,8 @@ const Home: React.FC = () => {
             {upcomingEvents.events
               .filter((event: any) => sportFilter === "All Sports" || event.sport?.includes(sportFilter) || event.league?.includes(sportFilter))
               .slice(0, 6)
-              .map((event: any) => (
-                <UpcomingGameCard key={`${event.id}-${event.sport || 'unknown'}`} game={{
+              .map((event: any, index: number) => (
+                <UpcomingGameCard key={`upcoming-${event.id}-${index}`} game={{
                   id: event.id,
                   homeTeam: {
                     id: 1,

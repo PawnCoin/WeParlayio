@@ -162,7 +162,8 @@ app.use((req, res, next) => {
       server = createSSLServer(app, sslConfig);
       log(`🔒 SSL/TLS encryption enabled for weparlay.io`);
     } catch (error) {
-      log(`❌ SSL certificate error: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown SSL error';
+      log(`❌ SSL certificate error: ${errorMessage}`);
       log(`🔄 Falling back to HTTP server`);
       server = app;
     }
