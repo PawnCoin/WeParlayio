@@ -295,8 +295,17 @@ export default function StreamingRecommendations() {
           </Card>
 
           {/* Recommendations Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredRecommendations.map((stream) => (
+          {isLoading ? (
+            <div className="text-center py-8">
+              <p className="text-white">Loading authentic streaming data...</p>
+            </div>
+          ) : filteredRecommendations.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-white">No streams found. Total events: {sportsData.length}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredRecommendations.map((stream) => (
               <Card key={stream.id} className="bg-card border-border overflow-hidden group hover:shadow-lg transition-all">
                 <div className="relative">
                   <div className="aspect-video bg-muted">
@@ -378,7 +387,8 @@ export default function StreamingRecommendations() {
                 </CardContent>
               </Card>
             ))}
-          </div>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="preferences" className="space-y-6">
