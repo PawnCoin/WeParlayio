@@ -50,11 +50,13 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
 
     const bet = {
       id: betId,
-      gameId: game.id,
-      betType,
-      team: safeTeamName,
-      odds: odds || 0,
-      sport: game.sportName || 'Unknown Sport',
+      type: betType,
+      eventName: `${game.awayTeam.name} vs ${game.homeTeam.name}`,
+      selection: safeTeamName,
+      opponent: safeTeamName === game.homeTeam.name ? game.awayTeam.name : game.homeTeam.name,
+      odds: odds || 100,
+      timestamp: new Date().toISOString(),
+      status: 'pending' as const,
     };
     addBet(bet);
     setSelectedBet(betId);
@@ -78,11 +80,18 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
               {game.sportName}
             </span>
           </div>
-          {game.status === 'Live' && (
-            <Badge variant="destructive" className="animate-pulse">
-              LIVE
-            </Badge>
-          )}
+          <div className="flex items-center gap-2">
+            {game.status === 'live' && (
+              <Badge variant="destructive" className="animate-pulse">
+                LIVE
+              </Badge>
+            )}
+            {game.period && (
+              <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                {game.period}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Teams and logos */}
@@ -100,9 +109,13 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
               />
               <div className="flex flex-col">
                 <span className="font-medium text-sm">{game.awayTeam.name}</span>
-                {game.status === 'Live' && game.awayScore !== undefined && (
-                  <span className="text-xl font-bold">{game.awayScore}</span>
-                )}
+                <div className="flex items-center gap-2">
+                  {game.status === 'live' && game.awayScore !== undefined ? (
+                    <span className="text-xl font-bold text-blue-600">{game.awayScore}</span>
+                  ) : (
+                    <span className="text-sm text-gray-500">{game.awayTeam.record || 'vs'}</span>
+                  )}
+                </div>
               </div>
             </div>
             <div className="text-right">
@@ -128,9 +141,13 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
               />
               <div className="flex flex-col">
                 <span className="font-medium text-sm">{game.homeTeam.name}</span>
-                {game.status === 'Live' && game.homeScore !== undefined && (
-                  <span className="text-xl font-bold">{game.homeScore}</span>
-                )}
+                <div className="flex items-center gap-2">
+                  {game.status === 'live' && game.homeScore !== undefined ? (
+                    <span className="text-xl font-bold text-green-600">{game.homeScore}</span>
+                  ) : (
+                    <span className="text-sm text-gray-500">{game.homeTeam.record || 'home'}</span>
+                  )}
+                </div>
               </div>
             </div>
             <div className="text-right">
@@ -148,16 +165,18 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
         <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
             <Clock className="w-4 h-4" />
-            <span>{game.startTime}</span>
+            <span>{new Date(game.startTime).toLocaleTimeString()}</span>
           </div>
           <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-            <div className="flex items-center gap-1">
-              <Users className="w-4 h-4" />
-              <span>1.2k</span>
-            </div>
+            {game.timeRemaining && (
+              <div className="flex items-center gap-1">
+                <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                <span>{game.timeRemaining}</span>
+              </div>
+            )}
             <div className="flex items-center gap-1">
               <TrendingUp className="w-4 h-4" />
-              <span>65%</span>
+              <span className="text-green-600 font-medium">Live</span>
             </div>
           </div>
         </div>

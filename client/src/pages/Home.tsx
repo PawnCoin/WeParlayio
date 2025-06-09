@@ -229,8 +229,11 @@ const Home: React.FC = () => {
       {/* Live Events Section */}
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-4 flex items-center">
-          <span className="h-3 w-3 rounded-full bg-green-500 mr-2"></span>
+          <span className="h-3 w-3 rounded-full bg-green-500 mr-2 animate-pulse"></span>
           Live Events
+          <span className="ml-2 text-sm font-normal text-green-600 bg-green-100 px-2 py-1 rounded-full">
+            {liveEvents?.length || 0} Live
+          </span>
         </h2>
 
         {isLoadingLiveEvents ? (
