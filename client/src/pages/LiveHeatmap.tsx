@@ -91,8 +91,8 @@ export default function LiveHeatmap() {
           </div>
         </div>
 
-        {/* Real-time stats from GRID and unified APIs */}
-        {coverageData && Array.isArray(coverageData) && (
+        {/* Real-time stats from authentic multi-sport data */}
+        {sportsData && Array.isArray(sportsData) && (
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
             <Card>
               <CardContent className="p-4">
@@ -101,7 +101,7 @@ export default function LiveHeatmap() {
                   <span className="text-sm font-medium">Live Events</span>
                 </div>
                 <div className="text-2xl font-bold text-red-600">
-                  {Array.isArray(liveEvents) ? liveEvents.length : 0}
+                  {sportsData.length}
                 </div>
               </CardContent>
             </Card>
