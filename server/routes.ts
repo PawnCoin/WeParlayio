@@ -3924,7 +3924,7 @@ Start betting through text now!`;
               const youtubeData = await youtubeResponse.json();
               youtubeData.items?.forEach((item: any) => {
                 liveGames.push({
-                  id: `youtube-${item.id.videoId}`,
+                  id: `youtube-${item.id.videoId}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
                   title: item.snippet.title,
                   sport: keyword,
                   homeTeam: { name: 'Live', logo: item.snippet.thumbnails?.default?.url, score: 0 },

@@ -337,10 +337,20 @@ export default function LiveStreaming() {
                   <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
                     {/* Video Element */}
                     {selectedGame.streamUrl ? (
-                      selectedGame.streamUrl.includes('youtube.com') || selectedGame.streamUrl.includes('twitch.tv') ? (
+                      selectedGame.streamUrl.includes('youtube.com') ? (
                         <iframe
                           className="w-full h-full"
-                          src={selectedGame.streamUrl}
+                          src={selectedGame.streamUrl.replace('watch?v=', 'embed/').replace('youtube.com', 'youtube-nocookie.com')}
+                          title={selectedGame.title}
+                          frameBorder="0"
+                          allowFullScreen
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        />
+                      ) : selectedGame.streamUrl.includes('twitch.tv') ? (
+                        <iframe
+                          className="w-full h-full"
+                          src={selectedGame.streamUrl.replace('twitch.tv/', 'player.twitch.tv/?channel=').replace('https://', 'https://player.twitch.tv/?channel=')}
+                          title={selectedGame.title}
                           frameBorder="0"
                           allowFullScreen
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
