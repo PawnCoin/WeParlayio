@@ -1,29 +1,23 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import Hls from 'hls.js';
 import { 
-  Play, 
-  Pause, 
-  Volume2, 
-  VolumeX, 
-  Maximize, 
-  TrendingUp,
-  TrendingDown,
+  Play,
   Clock,
   Users,
-  DollarSign,
-  Target,
   Zap,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { allSportsApiClient, type AllSportsGame } from '@/services/allSportsApiClient';
+import VideoPlayer from '@/components/streaming/VideoPlayer';
+import BettingPanel from '@/components/streaming/BettingPanel';
+import BetSlip from '@/components/streaming/BetSlip';
+import { StreamingGame, BetSlip as BetSlipType, BetType } from '@/components/streaming/types';
 
+// Legacy LiveGame interface for compatibility
 interface LiveGame {
   id: string;
   title: string;
@@ -52,25 +46,11 @@ interface LiveGame {
   timeRemaining: string;
 }
 
-interface BetSlip {
-  gameId: string;
-  betType: string;
-  odds: number;
-  amount: number;
-  potentialWin: number;
-}
-
 export default function LiveStreaming() {
-  const [selectedGame, setSelectedGame] = useState<LiveGame | null>(null);
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [betSlip, setBetSlip] = useState<BetSlip | null>(null);
+  const [selectedGame, setSelectedGame] = useState<StreamingGame | null>(null);
+  const [betSlip, setBetSlip] = useState<BetSlipType | null>(null);
   const [betAmount, setBetAmount] = useState<number>(10);
-  const [showPlayButton, setShowPlayButton] = useState(false);
   const { toast } = useToast();
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const carouselRef = useRef<HTMLDivElement>(null);
 
   const { data: rawLiveGames = [], isLoading } = useQuery<LiveGame[]>({
     queryKey: ['/api/live-games'],
