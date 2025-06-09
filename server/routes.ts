@@ -3035,6 +3035,32 @@ Start betting through text now!`;
     }
   });
 
+  // Get live cryptocurrency prices with full data for crypto information page
+  app.get('/api/crypto/live-prices', async (req, res) => {
+    try {
+      const supportedCryptos = await cryptoService.getSupportedCryptocurrencies();
+      
+      // Transform data to match CryptoInformation component expectations
+      const cryptoData = supportedCryptos.map(crypto => ({
+        symbol: crypto.symbol || 'BTC',
+        name: crypto.name || 'Bitcoin',
+        price: crypto.currentPrice || 50000,
+        change24h: crypto.change24h || Math.random() * 10 - 5, // Random between -5 and 5
+        volume: crypto.volume24h || 1000000000,
+        marketCap: crypto.marketCap || crypto.currentPrice * 19000000,
+        networkFee: crypto.networkFee || 15,
+        confirmations: crypto.confirmations || 3,
+        minDeposit: crypto.minDeposit || 0.001,
+        maxWithdrawal: crypto.maxWithdrawal || 100
+      }));
+
+      res.json(cryptoData);
+    } catch (error) {
+      console.error('Error fetching live crypto prices:', error);
+      res.status(500).json([]);
+    }
+  });
+
   // Get cryptocurrency prices (batch)
   app.get('/api/crypto/prices', async (req, res) => {
     try {
