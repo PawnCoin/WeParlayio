@@ -504,15 +504,15 @@ export default function LiveStreaming() {
                       </div>
                     </Button>
                     
-                    {selectedGame.odds.draw && (
+                    {selectedGame.odds?.draw && (
                       <Button
                         variant="outline"
                         className="h-16 border-gray-600 hover:bg-gray-600/20"
-                        onClick={() => handleBetPlace(selectedGame.id, 'draw', selectedGame.odds.draw!)}
+                        onClick={() => handleBetPlace(selectedGame.id, 'draw', selectedGame.odds?.draw || 3.2)}
                       >
                         <div className="text-center">
                           <p className="text-sm">Draw</p>
-                          <p className="text-lg font-bold">+{selectedGame.odds.draw}</p>
+                          <p className="text-lg font-bold">+{selectedGame.odds?.draw || 3.2}</p>
                         </div>
                       </Button>
                     )}
@@ -520,11 +520,11 @@ export default function LiveStreaming() {
                     <Button
                       variant="outline"
                       className="h-16 border-green-600 hover:bg-green-600/20"
-                      onClick={() => handleBetPlace(selectedGame.id, 'away_win', selectedGame.odds.awayWin)}
+                      onClick={() => handleBetPlace(selectedGame.id, 'away_win', selectedGame.odds?.awayWin || 1.8)}
                     >
                       <div className="text-center">
                         <p className="text-sm">{selectedGame.awayTeam.name} Win</p>
-                        <p className="text-lg font-bold">+{selectedGame.odds.awayWin}</p>
+                        <p className="text-lg font-bold">+{selectedGame.odds?.awayWin || 1.8}</p>
                       </div>
                     </Button>
                   </div>
