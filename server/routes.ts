@@ -4755,5 +4755,14 @@ ${streamUrl}
 
   // Return the HTTP server
   const httpServer = createServer(app);
+  
+  // Initialize WebSocket service on the same HTTP server
+  try {
+    const { initializeWebSocketService } = await import('./services/websocketService');
+    initializeWebSocketService(httpServer);
+  } catch (error) {
+    console.log('WebSocket service initialization skipped:', error.message);
+  }
+  
   return httpServer;
 }
