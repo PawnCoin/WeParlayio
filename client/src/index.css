@@ -200,6 +200,97 @@ html:not(.dark) .sidebar .icon {
   color: #6b7280 !important; /* Lighter gray for icons */
 }
 
+/* Dark Mode Element Style Overrides */
+.dark * {
+  border-color: rgb(51 65 85) !important;
+}
+
+/* Dark mode text color enforcement */
+.dark {
+  color: rgb(248 250 252) !important;
+}
+
+.dark * {
+  color: inherit !important;
+}
+
+/* Dark mode card backgrounds */
+.dark .bg-white {
+  background-color: rgb(30 41 59) !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: rgb(51 65 85) !important;
+}
+
+.dark .bg-gray-100 {
+  background-color: rgb(71 85 105) !important;
+}
+
+/* Dark mode text colors */
+.dark .text-black {
+  color: rgb(248 250 252) !important;
+}
+
+.dark .text-gray-900 {
+  color: rgb(248 250 252) !important;
+}
+
+.dark .text-gray-800 {
+  color: rgb(241 245 249) !important;
+}
+
+.dark .text-gray-700 {
+  color: rgb(203 213 225) !important;
+}
+
+.dark .text-gray-600 {
+  color: rgb(148 163 184) !important;
+}
+
+.dark .text-gray-500 {
+  color: rgb(148 163 184) !important;
+}
+
+/* Dark mode border overrides */
+.dark .border-gray-200 {
+  border-color: rgb(51 65 85) !important;
+}
+
+.dark .border-gray-300 {
+  border-color: rgb(71 85 105) !important;
+}
+
+/* Dark mode gradient overrides */
+.dark .from-green-50 {
+  background-image: linear-gradient(to right, rgb(6 78 59 / 0.2), var(--tw-gradient-to)) !important;
+}
+
+.dark .to-blue-50 {
+  --tw-gradient-to: rgb(30 58 138 / 0.2) !important;
+}
+
+.dark .from-blue-50 {
+  background-image: linear-gradient(to right, rgb(30 58 138 / 0.2), var(--tw-gradient-to)) !important;
+}
+
+.dark .to-green-50 {
+  --tw-gradient-to: rgb(6 78 59 / 0.2) !important;
+}
+
+/* Override any inline styles in dark mode */
+.dark [style*="background-color"] {
+  background-color: rgb(30 41 59) !important;
+}
+
+.dark [style*="color: rgb(0"] {
+  color: rgb(248 250 252) !important;
+}
+
+.dark [style*="color: black"] {
+  color: rgb(248 250 252) !important;
+}
+
 /* Badge and tag text in sidebar */
 html:not(.dark) .sidebar .badge,
 html:not(.dark) .sidebar .tag,
