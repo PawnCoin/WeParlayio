@@ -17,6 +17,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Filter, BarChart2, Handshake, Users, Crown, Sparkles } from "lucide-react";
+import LiveStatsBar from "@/components/sports/LiveStatsBar";
+import SportBreakdown from "@/components/sports/SportBreakdown";
 
 // Featured game will be pulled from real API data
 
@@ -217,13 +219,37 @@ const Home: React.FC = () => {
         </Card>
       </div>
 
-      {/* Animated Sports Stats Carousel */}
-      <div className="mb-8">
-        <h2 className="text-xl font-bold mb-4 flex items-center">
-          <BarChart2 className="h-5 w-5 mr-2 text-primary" />
-          Sports Stats Leaders
-        </h2>
-        <StatsCarousel />
+      {/* Sports Analytics Dashboard */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div>
+          <h2 className="text-xl font-bold mb-4 flex items-center">
+            <BarChart2 className="h-5 w-5 mr-2 text-primary" />
+            Sports Stats Leaders
+          </h2>
+          <StatsCarousel />
+        </div>
+        
+        <div>
+          <SportBreakdown 
+            sportsData={[
+              { name: 'NFL', count: 16, percentage: 42 },
+              { name: 'Soccer', count: 10, percentage: 26 },
+              { name: 'MLB', count: 9, percentage: 24 },
+              { name: 'NBA', count: 1, percentage: 3 },
+              { name: 'NHL', count: 1, percentage: 3 },
+              { name: 'WNBA', count: 1, percentage: 3 }
+            ]}
+          />
+        </div>
+      </div>
+
+      {/* Live Sports Statistics Bar */}
+      <div className="mb-6">
+        <LiveStatsBar 
+          totalEvents={liveEvents?.length || 0}
+          activeSports={['NFL', 'NBA', 'MLB', 'NHL', 'Soccer', 'WNBA']}
+          lastUpdate={new Date().toLocaleTimeString()}
+        />
       </div>
 
       {/* Live Events Section */}
