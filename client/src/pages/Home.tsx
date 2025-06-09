@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
+import { useToast } from "@/hooks/use-toast";
 import sportsBetAPI from "@/lib/sportsBetAPI";
 import GameCard from "@/components/betting/GameCard";
 import UpcomingGameCard from "@/components/betting/UpcomingGameCard";
@@ -29,6 +31,16 @@ const Home: React.FC = () => {
   const [sportFilter, setSportFilter] = useState("All Sports");
   const [selectedTab, setSelectedTab] = useState("game-lines");
   const [showPartnersModal, setShowPartnersModal] = useState(false);
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+
+  const handlePlatinumUpgrade = () => {
+    toast({
+      title: "Platinum Upgrade",
+      description: "Redirecting to tier selection...",
+    });
+    setLocation("/tier-comparison");
+  };
 
   // Get all available sports
   const { data: sports, isLoading: isLoadingSports } = useQuery({
@@ -210,6 +222,7 @@ const Home: React.FC = () => {
                 <Button 
                   size="lg"
                   className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold"
+                  onClick={handlePlatinumUpgrade}
                 >
                   Upgrade to Platinum
                 </Button>

@@ -59,6 +59,7 @@ import FantasyFootball from "@/pages/FantasyFootball";
 import YahooFantasyFootball from "@/pages/YahooFantasyFootball";
 import FantasySportsHub from "@/pages/FantasySportsHub";
 import FantasyAnalyticsDashboard from "@/pages/FantasyAnalyticsDashboard";
+import TierComparison from "@/pages/TierComparison";
 
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
@@ -178,6 +179,9 @@ function Router() {
       <Route path="/fantasy-football" component={FantasyFootball} />
       <Route path="/yahoo-fantasy" component={YahooFantasyFootball} />
       <Route path="/fantasy/analytics" component={FantasyAnalyticsDashboard} />
+
+      {/* Tier Management */}
+      <Route path="/tier-comparison" component={TierComparison} />
 
       {/* Tournaments */}
       <Route path="/tournaments" component={Tournaments} />
