@@ -3683,276 +3683,164 @@ Start betting through text now!`;
     }
   });
 
-  // Live Streaming API Endpoints
+  // Live Streaming API Endpoints - Sports Channels Only
   app.get('/api/live-games', async (req, res) => {
     try {
-      const liveGames = [];
+      const liveGames: any[] = [];
       
-      // Get authentic sports data from AllSportsAPI subscription
+      // Get sports channels from IPTV service (229,451 channels from thetv.to)
       try {
-        const allSportsEvents = await allSportsApiService.getLiveEvents();
+        const { iptvService } = await import('./services/iptvService');
+        const allChannels = iptvService.getAllChannels();
         
-        if (response.ok) {
-          const m3uContent = await response.text();
-          const lines = m3uContent.split('\n');
-          let channelCount = 0;
-          let currentChannel = null;
+        // Filter for sports-only channels
+        const sportsChannels = allChannels.filter(channel => {
+          const nameLower = channel.name.toLowerCase();
+          const categoryLower = channel.category.toLowerCase();
           
-          for (let i = 0; i < lines.length && channelCount < 10; i++) {
-            const line = lines[i].trim();
+          return (
+            // Dedicated sports networks
+            nameLower.includes('espn') ||
+            nameLower.includes('fox sports') ||
+            nameLower.includes('nfl') ||
+            nameLower.includes('nba') ||
+            nameLower.includes('mlb') ||
+            nameLower.includes('nhl') ||
+            nameLower.includes('tennis') ||
+            nameLower.includes('golf') ||
+            nameLower.includes('beinsports') ||
+            nameLower.includes('eurosport') ||
+            nameLower.includes('sky sports') ||
+            nameLower.includes('motorsport') ||
+            nameLower.includes('boxing') ||
+            nameLower.includes('soccer') ||
+            nameLower.includes('football') ||
+            nameLower.includes('basketball') ||
+            nameLower.includes('baseball') ||
+            nameLower.includes('hockey') ||
+            categoryLower === 'sports' ||
+            categoryLower === 'sport'
+          ) && (
+            // Exclude non-sports content
+            !nameLower.includes('news') &&
+            !nameLower.includes('weather') &&
+            !nameLower.includes('music') &&
+            !nameLower.includes('movie')
+          );
+        });
+        
+        // Convert IPTV sports channels to live games format
+        sportsChannels.slice(0, 15).forEach((channel) => {
+          liveGames.push({
+            id: `iptv-${channel.id}`,
+            title: channel.name,
+            sport: 'Live Sports',
+            homeTeam: { name: 'Live', logo: channel.logo },
+            awayTeam: { name: 'Sports', logo: channel.logo },
+            status: 'live',
+            streamUrl: channel.url,
+            thumbnailUrl: channel.logo,
+            leagueName: channel.group,
+            isEsport: false,
+            source: 'IPTV'
+          });
+        });
+        
+      } catch (error) {
+        console.error('Error loading IPTV sports channels:', error);
+      }
+      
+      // Add YouTube sports channels if API key available
+      try {
+        const youtubeApiKey = process.env.YOUTUBE_API_KEY;
+        if (youtubeApiKey) {
+          const sportsKeywords = ['ESPN', 'NBA', 'NFL', 'MLB', 'NHL', 'Soccer'];
+          
+          for (const keyword of sportsKeywords.slice(0, 3)) {
+            const youtubeResponse = await fetch(
+              `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&eventType=live&videoCategoryId=17&q=${keyword}&key=${youtubeApiKey}&maxResults=2`
+            );
             
-            if (line.startsWith('#EXTINF:')) {
-              const info = line.substring(8);
-              const parts = info.split(',');
-              const name = parts[parts.length - 1];
-              
-              // Extract group-title for categorization
-              const groupMatch = info.match(/group-title="([^"]+)"/);
-              const category = groupMatch ? groupMatch[1] : 'Sports';
-              
-              // Ultra-strict sports-only filtering - exclude all generic channels
-              const nameLower = name.toLowerCase();
-              const categoryLower = category.toLowerCase();
-              
-              const isSportsOnly = (
-                // Dedicated sports networks
-                nameLower.includes('espn') ||
-                nameLower.includes('fox sports') ||
-                nameLower.includes('nfl network') ||
-                nameLower.includes('nba tv') ||
-                nameLower.includes('mlb network') ||
-                nameLower.includes('nhl network') ||
-                nameLower.includes('tennis channel') ||
-                nameLower.includes('golf channel') ||
-                nameLower.includes('beinsports') ||
-                nameLower.includes('eurosport') ||
-                nameLower.includes('sky sports') ||
-                nameLower.includes('premier sports') ||
-                nameLower.includes('motorsport') ||
-                nameLower.includes('ncaa') ||
-                nameLower.includes('boxing') ||
-                nameLower.includes('tennis') ||
-                nameLower.includes('golf') ||
-                nameLower.includes('soccer') ||
-                nameLower.includes('football') && !nameLower.includes('news') ||
-                nameLower.includes('basketball') && !nameLower.includes('news') ||
-                nameLower.includes('baseball') && !nameLower.includes('news') ||
-                nameLower.includes('hockey') && !nameLower.includes('news') ||
-                // Sport-specific categories
-                categoryLower === 'sports' ||
-                categoryLower === 'sport'
-              ) && (
-                // Exclude generic channels and news
-                !nameLower.includes('pt |') &&
-                !nameLower.includes('news') &&
-                !nameLower.includes('weather') &&
-                !nameLower.includes('movie') &&
-                !nameLower.includes('entertainment')
-              );
-              
-              if (isSportsOnly) {
-                currentChannel = {
-                  name: name,
-                  category: category,
-                  info: info
-                };
-              }
-            } else if (line.startsWith('http') && currentChannel && channelCount < 10) {
-              const streamUrl = line;
-              
-              liveGames.push({
-                id: `thetv-${channelCount}`,
-                title: currentChannel.name,
-                homeTeam: {
-                  name: 'Live Event',
-                  score: Math.floor(Math.random() * 30),
-                  logo: '/api/placeholder/40/40'
-                },
-                awayTeam: {
-                  name: 'Broadcasting',
-                  score: Math.floor(Math.random() * 30),
-                  logo: '/api/placeholder/40/40'
-                },
-                sport: currentChannel.category,
-                league: currentChannel.name,
-                status: 'live' as const,
-                startTime: new Date().toISOString(),
-                streamUrl: `/api/stream-proxy?url=${encodeURIComponent(streamUrl)}`,
-                odds: {
-                  homeWin: Math.floor(Math.random() * 200) + 100,
-                  awayWin: Math.floor(Math.random() * 200) + 100
-                },
-                viewers: Math.floor(Math.random() * 50000) + 10000,
-                period: 'Live',
-                timeRemaining: 'Live'
+            if (youtubeResponse.ok) {
+              const youtubeData = await youtubeResponse.json();
+              youtubeData.items?.forEach((item: any) => {
+                liveGames.push({
+                  id: `youtube-${item.id.videoId}`,
+                  title: item.snippet.title,
+                  sport: keyword,
+                  homeTeam: { name: 'Live', logo: item.snippet.thumbnails?.default?.url },
+                  awayTeam: { name: 'Stream', logo: item.snippet.thumbnails?.default?.url },
+                  status: 'live',
+                  streamUrl: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+                  thumbnailUrl: item.snippet.thumbnails?.medium?.url,
+                  leagueName: 'YouTube Sports',
+                  isEsport: false,
+                  source: 'YouTube'
+                });
               });
-              
-              channelCount++;
-              currentChannel = null;
             }
           }
-          
-          console.log(`TheTVSub authentic streams loaded: ${liveGames.length} channels`);
         }
+        console.log(`YouTube Gaming streams loaded: ${liveGames.filter(g => g.source === 'YouTube').length} channels`);
       } catch (error) {
-        console.error('Error loading TheTVSub streams:', error);
+        console.error('Error loading YouTube sports streams:', error);
       }
       
-      // Add authentic sports data from The Odds API
+      // Add Twitch sports channels if API keys available
       try {
-        if (process.env.THE_ODDS_API_KEY) {
-          const response = await fetch(`https://api.the-odds-api.com/v4/sports/upcoming/odds/?apiKey=${process.env.THE_ODDS_API_KEY}&regions=us&markets=h2h&oddsFormat=american`);
-          if (response.ok) {
-            const oddsData = await response.json();
-            
-            // Convert odds data to live games format with real streaming URLs from your service
-            oddsData.slice(0, 5).forEach((game: any, index: number) => {
-              if (game.bookmakers && game.bookmakers.length > 0) {
-                const odds = game.bookmakers[0].markets[0].outcomes;
-                liveGames.push({
-                  id: `live-${game.id}`,
-                  title: `${game.home_team} vs ${game.away_team}`,
-                  homeTeam: {
-                    name: game.home_team,
-                    score: Math.floor(Math.random() * 30),
-                    logo: `/api/placeholder/40/40`
-                  },
-                  awayTeam: {
-                    name: game.away_team,
-                    score: Math.floor(Math.random() * 30),
-                    logo: `/api/placeholder/40/40`
-                  },
-                  sport: game.sport_title,
-                  league: game.sport_title,
-                  status: index < 3 ? 'live' : 'upcoming',
-                  startTime: game.commence_time,
-                  streamUrl: '', // Will be populated from thetv.to when available
-                  odds: {
-                    homeWin: Math.abs(odds.find((o: any) => o.name === game.home_team)?.price || 120),
-                    awayWin: Math.abs(odds.find((o: any) => o.name === game.away_team)?.price || 130),
-                    ...(odds.length > 2 && { draw: Math.abs(odds[2]?.price || 250) })
-                  },
-                  viewers: Math.floor(Math.random() * 50000) + 10000,
-                  period: index < 3 ? ['1st Quarter', '2nd Quarter', '3rd Quarter', 'Final'][Math.floor(Math.random() * 4)] : 'Pregame',
-                  timeRemaining: index < 3 ? `${Math.floor(Math.random() * 15)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}` : 'Starting Soon'
-                });
-              }
-            });
-          }
-        }
-      } catch (error) {
-        console.log('The Odds API unavailable, using primary streaming service');
-      }
-
-      // Get authentic live streams from Twitch API for esports
-      try {
-        if (process.env.TWITCH_CLIENT_ID && process.env.TWITCH_CLIENT_SECRET) {
-          // Get Twitch OAuth token
+        const twitchClientId = process.env.TWITCH_CLIENT_ID;
+        const twitchClientSecret = process.env.TWITCH_CLIENT_SECRET;
+        
+        if (twitchClientId && twitchClientSecret) {
           const tokenResponse = await fetch('https://id.twitch.tv/oauth2/token', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: `client_id=${process.env.TWITCH_CLIENT_ID}&client_secret=${process.env.TWITCH_CLIENT_SECRET}&grant_type=client_credentials`
+            body: `client_id=${twitchClientId}&client_secret=${twitchClientSecret}&grant_type=client_credentials`
           });
           
           if (tokenResponse.ok) {
             const tokenData = await tokenResponse.json();
+            const accessToken = tokenData.access_token;
             
-            // Get live gaming streams
-            const streamsResponse = await fetch('https://api.twitch.tv/helix/streams?game_id=509658&game_id=515025&game_id=21779&first=10', {
-              headers: {
-                'Client-ID': process.env.TWITCH_CLIENT_ID,
-                'Authorization': `Bearer ${tokenData.access_token}`
+            const sportsGameId = '518203'; // Sports category on Twitch
+            const streamsResponse = await fetch(
+              `https://api.twitch.tv/helix/streams?game_id=${sportsGameId}&first=5`,
+              {
+                headers: {
+                  'Client-ID': twitchClientId,
+                  'Authorization': `Bearer ${accessToken}`
+                }
               }
-            });
+            );
             
             if (streamsResponse.ok) {
               const streamsData = await streamsResponse.json();
-              console.log(`Twitch streams loaded: ${streamsData.data.length} channels`);
-              
-              streamsData.data.forEach((stream: any, index: number) => {
+              streamsData.data?.forEach((stream: any) => {
                 liveGames.push({
                   id: `twitch-${stream.id}`,
                   title: stream.title,
-                  homeTeam: { 
-                    name: stream.user_name, 
-                    score: Math.floor(Math.random() * 30), 
-                    logo: '/api/placeholder/40/40' 
-                  },
-                  awayTeam: { 
-                    name: 'Opponent', 
-                    score: Math.floor(Math.random() * 30), 
-                    logo: '/api/placeholder/40/40' 
-                  },
-                  sport: 'Esports',
-                  league: stream.game_name,
-                  status: 'live' as const,
-                  startTime: stream.started_at,
-                  streamUrl: `https://player.twitch.tv/?channel=${stream.user_login}&parent=localhost`,
-                  odds: { 
-                    homeWin: Math.floor(Math.random() * 200) + 100, 
-                    awayWin: Math.floor(Math.random() * 200) + 100 
-                  },
-                  viewers: stream.viewer_count,
-                  period: 'Live',
-                  timeRemaining: 'Live'
+                  sport: 'Sports',
+                  homeTeam: { name: stream.user_name, logo: stream.thumbnail_url },
+                  awayTeam: { name: 'Live', logo: stream.thumbnail_url },
+                  status: 'live',
+                  streamUrl: `https://www.twitch.tv/${stream.user_login}`,
+                  thumbnailUrl: stream.thumbnail_url?.replace('{width}', '320').replace('{height}', '180'),
+                  leagueName: 'Twitch Sports',
+                  isEsport: false,
+                  source: 'Twitch'
                 });
               });
             }
           }
         }
       } catch (error) {
-        console.error('Error loading Twitch streams:', error);
+        console.error('Error loading Twitch sports streams:', error);
       }
-
-      // Get YouTube Gaming live streams
-      try {
-        if (process.env.YOUTUBE_API_KEY) {
-          const youtubeResponse = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&eventType=live&type=video&videoCategoryId=20&maxResults=10&key=${process.env.YOUTUBE_API_KEY}`);
-          
-          if (youtubeResponse.ok) {
-            const youtubeData = await youtubeResponse.json();
-            console.log(`YouTube Gaming streams loaded: ${youtubeData.items?.length || 0} channels`);
-            
-            youtubeData.items?.forEach((video: any, index: number) => {
-              liveGames.push({
-                id: `youtube-${video.id.videoId}`,
-                title: video.snippet.title,
-                homeTeam: { 
-                  name: video.snippet.channelTitle, 
-                  score: Math.floor(Math.random() * 30), 
-                  logo: video.snippet.thumbnails.default.url 
-                },
-                awayTeam: { 
-                  name: 'Opponent', 
-                  score: Math.floor(Math.random() * 30), 
-                  logo: '/api/placeholder/40/40' 
-                },
-                sport: 'Esports',
-                league: 'YouTube Gaming',
-                status: 'live' as const,
-                startTime: video.snippet.publishedAt,
-                streamUrl: `https://www.youtube.com/embed/${video.id.videoId}?autoplay=1`,
-                odds: { 
-                  homeWin: Math.floor(Math.random() * 200) + 100, 
-                  awayWin: Math.floor(Math.random() * 200) + 100 
-                },
-                viewers: Math.floor(Math.random() * 50000) + 1000,
-                period: 'Live',
-                timeRemaining: 'Live'
-              });
-            });
-          }
-        }
-      } catch (error) {
-        console.error('Error loading YouTube Gaming streams:', error);
-      }
-
-
-
+      
       res.json(liveGames);
     } catch (error) {
-      console.error('Error fetching live games:', error);
-      res.status(500).json({ message: 'Failed to fetch live games' });
+      console.error('Error in live-games endpoint:', error);
+      res.status(500).json({ error: 'Failed to fetch live games' });
     }
   });
 
