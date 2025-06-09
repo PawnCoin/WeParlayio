@@ -291,66 +291,85 @@ export default function LiveStreaming() {
                 {liveGames.map((game) => (
                   <Card 
                     key={game.id} 
-                    className="bg-gray-900 border-gray-800 hover:border-blue-600 transition-colors cursor-pointer group"
+                    className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border-gray-700 hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 cursor-pointer group relative overflow-hidden"
                     onClick={() => handleGameSelect(game)}
                   >
-                    <CardHeader className="pb-3">
+                    {/* Animated background pattern */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-purple-600/5 to-blue-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    
+                    {/* Live indicator for live games */}
+                    {game.status === 'live' && (
+                      <div className="absolute top-2 right-2 flex items-center space-x-1">
+                        <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                        <span className="text-xs font-semibold text-red-500 bg-red-500/10 px-2 py-1 rounded-full">LIVE</span>
+                      </div>
+                    )}
+
+                    <CardHeader className="pb-3 relative z-10">
                       <div className="flex items-center justify-between">
-                        <Badge variant={getStatusBadgeVariant(game.status) as any}>
+                        <Badge 
+                          variant={getStatusBadgeVariant(game.status) as any}
+                          className="shadow-md font-semibold"
+                        >
                           {getStatusText(game.status)}
                         </Badge>
-                        <div className="flex items-center space-x-2 text-gray-400">
-                          <Users className="h-4 w-4" />
-                          <span className="text-sm">{game.viewers.toLocaleString()}</span>
+                        <div className="flex items-center space-x-2 text-gray-300 bg-gray-800/50 px-2 py-1 rounded-full">
+                          <Users className="h-4 w-4 text-blue-400" />
+                          <span className="text-sm font-medium">{game.viewers.toLocaleString()}</span>
                         </div>
                       </div>
-                      <CardTitle className="text-white group-hover:text-blue-400 transition-colors">
+                      <CardTitle className="text-white group-hover:text-blue-300 transition-colors text-lg font-bold">
                         {game.title}
                       </CardTitle>
+                      <div className="text-sm text-blue-400 font-medium">{game.sport} • {game.league}</div>
                     </CardHeader>
                     
-                    <CardContent>
+                    <CardContent className="relative z-10">
                       <div className="space-y-4">
-                        {/* Teams and Score */}
-                        <div className="flex items-center justify-between">
-                          <div className="text-center">
-                            <p className="text-sm font-medium text-white">{game.homeTeam.name}</p>
-                            <p className="text-2xl font-bold text-white">{game.homeTeam.score}</p>
+                        {/* Teams and Score with enhanced styling */}
+                        <div className="flex items-center justify-between bg-gray-800/30 rounded-lg p-3 border border-gray-700/50">
+                          <div className="text-center flex-1">
+                            <p className="text-sm font-bold text-blue-300 mb-1">{game.homeTeam.name}</p>
+                            <p className="text-3xl font-black text-white">{game.homeTeam.score}</p>
                           </div>
-                          <div className="text-center">
-                            <p className="text-xs text-gray-400">VS</p>
+                          <div className="text-center px-4">
+                            <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                              VS
+                            </div>
                           </div>
-                          <div className="text-center">
-                            <p className="text-sm font-medium text-white">{game.awayTeam.name}</p>
-                            <p className="text-2xl font-bold text-white">{game.awayTeam.score}</p>
-                          </div>
-                        </div>
-
-                        {/* Game Info */}
-                        <div className="flex items-center justify-between text-sm text-gray-400">
-                          <span>{game.league}</span>
-                          <div className="flex items-center space-x-1">
-                            <Clock className="h-4 w-4" />
-                            <span>{game.period} - {game.timeRemaining}</span>
+                          <div className="text-center flex-1">
+                            <p className="text-sm font-bold text-purple-300 mb-1">{game.awayTeam.name}</p>
+                            <p className="text-3xl font-black text-white">{game.awayTeam.score}</p>
                           </div>
                         </div>
 
-                        {/* Quick Odds */}
+                        {/* Game Info with enhanced styling */}
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center space-x-1 text-gray-300 bg-gray-700/30 px-2 py-1 rounded">
+                            <Clock className="h-4 w-4 text-yellow-400" />
+                            <span className="font-medium">{game.period}</span>
+                          </div>
+                          <div className="text-center">
+                            <span className="text-gray-300 font-medium">{game.timeRemaining}</span>
+                          </div>
+                        </div>
+
+                        {/* Enhanced Quick Odds */}
                         <div className="grid grid-cols-2 gap-2">
-                          <div className="text-center bg-gray-800 rounded p-2">
-                            <p className="text-xs text-gray-400">{game.homeTeam.name} Win</p>
-                            <p className="text-sm font-bold text-green-400">+{game.odds.homeWin.toFixed(1)}</p>
+                          <div className="text-center bg-gradient-to-br from-green-900/30 to-green-800/30 border border-green-700/30 rounded-lg p-2 hover:bg-green-800/20 transition-colors cursor-pointer">
+                            <p className="text-xs text-green-300 font-medium mb-1">{game.homeTeam.name}</p>
+                            <p className="text-lg font-bold text-green-400">+{game.odds.homeWin.toFixed(1)}</p>
                           </div>
-                          <div className="text-center bg-gray-800 rounded p-2">
-                            <p className="text-xs text-gray-400">{game.awayTeam.name} Win</p>
-                            <p className="text-sm font-bold text-green-400">+{game.odds.awayWin.toFixed(1)}</p>
+                          <div className="text-center bg-gradient-to-br from-purple-900/30 to-purple-800/30 border border-purple-700/30 rounded-lg p-2 hover:bg-purple-800/20 transition-colors cursor-pointer">
+                            <p className="text-xs text-purple-300 font-medium mb-1">{game.awayTeam.name}</p>
+                            <p className="text-lg font-bold text-purple-400">+{game.odds.awayWin.toFixed(1)}</p>
                           </div>
                         </div>
 
-                        {/* Watch Button */}
-                        <Button className="w-full bg-blue-600 hover:bg-blue-700 group-hover:bg-blue-500 transition-colors">
+                        {/* Enhanced Watch Button */}
+                        <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 group-hover:from-blue-400 group-hover:to-purple-400 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold">
                           <Play className="h-4 w-4 mr-2" />
-                          Watch Live
+                          {game.status === 'live' ? 'Watch Live' : 'Watch Stream'}
                         </Button>
                       </div>
                     </CardContent>
