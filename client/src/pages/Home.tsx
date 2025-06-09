@@ -517,11 +517,11 @@ const Home: React.FC = () => {
 
         {/* Trust Indicators */}
         <div className="mt-6">
-          <Card className="bg-gradient-to-r from-gray-50 to-slate-50 border-gray-200">
+          <Card className="bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-800/30 dark:to-slate-800/30 border-gray-200 dark:border-gray-700">
             <CardContent className="p-4">
               <div className="text-center">
-                <h3 className="font-bold text-gray-800 mb-3">Trusted by Champions</h3>
-                <div className="flex flex-wrap justify-center items-center gap-6 text-sm text-gray-600">
+                <h3 className="font-bold text-gray-800 dark:text-gray-200 mb-3">Trusted by Champions</h3>
+                <div className="flex flex-wrap justify-center items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                     <span>FDIC-Insured Banking</span>
@@ -531,7 +531,7 @@ const Home: React.FC = () => {
                     <span>256-bit SSL Encryption</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                    <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
                     <span>99.9% Uptime Guarantee</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -539,7 +539,7 @@ const Home: React.FC = () => {
                     <span>Licensed & Regulated</span>
                   </div>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                   Over 50,000 users trust WeParlay for secure, reliable sports betting
                 </p>
               </div>
