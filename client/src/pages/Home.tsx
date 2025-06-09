@@ -404,24 +404,24 @@ const Home: React.FC = () => {
         
         {/* Success Stats Banner */}
         <div className="mb-6">
-          <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+          <Card className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border-green-200 dark:border-green-800">
             <CardContent className="p-4">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                 <div>
-                  <div className="text-2xl font-bold text-green-600">50,000+</div>
-                  <div className="text-sm text-gray-600">Active Users</div>
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">50,000+</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Active Users</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-blue-600">$2.5M+</div>
-                  <div className="text-sm text-gray-600">Payouts Processed</div>
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">$2.5M+</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Payouts Processed</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-purple-600">4.9/5</div>
-                  <div className="text-sm text-gray-600">User Rating</div>
+                  <div className="text-2xl font-bold text-teal-600 dark:text-teal-400">4.9/5</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">User Rating</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-orange-600">24/7</div>
-                  <div className="text-sm text-gray-600">Support Available</div>
+                  <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">24/7</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Support Available</div>
                 </div>
               </div>
             </CardContent>
@@ -431,27 +431,27 @@ const Home: React.FC = () => {
         {/* Testimonials Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Testimonial 1 - Big Winner */}
-          <Card className="border-green-200 bg-green-50/50">
+          <Card className="border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-900/20">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
                 <img 
                   src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face" 
                   alt="Mike Profile" 
-                  className="w-12 h-12 rounded-full object-cover border-2 border-green-200"
+                  className="w-12 h-12 rounded-full object-cover border-2 border-green-200 dark:border-green-600"
                 />
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <h4 className="font-semibold">Mike_SportsFan</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">Mike_SportsFan</h4>
                     <div className="flex text-yellow-400">
                       ⭐⭐⭐⭐⭐
                     </div>
                   </div>
-                  <p className="text-sm text-gray-700 mb-2">
+                  <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
                     "Just hit my biggest win ever - $8.5K on an NBA parlay!! Been using WeParlay for 6 months and their odds beat DraftKings every time. Crypto withdrawals are instant too which is clutch"
                   </p>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Platinum Member</span>
-                    <span className="text-xs text-gray-500">2 weeks ago</span>
+                    <span className="text-xs bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-300 px-2 py-1 rounded">Platinum Member</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">2 weeks ago</span>
                   </div>
                 </div>
               </div>
@@ -459,27 +459,27 @@ const Home: React.FC = () => {
           </Card>
 
           {/* Testimonial 2 - Security Focus */}
-          <Card className="border-blue-200 bg-blue-50/50">
+          <Card className="border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/20">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
                 <img 
                   src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face" 
                   alt="Sarah Profile" 
-                  className="w-12 h-12 rounded-full object-cover border-2 border-blue-200"
+                  className="w-12 h-12 rounded-full object-cover border-2 border-blue-200 dark:border-blue-600"
                 />
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <h4 className="font-semibold">Sarah.crypto</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">Sarah.crypto</h4>
                     <div className="flex text-yellow-400">
                       ⭐⭐⭐⭐⭐
                     </div>
                   </div>
-                  <p className="text-sm text-gray-700 mb-2">
+                  <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
                     "Switched from Bovada last month. The wallet connection was super easy and I love seeing all my transaction history in one place. Support actually responds within minutes!"
                   </p>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Gold Member</span>
-                    <span className="text-xs text-gray-500">1 week ago</span>
+                    <span className="text-xs bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">Gold Member</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">1 week ago</span>
                   </div>
                 </div>
               </div>
@@ -487,27 +487,27 @@ const Home: React.FC = () => {
           </Card>
 
           {/* Testimonial 3 - Feature Love */}
-          <Card className="border-purple-200 bg-purple-50/50">
+          <Card className="border-teal-200 dark:border-teal-800 bg-teal-50/50 dark:bg-teal-900/20">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
                 <img 
                   src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face" 
                   alt="Alex Profile" 
-                  className="w-12 h-12 rounded-full object-cover border-2 border-purple-200"
+                  className="w-12 h-12 rounded-full object-cover border-2 border-teal-200 dark:border-teal-600"
                 />
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <h4 className="font-semibold">AnalyticsAlex</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">AnalyticsAlex</h4>
                     <div className="flex text-yellow-400">
                       ⭐⭐⭐⭐⭐
                     </div>
                   </div>
-                  <p className="text-sm text-gray-700 mb-2">
+                  <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
                     "The group challenges with my buddies are addictive lol. Tournament brackets during March Madness were perfect. WeParlay Cash is great for testing strategies without risking real money"
                   </p>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">Silver Member</span>
-                    <span className="text-xs text-gray-500">3 days ago</span>
+                    <span className="text-xs bg-teal-100 dark:bg-teal-800 text-teal-700 dark:text-teal-300 px-2 py-1 rounded">Silver Member</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">3 days ago</span>
                   </div>
                 </div>
               </div>
