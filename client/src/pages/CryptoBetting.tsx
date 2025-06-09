@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -24,19 +25,28 @@ export default function CryptoBetting() {
     topWinner: 0
   });
 
+  // Fetch real crypto market data
+  const { data: cryptoData = [] } = useQuery({
+    queryKey: ['/api/crypto/live-prices'],
+    refetchInterval: 10000,
+  });
+
   useEffect(() => {
-    // Simulate real-time stats
-    const interval = setInterval(() => {
+    // Calculate real market stats from authentic CoinGecko data
+    if (cryptoData.length > 0) {
+      const totalMarketVolume = cryptoData.reduce((sum: number, crypto: any) => {
+        return sum + (crypto.volume || 0);
+      }, 0);
+
+      // Use real market data for volume, simulate only platform-specific metrics
       setStats({
-        totalVolume: Math.random() * 1000000 + 500000,
+        totalVolume: totalMarketVolume,
         activeBets: Math.floor(Math.random() * 1000) + 200,
         payoutRatio: Math.random() * 5 + 95,
         topWinner: Math.random() * 50 + 10
       });
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, []);
+    }
+  }, [cryptoData]);
 
   const cryptoFeatures = [
     {
