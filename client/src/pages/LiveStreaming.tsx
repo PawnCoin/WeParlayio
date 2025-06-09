@@ -295,7 +295,7 @@ export default function LiveStreaming() {
                     onClick={() => handleGameSelect(game)}
                   >
                     {/* Animated background pattern */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-purple-600/5 to-blue-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-slate-600/5 to-blue-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     
                     {/* Live indicator for live games */}
                     {game.status === 'live' && (
@@ -333,12 +333,12 @@ export default function LiveStreaming() {
                             <p className="text-3xl font-black text-white">{game.homeTeam.score}</p>
                           </div>
                           <div className="text-center px-4">
-                            <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                            <div className="bg-gradient-to-r from-blue-500 to-teal-500 text-white text-xs font-bold px-3 py-1 rounded-full">
                               VS
                             </div>
                           </div>
                           <div className="text-center flex-1">
-                            <p className="text-sm font-bold text-purple-300 mb-1">{game.awayTeam.name}</p>
+                            <p className="text-sm font-bold text-slate-300 mb-1">{game.awayTeam.name}</p>
                             <p className="text-3xl font-black text-white">{game.awayTeam.score}</p>
                           </div>
                         </div>
@@ -360,14 +360,14 @@ export default function LiveStreaming() {
                             <p className="text-xs text-green-300 font-medium mb-1">{game.homeTeam.name}</p>
                             <p className="text-lg font-bold text-green-400">+{game.odds.homeWin.toFixed(1)}</p>
                           </div>
-                          <div className="text-center bg-gradient-to-br from-purple-900/30 to-purple-800/30 border border-purple-700/30 rounded-lg p-2 hover:bg-purple-800/20 transition-colors cursor-pointer">
-                            <p className="text-xs text-purple-300 font-medium mb-1">{game.awayTeam.name}</p>
-                            <p className="text-lg font-bold text-purple-400">+{game.odds.awayWin.toFixed(1)}</p>
+                          <div className="text-center bg-gradient-to-br from-slate-900/30 to-slate-800/30 border border-slate-700/30 rounded-lg p-2 hover:bg-slate-800/20 transition-colors cursor-pointer">
+                            <p className="text-xs text-slate-300 font-medium mb-1">{game.awayTeam.name}</p>
+                            <p className="text-lg font-bold text-slate-400">+{game.odds.awayWin.toFixed(1)}</p>
                           </div>
                         </div>
 
                         {/* Enhanced Watch Button */}
-                        <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 group-hover:from-blue-400 group-hover:to-purple-400 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold">
+                        <Button className="w-full bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-500 hover:to-teal-500 group-hover:from-blue-400 group-hover:to-teal-400 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold">
                           <Play className="h-4 w-4 mr-2" />
                           {game.status === 'live' ? 'Watch Live' : 'Watch Stream'}
                         </Button>
