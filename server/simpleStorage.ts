@@ -1,0 +1,466 @@
+import {
+  users, User, InsertUser, UpsertUser,
+  sports, Sport, InsertSport,
+  teams, Team, InsertTeam,
+  events, Event, InsertEvent,
+  bets, Bet, InsertBet,
+  tournaments, Tournament, InsertTournament,
+  fantasyTeams, FantasyTeam, InsertFantasyTeam,
+  players, Player, InsertPlayer,
+  fantasyTeamPlayers, FantasyTeamPlayer, InsertFantasyTeamPlayer,
+  bankAccounts, BankAccount, InsertBankAccount,
+  transactions, Transaction, InsertTransaction,
+  supportTickets, SupportTicket, InsertSupportTicket, 
+  supportTicketMessages, SupportTicketMessage, InsertSupportTicketMessage, 
+  supportTicketLogs, SupportTicketLog,
+  knownIssues, KnownIssue, InsertKnownIssue,
+  bettingChallenges, BettingChallenge, InsertBettingChallenge,
+  notifications, Notification, InsertNotification
+} from "@shared/schema";
+
+export interface IStorage {
+  // Basic user operations
+  getUser(id: string): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
+  upsertUser(userData: UpsertUser): Promise<User>;
+  getAllUsers(): Promise<User[]>;
+  updateUserBalance(userId: string, amount: number): Promise<User>;
+  updateUserPreferences(userId: string, preferences: any): Promise<User>;
+  updateUserGamertag(userId: string, gamertag: string): Promise<User>;
+  getUserByGamertag(gamertag: string): Promise<User | undefined>;
+  incrementUserWins(userId: string): Promise<User>;
+  getUserWithdrawalsForMonth(userId: string, month: number): Promise<number>;
+  updateUserTier(userId: string, tier: string): Promise<User>;
+  updateUserWeplayTokenBalance(userId: string, amount: number): Promise<User>;
+  updateUserConsent(userId: string, consents: any): Promise<User>;
+  updateUserStripeCustomerId(userId: string, customerId: string): Promise<User>;
+  
+  // Sports operations  
+  getAllSports(): Promise<Sport[]>;
+  getSport(id: number): Promise<Sport | undefined>;
+  getSportByKey(key: string): Promise<Sport | undefined>;
+  createSport(sport: InsertSport): Promise<Sport>;
+
+  // Teams operations
+  getAllTeams(): Promise<Team[]>;
+  getTeamsBySport(sportId: number): Promise<Team[]>;
+  getTeam(id: number): Promise<Team | undefined>;
+
+  // Events operations
+  getAllEvents(): Promise<Event[]>;
+  getEvent(id: number): Promise<Event | undefined>;
+  createEvent(event: InsertEvent): Promise<Event>;
+  getLiveEvents(): Promise<Event[]>;
+  getUpcomingEvents(limit?: number): Promise<Event[]>;
+  
+  // Tournament operations
+  getTournament(id: number): Promise<Tournament | undefined>;
+  
+  // Betting operations
+  createBet(bet: InsertBet): Promise<Bet>;
+  settleBet(betId: number, status: string): Promise<Bet>;
+  getUserBets(userId: number): Promise<Bet[]>;
+  
+  // Challenge operations
+  createBettingChallenge(challenge: InsertBettingChallenge): Promise<BettingChallenge>;
+  getBettingChallengeByUuid(uuid: string): Promise<BettingChallenge | undefined>;
+  getUserChallenges(userId: string, status?: string): Promise<BettingChallenge[]>;
+  acceptBettingChallenge(uuid: string, acceptedBy: string): Promise<BettingChallenge>;
+  updateBettingChallengeStatus(uuid: string, status: string): Promise<BettingChallenge>;
+  settleBettingChallenge(uuid: string, winnerId?: string, isDraw?: boolean): Promise<BettingChallenge>;
+  
+  // Notification operations
+  createNotification(notification: InsertNotification): Promise<Notification>;
+  getUserNotifications(userId: string, unreadOnly?: boolean): Promise<Notification[]>;
+  markNotificationAsRead(id: number, userId: string): Promise<Notification>;
+  
+  // Transaction operations
+  createTransaction(transaction: InsertTransaction): Promise<Transaction>;
+  getTransactions(limit: number, offset: number): Promise<Transaction[]>;
+  
+  // Financial operations
+  getFinancialSummary(): Promise<any>;
+  updatePlatformRevenue(amount: number, feeType: string): Promise<any>;
+  updateBankAccount(bankAccount: InsertBankAccount): Promise<BankAccount>;
+  
+  // Support operations
+  createSupportTicket(ticket: InsertSupportTicket): Promise<SupportTicket>;
+  getSupportTicketByNumber(ticketNumber: string): Promise<SupportTicket | undefined>;
+  getTicketMessages(ticketId: number): Promise<SupportTicketMessage[]>;
+  addTicketMessage(message: InsertSupportTicketMessage): Promise<SupportTicketMessage>;
+  
+  // Yahoo integration
+  updateYahooIntegration(userId: string, token: string, refreshToken: string, expiry: Date): Promise<User>;
+  
+  // Fantasy operations
+  getFantasyTeam(id: number): Promise<FantasyTeam | undefined>;
+  addPlayerToFantasyTeam(fantasyTeamPlayer: InsertFantasyTeamPlayer): Promise<FantasyTeamPlayer>;
+  
+  // WeParlay Cash operations
+  createWeparlayCashTransaction(transactionData: {
+    userId: string;
+    amount: number;
+    type: string;
+    description: string;
+    metadata?: any;
+  }): Promise<any>;
+  getWeparlayCashTransactions(userId: string): Promise<any[]>;
+  
+  // Social operations
+  sendFriendRequest(userId: string, friendId: string): Promise<any>;
+  acceptFriendRequest(userId: string, friendId: string): Promise<any>;
+  removeFriend(userId: string, friendId: string): Promise<boolean>;
+  getUserFriends(userId: string): Promise<any[]>;
+  getPendingFriendRequests(userId: string): Promise<any[]>;
+  searchUsers(query: string, currentUserId: string): Promise<any[]>;
+}
+
+export class SimpleStorage implements IStorage {
+  private users = new Map<string, User>();
+  private sports = new Map<number, Sport>();
+  private events = new Map<number, Event>();
+  private challenges = new Map<string, BettingChallenge>();
+  private nextId = 1;
+
+  constructor() {
+    // Initialize with basic data
+    this.initializeBasicData();
+  }
+
+  private async initializeBasicData() {
+    await this.createSport({ name: "Football", key: "americanfootball_nfl", isActive: true });
+    await this.createSport({ name: "Basketball", key: "basketball_nba", isActive: true });
+  }
+
+  async getUser(id: string): Promise<User | undefined> {
+    return this.users.get(id);
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.username === username);
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const id = insertUser.id || String(this.nextId++);
+    const user: User = { 
+      ...insertUser, 
+      id,
+      weparlayCashBalance: 10000,
+      weplayTokenBalance: 0,
+      tier: 'bronze',
+      winsCount: 0,
+      consentGiven: false,
+      consentTimestamp: null,
+      privacySettings: null,
+      twoFactorEnabled: false,
+      emailVerified: false,
+      createdAt: null,
+      updatedAt: null
+    };
+    this.users.set(id, user);
+    return user;
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const existingUser = await this.getUser(userData.id);
+    if (existingUser) {
+      const updatedUser = { ...existingUser, ...userData };
+      this.users.set(userData.id, updatedUser);
+      return updatedUser;
+    } else {
+      return this.createUser(userData);
+    }
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
+  }
+
+  async updateUserBalance(userId: string, amount: number): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error('User not found');
+    const updatedUser = { ...user, weparlayCashBalance: (user.weparlayCashBalance || 0) + amount };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+
+  async updateUserPreferences(userId: string, preferences: any): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error('User not found');
+    const updatedUser = { ...user, preferences };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+
+  async updateUserGamertag(userId: string, gamertag: string): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error('User not found');
+    const updatedUser = { ...user, gamertag };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+
+  async getUserByGamertag(gamertag: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.gamertag === gamertag);
+  }
+
+  async incrementUserWins(userId: string): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error('User not found');
+    const updatedUser = { ...user, winsCount: (user.winsCount || 0) + 1 };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+
+  async getUserWithdrawalsForMonth(userId: string, month: number): Promise<number> {
+    return 0; // Simplified implementation
+  }
+
+  async updateUserTier(userId: string, tier: string): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error('User not found');
+    const updatedUser = { ...user, tier };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+
+  async updateUserWeplayTokenBalance(userId: string, amount: number): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error('User not found');
+    const updatedUser = { ...user, weplayTokenBalance: (user.weplayTokenBalance || 0) + amount };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+
+  async updateUserConsent(userId: string, consents: any): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error('User not found');
+    const updatedUser = { ...user, consents };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+
+  async updateUserStripeCustomerId(userId: string, customerId: string): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error('User not found');
+    const updatedUser = { ...user, stripeCustomerId: customerId };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+
+  async getAllSports(): Promise<Sport[]> {
+    return Array.from(this.sports.values());
+  }
+
+  async getSport(id: number): Promise<Sport | undefined> {
+    return this.sports.get(id);
+  }
+
+  async getSportByKey(key: string): Promise<Sport | undefined> {
+    return Array.from(this.sports.values()).find(sport => sport.key === key);
+  }
+
+  async createSport(insertSport: InsertSport): Promise<Sport> {
+    const id = this.nextId++;
+    const sport: Sport = { ...insertSport, id };
+    this.sports.set(id, sport);
+    return sport;
+  }
+
+  async getAllTeams(): Promise<Team[]> { return []; }
+  async getTeamsBySport(sportId: number): Promise<Team[]> { return []; }
+  async getTeam(id: number): Promise<Team | undefined> { return undefined; }
+
+  async getAllEvents(): Promise<Event[]> {
+    return Array.from(this.events.values());
+  }
+
+  async getEvent(id: number): Promise<Event | undefined> {
+    return this.events.get(id);
+  }
+
+  async createEvent(insertEvent: InsertEvent): Promise<Event> {
+    const id = this.nextId++;
+    const event: Event = { 
+      ...insertEvent, 
+      id,
+      status: insertEvent.status || 'upcoming',
+      homeScore: insertEvent.homeScore || 0,
+      awayScore: insertEvent.awayScore || 0
+    };
+    this.events.set(id, event);
+    return event;
+  }
+
+  async getLiveEvents(): Promise<Event[]> {
+    return Array.from(this.events.values()).filter(event => event.status === 'live');
+  }
+
+  async getUpcomingEvents(limit?: number): Promise<Event[]> {
+    const upcoming = Array.from(this.events.values()).filter(event => event.status === 'upcoming');
+    return limit ? upcoming.slice(0, limit) : upcoming;
+  }
+
+  async getTournament(id: number): Promise<Tournament | undefined> { return undefined; }
+
+  async createBet(bet: InsertBet): Promise<Bet> {
+    const id = this.nextId++;
+    return { ...bet, id, status: bet.status || 'pending' };
+  }
+
+  async settleBet(betId: number, status: string): Promise<Bet> {
+    return { id: betId, userId: 'system', eventId: 1, amount: 0, odds: 0, potentialPayout: 0, status };
+  }
+
+  async getUserBets(userId: number): Promise<Bet[]> { return []; }
+
+  async createBettingChallenge(challenge: InsertBettingChallenge): Promise<BettingChallenge> {
+    const id = this.nextId++;
+    const uuid = challenge.uuid || `challenge-${id}`;
+    const newChallenge: BettingChallenge = { 
+      id, 
+      uuid,
+      ...challenge,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.challenges.set(uuid, newChallenge);
+    return newChallenge;
+  }
+
+  async getBettingChallengeByUuid(uuid: string): Promise<BettingChallenge | undefined> {
+    return this.challenges.get(uuid);
+  }
+
+  async getUserChallenges(userId: string, status?: string): Promise<BettingChallenge[]> {
+    return Array.from(this.challenges.values()).filter(challenge => 
+      (challenge.challengerId === userId || challenge.acceptedBy === userId) &&
+      (!status || challenge.status === status)
+    );
+  }
+
+  async acceptBettingChallenge(uuid: string, acceptedBy: string): Promise<BettingChallenge> {
+    const challenge = this.challenges.get(uuid);
+    if (!challenge) throw new Error('Challenge not found');
+    const updatedChallenge = { ...challenge, acceptedBy, status: 'accepted', updatedAt: new Date() };
+    this.challenges.set(uuid, updatedChallenge);
+    return updatedChallenge;
+  }
+
+  async updateBettingChallengeStatus(uuid: string, status: string): Promise<BettingChallenge> {
+    const challenge = this.challenges.get(uuid);
+    if (!challenge) throw new Error('Challenge not found');
+    const updatedChallenge = { ...challenge, status, updatedAt: new Date() };
+    this.challenges.set(uuid, updatedChallenge);
+    return updatedChallenge;
+  }
+
+  async settleBettingChallenge(uuid: string, winnerId?: string, isDraw: boolean = false): Promise<BettingChallenge> {
+    const challenge = this.challenges.get(uuid);
+    if (!challenge) throw new Error('Challenge not found');
+    const updatedChallenge = { 
+      ...challenge, 
+      winnerId, 
+      isDraw, 
+      status: 'settled', 
+      updatedAt: new Date() 
+    };
+    this.challenges.set(uuid, updatedChallenge);
+    return updatedChallenge;
+  }
+
+  // Simplified implementations for remaining methods
+  async createNotification(notification: InsertNotification): Promise<Notification> {
+    const id = this.nextId++;
+    return { ...notification, id, createdAt: new Date() };
+  }
+
+  async getUserNotifications(userId: string, unreadOnly: boolean = false): Promise<Notification[]> { return []; }
+  async markNotificationAsRead(id: number, userId: string): Promise<Notification> { 
+    return { id, userId, type: 'info', title: 'Test', message: 'Test', read: true, createdAt: new Date() };
+  }
+
+  async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
+    const id = this.nextId++;
+    return { ...transaction, id };
+  }
+
+  async getTransactions(limit: number, offset: number): Promise<Transaction[]> { return []; }
+
+  async getFinancialSummary(): Promise<any> {
+    return { totalRevenue: 0, totalPayouts: 0, activeBets: 0, totalUsers: this.users.size };
+  }
+
+  async updatePlatformRevenue(amount: number, feeType: string): Promise<any> {
+    return { success: true, amount, feeType };
+  }
+
+  async updateBankAccount(bankAccount: InsertBankAccount): Promise<BankAccount> {
+    const id = this.nextId++;
+    return { ...bankAccount, id };
+  }
+
+  async createSupportTicket(ticket: InsertSupportTicket): Promise<SupportTicket> {
+    const id = this.nextId++;
+    return { ...ticket, id, createdAt: new Date(), updatedAt: new Date() };
+  }
+
+  async getSupportTicketByNumber(ticketNumber: string): Promise<SupportTicket | undefined> { return undefined; }
+  async getTicketMessages(ticketId: number): Promise<SupportTicketMessage[]> { return []; }
+  async addTicketMessage(message: InsertSupportTicketMessage): Promise<SupportTicketMessage> {
+    const id = this.nextId++;
+    return { ...message, id, createdAt: new Date() };
+  }
+
+  async updateYahooIntegration(userId: string, token: string, refreshToken: string, expiry: Date): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error('User not found');
+    const updatedUser = { 
+      ...user, 
+      yahooAccessToken: token, 
+      yahooRefreshToken: refreshToken,
+      yahooTokenExpiry: expiry
+    };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+
+  async getFantasyTeam(id: number): Promise<FantasyTeam | undefined> { return undefined; }
+  async addPlayerToFantasyTeam(fantasyTeamPlayer: InsertFantasyTeamPlayer): Promise<FantasyTeamPlayer> {
+    const id = this.nextId++;
+    return { ...fantasyTeamPlayer, id };
+  }
+
+  async createWeparlayCashTransaction(transactionData: {
+    userId: string;
+    amount: number;
+    type: string;
+    description: string;
+    metadata?: any;
+  }): Promise<any> {
+    return { success: true, ...transactionData };
+  }
+
+  async getWeparlayCashTransactions(userId: string): Promise<any[]> { return []; }
+
+  async sendFriendRequest(userId: string, friendId: string): Promise<any> { 
+    return { success: true, userId, friendId }; 
+  }
+  async acceptFriendRequest(userId: string, friendId: string): Promise<any> { 
+    return { success: true, userId, friendId }; 
+  }
+  async removeFriend(userId: string, friendId: string): Promise<boolean> { return true; }
+  async getUserFriends(userId: string): Promise<any[]> { return []; }
+  async getPendingFriendRequests(userId: string): Promise<any[]> { return []; }
+  async searchUsers(query: string, currentUserId: string): Promise<any[]> {
+    return Array.from(this.users.values())
+      .filter(user => 
+        user.id !== currentUserId && 
+        (user.username?.toLowerCase().includes(query.toLowerCase()) || 
+         user.email?.toLowerCase().includes(query.toLowerCase()))
+      );
+  }
+}
+
+export const storage = new SimpleStorage();

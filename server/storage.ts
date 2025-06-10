@@ -48,6 +48,25 @@ export interface IStorage {
   getUpcomingEvents(limit?: number): Promise<Event[]>;
   updateUserPreferences(userId: string, preferences: any): Promise<User>;
   updateUserGamertag(userId: string, gamertag: string): Promise<User>;
+  getUserChallenges(userId: string, status?: string): Promise<BettingChallenge[]>;
+  acceptBettingChallenge(uuid: string, acceptedBy: string): Promise<BettingChallenge>;
+  updateBettingChallengeStatus(uuid: string, status: string): Promise<BettingChallenge>;
+  getUserNotifications(userId: string, unreadOnly?: boolean): Promise<Notification[]>;
+  markNotificationAsRead(id: number, userId: string): Promise<Notification>;
+  getTransactions(limit: number, offset: number): Promise<Transaction[]>;
+  incrementUserWins(userId: string): Promise<User>;
+  updatePlatformRevenue(amount: number, feeType: string): Promise<any>;
+  updateBankAccount(bankAccount: InsertBankAccount): Promise<BankAccount>;
+  createSupportTicket(ticket: InsertSupportTicket): Promise<SupportTicket>;
+  getSupportTicketByNumber(ticketNumber: string): Promise<SupportTicket | undefined>;
+  getTicketMessages(ticketId: number): Promise<SupportTicketMessage[]>;
+  addTicketMessage(message: InsertSupportTicketMessage): Promise<SupportTicketMessage>;
+  updateYahooIntegration(userId: string, token: string, refreshToken: string, expiry: Date): Promise<User>;
+  getFantasyTeam(id: number): Promise<FantasyTeam | undefined>;
+  addPlayerToFantasyTeam(fantasyTeamPlayer: InsertFantasyTeamPlayer): Promise<FantasyTeamPlayer>;
+  getUserByGamertag(gamertag: string): Promise<User | undefined>;
+  settleBettingChallenge(uuid: string, winnerId?: string, isDraw?: boolean): Promise<BettingChallenge>;
+  getUserBets(userId: number): Promise<Bet[]>;
   
   // WeParlay Cash system methods
   updateUserTier(userId: string, tier: string): Promise<User>;

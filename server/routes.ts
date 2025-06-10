@@ -32,6 +32,7 @@ import yahooFantasyRoutes from "./routes/yahooFantasyRoutes";
 import { apiQuotaManager } from "./services/apiQuotaManager";
 import { primaryApiRouter } from "./services/primaryApiRouter";
 import primaryDataRoutes from "./routes/primaryDataRoutes";
+import { smsService } from "./services/smsService";
 import { 
   getPlayerAnalytics, 
   getWeeklyMatchups, 
@@ -477,6 +478,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register Unified Sports API routes
   app.use('/api/unified-sports', unifiedSportsRoutes);
+
+  // SMS Betting Challenge Routes
+  app.post('/api/sms/betting-challenge', isAuthenticated, async (req, res) => {
+    try {
+      const { phoneNumber, challengeDetails } = req.body;
+      
+      if (!phoneNumber || !challengeDetails) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Phone number and challenge details required' 
+        });
+      }
+
+      const result = await smsService.sendBettingChallenge(phoneNumber, challengeDetails);
+      
+      res.json({
+        success: result.success,
+        message: result.success ? 'Challenge sent successfully' : result.error,
+        messageId: result.messageId
+      });
+    } catch (error) {
+      console.error('SMS challenge error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to send SMS challenge' 
+      });
+    }
+  });
+
+  app.post('/api/sms/bet-alert', isAuthenticated, async (req, res) => {
+    try {
+      const { phoneNumber, alertDetails } = req.body;
+      
+      if (!phoneNumber || !alertDetails) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Phone number and alert details required' 
+        });
+      }
+
+      const result = await smsService.sendBetAlert(phoneNumber, alertDetails);
+      
+      res.json({
+        success: result.success,
+        message: result.success ? 'Alert sent successfully' : result.error,
+        messageId: result.messageId
+      });
+    } catch (error) {
+      console.error('SMS alert error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to send SMS alert' 
+      });
+    }
+  });
+
+  app.get('/api/sms/status', isAuthenticated, async (req, res) => {
+    res.json({
+      configured: smsService.isServiceConfigured(),
+      message: smsService.isServiceConfigured() 
+        ? 'SMS service is ready' 
+        : 'SMS service requires Twilio configuration'
+    });
+  });
   
   // Register bookie revenue routes (temporarily disabled to fix database issues)
   // const bookieRoutes = await import('./routes/bookieRoutes');

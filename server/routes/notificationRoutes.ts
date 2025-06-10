@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { sendEmail, sendWelcomeEmail, sendBetConfirmation, sendWinNotification, sendSecurityAlert, sendAdminAlert } from '../services/emailService';
-import { sendSMS, sendBetConfirmationSMS, sendWinNotificationSMS, sendSecurityAlertSMS } from '../services/smsService';
+import { smsService } from '../services/smsService';
 import { isAuthenticated } from '../replitAuth';
 
 const router = Router();
