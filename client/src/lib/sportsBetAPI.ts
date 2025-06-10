@@ -137,7 +137,7 @@ export function getSportIdByKey(sportKey: string): number | null {
   return sportMap[baseSport] || null;
 }
 
-export default {
+const sportsBetAPI = {
   // Sports
   getSports: async (): Promise<Sport[]> => {
     const response = await apiRequest("GET", "/api/sports");
@@ -192,7 +192,9 @@ export default {
   // Filter live events by sport key
   getLiveEventsBySport: async (sportKey: string): Promise<Event[]> => {
     try {
-      const allEvents = await this.getLiveEvents();
+      const response = await apiRequest("GET", "/api/events/live");
+      const data = await response.json();
+      const allEvents = data.data || data.events || data || [];
       
       // If we have a specific sport key, filter by it
       if (sportKey && allEvents && Array.isArray(allEvents)) {
@@ -212,10 +214,12 @@ export default {
   // Filter upcoming events by sport key
   getUpcomingEventsBySport: async (sportKey: string): Promise<Event[]> => {
     try {
-      const allEvents = await this.getUpcomingEvents();
+      const response = await apiRequest("GET", "/api/events/upcoming");
+      const data = await response.json();
+      const allEvents = data.data || data.events || data || [];
       
       // If we have a specific sport key, filter by it
-      if (sportKey && allEvents) {
+      if (sportKey && allEvents && Array.isArray(allEvents)) {
         const sportId = getSportIdByKey(sportKey);
         if (sportId) {
           return allEvents.filter((event: Event) => event.sportId === sportId);
@@ -357,3 +361,5 @@ export default {
     return response.json();
   },
 };
+
+export default sportsBetAPI;
