@@ -362,4 +362,5 @@ const sportsBetAPI = {
   },
 };
 
+export { sportsBetAPI };
 export default sportsBetAPI;
