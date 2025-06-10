@@ -140,6 +140,34 @@ Accept at weparlay.io`;
     }
   }
 
+  async sendSMS(toNumber: string, message: string): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    if (!this.isConfigured || !this.client) {
+      return {
+        success: false,
+        error: 'SMS service not configured'
+      };
+    }
+
+    try {
+      const result = await this.client.messages.create({
+        body: message,
+        from: this.fromNumber,
+        to: toNumber
+      });
+
+      return {
+        success: true,
+        messageId: result.sid
+      };
+    } catch (error: any) {
+      console.error('SMS send failed:', error);
+      return {
+        success: false,
+        error: error.message || 'Failed to send SMS'
+      };
+    }
+  }
+
   isServiceConfigured(): boolean {
     return this.isConfigured;
   }
