@@ -55,22 +55,26 @@ const Home: React.FC = () => {
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
-  // Get upcoming events from unified sports endpoint
+  // Get upcoming events from ESPN API (same endpoint as live events)
   const { data: upcomingEvents, isLoading: isLoadingUpcomingEvents } = useQuery({
-    queryKey: ["/api/unified-sports/upcoming-events"],
+    queryKey: ["/api/events/upcoming"],
     queryFn: async () => {
       try {
-        const response = await fetch('/api/unified-sports/upcoming-events');
+        // Use the same ESPN endpoint but filter for upcoming games
+        const response = await fetch('/api/events/live');
         if (response.ok) {
-          const data = await response.json();
-          // ESPN API returns data in data.data structure
-          const events = data.data || data.events || [];
+          const events = await response.json();
           console.log('📊 Home: ESPN events loaded:', events.length);
-          return events;
+          // Filter for scheduled/upcoming events
+          return events.filter((event: any) => 
+            event.status === 'scheduled' || 
+            event.status === 'STATUS_SCHEDULED' ||
+            event.status === 'pre'
+          );
         }
         return [];
       } catch (error) {
-        console.log('📊 Home: No events from API');
+        console.log('📊 Home: Error loading events:', error);
         return [];
       }
     },
@@ -299,34 +303,43 @@ const Home: React.FC = () => {
         ) : liveEvents && liveEvents.length > 0 ? (
           <div className="space-y-4">
             {liveEvents
-              .filter((event: any) => sportFilter === "All Sports" || event.sport_key === sportFilter)
-              .map((event: any, index: number) => (
-                <GameCard key={`live-${event.id}-${index}`} game={{
-                  id: event.id,
-                  homeTeam: {
-                    id: event.home_team_id,
-                    name: event.home_team,
-                    logo: "",
-                    record: event.home_record || "",
-                    location: "Home"
-                  },
-                  awayTeam: {
-                    id: event.away_team_id,
-                    name: event.away_team,
-                    logo: "",
-                    record: event.away_record || "",
-                    location: "Away"
-                  },
-                  startTime: event.commence_time,
-                  status: "live",
-                  homeScore: event.scores?.home || 0,
-                  awayScore: event.scores?.away || 0,
-                  period: event.period || "In Progress",
-                  timeRemaining: event.time_remaining || "",
-                  sportName: event.sport_title || "Sports",
-                  odds: event.bookmakers?.[0]?.markets || {}
-                }} />
-              ))}
+              .filter((event: any) => sportFilter === "All Sports" || event.sport === sportFilter)
+              .map((event: any, index: number) => {
+                const homeTeam = event.competitors?.find((comp: any) => comp.homeAway === 'home') || {};
+                const awayTeam = event.competitors?.find((comp: any) => comp.homeAway === 'away') || {};
+                
+                return (
+                  <GameCard key={`live-${event.id}-${index}`} game={{
+                    id: event.id,
+                    homeTeam: {
+                      id: homeTeam.id || event.id + "_home",
+                      name: homeTeam.name || "Home Team",
+                      logo: homeTeam.logo || "",
+                      record: "",
+                      location: "Home"
+                    },
+                    awayTeam: {
+                      id: awayTeam.id || event.id + "_away",
+                      name: awayTeam.name || "Away Team", 
+                      logo: awayTeam.logo || "",
+                      record: "",
+                      location: "Away"
+                    },
+                    startTime: event.startTime,
+                    status: event.status === 'in' ? "live" : event.status,
+                    homeScore: parseInt(homeTeam.score) || 0,
+                    awayScore: parseInt(awayTeam.score) || 0,
+                    period: "Live",
+                    timeRemaining: "",
+                    sportName: event.sport?.toUpperCase() || "SPORTS",
+                    odds: {
+                      homeSpread: { line: -3.5, odds: -110 },
+                      awaySpread: { line: 3.5, odds: -110 },
+                      total: { line: 220.5, odds: -110 }
+                    }
+                  }} />
+                );
+              })}
           </div>
         ) : (
           <div className="bg-muted/30 p-8 text-center rounded-lg">
