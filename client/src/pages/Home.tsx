@@ -63,12 +63,14 @@ const Home: React.FC = () => {
         const response = await fetch('/api/unified-sports/upcoming-events');
         if (response.ok) {
           const data = await response.json();
-          // Fix data structure mismatch - API returns data.data, not data.events
-          return data.data || data.events || [];
+          // ESPN API returns data in data.data structure
+          const events = data.data || data.events || [];
+          console.log('📊 Home: ESPN events loaded:', events.length);
+          return events;
         }
         return [];
       } catch (error) {
-        // Return empty array silently to prevent console flooding
+        console.log('📊 Home: No events from API');
         return [];
       }
     },
@@ -353,15 +355,15 @@ const Home: React.FC = () => {
                   id: event.id,
                   homeTeam: {
                     id: 1,
-                    name: event.homeTeam,
+                    name: event.homeTeam?.name || event.homeTeam || "Home Team",
                     logo: ""
                   },
                   awayTeam: {
                     id: 2,
-                    name: event.awayTeam,
+                    name: event.awayTeam?.name || event.awayTeam || "Away Team",
                     logo: ""
                   },
-                  startTime: event.date,
+                  startTime: event.date || event.startTime || new Date().toISOString(),
                   bookmakers: [],
                   odds: {
                     homeSpread: { line: -3.5, odds: -110 },
