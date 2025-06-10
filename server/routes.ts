@@ -2612,6 +2612,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // SMS Opt-In/Opt-Out endpoints for Twilio compliance
+  app.post('/api/sms/opt-in', async (req, res) => {
+    try {
+      const { phoneNumber, consent, marketingConsent, timestamp } = req.body;
+
+      if (!phoneNumber || !consent) {
+        return res.status(400).json({ 
+          error: 'Phone number and consent are required' 
+        });
+      }
+
+      // Store opt-in record (in production, this would go to database)
+      const optInRecord = {
+        phoneNumber,
+        consent,
+        marketingConsent: marketingConsent || false,
+        timestamp: timestamp || new Date().toISOString(),
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent')
+      };
+
+      console.log('📱 SMS Opt-In Record:', optInRecord);
+
+      // Send confirmation SMS
+      await smsService.sendSMS(
+        phoneNumber,
+        `Welcome to WeParlay! You've successfully opted in to receive SMS notifications. Reply STOP to opt out anytime. Help: support@weparlay.io`
+      );
+
+      res.json({ 
+        success: true, 
+        message: 'Successfully opted in to SMS notifications',
+        record: optInRecord
+      });
+    } catch (error) {
+      console.error('SMS opt-in error:', error);
+      res.status(500).json({ error: 'Failed to process opt-in request' });
+    }
+  });
+
+  app.post('/api/sms/opt-out', async (req, res) => {
+    try {
+      const { phoneNumber, timestamp } = req.body;
+
+      if (!phoneNumber) {
+        return res.status(400).json({ 
+          error: 'Phone number is required' 
+        });
+      }
+
+      // Store opt-out record (in production, this would go to database)
+      const optOutRecord = {
+        phoneNumber,
+        timestamp: timestamp || new Date().toISOString(),
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent')
+      };
+
+      console.log('📱 SMS Opt-Out Record:', optOutRecord);
+
+      // Send confirmation SMS
+      await smsService.sendSMS(
+        phoneNumber,
+        `You've been successfully removed from WeParlay SMS notifications. You will no longer receive messages. Contact support@weparlay.io if you need assistance.`
+      );
+
+      res.json({ 
+        success: true, 
+        message: 'Successfully opted out of SMS notifications',
+        record: optOutRecord
+      });
+    } catch (error) {
+      console.error('SMS opt-out error:', error);
+      res.status(500).json({ error: 'Failed to process opt-out request' });
+    }
+  });
+
   // CRITICAL: Bet settlement and payout system
   app.post('/api/bets/:id/settle', isAuthenticated, async (req, res) => {
     try {

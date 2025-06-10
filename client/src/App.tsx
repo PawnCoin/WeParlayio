@@ -60,6 +60,7 @@ import YahooFantasyFootball from "@/pages/YahooFantasyFootball";
 import FantasySportsHub from "@/pages/FantasySportsHub";
 import FantasyAnalyticsDashboard from "@/pages/FantasyAnalyticsDashboard";
 import TierComparison from "@/pages/TierComparison";
+import SMSOptIn from "@/pages/SMSOptIn";
 
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
@@ -182,6 +183,9 @@ function Router() {
 
       {/* Tier Management */}
       <Route path="/tier-comparison" component={TierComparison} />
+      
+      {/* SMS Opt-In for Twilio Compliance */}
+      <Route path="/sms-opt-in" component={SMSOptIn} />
 
       {/* Tournaments */}
       <Route path="/tournaments" component={Tournaments} />
