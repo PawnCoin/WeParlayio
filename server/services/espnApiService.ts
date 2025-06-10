@@ -260,6 +260,55 @@ export class ESPNApiService {
   }
 
   /**
+   * Get live events across all sports
+   */
+  async getLiveEvents(): Promise<any[]> {
+    try {
+      const sports = ['nfl', 'nba', 'mlb', 'nhl'];
+      const allEvents = [];
+
+      for (const sport of sports) {
+        try {
+          const sportPath = this.sportMappings[sport];
+          if (!sportPath) continue;
+
+          const response = await fetch(`${this.baseUrl}/sports/${sportPath}/scoreboard`);
+          const data = await response.json();
+          
+          if (data.events && data.events.length > 0) {
+            const events = data.events.map((event: any) => ({
+              id: event.id,
+              sport: sport,
+              name: event.name,
+              shortName: event.shortName,
+              status: event.status?.type?.name || 'scheduled',
+              startTime: event.date,
+              competitors: event.competitions?.[0]?.competitors?.map((comp: any) => ({
+                id: comp.id,
+                name: comp.team?.displayName || comp.team?.name,
+                abbreviation: comp.team?.abbreviation,
+                logo: comp.team?.logo,
+                score: comp.score || '0',
+                homeAway: comp.homeAway
+              })) || [],
+              venue: event.competitions?.[0]?.venue?.fullName,
+              broadcast: event.competitions?.[0]?.broadcasts?.[0]?.names?.[0]
+            }));
+            allEvents.push(...events);
+          }
+        } catch (sportError) {
+          console.error(`Error fetching ${sport} events:`, sportError);
+        }
+      }
+
+      return allEvents;
+    } catch (error) {
+      console.error('ESPN Live Events API error:', error);
+      return [];
+    }
+  }
+
+  /**
    * Get all teams across all sports
    */
   async getAllTeams(): Promise<{ [sport: string]: any[] }> {

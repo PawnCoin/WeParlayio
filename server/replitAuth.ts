@@ -6,7 +6,7 @@ import session from "express-session";
 import type { Express, RequestHandler } from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
-import { storage } from "./storage";
+import { storage } from "./simpleStorage";
 import { generateInviteCode } from "./utils/inviteCodeGenerator";
 import { SubscriptionTier } from "../shared/tierSystem";
 
