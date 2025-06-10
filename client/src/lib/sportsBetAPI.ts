@@ -184,7 +184,9 @@ export default {
   
   getLiveEvents: async (): Promise<Event[]> => {
     const response = await apiRequest("GET", "/api/events/live");
-    return response.json();
+    const data = await response.json();
+    // Handle various response formats from different APIs
+    return data.data || data.events || data || [];
   },
   
   // Filter live events by sport key
@@ -193,7 +195,7 @@ export default {
       const allEvents = await this.getLiveEvents();
       
       // If we have a specific sport key, filter by it
-      if (sportKey && allEvents) {
+      if (sportKey && allEvents && Array.isArray(allEvents)) {
         const sportId = getSportIdByKey(sportKey);
         if (sportId) {
           return allEvents.filter((event: Event) => event.sportId === sportId);

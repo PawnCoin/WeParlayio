@@ -63,8 +63,8 @@ const Home: React.FC = () => {
         const response = await fetch('/api/unified-sports/upcoming-events');
         if (response.ok) {
           const data = await response.json();
-
-          return data.events || [];
+          // Fix data structure mismatch - API returns data.data, not data.events
+          return data.data || data.events || [];
         }
         return [];
       } catch (error) {
@@ -343,9 +343,9 @@ const Home: React.FC = () => {
             <Skeleton className="h-24 w-full" />
             <Skeleton className="h-24 w-full" />
           </div>
-        ) : upcomingEvents?.events && Array.isArray(upcomingEvents.events) && upcomingEvents.events.length > 0 ? (
+        ) : upcomingEvents && Array.isArray(upcomingEvents) && upcomingEvents.length > 0 ? (
           <div className="space-y-4">
-            {upcomingEvents.events
+            {upcomingEvents
               .filter((event: any) => sportFilter === "All Sports" || event.sport?.includes(sportFilter) || event.league?.includes(sportFilter))
               .slice(0, 6)
               .map((event: any, index: number) => (
