@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Coins, TrendingUp, TrendingDown, ExternalLink, Wallet } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import pawnCoinLogo from '@assets/$Pc2d128.png';
 
 interface PawnCoinData {
   price: number;
@@ -125,7 +126,7 @@ export default function PawnCoinIntegration({
               address: PAWN_COIN_CONTRACT,
               symbol: '$Pc',
               decimals: 18,
-              image: 'https://pawncoinpc.com/logo.png',
+              image: pawnCoinLogo,
             },
           },
         });

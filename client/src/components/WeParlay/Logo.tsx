@@ -1,4 +1,5 @@
 import React from 'react';
+import weparlayLogo from '@assets/weparlaylogo4.png';
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
@@ -19,7 +20,7 @@ const Logo: React.FC<LogoProps> = ({ size = 'md', className = '', withTagline = 
     <div className={`flex flex-col items-center ${className}`}>
       <div className="relative">
         <img 
-          src="/weparlaylogo.png" 
+          src={weparlayLogo} 
           alt="WeParlay.io Logo" 
           className={`${sizeClasses[size]} object-contain drop-shadow-md hover:drop-shadow-lg transition-all duration-300`} 
         />
