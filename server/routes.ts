@@ -3220,14 +3220,9 @@ Start betting through text now!`;
         odds: odds,
         status: 'pending',
         betType: betType || 'crypto',
+        pick: selection || 'crypto_bet',
         selection: selection,
-        potentialPayout: potentialPayout || amount * (odds > 0 ? (odds / 100) + 1 : (100 / Math.abs(odds)) + 1),
-        metadata: {
-          cryptocurrency,
-          walletAddress,
-          transactionType: 'crypto',
-          placedAt: new Date().toISOString()
-        }
+        potentialPayout: potentialPayout || amount * (odds > 0 ? (odds / 100) + 1 : (100 / Math.abs(odds)) + 1)
       });
 
       // Simulate blockchain transaction hash for demo
@@ -3342,7 +3337,7 @@ Start betting through text now!`;
         toAmount: convertedAmount,
         timestamp: new Date().toISOString()
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error converting cryptocurrency:', error);
       res.status(500).json({ 
         success: false, 
@@ -3441,38 +3436,19 @@ Start betting through text now!`;
 
       // Create bet record
       const bet = await storage.createBet({
-        userId: parseInt(userId),
+        userId: userId,
         eventId: parseInt(eventId),
         amount: amount,
         odds: odds,
+        pick: selection || 'crypto_bet',
         selection: selection,
         status: 'pending',
         betType: 'crypto',
-        metadata: {
-          cryptocurrency,
-          walletAddress,
-          transactionHash,
-          potentialPayout,
-          networkFee: cryptoInfo.networkFee || 0
-        }
+        potentialPayout: amount * (odds > 0 ? (odds / 100) + 1 : (100 / Math.abs(odds)) + 1)
       });
 
-      // Send confirmation email
-      try {
-        const user = await storage.getUser(userId);
-        if (user?.email) {
-          await emailService.sendBetConfirmation(user.email, {
-            betId: bet.id,
-            amount: `${amount} ${cryptocurrency}`,
-            selection,
-            odds,
-            potentialPayout: `${potentialPayout} ${cryptocurrency}`,
-            transactionHash
-          });
-        }
-      } catch (emailError) {
-        console.error('Failed to send bet confirmation email:', emailError);
-      }
+      // Log bet confirmation (email service not configured)
+      console.log(`Crypto bet confirmed: ${bet.id} for user ${userId}`);
 
       res.json({
         success: true,
