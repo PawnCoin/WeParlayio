@@ -2968,7 +2968,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Import email service
       const emailService = await import('./services/emailService');
-      await emailService.sendBetConfirmation(user.email, type, message);
+      await emailService.sendBetConfirmation(user.email, `${type}: ${message}`);
 
       res.json({ success: true, message: 'Notification sent successfully' });
     } catch (error) {
@@ -2989,8 +2989,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Import SMS service
-      const smsService = await import('./services/smsService');
-      await smsService.sendMessage(user.phoneNumber, message);
+      const { SMSService } = await import('./services/smsService');
+      const smsService = new SMSService();
+      await smsService.sendSMS(user.phoneNumber, message);
 
       res.json({ success: true, message: 'SMS sent successfully' });
     } catch (error) {
@@ -3066,6 +3067,7 @@ Start betting through text now!`;
       }
 
       // Send response SMS
+      const twilio = (await import('twilio')).default;
       const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
       await twilioClient.messages.create({
         body: responseMessage,
@@ -3095,7 +3097,7 @@ Start betting through text now!`;
 
       // Create challenge in database
       const challenge = await storage.createBettingChallenge({
-        uuid: crypto.randomUUID(),
+        challengeUuid: crypto.randomUUID(),
         createdBy: userId,
         eventName: `SMS Challenge: ${pick}`,
         amount: amount,
@@ -3108,7 +3110,8 @@ Start betting through text now!`;
       // Send SMS challenge
       const challengeMessage = `WeParlay Challenge: ${pick} for $${amount}. ${message || 'Accept at weparlay.io/challenge/' + challenge.uuid}`;
       
-      const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+      const twilio2 = (await import('twilio')).default;
+      const twilioClient = twilio2(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
       const smsResult = await twilioClient.messages.create({
         body: challengeMessage,
         from: process.env.TWILIO_PHONE_NUMBER,
