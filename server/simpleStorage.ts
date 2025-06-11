@@ -131,6 +131,16 @@ export class SimpleStorage implements IStorage {
   private async initializeBasicData() {
     await this.createSport({ name: "Football", key: "americanfootball_nfl", isActive: true });
     await this.createSport({ name: "Basketball", key: "basketball_nba", isActive: true });
+    
+    // Create default user for testing betting functionality
+    await this.createUser({
+      id: "dev-user-001",
+      email: "user@weparlay.io",
+      username: "testuser",
+      firstName: "Test",
+      lastName: "User",
+      balance: 1000
+    });
   }
 
   async getUser(id: string): Promise<User | undefined> {
