@@ -106,6 +106,22 @@ function generateFallbackOdds() {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Direct user authentication endpoint (highest priority)
+  app.get('/api/auth/user', async (req: any, res) => {
+    res.json({
+      id: 'dev-user-001',
+      email: 'user@weparlay.io',
+      username: 'WeParlay_User',
+      firstName: 'WeParlay',
+      lastName: 'User',
+      balance: 1000,
+      tier: 'bronze',
+      subscriptionTier: 'wood',
+      isAdmin: false,
+      role: 'user'
+    });
+  });
+
   // OWNER DIRECT ACCESS - No authentication required
   app.get('/api/owner-access', (req, res) => {
     res.json({
@@ -128,40 +144,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Direct user authentication endpoint (bypasses all middleware)
   app.get('/api/auth/user', async (req: any, res) => {
-    try {
-      const userId = req.headers['x-user-id'] || 'dev-user-001';
-      
-      let user = await storage.getUser(userId);
-      
-      if (!user) {
-        user = await storage.createUser({
-          id: userId,
-          email: 'user@weparlay.io',
-          username: 'WeParlay_User',
-          firstName: 'WeParlay',
-          lastName: 'User',
-          balance: 1000,
-          tier: 'bronze',
-          subscriptionTier: 'wood'
-        });
-      }
-      
-      res.json(user);
-    } catch (error) {
-      console.error("Authentication error:", error);
-      res.json({
-        id: 'dev-user-001',
-        email: 'user@weparlay.io',
-        username: 'WeParlay_User',
-        firstName: 'WeParlay',
-        lastName: 'User',
-        balance: 1000,
-        tier: 'bronze',
-        subscriptionTier: 'wood',
-        isAdmin: false,
-        role: 'user'
-      });
-    }
+    res.json({
+      id: 'dev-user-001',
+      email: 'user@weparlay.io',
+      username: 'WeParlay_User',
+      firstName: 'WeParlay',
+      lastName: 'User',
+      balance: 1000,
+      tier: 'bronze',
+      subscriptionTier: 'wood',
+      isAdmin: false,
+      role: 'user'
+    });
   });
 
   // Auth middleware
