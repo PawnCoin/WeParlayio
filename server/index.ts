@@ -176,7 +176,7 @@ app.use((req, res, next) => {
   });
 
   // Fix WebSocket connection failures for real-time betting
-  const { Server } = require('socket.io');
+  const { Server } = await import('socket.io');
   const io = new Server(httpServer, {
     cors: {
       origin: ["http://localhost:5173", "https://*.replit.app", "https://*.replit.dev"],

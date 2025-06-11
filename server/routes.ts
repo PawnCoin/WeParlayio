@@ -671,11 +671,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
       
-      // Verify sufficient balance 
+      // Verify sufficient balance with null safety
       const balanceField = isVirtual ? 'balance' : 'realMoneyBalance';
-      if (user[balanceField] < amount) {
+      const currentBalance = user[balanceField] || 0;
+      if (currentBalance < amount) {
         return res.status(400).json({ 
-          message: `Insufficient ${isVirtual ? 'WeParlay Cash' : 'funds'}. You need ${amount} but have ${user[balanceField]}.` 
+          message: `Insufficient ${isVirtual ? 'WeParlay Cash' : 'funds'}. You need ${amount} but have ${currentBalance}.` 
         });
       }
       
@@ -791,11 +792,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
       
-      // Verify sufficient balance
+      // Verify sufficient balance with null safety
       const balanceField = challenge.isVirtual ? 'balance' : 'realMoneyBalance';
-      if (user[balanceField] < challenge.amount) {
+      const currentBalance = user[balanceField] || 0;
+      if (currentBalance < challenge.amount) {
         return res.status(400).json({ 
-          message: `Insufficient ${challenge.isVirtual ? 'WeParlay Cash' : 'funds'}. You need ${challenge.amount} but have ${user[balanceField]}.` 
+          message: `Insufficient ${challenge.isVirtual ? 'WeParlay Cash' : 'funds'}. You need ${challenge.amount} but have ${currentBalance}.` 
         });
       }
       
@@ -2966,7 +2968,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Import email service
       const emailService = await import('./services/emailService');
-      await emailService.sendBetConfirmationEmail(user.email, type, message);
+      await emailService.sendBetConfirmation(user.email, type, message);
 
       res.json({ success: true, message: 'Notification sent successfully' });
     } catch (error) {
@@ -2988,7 +2990,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Import SMS service
       const smsService = await import('./services/smsService');
-      await smsService.sendSMS(user.phoneNumber, message);
+      await smsService.sendMessage(user.phoneNumber, message);
 
       res.json({ success: true, message: 'SMS sent successfully' });
     } catch (error) {
@@ -3921,11 +3923,12 @@ Start betting through text now!`;
         return res.status(404).json({ message: 'User not found' });
       }
 
-      if (user.weparlayCashBalance < tierInfo.amount) {
+      const currentBalance = user.weparlayCashBalance || 0;
+      if (currentBalance < tierInfo.amount) {
         return res.status(400).json({ 
           message: 'Insufficient WeParlay Cash balance',
           required: tierInfo.amount,
-          current: user.weparlayCashBalance
+          current: currentBalance
         });
       }
 
@@ -3946,7 +3949,7 @@ Start betting through text now!`;
         success: true, 
         message: `Tier upgraded to ${tierInfo.name}`,
         newTier: tierInfo.name,
-        remainingBalance: user.weparlayCashBalance - tierInfo.amount
+        remainingBalance: currentBalance - tierInfo.amount
       });
     } catch (error) {
       console.error('WeParlay Cash tier upgrade error:', error);
