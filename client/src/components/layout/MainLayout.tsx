@@ -87,7 +87,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/comprehensive-betting", label: "Sports Betting" },
-    { href: "/professional-betting", label: "Pro Betting" },
+    { href: "/betting-hub", label: "Betting Hub" },
     { href: "/esports-hub", label: "Esports Hub" },
     { href: "/fantasy", label: "Fantasy" },
     { href: "/tournaments", label: "Tournaments" },
