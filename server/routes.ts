@@ -33,6 +33,8 @@ import { apiQuotaManager } from "./services/apiQuotaManager";
 import { primaryApiRouter } from "./services/primaryApiRouter";
 import primaryDataRoutes from "./routes/primaryDataRoutes";
 import { smsService } from "./services/smsService";
+import betSettlementRoutes from "./routes/betSettlementRoutes";
+import { betSettlementService } from "./services/betSettlementService";
 import { 
   getPlayerAnalytics, 
   getWeeklyMatchups, 
@@ -401,6 +403,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register Banking routes for real deposits, withdrawals, and betting
   app.use('/api/banking', bankingRouter);
+  
+  // Register Bet Settlement routes for automated winner determination
+  app.use('/api/bet-settlement', betSettlementRoutes);
   
   // Main odds endpoint - connects to priority API system
   app.get('/api/odds', async (req, res) => {
