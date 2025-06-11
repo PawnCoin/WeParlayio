@@ -97,8 +97,8 @@ export default function Parlays() {
       id: `matchup-${event.id || event.game_id || index}`,
       sport: sportType,
       time: new Date(gameTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      homeTeam: event.home_team || event.homeTeam || 'Home Team',
-      awayTeam: event.away_team || event.awayTeam || 'Away Team',
+      homeTeam: event.home_team || event.homeTeam?.name || event.homeTeam || 'Home Team',
+      awayTeam: event.away_team || event.awayTeam?.name || event.awayTeam || 'Away Team',
       moneylineOdds: {
         home: event.home_odds || event.moneyline?.home || +152,
         away: event.away_odds || event.moneyline?.away || +267,

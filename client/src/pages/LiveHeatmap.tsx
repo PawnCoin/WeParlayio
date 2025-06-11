@@ -123,7 +123,10 @@ export default function LiveHeatmap() {
                   <span className="text-sm font-medium">Sports</span>
                 </div>
                 <div className="text-2xl font-bold text-blue-600">
-                  {coverageData.length || 0}
+                  {Object.keys(sportsData.reduce((acc: any, event: any) => {
+                    acc[event.sport] = true;
+                    return acc;
+                  }, {})).length}
                 </div>
               </CardContent>
             </Card>
