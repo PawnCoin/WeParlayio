@@ -175,5 +175,46 @@ app.use((req, res, next) => {
     log(`🚀 WeParlay server running on HTTP at 0.0.0.0:${port}`);
   });
 
+  // Fix WebSocket connection failures for real-time betting
+  const { Server } = require('socket.io');
+  const io = new Server(httpServer, {
+    cors: {
+      origin: ["http://localhost:5173", "https://*.replit.app", "https://*.replit.dev"],
+      methods: ["GET", "POST"],
+      credentials: true
+    },
+    transports: ['websocket', 'polling'],
+    allowEIO3: true
+  });
+
+  // Handle WebSocket connections for real-time betting
+  io.on('connection', (socket) => {
+    console.log('Client connected for real-time betting updates');
+    
+    socket.on('subscribe_to_odds', (data) => {
+      socket.join(`odds_${data.sport}`);
+    });
+    
+    socket.on('disconnect', () => {
+      console.log('Client disconnected from betting updates');
+    });
+  });
+
+  // Broadcast live odds updates every 30 seconds
+  setInterval(async () => {
+    try {
+      const liveEvents = await import('./services/espnApiService').then(service => 
+        service.espnApiService.getLiveEvents()
+      );
+      
+      io.emit('odds_update', {
+        timestamp: new Date().toISOString(),
+        events: liveEvents.slice(0, 10)
+      });
+    } catch (error) {
+      console.error('Failed to broadcast odds update:', error);
+    }
+  }, 30000);
+
   log('✅ WeParlay Fantasy Analytics Dashboard ready');
 })();

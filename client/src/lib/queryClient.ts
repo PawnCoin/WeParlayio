@@ -55,21 +55,26 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       staleTime: 5 * 60 * 1000, // 5 minutes
       retry: (failureCount, error: any) => {
-        // Disable retries for odds and events endpoints to prevent system crashes
-        const errorMessage = error?.message?.toLowerCase() || '';
-        const isProblematicEndpoint = errorMessage.includes('odds') || 
-                                     errorMessage.includes('events') ||
-                                     errorMessage.includes('unified-sports');
-        
-        if (isProblematicEndpoint || failureCount >= 1) {
-          return false; // No retries to prevent console flooding
-        }
-        
-        // Don't retry on 4xx errors
-        if (error?.status >= 400 && error?.status < 500) {
+        // Gracefully handle promise rejections to prevent memory leaks
+        try {
+          const errorMessage = error?.message?.toLowerCase() || '';
+          const isProblematicEndpoint = errorMessage.includes('odds') || 
+                                       errorMessage.includes('events') ||
+                                       errorMessage.includes('unified-sports');
+          
+          if (isProblematicEndpoint || failureCount >= 1) {
+            return false; // No retries to prevent console flooding
+          }
+          
+          // Don't retry on 4xx errors
+          if (error?.status >= 400 && error?.status < 500) {
+            return false;
+          }
+          return false; // Disable all retries temporarily
+        } catch (retryError) {
+          console.warn('Retry logic error handled gracefully');
           return false;
         }
-        return false; // Disable all retries temporarily
       },
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     },
