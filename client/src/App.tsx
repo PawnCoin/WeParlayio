@@ -76,7 +76,6 @@ import IPTVPlayer from "@/pages/IPTVPlayer";
 import UnifiedBettingHub from "@/pages/UnifiedBettingHub";
 
 import UnifiedSports from "@/pages/UnifiedSports";
-import ComprehensiveBetting from "@/pages/ComprehensiveBetting";
 import Odds from "@/pages/Odds";
 import Parlays from "@/pages/Parlays";
 import BettingAcademy from "@/pages/BettingAcademy";
@@ -138,7 +137,7 @@ function Router() {
       <Route path="/betting" component={BettingDashboard} />
       <Route path="/betting-experience" component={BettingExperience} />
       <Route path="/betting-manager" component={BettingManager} />
-      <Route path="/comprehensive-betting" component={ComprehensiveBetting} />
+
       <Route path="/odds" component={Odds} />
       <Route path="/live-betting" component={LiveBetting} />
       <Route path="/live-betting-enhanced" component={LiveBettingEnhanced} />

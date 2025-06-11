@@ -84,7 +84,7 @@ export default function ComprehensiveBetting() {
 
   // Filter sports based on search
   const filteredSports = sports?.filter((sport: any) =>
-    sport.name.toLowerCase().includes(searchTerm.toLowerCase())
+    sport?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
   const handleSportSelect = (sportKey: string) => {
