@@ -19,9 +19,9 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import TierGuard from '@/components/access/TierGuard';
 import { useAuth } from '@/hooks/useAuth';
 import { motion } from 'framer-motion';
-import TierGuard from '@/components/access/TierGuard';
 
 interface LiveMatch {
   id: string;
