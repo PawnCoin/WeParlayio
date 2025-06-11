@@ -68,81 +68,81 @@ export default function FantasySportsHub() {
               </p>
             </div>
 
-        {/* Platform Connection Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* ESPN Fantasy Card */}
-          <Card className="bg-white/10 border-white/20 backdrop-blur-sm hover:bg-white/15 transition-colors">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                  ESPN
-                </div>
-                ESPN Fantasy Football
-              </CardTitle>
-              <CardDescription className="text-gray-300">
-                Connect your ESPN fantasy leagues for comprehensive management and live scoring
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Badge className={espnConnected ? "bg-green-500/20 text-green-300" : "bg-gray-500/20 text-gray-400"}>
-                  {espnConnected ? "Connected" : "Not Connected"}
-                </Badge>
-                <Button 
-                  onClick={() => connectPlatform('espn')}
-                  disabled={espnConnected}
-                  className="bg-red-600 hover:bg-red-700"
-                >
-                  {espnConnected ? "Connected" : "Connect ESPN"}
-                </Button>
-              </div>
+            {/* Platform Connection Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* ESPN Fantasy Card */}
+              <Card className="bg-white/10 border-white/20 backdrop-blur-sm hover:bg-white/15 transition-colors">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                      ESPN
+                    </div>
+                    ESPN Fantasy Football
+                  </CardTitle>
+                  <CardDescription className="text-gray-300">
+                    Connect your ESPN fantasy leagues for comprehensive management and live scoring
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Badge className={espnConnected ? "bg-green-500/20 text-green-300" : "bg-gray-500/20 text-gray-400"}>
+                      {espnConnected ? "Connected" : "Not Connected"}
+                    </Badge>
+                    <Button 
+                      onClick={() => connectPlatform('espn')}
+                      disabled={espnConnected}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      {espnConnected ? "Connected" : "Connect ESPN"}
+                    </Button>
+                  </div>
               
-              <div className="space-y-2">
-                <div className="text-sm text-gray-300">Features:</div>
-                <ul className="text-xs text-gray-400 space-y-1">
-                  <li>• League standings and matchups</li>
-                  <li>• Roster management and optimization</li>
-                  <li>• Player stats and projections</li>
-                  <li>• Waiver wire analysis</li>
-                </ul>
-              </div>
-              
-              <Button 
-                onClick={() => navigateToPlatform('espn')}
-                className="w-full bg-gradient-to-r from-red-600 to-orange-600"
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Open ESPN Fantasy
-              </Button>
-            </CardContent>
-          </Card>
+                  <div className="space-y-2">
+                    <div className="text-sm text-gray-300">Features:</div>
+                    <ul className="text-xs text-gray-400 space-y-1">
+                      <li>• League standings and matchups</li>
+                      <li>• Roster management and optimization</li>
+                      <li>• Player stats and projections</li>
+                      <li>• Waiver wire analysis</li>
+                    </ul>
+                  </div>
+                  
+                  <Button 
+                    onClick={() => navigateToPlatform('espn')}
+                    className="w-full bg-gradient-to-r from-red-600 to-orange-600"
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Open ESPN Fantasy
+                  </Button>
+                </CardContent>
+              </Card>
 
-          {/* Yahoo Fantasy Card */}
-          <Card className="bg-white/10 border-white/20 backdrop-blur-sm hover:bg-white/15 transition-colors">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                  Y!
-                </div>
-                Yahoo Fantasy Football
-              </CardTitle>
-              <CardDescription className="text-gray-300">
-                Access your Yahoo fantasy leagues with advanced research tools and analytics
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Badge className={yahooConnected ? "bg-green-500/20 text-green-300" : "bg-gray-500/20 text-gray-400"}>
-                  {yahooConnected ? "Connected" : "Not Connected"}
-                </Badge>
-                <Button 
-                  onClick={() => connectPlatform('yahoo')}
-                  disabled={yahooConnected}
-                  className="bg-purple-600 hover:bg-purple-700"
-                >
-                  {yahooConnected ? "Connected" : "Connect Yahoo"}
-                </Button>
-              </div>
+              {/* Yahoo Fantasy Card */}
+              <Card className="bg-white/10 border-white/20 backdrop-blur-sm hover:bg-white/15 transition-colors">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                      Y!
+                    </div>
+                    Yahoo Fantasy Football
+                  </CardTitle>
+                  <CardDescription className="text-gray-300">
+                    Access your Yahoo fantasy leagues with advanced research tools and analytics
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Badge className={yahooConnected ? "bg-green-500/20 text-green-300" : "bg-gray-500/20 text-gray-400"}>
+                      {yahooConnected ? "Connected" : "Not Connected"}
+                    </Badge>
+                    <Button 
+                      onClick={() => connectPlatform('yahoo')}
+                      disabled={yahooConnected}
+                      className="bg-purple-600 hover:bg-purple-700"
+                    >
+                      {yahooConnected ? "Connected" : "Connect Yahoo"}
+                    </Button>
+                  </div>
               
               <div className="space-y-2">
                 <div className="text-sm text-gray-300">Features:</div>
