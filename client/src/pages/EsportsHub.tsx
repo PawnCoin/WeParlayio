@@ -21,6 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { useAuth } from '@/hooks/useAuth';
 import { motion } from 'framer-motion';
+import TierGuard from '@/components/access/TierGuard';
 
 interface LiveMatch {
   id: string;
@@ -75,8 +76,13 @@ const EsportsHub: React.FC = () => {
   };
 
   return (
-    <ErrorBoundary>
-      <div className="container mx-auto px-4 py-6">
+    <TierGuard 
+      requiredTier="vip" 
+      feature="Esports Hub"
+      description="Access live esports tournaments, professional match betting, streaming integration, and advanced esports analytics exclusively for VIP+ members."
+    >
+      <ErrorBoundary>
+        <div className="container mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2">
@@ -267,8 +273,9 @@ const EsportsHub: React.FC = () => {
             </div>
           </div>
         )}
-      </div>
-    </ErrorBoundary>
+        </div>
+      </ErrorBoundary>
+    </TierGuard>
   );
 };
 

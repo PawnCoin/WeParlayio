@@ -452,9 +452,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register Odds Ticker routes for real-time odds data (primary sources only)
   app.get('/api/odds-ticker/live-ticker', async (req, res) => {
     try {
-      console.log('🎯 Live Ticker: Fresh data from primary sources only');
+      console.log('🎯 Live Ticker: Prioritizing live sports data over upcoming events');
       
-      const tickerOdds = [];
+      const liveOdds = [];
+      const upcomingOdds = [];
       
       // Priority 1: The Odds API (Premium betting odds)
       if (process.env.THE_ODDS_API_KEY) {

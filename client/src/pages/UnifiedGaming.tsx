@@ -16,6 +16,7 @@ import {
   Clock, Eye, MessageCircle, Star
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import TierGuard from "@/components/access/TierGuard";
 
 // Gaming API Integration Functions (using live endpoints)
 
@@ -356,7 +357,12 @@ export default function UnifiedGaming() {
   });
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <TierGuard 
+      requiredTier="vip" 
+      feature="Gaming & Esports Hub"
+      description="Access comprehensive gaming platform integrations, esports tournaments, live streaming bets, and advanced gaming analytics exclusively for VIP+ members."
+    >
+      <div className="container mx-auto px-4 py-6">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
@@ -1271,6 +1277,7 @@ export default function UnifiedGaming() {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </TierGuard>
   );
 }
