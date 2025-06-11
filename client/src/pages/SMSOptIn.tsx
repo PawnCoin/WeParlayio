@@ -102,24 +102,24 @@ const SMSOptIn: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-4">
       <div className="max-w-2xl mx-auto pt-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">WeParlay SMS Notifications</h1>
-          <p className="text-slate-600">Manage your SMS preferences for betting alerts and notifications</p>
+          <h1 className="text-3xl font-bold text-white mb-2">WeParlay SMS Notifications</h1>
+          <p className="text-slate-300">Manage your SMS preferences for betting alerts and notifications</p>
         </div>
 
-        <Card className="mb-6">
+        <Card className="mb-6 bg-slate-800 border-slate-700">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Phone className="h-5 w-5 text-blue-600" />
+            <CardTitle className="flex items-center gap-2 text-white">
+              <Phone className="h-5 w-5 text-cyan-400" />
               SMS Opt-In / Opt-Out
             </CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleOptIn} className="space-y-6">
               <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-slate-700 mb-2">
+                <label htmlFor="phone" className="block text-sm font-medium text-slate-300 mb-2">
                   Phone Number *
                 </label>
                 <Input
@@ -128,9 +128,9 @@ const SMSOptIn: React.FC = () => {
                   placeholder="+1 (555) 123-4567"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  className="w-full"
+                  className="w-full bg-slate-700 border-slate-600 text-white placeholder-slate-400"
                 />
-                <p className="text-xs text-slate-500 mt-1">Include country code (e.g., +1 for US)</p>
+                <p className="text-xs text-slate-400 mt-1">Include country code (e.g., +1 for US)</p>
               </div>
 
               <div className="space-y-4">
@@ -140,9 +140,9 @@ const SMSOptIn: React.FC = () => {
                     checked={consent}
                     onCheckedChange={(checked) => setConsent(checked === true)}
                   />
-                  <label htmlFor="consent" className="text-sm text-slate-700 leading-relaxed">
+                  <label htmlFor="consent" className="text-sm text-slate-300 leading-relaxed">
                     <strong>I consent to receive SMS messages</strong> from WeParlay regarding:
-                    <ul className="list-disc list-inside mt-2 space-y-1 text-slate-600">
+                    <ul className="list-disc list-inside mt-2 space-y-1 text-slate-400">
                       <li>Bet confirmations and results</li>
                       <li>Account security alerts</li>
                       <li>Important platform updates</li>
@@ -157,9 +157,9 @@ const SMSOptIn: React.FC = () => {
                     checked={marketingConsent}
                     onCheckedChange={(checked) => setMarketingConsent(checked === true)}
                   />
-                  <label htmlFor="marketing" className="text-sm text-slate-700 leading-relaxed">
+                  <label htmlFor="marketing" className="text-sm text-slate-300 leading-relaxed">
                     I also consent to receive promotional SMS messages including:
-                    <ul className="list-disc list-inside mt-2 space-y-1 text-slate-600">
+                    <ul className="list-disc list-inside mt-2 space-y-1 text-slate-400">
                       <li>Special betting offers and bonuses</li>
                       <li>New feature announcements</li>
                       <li>Sports betting tips and insights</li>
