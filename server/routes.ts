@@ -1507,23 +1507,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { sportKey } = req.params;
       
-      // Check if this is one of our expanded sports (including college and women's leagues)
-      const newSportsMapping: Record<string, keyof typeof additionalSportsData> = {
-        // Pro Sports
-        'boxing_main': 'boxing_main',
-        'mma_ufc': 'mma_ufc',
-        'motorsport_nascar': 'motorsport_nascar',
-        'tennis_atp': 'tennis_atp',
-        'tennis_wta': 'tennis_wta',
-        'basketball_wnba': 'basketball_wnba',
-        'football_ufl': 'football_ufl',
-        // College Sports
-        'football_ncaaf': 'football_ncaaf',
-        'basketball_ncaam': 'basketball_ncaam',
-        'basketball_ncaaw': 'basketball_ncaaw'
-      };
+      // Return empty array for new sports until real API integration
+      const supportedNewSports = [
+        'boxing_main', 'mma_ufc', 'motorsport_nascar', 'tennis_atp', 
+        'tennis_wta', 'basketball_wnba', 'football_ufl', 'football_ncaaf',
+        'basketball_ncaam', 'basketball_ncaaw'
+      ];
       
-      if (newSportsMapping[sportKey]) {
+      if (supportedNewSports.includes(sportKey)) {
         // For our new sports, we'll pretend there are no live events currently
         // This could be enhanced to simulate live events if needed
         return res.json([]);
@@ -3097,18 +3088,17 @@ Start betting through text now!`;
 
       // Create challenge in database
       const challenge = await storage.createBettingChallenge({
-        challengeUuid: crypto.randomUUID(),
         createdBy: userId,
         eventName: `SMS Challenge: ${pick}`,
         amount: amount,
         pick: pick,
         status: 'pending',
-        expiryDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
         customMessage: message || ''
       });
 
       // Send SMS challenge
-      const challengeMessage = `WeParlay Challenge: ${pick} for $${amount}. ${message || 'Accept at weparlay.io/challenge/' + challenge.uuid}`;
+      const challengeMessage = `WeParlay Challenge: ${pick} for $${amount}. ${message || 'Accept at weparlay.io/challenge/' + challenge.challengeUuid}`;
       
       const twilio2 = (await import('twilio')).default;
       const twilioClient = twilio2(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
