@@ -3403,7 +3403,7 @@ Start betting through text now!`;
   app.post('/api/crypto/place-bet', isAuthenticated, async (req, res) => {
     try {
       const { eventId, selection, amount, cryptocurrency, odds, potentialPayout, walletAddress } = req.body;
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
 
       if (!eventId || !selection || !amount || !cryptocurrency || !odds || !walletAddress) {
         return res.status(400).json({
@@ -3477,7 +3477,7 @@ Start betting through text now!`;
   // Get user's crypto bets
   app.get('/api/user/crypto-bets', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = (req.user as any)?.claims?.sub;
       const bets = await storage.getUserBets(parseInt(userId));
       
       const cryptoBets = bets.filter(bet => bet.betType === 'crypto');
@@ -3652,7 +3652,7 @@ Start betting through text now!`;
         diamond: { amount: 149.99, name: 'Diamond' }
       };
 
-      const tierData = tierPricing[tierId];
+      const tierData = (tierPricing as any)[tierId];
       if (!tierData) {
         return res.status(400).json({ message: 'Invalid tier' });
       }
