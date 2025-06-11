@@ -120,6 +120,7 @@ import CryptoBetting from "@/pages/CryptoBetting";
 import TwilioOptInDemo from "@/pages/TwilioOptInDemo";
 import LiveBetting from "@/pages/LiveBetting";
 import UserAnalytics from "@/pages/UserAnalytics";
+import IPTVStreaming from "@/pages/IPTVStreaming";
 
 import { lazy } from 'react';
 
@@ -208,6 +209,8 @@ function Router() {
       <Route path="/live-streaming" component={LiveStreaming} />
       <Route path="/streaming-recommendations" component={StreamingRecommendations} />
       <Route path="/iptv-player" component={IPTVPlayer} />
+      <Route path="/iptv-streaming" component={IPTVStreaming} />
+      <Route path="/iptv" component={IPTVStreaming} />
       
       {/* Blockchain & Web3 Features */}
       <Route path="/blockchain-performance" component={BlockchainPerformance} />
@@ -247,6 +250,10 @@ function Router() {
       {/* Academy */}
       <Route path="/betting-academy" component={BettingAcademy} />
 
+      {/* Analytics */}
+      <Route path="/analytics" component={UserAnalytics} />
+      <Route path="/user-analytics" component={UserAnalytics} />
+      
       {/* Settings */}
       <Route path="/settings" component={Settings} />
       <Route path="/security-settings" component={SecuritySettings} />
