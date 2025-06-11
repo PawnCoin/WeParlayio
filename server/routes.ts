@@ -5668,6 +5668,14 @@ ${streamUrl}
   // Return the HTTP server
   const httpServer = createServer(app);
   
+  // Initialize Automated Bet Settlement Service
+  try {
+    betSettlementService.startAutomaticSettlement();
+    console.log('🎯 Automated bet settlement system initialized successfully');
+  } catch (error) {
+    console.error('❌ Failed to initialize bet settlement system:', error);
+  }
+  
   // WebSocket service temporarily disabled to resolve port conflicts
   console.log('⚠️ WebSocket service disabled - Live streaming will work without real-time features');
   
