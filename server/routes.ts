@@ -3700,7 +3700,7 @@ Start betting through text now!`;
         diamond: { amount: 14999, name: 'Diamond' }
       };
 
-      const tierData = tierPricing[tierId];
+      const tierData = (tierPricing as any)[tierId];
       if (!tierData) {
         return res.status(400).json({ message: 'Invalid tier' });
       }
@@ -3881,7 +3881,7 @@ Start betting through text now!`;
         diamond: { amount: 159.99, name: 'Diamond' }
       };
 
-      const tierInfo = tierPricing[tier.toLowerCase()];
+      const tierInfo = (tierPricing as any)[tier.toLowerCase()];
       if (!tierInfo) {
         return res.status(400).json({ message: 'Invalid tier' });
       }
@@ -3909,8 +3909,7 @@ Start betting through text now!`;
         userId,
         amount: -tierInfo.amount,
         type: 'tier_upgrade',
-        description: `Tier upgrade to ${tierInfo.name}`,
-        status: 'completed'
+        description: `Tier upgrade to ${tierInfo.name}`
       });
 
       res.json({ 
@@ -3939,7 +3938,7 @@ Start betting through text now!`;
         diamond: { amount: 159.99, name: 'Diamond' }
       };
 
-      const tierInfo = tierPricing[tier.toLowerCase()];
+      const tierInfo = (tierPricing as any)[tier.toLowerCase()];
       if (!tierInfo) {
         return res.status(400).json({ message: 'Invalid tier' });
       }
