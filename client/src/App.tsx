@@ -73,6 +73,7 @@ import { BettingProvider } from "./contexts/BettingContext";
 import InteractiveOnboardingWizard from "./components/onboarding/InteractiveOnboardingWizard";
 import OnboardingDemo from "@/pages/OnboardingDemo";
 import IPTVPlayer from "@/pages/IPTVPlayer";
+import ProfessionalBetting from "@/pages/ProfessionalBetting";
 
 import UnifiedSports from "@/pages/UnifiedSports";
 import ComprehensiveBetting from "@/pages/ComprehensiveBetting";
@@ -219,6 +220,7 @@ function Router() {
 
       {/* Enhanced Features */}
       <Route path="/enhanced-features" component={EnhancedFeatures} />
+      <Route path="/professional-betting" component={ProfessionalBetting} />
 
       {/* VIP Features */}
       <Route path="/vip" component={VipFeatures} />
