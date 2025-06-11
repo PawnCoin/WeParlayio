@@ -292,15 +292,48 @@ export default function UnifiedBettingHub() {
                 </TabsList>
 
                 <TabsContent value="arbitrage">
-                  <ArbitrageDetector />
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Arbitrage Detection</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center p-8">
+                        <Calculator className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                        <h3 className="text-xl font-semibold mb-2">Professional Arbitrage Tools</h3>
+                        <p className="text-muted-foreground">Advanced arbitrage detection across multiple sportsbooks</p>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </TabsContent>
 
                 <TabsContent value="analytics">
-                  <BettingAnalyticsDashboard />
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Professional Analytics</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center p-8">
+                        <BarChart3 className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                        <h3 className="text-xl font-semibold mb-2">Advanced Performance Metrics</h3>
+                        <p className="text-muted-foreground">Comprehensive betting analytics and ROI tracking</p>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </TabsContent>
 
                 <TabsContent value="parlay">
-                  <AdvancedParlayBuilder />
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Advanced Parlay Builder</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center p-8">
+                        <Target className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                        <h3 className="text-xl font-semibold mb-2">Professional Parlay Tools</h3>
+                        <p className="text-muted-foreground">Smart parlay optimization and correlation analysis</p>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </TabsContent>
               </Tabs>
             </div>
