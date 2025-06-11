@@ -130,96 +130,49 @@ function Router() {
 
   return (
     <Switch>
-      {/* Main Application Routes */}
-      <Route path="/home" component={Home} />
-      <Route path="/dashboard" component={BettingDashboard} />
-      <Route path="/betting-dashboard" component={BettingDashboard} />
-      <Route path="/betting" component={BettingDashboard} />
-      <Route path="/betting-experience" component={BettingExperience} />
-      <Route path="/betting-manager" component={BettingManager} />
-
+      {/* Core Betting Routes */}
+      <Route path="/betting-hub" component={UnifiedBettingHub} />
       <Route path="/odds" component={Odds} />
-      <Route path="/live-betting" component={LiveBetting} />
-      <Route path="/live-betting-enhanced" component={LiveBettingEnhanced} />
+      <Route path="/parlays" component={Parlays} />
       <Route path="/live-heatmap" component={LiveHeatmap} />
-      {/* VIP Access Features */}
-      <Route path="/vip-dashboard" component={VIPDashboard} />
+      <Route path="/betting-academy" component={BettingAcademy} />
+      <Route path="/results" component={Results} />
+      <Route path="/my-bets" component={MyBets} />
+      
+      {/* VIP Features */}
       <Route path="/vip" component={VIPDashboard} />
-      <Route path="/vip/live-streaming" component={LiveStreaming} />
-      <Route path="/vip/streaming" component={LiveStreaming} />
-      <Route path="/vip/fantasy" component={FantasySportsEnhanced} />
-      <Route path="/vip/tournaments" component={Tournaments} />
-      <Route path="/vip/head-to-head" component={HeadToHeadBetting} />
-      <Route path="/vip/blockchain-performance" component={BlockchainPerformance} />
-      <Route path="/vip/gaming-integration" component={GamingIntegration} />
-      <Route path="/live-streaming" component={LiveStreaming} />
-      <Route path="/streaming" component={LiveStreaming} />
       <Route path="/banking" component={BankingSystem} />
       <Route path="/crypto-wallet" component={CryptoWallet} />
-      <Route path="/wallet" component={CryptoWallet} />
-      <Route path="/crypto-betting" component={CryptoBetting} />
-      <Route path="/crypto" component={CryptoBetting} />
-      <Route path="/complete-betting" component={CompleteBettingSystem} />
-      <Route path="/my-bets" component={MyBets} />
-      <Route path="/results" component={Results} />
-      <Route path="/parlays" component={Parlays} />
+      <Route path="/live-streaming" component={LiveStreaming} />
 
-      {/* Sports Pages */}
+      {/* Sports & Gaming */}
       <Route path="/sport/:sportKey" component={SportPage} />
-      <Route path="/sports/:sportKey" component={SportPage} />
-      <Route path="/unified-sports" component={UnifiedSports} />
-
-      {/* Gaming & Esports */}
+      <Route path="/sports" component={UnifiedSports} />
       <Route path="/gaming" component={UnifiedGaming} />
-      <Route path="/gaming-integration" component={GamingIntegration} />
       <Route path="/esports-hub" component={EsportsHub} />
       <Route path="/betting-challenges" component={BettingChallenges} />
-       {/* Add /betting-challenge route for evaluation */}
-        <Route path="/betting-challenge" component={BettingChallenges} />
+      <Route path="/tournaments" component={Tournaments} />
 
       {/* Fantasy Sports */}
       <Route path="/fantasy" component={FantasySportsHub} />
-      <Route path="/fantasy-legacy" component={FantasySportsEnhanced} />
       <Route path="/fantasy-football" component={FantasyFootball} />
       <Route path="/yahoo-fantasy" component={YahooFantasyFootball} />
-      <Route path="/fantasy/analytics" component={FantasyAnalyticsDashboard} />
-
-      {/* Tier Management */}
-      <Route path="/tier-comparison" component={TierComparison} />
-      
-      {/* SMS Opt-In for Twilio Compliance */}
-      <Route path="/sms-opt-in" component={SMSOptIn} />
-
-      {/* Tournaments */}
-      <Route path="/tournaments" component={Tournaments} />
-      <Route path="/tournament/:id" component={Tournaments} />
 
       {/* Social Features */}
       <Route path="/social" component={SocialHub} />
-      <Route path="/social-betting" component={SocialBetting} />
       <Route path="/head-to-head" component={HeadToHeadBetting} />
 
-      {/* Trivia */}
-      <Route path="/trivia" component={Trivia} />
-
-      {/* Twilio SMS Opt-in Demo */}
-      <Route path="/twilio-opt-in-demo" component={TwilioOptInDemo} />
-
-      {/* Streaming & IPTV */}
-      <Route path="/live-streaming" component={LiveStreaming} />
-      <Route path="/streaming-recommendations" component={StreamingRecommendations} />
-      <Route path="/iptv-player" component={IPTVPlayer} />
-      <Route path="/iptv-streaming" component={IPTVStreaming} />
+      {/* Streaming */}
       <Route path="/iptv" component={IPTVStreaming} />
       
-      {/* Blockchain & Web3 Features */}
-      <Route path="/blockchain-performance" component={BlockchainPerformance} />
+      {/* Utilities */}
+      <Route path="/tier-comparison" component={TierComparison} />
+      <Route path="/sms-opt-in" component={SMSOptIn} />
+      <Route path="/trivia" component={Trivia} />
       <Route path="/wallet-tutorial" component={WalletTutorial} />
-      <Route path="/social-sharing" component={SocialSharing} />
 
       {/* Enhanced Features */}
       <Route path="/enhanced-features" component={EnhancedFeatures} />
-      <Route path="/betting-hub" component={UnifiedBettingHub} />
 
       {/* VIP Features */}
       <Route path="/vip" component={VipFeatures} />
