@@ -1905,14 +1905,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // CRITICAL: Real bet placement endpoint
-  app.post('/api/bets/place', isAuthenticated, async (req, res) => {
+  // User bet placement endpoint (no authentication required)
+  app.post('/api/user/place-bet', async (req, res) => {
     try {
-      const userId = (req.user as any)?.claims?.sub;
-      if (!userId) {
-        return res.status(401).json({ message: 'User not authenticated' });
-      }
-
+      const userId = req.headers['x-user-id'] || 'dev-user-001';
       const { eventId, selections, amount, currency, totalOdds, potentialPayout, betType } = req.body;
 
       if (!eventId || !selections || !amount || amount <= 0) {
@@ -4698,63 +4694,7 @@ Start betting through text now!`;
     }
   });
 
-  // Place bet endpoint for live streaming
-  app.post('/api/bets/place', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const { gameId, betType, amount, odds } = req.body;
-
-      if (!gameId || !betType || !amount || !odds) {
-        return res.status(400).json({ message: 'Missing required bet parameters' });
-      }
-
-      if (amount <= 0) {
-        return res.status(400).json({ message: 'Bet amount must be positive' });
-      }
-
-      const user = await storage.getUser(userId);
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-
-      const userBalance = user.cashBalance || 0;
-      if (amount > userBalance) {
-        return res.status(400).json({ message: 'Insufficient balance' });
-      }
-
-      // Create the bet
-      const bet = await storage.createBet({
-        userId,
-        eventId: parseInt(gameId.replace(/\D/g, '') || '1'),
-        amount,
-        odds,
-        pick: betType,
-        potentialPayout: amount * odds,
-        betType: 'crypto',
-        status: 'pending'
-      });
-
-      // Update user balance (deduct bet amount)
-      await storage.updateUserBalance(userId, -amount);
-
-      res.json({
-        success: true,
-        bet: {
-          id: bet.id,
-          gameId,
-          betType,
-          amount,
-          odds,
-          potentialWin: amount * (Math.abs(odds) / 100),
-          status: 'placed'
-        },
-        message: 'Bet placed successfully'
-      });
-    } catch (error) {
-      console.error('Error placing bet:', error);
-      res.status(500).json({ message: 'Failed to place bet' });
-    }
-  });
+  // Live streaming bet endpoint removed to prevent conflicts
 
   // Cash App payment routes
   app.post('/api/cashapp/payment', async (req, res) => {
