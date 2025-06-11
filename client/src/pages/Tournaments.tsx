@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Trophy, Calendar, Users, DollarSign, Clock, Star, Target } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
+import TierGuard from '@/components/access/TierGuard';
 
 interface Tournament {
   id: string;
@@ -164,8 +165,13 @@ const Tournaments: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
-      <div className="max-w-7xl mx-auto">
+    <TierGuard 
+      requiredTier="vip" 
+      feature="Tournaments"
+      description="Access exclusive tournament competitions, brackets tracking, and prize pool participation exclusively for VIP+ members."
+    >
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
+        <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
@@ -528,6 +534,7 @@ const Tournaments: React.FC = () => {
         </Tabs>
       </div>
     </div>
+    </TierGuard>
   );
 };
 

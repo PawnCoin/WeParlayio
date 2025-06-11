@@ -55,18 +55,18 @@ export default function FantasySportsHub() {
       feature="Fantasy Sports Hub"
       description="Access comprehensive fantasy sports management, platform integrations, and advanced analytics exclusively for VIP+ members."
     >
-      <div className="min-h-screen bg-gradient-to-br from-green-900 via-blue-900 to-purple-900 p-4">
-        <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold text-white flex items-center justify-center gap-2">
-            <Trophy className="h-8 w-8 text-yellow-400" />
-            Fantasy Sports Hub
-          </h1>
-          <p className="text-gray-300 max-w-2xl mx-auto">
-            Your unified fantasy sports dashboard connecting ESPN and Yahoo platforms with advanced analytics and betting integration
-          </p>
-        </div>
+        <div className="min-h-screen bg-gradient-to-br from-green-900 via-blue-900 to-purple-900 p-4">
+          <div className="max-w-7xl mx-auto space-y-6">
+            {/* Header */}
+            <div className="text-center space-y-4">
+              <h1 className="text-4xl font-bold text-white flex items-center justify-center gap-2">
+                <Trophy className="h-8 w-8 text-yellow-400" />
+                Fantasy Sports Hub
+              </h1>
+              <p className="text-gray-300 max-w-2xl mx-auto">
+                Your unified fantasy sports dashboard connecting ESPN and Yahoo platforms with advanced analytics and betting integration
+              </p>
+            </div>
 
         {/* Platform Connection Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -23,7 +23,7 @@ const TierGuard: React.FC<TierGuardProps> = ({
   // Mock tier checking - in production this would check user.tier
   const userTier = user?.tier || 'standard';
   
-  const tierLevels = {
+  const tierLevels: Record<string, number> = {
     'standard': 1,
     'vip': 2,
     'professional': 3
