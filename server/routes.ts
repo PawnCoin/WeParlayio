@@ -454,8 +454,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('🎯 Live Ticker: Prioritizing live sports data over upcoming events');
       
-      const liveOdds = [];
-      const upcomingOdds = [];
+      const liveOdds: any[] = [];
+      const upcomingOdds: any[] = [];
       
       // Priority 1: The Odds API (Premium betting odds)
       if (process.env.THE_ODDS_API_KEY) {
@@ -473,17 +473,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 if (oddsResponse.ok) {
                   const oddsData = await oddsResponse.json();
                   if (oddsData && oddsData.length > 0) {
-                    const authenticOdds = oddsData.map((event: any) => ({
-                      id: `odds_api_${event.id}`,
-                      sport: event.sport_title,
-                      teams: `${event.home_team} vs ${event.away_team}`,
-                      currentOdds: event.bookmakers?.[0]?.markets?.[0]?.outcomes?.[0]?.price || 0,
-                      previousOdds: null,
-                      timestamp: new Date().toISOString(),
-                      eventId: event.id,
-                      bookmaker: event.bookmakers?.[0]?.title || 'Premium Sportsbook'
-                    }));
-                    tickerOdds.push(...authenticOdds);
+                    oddsData.forEach((event: any) => {
+                      const oddsItem = {
+                        id: `odds_api_${event.id}`,
+                        sport: event.sport_title,
+                        teams: `${event.home_team} vs ${event.away_team}`,
+                        currentOdds: event.bookmakers?.[0]?.markets?.[0]?.outcomes?.[0]?.price || 0,
+                        previousOdds: null,
+                        timestamp: new Date().toISOString(),
+                        eventId: event.id,
+                        bookmaker: event.bookmakers?.[0]?.title || 'Premium Sportsbook',
+                        status: new Date(event.commence_time) < new Date() ? 'live' : 'upcoming'
+                      };
+                      
+                      if (new Date(event.commence_time) < new Date()) {
+                        liveOdds.push(oddsItem);
+                      } else {
+                        upcomingOdds.push(oddsItem);
+                      }
+                    });
                   }
                 }
               } catch (sportError) {
@@ -491,8 +499,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               }
             }
             
-            if (tickerOdds.length > 0) {
-              console.log(`✅ The Odds API: ${tickerOdds.length} live betting odds retrieved`);
+            if (liveOdds.length > 0 || upcomingOdds.length > 0) {
+              console.log(`✅ The Odds API: ${liveOdds.length} live, ${upcomingOdds.length} upcoming odds retrieved`);
             }
           }
         } catch (oddsError) {
@@ -512,17 +520,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (rapidResponse.ok) {
             const rapidData = await rapidResponse.json();
             if (rapidData.response && rapidData.response.length > 0) {
-              const soccerOdds = rapidData.response.slice(0, 3).map((match: any, index: number) => ({
-                id: `rapid_soccer_${match.fixture.id}`,
-                sport: 'Soccer',
-                teams: `${match.teams.home.name} vs ${match.teams.away.name}`,
-                currentOdds: 1.90 + (index * 0.03),
-                previousOdds: 1.87 + (index * 0.03),
-                timestamp: new Date().toISOString(),
-                eventId: match.fixture.id,
-                bookmaker: 'RapidAPI'
-              }));
-              tickerOdds.push(...soccerOdds);
+              rapidData.response.slice(0, 3).forEach((match: any, index: number) => {
+                const oddsItem = {
+                  id: `rapid_soccer_${match.fixture.id}`,
+                  sport: 'Soccer',
+                  teams: `${match.teams.home.name} vs ${match.teams.away.name}`,
+                  currentOdds: 1.90 + (index * 0.03),
+                  previousOdds: 1.87 + (index * 0.03),
+                  timestamp: new Date().toISOString(),
+                  eventId: match.fixture.id,
+                  bookmaker: 'RapidAPI',
+                  status: match.fixture.status.short === 'LIVE' ? 'live' : 'upcoming'
+                };
+                
+                if (match.fixture.status.short === 'LIVE') {
+                  liveOdds.push(oddsItem);
+                } else {
+                  upcomingOdds.push(oddsItem);
+                }
+              });
             }
           }
         } catch (rapidError) {
@@ -530,8 +546,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      // Prioritize live events over upcoming events in ticker display
+      const prioritizedOdds = [...liveOdds, ...upcomingOdds].slice(0, 20);
+      
       // Always return successful response for frontend stability
-      if (tickerOdds.length === 0) {
+      if (prioritizedOdds.length === 0) {
         return res.json({
           success: true,
           message: 'Premium odds services temporarily unavailable',
@@ -544,10 +563,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({
         success: true,
-        odds: tickerOdds,
+        odds: prioritizedOdds,
         cached: false,
         lastUpdate: new Date().toISOString(),
-        source: 'primary_authentic_sources_only'
+        source: 'primary_authentic_sources_only',
+        liveCount: liveOdds.length,
+        upcomingCount: upcomingOdds.length
       });
     } catch (error) {
       console.error('Error fetching fresh ticker data:', error);
