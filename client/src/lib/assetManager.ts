@@ -334,7 +334,7 @@ export class AssetManager {
         return espnLogo;
       }
     } catch (error) {
-      console.warn('ESPN service failed:', error);
+      // Silent fallback to generated logo
     }
 
     // Generate a simple SVG with team initials

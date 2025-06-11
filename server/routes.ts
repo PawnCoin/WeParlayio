@@ -2544,11 +2544,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     try {
       // Get fresh data
-      const freshData = await new Promise((resolve, reject) => {
+      const freshData = await new Promise<any>((resolve, reject) => {
         const mockRes = {
           json: resolve,
-          status: () => ({ json: reject })
-        };
+          status: (code: number) => ({ json: (reason?: any) => reject(reason) }),
+          sendStatus: () => mockRes,
+          links: () => mockRes,
+          send: resolve,
+          jsonp: resolve
+        } as any;
         getRealOddsData(req, mockRes);
       });
       
