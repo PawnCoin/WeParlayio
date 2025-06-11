@@ -118,6 +118,8 @@ import TierUpgradeSuccess from "@/pages/TierUpgradeSuccess";
 import CryptoWallet from "@/pages/CryptoWallet";
 import CryptoBetting from "@/pages/CryptoBetting";
 import TwilioOptInDemo from "@/pages/TwilioOptInDemo";
+import LiveBetting from "@/pages/LiveBetting";
+import UserAnalytics from "@/pages/UserAnalytics";
 
 import { lazy } from 'react';
 
@@ -136,7 +138,7 @@ function Router() {
       <Route path="/betting-manager" component={BettingManager} />
       <Route path="/comprehensive-betting" component={ComprehensiveBetting} />
       <Route path="/odds" component={Odds} />
-      <Route path="/live-betting" component={BettingExperience} />
+      <Route path="/live-betting" component={LiveBetting} />
       <Route path="/live-betting-enhanced" component={LiveBettingEnhanced} />
       <Route path="/live-heatmap" component={LiveHeatmap} />
       {/* VIP Access Features */}

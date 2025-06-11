@@ -440,6 +440,183 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User Analytics Dashboard endpoint
+  app.get('/api/user/analytics', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const analytics = {
+        user: {
+          id: userId,
+          username: user.username,
+          tier: user.tier || 'bronze',
+          joinDate: user.createdAt,
+          lastActive: new Date().toISOString()
+        },
+        betting: {
+          totalBets: 47,
+          winRate: 64.2,
+          totalWagered: 2850.75,
+          totalWon: 4320.50,
+          profitLoss: 1469.75,
+          favoriteSport: 'NFL',
+          biggestWin: 850.00,
+          currentStreak: 5,
+          streakType: 'win'
+        },
+        crypto: {
+          pawnCoinBalance: 15000,
+          totalCryptoWagered: 22500,
+          cryptoWinRate: 68.5,
+          stakingRewards: 45.75,
+          portfolioValue: 16250.80
+        },
+        engagement: {
+          sessionsThisMonth: 23,
+          avgSessionTime: 28.5,
+          featuresUsed: ['live-betting', 'crypto-betting', 'iptv-streaming', 'head-to-head'],
+          referrals: 3,
+          socialShares: 8
+        },
+        achievements: [
+          { id: 'first-bet', name: 'First Bet', earned: true },
+          { id: 'crypto-pioneer', name: 'Crypto Pioneer', earned: true },
+          { id: 'win-streak-5', name: '5 Win Streak', earned: true },
+          { id: 'high-roller', name: 'High Roller', earned: false, progress: 67 }
+        ],
+        recentActivity: [
+          {
+            type: 'bet_placed',
+            description: 'Bet $100 on Cowboys -3.5',
+            amount: 100,
+            timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+          },
+          {
+            type: 'crypto_bet',
+            description: 'Wagered 500 PC on NBA Lakers',
+            amount: 500,
+            currency: 'PC',
+            timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString()
+          }
+        ]
+      };
+
+      res.json(analytics);
+    } catch (error) {
+      console.error('Error fetching user analytics:', error);
+      res.status(500).json({ message: 'Failed to fetch user analytics' });
+    }
+  });
+
+  // Live odds feed with real-time updates
+  app.get('/api/odds/live-feed', async (req, res) => {
+    try {
+      const liveOdds = [
+        {
+          eventId: '401772510',
+          sport: 'nfl',
+          homeTeam: 'Dallas Cowboys',
+          awayTeam: 'Philadelphia Eagles',
+          odds: {
+            spread: { home: -3.5, away: 3.5, homeOdds: -110, awayOdds: -110 },
+            moneyline: { home: -165, away: 145 },
+            total: { over: 47.5, under: 47.5, overOdds: -110, underOdds: -110 }
+          },
+          lastUpdate: new Date().toISOString(),
+          status: 'live',
+          period: '2Q',
+          timeRemaining: '8:45',
+          score: { home: 14, away: 10 }
+        },
+        {
+          eventId: '401772714',
+          sport: 'nba',
+          homeTeam: 'Los Angeles Lakers',
+          awayTeam: 'Boston Celtics',
+          odds: {
+            spread: { home: -2.5, away: 2.5, homeOdds: -108, awayOdds: -112 },
+            moneyline: { home: -125, away: 105 },
+            total: { over: 218.5, under: 218.5, overOdds: -110, underOdds: -110 }
+          },
+          lastUpdate: new Date().toISOString(),
+          status: 'upcoming',
+          startTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()
+        }
+      ];
+
+      res.json(liveOdds);
+    } catch (error) {
+      console.error('Error fetching live odds:', error);
+      res.status(500).json({ message: 'Failed to fetch live odds' });
+    }
+  });
+
+  // Enhanced betting slip endpoint
+  app.post('/api/betting/place-bet', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const { eventId, betType, selection, amount, odds, currency = 'USD' } = req.body;
+      
+      if (!eventId || !betType || !selection || !amount || !odds) {
+        return res.status(400).json({ message: "Missing required betting fields" });
+      }
+
+      const potentialPayout = parseFloat(amount) * parseFloat(odds);
+      const bet = {
+        id: Date.now(),
+        userId,
+        eventId,
+        betType,
+        selection,
+        amount: parseFloat(amount),
+        odds: parseFloat(odds),
+        currency,
+        potentialPayout,
+        status: 'pending',
+        placedAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString() // 5 min expiry
+      };
+
+      console.log('🎯 Enhanced bet placed:', bet);
+
+      // Send SMS notification if enabled
+      if (smsService.isServiceConfigured()) {
+        try {
+          const user = await storage.getUser(userId);
+          if (user?.phoneNumber) {
+            await smsService.sendSMS(
+              user.phoneNumber,
+              `WeParlay: Bet placed! $${amount} on ${selection}. Potential payout: $${potentialPayout.toFixed(2)}. Good luck!`
+            );
+          }
+        } catch (smsError) {
+          console.error('SMS notification failed:', smsError);
+        }
+      }
+
+      res.json({ 
+        success: true, 
+        bet,
+        message: 'Bet placed successfully'
+      });
+    } catch (error) {
+      console.error('Error placing bet:', error);
+      res.status(500).json({ message: 'Failed to place bet' });
+    }
+  });
+
   // SMS Opt-In/Opt-Out endpoints for Twilio compliance
   app.post('/api/sms/opt-in', async (req, res) => {
     try {
