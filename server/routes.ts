@@ -4049,7 +4049,7 @@ Start betting through text now!`;
         
         if (allChannels.length > 0) {
           console.log(`🔍 Sample channel names:`, allChannels.slice(0, 10).map(c => c.name));
-          console.log(`🔍 Sample categories:`, [...new Set(allChannels.slice(0, 100).map(c => c.category))]);
+          console.log(`🔍 Sample categories:`, Array.from(new Set(allChannels.slice(0, 100).map(c => c.category))));
         }
         
         // Filter for ALL SPORTS - comprehensive sports filtering
@@ -4409,9 +4409,10 @@ Start betting through text now!`;
       // Filter by category if specified
       let filteredChannels = channels;
       if (category && category !== 'all') {
+        const categoryStr = Array.isArray(category) ? category[0] : category;
         filteredChannels = channels.filter(channel => 
-          channel.category.toLowerCase().includes(category.toLowerCase()) ||
-          channel.name.toLowerCase().includes(category.toLowerCase())
+          channel.category.toLowerCase().includes(String(categoryStr).toLowerCase()) ||
+          channel.name.toLowerCase().includes(String(categoryStr).toLowerCase())
         );
       }
       
@@ -4492,11 +4493,13 @@ Start betting through text now!`;
 
       // Create the bet
       const bet = await storage.createBet({
-        userId: parseInt(userId),
+        userId,
         eventId: parseInt(gameId.replace(/\D/g, '') || '1'),
         amount,
         odds,
-        selection: betType,
+        pick: betType,
+        potentialPayout: amount * odds,
+        betType: 'crypto',
         status: 'pending'
       });
 
@@ -4606,7 +4609,7 @@ Start betting through text now!`;
                 
                 if (fallbackResponse.body) {
                   const reader = fallbackResponse.body.getReader();
-                  const pump = () => {
+                  const pump = (): Promise<void> => {
                     return reader.read().then(({ done, value }) => {
                       if (done) {
                         res.end();
