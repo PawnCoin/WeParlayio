@@ -2018,8 +2018,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.updateUserBalance(userId, -cost);
       const updatedUser = await storage.upsertUser({
         id: userId,
-        tier,
-        updatedAt: new Date()
+        tier
       });
 
       // Create notification
@@ -3215,8 +3214,8 @@ Start betting through text now!`;
 
       // Create crypto bet record
       const bet = await storage.createBet({
-        userId: parseInt(user.claims.sub),
-        eventId: parseInt(eventId),
+        userId: user.claims.sub,
+        eventId: parseInt(eventId as string),
         amount: amount,
         odds: odds,
         status: 'pending',
