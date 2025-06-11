@@ -144,42 +144,42 @@ export default function FantasySportsHub() {
                     </Button>
                   </div>
               
-              <div className="space-y-2">
-                <div className="text-sm text-gray-300">Features:</div>
-                <ul className="text-xs text-gray-400 space-y-1">
-                  <li>• Complete league management</li>
-                  <li>• Player research and analytics</li>
-                  <li>• Waiver wire recommendations</li>
-                  <li>• Advanced scoring projections</li>
-                </ul>
-              </div>
-              
-              <Button 
-                onClick={() => navigateToPlatform('yahoo')}
-                className="w-full bg-gradient-to-r from-purple-600 to-blue-600"
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Open Yahoo Fantasy
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="bg-white/5 border-white/10">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <Users className="h-8 w-8 text-blue-400" />
-                <div>
-                  <div className="text-white font-semibold">Connected Leagues</div>
-                  <div className="text-gray-400 text-sm">
-                    {(espnConnected ? 1 : 0) + (yahooConnected ? 1 : 0)} platforms
+                  <div className="space-y-2">
+                    <div className="text-sm text-gray-300">Features:</div>
+                    <ul className="text-xs text-gray-400 space-y-1">
+                      <li>• Complete league management</li>
+                      <li>• Player research and analytics</li>
+                      <li>• Waiver wire recommendations</li>
+                      <li>• Advanced scoring projections</li>
+                    </ul>
                   </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                  
+                  <Button 
+                    onClick={() => navigateToPlatform('yahoo')}
+                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600"
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Open Yahoo Fantasy
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Quick Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card className="bg-white/5 border-white/10">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <Users className="h-8 w-8 text-blue-400" />
+                    <div>
+                      <div className="text-white font-semibold">Connected Leagues</div>
+                      <div className="text-gray-400 text-sm">
+                        {(espnConnected ? 1 : 0) + (yahooConnected ? 1 : 0)} platforms
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
           
           <Card className="bg-white/5 border-white/10">
             <CardContent className="p-4">
