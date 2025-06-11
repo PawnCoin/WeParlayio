@@ -390,6 +390,32 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                   </Link>
                 </li>
                 <li>
+                  <Link href="/fantasy">
+                    <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${
+                      location === '/fantasy' 
+                        ? "bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 dark:bg-gradient-to-r dark:from-green-900 dark:to-emerald-900 dark:text-green-300" 
+                        : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}>
+                      <Medal className="h-4 w-4 mr-2 text-green-600" />
+                      <span className="font-bold text-green-700 dark:text-green-300">Fantasy Sports</span>
+                      <span className="ml-auto text-xs bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-300 px-2 py-0.5 rounded-full font-bold">VIP+</span>
+                    </div>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/tournaments">
+                    <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${
+                      location === '/tournaments' 
+                        ? "bg-gradient-to-r from-amber-100 to-orange-100 text-amber-700 dark:bg-gradient-to-r dark:from-amber-900 dark:to-orange-900 dark:text-amber-300" 
+                        : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}>
+                      <Trophy className="h-4 w-4 mr-2 text-amber-600" />
+                      <span className="font-bold text-amber-700 dark:text-amber-300">Tournaments</span>
+                      <span className="ml-auto text-xs bg-amber-100 text-amber-700 dark:bg-amber-800 dark:text-amber-300 px-2 py-0.5 rounded-full font-bold">VIP+</span>
+                    </div>
+                  </Link>
+                </li>
+                <li>
                   <Link href="/enhanced-features">
                     <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${
                       location === '/enhanced-features' 
@@ -433,30 +459,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
               </div>
             </Link>
           </li>
-          <li>
-            <Link href="/tournaments">
-              <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
-                location === '/tournaments' 
-                  ? "bg-primary text-white" 
-                  : "hover:bg-gray-100 dark:hover:bg-gray-800"
-              }`}>
-                <Trophy className="h-5 w-5 mr-3" />
-                <span>Tournaments</span>
-              </div>
-            </Link>
-          </li>
-          <li>
-            <Link href="/fantasy">
-              <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
-                location === '/fantasy' 
-                  ? "bg-primary text-white" 
-                  : "hover:bg-gray-100 dark:hover:bg-gray-800"
-              }`}>
-                <Medal className="h-5 w-5 mr-3" />
-                <span>Fantasy Sports</span>
-              </div>
-            </Link>
-          </li>
+
           <li>
             <Link href="/results">
               <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
