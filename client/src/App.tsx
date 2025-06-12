@@ -159,7 +159,8 @@ function Router() {
       <Route path="/yahoo-fantasy" component={YahooFantasyFootball} />
 
       {/* Social Features */}
-      <Route path="/social" component={SocialHub} />
+      <Route path="/social" component={SocialBetting} />
+      <Route path="/social-betting" component={SocialBetting} />
       <Route path="/head-to-head" component={HeadToHeadBetting} />
 
       {/* Streaming */}
