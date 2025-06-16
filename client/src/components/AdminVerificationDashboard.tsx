@@ -29,12 +29,12 @@ const AdminVerificationDashboard: React.FC = () => {
   ]);
 
   const [apiEndpoints, setApiEndpoints] = useState([
-    { endpoint: '/api/admin/users', name: 'Admin Users API', status: 'untested' },
-    { endpoint: '/api/admin/financial-summary', name: 'Financial Summary API', status: 'untested' },
-    { endpoint: '/api/admin/transactions', name: 'Transactions API', status: 'untested' },
-    { endpoint: '/api/system/system-health', name: 'System Health API', status: 'untested' },
-    { endpoint: '/api/feedback', name: 'Feedback API', status: 'untested' },
-    { endpoint: '/api/satisfaction-metrics', name: 'Satisfaction Metrics API', status: 'untested' }
+    { endpoint: '/api/admin/users', name: 'Admin Users API', status: 'untested', error: '' },
+    { endpoint: '/api/admin/financial-summary', name: 'Financial Summary API', status: 'untested', error: '' },
+    { endpoint: '/api/admin/transactions', name: 'Transactions API', status: 'untested', error: '' },
+    { endpoint: '/api/system/system-health', name: 'System Health API', status: 'untested', error: '' },
+    { endpoint: '/api/feedback', name: 'Feedback API', status: 'untested', error: '' },
+    { endpoint: '/api/satisfaction-metrics', name: 'Satisfaction Metrics API', status: 'untested', error: '' }
   ]);
 
   const testApiEndpoint = async (endpoint: string) => {
