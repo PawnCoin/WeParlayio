@@ -34,21 +34,19 @@ export default function SocialMediaBots() {
   const [botStats, setBotStats] = useState<BotSystemStatus | null>(null);
   const { toast } = useToast();
 
-  // Owner authentication - Only Drnielous Luster can access
-  const OWNER_EMAIL = 'support@weparlay.io';
-  const OWNER_WALLETS = [
-    // Add your wallet addresses here for secure access
-    '0x...', // Placeholder for your actual wallet addresses
-  ];
+  // Admin-only authentication - Only platform administrators can access
+  const ADMIN_EMAIL = 'support@weparlay.io';
+  const ADMIN_ROLES = ['admin', 'owner', 'super-admin'];
 
   useEffect(() => {
-    // Check if user is the platform owner
-    const checkOwnerAccess = () => {
+    // Check if user has admin privileges
+    const checkAdminAccess = () => {
       // For now, using localStorage - in production this would be server-side auth
       const userEmail = localStorage.getItem('weparlay-owner-email');
-      const hasOwnerAccess = localStorage.getItem('weparlay-owner-access') === 'true';
+      const hasAdminAccess = localStorage.getItem('weparlay-admin-access') === 'true';
+      const userRole = localStorage.getItem('weparlay-user-role');
       
-      if (userEmail === OWNER_EMAIL || hasOwnerAccess) {
+      if (userEmail === ADMIN_EMAIL || hasAdminAccess || ADMIN_ROLES.includes(userRole || '')) {
         setIsAuthorized(true);
         fetchBotStats();
       }

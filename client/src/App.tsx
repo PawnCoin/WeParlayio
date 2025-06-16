@@ -19,7 +19,7 @@ import HeadToHeadBetting from "@/pages/HeadToHeadBetting";
 import LoginEnhanced from "@/pages/LoginEnhanced";
 import AuthTestDemo from "@/pages/AuthTestDemo";
 import UserDirectory from "@/pages/UserDirectory";
-import SocialMediaBots from "@/pages/SocialMediaBots";
+
 
 import EmailMonitoring from "@/pages/EmailMonitoring";
 import VipFeatures from "./pages/VipFeatures";
@@ -231,8 +231,7 @@ function Router() {
       <Route path="/system/system-health" component={SystemHealth} />
       <Route path="/unified-gaming" component={UnifiedGaming} />
       <Route path="/system/unified-gaming" component={UnifiedGaming} />
-      <Route path="/social-media-dashboard" component={SocialMediaDashboard} />
-      <Route path="/system/social-media-dashboard" component={SocialMediaDashboard} />
+
       <Route path="/live-sports-streaming" component={LiveSportsStreaming} />
       <Route path="/system/live-sports-streaming" component={LiveSportsStreaming} />
 
@@ -258,7 +257,7 @@ function Router() {
       <Route path="/auth-test-demo" component={AuthTestDemo} />
       <Route path="/community" component={UserDirectory} />
       <Route path="/users" component={UserDirectory} />
-      <Route path="/social-bots" component={SocialMediaBots} />
+
       <Route path="/email-monitoring" component={EmailMonitoring} />
 
       {/* Authentication Routes */}
