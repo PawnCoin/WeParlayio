@@ -74,7 +74,7 @@ const Home: React.FC = () => {
         }
         return [];
       } catch (error) {
-        console.log('📊 Home: Error loading events:', error);
+        // Silently handle errors without console spam
         return [];
       }
     },
