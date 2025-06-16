@@ -88,6 +88,7 @@ import SignUpEnhanced from "@/pages/SignUpEnhanced";
 
 import BettingChallenges from './components/betting/BettingChallenges';
 import SiteNavigation from './pages/SiteNavigation';
+import AdminVerificationDashboard from './components/AdminVerificationDashboard';
 import PageStatusChecker from './pages/PageStatusChecker';
 import AdminDashboard from "@/pages/AdminDashboard";
 
@@ -272,7 +273,7 @@ function Router() {
       <Route path="/admin/visual-component-editor" component={VisualComponentEditorPage} />
       <Route path="/admin/social-media-dashboard" component={SocialMediaDashboard} />
       <Route path="/admin/user-analytics" component={lazy(() => import("./pages/admin/UserAnalytics"))} />
-      <Route path="/admin/verification" component={lazy(() => import("./components/AdminVerificationDashboard"))} />
+      <Route path="/admin/verification" component={AdminVerificationDashboard} />
       <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/force-admin" component={AdminDashboard} />
       <Route path="/owner-access" component={OwnerAccess} />
