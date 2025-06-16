@@ -123,6 +123,8 @@ WeParlay.io is a comprehensive sports betting platform built with modern web tec
 ## Changelog
 
 Recent Changes:
+- June 16, 2025: Restricted social media bot access to administrators only - removed all user-accessible bot pages
+- June 16, 2025: Activated real social media posting with Twitter/Facebook API integration instead of simulation mode
 - June 16, 2025: Fixed AdminVerificationDashboard routing issue - removed lazy loading, added direct component import
 - June 16, 2025: Completed comprehensive admin verification testing - all API endpoints operational
 - June 16, 2025: Created launch verification report - platform ready for public deployment

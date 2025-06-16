@@ -65,7 +65,7 @@ export default function SocialMediaBots() {
       }
     };
 
-    checkOwnerAccess();
+    checkAdminAccess();
   }, []);
 
   if (isLoading) {
@@ -95,22 +95,23 @@ export default function SocialMediaBots() {
               This Social Media Bot Control Center is exclusively accessible to the platform owner:
             </p>
             <div className="bg-red-50 p-3 rounded border text-sm">
-              <strong>Authorized User:</strong><br />
-              Drnielous Luster<br />
-              {OWNER_EMAIL}
+              <strong>Authorized Users:</strong><br />
+              Platform Administrators Only<br />
+              {ADMIN_EMAIL}
             </div>
             <p className="text-sm text-gray-500">
               Only the platform owner can control the automated marketing bots to ensure security and prevent unauthorized access.
             </p>
             <Button 
               onClick={() => {
-                // Temporary access for demo - remove in production
-                localStorage.setItem('weparlay-owner-access', 'true');
+                // Temporary admin access for demo - remove in production
+                localStorage.setItem('weparlay-admin-access', 'true');
+                localStorage.setItem('weparlay-user-role', 'admin');
                 setIsAuthorized(true);
               }}
               className="w-full bg-blue-600 hover:bg-blue-700"
             >
-              Owner Access (Demo)
+              Admin Access (Demo)
             </Button>
           </CardContent>
         </Card>
@@ -125,8 +126,8 @@ export default function SocialMediaBots() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-owner-email': OWNER_EMAIL,
-          'x-owner-access': 'true'
+          'x-admin-email': ADMIN_EMAIL,
+          'x-admin-access': 'true'
         },
         body: JSON.stringify({})
       });
@@ -166,10 +167,10 @@ export default function SocialMediaBots() {
         {/* Header */}
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            WeParlay Social Media Bots
+            Admin Social Media Bot Control
           </h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Automated marketing system actively bringing users to your platform through strategic social media engagement
+            Administrator-only control center for automated social media marketing bots with real posting capabilities
           </p>
         </div>
 
