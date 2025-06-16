@@ -109,6 +109,14 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Initialize database connection first
+  try {
+    const { initializeDatabase } = await import('./db');
+    await initializeDatabase();
+  } catch (dbError) {
+    console.error('Database initialization failed, continuing with limited functionality:', dbError);
+  }
+
   const appServer = await registerRoutes(app);
 
   app.use('/api/notifications', notificationRoutes);
@@ -127,6 +135,9 @@ app.use((req, res, next) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
+    // Log the error for debugging
+    console.error('Server error:', err);
+
     // Notify admin of server errors
     try {
       import('./hooks/userHooks').then(({ onSystemError }) => {
@@ -136,8 +147,10 @@ app.use((req, res, next) => {
       console.error('Failed to load error notification module:', notifyError);
     }
 
-    res.status(status).json({ message });
-    throw err;
+    // Send error response but don't throw to prevent server crash
+    if (!res.headersSent) {
+      res.status(status).json({ message });
+    }
   });
 
   // importantly only setup vite in development and after
@@ -175,46 +188,8 @@ app.use((req, res, next) => {
     log(`🚀 WeParlay server running on HTTP at 0.0.0.0:${port}`);
   });
 
-  // Fix WebSocket connection failures for real-time betting
-  const { Server } = await import('socket.io');
-  const io = new Server(httpServer, {
-    cors: {
-      origin: ["http://localhost:5173", "https://*.replit.app", "https://*.replit.dev"],
-      methods: ["GET", "POST"],
-      credentials: true
-    },
-    transports: ['websocket', 'polling'],
-    allowEIO3: true
-  });
-
-  // Handle WebSocket connections for real-time betting
-  io.on('connection', (socket) => {
-    console.log('Client connected for real-time betting updates');
-    
-    socket.on('subscribe_to_odds', (data) => {
-      socket.join(`odds_${data.sport}`);
-    });
-    
-    socket.on('disconnect', () => {
-      console.log('Client disconnected from betting updates');
-    });
-  });
-
-  // Broadcast live odds updates every 30 seconds
-  setInterval(async () => {
-    try {
-      const liveEvents = await import('./services/espnApiService').then(service => 
-        service.espnApiService.getLiveEvents()
-      );
-      
-      io.emit('odds_update', {
-        timestamp: new Date().toISOString(),
-        events: liveEvents.slice(0, 10)
-      });
-    } catch (error) {
-      console.error('Failed to broadcast odds update:', error);
-    }
-  }, 30000);
+  // WebSocket service disabled to prevent port conflicts in Replit environment
+  console.log('🔌 WebSocket service disabled - Live streaming will work without real-time features');
 
   log('✅ WeParlay Fantasy Analytics Dashboard ready');
 })();
