@@ -198,28 +198,13 @@ export class RealSocialMediaService {
   }
 
   getRealMetrics(): PostMetrics[] {
-    // In a real implementation, this would query actual analytics APIs
-    // For now, returning realistic numbers based on actual posting activity
-    const now = new Date();
-    const todayPosts = this.isLiveMode ? 
-      [
-        { platform: 'Twitter', count: 8, clicks: 1240, users: 28, revenue: 420 },
-        { platform: 'Facebook', count: 5, clicks: 890, users: 19, revenue: 285 },
-        { platform: 'Instagram', count: 3, clicks: 650, users: 12, revenue: 180 }
-      ] :
-      [
-        { platform: 'Twitter', count: 0, clicks: 0, users: 0, revenue: 0 },
-        { platform: 'Facebook', count: 0, clicks: 0, users: 0, revenue: 0 },
-        { platform: 'Instagram', count: 0, clicks: 0, users: 0, revenue: 0 }
-      ];
-
-    return todayPosts.map(data => ({
-      platform: data.platform,
-      postsToday: data.count,
-      clicks: data.clicks,
-      newUsers: data.users,
-      revenue: data.revenue
-    }));
+    // Return actual zero metrics since no successful posts have been made
+    // Only return non-zero data when platforms are properly configured and posting succeeds
+    return [
+      { platform: 'Twitter', postsToday: 0, clicks: 0, newUsers: 0, revenue: 0 },
+      { platform: 'Facebook', postsToday: 0, clicks: 0, newUsers: 0, revenue: 0 },
+      { platform: 'Instagram', postsToday: 0, clicks: 0, newUsers: 0, revenue: 0 }
+    ];
   }
 
   getSystemStatus() {
@@ -227,13 +212,19 @@ export class RealSocialMediaService {
     const totalRevenueToday = this.getRealMetrics().reduce((sum, platform) => sum + platform.revenue, 0);
     
     return {
-      isLiveMode: this.isLiveMode,
+      isLiveMode: false, // Set to false since APIs are not properly authenticated
       totalPostsToday,
       totalRevenueToday,
-      lastActivity: new Date().toISOString(),
+      lastActivity: totalPostsToday > 0 ? new Date().toISOString() : 'No successful posts',
       platformsConfigured: {
         twitter: this.twitterConfigured,
-        facebook: this.facebookConfigured
+        facebook: this.facebookConfigured,
+        instagram: false
+      },
+      authenticationStatus: {
+        twitter: this.twitterConfigured ? 'Configured but authentication failed' : 'Not configured',
+        facebook: this.facebookConfigured ? 'Configured but authentication failed' : 'Not configured',
+        instagram: 'Not configured'
       }
     };
   }

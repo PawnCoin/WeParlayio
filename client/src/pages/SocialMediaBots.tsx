@@ -289,57 +289,77 @@ export default function SocialMediaBots() {
           )}
         </div>
 
-        {/* Recent Activity */}
+        {/* Authentication Status */}
         <Card>
           <CardHeader>
-            <CardTitle>Recent Bot Activity</CardTitle>
+            <CardTitle>Platform Authentication Status</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {[
-                { time: '2 min ago', platform: 'Twitter', action: 'Posted community leaderboard', engagement: '47 likes, 12 retweets' },
-                { time: '15 min ago', platform: 'Facebook', action: 'Shared user success story', engagement: '23 likes, 8 shares' },
-                { time: '32 min ago', platform: 'Instagram', action: 'Posted crypto betting tips', engagement: '89 likes, 15 comments' },
-                { time: '1 hour ago', platform: 'Twitter', action: 'Live-tweeted gaming results', engagement: '156 likes, 34 retweets' },
-                { time: '2 hours ago', platform: 'Facebook', action: 'Promoted WeParlay features', engagement: '45 likes, 19 shares' }
-              ].map((activity, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                  <div>
-                    <div className="font-medium">{activity.action}</div>
-                    <div className="text-sm text-gray-600">{activity.platform} • {activity.time}</div>
-                  </div>
-                  <div className="text-sm font-medium text-green-600">
-                    {activity.engagement}
-                  </div>
+              <div className="flex items-center justify-between p-3 bg-red-50 rounded border border-red-200">
+                <div>
+                  <div className="font-medium text-red-800">Twitter API</div>
+                  <div className="text-sm text-red-600">Authentication Failed - Invalid credentials or project access required</div>
                 </div>
-              ))}
+                <Badge className="bg-red-100 text-red-800">
+                  Not Connected
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-red-50 rounded border border-red-200">
+                <div>
+                  <div className="font-medium text-red-800">Facebook API</div>
+                  <div className="text-sm text-red-600">Authentication Failed - Invalid access token or session expired</div>
+                </div>
+                <Badge className="bg-red-100 text-red-800">
+                  Not Connected
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                <div>
+                  <div className="font-medium text-gray-800">Instagram API</div>
+                  <div className="text-sm text-gray-600">Not configured</div>
+                </div>
+                <Badge className="bg-gray-100 text-gray-800">
+                  Not Configured
+                </Badge>
+              </div>
+            </div>
+            <div className="mt-4 p-3 bg-blue-50 rounded border border-blue-200">
+              <p className="text-sm text-blue-800">
+                <strong>To enable real posting:</strong> Valid API keys and proper authentication are required for each platform.
+              </p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Marketing Impact */}
-        <Card className="border-2 border-green-200 bg-green-50">
+        {/* Actual System Status */}
+        <Card className="border-2 border-red-200 bg-red-50">
           <CardHeader>
-            <CardTitle className="text-green-800">Marketing Impact Summary</CardTitle>
+            <CardTitle className="text-red-800">Current System Status</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-4 gap-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">136</div>
-                <div className="text-sm text-green-700">New Users Today</div>
+                <div className="text-2xl font-bold text-red-600">0</div>
+                <div className="text-sm text-red-700">Successful Posts</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">7.3K</div>
-                <div className="text-sm text-green-700">Total Engagement</div>
+                <div className="text-2xl font-bold text-red-600">0</div>
+                <div className="text-sm text-red-700">Total Engagement</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">26</div>
-                <div className="text-sm text-green-700">Posts Published</div>
+                <div className="text-2xl font-bold text-red-600">0</div>
+                <div className="text-sm text-red-700">New Users Generated</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">$2,847</div>
-                <div className="text-sm text-green-700">Revenue Generated</div>
+                <div className="text-2xl font-bold text-red-600">$0</div>
+                <div className="text-sm text-red-700">Revenue Generated</div>
               </div>
+            </div>
+            <div className="mt-4 p-3 bg-yellow-50 rounded border border-yellow-200">
+              <p className="text-sm text-yellow-800">
+                <strong>Notice:</strong> Social media posting is currently inactive due to authentication issues. Statistics will display actual data once proper API credentials are configured.
+              </p>
             </div>
           </CardContent>
         </Card>
