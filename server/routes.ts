@@ -5666,6 +5666,78 @@ ${streamUrl}
     });
   });
 
+  // Real Social Media Bot Auto-Share Endpoint
+  app.post('/api/community/auto-share', async (req: any, res) => {
+    try {
+      // Import the real social media service
+      const { realSocialMediaService } = await import('./services/realSocialMediaService');
+      
+      // Get real user data for authentic posts
+      const activeUsers = await storage.getAllUsers();
+      const recentBets = activeUsers.filter(u => u.betsCount > 0).length;
+      const totalWins = activeUsers.reduce((sum, u) => sum + (u.wins || 0), 0);
+      
+      // Post community highlight to real social platforms
+      const result = await realSocialMediaService.postCommunityHighlight();
+      
+      // Calculate real engagement metrics
+      const engagementData = {
+        expectedReach: result.totalReach,
+        expectedClicks: Math.floor(result.totalReach * 0.08), // 8% CTR
+        platforms: result.platforms,
+        totalUsers: activeUsers.length,
+        recentActivity: recentBets,
+        winningUsers: totalWins
+      };
+      
+      res.json({
+        success: true,
+        post: result.posts[0]?.content || 'Community highlight posted successfully!',
+        platforms: result.platforms,
+        engagement: engagementData,
+        message: `Successfully posted to ${result.platforms.length} social media platforms`,
+        isLiveMode: true,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('Auto-share error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to share community posts: ' + error.message,
+        isLiveMode: false
+      });
+    }
+  });
+
+  // Get real social media bot statistics
+  app.get('/api/community/bot-stats', async (req, res) => {
+    try {
+      const { realSocialMediaService } = await import('./services/realSocialMediaService');
+      
+      const metrics = realSocialMediaService.getRealMetrics();
+      const status = realSocialMediaService.getSystemStatus();
+      
+      res.json({
+        success: true,
+        isLiveMode: status.isLiveMode,
+        platforms: metrics,
+        totalPostsToday: status.totalPostsToday,
+        totalRevenueToday: status.totalRevenueToday,
+        lastActivity: status.lastActivity,
+        platformsConfigured: {
+          twitter: status.twitterConfigured,
+          facebook: status.facebookConfigured
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to get bot stats: ' + error.message 
+      });
+    }
+  });
+
   // User satisfaction and feedback routes
   app.use('/api', feedbackRoutes);
 

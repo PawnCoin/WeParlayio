@@ -6,11 +6,32 @@ import { useToast } from '@/hooks/use-toast';
 import { Zap, Share2, TrendingUp, Users, Target, Bot, Lock, Shield } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 
+interface BotStats {
+  platform: string;
+  postsToday: number;
+  clicks: number;
+  newUsers: number;
+  revenue: number;
+}
+
+interface BotSystemStatus {
+  isLiveMode: boolean;
+  platforms: BotStats[];
+  totalPostsToday: number;
+  totalRevenueToday: number;
+  lastActivity: string;
+  platformsConfigured: {
+    twitter: boolean;
+    facebook: boolean;
+  };
+}
+
 export default function SocialMediaBots() {
   const [isPosting, setIsPosting] = useState(false);
   const [lastPost, setLastPost] = useState<any>(null);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [botStats, setBotStats] = useState<BotSystemStatus | null>(null);
   const { toast } = useToast();
 
   // Owner authentication - Only Drnielous Luster can access
@@ -29,8 +50,21 @@ export default function SocialMediaBots() {
       
       if (userEmail === OWNER_EMAIL || hasOwnerAccess) {
         setIsAuthorized(true);
+        fetchBotStats();
       }
       setIsLoading(false);
+    };
+
+    const fetchBotStats = async () => {
+      try {
+        const response = await fetch('/api/community/bot-stats');
+        if (response.ok) {
+          const data = await response.json();
+          setBotStats(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch bot stats:', error);
+      }
     };
 
     checkOwnerAccess();
@@ -89,17 +123,34 @@ export default function SocialMediaBots() {
   const triggerAutomaticPost = async () => {
     setIsPosting(true);
     try {
-      const response = await apiRequest('POST', '/api/community/auto-share', {}, {
-        'x-owner-email': OWNER_EMAIL,
-        'x-owner-access': 'true'
+      const response = await fetch('/api/community/auto-share', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-owner-email': OWNER_EMAIL,
+          'x-owner-access': 'true'
+        },
+        body: JSON.stringify({})
       });
+      
       const data = await response.json();
       
-      setLastPost(data);
-      toast({
-        title: "🚀 Community Posts Shared!",
-        description: `Posted to ${data.platforms?.length || 3} social platforms`,
-      });
+      if (data.success) {
+        setLastPost(data);
+        toast({
+          title: data.isLiveMode ? "Real Posts Shared!" : "Test Posts Generated",
+          description: `${data.isLiveMode ? 'Posted to' : 'Would post to'} ${data.platforms?.length || 0} social platforms`,
+        });
+        
+        // Refresh stats after posting
+        const statsResponse = await fetch('/api/community/bot-stats');
+        if (statsResponse.ok) {
+          const statsData = await statsResponse.json();
+          setBotStats(statsData);
+        }
+      } else {
+        throw new Error(data.message);
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -184,92 +235,59 @@ export default function SocialMediaBots() {
 
         {/* Bot Performance Stats */}
         <div className="grid md:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-green-600" />
-                Twitter Bot
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span>Status:</span>
-                  <Badge className="bg-green-100 text-green-800">Active</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span>Posts Today:</span>
-                  <span className="font-semibold">12</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Engagement:</span>
-                  <span className="font-semibold">2.4K clicks</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>New Users:</span>
-                  <span className="font-semibold text-green-600">+47</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-blue-600" />
-                Facebook Bot
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span>Status:</span>
-                  <Badge className="bg-green-100 text-green-800">Active</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span>Posts Today:</span>
-                  <span className="font-semibold">8</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Engagement:</span>
-                  <span className="font-semibold">1.8K clicks</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>New Users:</span>
-                  <span className="font-semibold text-green-600">+31</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Share2 className="h-5 w-5 text-purple-600" />
-                Instagram Bot
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span>Status:</span>
-                  <Badge className="bg-green-100 text-green-800">Active</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span>Posts Today:</span>
-                  <span className="font-semibold">6</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Engagement:</span>
-                  <span className="font-semibold">3.1K clicks</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>New Users:</span>
-                  <span className="font-semibold text-green-600">+58</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {botStats?.platforms?.map((platform, index) => {
+            const platformIcons = {
+              'Twitter': <TrendingUp className="h-5 w-5 text-green-600" />,
+              'Facebook': <Users className="h-5 w-5 text-blue-600" />,
+              'Instagram': <Share2 className="h-5 w-5 text-purple-600" />
+            };
+            
+            const isConfigured = platform.platform === 'Twitter' ? botStats.platformsConfigured?.twitter : 
+                               platform.platform === 'Facebook' ? botStats.platformsConfigured?.facebook : false;
+            
+            return (
+              <Card key={platform.platform}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    {platformIcons[platform.platform] || <Bot className="h-5 w-5 text-gray-600" />}
+                    {platform.platform} Bot
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span>Status:</span>
+                      <Badge className={isConfigured && botStats.isLiveMode ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
+                        {isConfigured && botStats.isLiveMode ? "Live" : "Simulation"}
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Posts Today:</span>
+                      <span className="font-semibold">{platform.postsToday}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Engagement:</span>
+                      <span className="font-semibold">{platform.clicks.toLocaleString()} clicks</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>New Users:</span>
+                      <span className="font-semibold text-green-600">+{platform.newUsers}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Revenue:</span>
+                      <span className="font-semibold text-green-600">${platform.revenue}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          }) || (
+            // Loading state
+            <div className="col-span-3 text-center py-8">
+              <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto" />
+              <p className="mt-2 text-gray-600">Loading bot statistics...</p>
+            </div>
+          )}
         </div>
 
         {/* Recent Activity */}
