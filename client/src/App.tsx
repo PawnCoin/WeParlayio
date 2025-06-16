@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { WebSocketHandler } from "@/lib/websocketHandler";
 import { initGA } from "@/lib/analytics";
 import { useAnalytics } from "@/hooks/use-analytics";
+import UserSatisfactionWidget from "@/components/UserSatisfactionWidget";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import Tournaments from "@/pages/Tournaments";
@@ -300,6 +301,9 @@ function AppContent() {
       <SimpleOnboarding />
       {/* Mobile voice betting floating button (visible on all pages) */}
       <MobileVoiceBetting />
+      
+      {/* User satisfaction monitoring widget */}
+      <UserSatisfactionWidget />
 
       {/* Interactive Onboarding Wizard for new users */}
       {showOnboarding && (
