@@ -28,6 +28,7 @@ import { apiTestRouter } from "./routes/apiTestRoutes";
 import { comprehensiveRapidApi } from "./services/comprehensiveRapidApi";
 import rapidApiRoutes from "./routes/rapidApiRoutes";
 import espnFantasyRoutes from "./routes/espnFantasyRoutes";
+import feedbackRoutes from "./routes/feedbackRoutes";
 import yahooFantasyRoutes from "./routes/yahooFantasyRoutes";
 import { apiQuotaManager } from "./services/apiQuotaManager";
 import { primaryApiRouter } from "./services/primaryApiRouter";
@@ -5664,6 +5665,9 @@ ${streamUrl}
       ]
     });
   });
+
+  // User satisfaction and feedback routes
+  app.use('/api', feedbackRoutes);
 
   // Return the HTTP server
   const httpServer = createServer(app);
