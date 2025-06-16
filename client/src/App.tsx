@@ -19,6 +19,7 @@ import HeadToHeadBetting from "@/pages/HeadToHeadBetting";
 import LoginEnhanced from "@/pages/LoginEnhanced";
 import AuthTestDemo from "@/pages/AuthTestDemo";
 import UserDirectory from "@/pages/UserDirectory";
+import SocialMediaBots from "@/pages/SocialMediaBots";
 
 
 import EmailMonitoring from "@/pages/EmailMonitoring";
@@ -257,6 +258,7 @@ function Router() {
       <Route path="/auth-test-demo" component={AuthTestDemo} />
       <Route path="/community" component={UserDirectory} />
       <Route path="/users" component={UserDirectory} />
+      <Route path="/social-media-bots" component={SocialMediaBots} />
 
       <Route path="/email-monitoring" component={EmailMonitoring} />
 
