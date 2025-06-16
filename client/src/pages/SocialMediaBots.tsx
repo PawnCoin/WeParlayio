@@ -236,7 +236,7 @@ export default function SocialMediaBots() {
         {/* Bot Performance Stats */}
         <div className="grid md:grid-cols-3 gap-6">
           {botStats?.platforms?.map((platform, index) => {
-            const platformIcons = {
+            const platformIcons: Record<string, JSX.Element> = {
               'Twitter': <TrendingUp className="h-5 w-5 text-green-600" />,
               'Facebook': <Users className="h-5 w-5 text-blue-600" />,
               'Instagram': <Share2 className="h-5 w-5 text-purple-600" />

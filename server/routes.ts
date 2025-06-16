@@ -5726,8 +5726,8 @@ ${streamUrl}
         totalRevenueToday: status.totalRevenueToday,
         lastActivity: status.lastActivity,
         platformsConfigured: {
-          twitter: status.twitterConfigured,
-          facebook: status.facebookConfigured
+          twitter: status.platformsConfigured.twitter,
+          facebook: status.platformsConfigured.facebook
         }
       });
     } catch (error) {

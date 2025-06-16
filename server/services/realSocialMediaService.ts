@@ -42,14 +42,26 @@ export class RealSocialMediaService {
           accessSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
         });
         
+        this.twitterConfigured = true;
         console.log('✅ Twitter API client initialized for real posting');
       } else {
+        this.twitterConfigured = false;
         console.log('⚠️ Twitter API credentials incomplete - using simulation mode');
         this.isLiveMode = false;
       }
     } catch (error) {
+      this.twitterConfigured = false;
       console.error('❌ Failed to initialize Twitter client:', error);
       this.isLiveMode = false;
+    }
+
+    // Check Facebook credentials
+    if (process.env.FACEBOOK_ACCESS_TOKEN) {
+      this.facebookConfigured = true;
+      console.log('✅ Facebook API credentials configured');
+    } else {
+      this.facebookConfigured = false;
+      console.log('⚠️ Facebook API credentials not configured');
     }
   }
 
@@ -211,13 +223,18 @@ export class RealSocialMediaService {
   }
 
   getSystemStatus() {
+    const totalPostsToday = this.getRealMetrics().reduce((sum, platform) => sum + platform.postsToday, 0);
+    const totalRevenueToday = this.getRealMetrics().reduce((sum, platform) => sum + platform.revenue, 0);
+    
     return {
       isLiveMode: this.isLiveMode,
-      twitterConfigured: !!this.twitterClient,
-      facebookConfigured: !!process.env.FACEBOOK_ACCESS_TOKEN,
-      lastActivity: new Date(),
-      totalPostsToday: this.isLiveMode ? 16 : 0,
-      totalRevenueToday: this.isLiveMode ? 885 : 0
+      totalPostsToday,
+      totalRevenueToday,
+      lastActivity: new Date().toISOString(),
+      platformsConfigured: {
+        twitter: this.twitterConfigured,
+        facebook: this.facebookConfigured
+      }
     };
   }
 }
