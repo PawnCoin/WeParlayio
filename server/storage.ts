@@ -464,6 +464,76 @@ export class MemStorage implements IStorage {
       user.lastName.toLowerCase().includes(query.toLowerCase())
     );
   }
+  async getFinancialSummary(): Promise<any> {
+    const totalUsers = this.users.size;
+    const totalRevenue = totalUsers * 50;
+    const totalPayouts = totalUsers * 25;
+    
+    return {
+      totalRevenue,
+      totalPayouts,
+      netProfit: totalRevenue - totalPayouts,
+      activeUsers: totalUsers,
+      totalTransactions: totalUsers * 5,
+      avgBetSize: 25.50,
+      monthlyGrowth: 15.3,
+      platformBalance: totalRevenue - totalPayouts
+    };
+  }
+
+  async getTransactions(limit: number, offset: number): Promise<Transaction[]> {
+    return Array.from({ length: Math.min(limit, 10) }, (_, i) => ({
+      id: i + 1,
+      userId: 'user-' + (i + 1),
+      amount: 25 + (i * 5),
+      type: i % 2 === 0 ? 'deposit' : 'withdrawal',
+      status: 'completed',
+      description: `Transaction ${i + 1}`,
+      createdAt: new Date(Date.now() - (i * 24 * 60 * 60 * 1000)),
+      updatedAt: new Date(Date.now() - (i * 24 * 60 * 60 * 1000)),
+      metadata: null,
+      feeAmount: 0
+    }));
+  }
+
+  async updatePlatformRevenue(amount: number, feeType: string): Promise<any> {
+    return { success: true, amount, feeType, timestamp: new Date() };
+  }
+
+  async updateBankAccount(bankAccount: InsertBankAccount): Promise<BankAccount> {
+    const id = this.nextId++;
+    return { ...bankAccount, id };
+  }
+
+  async createSupportTicket(ticket: InsertSupportTicket): Promise<SupportTicket> {
+    const id = this.nextId++;
+    return { ...ticket, id, createdAt: new Date(), updatedAt: new Date() };
+  }
+
+  async getSupportTicketByNumber(ticketNumber: string): Promise<SupportTicket | undefined> {
+    return undefined;
+  }
+
+  async getTicketMessages(ticketId: number): Promise<SupportTicketMessage[]> {
+    return [];
+  }
+
+  async addTicketMessage(message: InsertSupportTicketMessage): Promise<SupportTicketMessage> {
+    const id = this.nextId++;
+    return { ...message, id, createdAt: new Date() };
+  }
+
+  async getUserByGamertag(gamertag: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.gamertag === gamertag);
+  }
+
+  async updateUserStripeCustomerId(userId: string, customerId: string): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error('User not found');
+    const updatedUser = { ...user, stripeCustomerId: customerId };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
 }
 
 export const storage = new MemStorage();
