@@ -256,8 +256,8 @@ export default function SocialMediaBots() {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span>Status:</span>
-                      <Badge className={isConfigured && botStats.isLiveMode ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
-                        {isConfigured && botStats.isLiveMode ? "Live" : "Simulation"}
+                      <Badge className="bg-red-100 text-red-800">
+                        Not Connected
                       </Badge>
                     </div>
                     <div className="flex justify-between">

@@ -198,8 +198,7 @@ export class RealSocialMediaService {
   }
 
   getRealMetrics(): PostMetrics[] {
-    // Return actual zero metrics since no successful posts have been made
-    // Only return non-zero data when platforms are properly configured and posting succeeds
+    // Always return zero metrics - no fake data allowed
     return [
       { platform: 'Twitter', postsToday: 0, clicks: 0, newUsers: 0, revenue: 0 },
       { platform: 'Facebook', postsToday: 0, clicks: 0, newUsers: 0, revenue: 0 },
@@ -212,7 +211,7 @@ export class RealSocialMediaService {
     const totalRevenueToday = this.getRealMetrics().reduce((sum, platform) => sum + platform.revenue, 0);
     
     return {
-      isLiveMode: false, // Set to false since APIs are not properly authenticated
+      isLiveMode: false, // APIs not authenticated - no real posting capability
       totalPostsToday,
       totalRevenueToday,
       lastActivity: totalPostsToday > 0 ? new Date().toISOString() : 'No successful posts',
