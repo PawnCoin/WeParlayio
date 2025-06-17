@@ -162,12 +162,19 @@ export class RealSocialMediaService {
   }
 
   generateCommunityPost(): string {
+    const currentTime = new Date();
+    const timeString = currentTime.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      timeZone: 'America/New_York'
+    });
+    
     const posts = [
-      "WeParlay community is hitting at 68% this week! Join the winning team 🏆 #WeParlay #Community",
-      "New VIP members getting exclusive picks and crushing it! Welcome to the family 💪 #WeParlay #VIP",
-      "Live streaming + real-time betting = the future is here on WeParlay 🚀 #WeParlay #Innovation",
-      "Crypto payments on WeParlay are instant and secure. No waiting, just winning! ⚡ #WeParlay #Crypto",
-      "Fantasy sports meets sports betting on WeParlay. Double the fun, double the wins! 🎮 #WeParlay #Fantasy"
+      `🎯 WeParlay LIVE: 41+ sports events streaming now! Real ESPN data powering authentic betting at ${timeString} ET #WeParlay #LiveSports`,
+      `💰 JOIN THE ACTION: WeParlay users are winning with real-time odds and authentic data! Posted at ${timeString} ET #WeParlay #Winning`,
+      `🚀 BREAKING: WeParlay now delivers live NFL, NBA, MLB & more with authentic ESPN integration! ${timeString} ET update #WeParlay #RealData`,
+      `⚡ LIVE NOW: Experience authentic sports betting with WeParlay's real-time data feed! ${timeString} ET #WeParlay #Authentic`,
+      `🏆 WeParlay delivers what others promise: Real data, real odds, real wins! Active now at ${timeString} ET #WeParlay #TrustWorthy`
     ];
     
     return posts[Math.floor(Math.random() * posts.length)];
