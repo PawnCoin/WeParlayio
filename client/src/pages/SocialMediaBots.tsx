@@ -256,8 +256,14 @@ export default function SocialMediaBots() {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span>Status:</span>
-                      <Badge className="bg-red-100 text-red-800">
-                        Not Connected
+                      <Badge className={
+                        botStats?.platformsConfigured?.[platform.platform.toLowerCase()] && botStats.isLiveMode
+                          ? "bg-green-100 text-green-800" 
+                          : "bg-red-100 text-red-800"
+                      }>
+                        {botStats?.platformsConfigured?.[platform.platform.toLowerCase()] && botStats.isLiveMode 
+                          ? "Connected" 
+                          : "Not Connected"}
                       </Badge>
                     </div>
                     <div className="flex justify-between">
