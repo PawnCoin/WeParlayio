@@ -285,6 +285,15 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                               Crypto Wallet
                             </Link>
                           </DropdownMenuItem>
+                          {/* Admin only - Facebook Bot Manager */}
+                          {user?.isAdmin && (
+                            <DropdownMenuItem asChild>
+                              <Link href="/facebook-bot-manager" className="flex items-center">
+                                <span className="h-4 w-4 mr-2 text-blue-600">🤖</span>
+                                Facebook Bots
+                              </Link>
+                            </DropdownMenuItem>
+                          )}
                         </>
                       )}
 

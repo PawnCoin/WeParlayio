@@ -329,28 +329,33 @@ export class LiveMarketingBotsService {
 
   private async postToFacebook(content: string, botName: string): Promise<boolean> {
     try {
-      if (!process.env.FACEBOOK_ACCESS_TOKEN) {
+      if (!process.env.FACEBOOK_ACCESS_TOKEN || !process.env.FACEBOOK_PAGE_ID) {
         console.log(`[${botName}] Facebook posting ready - waiting for API credentials`);
         return false;
       }
 
       // Facebook Graph API integration for page posting
-      const response = await fetch(`https://graph.facebook.com/me/feed?access_token=${process.env.FACEBOOK_ACCESS_TOKEN}`, {
+      const response = await fetch(`https://graph.facebook.com/${process.env.FACEBOOK_PAGE_ID}/feed`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           message: content,
-          link: 'https://weparlay.io', // Link back to WeParlay
-          name: 'WeParlay - Premier Sports Betting',
-          description: 'Experience the future of sports betting with crypto integration and real-time odds.'
+          link: 'https://weparlay.io',
+          name: 'WeParlay - Premier Sports Betting Platform',
+          description: 'Experience the future of sports betting with crypto integration and real-time odds.',
+          picture: 'https://weparlay.io/weparlaylogo.png',
+          access_token: process.env.FACEBOOK_ACCESS_TOKEN
         })
       });
 
       if (response.ok) {
         const result = await response.json();
         console.log(`[${botName}] ✅ LIVE FACEBOOK POST: ${content.substring(0, 50)}... (ID: ${result.id})`);
+        
+        // Track successful post
+        this.trackPostSuccess('facebook', botName, content);
         return true;
       } else {
         const errorData = await response.json();
@@ -361,6 +366,20 @@ export class LiveMarketingBotsService {
       console.error(`[${botName}] Facebook posting error:`, error);
       return false;
     }
+  }
+
+  private trackPostSuccess(platform: string, botName: string, content: string) {
+    // Track successful posts for analytics
+    const postData = {
+      platform,
+      botName,
+      content: content.substring(0, 100),
+      timestamp: new Date().toISOString(),
+      success: true
+    };
+    
+    // Log to console for now - in production, save to database
+    console.log(`📊 Post tracked:`, postData);
   }
 
   private async postToTikTok(content: string, botName: string): Promise<boolean> {
