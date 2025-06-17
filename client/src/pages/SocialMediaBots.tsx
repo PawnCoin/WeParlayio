@@ -162,31 +162,31 @@ export default function SocialMediaBots() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Admin Social Media Bot Control
           </h1>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+          <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             Administrator-only control center for automated social media marketing bots with real posting capabilities
           </p>
         </div>
 
         {/* Control Panel */}
-        <Card className="border-2 border-blue-200">
+        <Card className="border-2 border-blue-200 dark:border-gray-700 dark:bg-gray-800">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Bot className="h-6 w-6 text-blue-600" />
+              <Bot className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               Bot Control Center
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold">Community Highlight Bot</h3>
-                <p className="text-sm text-gray-600">Auto-posts top user achievements and community stats</p>
+                <h3 className="font-semibold dark:text-white">Community Highlight Bot</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Auto-posts top user achievements and community stats</p>
               </div>
               <Button 
                 onClick={triggerAutomaticPost}
@@ -245,42 +245,42 @@ export default function SocialMediaBots() {
                                platform.platform === 'Facebook' ? botStats.platformsConfigured?.facebook : false;
             
             return (
-              <Card key={platform.platform}>
+              <Card key={platform.platform} className="dark:bg-gray-800 dark:border-gray-700">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    {platformIcons[platform.platform] || <Bot className="h-5 w-5 text-gray-600" />}
+                  <CardTitle className="flex items-center gap-2 dark:text-white">
+                    {platformIcons[platform.platform] || <Bot className="h-5 w-5 text-gray-600 dark:text-gray-400" />}
                     {platform.platform} Bot
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span>Status:</span>
+                      <span className="dark:text-gray-300">Status:</span>
                       <Badge className={
-                        botStats?.platformsConfigured?.[platform.platform.toLowerCase()] && botStats.isLiveMode
-                          ? "bg-green-100 text-green-800" 
-                          : "bg-red-100 text-red-800"
+                        isConfigured && botStats.isLiveMode
+                          ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" 
+                          : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
                       }>
-                        {botStats?.platformsConfigured?.[platform.platform.toLowerCase()] && botStats.isLiveMode 
+                        {isConfigured && botStats.isLiveMode 
                           ? "Connected" 
                           : "Not Connected"}
                       </Badge>
                     </div>
                     <div className="flex justify-between">
-                      <span>Posts Today:</span>
-                      <span className="font-semibold">{platform.postsToday}</span>
+                      <span className="dark:text-gray-300">Posts Today:</span>
+                      <span className="font-semibold dark:text-white">{platform.postsToday}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Engagement:</span>
-                      <span className="font-semibold">{platform.clicks.toLocaleString()} clicks</span>
+                      <span className="dark:text-gray-300">Engagement:</span>
+                      <span className="font-semibold dark:text-white">{platform.clicks.toLocaleString()} clicks</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>New Users:</span>
-                      <span className="font-semibold text-green-600">+{platform.newUsers}</span>
+                      <span className="dark:text-gray-300">New Users:</span>
+                      <span className="font-semibold text-green-600 dark:text-green-400">+{platform.newUsers}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Revenue:</span>
-                      <span className="font-semibold text-green-600">${platform.revenue}</span>
+                      <span className="dark:text-gray-300">Revenue:</span>
+                      <span className="font-semibold text-green-600 dark:text-green-400">${platform.revenue}</span>
                     </div>
                   </div>
                 </CardContent>
