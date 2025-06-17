@@ -290,48 +290,88 @@ export default function SocialMediaBots() {
             // Loading state
             <div className="col-span-3 text-center py-8">
               <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto" />
-              <p className="mt-2 text-gray-600">Loading bot statistics...</p>
+              <p className="mt-2 text-gray-600 dark:text-gray-300">Loading bot statistics...</p>
             </div>
           )}
         </div>
 
         {/* Authentication Status */}
-        <Card>
+        <Card className="dark:bg-gray-800 dark:border-gray-700">
           <CardHeader>
-            <CardTitle>Platform Authentication Status</CardTitle>
+            <CardTitle className="dark:text-white">Platform Authentication Status</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-red-50 rounded border border-red-200">
+              <div className={`flex items-center justify-between p-3 rounded border ${
+                botStats?.platformsConfigured?.twitter 
+                  ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                  : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+              }`}>
                 <div>
-                  <div className="font-medium text-red-800">Twitter API</div>
-                  <div className="text-sm text-red-600">Authentication Failed - Invalid credentials or project access required</div>
+                  <div className={`font-medium ${
+                    botStats?.platformsConfigured?.twitter 
+                      ? 'text-green-800 dark:text-green-200'
+                      : 'text-red-800 dark:text-red-200'
+                  }`}>Twitter API</div>
+                  <div className={`text-sm ${
+                    botStats?.platformsConfigured?.twitter 
+                      ? 'text-green-600 dark:text-green-300'
+                      : 'text-red-600 dark:text-red-300'
+                  }`}>
+                    {botStats?.platformsConfigured?.twitter 
+                      ? 'Connected and ready for posting'
+                      : 'Authentication Failed - Invalid credentials or project access required'}
+                  </div>
                 </div>
-                <Badge className="bg-red-100 text-red-800">
-                  Not Connected
+                <Badge className={
+                  botStats?.platformsConfigured?.twitter 
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                }>
+                  {botStats?.platformsConfigured?.twitter ? 'Connected' : 'Not Connected'}
                 </Badge>
               </div>
-              <div className="flex items-center justify-between p-3 bg-red-50 rounded border border-red-200">
+              <div className={`flex items-center justify-between p-3 rounded border ${
+                botStats?.platformsConfigured?.facebook 
+                  ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                  : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+              }`}>
                 <div>
-                  <div className="font-medium text-red-800">Facebook API</div>
-                  <div className="text-sm text-red-600">Authentication Failed - Invalid access token or session expired</div>
+                  <div className={`font-medium ${
+                    botStats?.platformsConfigured?.facebook 
+                      ? 'text-green-800 dark:text-green-200'
+                      : 'text-red-800 dark:text-red-200'
+                  }`}>Facebook API</div>
+                  <div className={`text-sm ${
+                    botStats?.platformsConfigured?.facebook 
+                      ? 'text-green-600 dark:text-green-300'
+                      : 'text-red-600 dark:text-red-300'
+                  }`}>
+                    {botStats?.platformsConfigured?.facebook 
+                      ? 'Connected and ready for posting'
+                      : 'Authentication Failed - Invalid access token or session expired'}
+                  </div>
                 </div>
-                <Badge className="bg-red-100 text-red-800">
-                  Not Connected
+                <Badge className={
+                  botStats?.platformsConfigured?.facebook 
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                }>
+                  {botStats?.platformsConfigured?.facebook ? 'Connected' : 'Not Connected'}
                 </Badge>
               </div>
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+              <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/20 border border-gray-200 dark:border-gray-700 rounded">
                 <div>
-                  <div className="font-medium text-gray-800">Instagram API</div>
-                  <div className="text-sm text-gray-600">Not configured</div>
+                  <div className="font-medium text-gray-800 dark:text-gray-200">Instagram API</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Not configured</div>
                 </div>
-                <Badge className="bg-gray-100 text-gray-800">
+                <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
                   Not Configured
                 </Badge>
               </div>
             </div>
-            <div className="mt-4 p-3 bg-blue-50 rounded border border-blue-200">
-              <p className="text-sm text-blue-800">
+            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800">
+              <p className="text-sm text-blue-800 dark:text-blue-300">
                 <strong>To enable real posting:</strong> Valid API keys and proper authentication are required for each platform.
               </p>
             </div>
@@ -339,32 +379,32 @@ export default function SocialMediaBots() {
         </Card>
 
         {/* Actual System Status */}
-        <Card className="border-2 border-red-200 bg-red-50">
+        <Card className="border-2 border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 dark:bg-gray-800">
           <CardHeader>
-            <CardTitle className="text-red-800">Current System Status</CardTitle>
+            <CardTitle className="text-green-800 dark:text-green-400">Current System Status</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-4 gap-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-red-600">0</div>
-                <div className="text-sm text-red-700">Successful Posts</div>
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">{botStats?.totalPostsToday || 0}</div>
+                <div className="text-sm text-green-700 dark:text-green-300">Successful Posts</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-red-600">0</div>
-                <div className="text-sm text-red-700">Total Engagement</div>
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">{botStats?.platforms?.reduce((sum, p) => sum + p.clicks, 0) || 0}</div>
+                <div className="text-sm text-green-700 dark:text-green-300">Total Engagement</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-red-600">0</div>
-                <div className="text-sm text-red-700">New Users Generated</div>
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">{botStats?.platforms?.reduce((sum, p) => sum + p.newUsers, 0) || 0}</div>
+                <div className="text-sm text-green-700 dark:text-green-300">New Users Generated</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-red-600">$0</div>
-                <div className="text-sm text-red-700">Revenue Generated</div>
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">${botStats?.totalRevenueToday || 0}</div>
+                <div className="text-sm text-green-700 dark:text-green-300">Revenue Generated</div>
               </div>
             </div>
-            <div className="mt-4 p-3 bg-yellow-50 rounded border border-yellow-200">
-              <p className="text-sm text-yellow-800">
-                <strong>Notice:</strong> Social media posting is currently inactive due to authentication issues. Statistics will display actual data once proper API credentials are configured.
+            <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded border border-green-200 dark:border-green-800">
+              <p className="text-sm text-green-800 dark:text-green-300">
+                <strong>Status:</strong> {botStats?.isLiveMode ? 'Twitter API is connected and ready for real posting.' : 'System is in testing mode.'} {botStats?.lastActivity}
               </p>
             </div>
           </CardContent>
