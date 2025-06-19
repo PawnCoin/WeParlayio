@@ -13,27 +13,33 @@ const router = Router();
 // Tier check middleware for gaming features
 const requireTier = (minTier: string) => {
   return async (req: any, res: any, next: any) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).json({ message: 'Authentication required for gaming features' });
-    }
+    try {
+      // Check if user is authenticated
+      if (!req.user) {
+        return res.status(401).json({ message: 'Authentication required for gaming features' });
+      }
 
-    const user = req.user;
-    const userTier = user?.tier || user?.subscriptionTier || 'bronze';
-    
-    // Define tier hierarchy: bronze < silver < gold < platinum
-    const tierLevels = { bronze: 0, silver: 1, gold: 2, platinum: 3 };
-    const userLevel = tierLevels[userTier] || 0;
-    const requiredLevel = tierLevels[minTier] || 0;
-    
-    if (userLevel < requiredLevel) {
-      return res.status(403).json({ 
-        message: `${minTier.charAt(0).toUpperCase() + minTier.slice(1)} tier or higher required for gaming features`,
-        currentTier: userTier,
-        requiredTier: minTier
-      });
+      const user = req.user;
+      const userTier = user?.tier || user?.subscriptionTier || 'bronze';
+      
+      // Define tier hierarchy: bronze < silver < gold < platinum
+      const tierLevels: { [key: string]: number } = { bronze: 0, silver: 1, gold: 2, platinum: 3 };
+      const userLevel = tierLevels[userTier] || 0;
+      const requiredLevel = tierLevels[minTier] || 0;
+      
+      if (userLevel < requiredLevel) {
+        return res.status(403).json({ 
+          message: `${minTier.charAt(0).toUpperCase() + minTier.slice(1)} tier or higher required for gaming features`,
+          currentTier: userTier,
+          requiredTier: minTier
+        });
+      }
+      
+      next();
+    } catch (error) {
+      console.error('Tier check error:', error);
+      res.status(500).json({ message: 'Error checking user tier' });
     }
-    
-    next();
   };
 };
 
@@ -89,8 +95,8 @@ router.post('/connect/:platform', isAuthenticated, requireTier('gold'), async (r
   }
 });
 
-// Get live gaming sessions
-router.get('/live-sessions/:userId', async (req, res) => {
+// Get live gaming sessions - Requires Silver tier
+router.get('/live-sessions/:userId', isAuthenticated, requireTier('silver'), async (req, res) => {
   try {
     const { userId } = req.params;
 
@@ -124,8 +130,8 @@ router.get('/live-sessions/:userId', async (req, res) => {
   }
 });
 
-// Get live streams for betting
-router.get('/live-streams', async (req, res) => {
+// Get live streams for betting - Requires Silver tier
+router.get('/live-streams', isAuthenticated, requireTier('silver'), async (req, res) => {
   try {
     const { game } = req.query;
 
@@ -188,8 +194,8 @@ router.get('/live-streams', async (req, res) => {
   }
 });
 
-// Place gaming bet
-router.post('/bet', async (req, res) => {
+// Place gaming bet - Requires Gold tier
+router.post('/bet', isAuthenticated, requireTier('gold'), async (req, res) => {
   try {
     const { userId, betType, amount, platform, targetUser, gameData } = req.body;
 
@@ -224,8 +230,8 @@ router.post('/bet', async (req, res) => {
   }
 });
 
-// Get gaming leaderboard
-router.get('/leaderboard', async (req, res) => {
+// Get gaming leaderboard - Requires Bronze tier minimum
+router.get('/leaderboard', isAuthenticated, requireTier('bronze'), async (req, res) => {
   try {
     // This would normally come from your database
     const leaderboard = [
@@ -243,8 +249,8 @@ router.get('/leaderboard', async (req, res) => {
   }
 });
 
-// Get gaming matches endpoint - now powered by GRID API
-router.get('/matches', async (req, res) => {
+// Get gaming matches endpoint - Requires Silver tier
+router.get('/matches', isAuthenticated, requireTier('silver'), async (req, res) => {
   try {
     const gridApi = new GridApiService();
     
@@ -293,8 +299,8 @@ router.get('/matches', async (req, res) => {
   }
 });
 
-// Get esports odds endpoint - now powered by GRID API
-router.get('/esports-odds', async (req, res) => {
+// Get esports odds endpoint - Requires Silver tier
+router.get('/esports-odds', isAuthenticated, requireTier('silver'), async (req, res) => {
   try {
     const gridApi = new GridApiService();
     
