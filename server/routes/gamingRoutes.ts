@@ -1,4 +1,4 @@
-// WeParlay Gaming API Routes
+// WeParlay Gaming API Routes - TIER RESTRICTED
 import { Router } from 'express';
 import { gamingAPIService } from '../services/gamingAPIService';
 import { unifiedGamingAPI } from '../services/unifiedGamingAPI';
@@ -6,11 +6,39 @@ import { psnProfilesScraper } from '../services/psnProfilesScraper';
 import { leaguepediaAPI } from '../services/leaguepediaAPI';
 import { fetchLiveGamingMatches, fetchEsportsOdds, fetchPlayerStatistics, fetchTournamentData } from '../services/gamingAPIService';
 import { GridApiService } from '../services/gridApiService';
+import { isAuthenticated } from '../replitAuth';
 
 const router = Router();
 
-// Connect gaming account
-router.post('/connect/:platform', async (req, res) => {
+// Tier check middleware for gaming features
+const requireTier = (minTier: string) => {
+  return async (req: any, res: any, next: any) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: 'Authentication required for gaming features' });
+    }
+
+    const user = req.user;
+    const userTier = user?.tier || user?.subscriptionTier || 'bronze';
+    
+    // Define tier hierarchy: bronze < silver < gold < platinum
+    const tierLevels = { bronze: 0, silver: 1, gold: 2, platinum: 3 };
+    const userLevel = tierLevels[userTier] || 0;
+    const requiredLevel = tierLevels[minTier] || 0;
+    
+    if (userLevel < requiredLevel) {
+      return res.status(403).json({ 
+        message: `${minTier.charAt(0).toUpperCase() + minTier.slice(1)} tier or higher required for gaming features`,
+        currentTier: userTier,
+        requiredTier: minTier
+      });
+    }
+    
+    next();
+  };
+};
+
+// Connect gaming account - Requires Gold tier
+router.post('/connect/:platform', isAuthenticated, requireTier('gold'), async (req, res) => {
   try {
     const { platform } = req.params;
     const { username, userId } = req.body;
@@ -307,8 +335,8 @@ router.get('/esports-odds', async (req, res) => {
   }
 });
 
-// Get player statistics endpoint
-router.get('/player-stats/:playerId', async (req, res) => {
+// Get player statistics endpoint - Requires Gold tier
+router.get('/player-stats/:playerId', isAuthenticated, requireTier('gold'), async (req, res) => {
   try {
     const { playerId } = req.params;
     const stats = await fetchPlayerStatistics(playerId);
@@ -322,8 +350,8 @@ router.get('/player-stats/:playerId', async (req, res) => {
   }
 });
 
-// Get trending players endpoint
-router.get('/trending-players', async (req, res) => {
+// Get trending players endpoint - Requires Gold tier  
+router.get('/trending-players', isAuthenticated, requireTier('gold'), async (req, res) => {
   try {
     const trendingPlayers = await fetchPlayerStatistics('trending');
     res.json(trendingPlayers);
@@ -336,8 +364,8 @@ router.get('/trending-players', async (req, res) => {
   }
 });
 
-// Get tournament data endpoint - now powered by GRID API
-router.get('/tournaments', async (req, res) => {
+// Get tournament data endpoint - Requires Silver tier minimum
+router.get('/tournaments', isAuthenticated, requireTier('silver'), async (req, res) => {
   try {
     const gridApi = new GridApiService();
     const { game } = req.query;

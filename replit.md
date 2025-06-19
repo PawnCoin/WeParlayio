@@ -123,15 +123,15 @@ WeParlay.io is a comprehensive sports betting platform built with modern web tec
 ## Changelog
 
 Recent Changes:
+- June 19, 2025: Implemented tier-based security for gaming endpoints - Silver tier required for tournaments/odds, Gold tier for advanced features
+- June 19, 2025: Fixed user directory to display all 13 database users with direct database access bypassing storage issues
+- June 19, 2025: Created professional upgrade tier page with Gold/Platinum options and working upgrade buttons across platform
 - June 17, 2025: Fixed dark mode theme inconsistency on social media bots page - updated all cards, badges, and text elements for proper dark theme support
 - June 17, 2025: Fixed status display to show actual API connection status instead of hardcoded "Not Connected" - Twitter shows as "Connected" when API is configured
 - June 16, 2025: Restricted social media bot access to administrators only - removed all user-accessible bot pages
 - June 16, 2025: Activated real social media posting with Twitter/Facebook API integration instead of simulation mode
 - June 16, 2025: Fixed AdminVerificationDashboard routing issue - removed lazy loading, added direct component import
 - June 16, 2025: Completed comprehensive admin verification testing - all API endpoints operational
-- June 16, 2025: Created launch verification report - platform ready for public deployment
-- June 16, 2025: Updated project status to 100% completion with authentic data integration
-- June 16, 2025: Verified ESPN API delivering 41+ live events, automated settlement active
 
 ## User Preferences
 
