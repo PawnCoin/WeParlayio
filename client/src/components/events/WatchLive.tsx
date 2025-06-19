@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getTeamLogoUrl } from "@/lib/sportsDataUtils";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
-import { SubscriptionTier, canUserAccess } from '../../../shared/tierSystem';
+import { SubscriptionTier, canUserAccess } from '@/../../shared/tierSystem';
 import { Crown, Lock } from 'lucide-react';
 
 type LiveStreamProps = {
@@ -248,7 +248,7 @@ export const WatchLive: React.FC<LiveStreamProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Check if user has access to live streaming (Platinum only)
-  const hasLiveStreamAccess = user?.tier && canUserAccess(user.tier as SubscriptionTier, 'liveStreamingAccess');
+  const hasLiveStreamAccess = user && user.tier && canUserAccess(user.tier as SubscriptionTier, 'liveStreamingAccess');
   
   // League for team logos
   const league = getSportLeague(sportKey);

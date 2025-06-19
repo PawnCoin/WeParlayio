@@ -80,13 +80,13 @@ export default function ComprehensiveBetting() {
   });
 
   // Process upcoming events from unified endpoint - handle both nested and direct data structures
-  const upcomingEvents = upcomingEventsData?.data || upcomingEventsData || [];
+  const upcomingEvents = Array.isArray(upcomingEventsData?.data) ? upcomingEventsData.data : Array.isArray(upcomingEventsData) ? upcomingEventsData : [];
 
   // Filter sports based on search - handle both nested and direct data structures
-  const sportsArray = sports?.data || sports || [];
-  const filteredSports = Array.isArray(sportsArray) ? sportsArray.filter((sport: any) =>
+  const sportsArray = Array.isArray(sports?.data) ? sports.data : Array.isArray(sports) ? sports : [];
+  const filteredSports = sportsArray.filter((sport: any) =>
     sport?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-  ) : [];
+  );
 
   const handleSportSelect = (sportKey: string) => {
     setSelectedSport(sportKey);
@@ -304,7 +304,7 @@ export default function ComprehensiveBetting() {
                   <Trophy className="h-4 w-4 text-blue-400" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-blue-400">{sports?.length || 0}</div>
+                  <div className="text-2xl font-bold text-blue-400">{Array.isArray(sportsArray) ? sportsArray.length : 0}</div>
                   <p className="text-xs text-slate-400">Click to view all sports</p>
                 </CardContent>
               </Card>
@@ -315,7 +315,7 @@ export default function ComprehensiveBetting() {
                   <Activity className="h-4 w-4 text-green-400" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-green-400">{liveEvents?.length || 0}</div>
+                  <div className="text-2xl font-bold text-green-400">{Array.isArray(liveEvents) ? liveEvents.length : 0}</div>
                   <p className="text-xs text-slate-400">Click to view live events</p>
                 </CardContent>
               </Card>

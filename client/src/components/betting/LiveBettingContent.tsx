@@ -525,7 +525,7 @@ const LiveBettingContent: React.FC = () => {
         <WatchLive
           isOpen={watchLiveDialog}
           onClose={() => setWatchLiveDialog(false)}
-          eventId={selectedEvent.id}
+          eventId={Number(selectedEvent.id)}
           homeTeam={selectedEvent.homeTeam}
           awayTeam={selectedEvent.awayTeam}
           homeScore={selectedEvent.homeScore}

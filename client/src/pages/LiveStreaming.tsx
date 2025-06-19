@@ -255,13 +255,13 @@ export default function LiveStreaming() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <Card className="bg-gray-900 border-gray-800">
                 <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-blue-400">{sportsEvents?.length || 0}</div>
+                  <div className="text-2xl font-bold text-blue-400">{Array.isArray(sportsEvents) ? sportsEvents.length : 0}</div>
                   <div className="text-sm text-gray-400">Sports Events</div>
                 </CardContent>
               </Card>
               <Card className="bg-gray-900 border-gray-800">
                 <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-green-400">{iptvChannels?.length || 0}</div>
+                  <div className="text-2xl font-bold text-green-400">{Array.isArray(iptvChannels) ? iptvChannels.length : 0}</div>
                   <div className="text-sm text-gray-400">Live Channels</div>
                 </CardContent>
               </Card>
@@ -282,7 +282,7 @@ export default function LiveStreaming() {
                   <h3 className="text-lg font-semibold mb-2 text-white">Loading Streaming Content</h3>
                   <p className="text-gray-400">Connecting to live sports and IPTV channels...</p>
                   <p className="text-sm text-gray-500 mt-2">
-                    ESPN API: {sportsEvents?.length || 0} events | IPTV: {iptvChannels?.length || 0} channels
+                    ESPN API: {Array.isArray(sportsEvents) ? sportsEvents.length : 0} events | IPTV: {Array.isArray(iptvChannels) ? iptvChannels.length : 0} channels
                   </p>
                 </CardContent>
               </Card>
