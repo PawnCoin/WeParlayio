@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocation } from 'wouter';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,7 @@ interface Message {
 
 const UserDirectory: React.FC = () => {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterTier, setFilterTier] = useState('all');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -60,13 +62,13 @@ const UserDirectory: React.FC = () => {
   });
 
   // Fetch all users
-  const { data: users = [], isLoading } = useQuery({
+  const { data: users = [], isLoading } = useQuery<User[]>({
     queryKey: ['/api/users/directory'],
     refetchInterval: 30000 // Refresh every 30 seconds
   });
 
   // Get user's friends
-  const { data: friends = [] } = useQuery({
+  const { data: friends = [] } = useQuery<User[]>({
     queryKey: ['/api/users/friends'],
   });
 

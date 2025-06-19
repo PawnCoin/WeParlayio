@@ -373,6 +373,7 @@ export default function LiveStreamPlayer({
                 onClick={() => {
                   onUpgradeClick?.();
                   setShowUpgradeModal(false);
+                  window.location.href = '/upgrade-tier';
                 }}
                 className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600"
               >

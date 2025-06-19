@@ -30,9 +30,7 @@ async function initializeDatabase() {
         ssl: { rejectUnauthorized: false },
         max: 5,
         idleTimeoutMillis: 10000,
-        connectionTimeoutMillis: 5000,
-        idleTimeoutMillis: 10000,
-        connectionTimeoutMillis: 5000,
+        connectionTimeoutMillis: 5000
       });
 
       // Test the connection
