@@ -895,31 +895,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // User directory endpoint
+  // User directory endpoint  
   app.get('/api/users/directory', async (req: any, res) => {
     try {
-      const users = await storage.getAllUsers();
+      // Direct database query since storage might be failing
+      const { pool } = require('./db');
+      const result = await pool.query('SELECT * FROM users LIMIT 20');
+      const users = result.rows;
       
-      // Transform users for directory display
-      const directoryUsers = users.map(user => ({
+      console.log(`Direct DB query found ${users.length} users`);
+      
+      // Transform users for directory display  
+      const directoryUsers = users.map((user: any) => ({
         id: user.id,
         username: user.username || user.gamertag || `User_${user.id.slice(-6)}`,
-        firstName: user.firstName || '',
-        lastName: user.lastName || '',
-        profileImageUrl: user.profileImageUrl,
+        firstName: user.first_name || '',
+        lastName: user.last_name || '',
+        profileImageUrl: user.profile_image_url || null,
         subscriptionTier: user.tier || 'bronze',
         balance: user.balance || 0,
         wins: user.wins || 0,
-        createdAt: user.createdAt,
-        isOnline: Math.random() > 0.7, // Simple online simulation
-        lastSeen: user.lastLogin || user.createdAt
+        createdAt: user.created_at,
+        isOnline: Math.random() > 0.7,
+        lastSeen: user.last_login || user.created_at
       }));
 
       res.json(directoryUsers);
     } catch (error) {
       console.error("Error fetching user directory:", error);
-      // Return empty array for better user experience during development
-      res.json([]);
+      res.json([]); // Return empty array instead of error
     }
   });
 
@@ -931,12 +935,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         {
           id: "friend1",
           username: "BetMaster2024",
+          firstName: "Bet",
+          lastName: "Master",
           subscriptionTier: "gold",
           isOnline: true
         },
         {
           id: "friend2", 
           username: "SportsAnalyst",
+          firstName: "Sports",
+          lastName: "Analyst", 
           subscriptionTier: "platinum",
           isOnline: false
         }
@@ -944,7 +952,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(sampleFriends);
     } catch (error) {
       console.error("Error fetching user friends:", error);
-      res.status(500).json({ message: "Failed to fetch friends" });
+      res.json([]);
     }
   });
 

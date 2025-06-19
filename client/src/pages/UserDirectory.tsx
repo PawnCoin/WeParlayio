@@ -61,6 +61,9 @@ const UserDirectory: React.FC = () => {
     queryKey: ['/api/auth/me'],
   });
 
+  // Mock current user for tier checking
+  const currentUser = authUser || { subscriptionTier: 'bronze' };
+
   // Fetch all users
   const { data: users = [], isLoading } = useQuery<User[]>({
     queryKey: ['/api/users/directory'],
@@ -149,7 +152,7 @@ const UserDirectory: React.FC = () => {
   };
 
   // Check if user can interact (non-bronze tier)
-  const canInteract = authUser?.subscriptionTier !== 'bronze';
+  const canInteract = currentUser?.subscriptionTier !== 'bronze';
   
   const isFriend = (userId: string) => (friends as User[]).some((friend: User) => friend.id === userId);
 
