@@ -1099,7 +1099,18 @@ export default function UnifiedGaming() {
                   </div>
                   <div className="flex justify-between items-center pt-2">
                     <span className="text-sm">Prize Pool: $2.2M</span>
-                    <Button size="sm">View Bracket</Button>
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        className="bg-red-600 hover:bg-red-700 text-white"
+                        onClick={() => window.location.href = '/live-streaming'}
+                      >
+                        <Play className="h-3 w-3 mr-1" />
+                        Watch Live
+                      </Button>
+                      <Button size="sm" variant="outline">View Details</Button>
+                      <Button size="sm">Manage Bets</Button>
+                    </div>
                   </div>
                 </div>
 
@@ -1127,7 +1138,18 @@ export default function UnifiedGaming() {
                   </div>
                   <div className="flex justify-between items-center pt-2">
                     <span className="text-sm">Prize Pool: $1.5M</span>
-                    <Button size="sm" variant="outline">View Matches</Button>
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        className="bg-red-600 hover:bg-red-700 text-white"
+                        onClick={() => window.location.href = '/live-streaming'}
+                      >
+                        <Play className="h-3 w-3 mr-1" />
+                        Watch Live
+                      </Button>
+                      <Button size="sm" variant="outline">View Details</Button>
+                      <Button size="sm">Manage Bets</Button>
+                    </div>
                   </div>
                 </div>
               </CardContent>

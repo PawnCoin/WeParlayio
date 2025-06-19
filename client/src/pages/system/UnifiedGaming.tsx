@@ -260,6 +260,16 @@ export default function UnifiedGaming() {
                         </div>
                       </div>
                       <div className="flex gap-2 ml-4">
+                        {tournament.status === 'live' && (
+                          <Button 
+                            size="sm" 
+                            className="bg-red-600 hover:bg-red-700 text-white"
+                            onClick={() => window.location.href = '/live-streaming'}
+                          >
+                            <Play className="h-3 w-3 mr-1" />
+                            Watch Live
+                          </Button>
+                        )}
                         <Button size="sm" variant="outline">
                           View Details
                         </Button>
