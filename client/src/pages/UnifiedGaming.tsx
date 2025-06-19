@@ -164,20 +164,19 @@ export default function UnifiedGaming() {
     });
   };
 
-  // Enhanced Chat button functionality
+  // Enhanced Chat button functionality - navigate to live streaming
   const handleChatOpen = (streamId: number) => {
-    toast({
-      title: "Live Chat",
-      description: `Chat for Stream ${streamId} - Feature coming soon with real-time messaging`,
-    });
+    window.location.href = '/live-streaming';
   };
 
-  // Fix for View All Matches button
+  // Fix for View All Matches button - navigate to live streaming
   const handleViewAllMatches = () => {
-    toast({
-      title: "Loading All Matches",
-      description: "Fetching complete match listings...",
-    });
+    window.location.href = '/live-streaming';
+  };
+
+  // Fix for Watch Live functionality
+  const handleWatchLive = (streamId?: number) => {
+    window.location.href = '/live-streaming';
   };
 
   // Enhanced Database Status monitoring
@@ -865,23 +864,33 @@ export default function UnifiedGaming() {
                         </div>
                         <div className="text-right">
                           <div className="text-sm font-medium mb-2">GRID API Match</div>
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 flex-col">
                             <Button
                               size="sm"
-                              variant="outline"
-                              className="text-xs"
-                              onClick={() => handlePlaceBet(match, 'team1')}
+                              className="bg-red-600 hover:bg-red-700 text-white text-xs"
+                              onClick={() => handleWatchLive()}
                             >
-                              {match.opponents?.[0]?.opponent?.name || 'Team 1'} 1.85
+                              <Play className="h-3 w-3 mr-1" />
+                              Watch Live
                             </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-xs"
-                              onClick={() => handlePlaceBet(match, 'team2')}
-                            >
-                              {match.opponents?.[1]?.opponent?.name || 'Team 2'} 1.95
-                            </Button>
+                            <div className="flex gap-1">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs"
+                                onClick={() => handlePlaceBet(match, 'team1')}
+                              >
+                                {match.opponents?.[0]?.opponent?.name || 'Team 1'} 1.85
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs"
+                                onClick={() => handlePlaceBet(match, 'team2')}
+                              >
+                                {match.opponents?.[1]?.opponent?.name || 'Team 2'} 1.95
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -909,24 +918,34 @@ export default function UnifiedGaming() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-sm font-medium mb-2">Betting Odds</div>
-                          <div className="flex gap-2">
+                          <div className="text-sm font-medium mb-2">Live Stream</div>
+                          <div className="flex gap-2 flex-col">
                             <Button
                               size="sm"
-                              variant="outline"
-                              className="text-xs"
-                              onClick={() => handlePlaceBet(stream, 'win')}
+                              className="bg-red-600 hover:bg-red-700 text-white text-xs"
+                              onClick={() => handleWatchLive(stream.id)}
                             >
-                              Win {stream.odds.win}
+                              <Play className="h-3 w-3 mr-1" />
+                              Watch Live
                             </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-xs"
-                              onClick={() => handlePlaceBet(stream, 'lose')}
-                            >
-                              Lose {stream.odds.lose}
-                            </Button>
+                            <div className="flex gap-1">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs"
+                                onClick={() => handlePlaceBet(stream, 'win')}
+                              >
+                                Win {stream.odds.win}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs"
+                                onClick={() => handlePlaceBet(stream, 'lose')}
+                              >
+                                Lose {stream.odds.lose}
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       </div>
