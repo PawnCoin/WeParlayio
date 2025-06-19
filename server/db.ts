@@ -31,6 +31,8 @@ async function initializeDatabase() {
         max: 5,
         idleTimeoutMillis: 10000,
         connectionTimeoutMillis: 5000,
+        idleTimeoutMillis: 10000,
+        connectionTimeoutMillis: 5000,
       });
 
       // Test the connection

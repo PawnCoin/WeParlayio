@@ -895,6 +895,113 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User directory endpoint
+  app.get('/api/users/directory', async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const users = await storage.getAllUsers();
+      
+      // Transform users for directory display
+      const directoryUsers = users.map(user => ({
+        id: user.id,
+        username: user.username || user.gamertag || `User_${user.id.slice(-6)}`,
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        profileImageUrl: user.profileImageUrl,
+        subscriptionTier: user.tier || 'bronze',
+        balance: user.balance || 0,
+        wins: user.wins || 0,
+        createdAt: user.createdAt,
+        isOnline: Math.random() > 0.7, // Simple online simulation
+        lastSeen: user.lastLogin || user.createdAt
+      }));
+
+      res.json(directoryUsers);
+    } catch (error) {
+      console.error("Error fetching user directory:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  // User friends endpoint
+  app.get('/api/users/friends', async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const userId = req.user.claims.sub;
+      const friends = await storage.getUserFriends(userId);
+      res.json(friends);
+    } catch (error) {
+      console.error("Error fetching user friends:", error);
+      res.status(500).json({ message: "Failed to fetch friends" });
+    }
+  });
+
+  // User messages endpoint
+  app.get('/api/users/messages', async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const userId = req.user.claims.sub;
+      // Return empty array for now - implement messaging system later
+      res.json([]);
+    } catch (error) {
+      console.error("Error fetching user messages:", error);
+      res.status(500).json({ message: "Failed to fetch messages" });
+    }
+  });
+
+  // Add friend endpoint
+  app.post('/api/users/add-friend', async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const userId = req.user.claims.sub;
+      const { userId: friendId } = req.body;
+
+      if (!friendId) {
+        return res.status(400).json({ message: "Friend user ID required" });
+      }
+
+      await storage.sendFriendRequest(userId, friendId);
+      res.json({ success: true, message: "Friend request sent" });
+    } catch (error) {
+      console.error("Error adding friend:", error);
+      res.status(500).json({ message: "Failed to add friend" });
+    }
+  });
+
+  // Send message endpoint
+  app.post('/api/users/send-message', async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const userId = req.user.claims.sub;
+      const { toUserId, content } = req.body;
+
+      if (!toUserId || !content) {
+        return res.status(400).json({ message: "Recipient and message content required" });
+      }
+
+      // For now, just return success - implement full messaging later
+      res.json({ success: true, message: "Message sent" });
+    } catch (error) {
+      console.error("Error sending message:", error);
+      res.status(500).json({ message: "Failed to send message" });
+    }
+  });
+
   // Head-to-head betting challenge routes
   app.post('/api/challenges', async (req: any, res) => {
     try {

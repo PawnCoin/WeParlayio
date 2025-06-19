@@ -425,7 +425,11 @@ const UserDirectory: React.FC = () => {
                 <p className="text-gray-600 mb-4">
                   Upgrade to any paid tier to add friends, send messages, and connect with the WeParlay community!
                 </p>
-                <Button size="lg" className="bg-gradient-to-r from-blue-500 to-purple-600">
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-blue-500 to-purple-600"
+                  onClick={() => setLocation('/upgrade-tier')}
+                >
                   <Crown className="h-4 w-4 mr-2" />
                   Upgrade Membership
                 </Button>
