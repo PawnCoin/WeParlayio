@@ -157,7 +157,7 @@ const UserDirectory: React.FC = () => {
   };
 
   // Check if user can interact (non-bronze tier)
-  const canInteract = currentUser?.subscriptionTier !== 'bronze';
+  const canInteract = (currentUser as any)?.subscriptionTier !== 'bronze';
   
   const isFriend = (userId: string) => (friends as User[]).some((friend: User) => friend.id === userId);
 

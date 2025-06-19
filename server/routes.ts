@@ -883,41 +883,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // User directory endpoint - FIXED WORKING VERSION
   app.get('/api/users/directory', async (req: any, res) => {
-    console.log('🚀 User directory endpoint hit!');
+    console.log('User directory endpoint hit!');
     try {
-      // Direct database query bypassing storage
-      const { pool } = require('./db');
-      const result = await pool.query('SELECT * FROM users LIMIT 20');
-      const users = result.rows;
+      // Use storage to get all users 
+      const users = await storage.getAllUsers();
+      console.log(`Database query found ${users.length} users`);
       
-      console.log(`📊 Direct DB query found ${users.length} users`);
-      
-      // Transform users for directory display using correct snake_case column names
+      // Transform users for directory display
       const directoryUsers = users.map((user: any) => ({
         id: user.id,
         username: user.username || user.gamertag || `User_${user.id.slice(-6)}`,
-        firstName: user.first_name || '',
-        lastName: user.last_name || '',
-        profileImageUrl: user.profile_image_url || null,
-        subscriptionTier: user.tier || 'bronze',
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        profileImageUrl: user.profileImageUrl || null,
+        subscriptionTier: user.subscriptionTier || user.tier || 'bronze',
         balance: user.balance || 0,
         wins: user.wins || 0,
-        createdAt: user.created_at,
+        createdAt: user.createdAt,
         isOnline: Math.random() > 0.7,
-        lastSeen: user.last_login || user.created_at
+        lastSeen: user.lastLogin || user.createdAt
       }));
 
-      console.log(`✅ Returning ${directoryUsers.length} users to frontend`);
+      console.log(`Returning ${directoryUsers.length} users to frontend`);
       res.json(directoryUsers);
     } catch (error) {
-      console.error("❌ Error fetching user directory:", error);
+      console.error("Error fetching user directory:", error);
       res.json([]); // Return empty array instead of error
     }
   });
 
   // User friends endpoint - FIXED WORKING VERSION
   app.get('/api/users/friends', async (req: any, res) => {
-    console.log('👥 User friends endpoint hit!');
+    console.log('User friends endpoint hit!');
     try {
       // Return sample friends for development with proper structure
       const sampleFriends = [
@@ -944,10 +941,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           wins: 32
         }
       ];
-      console.log(`✅ Returning ${sampleFriends.length} friends to frontend`);
+      console.log(`Returning ${sampleFriends.length} friends to frontend`);
       res.json(sampleFriends);
     } catch (error) {
-      console.error("❌ Error fetching user friends:", error);
+      console.error("Error fetching user friends:", error);
       res.json([]);
     }
   });
@@ -1012,22 +1009,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // User Profile Management (moved here to avoid route conflicts)
-  app.get('/api/users/:userId', async (req, res) => {
-    try {
-      const { userId } = req.params;
-      const user = await storage.getUser(userId);
-      
-      if (!user) {
-        return res.status(404).json({ success: false, message: 'User not found' });
-      }
-      
-      res.json(user);
-    } catch (error) {
-      console.error('Error fetching user:', error);
-      res.status(500).json({ success: false, message: 'Failed to fetch user' });
-    }
-  });
+  // MOVED TO END - User Profile Management (to avoid intercepting /directory and /friends)
+  // This route handler will be placed at the very end to prevent conflicts
 
   // Head-to-head betting challenge routes
   app.post('/api/challenges', async (req: any, res) => {

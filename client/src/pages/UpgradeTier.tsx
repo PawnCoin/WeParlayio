@@ -1,330 +1,143 @@
-import { useState } from "react";
-import { useLocation } from "wouter";
-import { useMutation } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Crown, Diamond, Star, Zap, ArrowLeft, Loader2, CreditCard, DollarSign, Coins } from "lucide-react";
-import CashAppButton from "@/components/CashAppButton";
-
-const tierPlans = [
-  {
-    id: 'bronze',
-    name: 'Bronze',
-    price: '$9.99',
-    period: 'month',
-    icon: Star,
-    color: 'from-orange-400 to-orange-600',
-    features: [
-      'Basic betting functionality',
-      'Standard odds access',
-      'Email support',
-      'Basic analytics',
-      'Mobile app access'
-    ]
-  },
-  {
-    id: 'silver',
-    name: 'Silver',
-    price: '$19.99',
-    period: 'month',
-    icon: Zap,
-    color: 'from-gray-400 to-gray-600',
-    popular: true,
-    features: [
-      'Everything in Bronze',
-      'Live streaming access',
-      'Advanced analytics',
-      'Priority support',
-      'Multi-currency betting',
-      'Parlay betting'
-    ]
-  },
-  {
-    id: 'gold',
-    name: 'Gold',
-    price: '$39.99',
-    period: 'month',
-    icon: Crown,
-    color: 'from-yellow-400 to-yellow-600',
-    features: [
-      'Everything in Silver',
-      'Exclusive tournaments',
-      'VIP chat support',
-      'Advanced betting tools',
-      'Custom alerts',
-      'API access'
-    ]
-  },
-  {
-    id: 'platinum',
-    name: 'Platinum',
-    price: '$79.99',
-    period: 'month',
-    icon: Crown,
-    color: 'from-purple-400 to-purple-600',
-    features: [
-      'Everything in Gold',
-      'Personal account manager',
-      'Custom betting limits',
-      'Premium insights',
-      'White-label options',
-      'Early feature access'
-    ]
-  },
-  {
-    id: 'diamond',
-    name: 'Diamond',
-    price: '$149.99',
-    period: 'month',
-    icon: Diamond,
-    color: 'from-blue-400 to-blue-600',
-    elite: true,
-    features: [
-      'Everything in Platinum',
-      'White-glove service',
-      'Unlimited access',
-      'Beta features',
-      'Platform settings access',
-      'System management tools'
-    ]
-  }
-];
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Crown, Check, Star, Zap } from 'lucide-react';
 
 export default function UpgradeTier() {
-  const [, setLocation] = useLocation();
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-  const { toast } = useToast();
+  const [selectedTier, setSelectedTier] = useState<string>('gold');
 
-  const [paymentMethod, setPaymentMethod] = useState<'paypal' | 'cashapp' | 'weparlay' | null>(null);
-
-  const paypalUpgradeMutation = useMutation({
-    mutationFn: async (tierId: string) => {
-      const plan = tierPlans.find(p => p.id === tierId);
-      const amount = parseFloat(plan?.price.replace('$', '') || '0');
-      const response = await apiRequest('POST', '/api/paypal/order', {
-        intent: 'CAPTURE',
-        amount: amount.toString(),
-        currency: 'USD'
-      });
-      return await response.json();
+  const tiers = [
+    {
+      id: 'bronze',
+      name: 'Bronze',
+      price: 'Free',
+      description: 'Basic betting features',
+      features: [
+        'Basic bet placement',
+        'Standard odds viewing',
+        'Community access (limited)',
+        'Mobile app access'
+      ],
+      color: 'from-amber-600 to-amber-800',
+      icon: Crown,
+      current: true
     },
-    onSuccess: (data: any) => {
-      if (data.id) {
-        window.open(data.links?.find((link: any) => link.rel === 'approve')?.href, '_blank');
-      }
+    {
+      id: 'gold',
+      name: 'Gold',
+      price: '$9.99/month',
+      description: 'Enhanced betting experience',
+      features: [
+        'All Bronze features',
+        'Advanced analytics',
+        'Priority customer support',
+        'User directory access',
+        'Friend messaging',
+        'Exclusive tournaments',
+        'Live score notifications'
+      ],
+      color: 'from-yellow-400 to-yellow-600',
+      icon: Star,
+      popular: true
     },
-    onError: (error: any) => {
-      toast({
-        title: "PayPal Payment Failed",
-        description: error.message || "Failed to create PayPal payment.",
-        variant: "destructive",
-      });
-      setSelectedPlan(null);
-      setPaymentMethod(null);
-    },
-  });
-
-  const weparlayCashUpgradeMutation = useMutation({
-    mutationFn: async (tierId: string) => {
-      const response = await apiRequest('POST', '/api/weparlay-cash/upgrade-tier', { tier: tierId });
-      return await response.json();
-    },
-    onSuccess: (data: any) => {
-      toast({
-        title: "Tier Upgraded Successfully",
-        description: `Welcome to ${data.tier} tier! Your upgrade is now active.`,
-      });
-      setSelectedPlan(null);
-      setPaymentMethod(null);
-    },
-    onError: (error: any) => {
-      toast({
-        title: "WeParlay Cash Payment Failed",
-        description: error.message || "Insufficient WeParlay Cash balance or upgrade failed.",
-        variant: "destructive",
-      });
-      setSelectedPlan(null);
-      setPaymentMethod(null);
-    },
-  });
-
-  const handleUpgrade = (planId: string, method: 'paypal' | 'cashapp' | 'weparlay') => {
-    setSelectedPlan(planId);
-    setPaymentMethod(method);
-    
-    if (method === 'paypal') {
-      paypalUpgradeMutation.mutate(planId);
-    } else if (method === 'weparlay') {
-      weparlayCashUpgradeMutation.mutate(planId);
+    {
+      id: 'platinum',
+      name: 'Platinum',
+      price: '$19.99/month',
+      description: 'Premium features for serious bettors',
+      features: [
+        'All Gold features',
+        'VIP tournaments',
+        'Personal betting advisor',
+        'Advanced statistics',
+        'Early access to new features',
+        'Custom bet alerts',
+        'Priority live chat',
+        'Exclusive events'
+      ],
+      color: 'from-purple-500 to-purple-700',
+      icon: Zap
     }
-    // Cash App will be handled by the CashAppButton component
-  };
+  ];
 
-  const handleCashAppSuccess = (paymentId: string) => {
-    toast({
-      title: "Cash App Payment Successful",
-      description: "Your tier upgrade has been processed successfully!",
-    });
-    setSelectedPlan(null);
-    setPaymentMethod(null);
-  };
-
-  const handleCashAppError = (error: string) => {
-    toast({
-      title: "Cash App Payment Failed",
-      description: error,
-      variant: "destructive",
-    });
-    setSelectedPlan(null);
-    setPaymentMethod(null);
-  };
-
-  const handleGoBack = () => {
-    setLocation('/');
+  const handleUpgrade = (tierId: string) => {
+    // Redirect to payment processing
+    window.location.href = `/payment?tier=${tierId}`;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black p-4">
-      <div className="container mx-auto max-w-7xl">
-        <div className="mb-8">
-          <Button 
-            variant="ghost" 
-            onClick={handleGoBack}
-            className="mb-4"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Platform
-          </Button>
-          
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-white mb-4">Upgrade Your WeParlay Experience</h1>
-            <p className="text-xl text-gray-300 mb-8">
-              Choose the perfect plan to unlock advanced features and take your betting to the next level
-            </p>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900">
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-white mb-4">
+            Upgrade Your WeParlay Experience
+          </h1>
+          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+            Unlock premium features, exclusive tournaments, and advanced analytics 
+            to take your sports betting to the next level.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-          {tierPlans.map((plan) => {
-            const IconComponent = plan.icon;
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {tiers.map((tier) => {
+            const IconComponent = tier.icon;
             return (
-              <Card 
-                key={plan.id}
-                className={`relative transition-all duration-300 hover:scale-105 bg-gray-800 border-gray-700 ${
-                  plan.popular ? 'ring-2 ring-orange-500 shadow-lg' : ''
-                } ${
-                  plan.elite ? 'ring-2 ring-blue-500 shadow-xl' : ''
-                }`}
+              <Card
+                key={tier.id}
+                className={`relative overflow-hidden transition-all duration-300 hover:scale-105 ${
+                  tier.popular ? 'ring-2 ring-yellow-400 shadow-2xl' : ''
+                } ${tier.current ? 'ring-2 ring-green-400' : ''}`}
               >
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-orange-500 text-white">Most Popular</Badge>
-                  </div>
+                {tier.popular && (
+                  <Badge className="absolute top-4 right-4 bg-yellow-500 text-black">
+                    Most Popular
+                  </Badge>
+                )}
+                {tier.current && (
+                  <Badge className="absolute top-4 right-4 bg-green-500 text-white">
+                    Current Plan
+                  </Badge>
                 )}
                 
-                {plan.elite && (
-                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-blue-500 text-white">Elite Access</Badge>
+                <CardHeader className={`bg-gradient-to-r ${tier.color} text-white`}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                        <IconComponent className="h-6 w-6" />
+                        {tier.name}
+                      </CardTitle>
+                      <CardDescription className="text-gray-100 mt-2">
+                        {tier.description}
+                      </CardDescription>
+                    </div>
                   </div>
-                )}
-
-                <CardHeader className="text-center">
-                  <div className={`mx-auto mb-4 w-16 h-16 bg-gradient-to-br ${plan.color} rounded-full flex items-center justify-center`}>
-                    <IconComponent className="w-8 h-8 text-white" />
-                  </div>
-                  
-                  <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                  <CardDescription>
-                    <span className="text-3xl font-bold">{plan.price}</span>
-                    <span className="text-gray-500">/{plan.period}</span>
-                  </CardDescription>
+                  <div className="text-3xl font-bold mt-4">{tier.price}</div>
                 </CardHeader>
 
-                <CardContent>
+                <CardContent className="p-6">
                   <ul className="space-y-3 mb-6">
-                    {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-start">
-                        <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                    {tier.features.map((feature, index) => (
+                      <li key={index} className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
                         <span className="text-sm">{feature}</span>
                       </li>
                     ))}
                   </ul>
 
-                  <div className="space-y-4">
-                    <div className="text-center mb-4">
-                      <h4 className="text-lg font-semibold text-white mb-2">Choose Payment Method</h4>
-                      <p className="text-sm text-gray-400">Secure payment processing with instant activation</p>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 gap-3">
-                      {/* PayPal Payment */}
-                      <Button 
-                        className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all duration-200 hover:scale-[1.02] shadow-lg"
-                        onClick={() => handleUpgrade(plan.id, 'paypal')}
-                        disabled={selectedPlan === plan.id}
-                      >
-                        {selectedPlan === plan.id && paymentMethod === 'paypal' ? (
-                          <>
-                            <Loader2 className="w-5 h-5 mr-3 animate-spin" />
-                            Processing PayPal...
-                          </>
-                        ) : (
-                          <>
-                            <CreditCard className="w-5 h-5 mr-3" />
-                            PayPal • {plan.price}
-                          </>
-                        )}
-                      </Button>
-                    
-                      {/* Cash App Payment */}
-                      {selectedPlan === plan.id && paymentMethod === 'cashapp' ? (
-                        <CashAppButton
-                          amount={parseFloat(plan.price.replace('$', ''))}
-                          description={`WeParlay ${plan.name} Tier Upgrade`}
-                          onSuccess={handleCashAppSuccess}
-                          onError={handleCashAppError}
-                          className="w-full h-14"
-                        />
-                      ) : (
-                        <Button 
-                          className="w-full h-14 bg-green-600 hover:bg-green-700 text-white font-medium transition-all duration-200 hover:scale-[1.02] shadow-lg"
-                          onClick={() => handleUpgrade(plan.id, 'cashapp')}
-                          disabled={selectedPlan === plan.id}
-                        >
-                          <DollarSign className="w-5 h-5 mr-3" />
-                          Cash App • {plan.price}
-                        </Button>
-                      )}
-                      
-                      {/* WeParlay Cash Payment */}
-                      <Button 
-                        className="w-full h-14 bg-orange-600 hover:bg-orange-700 text-white font-medium transition-all duration-200 hover:scale-[1.02] shadow-lg"
-                        onClick={() => handleUpgrade(plan.id, 'weparlay')}
-                        disabled={selectedPlan === plan.id && paymentMethod === 'weparlay'}
-                      >
-                        {selectedPlan === plan.id && paymentMethod === 'weparlay' ? (
-                          <>
-                            <Loader2 className="w-5 h-5 mr-3 animate-spin" />
-                            Processing WeParlay Cash...
-                          </>
-                        ) : (
-                          <>
-                            <Coins className="w-5 h-5 mr-3" />
-                            WeParlay Cash • {plan.price}
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                    
-                    <div className="mt-4 pt-3 border-t border-gray-600">
-                      <p className="text-xs text-gray-400 text-center">
-                        ✓ Secure payment processing • ✓ Instant activation • ✓ 30-day money-back guarantee
-                      </p>
-                    </div>
-                  </div>
+                  {tier.current ? (
+                    <Button className="w-full" disabled>
+                      Current Plan
+                    </Button>
+                  ) : (
+                    <Button
+                      className="w-full"
+                      variant={tier.popular ? "default" : "outline"}
+                      onClick={() => handleUpgrade(tier.id)}
+                    >
+                      Upgrade to {tier.name}
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             );
@@ -332,30 +145,17 @@ export default function UpgradeTier() {
         </div>
 
         <div className="mt-12 text-center">
-          <Card className="max-w-2xl mx-auto bg-gray-800 border-gray-700">
-            <CardContent className="p-6">
-              <h3 className="text-xl font-semibold text-white mb-4">Why Upgrade?</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div>
-                  <h4 className="font-medium text-white mb-2">Enhanced Features</h4>
-                  <p className="text-gray-300">Access advanced betting tools and exclusive content</p>
-                </div>
-                <div>
-                  <h4 className="font-medium text-white mb-2">Priority Support</h4>
-                  <p className="text-gray-300">Get faster response times and dedicated assistance</p>
-                </div>
-                <div>
-                  <h4 className="font-medium text-white mb-2">Exclusive Access</h4>
-                  <p className="text-gray-300">Early access to new features and beta testing</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="mt-8 text-center text-sm text-gray-400">
-          <p>All plans include a 30-day money-back guarantee. Cancel anytime.</p>
-          <p className="mt-2">Questions? Contact our support team at support@weparlay.io</p>
+          <div className="bg-gray-800 rounded-lg p-6 max-w-2xl mx-auto">
+            <h3 className="text-xl font-semibold text-white mb-4">
+              Need Help Choosing?
+            </h3>
+            <p className="text-gray-300 mb-4">
+              Our support team is here to help you find the perfect tier for your betting needs.
+            </p>
+            <Button variant="outline">
+              Contact Support
+            </Button>
+          </div>
         </div>
       </div>
     </div>
