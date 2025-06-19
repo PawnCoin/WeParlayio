@@ -526,11 +526,9 @@ const LiveBettingContent: React.FC = () => {
           isOpen={watchLiveDialog}
           onClose={() => setWatchLiveDialog(false)}
           eventId={Number(selectedEvent.id)}
+          sportKey={selectedEvent.sport || 'basketball'}
           homeTeam={selectedEvent.homeTeam}
           awayTeam={selectedEvent.awayTeam}
-          homeScore={selectedEvent.homeScore}
-          awayScore={selectedEvent.awayScore}
-          league={selectedEvent.league}
         />
       )}
     </div>

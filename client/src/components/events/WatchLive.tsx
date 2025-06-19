@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getTeamLogoUrl } from "@/lib/sportsDataUtils";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
-import { SubscriptionTier, canUserAccess } from '@/../../shared/tierSystem';
+import { SubscriptionTier, canUserAccess } from '../../../shared/tierSystem';
 import { Crown, Lock } from 'lucide-react';
 
 type LiveStreamProps = {

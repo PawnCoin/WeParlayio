@@ -79,11 +79,13 @@ export default function ComprehensiveBetting() {
     // Error handling disabled for React Query v5 compatibility
   });
 
-  // Process upcoming events from unified endpoint - handle both nested and direct data structures
-  const upcomingEvents = Array.isArray(upcomingEventsData?.data) ? upcomingEventsData.data : Array.isArray(upcomingEventsData) ? upcomingEventsData : [];
+  // Process upcoming events from unified endpoint
+  const upcomingEventsArray = upcomingEventsData?.data || upcomingEventsData;
+  const upcomingEvents = Array.isArray(upcomingEventsArray) ? upcomingEventsArray : [];
 
-  // Filter sports based on search - handle both nested and direct data structures
-  const sportsArray = Array.isArray(sports?.data) ? sports.data : Array.isArray(sports) ? sports : [];
+  // Filter sports based on search
+  const sportsRaw = sports?.data || sports;
+  const sportsArray = Array.isArray(sportsRaw) ? sportsRaw : [];
   const filteredSports = sportsArray.filter((sport: any) =>
     sport?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
