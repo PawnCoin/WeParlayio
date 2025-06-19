@@ -122,6 +122,15 @@ const UserDirectory: React.FC = () => {
   // Type the users properly to avoid TypeScript errors
   const typedUsers = users as User[];
 
+  // Filter users based on search and tier
+  const filteredUsers = typedUsers.filter((user: User) => {
+    const matchesSearch = user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.lastName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesTier = filterTier === 'all' || user.subscriptionTier === filterTier;
+    return matchesSearch && matchesTier;
+  });
+
   const getTierColor = (tier: string) => {
     switch (tier) {
       case 'diamond': return 'bg-blue-100 text-blue-800';
@@ -141,9 +150,6 @@ const UserDirectory: React.FC = () => {
 
   // Check if user can interact (non-bronze tier)
   const canInteract = authUser?.subscriptionTier !== 'bronze';
-  
-  // Type the users properly to avoid TypeScript errors
-  const typedUsers = users as User[];
   
   const isFriend = (userId: string) => (friends as User[]).some((friend: User) => friend.id === userId);
 
@@ -215,7 +221,7 @@ const UserDirectory: React.FC = () => {
             
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <Users className="h-4 w-4" />
-              <span>{typedUsers.length} users found</span>
+              <span>{filteredUsers.length} users found</span>
               {canInteract && (
                 <>
                   <span>•</span>
@@ -229,13 +235,7 @@ const UserDirectory: React.FC = () => {
 
         {/* User Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {typedUsers.filter((user: User) => {
-            const matchesSearch = user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                 user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                 user.lastName.toLowerCase().includes(searchTerm.toLowerCase());
-            const matchesTier = filterTier === 'all' || user.subscriptionTier === filterTier;
-            return matchesSearch && matchesTier;
-          }).map((user: User) => (
+          {filteredUsers.map((user: User) => (
             <Card key={user.id} className="hover:shadow-lg transition-shadow">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
