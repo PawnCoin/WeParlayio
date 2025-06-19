@@ -57,7 +57,7 @@ const UserDirectory: React.FC = () => {
   const [showMessaging, setShowMessaging] = useState(false);
 
   // Get current user info
-  const { data: currentUser } = useQuery({
+  const { data: authUser } = useQuery({
     queryKey: ['/api/auth/me'],
   });
 
@@ -119,13 +119,8 @@ const UserDirectory: React.FC = () => {
     }
   });
 
-  // Filter users based on search and tier
-  const filteredUsers = users.filter((user: User) => {
-    const matchesSearch = user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesTier = filterTier === 'all' || user.subscriptionTier === filterTier;
-    return matchesSearch && matchesTier;
-  });
+  // Type the users properly to avoid TypeScript errors
+  const typedUsers = users as User[];
 
   const getTierColor = (tier: string) => {
     switch (tier) {
@@ -144,10 +139,13 @@ const UserDirectory: React.FC = () => {
     return null;
   };
 
-  const canInteract = currentUser?.subscriptionTier && 
-                     ['diamond', 'gold', 'silver', 'bronze'].includes(currentUser.subscriptionTier);
-
-  const isFriend = (userId: string) => friends.some((friend: any) => friend.id === userId);
+  // Check if user can interact (non-bronze tier)
+  const canInteract = authUser?.subscriptionTier !== 'bronze';
+  
+  // Type the users properly to avoid TypeScript errors
+  const typedUsers = users as User[];
+  
+  const isFriend = (userId: string) => (friends as User[]).some((friend: User) => friend.id === userId);
 
   if (isLoading) {
     return (
@@ -217,7 +215,7 @@ const UserDirectory: React.FC = () => {
             
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <Users className="h-4 w-4" />
-              <span>{filteredUsers.length} users found</span>
+              <span>{typedUsers.length} users found</span>
               {canInteract && (
                 <>
                   <span>•</span>
@@ -230,8 +228,14 @@ const UserDirectory: React.FC = () => {
         </Card>
 
         {/* User Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredUsers.map((user: User) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {typedUsers.filter((user: User) => {
+            const matchesSearch = user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                 user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                 user.lastName.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesTier = filterTier === 'all' || user.subscriptionTier === filterTier;
+            return matchesSearch && matchesTier;
+          }).map((user: User) => (
             <Card key={user.id} className="hover:shadow-lg transition-shadow">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
