@@ -881,34 +881,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // User directory endpoint - FIXED WORKING VERSION
+  // User directory endpoint - FIXED WITH DIRECT DB ACCESS
   app.get('/api/users/directory', async (req: any, res) => {
     console.log('User directory endpoint hit!');
     try {
-      // Use storage to get all users 
-      const users = await storage.getAllUsers();
-      console.log(`Database query found ${users.length} users`);
+      // Import db module dynamically to avoid module conflicts
+      const dbModule = await import('./db');
+      const result = await dbModule.pool.query('SELECT * FROM users ORDER BY created_at DESC');
+      const users = result.rows;
       
-      // Transform users for directory display
+      console.log(`Direct database query found ${users.length} users`);
+      
+      // Transform users for directory display using snake_case column names from DB
       const directoryUsers = users.map((user: any) => ({
         id: user.id,
         username: user.username || user.gamertag || `User_${user.id.slice(-6)}`,
-        firstName: user.firstName || '',
-        lastName: user.lastName || '',
-        profileImageUrl: user.profileImageUrl || null,
-        subscriptionTier: user.subscriptionTier || user.tier || 'bronze',
+        firstName: user.first_name || '',
+        lastName: user.last_name || '',
+        profileImageUrl: user.profile_image_url || null,
+        subscriptionTier: user.tier || 'bronze',
         balance: user.balance || 0,
         wins: user.wins || 0,
-        createdAt: user.createdAt,
+        createdAt: user.created_at,
         isOnline: Math.random() > 0.7,
-        lastSeen: user.lastLogin || user.createdAt
+        lastSeen: user.last_login || user.created_at
       }));
 
-      console.log(`Returning ${directoryUsers.length} users to frontend`);
+      console.log(`Successfully returning ${directoryUsers.length} users to frontend`);
       res.json(directoryUsers);
     } catch (error) {
       console.error("Error fetching user directory:", error);
-      res.json([]); // Return empty array instead of error
+      res.json([]);
     }
   });
 
