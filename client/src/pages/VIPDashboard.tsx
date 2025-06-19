@@ -223,12 +223,13 @@ export default function VIPDashboard() {
         {/* Upgrade Prompt */}
         <div className="mt-8 text-center">
           <p className="text-gray-400 mb-4">Want to upgrade your VIP tier for even more benefits?</p>
-          <Link href="/upgrade-tier">
-            <Button className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white px-8 py-3 text-lg">
-              <Crown className="w-5 h-5 mr-2" />
-              Upgrade VIP Tier
-            </Button>
-          </Link>
+          <Button 
+            className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white px-8 py-3 text-lg"
+            onClick={() => window.location.href = '/upgrade-tier'}
+          >
+            <Crown className="w-5 h-5 mr-2" />
+            Upgrade VIP Tier
+          </Button>
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocation } from 'wouter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -63,6 +64,7 @@ export default function TierUpgradePrompt({
   compact = false
 }: TierUpgradePromptProps) {
   const { user } = useAuth();
+  const [, setLocation] = useLocation();
   const [showDialog, setShowDialog] = useState(false);
   
   const tierInfo = tierConfig[requiredTier];
@@ -150,9 +152,13 @@ export default function TierUpgradePrompt({
             />
           </Dialog>
           
-          <Button variant="outline" size="sm">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setLocation('/upgrade-tier')}
+          >
             <TrendingUp className="h-4 w-4 mr-2" />
-            Track Progress
+            Upgrade Now
           </Button>
         </div>
       </CardContent>
@@ -174,6 +180,7 @@ function UpgradeDialog({
   userProgress: any;
 }) {
   const TierIcon = tierInfo.icon;
+  const [, setLocation] = useLocation();
 
   return (
     <DialogContent className="max-w-md">
@@ -224,12 +231,18 @@ function UpgradeDialog({
         </div>
 
         <div className="flex gap-2">
-          <Button className="flex-1">
-            Start Betting to Upgrade
+          <Button 
+            className="flex-1"
+            onClick={() => setLocation('/upgrade-tier')}
+          >
+            Upgrade to {requiredTier.charAt(0).toUpperCase() + requiredTier.slice(1)}
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
-          <Button variant="outline">
-            Learn More
+          <Button 
+            variant="outline"
+            onClick={() => setLocation('/sports')}
+          >
+            Start Betting
           </Button>
         </div>
       </div>
