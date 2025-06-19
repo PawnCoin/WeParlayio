@@ -125,24 +125,14 @@ export default function ComprehensiveBetting() {
   };
 
   const handleViewLiveEvent = (event: any) => {
-    if (!isAuthenticated) {
-      toast({
-        title: "Login Required",
-        description: "Please log in to view live events",
-        variant: "destructive",
-        duration: 3000,
-      });
-      return;
-    }
-
     toast({
-      title: "Opening Live Event",
+      title: "Opening Live Stream",
       description: `Loading ${event.title || event.name}...`,
       duration: 2000,
     });
     
-    // Navigate to live betting page for this event
-    window.location.href = `/live-betting?event=${event.id}`;
+    // Navigate to actual live sports streaming page
+    window.location.href = `/live-sports-streaming`;
   };
 
   const handleQuickBet = (event: any, betType: string = 'moneyline') => {
