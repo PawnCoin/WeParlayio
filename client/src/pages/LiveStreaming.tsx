@@ -367,7 +367,10 @@ export default function LiveStreaming() {
                         </div>
 
                         {/* Enhanced Watch Button */}
-                        <Button className="w-full bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-500 hover:to-teal-500 group-hover:from-blue-400 group-hover:to-teal-400 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold">
+                        <Button 
+                          className="w-full bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-500 hover:to-teal-500 group-hover:from-blue-400 group-hover:to-teal-400 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold"
+                          onClick={() => handleGameSelect(game)}
+                        >
                           <Play className="h-4 w-4 mr-2" />
                           {game.status === 'live' ? 'Watch Live' : 'Watch Stream'}
                         </Button>

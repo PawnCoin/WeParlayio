@@ -64,8 +64,12 @@ const EsportsHub: React.FC = () => {
   ];
 
   const handleWatchLive = (match: LiveMatch) => {
-    setSelectedMatch(match);
-    setIsLiveStreamOpen(true);
+    toast({
+      title: "Opening Live Stream",
+      description: `Loading ${match.teams[0]} vs ${match.teams[1]}...`,
+      duration: 2000,
+    });
+    window.location.href = '/live-sports-streaming';
   };
 
   const placeBet = (matchId: string, team: number) => {

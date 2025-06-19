@@ -192,12 +192,13 @@ export default function VIPDashboard() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Link href="/vip/live-streaming">
-                <Button className="w-full bg-red-600 hover:bg-red-700 text-white">
-                  <Play className="w-4 h-4 mr-2" />
-                  Watch Live
-                </Button>
-              </Link>
+              <Button 
+                className="w-full bg-red-600 hover:bg-red-700 text-white"
+                onClick={() => window.location.href = '/live-sports-streaming'}
+              >
+                <Play className="w-4 h-4 mr-2" />
+                Watch Live
+              </Button>
               <Link href="/vip/tournaments">
                 <Button className="w-full bg-yellow-600 hover:bg-yellow-700 text-white">
                   <Trophy className="w-4 h-4 mr-2" />

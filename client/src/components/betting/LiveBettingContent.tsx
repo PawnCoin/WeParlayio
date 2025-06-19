@@ -162,16 +162,12 @@ const LiveBettingContent: React.FC = () => {
   
   // Watch live handler
   const handleWatchLive = (event: any) => {
-    setSelectedEvent({
-      id: event.id,
-      homeTeam: event.home_team,
-      awayTeam: event.away_team,
-      homeScore: event.scores?.home || 0,
-      awayScore: event.scores?.away || 0,
-      league: event.sport_title || selectedSport.toUpperCase()
+    toast({
+      title: "Opening Live Stream",
+      description: `Loading ${event.home_team} vs ${event.away_team}...`,
+      duration: 2000,
     });
-    
-    setWatchLiveDialog(true);
+    window.location.href = '/live-sports-streaming';
   };
   
   // Get the last updated time

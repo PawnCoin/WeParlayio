@@ -227,10 +227,10 @@ const Home: React.FC = () => {
               <div className="text-right">
                 <Button 
                   size="lg"
-                  className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold"
-                  onClick={handlePlatinumUpgrade}
+                  className="bg-red-500 hover:bg-red-600 text-white font-bold"
+                  onClick={() => window.location.href = '/live-sports-streaming'}
                 >
-                  Upgrade to Platinum
+                  Watch Live Now
                 </Button>
                 <p className="text-xs text-red-200 mt-1">Join the elite</p>
               </div>

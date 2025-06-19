@@ -42,7 +42,7 @@ export default function ComprehensiveBetting() {
   const [activeTab, setActiveTab] = useState("overview");
   const [refreshing, setRefreshing] = useState(false);
   const { toast } = useToast();
-  const { addToBetSlip } = useBetting();
+  const { addBet } = useBetting();
   const { user, isAuthenticated } = useAuth();
 
   // Fetch real sports data using working APIs only with error handling
@@ -51,7 +51,7 @@ export default function ComprehensiveBetting() {
     refetchInterval: 300000,
     retry: 3,
     retryDelay: 1000,
-    onError: (error) => console.log('Sports API error (handled):', error),
+    // Error handling disabled for React Query v5 compatibility
   });
 
   const { data: oddsData, refetch: refetchOdds, error: oddsError } = useQuery({
@@ -59,7 +59,7 @@ export default function ComprehensiveBetting() {
     refetchInterval: 30000,
     retry: 2,
     retryDelay: 2000,
-    onError: (error) => console.log('Odds API error (handled):', error),
+    // Error handling disabled for React Query v5 compatibility
   });
 
   // Fetch live events data with error handling
@@ -68,7 +68,7 @@ export default function ComprehensiveBetting() {
     refetchInterval: 5000,
     retry: 1,
     retryDelay: 3000,
-    onError: (error) => console.log('Live events error (handled):', error),
+    // Error handling disabled for React Query v5 compatibility
   });
 
   const { data: upcomingEventsData, refetch: refetchUpcoming, error: upcomingError } = useQuery({
@@ -76,16 +76,16 @@ export default function ComprehensiveBetting() {
     refetchInterval: 30000,
     retry: 2,
     retryDelay: 2000,
-    onError: (error) => console.log('Upcoming events error (handled):', error),
+    // Error handling disabled for React Query v5 compatibility
   });
 
   // Process upcoming events from unified endpoint
-  const upcomingEvents = upcomingEventsData?.events || [];
+  const upcomingEvents = upcomingEventsData?.data || [];
 
   // Filter sports based on search
-  const filteredSports = sports?.filter((sport: any) =>
+  const filteredSports = (sports?.data || []).filter((sport: any) =>
     sport?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  );
 
   const handleSportSelect = (sportKey: string) => {
     setSelectedSport(sportKey);

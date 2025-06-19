@@ -438,7 +438,11 @@ export const WatchLive: React.FC<LiveStreamProps> = ({
                     <Lock className="h-4 w-4" />
                     <span className="text-xs font-medium">Premium Feature</span>
                   </div>
-                  <Button size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500">
+                  <Button 
+                    size="sm" 
+                    className="bg-gradient-to-r from-yellow-500 to-orange-500"
+                    onClick={() => window.location.href = '/upgrade-tier'}
+                  >
                     Upgrade Now
                   </Button>
                 </div>
