@@ -79,13 +79,14 @@ export default function ComprehensiveBetting() {
     // Error handling disabled for React Query v5 compatibility
   });
 
-  // Process upcoming events from unified endpoint
-  const upcomingEvents = upcomingEventsData?.data || [];
+  // Process upcoming events from unified endpoint - handle both nested and direct data structures
+  const upcomingEvents = upcomingEventsData?.data || upcomingEventsData || [];
 
-  // Filter sports based on search
-  const filteredSports = (sports?.data || []).filter((sport: any) =>
+  // Filter sports based on search - handle both nested and direct data structures
+  const sportsArray = sports?.data || sports || [];
+  const filteredSports = Array.isArray(sportsArray) ? sportsArray.filter((sport: any) =>
     sport?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ) : [];
 
   const handleSportSelect = (sportKey: string) => {
     setSelectedSport(sportKey);
@@ -150,14 +151,16 @@ export default function ComprehensiveBetting() {
       id: `${event.id}-${betType}`,
       eventId: event.id,
       eventName: event.title || event.name,
-      betType: betType,
+      type: betType,
+      selection: event.title || event.name,
       odds: event.odds || 1.85,
       sport: event.sport_key || 'general',
       stake: 0,
-      potentialWin: 0
+      potentialWin: 0,
+      opponent: 'TBD'
     };
 
-    addToBetSlip(betData);
+    addBet(betData);
     
     toast({
       title: "Added to Bet Slip",
@@ -241,13 +244,13 @@ export default function ComprehensiveBetting() {
                   <span className="font-semibold text-green-800">LIVE DATA ACTIVE</span>
                 </div>
                 <Badge variant="outline" className="border-blue-300 text-blue-800">
-                  {sports?.length || 0} Sports Available
+                  {Array.isArray(sportsArray) ? sportsArray.length : 0} Sports Available
                 </Badge>
                 <Badge variant="outline" className="border-purple-300 text-purple-800">
-                  {liveEvents?.length || 0} Live Events
+                  {Array.isArray(liveEvents) ? liveEvents.length : 0} Live Events
                 </Badge>
                 <Badge variant="outline" className="border-orange-300 text-orange-800">
-                  {upcomingEvents?.length || 0} Upcoming
+                  {Array.isArray(upcomingEvents) ? upcomingEvents.length : 0} Upcoming
                 </Badge>
               </div>
               <div className="flex items-center gap-2">
@@ -390,13 +393,13 @@ export default function ComprehensiveBetting() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-slate-200">
                   <Activity className="h-5 w-5 text-red-400" />
-                  Live Events ({liveEvents?.length || 0})
+                  Live Events ({Array.isArray(liveEvents) ? liveEvents.length : 0})
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {liveEvents && liveEvents.length > 0 ? (
+                {Array.isArray(liveEvents) && liveEvents.length > 0 ? (
                   <div className="space-y-4">
-                    {liveEvents.map((event: any, index: number) => (
+                    {(Array.isArray(liveEvents) ? liveEvents : []).map((event: any, index: number) => (
                       <Card key={index} className="border-red-200 bg-red-50">
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between">
