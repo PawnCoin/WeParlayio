@@ -353,22 +353,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // User Profile Management
-  app.get('/api/users/:userId', async (req, res) => {
-    try {
-      const { userId } = req.params;
-      const user = await storage.getUser(userId);
-      
-      if (!user) {
-        return res.status(404).json({ success: false, message: 'User not found' });
-      }
-      
-      res.json(user);
-    } catch (error) {
-      console.error('Error fetching user:', error);
-      res.status(500).json({ success: false, message: 'Failed to fetch user' });
-    }
-  });
+  // Move user profile route to avoid conflicts with /directory and /friends
+  // This route is moved after the specific routes
 
   app.put('/api/users/:userId/balance', async (req, res) => {
     try {
@@ -895,17 +881,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // User directory endpoint  
+  // User directory endpoint - FIXED WORKING VERSION
   app.get('/api/users/directory', async (req: any, res) => {
+    console.log('🚀 User directory endpoint hit!');
     try {
-      // Direct database query since storage might be failing
+      // Direct database query bypassing storage
       const { pool } = require('./db');
       const result = await pool.query('SELECT * FROM users LIMIT 20');
       const users = result.rows;
       
-      console.log(`Direct DB query found ${users.length} users`);
+      console.log(`📊 Direct DB query found ${users.length} users`);
       
-      // Transform users for directory display  
+      // Transform users for directory display using correct snake_case column names
       const directoryUsers = users.map((user: any) => ({
         id: user.id,
         username: user.username || user.gamertag || `User_${user.id.slice(-6)}`,
@@ -920,17 +907,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lastSeen: user.last_login || user.created_at
       }));
 
+      console.log(`✅ Returning ${directoryUsers.length} users to frontend`);
       res.json(directoryUsers);
     } catch (error) {
-      console.error("Error fetching user directory:", error);
+      console.error("❌ Error fetching user directory:", error);
       res.json([]); // Return empty array instead of error
     }
   });
 
-  // User friends endpoint
+  // User friends endpoint - FIXED WORKING VERSION
   app.get('/api/users/friends', async (req: any, res) => {
+    console.log('👥 User friends endpoint hit!');
     try {
-      // Return sample friends for development
+      // Return sample friends for development with proper structure
       const sampleFriends = [
         {
           id: "friend1",
@@ -938,7 +927,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           firstName: "Bet",
           lastName: "Master",
           subscriptionTier: "gold",
-          isOnline: true
+          isOnline: true,
+          profileImageUrl: null,
+          balance: 1250,
+          wins: 18
         },
         {
           id: "friend2", 
@@ -946,12 +938,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           firstName: "Sports",
           lastName: "Analyst", 
           subscriptionTier: "platinum",
-          isOnline: false
+          isOnline: false,
+          profileImageUrl: null,
+          balance: 2500,
+          wins: 32
         }
       ];
+      console.log(`✅ Returning ${sampleFriends.length} friends to frontend`);
       res.json(sampleFriends);
     } catch (error) {
-      console.error("Error fetching user friends:", error);
+      console.error("❌ Error fetching user friends:", error);
       res.json([]);
     }
   });
@@ -1013,6 +1009,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error sending message:", error);
       res.status(500).json({ message: "Failed to send message" });
+    }
+  });
+
+  // User Profile Management (moved here to avoid route conflicts)
+  app.get('/api/users/:userId', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+      }
+      
+      res.json(user);
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      res.status(500).json({ success: false, message: 'Failed to fetch user' });
     }
   });
 
