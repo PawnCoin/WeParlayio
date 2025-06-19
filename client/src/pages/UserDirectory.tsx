@@ -64,6 +64,11 @@ const UserDirectory: React.FC = () => {
   // Mock current user for tier checking
   const currentUser = authUser || { subscriptionTier: 'bronze' };
 
+  // Add upgrade button handler
+  const handleUpgradeClick = () => {
+    window.location.href = '/upgrade-tier';
+  };
+
   // Fetch all users
   const { data: users = [], isLoading } = useQuery<User[]>({
     queryKey: ['/api/users/directory'],
