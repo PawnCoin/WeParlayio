@@ -135,6 +135,8 @@ function Router() {
     <Switch>
       {/* Core Betting Routes */}
       <Route path="/betting-hub" component={UnifiedBettingHub} />
+      <Route path="/betting-dashboard" component={BettingDashboard} />
+      <Route path="/live-betting" component={LiveBetting} />
       <Route path="/odds" component={Odds} />
       <Route path="/parlays" component={Parlays} />
       <Route path="/live-heatmap" component={LiveHeatmap} />
