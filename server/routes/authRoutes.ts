@@ -90,7 +90,7 @@ router.post('/login', async (req, res) => {
     if (adminCred && password === adminCred.password) {
       // Admin login detected
       isAdmin = true;
-      user = await storage.getUserByEmail?.(adminCred.email);
+      user = await storage.getUserByEmail(adminCred.email);
 
       // Create admin user if doesn't exist
       if (!user) {
@@ -98,7 +98,7 @@ router.post('/login', async (req, res) => {
         const adminUserData = {
           id: `admin-${email.split('@')[0]}-${Date.now()}`,
           email: adminCred.email,
-          username: email === 'support@weparlay.io' ? 'WeParlay' : 'Admin',
+          username: email === 'support@weparlay.io' ? 'WeParlay Admin' : 'WeParlay Admin',
           firstName: 'WeParlay',
           lastName: 'Admin',
           role: 'admin',
@@ -110,11 +110,11 @@ router.post('/login', async (req, res) => {
           password: hashedPassword,
           createdAt: new Date(),
         };
-        user = await storage.upsertUser(adminUserData);
+        user = await storage.createUser(adminUserData);
       }
     } else {
       // Regular user login
-      user = await storage.getUserByEmail?.(email);
+      user = await storage.getUserByEmail(email);
 
       if (!user) {
         return res.status(401).json({ 
