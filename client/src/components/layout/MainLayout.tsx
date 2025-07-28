@@ -59,14 +59,24 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const userBalance = currentUser.balance || 0;
   const userProfileImage = currentUser.profileImageUrl;
   
-  // Simple logout function
-  const logout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("weparlay-logged-in");
-    localStorage.removeItem("weparlay-user-email");
-    localStorage.removeItem("weparlay-is-admin");
-    localStorage.removeItem("weparlay-admin-email");
-    window.location.href = '/';
+  // Simple logout function - use useAuth logout
+  const logout = async () => {
+    try {
+      // Call logout endpoint
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+    
+    // Clear all user data
+    localStorage.clear(); // Clear all localStorage items
+    sessionStorage.clear(); // Clear all sessionStorage items
+    
+    // Force reload to ensure clean state
+    window.location.reload();
   };
 
   // Simple wallet connection function

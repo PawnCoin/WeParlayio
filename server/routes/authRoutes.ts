@@ -410,17 +410,20 @@ router.post('/admin-reset-password', async (req, res) => {
 // Get current user info endpoint - returns mock user with proper admin status
 router.get('/user', async (req, res) => {
   try {
-    // Get stored user info from session/auth
+    // Check if user is logged out (no stored data)
     const storedEmail = req.headers['x-user-email'] || req.query.email;
+    
+    // If no email, return null (logged out state)
+    if (!storedEmail) {
+      return res.status(401).json({ message: 'Not authenticated' });
+    }
+    
     const adminEmails = ['support@weparlay.io', 'admin@weparlay.io', 'weparlay@admin.com'];
+    const isAdminUser = adminEmails.includes(storedEmail);
     
-    // Check if this is an admin user based on email
-    const isAdminUser = storedEmail && adminEmails.includes(storedEmail);
-    
-    // For demo purposes, return appropriate user based on admin status
     const mockUser = {
       id: isAdminUser ? 'admin-001' : 'dev-user-001',
-      email: storedEmail || 'user@weparlay.io',
+      email: storedEmail,
       username: isAdminUser ? 'WeParlay Admin' : 'devuser',
       firstName: 'WeParlay',
       lastName: isAdminUser ? 'Admin' : 'User',
@@ -436,6 +439,36 @@ router.get('/user', async (req, res) => {
   } catch (error) {
     console.error('Get user error:', error);
     res.status(500).json({ message: 'Failed to get user info' });
+  }
+});
+
+// Logout endpoint
+router.post('/logout', (req, res) => {
+  try {
+    // Clear session if using sessions
+    if (req.session) {
+      req.session.destroy((err) => {
+        if (err) {
+          console.error('Session destruction error:', err);
+        }
+      });
+    }
+    
+    // Clear any cookies
+    res.clearCookie('connect.sid');
+    res.clearCookie('session');
+    res.clearCookie('auth-token');
+    
+    res.json({ 
+      success: true, 
+      message: 'Logged out successfully' 
+    });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Logout failed' 
+    });
   }
 });
 

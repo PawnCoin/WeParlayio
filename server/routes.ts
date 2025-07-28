@@ -233,43 +233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/auth/login', async (req, res) => {
-    try {
-      const { username, email } = req.body;
-      
-      let user;
-      if (username) {
-        user = await storage.getUserByUsername(username);
-      } else if (email) {
-        user = await storage.getUserByEmail(email);
-      }
-      
-      if (!user) {
-        // Create new user for simplified login
-        user = await storage.createUser({
-          id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          email: email || `${username}@weparlay.io`,
-          username: username || email.split('@')[0],
-          balance: 1000,
-          weparlayCashBalance: 500,
-          tier: 'bronze',
-          subscriptionTier: 'wood',
-          createdAt: new Date(),
-          updatedAt: new Date()
-        });
-      }
-      
-      res.json({
-        success: true,
-        user,
-        token: `token_${user.id}_${Date.now()}`,
-        message: 'Login successful'
-      });
-    } catch (error) {
-      console.error('Login error:', error);
-      res.status(400).json({ success: false, message: 'Login failed' });
-    }
-  });
+
 
 
   

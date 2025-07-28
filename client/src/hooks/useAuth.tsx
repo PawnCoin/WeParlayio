@@ -87,18 +87,29 @@ export function useAuth() {
     }
   };
   
-  const logout = () => {
+  const logout = async () => {
+    try {
+      // Call logout endpoint
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+    
+    // Clear all user data
     setCurrentUser(null);
-    localStorage.removeItem("user");
-    localStorage.removeItem("weparlay-logged-in");
-    localStorage.removeItem("weparlay-user-email");
-    localStorage.removeItem("weparlay-is-admin");
+    localStorage.clear(); // Clear all localStorage items
+    sessionStorage.clear(); // Clear all sessionStorage items
+    
     toast({
       title: "Logged out",
       description: "You have been successfully logged out",
     });
-    // Redirect to homepage after logout
-    window.location.href = '/';
+    
+    // Force reload to ensure clean state
+    window.location.reload();
   };
 
   const connectWallet = (address: string, type: string) => {
