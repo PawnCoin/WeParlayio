@@ -18,9 +18,9 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  // Get auth headers for admin users
-  const adminEmail = localStorage.getItem('weparlay-admin-email');
-  const authHeaders = adminEmail ? { 'X-User-Email': adminEmail } : {};
+  // Get auth headers for all users
+  const userEmail = localStorage.getItem('weparlay-user-email') || localStorage.getItem('weparlay-admin-email');
+  const authHeaders = userEmail ? { 'X-User-Email': userEmail } : {};
   
   const res = await fetch(url, {
     method,
@@ -42,11 +42,9 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    // Get auth headers for admin users
-    const adminEmail = localStorage.getItem('weparlay-admin-email');
-    const userEmail = localStorage.getItem('weparlay-user-email');
-    const authHeaders = adminEmail ? { 'X-User-Email': adminEmail } : 
-                       userEmail ? { 'X-User-Email': userEmail } : {};
+    // Get auth headers for all users
+    const userEmail = localStorage.getItem('weparlay-user-email') || localStorage.getItem('weparlay-admin-email');
+    const authHeaders = userEmail ? { 'X-User-Email': userEmail } : {};
     
     const res = await fetch(queryKey[0] as string, {
       credentials: "include",

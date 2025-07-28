@@ -63,7 +63,15 @@ export function useAuth() {
       localStorage.setItem("weparlay-logged-in", "true");
       localStorage.setItem("weparlay-user-email", user.email || loginEmail);
       localStorage.setItem("weparlay-is-admin", (isAdminLogin || data.isAdmin) ? "true" : "false");
-      localStorage.setItem("weparlay-admin-email", isAdminLogin ? loginEmail : "");
+      if (isAdminLogin) {
+        localStorage.setItem("weparlay-admin-email", loginEmail);
+      }
+      
+      console.log('Login data stored:', {
+        email: user.email || loginEmail,
+        isAdmin: isAdminLogin || data.isAdmin,
+        userEmail: localStorage.getItem("weparlay-user-email")
+      });
       
       toast({
         title: "Logged in successfully",
