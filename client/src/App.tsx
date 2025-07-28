@@ -63,6 +63,7 @@ import FantasySportsHub from "@/pages/FantasySportsHub";
 import FantasyAnalyticsDashboard from "@/pages/FantasyAnalyticsDashboard";
 import TierComparison from "@/pages/TierComparison";
 import SMSOptIn from "@/pages/SMSOptIn";
+import PermissionDemo from "@/pages/PermissionDemo";
 
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
@@ -177,6 +178,7 @@ function Router() {
       <Route path="/sms-opt-in" component={SMSOptIn} />
       <Route path="/trivia" component={Trivia} />
       <Route path="/wallet-tutorial" component={WalletTutorial} />
+      <Route path="/permission-demo" component={PermissionDemo} />
 
       {/* Enhanced Features */}
       <Route path="/enhanced-features" component={EnhancedFeatures} />

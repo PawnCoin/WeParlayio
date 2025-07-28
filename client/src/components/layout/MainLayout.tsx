@@ -9,6 +9,8 @@ import BetNotifications from "../notifications/BetNotifications";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import PermissionGate from "@/components/auth/PermissionGate";
+import PermissionBadge from "@/components/auth/PermissionBadge";
 import CurrencyModeToggle from "@/components/shared/CurrencyModeToggle";
 import { 
   DropdownMenu, 
@@ -17,7 +19,7 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Menu, Wallet, Coins, Shield, ArrowRightLeft, History, CreditCard, Crown, Briefcase } from "lucide-react";
+import { ChevronDown, Menu, Wallet, Coins, Shield, ArrowRightLeft, History, CreditCard, Crown, Briefcase, Settings, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Logo from "@/components/WeParlay/Logo";
 import WalletConnectionOptimized from "@/components/wallet/WalletConnectionOptimized";
@@ -265,7 +267,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                           <AvatarImage src={user?.profileImageUrl || "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150"} />
                           <AvatarFallback>{user?.firstName?.charAt(0) || user?.email?.charAt(0) || "W"}</AvatarFallback>
                         </Avatar>
-                        <span className="hidden md:block">{user?.firstName || user?.email?.split('@')[0]}</span>
+                        <div className="hidden md:block">
+                          <span className="block">{user?.firstName || user?.email?.split('@')[0]}</span>
+                          <PermissionBadge className="mt-1" />
+                        </div>
                         <ChevronDown className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -298,15 +303,27 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                               Crypto Wallet
                             </Link>
                           </DropdownMenuItem>
-                          {/* Admin only - Facebook Bot Manager */}
-                          {user?.isAdmin && (
+                          {/* Admin only features using PermissionGate */}
+                          <PermissionGate adminOnly>
                             <DropdownMenuItem asChild>
                               <Link href="/facebook-bot-manager" className="flex items-center">
                                 <span className="h-4 w-4 mr-2 text-blue-600">🤖</span>
                                 Facebook Bots
                               </Link>
                             </DropdownMenuItem>
-                          )}
+                            <DropdownMenuItem asChild>
+                              <Link href="/admin" className="flex items-center">
+                                <Settings className="h-4 w-4 mr-2 text-red-600" />
+                                Admin Dashboard
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                              <Link href="/users" className="flex items-center">
+                                <Users className="h-4 w-4 mr-2 text-purple-600" />
+                                User Management
+                              </Link>
+                            </DropdownMenuItem>
+                          </PermissionGate>
                         </>
                       )}
 
