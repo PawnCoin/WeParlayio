@@ -38,16 +38,28 @@ export default function AdminLogin() {
       const result = await response.json();
 
       if (response.ok) {
+        // Store admin-specific tokens
         localStorage.setItem('weparlay-admin-token', result.token);
         localStorage.setItem('weparlay-admin-user', JSON.stringify(result.user));
         localStorage.setItem('weparlay-admin-expiry', (Date.now() + 24 * 60 * 60 * 1000).toString()); // 24 hours
+        
+        // Also store in main auth system for compatibility
+        localStorage.setItem('auth-token', result.token);
+        localStorage.setItem('user', JSON.stringify(result.user));
+        localStorage.setItem('weparlay-logged-in', 'true');
+        localStorage.setItem('weparlay-is-admin', 'true');
+        localStorage.setItem('weparlay-user-email', result.user.email);
+        localStorage.setItem('weparlay-admin-email', result.user.email);
         
         toast({
           title: "Welcome back!",
           description: "Admin login successful"
         });
         
-        navigate('/admin-dashboard');
+        // Force a page reload to ensure the authentication state is updated
+        setTimeout(() => {
+          window.location.href = '/admin-dashboard';
+        }, 500);
       } else {
         toast({
           title: "Login Failed",

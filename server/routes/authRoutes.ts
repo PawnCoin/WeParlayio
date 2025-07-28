@@ -434,20 +434,27 @@ router.post('/admin-reset-password', async (req, res) => {
 // Get current user info endpoint - returns actual user data
 router.get('/user', async (req, res) => {
   try {
-    // Check if user is logged out (no stored data)
-    const storedEmail = req.headers['x-user-email'] || req.query.email;
+    // Check for JWT token in Authorization header
+    const authHeader = req.headers.authorization;
+    let token = null;
     
-    // If no email, return null (logged out state)
-    if (!storedEmail) {
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    } else {
+      // Check localStorage token (for compatibility)
+      token = req.headers['x-auth-token'] || req.query.token;
+    }
+    
+    if (!token) {
       return res.status(401).json({ message: 'Not authenticated' });
     }
     
-    const adminEmails = ['support@weparlay.io', 'admin@weparlay.io', 'weparlay@admin.com'];
-    const isAdminUser = adminEmails.includes(storedEmail);
-    
-    // Get actual user from database only - no mock data
     try {
-      const user = await storage.getUserByEmail(storedEmail);
+      // Verify JWT token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'weparlay-secret-key') as any;
+      
+      // Get user from database
+      const user = await storage.getUser(decoded.userId);
       if (!user) {
         return res.status(401).json({ message: 'User not found' });
       }
@@ -456,18 +463,18 @@ router.get('/user', async (req, res) => {
       const userResponse = { ...user };
       delete userResponse.password;
       
-      // Add admin status if applicable
-      userResponse.isAdmin = isAdminUser || user.isAdmin || false;
-      userResponse.role = isAdminUser ? 'admin' : (user.role || 'user');
+      // Ensure admin status is preserved from token
+      userResponse.isAdmin = decoded.isAdmin || user.isAdmin || false;
+      userResponse.role = decoded.role || (userResponse.isAdmin ? 'admin' : 'user');
       
       return res.json(userResponse);
-    } catch (dbError) {
-      console.error('Database error:', dbError);
-      return res.status(500).json({ message: 'Database error' });
+    } catch (jwtError) {
+      console.error('JWT verification failed:', jwtError);
+      return res.status(401).json({ message: 'Invalid token' });
     }
   } catch (error) {
     console.error('Get user error:', error);
-    res.status(500).json({ message: 'Failed to get user info' });
+    res.status(401).json({ message: 'Invalid token' });
   }
 });
 
