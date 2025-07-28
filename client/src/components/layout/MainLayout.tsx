@@ -19,7 +19,7 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Menu, Wallet, Coins, Shield, ArrowRightLeft, History, CreditCard, Crown, Briefcase, Settings, Users } from "lucide-react";
+import { ChevronDown, Menu, Wallet, Coins, Shield, ArrowRightLeft, History, CreditCard, Crown, Briefcase, Settings, Users, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Logo from "@/components/WeParlay/Logo";
 import WalletConnectionOptimized from "@/components/wallet/WalletConnectionOptimized";
@@ -285,6 +285,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                       {isAuthenticated && (
                         <>
                           <DropdownMenuItem asChild>
+                            <Link href="/profile" className="flex items-center">
+                              <User className="h-4 w-4 mr-2" />
+                              My Profile
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
                             <Link href="/settings">Settings</Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
@@ -346,14 +352,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   <Button 
                     variant="outline" 
                     className="text-white border-green-500 hover:bg-green-500/10"
-                    onClick={() => window.location.href = '/login'}
+                    onClick={() => window.location.href = '/auth'}
                   >
                     Login
                   </Button>
                   <Button 
                     variant="default" 
                     className="bg-green-600 hover:bg-green-700"
-                    onClick={() => window.location.href = '/register'}
+                    onClick={() => window.location.href = '/auth'}
                   >
                     Sign Up
                   </Button>

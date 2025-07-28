@@ -64,6 +64,8 @@ import FantasyAnalyticsDashboard from "@/pages/FantasyAnalyticsDashboard";
 import TierComparison from "@/pages/TierComparison";
 import SMSOptIn from "@/pages/SMSOptIn";
 import PermissionDemo from "@/pages/PermissionDemo";
+import AuthenticationHub from "@/pages/AuthenticationHub";
+import UserProfile from "@/pages/UserProfile";
 
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
@@ -196,9 +198,9 @@ function Router() {
       <Route path="/wallet-management-enhancement" component={CryptoWallet} />
       <Route path="/wallet-test" component={WalletTest} />
       <Route path="/user-profile-banking" component={UserProfileBanking} />
-      <Route path="/user-profile" component={UserProfilePage} />
-      <Route path="/user-profile-page" component={UserProfilePage} />
-      <Route path="/profile" component={UserProfilePage} />
+      <Route path="/user-profile" component={UserProfile} />
+      <Route path="/user-profile-page" component={UserProfile} />
+      <Route path="/profile" component={UserProfile} />
 
       {/* Payment & Demo */}
       <Route path="/payment-demo" component={PaymentDemo} />
@@ -256,7 +258,9 @@ function Router() {
       <Route path="/security-info" component={SecurityInfo} />
 
       {/* Authentication */}
-      <Route path="/login" component={LoginEnhanced} />
+      <Route path="/auth" component={AuthenticationHub} />
+      <Route path="/login" component={AuthenticationHub} />
+      <Route path="/signup" component={AuthenticationHub} />
       <Route path="/login-enhanced" component={LoginEnhanced} />
       <Route path="/mobile-login" component={MobileLogin} />
       <Route path="/auth-test" component={AuthTestDemo} />

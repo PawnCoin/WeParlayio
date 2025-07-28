@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 interface LoginCredentials {
@@ -21,16 +21,31 @@ export function useAuth() {
   const login = async (credentials: LoginCredentials) => {
     setIsLoggingIn(true);
     try {
-      const response = await apiRequest("POST", "/api/login", credentials);
-      const user = await response.json();
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(credentials),
+      });
+      
+      if (!response.ok) {
+        throw new Error("Login failed");
+      }
+      
+      const data = await response.json();
+      const user = data.user || data;
       
       setCurrentUser(user);
       localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("weparlay-logged-in", "true");
+      localStorage.setItem("weparlay-user-email", user.email);
       
       toast({
         title: "Logged in successfully",
-        description: `Welcome back, ${user.username}!`,
+        description: `Welcome back, ${user.username || user.firstName || 'User'}!`,
       });
+      
+      // Redirect to dashboard after successful login
+      window.location.href = '/';
       
       return user;
     } catch (error) {

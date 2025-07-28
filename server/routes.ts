@@ -109,6 +109,72 @@ function generateFallbackOdds() {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Professional Authentication Routes
+  app.post('/api/auth/login', async (req: any, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      // Mock authentication - in production, verify against database
+      if (username && password) {
+        const user = {
+          id: 'auth-user-' + Date.now(),
+          email: username.includes('@') ? username : `${username}@weparlay.io`,
+          username: username.includes('@') ? username.split('@')[0] : username,
+          firstName: 'WeParlay',
+          lastName: 'User',
+          balance: 1000,
+          tier: 'bronze',
+          subscriptionTier: 'wood',
+          isAdmin: username === 'admin',
+          role: username === 'admin' ? 'admin' : 'user',
+          profileImageUrl: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150'
+        };
+        
+        res.json({
+          success: true,
+          user,
+          token: 'mock-jwt-token-' + Date.now()
+        });
+      } else {
+        res.status(401).json({ error: 'Invalid credentials' });
+      }
+    } catch (error) {
+      res.status(500).json({ error: 'Login failed' });
+    }
+  });
+
+  app.post('/api/auth/register', async (req: any, res) => {
+    try {
+      const { username, email, firstName, lastName, password } = req.body;
+      
+      const user = {
+        id: 'reg-user-' + Date.now(),
+        email,
+        username,
+        firstName: firstName || 'New',
+        lastName: lastName || 'User',
+        balance: 1025, // $25 welcome bonus
+        tier: 'bronze',
+        subscriptionTier: 'wood',
+        isAdmin: false,
+        role: 'user',
+        profileImageUrl: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150'
+      };
+      
+      res.json({
+        success: true,
+        user,
+        token: 'mock-jwt-token-' + Date.now()
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Registration failed' });
+    }
+  });
+
+  app.post('/api/auth/logout', async (req: any, res) => {
+    res.json({ success: true, message: 'Logged out successfully' });
+  });
+
   // Direct user authentication endpoint (highest priority)
   app.get('/api/auth/user', async (req: any, res) => {
     res.json({
