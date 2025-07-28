@@ -6,7 +6,7 @@ import Footer from "./Footer";
 import SystemStatusIndicator from '../SystemStatusIndicator';
 import UnifiedBetSlip from "../betting/UnifiedBetSlip";
 import BetNotifications from "../notifications/BetNotifications";
-import { useAuth } from "@/hooks/useAuth.ts";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import CurrencyModeToggle from "@/components/shared/CurrencyModeToggle";
@@ -37,7 +37,20 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [location] = useLocation();
-  const { user, isAuthenticated, logout, connectWallet } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  
+  // Simple logout function
+  const logout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("weparlay-logged-in");
+    localStorage.removeItem("weparlay-user-email");
+    window.location.href = '/';
+  };
+
+  // Simple wallet connection function
+  const connectWallet = (address: string, type: string) => {
+    console.log(`Connecting wallet: ${address} (${type})`);
+  };
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isBusinessProposalOpen, setIsBusinessProposalOpen] = useState(false);
 
@@ -299,7 +312,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
 
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={logout}>
+                      <DropdownMenuItem 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          logout();
+                        }}
+                        className="cursor-pointer"
+                      >
                         Logout
                       </DropdownMenuItem>
                     </DropdownMenuContent>

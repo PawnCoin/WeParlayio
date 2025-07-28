@@ -49,10 +49,19 @@ export function useAuth() {
   const logout = () => {
     setCurrentUser(null);
     localStorage.removeItem("user");
+    localStorage.removeItem("weparlay-logged-in");
+    localStorage.removeItem("weparlay-user-email");
     toast({
       title: "Logged out",
       description: "You have been successfully logged out",
     });
+    // Redirect to homepage after logout
+    window.location.href = '/';
+  };
+
+  const connectWallet = (address: string, type: string) => {
+    console.log(`Connecting wallet: ${address} (${type})`);
+    // Wallet connection logic would go here
   };
   
   return {
@@ -61,5 +70,6 @@ export function useAuth() {
     isLoggingIn,
     login,
     logout,
+    connectWallet,
   };
 }
