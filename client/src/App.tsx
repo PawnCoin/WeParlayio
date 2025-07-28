@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense } from "react";
 import { Switch, Route } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
@@ -8,6 +8,10 @@ import { WebSocketHandler } from "@/lib/websocketHandler";
 import { initGA } from "@/lib/analytics";
 import { useAnalytics } from "@/hooks/use-analytics";
 import UserSatisfactionWidget from "@/components/UserSatisfactionWidget";
+import LoadingFallback from "@/components/routing/LoadingFallback";
+import { AdminRoutes, DevRoutes, SystemRoutes } from "@/components/routing/RouteGroups";
+
+// Core page imports
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import Tournaments from "@/pages/Tournaments";
@@ -16,58 +20,29 @@ import SocialBetting from "@/pages/SocialBetting";
 import Settings from "@/pages/Settings";
 import SecuritySettings from "@/pages/SecuritySettings";
 import HeadToHeadBetting from "@/pages/HeadToHeadBetting";
-import LoginEnhanced from "@/pages/LoginEnhanced";
-import AuthTestDemo from "@/pages/AuthTestDemo";
-import UserDirectory from "@/pages/UserDirectory";
-import SocialMediaBots from "@/pages/SocialMediaBots";
-
-
-import EmailMonitoring from "@/pages/EmailMonitoring";
-import VipFeatures from "./pages/VipFeatures";
-import WalletManagement from "./pages/WalletManagement";
-import EsportsHub from "./pages/EsportsHub";
-import Trivia from "@/pages/Trivia";
-import BettingExperience from "@/pages/BettingExperience"; // New enhanced betting page
-import SportPage from "@/pages/SportPage"; // New sport page
-import BettingDashboard from "@/pages/BettingDashboard"; // Professional sports betting dashboard
-import MobileLogin from "@/pages/MobileLogin"; // Login page with social login options
-import EnhancedFeatures from "@/pages/EnhancedFeatures"; // Advanced features page
-import ThemeSettingsPage from "@/pages/ThemeSettingsPage"; // Theme settings page
-// Removed duplicate AdminDashboard import
-// AdminLogin component removed - using AdminLoginTest instead
-import NotificationTest from "@/pages/NotificationTest"; // Email and SMS testing
-import PrivacyPolicy from "@/pages/PrivacyPolicy"; // Privacy policy page for social login requirements
-import TermsOfService from "@/pages/TermsOfService"; // Terms of service page for social login requirements
-import SecurityInfo from "@/pages/SecurityInfo"; // Security information page showing our protection measures
-import Support from "@/pages/Support"; // Automated support system
-import CryptoInformation from "@/pages/CryptoInformation"; // Cryptocurrency information and guides
-// SMS functionality consolidated into Head-to-Head Betting
-import UserProfileBanking from "@/pages/UserProfileBanking"; // Complete user profile with integrated banking
-import MyBets from "@/pages/MyBets"; // User betting history and tracking
-import WeParlayCash from "@/pages/WeParlayCash"; // WeParlay Cash hub and management
-import BettingManager from "@/pages/BettingManager";
-import PaymentDemo from "@/pages/PaymentDemo";
-import WalletTest from "@/pages/WalletTest";
-import UserProfilePage from "@/pages/UserProfilePage";
-import FantasySportsEnhanced from "@/pages/FantasySportsEnhanced";
-import GamingIntegration from "@/pages/GamingIntegration";
-import SocialHub from "@/pages/SocialHub";
-import BlockchainPerformance from "@/pages/BlockchainPerformance";
-import WalletTutorial from "@/pages/WalletTutorial";
-import StreamingRecommendations from "@/pages/StreamingRecommendations";
-import SocialSharing from "@/pages/SocialSharing";
-import LiveStreaming from "@/pages/LiveStreaming";
-import FantasyFootball from "@/pages/FantasyFootball";
-import YahooFantasyFootball from "@/pages/YahooFantasyFootball";
-import FantasySportsHub from "@/pages/FantasySportsHub";
-import FantasyAnalyticsDashboard from "@/pages/FantasyAnalyticsDashboard";
-import TierComparison from "@/pages/TierComparison";
-import SMSOptIn from "@/pages/SMSOptIn";
-import PermissionDemo from "@/pages/PermissionDemo";
 import AuthenticationHub from "@/pages/AuthenticationHub";
 import UserProfile from "@/pages/UserProfile";
-import TokenCleanupTest from "@/pages/TokenCleanupTest";
+import EsportsHub from "@/pages/EsportsHub";
+import SportPage from "@/pages/SportPage";
+import BettingDashboard from "@/pages/BettingDashboard";
+import UnifiedBettingHub from "@/pages/UnifiedBettingHub";
+import UnifiedSports from "@/pages/UnifiedSports";
+import Odds from "@/pages/Odds";
+import Parlays from "@/pages/Parlays";
+import BettingAcademy from "@/pages/BettingAcademy";
+import LiveHeatmap from "@/pages/LiveHeatmap";
+import MyBets from "@/pages/MyBets";
+import VIPDashboard from "@/pages/VIPDashboard";
+import BankingSystem from "@/pages/BankingSystem";
+import CryptoWallet from "@/pages/CryptoWallet";
+import LiveBetting from "@/pages/LiveBetting";
+import UpgradeTier from "@/pages/UpgradeTier";
+import Support from "@/pages/Support";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import TermsOfService from "@/pages/TermsOfService";
+import SecurityInfo from "@/pages/SecurityInfo";
 
+// Layout and context imports
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
 import MobileVoiceBetting from "@/components/mobile/MobileVoiceBetting";
@@ -77,59 +52,26 @@ import { BetSlipProvider } from "./contexts/BetSlipContext";
 import { OnboardingProvider, useOnboarding } from "./contexts/OnboardingContext";
 import { BettingProvider } from "./contexts/BettingContext";
 import InteractiveOnboardingWizard from "./components/onboarding/InteractiveOnboardingWizard";
-import OnboardingDemo from "@/pages/OnboardingDemo";
-import IPTVPlayer from "@/pages/IPTVPlayer";
-import UnifiedBettingHub from "@/pages/UnifiedBettingHub";
-
-import UnifiedSports from "@/pages/UnifiedSports";
-import Odds from "@/pages/Odds";
-import Parlays from "@/pages/Parlays";
-import BettingAcademy from "@/pages/BettingAcademy";
-import LiveHeatmap from "@/pages/LiveHeatmap";
-import LiveBettingEnhanced from "@/pages/LiveBettingEnhanced";
 import ErrorBoundary from "./components/ErrorBoundary";
-import ThemeColorManager from "@/pages/ThemeColorManager";
-import SignUpEnhanced from "@/pages/SignUpEnhanced";
 
-import BettingChallenges from './components/betting/BettingChallenges';
-import SiteNavigation from './pages/SiteNavigation';
-import AdminVerificationDashboard from './components/AdminVerificationDashboard';
-import PageStatusChecker from './pages/PageStatusChecker';
-import AdminDashboard from "@/pages/AdminDashboard";
+// Lazy load less critical pages
+const FantasySportsHub = React.lazy(() => import("@/pages/FantasySportsHub"));
+const FantasyFootball = React.lazy(() => import("@/pages/FantasyFootball"));
+const LiveStreaming = React.lazy(() => import("@/pages/LiveStreaming"));
+const Trivia = React.lazy(() => import("@/pages/Trivia"));
+const TierComparison = React.lazy(() => import("@/pages/TierComparison"));
+const WeParlayCash = React.lazy(() => import("@/pages/WeParlayCash"));
+const CryptoInformation = React.lazy(() => import("@/pages/CryptoInformation"));
+const IPTVStreaming = React.lazy(() => import("@/pages/IPTVStreaming"));
+const UserAnalytics = React.lazy(() => import("@/pages/UserAnalytics"));
+const ThemeSettingsPage = React.lazy(() => import("@/pages/ThemeSettingsPage"));
+const PaymentCheckout = React.lazy(() => import("@/pages/PaymentCheckout"));
+const CryptoCheckout = React.lazy(() => import("@/pages/CryptoCheckout"));
+const TierUpgradeSuccess = React.lazy(() => import("@/pages/TierUpgradeSuccess"));
 
-// Import admin components
-import AdminBypass from "@/pages/AdminBypass";
-import OwnerAccess from "@/pages/OwnerAccess";
-import ManageUsers from "@/pages/admin/ManageUsers";
-import FinancialOverview from "@/pages/admin/FinancialOverview";
-import Analytics from "@/pages/admin/Analytics";
-import SimplePlatformSettings from "@/pages/admin/SimplePlatformSettings";
-import VisualComponentEditorPage from "./pages/admin/VisualComponentEditor";
-import NotificationManagement from "@/pages/system/NotificationManagement";
-import TransactionManagement from "@/pages/system/TransactionManagement";
-import PayoutManagement from "@/pages/system/PayoutManagement";
-import SystemLogs from "@/pages/system/SystemLogs";
-import ApiStatus from "@/pages/system/ApiStatus";
-import SystemHealth from "@/pages/system/SystemHealth";
-import UnifiedGaming from "@/pages/system/UnifiedGaming";
-import SocialMediaDashboard from "@/pages/system/SocialMediaDashboard";
-import LiveSportsStreaming from "@/pages/system/LiveSportsStreaming";
-import VIPDashboard from "@/pages/VIPDashboard";
-import BankingSystem from "@/pages/BankingSystem";
-import CompleteBettingSystem from "@/pages/CompleteBettingSystem";
-import MultiCurrencyBetting from "@/pages/MultiCurrencyBetting";
-import UpgradeTier from "@/pages/UpgradeTier";
-import PaymentCheckout from "@/pages/PaymentCheckout";
-import CryptoCheckout from "@/pages/CryptoCheckout";
-import TierUpgradeSuccess from "@/pages/TierUpgradeSuccess";
-import CryptoWallet from "@/pages/CryptoWallet";
-import CryptoBetting from "@/pages/CryptoBetting";
-import TwilioOptInDemo from "@/pages/TwilioOptInDemo";
-import LiveBetting from "@/pages/LiveBetting";
-import UserAnalytics from "@/pages/UserAnalytics";
-import IPTVStreaming from "@/pages/IPTVStreaming";
-
-import { lazy } from 'react';
+// Development/Testing imports (conditional)
+const TokenCleanupTest = React.lazy(() => import("@/pages/TokenCleanupTest"));
+const NotificationTest = React.lazy(() => import("@/pages/NotificationTest"));
 
 function Router() {
   // Track page views when routes change
@@ -137,6 +79,14 @@ function Router() {
 
   return (
     <Switch>
+      {/* Public Routes */}
+      <Route path="/" component={Home} />
+      
+      {/* Authentication Routes */}
+      <Route path="/auth" component={AuthenticationHub} />
+      <Route path="/login" component={AuthenticationHub} />
+      <Route path="/signup" component={AuthenticationHub} />
+      
       {/* Core Betting Routes */}
       <Route path="/betting-hub" component={UnifiedBettingHub} />
       <Route path="/betting-dashboard" component={BettingDashboard} />
@@ -148,109 +98,46 @@ function Router() {
       <Route path="/results" component={Results} />
       <Route path="/my-bets" component={MyBets} />
       
-      {/* VIP Features */}
-      <Route path="/vip" component={VIPDashboard} />
-      <Route path="/banking" component={BankingSystem} />
-      <Route path="/crypto-wallet" component={CryptoWallet} />
-      <Route path="/live-streaming" component={LiveStreaming} />
-
       {/* Sports & Gaming */}
       <Route path="/sport/:sportKey" component={SportPage} />
       <Route path="/sports/:sportKey" component={SportPage} />
       <Route path="/sports" component={UnifiedSports} />
-      <Route path="/gaming" component={UnifiedGaming} />
       <Route path="/esports-hub" component={EsportsHub} />
-      <Route path="/betting-challenges" component={BettingChallenges} />
       <Route path="/tournaments" component={Tournaments} />
 
-      {/* Fantasy Sports */}
-      <Route path="/fantasy" component={FantasySportsHub} />
-      <Route path="/fantasy-football" component={FantasyFootball} />
-      <Route path="/yahoo-fantasy" component={YahooFantasyFootball} />
-
-      {/* Social Features */}
-      <Route path="/social" component={SocialBetting} />
-      <Route path="/social-betting" component={SocialBetting} />
-      <Route path="/head-to-head" component={HeadToHeadBetting} />
-
-      {/* Streaming */}
-      <Route path="/iptv" component={IPTVStreaming} />
-      
-      {/* Utilities */}
-      <Route path="/tier-comparison" component={TierComparison} />
-      <Route path="/sms-opt-in" component={SMSOptIn} />
-      <Route path="/trivia" component={Trivia} />
-      <Route path="/wallet-tutorial" component={WalletTutorial} />
-      <Route path="/permission-demo" component={PermissionDemo} />
-
-      {/* Enhanced Features */}
-      <Route path="/enhanced-features" component={EnhancedFeatures} />
-
-      {/* VIP Features */}
-      <Route path="/vip" component={VipFeatures} />
-      <Route path="/vip-features" component={VipFeatures} />
-
-      {/* WeParlay Cash */}
-      <Route path="/weparlay-cash" component={WeParlayCash} />
-
-      {/* Financial Management - Clear Separation */}
+      {/* VIP Features (Single route per feature) */}
+      <Route path="/vip" component={VIPDashboard} />
       <Route path="/banking" component={BankingSystem} />
       <Route path="/crypto-wallet" component={CryptoWallet} />
-      <Route path="/wallet-management-enhancement" component={CryptoWallet} />
-      <Route path="/wallet-test" component={WalletTest} />
-      <Route path="/user-profile-banking" component={UserProfileBanking} />
-      <Route path="/user-profile" component={UserProfile} />
-      <Route path="/user-profile-page" component={UserProfile} />
-      <Route path="/profile" component={UserProfile} />
-
-      {/* Payment & Demo */}
-      <Route path="/payment-demo" component={PaymentDemo} />
-      <Route path="/payment-checkout" component={PaymentCheckout} />
-      <Route path="/crypto-checkout" component={CryptoCheckout} />
-      <Route path="/tier-upgrade-success" component={TierUpgradeSuccess} />
-      <Route path="/onboarding-demo" component={OnboardingDemo} />
-      <Route path="/notification-test" component={NotificationTest} />
-      <Route path="/sms-challenge" component={HeadToHeadBetting} />
-      <Route path="/sms-center" component={HeadToHeadBetting} />
-
-      {/* Academy */}
-      <Route path="/betting-academy" component={BettingAcademy} />
-
-      {/* Analytics */}
-      <Route path="/analytics" component={UserAnalytics} />
-      <Route path="/user-analytics" component={UserAnalytics} />
       
-      {/* Settings */}
+      {/* Social Features */}
+      <Route path="/social" component={SocialBetting} />
+      <Route path="/head-to-head" component={HeadToHeadBetting} />
+
+      {/* User Profile & Settings */}
+      <Route path="/profile" component={UserProfile} />
       <Route path="/settings" component={Settings} />
       <Route path="/security-settings" component={SecuritySettings} />
-      <Route path="/theme-settings" component={ThemeSettingsPage} />
       <Route path="/upgrade-tier" component={UpgradeTier} />
-      <Route path="/theme-color-manager" component={ThemeColorManager} />
 
-      {/* System Management Routes */}
-      <Route path="/platform-settings" component={SimplePlatformSettings} />
-      <Route path="/security" component={SecuritySettings} />
-      <Route path="/notifications" component={NotificationManagement} />
-      <Route path="/transactions" component={TransactionManagement} />
-      <Route path="/payouts" component={PayoutManagement} />
-      <Route path="/logs" component={SystemLogs} />
-      <Route path="/api-status" component={ApiStatus} />
-      <Route path="/system/api-status" component={ApiStatus} />
-      <Route path="/system-health" component={SystemHealth} />
-      <Route path="/system/system-health" component={SystemHealth} />
-      <Route path="/unified-gaming" component={UnifiedGaming} />
-      <Route path="/system/unified-gaming" component={UnifiedGaming} />
-
-      <Route path="/live-sports-streaming" component={LiveSportsStreaming} />
-      <Route path="/system/live-sports-streaming" component={LiveSportsStreaming} />
-
-      {/* Enhanced Multi-Currency Betting */}
-      <Route path="/multi-currency-betting" component={MultiCurrencyBetting} />
-
-      {/* Crypto */}
-      <Route path="/crypto-info" component={CryptoInformation} />
-      <Route path="/crypto-guide" component={CryptoInformation} />
-      <Route path="/crypto-information" component={CryptoInformation} />
+      {/* Lazy-loaded Feature Pages */}
+      <Suspense fallback={<LoadingFallback />}>
+        <Route path="/fantasy" component={FantasySportsHub} />
+        <Route path="/fantasy-football" component={FantasyFootball} />
+        <Route path="/live-streaming" component={LiveStreaming} />
+        <Route path="/iptv" component={IPTVStreaming} />
+        <Route path="/trivia" component={Trivia} />
+        <Route path="/tier-comparison" component={TierComparison} />
+        <Route path="/weparlay-cash" component={WeParlayCash} />
+        <Route path="/crypto-info" component={CryptoInformation} />
+        <Route path="/analytics" component={UserAnalytics} />
+        <Route path="/theme-settings" component={ThemeSettingsPage} />
+        
+        {/* Payment Routes */}
+        <Route path="/payment-checkout" component={PaymentCheckout} />
+        <Route path="/crypto-checkout" component={CryptoCheckout} />
+        <Route path="/tier-upgrade-success" component={TierUpgradeSuccess} />
+      </Suspense>
 
       {/* Support & Legal */}
       <Route path="/support" component={Support} />
@@ -258,49 +145,25 @@ function Router() {
       <Route path="/terms-of-service" component={TermsOfService} />
       <Route path="/security-info" component={SecurityInfo} />
 
-      {/* Authentication */}
-      <Route path="/auth" component={AuthenticationHub} />
-      <Route path="/login" component={AuthenticationHub} />
-      <Route path="/signup" component={AuthenticationHub} />
-      <Route path="/login-enhanced" component={LoginEnhanced} />
-      <Route path="/mobile-login" component={MobileLogin} />
-      <Route path="/auth-test" component={AuthTestDemo} />
-      <Route path="/auth-test-demo" component={AuthTestDemo} />
-      <Route path="/admin-login" component={lazy(() => import("@/pages/AdminLoginTest"))} />
-      <Route path="/admin-login-test" component={lazy(() => import("@/pages/AdminLoginTest"))} />
-      <Route path="/admin-login-quick-test" component={lazy(() => import("@/pages/AdminLoginTest"))} />
-      <Route path="/token-cleanup-test" component={TokenCleanupTest} />
-      <Route path="/community" component={UserDirectory} />
-      <Route path="/users" component={UserDirectory} />
-      <Route path="/social-media-bots" component={SocialMediaBots} />
+      {/* Admin Routes (Protected) */}
+      <AdminRoutes />
+      
+      {/* System Routes (Admin Protected) */}
+      <SystemRoutes />
+      
+      {/* Development Routes (Dev Environment Only) */}
+      <DevRoutes />
+      
+      {/* Development/Testing Routes (Only in Dev) */}
+      {import.meta.env.DEV && (
+        <Suspense fallback={<LoadingFallback />}>
+          <Route path="/token-cleanup-test" component={TokenCleanupTest} />
+          <Route path="/notification-test" component={NotificationTest} />
+        </Suspense>
+      )}
 
-      <Route path="/email-monitoring" component={EmailMonitoring} />
-
-      {/* Authentication Routes */}
-      <Route path="/signup" component={SignUpEnhanced} />
-      <Route path="/signup-enhanced" component={SignUpEnhanced} />
-
-      {/* Admin Routes - Direct access without authentication */}
-      <Route path="/admin" component={AdminDashboard} />
-      <Route path="/admin-dashboard" component={AdminDashboard} />
-      <Route path="/admin/manage-users" component={ManageUsers} />
-      <Route path="/admin/financial-overview" component={FinancialOverview} />
-      <Route path="/admin/analytics" component={Analytics} />
-      <Route path="/admin/platform-settings" component={SimplePlatformSettings} />
-      <Route path="/admin/visual-component-editor" component={VisualComponentEditorPage} />
-      <Route path="/admin/social-media-dashboard" component={SocialMediaDashboard} />
-      <Route path="/admin/user-analytics" component={lazy(() => import("./pages/admin/UserAnalytics"))} />
-      <Route path="/admin/verification" component={AdminVerificationDashboard} />
-      <Route path="/force-admin" component={AdminDashboard} />
-      <Route path="/owner-access" component={OwnerAccess} />
-      <Route path="/api-test" component={lazy(() => import("./pages/ApiTestPage"))} />
-
-      {/* Default route */}
-      <Route path="/" component={Home} />
-       <Route path="/site-navigation" component={SiteNavigation} />
-            <Route path="/page-status-checker" component={PageStatusChecker} />
-        <Route path="/functionality-test" component={PageStatusChecker} />
-      <Route component={NotFound} />
+      {/* Catch-all 404 Route - MUST BE LAST */}
+      <Route path="*" component={NotFound} />
     </Switch>
   );
 }
@@ -339,14 +202,22 @@ function App() {
   React.useEffect(() => {
     // Initialize WebSocket error handler
     WebSocketHandler.getInstance().preventUnhandledRejection();
-    console.log('🔌 WebSocket disabled in development environment');
     
-    // Verify required environment variable is present
+    // Only log in development
+    if (import.meta.env.DEV) {
+      console.log('🔌 WebSocket disabled in development environment');
+    }
+    
+    // Verify required environment variable is present (only warn in dev)
     if (!import.meta.env.VITE_GA_MEASUREMENT_ID) {
-      console.warn('Missing required Google Analytics key: VITE_GA_MEASUREMENT_ID');
+      if (import.meta.env.DEV) {
+        console.warn('Missing Google Analytics key: VITE_GA_MEASUREMENT_ID');
+      }
     } else {
       initGA();
-      console.log('🚀 WeParlay Analytics initialized!');
+      if (import.meta.env.DEV) {
+        console.log('🚀 WeParlay Analytics initialized!');
+      }
     }
   }, []);
 
