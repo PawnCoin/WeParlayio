@@ -7,6 +7,9 @@ import websocketPollingRoutes from './routes/websocketPollingRoutes';
 import apiMonitoringRoutes from './routes/apiMonitoringRoutes';
 import apiHealthRoutes from './routes/apiHealthRoutes';
 import systemHealthRoutes from './routes/systemHealthRoutes';
+import securityRoutes from './routes/securityRoutes';
+import { logger } from './services/enhancedLoggingService';
+import { performanceMonitor } from './services/performanceMonitoringService';
 
 // Security middleware
 import helmet from 'helmet';
@@ -127,6 +130,16 @@ app.use((req, res, next) => {
   app.use('/api/monitoring', apiMonitoringRoutes);
   app.use('/api/health', apiHealthRoutes);
   app.use('/api/system', systemHealthRoutes);
+  app.use('/api/security', securityRoutes);
+
+  // Add performance monitoring middleware
+  app.use(performanceMonitor.createPerformanceMiddleware());
+
+  // Initialize enhanced logging
+  logger.info('WeParlay security services initialized', {
+    timestamp: new Date().toISOString(),
+    features: ['2FA', 'Security Monitoring', 'Performance Tracking', 'Dependency Scanning']
+  });
 
   // Global unhandled promise rejection handler
   process.on('unhandledRejection', (reason, promise) => {
