@@ -154,11 +154,11 @@ router.post('/login', async (req, res) => {
       message: isAdmin ? 'Admin login successful' : 'Login successful',
       user: {
         ...userResponse,
-        isAdmin: isAdmin,
-        role: isAdmin ? 'admin' : 'user'
+        isAdmin: isAdmin || user.isAdmin || false,
+        role: isAdmin ? 'admin' : (user.role || 'user')
       },
       token,
-      isAdmin
+      isAdmin: isAdmin || user.isAdmin || false
     });
 
   } catch (error) {
@@ -407,32 +407,28 @@ router.post('/admin-reset-password', async (req, res) => {
   }
 });
 
-// Get current user info endpoint - checks for admin emails
+// Get current user info endpoint - returns mock user with proper admin status
 router.get('/user', async (req, res) => {
   try {
-    // Check if user is logged in with admin credentials by checking local storage/session
-    // For demo purposes, we'll simulate checking admin status
-    
-    // Check for admin emails in session/cookie (simplified check)
+    // Get stored user info from session/auth
+    const storedEmail = req.headers['x-user-email'] || req.query.email;
     const adminEmails = ['support@weparlay.io', 'admin@weparlay.io', 'weparlay@admin.com'];
     
-    // This is a simplified check - in production you'd verify JWT token
-    const userEmail = 'user@weparlay.io'; // Default demo user
-    let isAdmin = false;
+    // Check if this is an admin user based on email
+    const isAdminUser = storedEmail && adminEmails.includes(storedEmail);
     
-    // Check if current session has admin privileges
-    // In a real app, this would decode JWT token and check user role
+    // For demo purposes, return appropriate user based on admin status
     const mockUser = {
-      id: 'dev-user-001',
-      email: userEmail,
-      username: 'devuser',
+      id: isAdminUser ? 'admin-001' : 'dev-user-001',
+      email: storedEmail || 'user@weparlay.io',
+      username: isAdminUser ? 'WeParlay Admin' : 'devuser',
       firstName: 'WeParlay',
-      lastName: 'User',
-      balance: 1000,
-      tier: 'bronze',
-      subscriptionTier: 'wood',
-      isAdmin: isAdmin,
-      role: isAdmin ? 'admin' : 'user',
+      lastName: isAdminUser ? 'Admin' : 'User',
+      balance: isAdminUser ? 1000000 : 1000,
+      tier: isAdminUser ? 'platinum' : 'bronze',
+      subscriptionTier: isAdminUser ? 'platinum' : 'wood',
+      isAdmin: isAdminUser,
+      role: isAdminUser ? 'admin' : 'user',
       profileImageUrl: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150'
     };
 

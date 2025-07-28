@@ -49,10 +49,11 @@ export function useAuth() {
       
       // Check if this is an admin login based on email
       const adminEmails = ['support@weparlay.io', 'admin@weparlay.io', 'weparlay@admin.com'];
-      const isAdminLogin = adminEmails.includes(credentials.username);
+      const loginEmail = credentials.username.includes('@') ? credentials.username : `${credentials.username}@weparlay.io`;
+      const isAdminLogin = adminEmails.includes(loginEmail);
       
       // Update user object with admin status if it's an admin login
-      if (isAdminLogin) {
+      if (isAdminLogin || data.isAdmin) {
         user.isAdmin = true;
         user.role = 'admin';
       }
@@ -60,8 +61,9 @@ export function useAuth() {
       setCurrentUser(user);
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("weparlay-logged-in", "true");
-      localStorage.setItem("weparlay-user-email", user.email);
-      localStorage.setItem("weparlay-is-admin", isAdminLogin ? "true" : "false");
+      localStorage.setItem("weparlay-user-email", user.email || loginEmail);
+      localStorage.setItem("weparlay-is-admin", (isAdminLogin || data.isAdmin) ? "true" : "false");
+      localStorage.setItem("weparlay-admin-email", isAdminLogin ? loginEmail : "");
       
       toast({
         title: "Logged in successfully",

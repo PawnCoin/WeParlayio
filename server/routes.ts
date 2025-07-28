@@ -271,44 +271,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/auth/user', async (req: any, res) => {
-    try {
-      const userId = req.user?.claims?.sub || req.headers['x-user-id'] || 'dev-user-001';
-      
-      let user = await storage.getUser(userId);
-      
-      if (!user) {
-        user = await storage.createUser({
-          id: userId,
-          email: 'user@weparlay.io',
-          username: 'WeParlay_User',
-          firstName: 'WeParlay',
-          lastName: 'User',
-          balance: 1000,
-          tier: 'bronze',
-          subscriptionTier: 'wood',
-          createdAt: new Date(),
-          updatedAt: new Date()
-        });
-      }
-      
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.json({
-        id: 'dev-user-001',
-        email: 'user@weparlay.io',
-        username: 'WeParlay_User',
-        firstName: 'WeParlay',
-        lastName: 'User',
-        balance: 1000,
-        tier: 'bronze',
-        subscriptionTier: 'wood',
-        isAdmin: false,
-        role: 'user'
-      });
-    }
-  });
+
   
   // Register Yahoo Fantasy routes
   app.use('/api/yahoo', yahooRouter);
