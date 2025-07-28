@@ -11,19 +11,25 @@ import { useToast } from "@/hooks/use-toast";
 import { User, Mail, Phone, Calendar, Shield, Crown, Star, Settings, Bell, Lock, CreditCard } from "lucide-react";
 import PermissionBadge from "@/components/auth/PermissionBadge";
 import NotificationCenter from "@/components/notifications/NotificationCenter";
+import ProfilePictureUpload from "@/components/user/ProfilePictureUpload";
 
 const UserProfile: React.FC = () => {
   const { user, logout } = useAuth();
   const { toast } = useToast();
+  
+  // Type assertion for user object
+  const currentUser = user as any || {};
 
   const [profileData, setProfileData] = useState({
-    firstName: user?.firstName || '',
-    lastName: user?.lastName || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
-    dateOfBirth: user?.dateOfBirth || '',
-    bio: user?.bio || ''
+    firstName: currentUser.firstName || '',
+    lastName: currentUser.lastName || '',
+    email: currentUser.email || '',
+    phone: currentUser.phone || '',
+    dateOfBirth: currentUser.dateOfBirth || '',
+    bio: currentUser.bio || ''
   });
+  
+  const [profileImageUrl, setProfileImageUrl] = useState(currentUser.profileImageUrl || '');
 
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -75,35 +81,34 @@ const UserProfile: React.FC = () => {
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center gap-6">
-            <Avatar className="h-24 w-24">
-              <AvatarImage src={user.profileImageUrl || "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150"} />
-              <AvatarFallback className="text-2xl">
-                {user.firstName?.charAt(0) || user.email?.charAt(0) || "U"}
-              </AvatarFallback>
-            </Avatar>
+            <ProfilePictureUpload 
+              currentImageUrl={profileImageUrl}
+              onImageUpdate={setProfileImageUrl}
+              className="flex-shrink-0"
+            />
             
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-3xl font-bold">
-                  {user.firstName} {user.lastName}
+                  {currentUser.firstName} {currentUser.lastName}
                 </h1>
                 <PermissionBadge />
               </div>
               
-              <p className="text-muted-foreground mb-3">@{user.username}</p>
+              <p className="text-muted-foreground mb-3">@{currentUser.username}</p>
               
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <CreditCard className="h-4 w-4 text-green-600" />
-                  <span className="font-semibold">${user.balance?.toLocaleString() || '0'}</span>
+                  <span className="font-semibold">${currentUser.balance?.toLocaleString() || '0'}</span>
                 </div>
                 
                 <Badge variant="secondary" className="flex items-center gap-1">
                   <Star className="h-3 w-3" />
-                  {user.tier?.charAt(0).toUpperCase() + user.tier?.slice(1) || 'Bronze'} Tier
+                  {currentUser.tier?.charAt(0).toUpperCase() + currentUser.tier?.slice(1) || 'Bronze'} Tier
                 </Badge>
                 
-                {user.isAdmin && (
+                {currentUser.isAdmin && (
                   <Badge variant="destructive" className="flex items-center gap-1">
                     <Shield className="h-3 w-3" />
                     Administrator

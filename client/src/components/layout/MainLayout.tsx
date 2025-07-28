@@ -19,7 +19,7 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Menu, Wallet, Coins, Shield, ArrowRightLeft, History, CreditCard, Crown, Briefcase, Settings, Users, User } from "lucide-react";
+import { ChevronDown, Menu, Wallet, Coins, Shield, ArrowRightLeft, History, CreditCard, Crown, Briefcase, Settings, Users, User, Camera, LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Logo from "@/components/WeParlay/Logo";
 import WalletConnectionOptimized from "@/components/wallet/WalletConnectionOptimized";
@@ -40,6 +40,14 @@ interface MainLayoutProps {
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [location] = useLocation();
   const { user, isAuthenticated } = useAuth();
+  
+  // Handle missing user properties with proper defaults
+  const currentUser = user as any || {};
+  const userId = currentUser.id || 'guest';
+  const userName = currentUser.firstName || currentUser.email?.split('@')[0] || 'User';
+  const userInitial = currentUser.firstName?.charAt(0) || currentUser.email?.charAt(0) || "W";
+  const userBalance = currentUser.balance || 0;
+  const userProfileImage = currentUser.profileImageUrl;
   
   // Simple logout function
   const logout = () => {
@@ -68,16 +76,15 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
   // Initialize WebSocket connection for real-time updates
   const {
-    isConnected = false,
-    connectionStatus = 'disconnected'
+    isConnected = false
   } = useWebSocket({
-    autoConnect: isAuthenticated,
+    onConnect: () => console.log('WebSocket connected'),
     reconnectAttempts: 5,
     reconnectInterval: 3000
   }) || {};
 
   // Fetch WeParlay Cash balance
-  const { data: cashBalance } = useQuery({
+  const { data: cashBalance = {} as any } = useQuery({
     queryKey: ['/api/user/cash-balance'],
     enabled: isAuthenticated,
   });
@@ -176,8 +183,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               <div className="hidden md:flex items-center space-x-2">
                 {/* WebSocket Connection Status */}
                 <div className={`w-2 h-2 rounded-full ${
-                  isConnected ? 'bg-green-500' : connectionStatus === 'connecting' ? 'bg-yellow-500' : 'bg-red-500'
-                }`} title={`Real-time updates: ${isConnected ? 'Connected' : connectionStatus}`} />
+                  isConnected ? 'bg-green-500' : 'bg-red-500'
+                }`} title={`Real-time updates: ${isConnected ? 'Connected' : 'Disconnected'}`} />
 
                 <CurrencyModeToggle 
                   variant="compact" 
@@ -218,12 +225,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                           {selectedCurrency === 'WEPARLAY' ? (
                             <>
                               <span className="text-blue-200 text-xs mr-1 flex-shrink-0">🎮</span>
-                              <span className="text-sm font-medium truncate">{(cashBalance?.balance || user?.weplayTokenBalance || 10000).toLocaleString()} WPC</span>
+                              <span className="text-sm font-medium truncate">{(cashBalance.balance || currentUser.weplayTokenBalance || 10000).toLocaleString()} WPC</span>
                             </>
                           ) : (
                             <>
                               <span className="text-green-200 text-xs mr-1 flex-shrink-0">💰</span>
-                              <span className="text-sm font-medium">${user?.balance?.toFixed(2) || "0.00"}</span>
+                              <span className="text-sm font-medium">${userBalance.toFixed(2)}</span>
                             </>
                           )}
                         </div>
@@ -268,43 +275,50 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   </DropdownMenu>
 
                   {/* Unified Notifications - Combined Betting & Wallet */}
-                  <BetNotifications userId={user?.id} showWalletNotifications={true} />
+                  <BetNotifications userId={userId} />
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="flex items-center space-x-2">
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={user?.profileImageUrl || "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150"} />
-                          <AvatarFallback>{user?.firstName?.charAt(0) || user?.email?.charAt(0) || "W"}</AvatarFallback>
+                          {/* Only show profile image if user is authenticated */}
+                          <AvatarImage src={isAuthenticated ? userProfileImage : undefined} />
+                          <AvatarFallback>{userInitial}</AvatarFallback>
                         </Avatar>
                         <div className="hidden md:block">
-                          <span className="block">{user?.firstName || user?.email?.split('@')[0]}</span>
-                          <PermissionBadge className="mt-1" />
+                          <span className="block">{userName}</span>
+                          {isAuthenticated && <PermissionBadge className="mt-1" />}
                         </div>
                         <ChevronDown className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem asChild>
-                        <Link href="/profile">Profile</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/my-bets">My Bets</Link>
-                      </DropdownMenuItem>
                       {/* Only show these options to authenticated users */}
-                      {isAuthenticated && (
+                      {isAuthenticated ? (
                         <>
                           <DropdownMenuItem asChild>
                             <Link href="/profile" className="flex items-center">
                               <User className="h-4 w-4 mr-2" />
-                              My Profile
+                              Profile
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
-                            <Link href="/settings">Settings</Link>
+                            <Link href="/my-bets" className="flex items-center">
+                              <History className="h-4 w-4 mr-2" />
+                              My Bets
+                            </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
-                            <Link href="/security-settings">Security</Link>
+                            <Link href="/settings" className="flex items-center">
+                              <Settings className="h-4 w-4 mr-2" />
+                              Settings
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href="/security-settings" className="flex items-center">
+                              <Shield className="h-4 w-4 mr-2" />
+                              Security
+                            </Link>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem asChild>
@@ -321,6 +335,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                           </DropdownMenuItem>
                           {/* Admin only features using PermissionGate */}
                           <PermissionGate adminOnly>
+                            <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
                               <Link href="/facebook-bot-manager" className="flex items-center">
                                 <span className="h-4 w-4 mr-2 text-blue-600">🤖</span>
@@ -340,20 +355,34 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                               </Link>
                             </DropdownMenuItem>
                           </PermissionGate>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            onClick={(e) => {
+                              e.preventDefault();
+                              logout();
+                            }}
+                            className="cursor-pointer flex items-center"
+                          >
+                            <LogOut className="h-4 w-4 mr-2" />
+                            Logout
+                          </DropdownMenuItem>
+                        </>
+                      ) : (
+                        <>
+                          <DropdownMenuItem asChild>
+                            <Link href="/auth" className="flex items-center">
+                              <User className="h-4 w-4 mr-2" />
+                              Login
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href="/auth" className="flex items-center">
+                              <User className="h-4 w-4 mr-2" />
+                              Sign Up
+                            </Link>
+                          </DropdownMenuItem>
                         </>
                       )}
-
-
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem 
-                        onClick={(e) => {
-                          e.preventDefault();
-                          logout();
-                        }}
-                        className="cursor-pointer"
-                      >
-                        Logout
-                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </>

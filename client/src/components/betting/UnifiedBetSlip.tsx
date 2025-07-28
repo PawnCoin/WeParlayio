@@ -9,6 +9,7 @@ import {
   X,
   DollarSign
 } from 'lucide-react';
+import { useBetSlip } from '@/contexts/BetSlipContext';
 import CryptoBetSlip from './CryptoBetSlip';
 import PawnCoinIntegration from '@/components/crypto/PawnCoinIntegration';
 
@@ -22,12 +23,20 @@ interface Bet {
 }
 
 interface UnifiedBetSlipProps {
-  bets: Bet[];
-  onRemoveBet: (betId: string) => void;
-  onClearAll: () => void;
+  bets?: Bet[];
+  onRemoveBet?: (betId: string) => void;
+  onClearAll?: () => void;
 }
 
-export default function UnifiedBetSlip({ bets = [], onRemoveBet, onClearAll }: UnifiedBetSlipProps) {
+export default function UnifiedBetSlip({ bets: propBets, onRemoveBet: propOnRemoveBet, onClearAll: propOnClearAll }: UnifiedBetSlipProps = {}) {
+  // Use BetSlip context if props are not provided
+  const betSlipContext = useBetSlip?.() || {} as any;
+  const { bets: contextBets = [], removeBet, clearBetSlip } = betSlipContext;
+  
+  // Use props if provided, otherwise fall back to context
+  const bets = propBets || contextBets || [];
+  const onRemoveBet = propOnRemoveBet || removeBet || (() => {});
+  const onClearAll = propOnClearAll || clearBetSlip || (() => {});
   const [paymentMethod, setPaymentMethod] = useState<'crypto' | 'fiat' | 'pawncoin'>('crypto');
 
   if (!bets || bets.length === 0) {
@@ -94,7 +103,7 @@ export default function UnifiedBetSlip({ bets = [], onRemoveBet, onClearAll }: U
           <TabsContent value="crypto" className="mt-4">
             <div className="mt-[-16px]">
               <CryptoBetSlip 
-                bets={bets}
+                bets={bets as any}
                 onRemoveBet={onRemoveBet}
                 onClearAll={onClearAll}
               />
@@ -124,7 +133,7 @@ export default function UnifiedBetSlip({ bets = [], onRemoveBet, onClearAll }: U
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1">
                         <p className="text-white font-semibold text-sm">{bet.selection}</p>
-                        <p className="text-slate-400 text-xs">{bet.gameInfo}</p>
+                        <p className="text-slate-400 text-xs">{(bet as any).gameInfo || `${bet.betType} Bet`}</p>
                         <div className="flex items-center gap-2 mt-1">
                           <Badge variant="outline" className="border-green-500 text-green-400 text-xs">
                             {bet.odds > 0 ? `+${bet.odds}` : bet.odds}
