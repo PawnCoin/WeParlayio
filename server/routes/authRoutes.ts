@@ -424,41 +424,26 @@ router.get('/user', async (req, res) => {
     const adminEmails = ['support@weparlay.io', 'admin@weparlay.io', 'weparlay@admin.com'];
     const isAdminUser = adminEmails.includes(storedEmail);
     
-    // Try to get actual user from database first
-    let user;
+    // Get actual user from database only - no mock data
     try {
-      user = await storage.getUserByEmail(storedEmail);
-      if (user) {
-        // Remove password from response
-        const userResponse = { ...user };
-        delete userResponse.password;
-        
-        // Add admin status if applicable
-        userResponse.isAdmin = isAdminUser || user.isAdmin || false;
-        userResponse.role = isAdminUser ? 'admin' : (user.role || 'user');
-        
-        return res.json(userResponse);
+      const user = await storage.getUserByEmail(storedEmail);
+      if (!user) {
+        return res.status(401).json({ message: 'User not found' });
       }
+      
+      // Remove password from response
+      const userResponse = { ...user };
+      delete userResponse.password;
+      
+      // Add admin status if applicable
+      userResponse.isAdmin = isAdminUser || user.isAdmin || false;
+      userResponse.role = isAdminUser ? 'admin' : (user.role || 'user');
+      
+      return res.json(userResponse);
     } catch (dbError) {
-      console.log('User not found in database, using mock data');
+      console.error('Database error:', dbError);
+      return res.status(500).json({ message: 'Database error' });
     }
-    
-    // Fallback to mock user if not found in database
-    const mockUser = {
-      id: isAdminUser ? 'admin-001' : 'dev-user-001',
-      email: storedEmail,
-      username: isAdminUser ? 'WeParlay Admin' : storedEmail.split('@')[0],
-      firstName: isAdminUser ? 'WeParlay' : storedEmail.split('@')[0],
-      lastName: isAdminUser ? 'Admin' : 'User',
-      balance: isAdminUser ? 1000000 : 1000,
-      tier: isAdminUser ? 'platinum' : 'bronze',
-      subscriptionTier: isAdminUser ? 'platinum' : 'wood',
-      isAdmin: isAdminUser,
-      role: isAdminUser ? 'admin' : 'user',
-      profileImageUrl: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150'
-    };
-
-    res.json(mockUser);
   } catch (error) {
     console.error('Get user error:', error);
     res.status(500).json({ message: 'Failed to get user info' });
