@@ -53,6 +53,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   currentUser.isAdmin = isAdmin;
   currentUser.role = isAdmin ? 'admin' : (currentUser.role || 'user');
   
+  // Debug log to check admin status
+  console.log('Admin check:', {
+    userEmail: currentUser.email,
+    isAdmin,
+    localStorage: localStorage.getItem("weparlay-is-admin"),
+    userIsAdmin: currentUser.isAdmin
+  });
+  
   const userId = currentUser.id || 'guest';
   const userName = currentUser.firstName || currentUser.email?.split('@')[0] || 'User';
   const userInitial = currentUser.firstName?.charAt(0) || currentUser.email?.charAt(0) || "W";
@@ -346,7 +354,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                             </Link>
                           </DropdownMenuItem>
                           {/* Admin access for authenticated admin users */}
-                          {currentUser.isAdmin && (
+                          {(currentUser.isAdmin || isAdmin) && (
                             <>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem asChild>
