@@ -156,23 +156,23 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               </div>
             </div>
 
-            {/* Currency Mode Toggle & Wallet Access */}
-            <div className="hidden md:flex items-center space-x-2">
-              {/* WebSocket Connection Status */}
-              {isAuthenticated && (
+            {/* Currency Mode Toggle & Wallet Access - Only for authenticated users */}
+            {isAuthenticated && (
+              <div className="hidden md:flex items-center space-x-2">
+                {/* WebSocket Connection Status */}
                 <div className={`w-2 h-2 rounded-full ${
                   isConnected ? 'bg-green-500' : connectionStatus === 'connecting' ? 'bg-yellow-500' : 'bg-red-500'
                 }`} title={`Real-time updates: ${isConnected ? 'Connected' : connectionStatus}`} />
-              )}
 
-              <CurrencyModeToggle 
-                variant="compact" 
-                className="bg-black/20 p-2 rounded-md" 
-                onCurrencyChange={handleCurrencySwitch}
-              />
+                <CurrencyModeToggle 
+                  variant="compact" 
+                  className="bg-black/20 p-2 rounded-md" 
+                  onCurrencyChange={handleCurrencySwitch}
+                />
 
-              <WalletConnectionOptimized />
-            </div>
+                <WalletConnectionOptimized />
+              </div>
+            )}
 
             {/* User menu */}
             <div className="flex items-center space-x-4">
@@ -306,13 +306,22 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   </DropdownMenu>
                 </>
               ) : (
-                <WalletConnectionOptimized 
-                  onConnect={(walletData) => {
-                    console.log(`Connected wallet: ${walletData.address} (${walletData.type})`);
-                    // Connect the wallet using our authentication hook
-                    connectWallet(walletData.address, walletData.type);
-                  }}
-                />
+                <div className="flex items-center space-x-4">
+                  <Button 
+                    variant="outline" 
+                    className="text-white border-green-500 hover:bg-green-500/10"
+                    onClick={() => window.location.href = '/login'}
+                  >
+                    Login
+                  </Button>
+                  <Button 
+                    variant="default" 
+                    className="bg-green-600 hover:bg-green-700"
+                    onClick={() => window.location.href = '/register'}
+                  >
+                    Sign Up
+                  </Button>
+                </div>
               )}
 
               {/* Mobile menu button */}
