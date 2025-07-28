@@ -74,6 +74,8 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    console.log(`Login attempt: ${email}`);
+
     // Check for admin credentials first
     const adminCredentials = [
       { email: 'support@weparlay.io', password: 'Baysides3!' },
@@ -87,18 +89,22 @@ router.post('/login', async (req, res) => {
     let user;
     let isAdmin = false;
 
+    // Handle admin login
     if (adminCred && password === adminCred.password) {
-      // Admin login detected
+      console.log('Admin login detected');
       isAdmin = true;
+      
+      // Try to get existing admin user
       user = await storage.getUserByEmail(adminCred.email);
 
       // Create admin user if doesn't exist
       if (!user) {
+        console.log('Creating new admin user');
         const hashedPassword = await bcrypt.hash(adminCred.password, 12);
         const adminUserData = {
-          id: `admin-${email.split('@')[0]}-${Date.now()}`,
+          id: `admin-${Date.now()}`,
           email: adminCred.email,
-          username: email === 'support@weparlay.io' ? 'WeParlay Admin' : 'WeParlay Admin',
+          username: 'WeParlay Admin',
           firstName: 'WeParlay',
           lastName: 'Admin',
           role: 'admin',
@@ -111,9 +117,18 @@ router.post('/login', async (req, res) => {
           createdAt: new Date(),
         };
         user = await storage.createUser(adminUserData);
+        console.log('Admin user created successfully');
       }
+    } else if (adminCred) {
+      // Admin email but wrong password
+      console.log('Admin email with wrong password');
+      return res.status(401).json({ 
+        success: false,
+        message: 'Invalid admin credentials' 
+      });
     } else {
       // Regular user login
+      console.log('Regular user login attempt');
       user = await storage.getUserByEmail(email);
 
       if (!user) {
@@ -123,9 +138,15 @@ router.post('/login', async (req, res) => {
         });
       }
 
-      // Verify password
-      const isValidPassword = await bcrypt.compare(password, user.password);
+      // Verify password for regular users
+      if (!user.password) {
+        return res.status(401).json({ 
+          success: false,
+          message: 'Invalid credentials' 
+        });
+      }
 
+      const isValidPassword = await bcrypt.compare(password, user.password);
       if (!isValidPassword) {
         return res.status(401).json({ 
           success: false,

@@ -109,74 +109,16 @@ function generateFallbackOdds() {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Professional Authentication Routes
-  app.post('/api/auth/login', async (req: any, res) => {
-    try {
-      const { username, password } = req.body;
-      
-      // Mock authentication - in production, verify against database
-      if (username && password) {
-        const user = {
-          id: 'auth-user-' + Date.now(),
-          email: username.includes('@') ? username : `${username}@weparlay.io`,
-          username: username.includes('@') ? username.split('@')[0] : username,
-          firstName: 'WeParlay',
-          lastName: 'User',
-          balance: 1000,
-          tier: 'bronze',
-          subscriptionTier: 'wood',
-          isAdmin: username === 'admin',
-          role: username === 'admin' ? 'admin' : 'user',
-          profileImageUrl: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150'
-        };
-        
-        res.json({
-          success: true,
-          user,
-          token: 'mock-jwt-token-' + Date.now()
-        });
-      } else {
-        res.status(401).json({ error: 'Invalid credentials' });
-      }
-    } catch (error) {
-      res.status(500).json({ error: 'Login failed' });
-    }
-  });
+  // REMOVED - Conflicting login route causing admin authentication failures
+  // All authentication now handled by authRoutes.ts
 
-  app.post('/api/auth/register', async (req: any, res) => {
-    try {
-      const { username, email, firstName, lastName, password } = req.body;
-      
-      const user = {
-        id: 'reg-user-' + Date.now(),
-        email,
-        username,
-        firstName: firstName || 'New',
-        lastName: lastName || 'User',
-        balance: 1025, // $25 welcome bonus
-        tier: 'bronze',
-        subscriptionTier: 'wood',
-        isAdmin: false,
-        role: 'user',
-        profileImageUrl: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150'
-      };
-      
-      res.json({
-        success: true,
-        user,
-        token: 'mock-jwt-token-' + Date.now()
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Registration failed' });
-    }
-  });
+  // REMOVED - Conflicting register route causing auth conflicts
+  // All authentication now handled by authRoutes.ts
 
-  app.post('/api/auth/logout', async (req: any, res) => {
-    res.json({ success: true, message: 'Logged out successfully' });
-  });
-
-  // Mount auth routes with proper admin handling
+  // Mount auth routes FIRST to prevent conflicts
   app.use('/api/auth', authRoutes);
+
+  // Additional logout handled by authRoutes now
 
   // OWNER DIRECT ACCESS - No authentication required
   app.get('/api/owner-access', (req, res) => {
@@ -203,35 +145,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
-  // Complete Authentication System
-  app.post('/api/auth/register', async (req, res) => {
-    try {
-      const { email, username, password, firstName, lastName } = req.body;
-      
-      const newUser = await storage.createUser({
-        id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        email,
-        username,
-        firstName,
-        lastName,
-        balance: 1000,
-        weparlayCashBalance: 500,
-        tier: 'bronze',
-        subscriptionTier: 'wood',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      });
-      
-      res.json({
-        success: true,
-        user: newUser,
-        message: 'Account created successfully'
-      });
-    } catch (error) {
-      console.error('Registration error:', error);
-      res.status(400).json({ success: false, message: 'Registration failed' });
-    }
-  });
+  // REMOVED - Another conflicting register route
+  // All authentication handled by authRoutes.ts
 
 
 
