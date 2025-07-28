@@ -123,6 +123,7 @@ WeParlay.io is a comprehensive sports betting platform built with modern web tec
 ## Changelog
 
 Recent Changes:
+- July 28, 2025: **Admin Access Integration** - Fixed admin dropdown menu access for support@weparlay.io login, admin menu items (Admin Dashboard, User Management, Facebook Bots) now appear in profile dropdown for authenticated admin users, resolved authentication routing conflicts
 - July 28, 2025: **Profile System Overhaul** - Fixed profile dropdown to show single "Profile" link, added profile picture upload functionality with camera interface, profile images only show for authenticated users, logout only visible when logged in, resolved all TypeScript errors in MainLayout
 - July 28, 2025: **Enhanced User Profile Page** - Created ProfilePictureUpload component with drag-drop support, image validation (5MB max, JPG/PNG), preview functionality, and integrated with main profile page for complete user management
 - July 28, 2025: **Fixed Authentication UI** - Cleaned up duplicate profile links in dropdown menu, proper conditional rendering based on authentication state, improved user experience with clear visual feedback

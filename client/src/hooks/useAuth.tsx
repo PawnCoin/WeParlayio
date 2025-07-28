@@ -15,7 +15,17 @@ export function useAuth() {
   // Mock user for now - in a real app, this would check for a session
   const [currentUser, setCurrentUser] = useState(() => {
     const savedUser = localStorage.getItem("user");
-    return savedUser ? JSON.parse(savedUser) : null;
+    if (savedUser) {
+      const user = JSON.parse(savedUser);
+      // Check if admin status is stored separately
+      const isAdmin = localStorage.getItem("weparlay-is-admin") === "true";
+      if (isAdmin) {
+        user.isAdmin = true;
+        user.role = 'admin';
+      }
+      return user;
+    }
+    return null;
   });
   
   const login = async (credentials: LoginCredentials) => {
@@ -24,7 +34,10 @@ export function useAuth() {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(credentials),
+        body: JSON.stringify({ 
+          email: credentials.username, // Use username as email for login
+          password: credentials.password 
+        }),
       });
       
       if (!response.ok) {
@@ -34,14 +47,25 @@ export function useAuth() {
       const data = await response.json();
       const user = data.user || data;
       
+      // Check if this is an admin login based on email
+      const adminEmails = ['support@weparlay.io', 'admin@weparlay.io', 'weparlay@admin.com'];
+      const isAdminLogin = adminEmails.includes(credentials.username);
+      
+      // Update user object with admin status if it's an admin login
+      if (isAdminLogin) {
+        user.isAdmin = true;
+        user.role = 'admin';
+      }
+      
       setCurrentUser(user);
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("weparlay-logged-in", "true");
       localStorage.setItem("weparlay-user-email", user.email);
+      localStorage.setItem("weparlay-is-admin", isAdminLogin ? "true" : "false");
       
       toast({
         title: "Logged in successfully",
-        description: `Welcome back, ${user.username || user.firstName || 'User'}!`,
+        description: `Welcome back, ${user.username || user.firstName || 'User'}!${isAdminLogin ? ' (Admin Access)' : ''}`,
       });
       
       // Redirect to dashboard after successful login
@@ -66,6 +90,7 @@ export function useAuth() {
     localStorage.removeItem("user");
     localStorage.removeItem("weparlay-logged-in");
     localStorage.removeItem("weparlay-user-email");
+    localStorage.removeItem("weparlay-is-admin");
     toast({
       title: "Logged out",
       description: "You have been successfully logged out",

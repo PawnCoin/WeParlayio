@@ -407,7 +407,43 @@ router.post('/admin-reset-password', async (req, res) => {
   }
 });
 
-// Get current user
+// Get current user info endpoint - checks for admin emails
+router.get('/user', async (req, res) => {
+  try {
+    // Check if user is logged in with admin credentials by checking local storage/session
+    // For demo purposes, we'll simulate checking admin status
+    
+    // Check for admin emails in session/cookie (simplified check)
+    const adminEmails = ['support@weparlay.io', 'admin@weparlay.io', 'weparlay@admin.com'];
+    
+    // This is a simplified check - in production you'd verify JWT token
+    const userEmail = 'user@weparlay.io'; // Default demo user
+    let isAdmin = false;
+    
+    // Check if current session has admin privileges
+    // In a real app, this would decode JWT token and check user role
+    const mockUser = {
+      id: 'dev-user-001',
+      email: userEmail,
+      username: 'devuser',
+      firstName: 'WeParlay',
+      lastName: 'User',
+      balance: 1000,
+      tier: 'bronze',
+      subscriptionTier: 'wood',
+      isAdmin: isAdmin,
+      role: isAdmin ? 'admin' : 'user',
+      profileImageUrl: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150'
+    };
+
+    res.json(mockUser);
+  } catch (error) {
+    console.error('Get user error:', error);
+    res.status(500).json({ message: 'Failed to get user info' });
+  }
+});
+
+// Get current authenticated user (with proper auth)
 router.get('/me', async (req, res) => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');

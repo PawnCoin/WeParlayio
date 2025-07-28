@@ -175,21 +175,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ success: true, message: 'Logged out successfully' });
   });
 
-  // Direct user authentication endpoint (highest priority)
-  app.get('/api/auth/user', async (req: any, res) => {
-    res.json({
-      id: 'dev-user-001',
-      email: 'user@weparlay.io',
-      username: 'WeParlay_User',
-      firstName: 'WeParlay',
-      lastName: 'User',
-      balance: 1000,
-      tier: 'bronze',
-      subscriptionTier: 'wood',
-      isAdmin: false,
-      role: 'user'
-    });
-  });
+  // Mount auth routes with proper admin handling
+  app.use('/api/auth', authRoutes);
 
   // OWNER DIRECT ACCESS - No authentication required
   app.get('/api/owner-access', (req, res) => {
@@ -211,21 +198,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register Primary Data routes (100% audit compliant)
   app.use('/api/primary', primaryDataRoutes);
   
-  // Direct user authentication endpoint (bypasses all middleware)
-  app.get('/api/auth/user', async (req: any, res) => {
-    res.json({
-      id: 'dev-user-001',
-      email: 'user@weparlay.io',
-      username: 'WeParlay_User',
-      firstName: 'WeParlay',
-      lastName: 'User',
-      balance: 1000,
-      tier: 'bronze',
-      subscriptionTier: 'wood',
-      isAdmin: false,
-      role: 'user'
-    });
-  });
+
 
   // Auth middleware
   await setupAuth(app);
