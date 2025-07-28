@@ -191,6 +191,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
             {/* User menu */}
             <div className="flex items-center space-x-4">
+              {!isAuthenticated && (
+                <div className="flex items-center space-x-2">
+                  <Link href="/auth">
+                    <Button variant="outline" size="sm" className="text-sm">
+                      <User className="mr-2 h-4 w-4" />
+                      Login
+                    </Button>
+                  </Link>
+                </div>
+              )}
               {isAuthenticated ? (
                 <>
                   <DropdownMenu>
