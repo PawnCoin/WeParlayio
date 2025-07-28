@@ -41,8 +41,18 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [location] = useLocation();
   const { user, isAuthenticated } = useAuth();
   
-  // Handle missing user properties with proper defaults
+  // Handle missing user properties with proper defaults and admin status
   const currentUser = user as any || {};
+  
+  // Check admin status from multiple sources
+  const isAdmin = currentUser.isAdmin || 
+                  localStorage.getItem("weparlay-is-admin") === "true" || 
+                  ['support@weparlay.io', 'admin@weparlay.io', 'weparlay@admin.com'].includes(currentUser.email || '');
+  
+  // Enhance user object with admin status
+  currentUser.isAdmin = isAdmin;
+  currentUser.role = isAdmin ? 'admin' : (currentUser.role || 'user');
+  
   const userId = currentUser.id || 'guest';
   const userName = currentUser.firstName || currentUser.email?.split('@')[0] || 'User';
   const userInitial = currentUser.firstName?.charAt(0) || currentUser.email?.charAt(0) || "W";
@@ -54,6 +64,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     localStorage.removeItem("user");
     localStorage.removeItem("weparlay-logged-in");
     localStorage.removeItem("weparlay-user-email");
+    localStorage.removeItem("weparlay-is-admin");
+    localStorage.removeItem("weparlay-admin-email");
     window.location.href = '/';
   };
 
