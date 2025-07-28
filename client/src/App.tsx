@@ -266,6 +266,7 @@ function Router() {
       <Route path="/mobile-login" component={MobileLogin} />
       <Route path="/auth-test" component={AuthTestDemo} />
       <Route path="/auth-test-demo" component={AuthTestDemo} />
+      <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin-login-test" component={AdminLoginTest} />
       <Route path="/community" component={UserDirectory} />
       <Route path="/users" component={UserDirectory} />
@@ -278,6 +279,8 @@ function Router() {
       <Route path="/signup-enhanced" component={SignUpEnhanced} />
 
       {/* Admin Routes - Direct access without authentication */}
+      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/admin/manage-users" component={ManageUsers} />
       <Route path="/admin/financial-overview" component={FinancialOverview} />
       <Route path="/admin/analytics" component={Analytics} />
@@ -286,7 +289,6 @@ function Router() {
       <Route path="/admin/social-media-dashboard" component={SocialMediaDashboard} />
       <Route path="/admin/user-analytics" component={lazy(() => import("./pages/admin/UserAnalytics"))} />
       <Route path="/admin/verification" component={AdminVerificationDashboard} />
-      <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/force-admin" component={AdminDashboard} />
       <Route path="/owner-access" component={OwnerAccess} />
       <Route path="/api-test" component={lazy(() => import("./pages/ApiTestPage"))} />

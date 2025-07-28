@@ -47,7 +47,7 @@ export default function AdminLogin() {
           description: "Admin login successful"
         });
         
-        navigate('/admin');
+        navigate('/admin-dashboard');
       } else {
         toast({
           title: "Login Failed",
