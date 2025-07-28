@@ -45,37 +45,51 @@ export function useAuth() {
       }
       
       const data = await response.json();
+      console.log('Backend login response:', data);
+      
       const user = data.user || data;
       
-      // Check if this is an admin login based on email
+      // Store JWT token if provided
+      if (data.token) {
+        localStorage.setItem("auth-token", data.token);
+      }
+      
+      // Check admin status from backend response (highest priority)
+      const isAdminFromBackend = data.isAdmin || user.isAdmin || user.role === 'admin';
+      
+      // Check if this is an admin login based on email (secondary check)
       const adminEmails = ['support@weparlay.io', 'admin@weparlay.io', 'weparlay@admin.com'];
       const loginEmail = credentials.username.includes('@') ? credentials.username : `${credentials.username}@weparlay.io`;
-      const isAdminLogin = adminEmails.includes(loginEmail);
+      const isAdminByEmail = adminEmails.includes(loginEmail) || adminEmails.includes(user.email);
       
-      // Update user object with admin status if it's an admin login
-      if (isAdminLogin || data.isAdmin) {
-        user.isAdmin = true;
-        user.role = 'admin';
-      }
+      // Final admin status determination
+      const isAdmin = isAdminFromBackend || isAdminByEmail;
+      
+      // Update user object with confirmed admin status
+      user.isAdmin = isAdmin;
+      user.role = isAdmin ? 'admin' : (user.role || 'user');
       
       setCurrentUser(user);
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("weparlay-logged-in", "true");
       localStorage.setItem("weparlay-user-email", user.email || loginEmail);
-      localStorage.setItem("weparlay-is-admin", (isAdminLogin || data.isAdmin) ? "true" : "false");
-      if (isAdminLogin) {
-        localStorage.setItem("weparlay-admin-email", loginEmail);
+      localStorage.setItem("weparlay-is-admin", isAdmin ? "true" : "false");
+      if (isAdmin) {
+        localStorage.setItem("weparlay-admin-email", user.email || loginEmail);
       }
       
-      console.log('Login data stored:', {
-        email: user.email || loginEmail,
-        isAdmin: isAdminLogin || data.isAdmin,
-        userEmail: localStorage.getItem("weparlay-user-email")
+      console.log('Admin login verification:', {
+        backendResponse: data,
+        userEmail: user.email,
+        isAdminFromBackend,
+        isAdminByEmail,
+        finalIsAdmin: isAdmin,
+        storedAdminStatus: localStorage.getItem("weparlay-is-admin")
       });
       
       toast({
         title: "Logged in successfully",
-        description: `Welcome back, ${user.username || user.firstName || 'User'}!${isAdminLogin ? ' (Admin Access)' : ''}`,
+        description: `Welcome back, ${user.username || user.firstName || 'User'}!${isAdmin ? ' (Admin Access Granted)' : ''}`,
       });
       
       // Redirect to dashboard after successful login

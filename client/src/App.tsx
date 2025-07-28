@@ -66,6 +66,7 @@ import SMSOptIn from "@/pages/SMSOptIn";
 import PermissionDemo from "@/pages/PermissionDemo";
 import AuthenticationHub from "@/pages/AuthenticationHub";
 import UserProfile from "@/pages/UserProfile";
+import AdminLoginTest from "@/pages/AdminLoginTest";
 
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
@@ -265,6 +266,7 @@ function Router() {
       <Route path="/mobile-login" component={MobileLogin} />
       <Route path="/auth-test" component={AuthTestDemo} />
       <Route path="/auth-test-demo" component={AuthTestDemo} />
+      <Route path="/admin-login-test" component={AdminLoginTest} />
       <Route path="/community" component={UserDirectory} />
       <Route path="/users" component={UserDirectory} />
       <Route path="/social-media-bots" component={SocialMediaBots} />
