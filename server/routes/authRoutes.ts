@@ -56,9 +56,11 @@ router.post('/register', async (req, res) => {
     delete userResponse.password;
 
     res.status(201).json({
+      success: true,
       message: 'User registered successfully',
       user: userResponse,
       token,
+      isNewUser: true
     });
 
   } catch (error) {
@@ -238,6 +240,7 @@ router.post('/quick-register', async (req, res) => {
     delete userResponse.password;
 
     res.status(201).json({
+      success: true,
       message: 'Quick registration successful',
       user: userResponse,
       token,
@@ -407,7 +410,7 @@ router.post('/admin-reset-password', async (req, res) => {
   }
 });
 
-// Get current user info endpoint - returns mock user with proper admin status
+// Get current user info endpoint - returns actual user data
 router.get('/user', async (req, res) => {
   try {
     // Check if user is logged out (no stored data)
@@ -421,11 +424,31 @@ router.get('/user', async (req, res) => {
     const adminEmails = ['support@weparlay.io', 'admin@weparlay.io', 'weparlay@admin.com'];
     const isAdminUser = adminEmails.includes(storedEmail);
     
+    // Try to get actual user from database first
+    let user;
+    try {
+      user = await storage.getUserByEmail(storedEmail);
+      if (user) {
+        // Remove password from response
+        const userResponse = { ...user };
+        delete userResponse.password;
+        
+        // Add admin status if applicable
+        userResponse.isAdmin = isAdminUser || user.isAdmin || false;
+        userResponse.role = isAdminUser ? 'admin' : (user.role || 'user');
+        
+        return res.json(userResponse);
+      }
+    } catch (dbError) {
+      console.log('User not found in database, using mock data');
+    }
+    
+    // Fallback to mock user if not found in database
     const mockUser = {
       id: isAdminUser ? 'admin-001' : 'dev-user-001',
       email: storedEmail,
-      username: isAdminUser ? 'WeParlay Admin' : 'devuser',
-      firstName: 'WeParlay',
+      username: isAdminUser ? 'WeParlay Admin' : storedEmail.split('@')[0],
+      firstName: isAdminUser ? 'WeParlay' : storedEmail.split('@')[0],
       lastName: isAdminUser ? 'Admin' : 'User',
       balance: isAdminUser ? 1000000 : 1000,
       tier: isAdminUser ? 'platinum' : 'bronze',
