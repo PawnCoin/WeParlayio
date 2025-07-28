@@ -34,7 +34,7 @@ import MobileLogin from "@/pages/MobileLogin"; // Login page with social login o
 import EnhancedFeatures from "@/pages/EnhancedFeatures"; // Advanced features page
 import ThemeSettingsPage from "@/pages/ThemeSettingsPage"; // Theme settings page
 // Removed duplicate AdminDashboard import
-import AdminLogin from "@/pages/AdminLogin"; // Admin login page
+// AdminLogin component removed - using AdminLoginTest instead
 import NotificationTest from "@/pages/NotificationTest"; // Email and SMS testing
 import PrivacyPolicy from "@/pages/PrivacyPolicy"; // Privacy policy page for social login requirements
 import TermsOfService from "@/pages/TermsOfService"; // Terms of service page for social login requirements
@@ -66,7 +66,7 @@ import SMSOptIn from "@/pages/SMSOptIn";
 import PermissionDemo from "@/pages/PermissionDemo";
 import AuthenticationHub from "@/pages/AuthenticationHub";
 import UserProfile from "@/pages/UserProfile";
-import AdminLoginTest from "@/pages/AdminLoginTest";
+import TokenCleanupTest from "@/pages/TokenCleanupTest";
 
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
@@ -266,9 +266,10 @@ function Router() {
       <Route path="/mobile-login" component={MobileLogin} />
       <Route path="/auth-test" component={AuthTestDemo} />
       <Route path="/auth-test-demo" component={AuthTestDemo} />
-      <Route path="/admin-login" component={AdminLogin} />
-      <Route path="/admin-login-test" component={AdminLoginTest} />
-      <Route path="/admin-login-quick-test" component={lazy(() => import("./pages/AdminLoginQuickTest"))} />
+      <Route path="/admin-login" component={lazy(() => import("@/pages/AdminLoginTest"))} />
+      <Route path="/admin-login-test" component={lazy(() => import("@/pages/AdminLoginTest"))} />
+      <Route path="/admin-login-quick-test" component={lazy(() => import("@/pages/AdminLoginTest"))} />
+      <Route path="/token-cleanup-test" component={TokenCleanupTest} />
       <Route path="/community" component={UserDirectory} />
       <Route path="/users" component={UserDirectory} />
       <Route path="/social-media-bots" component={SocialMediaBots} />

@@ -17,10 +17,22 @@ import {
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import TierGuard from "@/components/access/TierGuard";
+import VipGuard from "@/components/access/VipGuard";
 
 // Gaming API Integration Functions (using live endpoints)
 
 export default function UnifiedGaming() {
+  return (
+    <VipGuard 
+      requiredTier="silver" 
+      feature="Unified Gaming Hub"
+    >
+      <UnifiedGamingContent />
+    </VipGuard>
+  );
+}
+
+function UnifiedGamingContent() {
   const { toast } = useToast();
   const { addBet } = useBetting();
   const [connectedAccounts, setConnectedAccounts] = useState<string[]>([]);
