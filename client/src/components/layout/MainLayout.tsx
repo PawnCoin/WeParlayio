@@ -220,16 +220,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
             {/* User menu */}
             <div className="flex items-center space-x-4">
-              {!isAuthenticated && (
-                <div className="flex items-center space-x-2">
-                  <Link href="/auth">
-                    <Button variant="outline" size="sm" className="text-sm">
-                      <User className="mr-2 h-4 w-4" />
-                      Login
-                    </Button>
-                  </Link>
-                </div>
-              )}
               {isAuthenticated ? (
                 <>
                   <DropdownMenu>
@@ -417,14 +407,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                     className="text-white border-green-500 hover:bg-green-500/10"
                     onClick={() => window.location.href = '/auth'}
                   >
+                    <User className="mr-2 h-4 w-4" />
                     Login
-                  </Button>
-                  <Button 
-                    variant="default" 
-                    className="bg-green-600 hover:bg-green-700"
-                    onClick={() => window.location.href = '/auth'}
-                  >
-                    Sign Up
                   </Button>
                 </div>
               )}

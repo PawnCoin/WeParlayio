@@ -44,7 +44,9 @@ export const getQueryFn: <T>(options: {
   async ({ queryKey }) => {
     // Get auth headers for admin users
     const adminEmail = localStorage.getItem('weparlay-admin-email');
-    const authHeaders = adminEmail ? { 'X-User-Email': adminEmail } : {};
+    const userEmail = localStorage.getItem('weparlay-user-email');
+    const authHeaders = adminEmail ? { 'X-User-Email': adminEmail } : 
+                       userEmail ? { 'X-User-Email': userEmail } : {};
     
     const res = await fetch(queryKey[0] as string, {
       credentials: "include",

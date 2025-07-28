@@ -71,7 +71,9 @@ export function useAuth() {
       });
       
       // Redirect to dashboard after successful login
-      window.location.href = '/';
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
       
       return user;
     } catch (error) {
