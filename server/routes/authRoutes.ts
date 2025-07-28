@@ -450,6 +450,9 @@ router.get('/user', async (req, res) => {
     }
     
     try {
+      // Log the token for debugging
+      console.log('Received token for verification:', token?.substring(0, 50) + '...');
+      
       // Verify JWT token
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'weparlay-secret-key') as any;
       

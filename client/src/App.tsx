@@ -268,6 +268,7 @@ function Router() {
       <Route path="/auth-test-demo" component={AuthTestDemo} />
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin-login-test" component={AdminLoginTest} />
+      <Route path="/admin-login-quick-test" component={lazy(() => import("./pages/AdminLoginQuickTest"))} />
       <Route path="/community" component={UserDirectory} />
       <Route path="/users" component={UserDirectory} />
       <Route path="/social-media-bots" component={SocialMediaBots} />
