@@ -358,7 +358,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                             <>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem asChild>
-                                <Link href="/admin" className="flex items-center">
+                                <Link href="/admin-dashboard" className="flex items-center">
                                   <Settings className="h-4 w-4 mr-2 text-red-600" />
                                   Admin Dashboard
                                 </Link>
@@ -370,9 +370,15 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                                 </Link>
                               </DropdownMenuItem>
                               <DropdownMenuItem asChild>
-                                <Link href="/facebook-bot-manager" className="flex items-center">
+                                <Link href="/social-media-bots" className="flex items-center">
                                   <span className="h-4 w-4 mr-2 text-blue-600">🤖</span>
                                   Facebook Bots
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href="/admin-login-test" className="flex items-center">
+                                  <Shield className="h-4 w-4 mr-2 text-yellow-600" />
+                                  Admin Test
                                 </Link>
                               </DropdownMenuItem>
                             </>
