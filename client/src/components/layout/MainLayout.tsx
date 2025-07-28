@@ -333,28 +333,30 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                               Crypto Wallet
                             </Link>
                           </DropdownMenuItem>
-                          {/* Admin only features using PermissionGate */}
-                          <PermissionGate adminOnly>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem asChild>
-                              <Link href="/facebook-bot-manager" className="flex items-center">
-                                <span className="h-4 w-4 mr-2 text-blue-600">🤖</span>
-                                Facebook Bots
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <Link href="/admin" className="flex items-center">
-                                <Settings className="h-4 w-4 mr-2 text-red-600" />
-                                Admin Dashboard
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <Link href="/users" className="flex items-center">
-                                <Users className="h-4 w-4 mr-2 text-purple-600" />
-                                User Management
-                              </Link>
-                            </DropdownMenuItem>
-                          </PermissionGate>
+                          {/* Admin access for authenticated admin users */}
+                          {currentUser.isAdmin && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem asChild>
+                                <Link href="/admin" className="flex items-center">
+                                  <Settings className="h-4 w-4 mr-2 text-red-600" />
+                                  Admin Dashboard
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href="/users" className="flex items-center">
+                                  <Users className="h-4 w-4 mr-2 text-purple-600" />
+                                  User Management
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href="/facebook-bot-manager" className="flex items-center">
+                                  <span className="h-4 w-4 mr-2 text-blue-600">🤖</span>
+                                  Facebook Bots
+                                </Link>
+                              </DropdownMenuItem>
+                            </>
+                          )}
                           <DropdownMenuSeparator />
                           <DropdownMenuItem 
                             onClick={(e) => {

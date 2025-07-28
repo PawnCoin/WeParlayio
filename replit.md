@@ -156,3 +156,4 @@ Preferred communication style: Simple, everyday language.
 - Profile images only visible for authenticated users
 - Logout button only shows when user is logged in
 - Camera interface for easy profile picture updates
+- Admin access in dropdown menu when admin user is logged in
