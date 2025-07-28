@@ -123,6 +123,10 @@ WeParlay.io is a comprehensive sports betting platform built with modern web tec
 ## Changelog
 
 Recent Changes:
+- July 28, 2025: Completed professional authentication system overhaul - built AuthenticationHub with unified login/signup, comprehensive UserProfile with security settings, and NotificationCenter with real-time updates
+- July 28, 2025: Implemented proper server-side authentication endpoints (/api/auth/login, /api/auth/register, /api/auth/logout) with session management and $25 welcome bonus for new users
+- July 28, 2025: Enhanced navigation routing to use /auth for unified authentication experience, added user profile management with tier display and logout functionality
+- July 28, 2025: Fixed critical React component errors in MainLayout and integrated notification system with professional user management features
 - June 19, 2025: Implemented tier-based security for gaming endpoints - Silver tier required for tournaments/odds, Gold tier for advanced features
 - June 19, 2025: Fixed user directory to display all 13 database users with direct database access bypassing storage issues
 - June 19, 2025: Created professional upgrade tier page with Gold/Platinum options and working upgrade buttons across platform

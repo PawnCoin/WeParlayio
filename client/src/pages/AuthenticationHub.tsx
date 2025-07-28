@@ -12,7 +12,9 @@ import { LogIn, UserPlus, Eye, EyeOff, Shield, Mail, Lock, User, Phone, Calendar
 
 const AuthenticationHub: React.FC = () => {
   const [, navigate] = useLocation();
-  const { login, isLoggingIn } = useAuth();
+  const auth = useAuth();
+  const login = auth.login || (() => Promise.resolve());
+  const isLoggingIn = auth.isLoggingIn || false;
   const { toast } = useToast();
 
   // Login state
