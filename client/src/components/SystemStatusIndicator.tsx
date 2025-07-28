@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Badge } from './ui/badge';
 import { Alert, AlertDescription } from './ui/alert';
 import { Wifi, WifiOff, AlertTriangle, CheckCircle } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface SystemStatus {
   overall_status: string;
@@ -13,8 +14,14 @@ interface SystemStatus {
 }
 
 export default function SystemStatusIndicator() {
+  const { user, isAuthenticated } = useAuth();
   const [status, setStatus] = useState<SystemStatus | null>(null);
   const [showDetails, setShowDetails] = useState(false);
+  
+  // Only show for admin users
+  if (!isAuthenticated || !user?.isAdmin) {
+    return null;
+  }
 
   useEffect(() => {
     async function checkSystemHealth() {
