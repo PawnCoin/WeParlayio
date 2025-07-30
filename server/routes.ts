@@ -272,6 +272,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register Banking routes for real deposits, withdrawals, and betting
   app.use('/api/banking', bankingRouter);
   
+  // Register Plaid routes for bank account integration
+  const plaidRoutes = (await import('./routes/plaidRoutes')).default;
+  app.use('/api/plaid', plaidRoutes);
+  
   // Register Bet Settlement routes for automated winner determination
   app.use('/api/bet-settlement', betSettlementRoutes);
   

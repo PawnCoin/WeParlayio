@@ -176,6 +176,33 @@ export const transactions = pgTable("transactions", {
   method: text("method"), // 'plaid_transfer', 'cash_app', 'stripe', etc.
 });
 
+// Plaid bank accounts table for secure bank integration
+export const plaidBankAccounts = pgTable("plaid_bank_accounts", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  plaidAccountId: varchar("plaid_account_id").notNull(),
+  plaidAccessToken: varchar("plaid_access_token", { length: 512 }).notNull(),
+  plaidItemId: varchar("plaid_item_id").notNull(),
+  accountName: varchar("account_name"),
+  accountType: varchar("account_type"), // 'depository', 'credit', etc.
+  accountSubtype: varchar("account_subtype"), // 'checking', 'savings', etc.
+  mask: varchar("mask", { length: 10 }), // Last 4 digits
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertPlaidBankAccountSchema = createInsertSchema(plaidBankAccounts).pick({
+  userId: true,
+  plaidAccountId: true,
+  plaidAccessToken: true,
+  plaidItemId: true,
+  accountName: true,
+  accountType: true,
+  accountSubtype: true,
+  mask: true,
+});
+
 export const insertTransactionSchema = createInsertSchema(transactions).pick({
   userId: true,
   type: true,

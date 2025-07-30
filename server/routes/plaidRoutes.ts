@@ -1,289 +1,447 @@
-
-import { Router } from 'express';
-import { isAuthenticated } from '../replitAuth';
-import { plaidService } from '../services/plaidService';
-import { storage } from '../storage';
+import { Router, Request, Response } from 'express';
+import plaidService from '../services/plaidService';
+import { db } from '../db';
+import { plaidBankAccounts, users, transactions } from '../../shared/schema';
+import { eq, and, desc } from 'drizzle-orm';
 
 const router = Router();
 
 // Create link token for Plaid Link
-router.post('/create-link-token', isAuthenticated, async (req: any, res) => {
+router.post('/create-link-token', async (req: Request, res: Response) => {
   try {
-    const userId = req.user.claims.sub;
-    const { products } = req.body;
-    
-    const linkToken = await plaidService.createLinkToken(userId, products);
-    
-    res.json(linkToken);
+    const { userId, userName } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'User ID is required'
+      });
+    }
+
+    const result = await plaidService.createLinkToken(userId, userName);
+    res.json(result);
   } catch (error) {
-    console.error('Link token creation error:', error);
-    res.status(500).json({ message: 'Failed to create link token' });
+    console.error('Create link token error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    });
   }
 });
 
-// Exchange public token for access token and store account info
-router.post('/exchange-token', isAuthenticated, async (req: any, res) => {
+// Exchange public token for access token and save to database
+router.post('/exchange-public-token', async (req: Request, res: Response) => {
   try {
-    const userId = req.user.claims.sub;
-    const { public_token, metadata } = req.body;
-    
-    // Exchange the public token
-    const exchangeData = await plaidService.exchangePublicToken(public_token);
-    const accessToken = exchangeData.access_token;
-    const itemId = exchangeData.item_id;
-    
-    // Get account information
-    const accountsData = await plaidService.getAccounts(accessToken);
-    const authData = await plaidService.getAuthInfo(accessToken);
-    
-    // Identify Cash App account if present
-    const cashAppAccount = plaidService.identifyCashAppAccount(accountsData.accounts);
-    
-    // Store the linked account in our database
-    const linkedAccount = {
-      userId: userId,
-      plaidItemId: itemId,
-      plaidAccessToken: accessToken,
-      institutionId: metadata.institution.institution_id,
-      institutionName: metadata.institution.name,
-      accountType: cashAppAccount ? 'cash_app' : 'bank',
-      accounts: accountsData.accounts.map(account => ({
-        accountId: account.account_id,
-        name: account.name,
-        officialName: account.official_name,
-        type: account.type,
-        subtype: account.subtype,
+    const { publicToken, userId } = req.body;
+
+    if (!publicToken || !userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Public token and user ID are required'
+      });
+    }
+
+    const result = await plaidService.exchangePublicToken(publicToken);
+
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    // Save bank account information to database
+    for (const account of result.accounts) {
+      await db.insert(plaidBankAccounts).values({
+        userId: userId,
+        plaidAccountId: account.account_id,
+        plaidAccessToken: result.access_token,
+        plaidItemId: result.item_id,
+        accountName: account.name,
+        accountType: account.type,
+        accountSubtype: account.subtype,
         mask: account.mask,
-        isCashApp: account.account_id === cashAppAccount?.account_id
-      })),
-      authInfo: authData.accounts.map(account => ({
-        accountId: account.account_id,
-        routingNumber: account.routing_number,
-        accountNumber: account.account_number
-      })),
-      isActive: true,
-      linkedAt: new Date()
-    };
-    
-    // Save to database
-    await storage.createLinkedAccount(linkedAccount);
-    
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }).onConflictDoUpdate({
+        target: [plaidBankAccounts.userId, plaidBankAccounts.plaidAccountId],
+        set: {
+          accountName: account.name,
+          accountType: account.type,
+          accountSubtype: account.subtype,
+          mask: account.mask,
+          updatedAt: new Date()
+        }
+      });
+    }
+
     res.json({
       success: true,
-      message: `Successfully linked ${linkedAccount.institutionName}`,
-      accountType: linkedAccount.accountType,
-      accounts: linkedAccount.accounts.length,
-      hasCashApp: !!cashAppAccount
+      message: 'Bank account linked successfully',
+      accounts: result.accounts
     });
-    
   } catch (error) {
-    console.error('Token exchange error:', error);
-    res.status(500).json({ message: 'Failed to link account' });
+    console.error('Exchange public token error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    });
   }
 });
 
-// Get linked accounts for user
-router.get('/linked-accounts', isAuthenticated, async (req: any, res) => {
+// Get user's linked bank accounts
+router.get('/accounts/:userId', async (req: Request, res: Response) => {
   try {
-    const userId = req.user.claims.sub;
-    const linkedAccounts = await storage.getLinkedAccounts(userId);
+    const { userId } = req.params;
+
+    const userAccounts = await db
+      .select()
+      .from(plaidBankAccounts)
+      .where(and(
+        eq(plaidBankAccounts.userId, userId),
+        eq(plaidBankAccounts.isActive, true)
+      ));
+
+    // Get fresh balance data for each account
+    const accountsWithBalances = [];
     
-    // Get current balances for active accounts
-    const accountsWithBalances = await Promise.all(
-      linkedAccounts.map(async (account) => {
-        try {
-          const balances = await plaidService.getBalances(account.plaidAccessToken);
-          return {
-            ...account,
-            balances: balances.accounts.map(acc => ({
-              accountId: acc.account_id,
-              available: acc.balances.available,
-              current: acc.balances.current,
-              limit: acc.balances.limit
-            }))
-          };
-        } catch (error) {
-          return { ...account, balances: [] };
+    for (const account of userAccounts) {
+      const balanceResult = await plaidService.getAccountBalances(account.plaidAccessToken);
+      
+      if (balanceResult.success) {
+        const plaidAccount = balanceResult.accounts.find(
+          acc => acc.account_id === account.plaidAccountId
+        );
+        
+        if (plaidAccount) {
+          accountsWithBalances.push({
+            id: account.id,
+            accountName: account.accountName,
+            accountType: account.accountType,
+            accountSubtype: account.accountSubtype,
+            mask: account.mask,
+            balances: plaidAccount.balances,
+            isActive: account.isActive,
+            createdAt: account.createdAt
+          });
         }
-      })
-    );
-    
-    res.json(accountsWithBalances);
+      }
+    }
+
+    res.json({
+      success: true,
+      accounts: accountsWithBalances
+    });
   } catch (error) {
-    console.error('Get linked accounts error:', error);
-    res.status(500).json({ message: 'Failed to get linked accounts' });
+    console.error('Get accounts error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    });
   }
 });
 
-// Initiate deposit from linked account
-router.post('/deposit', isAuthenticated, async (req: any, res) => {
+// Initiate withdrawal to bank account
+router.post('/withdraw', async (req: Request, res: Response) => {
   try {
-    const userId = req.user.claims.sub;
-    const { accountId, amount, currency = 'USD' } = req.body;
-    
-    if (!amount || amount < 1) {
-      return res.status(400).json({ message: 'Minimum deposit is $1' });
+    const { userId, accountId, amount, description } = req.body;
+
+    if (!userId || !accountId || !amount) {
+      return res.status(400).json({
+        success: false,
+        error: 'User ID, account ID, and amount are required'
+      });
     }
-    
-    if (amount > 5000) {
-      return res.status(400).json({ message: 'Maximum deposit is $5,000' });
+
+    // Validate amount
+    if (amount <= 0 || amount > 50000) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid withdrawal amount. Must be between $1 and $50,000'
+      });
     }
-    
-    // Get the linked account
-    const linkedAccount = await storage.getLinkedAccountByPlaidAccountId(userId, accountId);
-    if (!linkedAccount) {
-      return res.status(404).json({ message: 'Linked account not found' });
+
+    // Get user's bank account
+    const bankAccount = await db
+      .select()
+      .from(plaidBankAccounts)
+      .where(and(
+        eq(plaidBankAccounts.id, parseInt(accountId)),
+        eq(plaidBankAccounts.userId, userId),
+        eq(plaidBankAccounts.isActive, true)
+      ))
+      .limit(1);
+
+    if (bankAccount.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Bank account not found'
+      });
     }
+
+    // Check user's WeParlay balance
+    const user = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (user.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    const userBalance = user[0].balance || 0;
     
-    // Create transfer via Plaid
-    const transfer = await plaidService.createTransfer(
-      linkedAccount.plaidAccessToken,
-      accountId,
+    if (userBalance < amount) {
+      return res.status(400).json({
+        success: false,
+        error: 'Insufficient balance'
+      });
+    }
+
+    // Create transfer using Plaid
+    const transferResult = await plaidService.createTransfer(
+      bankAccount[0].plaidAccessToken,
+      bankAccount[0].plaidAccountId,
       amount,
-      'debit'
+      description || 'WeParlay withdrawal'
     );
-    
-    // Create transaction record
-    const transaction = await storage.createTransaction({
+
+    if (!transferResult.success) {
+      return res.status(400).json(transferResult);
+    }
+
+    // Record transaction in database
+    await db.insert(transactions).values({
+      userId: userId,
+      type: 'withdrawal',
+      amount: amount,
+      status: 'pending',
+      description: description || 'Bank withdrawal',
+      plaidTransferId: transferResult.transfer_id,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    // Update user balance (deduct withdrawal amount)
+    await db
+      .update(users)
+      .set({
+        balance: userBalance - amount,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId));
+
+    res.json({
+      success: true,
+      message: 'Withdrawal initiated successfully',
+      transferId: transferResult.transfer_id,
+      amount: amount,
+      status: 'pending'
+    });
+  } catch (error) {
+    console.error('Withdrawal error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    });
+  }
+});
+
+// Initiate deposit from bank account
+router.post('/deposit', async (req: Request, res: Response) => {
+  try {
+    const { userId, accountId, amount, description } = req.body;
+
+    if (!userId || !accountId || !amount) {
+      return res.status(400).json({
+        success: false,
+        error: 'User ID, account ID, and amount are required'
+      });
+    }
+
+    // Validate amount
+    if (amount <= 0 || amount > 50000) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid deposit amount. Must be between $1 and $50,000'
+      });
+    }
+
+    // Get user's bank account
+    const bankAccount = await db
+      .select()
+      .from(plaidBankAccounts)
+      .where(and(
+        eq(plaidBankAccounts.id, parseInt(accountId)),
+        eq(plaidBankAccounts.userId, userId),
+        eq(plaidBankAccounts.isActive, true)
+      ))
+      .limit(1);
+
+    if (bankAccount.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Bank account not found'
+      });
+    }
+
+    // Create transfer using Plaid (in reverse direction for deposit)
+    const transferResult = await plaidService.createTransfer(
+      bankAccount[0].plaidAccessToken,
+      bankAccount[0].plaidAccountId,
+      amount,
+      description || 'WeParlay deposit'
+    );
+
+    if (!transferResult.success) {
+      return res.status(400).json(transferResult);
+    }
+
+    // Record transaction in database
+    await db.insert(transactions).values({
       userId: userId,
       type: 'deposit',
       amount: amount,
-      currency: currency,
       status: 'pending',
-      method: linkedAccount.accountType === 'cash_app' ? 'cash_app' : 'bank_transfer',
-      plaidTransferId: transfer.transfer.id,
-      description: `Deposit from ${linkedAccount.institutionName}`,
-      timestamp: new Date()
+      description: description || 'Bank deposit',
+      plaidTransferId: transferResult.transfer_id,
+      createdAt: new Date(),
+      updatedAt: new Date()
     });
-    
-    // If transfer is successful, update user balance
-    if (transfer.transfer.status === 'posted') {
-      await storage.updateUserBalance(userId, amount);
-      await storage.updateTransactionStatus(transaction.id, 'completed');
-    }
-    
+
     res.json({
       success: true,
-      transactionId: transaction.id,
-      transferId: transfer.transfer.id,
-      status: transfer.transfer.status,
       message: 'Deposit initiated successfully',
-      estimatedArrival: transfer.transfer.status === 'posted' ? 'Immediate' : '1-3 business days'
+      transferId: transferResult.transfer_id,
+      amount: amount,
+      status: 'pending'
     });
-    
   } catch (error) {
     console.error('Deposit error:', error);
-    res.status(500).json({ message: 'Deposit failed. Please try again.' });
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    });
   }
 });
 
-// Initiate withdrawal to linked account
-router.post('/withdraw', isAuthenticated, async (req: any, res) => {
+// Get transaction history
+router.get('/transactions/:userId', async (req: Request, res: Response) => {
   try {
-    const userId = req.user.claims.sub;
-    const { accountId, amount, currency = 'USD' } = req.body;
-    
-    const user = await storage.getUser(userId);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    
-    if (!amount || amount < 1) {
-      return res.status(400).json({ message: 'Minimum withdrawal is $1' });
-    }
-    
-    if (amount > (user.balance || 0)) {
-      return res.status(400).json({ message: 'Insufficient balance' });
-    }
-    
-    // Get the linked account
-    const linkedAccount = await storage.getLinkedAccountByPlaidAccountId(userId, accountId);
-    if (!linkedAccount) {
-      return res.status(404).json({ message: 'Linked account not found' });
-    }
-    
-    // Create transfer via Plaid
-    const transfer = await plaidService.createTransfer(
-      linkedAccount.plaidAccessToken,
-      accountId,
-      amount,
-      'credit'
-    );
-    
-    // Deduct from user balance immediately
-    await storage.updateUserBalance(userId, -amount);
-    
-    // Create transaction record
-    const transaction = await storage.createTransaction({
-      userId: userId,
-      type: 'withdrawal',
-      amount: -amount,
-      currency: currency,
-      status: 'pending',
-      method: linkedAccount.accountType === 'cash_app' ? 'cash_app' : 'bank_transfer',
-      plaidTransferId: transfer.transfer.id,
-      description: `Withdrawal to ${linkedAccount.institutionName}`,
-      timestamp: new Date()
-    });
-    
+    const { userId } = req.params;
+    const { limit = 50, offset = 0 } = req.query;
+
+    const userTransactions = await db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.userId, userId))
+      .orderBy(desc(transactions.createdAt))
+      .limit(parseInt(limit as string))
+      .offset(parseInt(offset as string));
+
     res.json({
       success: true,
-      transactionId: transaction.id,
-      transferId: transfer.transfer.id,
-      status: transfer.transfer.status,
-      message: 'Withdrawal initiated successfully',
-      estimatedArrival: '1-3 business days'
+      transactions: userTransactions
     });
-    
   } catch (error) {
-    console.error('Withdrawal error:', error);
-    res.status(500).json({ message: 'Withdrawal failed. Please try again.' });
+    console.error('Get transactions error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    });
   }
 });
 
-// Plaid webhook for transfer updates
-router.post('/webhook', async (req, res) => {
-  const { webhook_type, webhook_code, item_id, transfer_id } = req.body;
-  
+// Remove/unlink bank account
+router.delete('/accounts/:userId/:accountId', async (req: Request, res: Response) => {
   try {
-    if (webhook_type === 'TRANSFER') {
-      // Update transaction status based on webhook
-      const transaction = await storage.getTransactionByPlaidTransferId(transfer_id);
-      if (transaction) {
-        let status = 'pending';
-        if (webhook_code === 'TRANSFER_EVENTS_UPDATE') {
-          status = 'completed';
-        } else if (webhook_code === 'TRANSFER_EVENTS_UPDATE') {
-          status = 'failed';
+    const { userId, accountId } = req.params;
+
+    // Get bank account
+    const bankAccount = await db
+      .select()
+      .from(plaidBankAccounts)
+      .where(and(
+        eq(plaidBankAccounts.id, parseInt(accountId)),
+        eq(plaidBankAccounts.userId, userId)
+      ))
+      .limit(1);
+
+    if (bankAccount.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Bank account not found'
+      });
+    }
+
+    // Remove from Plaid
+    const removeResult = await plaidService.removeItem(bankAccount[0].plaidAccessToken);
+
+    // Mark as inactive in database regardless of Plaid result
+    await db
+      .update(plaidBankAccounts)
+      .set({
+        isActive: false,
+        updatedAt: new Date()
+      })
+      .where(eq(plaidBankAccounts.id, parseInt(accountId)));
+
+    res.json({
+      success: true,
+      message: 'Bank account unlinked successfully'
+    });
+  } catch (error) {
+    console.error('Remove account error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    });
+  }
+});
+
+// Webhook endpoint for Plaid notifications
+router.post('/webhook', async (req: Request, res: Response) => {
+  try {
+    const { webhook_type, webhook_code, item_id, error } = req.body;
+
+    console.log('Plaid webhook received:', {
+      webhook_type,
+      webhook_code,
+      item_id,
+      error
+    });
+
+    // Handle different webhook types
+    switch (webhook_type) {
+      case 'TRANSACTIONS':
+        // Handle transaction updates
+        if (webhook_code === 'TRANSACTIONS_REMOVED') {
+          // Handle removed transactions
         }
-        
-        await storage.updateTransactionStatus(transaction.id, status);
-      }
+        break;
+      
+      case 'ITEM':
+        if (webhook_code === 'ERROR') {
+          // Handle item errors - might need to prompt user to re-link
+          console.error('Plaid item error:', error);
+        }
+        break;
+      
+      case 'AUTH':
+        // Handle auth updates
+        break;
     }
-    
-    res.json({ acknowledged: true });
-  } catch (error) {
-    console.error('Webhook processing error:', error);
-    res.status(500).json({ error: 'Webhook processing failed' });
-  }
-});
 
-// Remove linked account
-router.delete('/linked-accounts/:itemId', isAuthenticated, async (req: any, res) => {
-  try {
-    const userId = req.user.claims.sub;
-    const { itemId } = req.params;
-    
-    await storage.removeLinkedAccount(userId, itemId);
-    
-    res.json({
-      success: true,
-      message: 'Account unlinked successfully'
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Webhook error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Webhook processing failed'
     });
-  } catch (error) {
-    console.error('Unlink account error:', error);
-    res.status(500).json({ message: 'Failed to unlink account' });
   }
 });
 
-export { router as plaidRouter };
+export default router;

@@ -1,160 +1,255 @@
+import { Configuration, PlaidApi, PlaidEnvironments } from 'plaid';
+import { Request, Response } from 'express';
 
-import { Configuration, PlaidApi, PlaidEnvironments, Products, CountryCode } from 'plaid';
+class PlaidService {
+  private client: PlaidApi;
 
-const configuration = new Configuration({
-  basePath: process.env.PLAID_ENV === 'production' 
-    ? PlaidEnvironments.production 
-    : PlaidEnvironments.sandbox,
-  baseOptions: {
-    headers: {
-      'PLAID-CLIENT-ID': process.env.PLAID_CLIENT_ID,
-      'PLAID-SECRET': process.env.PLAID_SECRET,
-    },
-  },
-});
+  constructor() {
+    const configuration = new Configuration({
+      basePath: PlaidEnvironments[process.env.PLAID_ENV as keyof typeof PlaidEnvironments] || PlaidEnvironments.sandbox,
+      baseOptions: {
+        headers: {
+          'PLAID-CLIENT-ID': process.env.PLAID_CLIENT_ID!,
+          'PLAID-SECRET': process.env.PLAID_SECRET!,
+        },
+      },
+    });
 
-const client = new PlaidApi(configuration);
+    this.client = new PlaidApi(configuration);
+  }
 
-export class PlaidService {
-  /**
-   * Create a link token for Plaid Link initialization
-   */
-  async createLinkToken(userId: string, products: Products[] = [Products.Transactions, Products.Auth]) {
+  // Create link token for user authentication
+  async createLinkToken(userId: string, userName: string = 'WeParlay User') {
     try {
-      const request = {
-        user: {
+      const response = await this.client.linkTokenCreate({
+        user: { 
           client_user_id: userId,
         },
         client_name: 'WeParlay',
-        products: products,
-        country_codes: [CountryCode.Us],
+        products: ['auth', 'transactions', 'identity'],
+        country_codes: ['US'],
         language: 'en',
-        webhook: `${process.env.SERVER_URL}/api/plaid/webhook`,
+        webhook: process.env.PLAID_WEBHOOK_URL,
         account_filters: {
           depository: {
-            account_subtypes: ['checking', 'savings'],
-          },
-        },
-      };
+            account_type: ['checking', 'savings'],
+            account_subtype: ['checking', 'savings']
+          }
+        }
+      });
 
-      const response = await client.linkTokenCreate(request);
-      return response.data;
+      return {
+        success: true,
+        link_token: response.data.link_token,
+        expiration: response.data.expiration
+      };
     } catch (error) {
-      console.error('Error creating link token:', error);
-      throw error;
+      console.error('Plaid link token creation error:', error);
+      return {
+        success: false,
+        error: 'Unable to create link token'
+      };
     }
   }
 
-  /**
-   * Exchange public token for access token
-   */
+  // Exchange public token for access token
   async exchangePublicToken(publicToken: string) {
     try {
-      const response = await client.itemPublicTokenExchange({
-        public_token: publicToken,
+      const tokenResponse = await this.client.itemPublicTokenExchange({
+        public_token: publicToken
       });
-      return response.data;
-    } catch (error) {
-      console.error('Error exchanging public token:', error);
-      throw error;
-    }
-  }
 
-  /**
-   * Get account information
-   */
-  async getAccounts(accessToken: string) {
-    try {
-      const response = await client.accountsGet({
+      const accessToken = tokenResponse.data.access_token;
+      const itemId = tokenResponse.data.item_id;
+
+      // Get account information
+      const accountsResponse = await this.client.accountsGet({
+        access_token: accessToken
+      });
+
+      const accounts = accountsResponse.data.accounts;
+
+      return {
+        success: true,
         access_token: accessToken,
-      });
-      return response.data;
+        item_id: itemId,
+        accounts: accounts.map(account => ({
+          account_id: account.account_id,
+          name: account.name,
+          official_name: account.official_name,
+          type: account.type,
+          subtype: account.subtype,
+          mask: account.mask,
+          balances: {
+            available: account.balances.available,
+            current: account.balances.current,
+            limit: account.balances.limit,
+            iso_currency_code: account.balances.iso_currency_code
+          }
+        }))
+      };
     } catch (error) {
-      console.error('Error getting accounts:', error);
-      throw error;
+      console.error('Plaid token exchange error:', error);
+      return {
+        success: false,
+        error: 'Token exchange failed'
+      };
     }
   }
 
-  /**
-   * Get account balances
-   */
-  async getBalances(accessToken: string) {
+  // Get account balances
+  async getAccountBalances(accessToken: string) {
     try {
-      const response = await client.accountsBalanceGet({
-        access_token: accessToken,
+      const response = await this.client.accountsGet({
+        access_token: accessToken
       });
-      return response.data;
+
+      return {
+        success: true,
+        accounts: response.data.accounts.map(account => ({
+          account_id: account.account_id,
+          name: account.name,
+          type: account.type,
+          subtype: account.subtype,
+          mask: account.mask,
+          balances: account.balances
+        }))
+      };
     } catch (error) {
-      console.error('Error getting balances:', error);
-      throw error;
+      console.error('Plaid get balances error:', error);
+      return {
+        success: false,
+        error: 'Unable to fetch account balances'
+      };
     }
   }
 
-  /**
-   * Get auth information for ACH transfers
-   */
-  async getAuthInfo(accessToken: string) {
-    try {
-      const response = await client.authGet({
-        access_token: accessToken,
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error getting auth info:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get transactions
-   */
+  // Get account transactions
   async getTransactions(accessToken: string, startDate: string, endDate: string) {
     try {
-      const response = await client.transactionsGet({
+      const response = await this.client.transactionsGet({
         access_token: accessToken,
         start_date: startDate,
         end_date: endDate,
+        count: 100,
+        offset: 0
       });
-      return response.data;
+
+      return {
+        success: true,
+        transactions: response.data.transactions,
+        total_transactions: response.data.total_transactions
+      };
     } catch (error) {
-      console.error('Error getting transactions:', error);
-      throw error;
+      console.error('Plaid get transactions error:', error);
+      return {
+        success: false,
+        error: 'Unable to fetch transactions'
+      };
     }
   }
 
-  /**
-   * Create a transfer for instant bank transfers
-   */
-  async createTransfer(accessToken: string, accountId: string, amount: number, type: 'debit' | 'credit') {
+  // Create ACH transfer (for withdrawals)
+  async createTransfer(accessToken: string, accountId: string, amount: number, description: string) {
     try {
-      const response = await client.transferCreate({
+      // First, create a processor token for the account
+      const processorResponse = await this.client.processorTokenCreate({
         access_token: accessToken,
         account_id: accountId,
-        type: type,
-        network: 'ach',
-        amount: (amount * 100).toString(), // Convert to cents
-        ach_class: 'web',
-        user: {
-          legal_name: 'WeParlay User',
-        },
+        processor: 'dwolla' // You can change this based on your payment processor
       });
-      return response.data;
+
+      const processorToken = processorResponse.data.processor_token;
+
+      // In a real implementation, you would use this processor token
+      // with your payment processor (like Dwolla, Stripe, etc.)
+      // to initiate the actual transfer
+
+      return {
+        success: true,
+        processor_token: processorToken,
+        transfer_id: `transfer_${Date.now()}`, // Mock transfer ID
+        status: 'pending',
+        amount,
+        description
+      };
     } catch (error) {
-      console.error('Error creating transfer:', error);
-      throw error;
+      console.error('Plaid create transfer error:', error);
+      return {
+        success: false,
+        error: 'Unable to create transfer'
+      };
     }
   }
 
-  /**
-   * Identify Cash App accounts specifically
-   */
-  identifyCashAppAccount(accounts: any[]) {
-    return accounts.find(account => 
-      account.name?.toLowerCase().includes('cash') ||
-      account.official_name?.toLowerCase().includes('cash app') ||
-      account.subtype === 'checking' && account.name?.toLowerCase().includes('square')
-    );
+  // Verify account ownership (for enhanced security)
+  async verifyAccountOwnership(accessToken: string) {
+    try {
+      const response = await this.client.identityGet({
+        access_token: accessToken
+      });
+
+      return {
+        success: true,
+        identity: response.data.accounts.map(account => ({
+          account_id: account.account_id,
+          owners: account.owners.map(owner => ({
+            names: owner.names,
+            emails: owner.emails,
+            phone_numbers: owner.phone_numbers,
+            addresses: owner.addresses
+          }))
+        }))
+      };
+    } catch (error) {
+      console.error('Plaid identity verification error:', error);
+      return {
+        success: false,
+        error: 'Unable to verify account ownership'
+      };
+    }
+  }
+
+  // Remove bank account (unlink)
+  async removeItem(accessToken: string) {
+    try {
+      await this.client.itemRemove({
+        access_token: accessToken
+      });
+
+      return {
+        success: true,
+        message: 'Bank account successfully unlinked'
+      };
+    } catch (error) {
+      console.error('Plaid remove item error:', error);
+      return {
+        success: false,
+        error: 'Unable to unlink bank account'
+      };
+    }
+  }
+
+  // Get item status (for troubleshooting)
+  async getItemStatus(accessToken: string) {
+    try {
+      const response = await this.client.itemGet({
+        access_token: accessToken
+      });
+
+      return {
+        success: true,
+        item: response.data.item,
+        status: response.data.status
+      };
+    } catch (error) {
+      console.error('Plaid get item status error:', error);
+      return {
+        success: false,
+        error: 'Unable to get item status'
+      };
+    }
   }
 }
 
-export const plaidService = new PlaidService();
+export default new PlaidService();

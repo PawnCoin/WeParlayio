@@ -108,6 +108,7 @@ function Router() {
       {/* VIP Features (Single route per feature) */}
       <Route path="/vip" component={VIPDashboard} />
       <Route path="/banking" component={BankingSystem} />
+      <Route path="/plaid-banking" component={React.lazy(() => import("@/pages/PlaidBanking"))} />
       <Route path="/crypto-wallet" component={CryptoWallet} />
       
       {/* Social Features */}
