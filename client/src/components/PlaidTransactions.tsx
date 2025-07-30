@@ -171,13 +171,13 @@ export default function PlaidTransactions({ userId, currentBalance }: PlaidTrans
       </CardHeader>
       <CardContent>
         {/* Current Balance Display */}
-        <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg">
+        <div className="mb-6 p-4 bg-primary/5 dark:bg-primary/10 rounded-lg border border-primary/20">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Current WeParlay Balance</p>
-              <p className="text-2xl font-bold text-green-600">${currentBalance.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-primary">${currentBalance.toFixed(2)}</p>
             </div>
-            <DollarSign className="h-8 w-8 text-green-600" />
+            <DollarSign className="h-8 w-8 text-primary" />
           </div>
         </div>
 
@@ -297,12 +297,12 @@ export default function PlaidTransactions({ userId, currentBalance }: PlaidTrans
         </Tabs>
 
         {/* Processing Time Info */}
-        <div className="mt-6 p-3 bg-blue-50 rounded-lg">
+        <div className="mt-6 p-3 bg-muted/50 rounded-lg border">
           <div className="flex items-center gap-2 mb-2">
-            <Clock className="h-4 w-4 text-blue-600" />
-            <span className="text-sm font-medium text-blue-800">Processing Times</span>
+            <Clock className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium text-foreground">Processing Times</span>
           </div>
-          <div className="text-xs text-blue-700 space-y-1">
+          <div className="text-xs text-muted-foreground space-y-1">
             <div>• Deposits: 1-2 business days</div>
             <div>• Withdrawals: 2-3 business days</div>
             <div>• All transfers are processed securely through Plaid</div>

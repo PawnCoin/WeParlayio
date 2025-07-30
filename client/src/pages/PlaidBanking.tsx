@@ -32,26 +32,26 @@ export default function PlaidBanking() {
       </div>
 
       {/* Security Info Banner */}
-      <Card className="mb-6 border-green-200 bg-green-50">
+      <Card className="mb-6 border-primary/20 bg-primary/5 dark:bg-primary/10">
         <CardContent className="pt-6">
           <div className="flex items-start gap-4">
-            <Shield className="h-6 w-6 text-green-600 mt-1" />
+            <Shield className="h-6 w-6 text-primary mt-1" />
             <div>
-              <h3 className="font-semibold text-green-800 mb-2">Bank-Level Security</h3>
-              <p className="text-green-700 text-sm mb-3">
+              <h3 className="font-semibold text-foreground mb-2">Bank-Level Security</h3>
+              <p className="text-muted-foreground text-sm mb-3">
                 We use Plaid's industry-leading security to protect your financial information. 
                 Your login credentials are encrypted and never stored on our servers.
               </p>
               <div className="flex flex-wrap gap-2">
-                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                <Badge variant="secondary" className="bg-background text-foreground border">
                   <Shield className="h-3 w-3 mr-1" />
                   256-bit SSL Encryption
                 </Badge>
-                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                <Badge variant="secondary" className="bg-background text-foreground border">
                   <Banknote className="h-3 w-3 mr-1" />
                   FDIC Protected
                 </Badge>
-                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                <Badge variant="secondary" className="bg-background text-foreground border">
                   <Clock className="h-3 w-3 mr-1" />
                   Instant Transfers
                 </Badge>
@@ -97,7 +97,7 @@ export default function PlaidBanking() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <Clock className="h-5 w-5 text-blue-600" />
+              <Clock className="h-5 w-5 text-primary" />
               Instant Deposits
             </CardTitle>
           </CardHeader>
@@ -111,7 +111,7 @@ export default function PlaidBanking() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <Shield className="h-5 w-5 text-green-600" />
+              <Shield className="h-5 w-5 text-primary" />
               Secure & Private
             </CardTitle>
           </CardHeader>
@@ -125,7 +125,7 @@ export default function PlaidBanking() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <Banknote className="h-5 w-5 text-purple-600" />
+              <Banknote className="h-5 w-5 text-primary" />
               Low Fees
             </CardTitle>
           </CardHeader>

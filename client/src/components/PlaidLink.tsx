@@ -166,11 +166,11 @@ export default function PlaidLink({ userId, onSuccess }: PlaidLinkProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-wrap gap-2 mb-4">
-          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+          <Badge variant="outline" className="bg-background text-foreground border">
             <CheckCircle className="h-3 w-3 mr-1" />
             Bank-Level Security
           </Badge>
-          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+          <Badge variant="outline" className="bg-background text-foreground border">
             <Banknote className="h-3 w-3 mr-1" />
             Instant Transfers
           </Badge>
@@ -220,7 +220,7 @@ export default function PlaidLink({ userId, onSuccess }: PlaidLinkProps) {
           </Button>
         </div>
 
-        <div className="text-xs text-muted-foreground mt-4 p-3 bg-gray-50 rounded">
+        <div className="text-xs text-muted-foreground mt-4 p-3 bg-muted/50 rounded border">
           <strong>Security Note:</strong> We use Plaid's bank-grade security. Your credentials are encrypted 
           and we never store your login information. All connections are read-only and FDIC protected.
         </div>
