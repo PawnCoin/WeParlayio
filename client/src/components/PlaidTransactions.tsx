@@ -1,463 +1,314 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, ArrowDownRight, ArrowUpRight, DollarSign, AlertCircle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  ArrowDownLeft, 
+  ArrowUpRight, 
+  Banknote, 
+  CreditCard, 
+  Loader2, 
+  RefreshCw,
+  DollarSign,
+  Clock,
+  CheckCircle,
+  AlertCircle
+} from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface PlaidTransactionsProps {
   userId: string;
-  userBalance?: number;
+  currentBalance: number;
 }
 
-interface BankAccount {
-  id: number;
-  accountName: string;
-  accountType: string;
-  accountSubtype: string;
-  mask: string;
-  balances: {
-    available: number | null;
-    current: number | null;
-    iso_currency_code: string;
-  };
-}
-
-interface Transaction {
-  id: number;
-  type: string;
-  amount: number;
-  status: string;
-  description: string;
-  createdAt: string;
-  plaidTransferId?: string;
-}
-
-export default function PlaidTransactions({ userId, userBalance = 0 }: PlaidTransactionsProps) {
-  const [depositAmount, setDepositAmount] = useState('');
-  const [withdrawAmount, setWithdrawAmount] = useState('');
-  const [selectedDepositAccount, setSelectedDepositAccount] = useState('');
-  const [selectedWithdrawAccount, setSelectedWithdrawAccount] = useState('');
+export default function PlaidTransactions({ userId, currentBalance }: PlaidTransactionsProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState('deposit');
+  const [amount, setAmount] = useState('');
+  const [selectedAccount, setSelectedAccount] = useState('');
 
-  // Get user's bank accounts
-  const { data: accounts = [], isLoading: accountsLoading } = useQuery({
+  // Fetch connected accounts
+  const { data: accountsData, isLoading: accountsLoading } = useQuery({
     queryKey: ['/api/plaid/accounts', userId],
-    queryFn: () => apiRequest(`/api/plaid/accounts/${userId}`),
-    enabled: !!userId
-  });
-
-  // Get transaction history
-  const { data: transactions = [], isLoading: transactionsLoading } = useQuery({
-    queryKey: ['/api/plaid/transactions', userId],
-    queryFn: () => apiRequest(`/api/plaid/transactions/${userId}`),
-    enabled: !!userId
-  });
-
-  // Deposit mutation
-  const depositMutation = useMutation({
-    mutationFn: (data: { accountId: string; amount: number; description?: string }) =>
-      apiRequest('/api/plaid/deposit', {
-        method: 'POST',
-        body: JSON.stringify({ ...data, userId })
-      }),
-    onSuccess: (data) => {
-      if (data.success) {
-        toast({
-          title: "Deposit Initiated",
-          description: `$${depositAmount} deposit is being processed`,
-          variant: "default"
-        });
-        setDepositAmount('');
-        setSelectedDepositAccount('');
-        queryClient.invalidateQueries({ queryKey: ['/api/plaid/transactions', userId] });
-      } else {
-        toast({
-          title: "Deposit Failed",
-          description: data.error || "Failed to initiate deposit",
-          variant: "destructive"
-        });
+    queryFn: async () => {
+      const response = await fetch(`/api/plaid/accounts?userId=${userId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch accounts');
       }
+      return response.json();
     },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to process deposit",
-        variant: "destructive"
-      });
-    }
+    refetchInterval: 30000, // Refresh every 30 seconds
   });
 
-  // Withdrawal mutation
-  const withdrawMutation = useMutation({
-    mutationFn: (data: { accountId: string; amount: number; description?: string }) =>
-      apiRequest('/api/plaid/withdraw', {
+  // Create transfer mutation
+  const transferMutation = useMutation({
+    mutationFn: async ({ type, amount, accountId }: { type: 'deposit' | 'withdrawal', amount: number, accountId: string }) => {
+      const response = await fetch('/api/plaid/transfer', {
         method: 'POST',
-        body: JSON.stringify({ ...data, userId })
-      }),
-    onSuccess: (data) => {
-      if (data.success) {
-        toast({
-          title: "Withdrawal Initiated",
-          description: `$${withdrawAmount} withdrawal is being processed`,
-          variant: "default"
-        });
-        setWithdrawAmount('');
-        setSelectedWithdrawAccount('');
-        queryClient.invalidateQueries({ queryKey: ['/api/plaid/transactions', userId] });
-      } else {
-        toast({
-          title: "Withdrawal Failed",
-          description: data.error || "Failed to initiate withdrawal",
-          variant: "destructive"
-        });
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          accountId,
+          amount,
+          type,
+          description: `WeParlay ${type} - $${amount}`
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to process ${type}`);
       }
+      
+      return response.json();
     },
-    onError: () => {
+    onSuccess: (data, variables) => {
       toast({
-        title: "Error",
-        description: "Failed to process withdrawal",
-        variant: "destructive"
+        title: `${variables.type === 'deposit' ? 'Deposit' : 'Withdrawal'} Initiated`,
+        description: `$${variables.amount} ${variables.type} is being processed. Usually takes 1-2 business days.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/plaid/accounts'] });
+      setAmount('');
+    },
+    onError: (error, variables) => {
+      toast({
+        title: `${variables.type === 'deposit' ? 'Deposit' : 'Withdrawal'} Failed`,
+        description: error instanceof Error ? error.message : 'Transaction failed',
+        variant: "destructive",
       });
     }
   });
 
-  const handleDeposit = () => {
-    const amount = parseFloat(depositAmount);
-    if (!amount || amount <= 0) {
+  const handleTransfer = async (type: 'deposit' | 'withdrawal') => {
+    const transferAmount = parseFloat(amount);
+    
+    if (!transferAmount || transferAmount <= 0) {
       toast({
         title: "Invalid Amount",
-        description: "Please enter a valid deposit amount",
-        variant: "destructive"
+        description: "Please enter a valid amount greater than $0",
+        variant: "destructive",
       });
       return;
     }
 
-    if (!selectedDepositAccount) {
+    if (!selectedAccount) {
       toast({
-        title: "Select Account",
-        description: "Please select a bank account for the deposit",
-        variant: "destructive"
+        title: "No Account Selected",
+        description: "Please select a bank account for the transaction",
+        variant: "destructive",
       });
       return;
     }
 
-    if (amount < 1 || amount > 50000) {
-      toast({
-        title: "Invalid Amount",
-        description: "Deposit amount must be between $1 and $50,000",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    depositMutation.mutate({
-      accountId: selectedDepositAccount,
-      amount,
-      description: `WeParlay deposit - $${amount}`
-    });
-  };
-
-  const handleWithdraw = () => {
-    const amount = parseFloat(withdrawAmount);
-    if (!amount || amount <= 0) {
-      toast({
-        title: "Invalid Amount",
-        description: "Please enter a valid withdrawal amount",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (!selectedWithdrawAccount) {
-      toast({
-        title: "Select Account",
-        description: "Please select a bank account for the withdrawal",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (amount < 1 || amount > 50000) {
-      toast({
-        title: "Invalid Amount",
-        description: "Withdrawal amount must be between $1 and $50,000",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (amount > userBalance) {
+    if (type === 'withdrawal' && transferAmount > currentBalance) {
       toast({
         title: "Insufficient Balance",
-        description: `You only have $${userBalance.toFixed(2)} available`,
-        variant: "destructive"
+        description: `Cannot withdraw $${transferAmount}. Current balance: $${currentBalance}`,
+        variant: "destructive",
       });
       return;
     }
 
-    withdrawMutation.mutate({
-      accountId: selectedWithdrawAccount,
-      amount,
-      description: `WeParlay withdrawal - $${amount}`
+    await transferMutation.mutateAsync({
+      type,
+      amount: transferAmount,
+      accountId: selectedAccount
     });
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'failed': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getTransactionIcon = (type: string) => {
-    return type === 'deposit' ? (
-      <ArrowDownRight className="h-4 w-4 text-green-600" />
-    ) : (
-      <ArrowUpRight className="h-4 w-4 text-red-600" />
-    );
-  };
+  const accounts = accountsData?.accounts || [];
+  const hasAccounts = accounts.length > 0;
 
   if (accountsLoading) {
     return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-8">
-          <Loader2 className="h-6 w-6 animate-spin mr-2" />
-          Loading...
+      <Card className="w-full">
+        <CardContent className="flex items-center justify-center p-8">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Loading bank accounts...</span>
         </CardContent>
       </Card>
     );
   }
 
-  if (accounts.length === 0) {
+  if (!hasAccounts) {
     return (
-      <Card>
-        <CardContent className="text-center py-8">
-          <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-          <p className="text-muted-foreground">Please connect a bank account first</p>
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CreditCard className="h-5 w-5" />
+            Bank Transfers
+          </CardTitle>
+          <CardDescription>
+            Connect a bank account to enable deposits and withdrawals
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <Banknote className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">
+              No bank accounts connected. Use the "Connect Bank Account" section above to get started.
+            </p>
+          </div>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Balance Display */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5" />
-            WeParlay Balance
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold">{formatCurrency(userBalance)}</div>
-          <p className="text-muted-foreground">Available for withdrawal</p>
-        </CardContent>
-      </Card>
-
-      {/* Deposit/Withdraw Tabs */}
-      <Tabs defaultValue="deposit" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="deposit">Deposit</TabsTrigger>
-          <TabsTrigger value="withdraw">Withdraw</TabsTrigger>
-        </TabsList>
-
-        {/* Deposit Tab */}
-        <TabsContent value="deposit">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ArrowDownRight className="h-5 w-5 text-green-600" />
-                Deposit Funds
-              </CardTitle>
-              <CardDescription>
-                Transfer money from your bank account to WeParlay
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Select Bank Account</label>
-                <Select value={selectedDepositAccount} onValueChange={setSelectedDepositAccount}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose an account" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {accounts.map((account: BankAccount) => (
-                      <SelectItem key={account.id} value={account.id.toString()}>
-                        {account.accountName} •••• {account.mask} 
-                        ({formatCurrency(account.balances.available || 0)} available)
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium">Amount</label>
-                <Input
-                  type="number"
-                  placeholder="0.00"
-                  value={depositAmount}
-                  onChange={(e) => setDepositAmount(e.target.value)}
-                  min="1"
-                  max="50000"
-                  step="0.01"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Minimum: $1.00 • Maximum: $50,000.00
-                </p>
-              </div>
-
-              <Button
-                onClick={handleDeposit}
-                disabled={depositMutation.isPending}
-                className="w-full"
-              >
-                {depositMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing Deposit...
-                  </>
-                ) : (
-                  <>
-                    <ArrowDownRight className="mr-2 h-4 w-4" />
-                    Deposit {depositAmount ? formatCurrency(parseFloat(depositAmount)) : 'Funds'}
-                  </>
-                )}
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Withdraw Tab */}
-        <TabsContent value="withdraw">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ArrowUpRight className="h-5 w-5 text-red-600" />
-                Withdraw Funds
-              </CardTitle>
-              <CardDescription>
-                Transfer money from WeParlay to your bank account
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Select Bank Account</label>
-                <Select value={selectedWithdrawAccount} onValueChange={setSelectedWithdrawAccount}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose an account" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {accounts.map((account: BankAccount) => (
-                      <SelectItem key={account.id} value={account.id.toString()}>
-                        {account.accountName} •••• {account.mask}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium">Amount</label>
-                <Input
-                  type="number"
-                  placeholder="0.00"
-                  value={withdrawAmount}
-                  onChange={(e) => setWithdrawAmount(e.target.value)}
-                  min="1"
-                  max={userBalance.toString()}
-                  step="0.01"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Available: {formatCurrency(userBalance)} • Minimum: $1.00
-                </p>
-              </div>
-
-              <Button
-                onClick={handleWithdraw}
-                disabled={withdrawMutation.isPending}
-                className="w-full"
-                variant="outline"
-              >
-                {withdrawMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing Withdrawal...
-                  </>
-                ) : (
-                  <>
-                    <ArrowUpRight className="mr-2 h-4 w-4" />
-                    Withdraw {withdrawAmount ? formatCurrency(parseFloat(withdrawAmount)) : 'Funds'}
-                  </>
-                )}
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-
-      {/* Transaction History */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Transaction History</CardTitle>
-          <CardDescription>Your recent deposits and withdrawals</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {transactionsLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin mr-2" />
-              Loading transactions...
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <ArrowDownLeft className="h-5 w-5" />
+          Bank Transfers
+        </CardTitle>
+        <CardDescription>
+          Deposit or withdraw funds from your connected bank accounts
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {/* Current Balance Display */}
+        <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Current WeParlay Balance</p>
+              <p className="text-2xl font-bold text-green-600">${currentBalance.toFixed(2)}</p>
             </div>
-          ) : transactions.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>No transactions yet</p>
-              <p className="text-sm">Your deposits and withdrawals will appear here</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {transactions.slice(0, 10).map((transaction: Transaction) => (
-                <div key={transaction.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    {getTransactionIcon(transaction.type)}
-                    <div>
-                      <p className="font-medium capitalize">{transaction.type}</p>
-                      <p className="text-sm text-muted-foreground">{transaction.description}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(transaction.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
+            <DollarSign className="h-8 w-8 text-green-600" />
+          </div>
+        </div>
+
+        {/* Connected Accounts */}
+        <div className="mb-6">
+          <Label className="text-sm font-medium mb-3 block">Connected Bank Accounts</Label>
+          <div className="space-y-2">
+            {accounts.map((account: any) => (
+              <div
+                key={account.account_id}
+                className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                  selectedAccount === account.account_id 
+                    ? 'border-primary bg-primary/5' 
+                    : 'border-border hover:bg-muted/50'
+                }`}
+                onClick={() => setSelectedAccount(account.account_id)}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">{account.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {account.subtype} •••• {account.mask}
+                    </p>
                   </div>
                   <div className="text-right">
                     <p className="font-medium">
-                      {transaction.type === 'deposit' ? '+' : '-'}{formatCurrency(transaction.amount)}
+                      ${account.balances?.available?.toFixed(2) || '0.00'}
                     </p>
-                    <Badge className={getStatusColor(transaction.status)}>
-                      {transaction.status}
-                    </Badge>
+                    <p className="text-xs text-muted-foreground">Available</p>
                   </div>
                 </div>
-              ))}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Transfer Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="deposit" className="flex items-center gap-2">
+              <ArrowDownLeft className="h-4 w-4" />
+              Deposit
+            </TabsTrigger>
+            <TabsTrigger value="withdrawal" className="flex items-center gap-2">
+              <ArrowUpRight className="h-4 w-4" />
+              Withdraw
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="deposit" className="space-y-4">
+            <div>
+              <Label htmlFor="deposit-amount">Deposit Amount</Label>
+              <Input
+                id="deposit-amount"
+                type="number"
+                placeholder="0.00"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="mt-1"
+              />
             </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+            <Button
+              onClick={() => handleTransfer('deposit')}
+              disabled={transferMutation.isPending || !selectedAccount || !amount}
+              className="w-full"
+              size="lg"
+            >
+              {transferMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Processing Deposit...
+                </>
+              ) : (
+                <>
+                  <ArrowDownLeft className="h-4 w-4 mr-2" />
+                  Deposit ${amount || '0.00'}
+                </>
+              )}
+            </Button>
+          </TabsContent>
+
+          <TabsContent value="withdrawal" className="space-y-4">
+            <div>
+              <Label htmlFor="withdrawal-amount">Withdrawal Amount</Label>
+              <Input
+                id="withdrawal-amount"
+                type="number"
+                placeholder="0.00"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="mt-1"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Maximum: ${currentBalance.toFixed(2)}
+              </p>
+            </div>
+            <Button
+              onClick={() => handleTransfer('withdrawal')}
+              disabled={transferMutation.isPending || !selectedAccount || !amount}
+              className="w-full"
+              size="lg"
+              variant="outline"
+            >
+              {transferMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Processing Withdrawal...
+                </>
+              ) : (
+                <>
+                  <ArrowUpRight className="h-4 w-4 mr-2" />
+                  Withdraw ${amount || '0.00'}
+                </>
+              )}
+            </Button>
+          </TabsContent>
+        </Tabs>
+
+        {/* Processing Time Info */}
+        <div className="mt-6 p-3 bg-blue-50 rounded-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <Clock className="h-4 w-4 text-blue-600" />
+            <span className="text-sm font-medium text-blue-800">Processing Times</span>
+          </div>
+          <div className="text-xs text-blue-700 space-y-1">
+            <div>• Deposits: 1-2 business days</div>
+            <div>• Withdrawals: 2-3 business days</div>
+            <div>• All transfers are processed securely through Plaid</div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

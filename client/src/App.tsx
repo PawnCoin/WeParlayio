@@ -68,6 +68,7 @@ const ThemeSettingsPage = React.lazy(() => import("@/pages/ThemeSettingsPage"));
 const PaymentCheckout = React.lazy(() => import("@/pages/PaymentCheckout"));
 const CryptoCheckout = React.lazy(() => import("@/pages/CryptoCheckout"));
 const TierUpgradeSuccess = React.lazy(() => import("@/pages/TierUpgradeSuccess"));
+const PlaidBanking = React.lazy(() => import("@/pages/PlaidBanking"));
 
 // Development/Testing imports (conditional)
 const TokenCleanupTest = React.lazy(() => import("@/pages/TokenCleanupTest"));
@@ -108,7 +109,7 @@ function Router() {
       {/* VIP Features (Single route per feature) */}
       <Route path="/vip" component={VIPDashboard} />
       <Route path="/banking" component={BankingSystem} />
-      <Route path="/plaid-banking" component={React.lazy(() => import("@/pages/PlaidBanking"))} />
+      <Route path="/plaid-banking" component={PlaidBanking} />
       <Route path="/crypto-wallet" component={CryptoWallet} />
       
       {/* Social Features */}

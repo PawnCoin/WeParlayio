@@ -6,17 +6,21 @@ import { Banknote, CreditCard, Shield, Clock } from "lucide-react";
 import PlaidLink from "@/components/PlaidLink";
 import PlaidTransactions from "@/components/PlaidTransactions";
 import { useQuery } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
+// import { apiRequest } from '@/lib/queryClient';
 
 export default function PlaidBanking() {
   // Get current user from query or use demo user
   const { data: userInfo } = useQuery({
     queryKey: ['/api/auth/user'],
-    queryFn: () => apiRequest('/api/auth/user'),
+    queryFn: async () => {
+      const response = await fetch('/api/auth/user');
+      if (!response.ok) throw new Error('Failed to fetch user');
+      return response.json();
+    },
   });
   
   const userId = userInfo?.id || "demo-user-1";
-  const currentBalance = userInfo?.balance || 0;
+  const currentBalance = userInfo?.balance || 250.00;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -73,7 +77,7 @@ export default function PlaidBanking() {
         <TabsContent value="accounts" className="mt-6">
           <PlaidLink 
             userId={userId}
-            userName={userInfo?.username || userInfo?.firstName || 'WeParlay User'}
+            // userName={userInfo?.username || userInfo?.firstName || 'WeParlay User'}
             onSuccess={(accounts) => {
               console.log('Successfully linked accounts:', accounts);
             }}
@@ -83,7 +87,7 @@ export default function PlaidBanking() {
         <TabsContent value="transactions" className="mt-6">
           <PlaidTransactions 
             userId={userId}
-            userBalance={currentBalance}
+            currentBalance={currentBalance}
           />
         </TabsContent>
       </Tabs>
