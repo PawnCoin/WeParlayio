@@ -44,22 +44,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   // Handle missing user properties with proper defaults and admin status
   const currentUser = user as any || {};
   
-  // Check admin status from multiple sources
-  const isAdmin = currentUser.isAdmin || 
-                  localStorage.getItem("weparlay-is-admin") === "true" || 
-                  ['support@weparlay.io', 'admin@weparlay.io', 'weparlay@admin.com'].includes(currentUser.email || '');
+  // Check admin status from multiple sources (memoized to prevent infinite loops)
+  const isAdmin = React.useMemo(() => {
+    return currentUser.isAdmin || 
+           localStorage.getItem("weparlay-is-admin") === "true" || 
+           ['support@weparlay.io', 'admin@weparlay.io', 'weparlay@admin.com'].includes(currentUser.email || '');
+  }, [currentUser.isAdmin, currentUser.email]);
   
   // Enhance user object with admin status
   currentUser.isAdmin = isAdmin;
   currentUser.role = isAdmin ? 'admin' : (currentUser.role || 'user');
-  
-  // Debug log to check admin status
-  console.log('Admin check:', {
-    userEmail: currentUser.email,
-    isAdmin,
-    localStorage: localStorage.getItem("weparlay-is-admin"),
-    userIsAdmin: currentUser.isAdmin
-  });
   
   const userId = currentUser.id || 'guest';
   const userName = currentUser.firstName || currentUser.email?.split('@')[0] || 'User';

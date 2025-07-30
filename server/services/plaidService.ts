@@ -1,16 +1,22 @@
-import { Configuration, PlaidApi, PlaidEnvironments } from 'plaid';
+import { Configuration, PlaidApi, PlaidEnvironments, Products, CountryCode, ProcessorTokenCreateRequestProcessorEnum } from 'plaid';
 import { Request, Response } from 'express';
+import plaidDemoService from './plaidDemoService';
 
 class PlaidService {
   private client: PlaidApi;
 
   constructor() {
+    // Set default environment to sandbox if not specified
+    const plaidEnv = process.env.PLAID_ENV || 'sandbox';
+    const clientId = process.env.PLAID_CLIENT_ID;
+    const secret = process.env.PLAID_SECRET;
+    
     const configuration = new Configuration({
-      basePath: PlaidEnvironments[process.env.PLAID_ENV as keyof typeof PlaidEnvironments] || PlaidEnvironments.sandbox,
+      basePath: PlaidEnvironments[plaidEnv as keyof typeof PlaidEnvironments] || PlaidEnvironments.sandbox,
       baseOptions: {
         headers: {
-          'PLAID-CLIENT-ID': process.env.PLAID_CLIENT_ID!,
-          'PLAID-SECRET': process.env.PLAID_SECRET!,
+          'PLAID-CLIENT-ID': clientId,
+          'PLAID-SECRET': secret,
         },
       },
     });
@@ -20,20 +26,25 @@ class PlaidService {
 
   // Create link token for user authentication
   async createLinkToken(userId: string, userName: string = 'WeParlay User') {
+    // Use demo service if no real credentials are provided
+    if (!process.env.PLAID_CLIENT_ID || !process.env.PLAID_SECRET) {
+      console.log('Using Plaid demo service - no real credentials provided');
+      return plaidDemoService.createLinkToken(userId, userName);
+    }
+
     try {
       const response = await this.client.linkTokenCreate({
         user: { 
           client_user_id: userId,
         },
         client_name: 'WeParlay',
-        products: ['auth', 'transactions', 'identity'],
-        country_codes: ['US'],
+        products: [Products.Auth, Products.Transactions, Products.Identity],
+        country_codes: [CountryCode.Us],
         language: 'en',
-        webhook: process.env.PLAID_WEBHOOK_URL,
+        webhook: process.env.PLAID_WEBHOOK_URL || undefined,
         account_filters: {
           depository: {
-            account_type: ['checking', 'savings'],
-            account_subtype: ['checking', 'savings']
+            account_subtypes: ['checking', 'savings']
           }
         }
       });
@@ -54,6 +65,12 @@ class PlaidService {
 
   // Exchange public token for access token
   async exchangePublicToken(publicToken: string) {
+    // Use demo service if no real credentials are provided
+    if (!process.env.PLAID_CLIENT_ID || !process.env.PLAID_SECRET) {
+      console.log('Using Plaid demo service - no real credentials provided');
+      return plaidDemoService.exchangePublicToken(publicToken);
+    }
+
     try {
       const tokenResponse = await this.client.itemPublicTokenExchange({
         public_token: publicToken
@@ -99,6 +116,10 @@ class PlaidService {
 
   // Get account balances
   async getAccountBalances(accessToken: string) {
+    if (!process.env.PLAID_CLIENT_ID || !process.env.PLAID_SECRET) {
+      return plaidDemoService.getAccountBalances(accessToken);
+    }
+
     try {
       const response = await this.client.accountsGet({
         access_token: accessToken
@@ -130,9 +151,7 @@ class PlaidService {
       const response = await this.client.transactionsGet({
         access_token: accessToken,
         start_date: startDate,
-        end_date: endDate,
-        count: 100,
-        offset: 0
+        end_date: endDate
       });
 
       return {

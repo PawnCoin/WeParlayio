@@ -68,6 +68,14 @@ export default function VIPDashboard() {
       path: '/vip/blockchain-performance',
       color: 'bg-green-600',
       features: ['Pawn Coin analytics', 'Web3 integration', 'Crypto betting', 'Portfolio tracking']
+    },
+    {
+      title: 'Plaid Banking',
+      description: 'Bank-grade security with instant ACH transfers',
+      icon: Shield,
+      path: '/plaid-banking',
+      color: 'bg-indigo-600',
+      features: ['Direct bank linking', 'Secure ACH transfers', 'Real-time balances', 'Industry-standard encryption']
     }
   ];
 

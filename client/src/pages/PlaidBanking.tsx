@@ -9,15 +9,13 @@ import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 
 export default function PlaidBanking() {
-  // Mock user data - in real app this would come from authentication context
-  const userId = "current-user-id"; // Replace with actual user ID from auth
-  
-  // Get user info to show current balance
+  // Get current user from query or use demo user
   const { data: userInfo } = useQuery({
     queryKey: ['/api/auth/user'],
     queryFn: () => apiRequest('/api/auth/user'),
   });
-
+  
+  const userId = userInfo?.id || "demo-user-1";
   const currentBalance = userInfo?.balance || 0;
 
   return (
