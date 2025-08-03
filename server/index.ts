@@ -42,6 +42,51 @@ const bettingRateLimit = rateLimit({
 // Apply rate limiting to betting endpoints
 app.use('/api/bets', bettingRateLimit);
 app.use('/api/betting', bettingRateLimit);
+
+// Error reporting endpoint
+app.use(express.json());
+app.post('/api/error-reports', (req, res) => {
+  try {
+    const report = {
+      id: req.body.id || `report_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      type: req.body.type || 'feedback',
+      message: req.body.message || '',
+      details: req.body.details || '',
+      userAgent: req.body.userAgent || req.headers['user-agent'],
+      url: req.body.url || req.headers.referer,
+      timestamp: new Date().toISOString(),
+      status: 'submitted'
+    };
+    
+    console.log(`📧 Error Report Received:
+Type: ${report.type}
+Message: ${report.message}
+URL: ${report.url}
+Time: ${report.timestamp}
+---`);
+
+    res.json({
+      success: true,
+      message: 'Report submitted successfully',
+      reportId: report.id
+    });
+  } catch (error) {
+    console.error('Error processing report:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to submit report'
+    });
+  }
+});
+
+app.get('/api/error-reports', (req, res) => {
+  res.json({
+    success: true,
+    reports: [],
+    count: 0,
+    message: 'Error reports endpoint ready'
+  });
+});
 app.set('trust proxy', 1); // Trust first proxy - important for secure cookies with custom domain
 
 // Apply security middleware FIRST with relaxed CSP for development and streaming

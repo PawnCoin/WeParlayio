@@ -701,3 +701,31 @@ export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 
 export type Friendship = typeof friendships.$inferSelect;
 export type InsertFriendship = z.infer<typeof insertFriendshipSchema>;
+
+// Error reporting system
+export const errorReports = pgTable("error_reports", {
+  id: varchar("id").primaryKey().notNull(),
+  type: text("type").notNull(), // 'error', 'feedback', 'bug'
+  message: text("message").notNull(),
+  details: text("details").default(""),
+  userAgent: text("user_agent").notNull(),
+  url: text("url").notNull(),
+  timestamp: timestamp("timestamp").notNull(),
+  status: text("status").default("submitted"), // 'pending', 'submitted', 'resolved'
+  critical: boolean("critical").default(false),
+  userId: varchar("user_id").references(() => users.id),
+  userEmail: text("user_email"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  resolvedAt: timestamp("resolved_at"),
+});
+
+export const insertErrorReportSchema = createInsertSchema(errorReports)
+  .omit({ 
+    createdAt: true, 
+    updatedAt: true, 
+    resolvedAt: true 
+  });
+
+export type ErrorReport = typeof errorReports.$inferSelect;
+export type InsertErrorReport = z.infer<typeof insertErrorReportSchema>;

@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown, Menu, Wallet, Coins, Shield, ArrowRightLeft, History, CreditCard, Crown, Briefcase, Settings, Users, User, Camera, LogOut } from "lucide-react";
+import FeedbackButton from '../FeedbackButton';
 import { useToast } from "@/hooks/use-toast";
 import Logo from "@/components/WeParlay/Logo";
 import WalletConnectionOptimized from "@/components/wallet/WalletConnectionOptimized";
@@ -476,7 +477,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
       {/* Bottom Right Corner - Professionally Organized */}
       <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 items-end">
-        {/* System Status - Top */}
+        {/* Feedback Button - Top */}
+        <FeedbackButton variant="floating" />
+        
+        {/* System Status - Middle */}
         <div className="bg-black/10 backdrop-blur-sm rounded-lg p-2 shadow-lg">
           <SystemStatusIndicator />
         </div>
