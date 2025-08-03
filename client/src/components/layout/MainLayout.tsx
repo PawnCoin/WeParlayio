@@ -460,10 +460,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   <Button 
                     variant="outline" 
                     className="text-white border-green-500 hover:bg-green-500/10"
-                    onClick={() => window.location.href = '/auth'}
+                    onClick={() => window.location.href = '/quick-admin-login'}
                   >
                     <User className="mr-2 h-4 w-4" />
-                    Login
+                    Quick Login
                   </Button>
                 </div>
               )}
