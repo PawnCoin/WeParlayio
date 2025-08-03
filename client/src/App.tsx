@@ -105,6 +105,7 @@ function Router() {
       <Route path="/sports" component={UnifiedSports} />
       <Route path="/esports-hub" component={EsportsHub} />
       <Route path="/tournaments" component={Tournaments} />
+      <Route path="/gaming" component={React.lazy(() => import("@/pages/UnifiedGaming"))} />
 
       {/* VIP Features (Single route per feature) */}
       <Route path="/vip" component={VIPDashboard} />

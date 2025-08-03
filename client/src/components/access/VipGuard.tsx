@@ -77,6 +77,11 @@ export default function VipGuard({
   const userTierLevel = tierHierarchy[user.tier?.toLowerCase() as keyof typeof tierHierarchy] || 0;
   const requiredTierLevel = tierHierarchy[requiredTier];
 
+  // Admin users have full access to everything - bypass all VIP restrictions
+  if (user.isAdmin || user.role === 'admin') {
+    return <>{children}</>;
+  }
+
   // Check if user has required tier
   if (userTierLevel < requiredTierLevel) {
     const getTierColor = (tier: string) => {
