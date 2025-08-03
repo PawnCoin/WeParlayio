@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 export function useAuth() {
-  const { data: user, isLoading, error } = useQuery({
+  const { data: user, isLoading, error, refetch } = useQuery({
     queryKey: ["/api/auth/user"],
     queryFn: async () => {
       const token = localStorage.getItem('auth-token') || localStorage.getItem('weparlay-admin-token');
@@ -29,6 +29,8 @@ export function useAuth() {
     },
     retry: false,
     staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: true,
+    refetchInterval: 60000, // Refetch every minute to keep auth state fresh
   });
 
   // If there's a 401 error or no user data, user is not authenticated
@@ -45,5 +47,6 @@ export function useAuth() {
     user: enhancedUser,
     isLoading,
     isAuthenticated,
+    refetch,
   };
 }

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Admin Login</title>
+</head>
+<body>
+    <h1>Admin Login Test</h1>
+    <button onclick="adminLogin()">Login as Admin</button>
+    <button onclick="clearAuth()">Clear Auth</button>
+    <div id="status"></div>
+
+    <script>
+        async function adminLogin() {
+            try {
+                document.getElementById('status').innerHTML = 'Logging in...';
+                
+                const response = await fetch('/api/auth/admin-login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'support@weparlay.io',
+                        password: 'Baysides3!'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success && data.token) {
+                    localStorage.setItem('auth-token', data.token);
+                    localStorage.setItem('weparlay-is-admin', 'true');
+                    document.getElementById('status').innerHTML = '✅ Admin login successful! Redirecting...';
+                    
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
+                } else {
+                    document.getElementById('status').innerHTML = '❌ Login failed: ' + data.message;
+                }
+            } catch (error) {
+                document.getElementById('status').innerHTML = '❌ Error: ' + error.message;
+            }
+        }
+
+        function clearAuth() {
+            localStorage.clear();
+            document.getElementById('status').innerHTML = 'Authentication cleared';
+        }
+    </script>
+</body>
+</html>
