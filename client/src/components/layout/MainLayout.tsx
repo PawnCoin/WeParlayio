@@ -74,6 +74,40 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const userBalance = currentUser.balance || 0;
   const userProfileImage = currentUser.profileImageUrl;
   
+  // Quick admin login function
+  const quickAdminLogin = async () => {
+    try {
+      console.log('🔐 Quick admin login...');
+      
+      const response = await fetch('/api/auth/admin-login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: 'support@weparlay.io',
+          password: 'Baysides3!'
+        })
+      });
+
+      const data = await response.json();
+      console.log('Admin login response:', data);
+
+      if (data.success && data.token) {
+        // Store the token in localStorage
+        localStorage.setItem('auth-token', data.token);
+        localStorage.setItem('weparlay-is-admin', 'true');
+        
+        // Force page reload to refresh auth state
+        window.location.reload();
+      } else {
+        console.error('Admin login failed:', data.message);
+      }
+    } catch (error) {
+      console.error('Admin login error:', error);
+    }
+  };
+
   // Simple logout function - use useAuth logout
   const logout = async () => {
     try {
@@ -426,6 +460,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   <Button 
                     variant="outline" 
                     className="text-white border-green-500 hover:bg-green-500/10"
+                    onClick={() => window.location.href = '/test-admin-auth'}
+                  >
+                    <User className="mr-2 h-4 w-4" />
+                    Admin Login
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="text-white border-gray-500 hover:bg-gray-500/10"
                     onClick={() => window.location.href = '/auth'}
                   >
                     <User className="mr-2 h-4 w-4" />

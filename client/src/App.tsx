@@ -161,6 +161,7 @@ function Router() {
         <Suspense fallback={<LoadingFallback />}>
           <Route path="/token-cleanup-test" component={TokenCleanupTest} />
           <Route path="/notification-test" component={NotificationTest} />
+          <Route path="/test-admin-auth" component={React.lazy(() => import("@/pages/TestAdminAuth"))} />
         </Suspense>
       )}
 
