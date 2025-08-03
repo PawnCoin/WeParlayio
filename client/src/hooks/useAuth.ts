@@ -37,7 +37,7 @@ export function useAuth() {
   // Check if user is admin based on stored data and backend response
   const enhancedUser = user ? {
     ...user,
-    isAdmin: user.isAdmin || localStorage.getItem("weparlay-is-admin") === "true" || false,
+    isAdmin: user.isAdmin || user.role === 'admin' || localStorage.getItem("weparlay-is-admin") === "true" || false,
     role: user.role || (user.isAdmin ? 'admin' : 'user')
   } : null;
 

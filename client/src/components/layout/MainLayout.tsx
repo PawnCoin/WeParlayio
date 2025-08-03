@@ -48,13 +48,25 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   // Check admin status from multiple sources (memoized to prevent infinite loops)
   const isAdmin = React.useMemo(() => {
     return currentUser.isAdmin || 
+           currentUser.role === 'admin' ||
            localStorage.getItem("weparlay-is-admin") === "true" || 
            ['support@weparlay.io', 'admin@weparlay.io', 'weparlay@admin.com'].includes(currentUser.email || '');
-  }, [currentUser.isAdmin, currentUser.email]);
+  }, [currentUser.isAdmin, currentUser.role, currentUser.email]);
   
   // Enhance user object with admin status
   currentUser.isAdmin = isAdmin;
   currentUser.role = isAdmin ? 'admin' : (currentUser.role || 'user');
+  
+  // Debug logging for authentication state
+  React.useEffect(() => {
+    console.log('🔍 Auth Debug:', {
+      isAuthenticated,
+      userEmail: currentUser.email,
+      isAdmin,
+      hasToken: !!localStorage.getItem('auth-token') || !!localStorage.getItem('weparlay-admin-token'),
+      user: currentUser
+    });
+  }, [isAuthenticated, currentUser.email, isAdmin]);
   
   const userId = currentUser.id || 'guest';
   const userName = currentUser.firstName || currentUser.email?.split('@')[0] || 'User';
