@@ -285,19 +285,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
               </div>
             </Link>
           </li>
-          <li>
-            <Link href="/esports-hub">
-              <div className={`flex items-center py-2 px-4 rounded-md cursor-pointer ${
-                location === '/esports-hub' 
-                  ? "bg-primary text-white" 
-                  : "bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 hover:from-indigo-100 hover:to-purple-100 dark:hover:from-indigo-900/40 dark:hover:to-purple-900/40"
-              }`}>
-                <MdSportsEsports className="h-5 w-5 mr-3 text-indigo-600" />
-                <span className="text-indigo-700 dark:text-indigo-300 font-medium">Esports Hub</span>
-                <span className="ml-2 text-[10px] font-bold py-0.5 px-1.5 bg-indigo-200 dark:bg-indigo-800 text-indigo-800 dark:text-indigo-200 rounded-full">HOT</span>
-              </div>
-            </Link>
-          </li>
+
 
           <li>
             <details className="group">

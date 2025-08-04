@@ -198,10 +198,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/betting-hub", label: "Sports Betting" },
-    { href: "/esports-hub", label: "Esports Hub" },
+
     { href: "/fantasy", label: "Fantasy" },
     { href: "/tournaments", label: "Tournaments" },
-    { href: "/gaming", label: "Gaming" },
+    { href: "/gaming", label: "Gaming & Esports" },
     { href: "/trivia", label: "Trivia" },
     { href: "/results", label: "Results" },
     { href: "/social-betting", label: "Social" }
