@@ -70,6 +70,9 @@ const CryptoCheckout = React.lazy(() => import("@/pages/CryptoCheckout"));
 const TierUpgradeSuccess = React.lazy(() => import("@/pages/TierUpgradeSuccess"));
 const PlaidBanking = React.lazy(() => import("@/pages/PlaidBanking"));
 const UnifiedGaming = React.lazy(() => import("@/pages/UnifiedGaming"));
+const SocialMediaBots = React.lazy(() => import("@/pages/SocialMediaBots"));
+const AdminDashboard = React.lazy(() => import("@/pages/AdminDashboard"));
+const UserDirectory = React.lazy(() => import("@/pages/UserDirectory"));
 
 // Development/Testing imports (conditional)
 const TokenCleanupTest = React.lazy(() => import("@/pages/TokenCleanupTest"));
@@ -117,10 +120,13 @@ function Router() {
       
       {/* Social Features */}
       <Route path="/social" component={SocialBetting} />
+      <Route path="/social-media-bots" component={SocialMediaBots} />
       <Route path="/head-to-head" component={HeadToHeadBetting} />
 
       {/* User Profile & Settings */}
       <Route path="/profile" component={UserProfile} />
+      <Route path="/user-dashboard" component={AdminDashboard} />
+      <Route path="/users" component={UserDirectory} />
       <Route path="/settings" component={Settings} />
       <Route path="/security-settings" component={SecuritySettings} />
       <Route path="/upgrade-tier" component={UpgradeTier} />
