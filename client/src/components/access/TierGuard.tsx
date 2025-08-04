@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Crown, Lock, Zap } from 'lucide-react';
 import { Link } from 'wouter';
+import AdminBypass from './AdminBypass';
 
 interface TierGuardProps {
   children: React.ReactNode;
@@ -20,6 +21,30 @@ const TierGuard: React.FC<TierGuardProps> = ({
 }) => {
   const { user } = useAuth();
   
+  // Admin users get access to EVERYTHING - wrap in AdminBypass
+  return (
+    <AdminBypass>
+      {/* For admin users, AdminBypass will just render children directly */}
+      <TierGuardContent 
+        user={user}
+        requiredTier={requiredTier}
+        feature={feature}
+        description={description}
+      >
+        {children}
+      </TierGuardContent>
+    </AdminBypass>
+  );
+};
+
+// Separate component for the actual tier checking logic
+const TierGuardContent: React.FC<{
+  children: React.ReactNode;
+  user: any;
+  requiredTier: 'standard' | 'vip' | 'professional';
+  feature: string;
+  description?: string;
+}> = ({ children, user, requiredTier, feature, description }) => {
   // Mock tier checking - in production this would check user.tier
   const userTier = user?.tier || 'standard';
   
