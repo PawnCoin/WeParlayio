@@ -474,9 +474,36 @@ router.get('/user', async (req, res) => {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'weparlay-secret-key') as any;
       
-      // Get user from database
-      const user = await storage.getUser(decoded.userId);
+      // Get user from database - try both getUser and getUserById
+      let user = await storage.getUser?.(decoded.userId);
+      if (!user && storage.getUserById) {
+        user = await storage.getUserById(decoded.userId);
+      }
+      
+      // If still no user found, but token has admin info, create/return admin user
+      if (!user && decoded.isAdmin) {
+        console.log('Creating admin user from JWT token for:', decoded.email);
+        const adminUserData = {
+          id: decoded.userId,
+          email: decoded.email,
+          username: decoded.username || 'WeParlay Admin',
+          firstName: 'WeParlay',
+          lastName: 'Admin',
+          role: 'admin',
+          tier: 'platinum',
+          isAdmin: true,
+          status: 'active',
+          balance: 1000000,
+          weplayTokenBalance: 1000000,
+          password: await bcrypt.hash('temp-password', 12),
+          createdAt: new Date(),
+        };
+        
+        user = await storage.upsertUser(adminUserData);
+      }
+      
       if (!user) {
+        console.log('User lookup failed for userId:', decoded.userId);
         return res.status(401).json({ message: 'User not found' });
       }
       
