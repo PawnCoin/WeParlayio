@@ -290,7 +290,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
           <li>
             <details className="group">
               <summary className={`flex items-center py-2 px-4 rounded-md cursor-pointer list-none ${
-                ['/vip', '/enhanced-features', '/head-to-head'].includes(location) 
+                ['/vip', '/enhanced-features', '/head-to-head', '/gaming'].includes(location) 
                   ? "bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900/40 dark:to-yellow-900/40" 
                   : "bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 hover:from-amber-100 hover:to-yellow-100 dark:hover:from-amber-900/40 dark:hover:to-yellow-900/40"
               }`}>
@@ -300,6 +300,19 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                 <ChevronDown className="h-4 w-4 ml-auto group-open:rotate-180 transition-transform text-amber-600" />
               </summary>
               <ul className="ml-6 mt-2 space-y-1">
+                <li>
+                  <Link href="/gaming">
+                    <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${
+                      location === '/gaming' 
+                        ? "bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-700 dark:bg-gradient-to-r dark:from-purple-900 dark:to-indigo-900 dark:text-purple-300" 
+                        : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}>
+                      <MdSportsEsports className="h-4 w-4 mr-2 text-purple-600" />
+                      <span className="font-bold text-purple-700 dark:text-purple-300">Gaming & Esports</span>
+                      <span className="ml-auto text-xs bg-purple-100 text-purple-700 dark:bg-purple-800 dark:text-purple-300 px-2 py-0.5 rounded-full font-bold">VIP</span>
+                    </div>
+                  </Link>
+                </li>
                 <li>
                   <Link href="/head-to-head">
                     <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${

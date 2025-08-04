@@ -17,8 +17,8 @@ import VipGuard from "@/components/access/VipGuard";
 export default function UnifiedGaming() {
   return (
     <VipGuard 
-      requiredTier="silver" 
-      feature="Unified Gaming Hub"
+      requiredTier="gold" 
+      feature="Gaming & Esports Hub"
     >
       <UnifiedGamingContent />
     </VipGuard>

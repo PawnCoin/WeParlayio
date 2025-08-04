@@ -66,6 +66,20 @@ export default function VipGuard({
     );
   }
 
+  // Admin users always have access
+  console.log('VipGuard Debug:', {
+    userIsAdmin: user?.isAdmin,
+    userRole: user?.role,
+    userEmail: user?.email,
+    userTier: user?.tier,
+    adminCheck: user?.isAdmin === true || user?.role === 'admin'
+  });
+
+  if (user?.isAdmin === true || user?.role === 'admin') {
+    console.log('✅ Admin access granted, bypassing VIP guard');
+    return <>{children}</>;
+  }
+
   // Define tier hierarchy
   const tierHierarchy = {
     bronze: 0,
