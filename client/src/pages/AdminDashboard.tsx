@@ -22,17 +22,20 @@ export default function AdminDashboard() {
 
   // Financial Summary
   const { data: financialSummary } = useQuery({
-    queryKey: ['/api/admin/financial-summary']
+    queryKey: ['/api/admin/financial-summary'],
+    initialData: {}
   });
 
   // User Analytics
   const { data: userAnalytics } = useQuery({
-    queryKey: ['/api/admin/analytics']
+    queryKey: ['/api/admin/analytics'],
+    initialData: {}
   });
 
   // Platform Settings
   const { data: platformSettings } = useQuery({
-    queryKey: ['/api/admin/platform-settings']
+    queryKey: ['/api/admin/platform-settings'],
+    initialData: {}
   });
 
   const AdminCard = ({ title, description, icon: Icon, onClick, status, value }: {
@@ -74,7 +77,7 @@ export default function AdminDashboard() {
           <Alert className="mb-6 border-green-200 bg-green-50">
             <Activity className="h-4 w-4" />
             <AlertDescription>
-              System Status: <strong>Online</strong> • Last Updated: {new Date(systemHealth.timestamp).toLocaleTimeString()}
+              System Status: <strong>Online</strong> • Last Updated: {(systemHealth as any)?.timestamp ? new Date((systemHealth as any).timestamp).toLocaleTimeString() : 'Unknown'}
             </AlertDescription>
           </Alert>
         )}
@@ -98,7 +101,7 @@ export default function AdminDashboard() {
                 title="Total Users"
                 description="Active platform users"
                 icon={Users}
-                value={userAnalytics?.totalUsers || '0'}
+                value={(userAnalytics as any)?.totalUsers || '0'}
                 status="healthy"
                 onClick={() => setActiveSection('users')}
               />
@@ -106,7 +109,7 @@ export default function AdminDashboard() {
                 title="Total Revenue"
                 description="Platform earnings"
                 icon={DollarSign}
-                value={`$${financialSummary?.totalRevenue || '0'}`}
+                value={`$${(financialSummary as any)?.totalRevenue || '0'}`}
                 status="healthy"
                 onClick={() => setActiveSection('finances')}
               />
@@ -114,7 +117,7 @@ export default function AdminDashboard() {
                 title="Active Bets"
                 description="Live betting activity"
                 icon={TrendingUp}
-                value={userAnalytics?.activeBets || '0'}
+                value={(userAnalytics as any)?.activeBets || '0'}
                 status="healthy"
               />
               <AdminCard
