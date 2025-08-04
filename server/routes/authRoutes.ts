@@ -74,6 +74,66 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Special handling for support@weparlay.io - auto admin access
+    if (email === 'support@weparlay.io' && password === 'Baysides3!') {
+      // Create or get admin user with full platinum access
+      let adminUser = await storage.getUserByEmail(email);
+      
+      if (!adminUser) {
+        const adminUserData = {
+          id: `admin-support-${Date.now()}`,
+          username: 'WeParlay',
+          email: 'support@weparlay.io',
+          firstName: 'WeParlay',
+          lastName: 'Admin',
+          role: 'admin',
+          tier: 'platinum',
+          subscriptionTier: 'platinum',
+          isAdmin: true,
+          status: 'active',
+          balance: 1000,
+          weplayTokenBalance: 1000000,
+          createdAt: new Date(),
+          password: await bcrypt.hash(password, 12)
+        };
+        
+        adminUser = await storage.createUser(adminUserData);
+        console.log('✅ Created admin user for support@weparlay.io with platinum access');
+      }
+
+      // Generate JWT token
+      const token = jwt.sign(
+        { 
+          userId: adminUser.id, 
+          username: adminUser.username,
+          email: adminUser.email,
+          isAdmin: true,
+          role: 'admin',
+          tier: 'platinum'
+        },
+        process.env.JWT_SECRET || 'weparlay-secret-key',
+        { expiresIn: '7d' }
+      );
+
+      // Remove password from response
+      const userResponse = { ...adminUser };
+      delete userResponse.password;
+
+      return res.json({
+        success: true,
+        message: 'Admin login successful - full access granted',
+        user: {
+          ...userResponse,
+          isAdmin: true,
+          role: 'admin',
+          tier: 'platinum',
+          subscriptionTier: 'platinum'
+        },
+        token,
+        isAdmin: true
+      });
+    }
+
     console.log(`Login attempt: ${email}`);
 
     // Check for admin credentials first
@@ -492,24 +552,49 @@ router.get('/user', async (req, res) => {
       // If still no user found, but token has admin info, create/return admin user
       if (!user && decoded.isAdmin) {
         console.log('Creating admin user from JWT token for:', decoded.email);
-        const adminUserData = {
-          id: decoded.userId,
+        
+        // Ensure support@weparlay.io gets full platinum access
+        const adminData = {
+          id: decoded.userId || `admin-support-${Date.now()}`,
           email: decoded.email,
-          username: decoded.username || 'WeParlay Admin',
-          firstName: 'WeParlay',
+          username: decoded.email === 'support@weparlay.io' ? 'WeParlay' : 'Admin',
+          firstName: decoded.email === 'support@weparlay.io' ? 'WeParlay' : 'Admin',
           lastName: 'Admin',
           role: 'admin',
           tier: 'platinum',
           subscriptionTier: 'platinum',
           isAdmin: true,
           status: 'active',
-          balance: 1000000,
+          balance: decoded.email === 'support@weparlay.io' ? 10000 : 1000,
           weplayTokenBalance: 1000000,
-          password: await bcrypt.hash('temp-password', 12),
+          weparlayCashBalance: 0,
+          cashBalance: 0,
+          betsCount: 0,
+          winsCount: 0,
+          totalBets: 0,
+          totalWinnings: 0,
+          winRate: 0,
+          averageBet: 0,
+          biggestWin: 0,
+          preferences: null,
+          socialLinks: null,
+          yahooRefreshToken: null,
+          yahooTokenExpiry: null,
+          stripeCustomerId: null,
+          stripeSubscriptionId: null,
+          plaidAccessToken: null,
+          plaidItemId: null,
+          consentGiven: false,
+          consentTimestamp: null,
+          privacySettings: null,
+          twoFactorEnabled: false,
+          emailVerified: false,
           createdAt: new Date(),
+          updatedAt: null,
+          gamertag: null
         };
         
-        user = await storage.upsertUser(adminUserData);
+        user = await storage.upsertUser(adminData);
       }
       
       if (!user) {
@@ -525,10 +610,12 @@ router.get('/user', async (req, res) => {
       userResponse.isAdmin = decoded.isAdmin || user.isAdmin || false;
       userResponse.role = decoded.role || (userResponse.isAdmin ? 'admin' : 'user');
       
-      // Force platinum tier for admin users
-      if (userResponse.isAdmin && userResponse.tier !== 'platinum') {
+      // Force platinum tier for admin users, especially support@weparlay.io
+      if (userResponse.isAdmin || userResponse.email === 'support@weparlay.io') {
         userResponse.tier = 'platinum';
         userResponse.subscriptionTier = 'platinum';
+        userResponse.isAdmin = true;
+        userResponse.role = 'admin';
       }
       
       return res.json(userResponse);
