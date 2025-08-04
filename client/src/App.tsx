@@ -22,7 +22,7 @@ import SecuritySettings from "@/pages/SecuritySettings";
 import HeadToHeadBetting from "@/pages/HeadToHeadBetting";
 import AuthenticationHub from "@/pages/AuthenticationHub";
 import UserProfile from "@/pages/UserProfile";
-import EsportsHub from "@/pages/EsportsHub";
+
 import SportPage from "@/pages/SportPage";
 import BettingDashboard from "@/pages/BettingDashboard";
 import UnifiedBettingHub from "@/pages/UnifiedBettingHub";
@@ -104,13 +104,18 @@ function Router() {
       <Route path="/sport/:sportKey" component={SportPage} />
       <Route path="/sports/:sportKey" component={SportPage} />
       <Route path="/sports" component={UnifiedSports} />
-      <Route path="/esports-hub" component={EsportsHub} />
-      <Route path="/tournaments" component={Tournaments} />
       <Route path="/gaming">
         <Suspense fallback={<LoadingFallback />}>
           <UnifiedGaming />
         </Suspense>
       </Route>
+      {/* Redirect old esports routes to unified gaming */}
+      <Route path="/esports-hub">
+        <Suspense fallback={<LoadingFallback />}>
+          <UnifiedGaming />
+        </Suspense>
+      </Route>
+      <Route path="/tournaments" component={Tournaments} />
 
       {/* VIP Features (Single route per feature) */}
       <Route path="/vip" component={VIPDashboard} />
