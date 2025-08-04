@@ -69,6 +69,7 @@ const PaymentCheckout = React.lazy(() => import("@/pages/PaymentCheckout"));
 const CryptoCheckout = React.lazy(() => import("@/pages/CryptoCheckout"));
 const TierUpgradeSuccess = React.lazy(() => import("@/pages/TierUpgradeSuccess"));
 const PlaidBanking = React.lazy(() => import("@/pages/PlaidBanking"));
+const UnifiedGaming = React.lazy(() => import("@/pages/UnifiedGaming"));
 
 // Development/Testing imports (conditional)
 const TokenCleanupTest = React.lazy(() => import("@/pages/TokenCleanupTest"));
@@ -105,7 +106,11 @@ function Router() {
       <Route path="/sports" component={UnifiedSports} />
       <Route path="/esports-hub" component={EsportsHub} />
       <Route path="/tournaments" component={Tournaments} />
-      <Route path="/gaming" component={React.lazy(() => import("@/pages/UnifiedGaming"))} />
+      <Route path="/gaming">
+        <Suspense fallback={<LoadingFallback />}>
+          <UnifiedGaming />
+        </Suspense>
+      </Route>
 
       {/* VIP Features (Single route per feature) */}
       <Route path="/vip" component={VIPDashboard} />
