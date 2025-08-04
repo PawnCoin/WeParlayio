@@ -43,6 +43,9 @@ import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
 import SecurityInfo from "@/pages/SecurityInfo";
 
+// Enhanced Features
+import EnhancedFeatures from "@/pages/EnhancedFeatures";
+
 // Layout and context imports
 import MainLayout from "@/components/layout/MainLayout";
 import SimpleOnboarding from "@/components/onboarding/SimpleOnboarding";
@@ -111,7 +114,13 @@ function Router() {
       <Route path="/gaming" component={UnifiedGaming} />
       {/* Redirect old esports routes to unified gaming */}
       <Route path="/esports-hub" component={UnifiedGaming} />
-      <Route path="/tournaments" component={Tournaments} />
+      <SuspenseRoute path="/tournaments" component={Tournaments} />
+
+      {/* Enhanced Features with SuspenseRoute */}
+      <SuspenseRoute path="/enhanced-features" component={EnhancedFeatures} />
+      
+      {/* Additional Feature Pages with SuspenseRoute */}
+      <SuspenseRoute path="/api-status" component={React.lazy(() => import("@/pages/system/ApiStatus"))} />
 
       {/* VIP Features (Single route per feature) */}
       <Route path="/vip" component={VIPDashboard} />
@@ -137,24 +146,21 @@ function Router() {
       <SuspenseRoute path="/user-dashboard" component={AdminDashboard} />
       <SuspenseRoute path="/users" component={UserDirectory} />
 
-      {/* Lazy-loaded Feature Pages */}
-      <Suspense fallback={<LoadingFallback />}>
-        <Route path="/fantasy" component={FantasySportsHub} />
-        <Route path="/fantasy-football" component={FantasyFootball} />
-        <Route path="/live-streaming" component={LiveStreaming} />
-        <Route path="/iptv" component={IPTVStreaming} />
-        <Route path="/trivia" component={Trivia} />
-        <Route path="/tier-comparison" component={TierComparison} />
-        <Route path="/weparlay-cash" component={WeParlayCash} />
-        <Route path="/crypto-info" component={CryptoInformation} />
-        <Route path="/analytics" component={UserAnalytics} />
-        <Route path="/theme-settings" component={ThemeSettingsPage} />
-        
-        {/* Payment Routes */}
-        <Route path="/payment-checkout" component={PaymentCheckout} />
-        <Route path="/crypto-checkout" component={CryptoCheckout} />
-        <Route path="/tier-upgrade-success" component={TierUpgradeSuccess} />
-      </Suspense>
+      {/* Lazy-loaded Feature Pages with SuspenseRoute */}
+      <SuspenseRoute path="/fantasy" component={FantasySportsHub} />
+      <SuspenseRoute path="/fantasy-football" component={FantasyFootball} />
+      <SuspenseRoute path="/live-streaming" component={LiveStreaming} />
+      <SuspenseRoute path="/iptv" component={IPTVStreaming} />
+      <SuspenseRoute path="/tier-comparison" component={TierComparison} />
+      <SuspenseRoute path="/weparlay-cash" component={WeParlayCash} />
+      <SuspenseRoute path="/crypto-info" component={CryptoInformation} />
+      <SuspenseRoute path="/analytics" component={UserAnalytics} />
+      <SuspenseRoute path="/theme-settings" component={ThemeSettingsPage} />
+      
+      {/* Payment Routes with SuspenseRoute */}
+      <SuspenseRoute path="/payment-checkout" component={PaymentCheckout} />
+      <SuspenseRoute path="/crypto-checkout" component={CryptoCheckout} />
+      <SuspenseRoute path="/tier-upgrade-success" component={TierUpgradeSuccess} />
 
       {/* Support & Legal */}
       <Route path="/support" component={Support} />
