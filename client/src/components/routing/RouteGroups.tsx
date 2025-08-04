@@ -23,11 +23,13 @@ export function AdminRoutes() {
     <Suspense fallback={<LoadingFallback />}>
       <Route path="/admin" component={(props) => <AdminRoute component={AdminDashboard} {...props} />} />
       <Route path="/admin-dashboard" component={(props) => <AdminRoute component={AdminDashboard} {...props} />} />
+      <Route path="/users" component={(props) => <AdminRoute component={ManageUsers} {...props} />} />
       <Route path="/admin/manage-users" component={(props) => <AdminRoute component={ManageUsers} {...props} />} />
       <Route path="/admin/financial-overview" component={(props) => <AdminRoute component={FinancialOverview} {...props} />} />
       <Route path="/admin/analytics" component={(props) => <AdminRoute component={Analytics} {...props} />} />
       <Route path="/admin/platform-settings" component={(props) => <AdminRoute component={SimplePlatformSettings} {...props} />} />
       <Route path="/admin/visual-component-editor" component={(props) => <AdminRoute component={VisualComponentEditorPage} {...props} />} />
+      <Route path="/social-media-bots" component={(props) => <AdminRoute component={SocialMediaDashboard} {...props} />} />
       <Route path="/admin/social-media-dashboard" component={(props) => <AdminRoute component={SocialMediaDashboard} {...props} />} />
       <Route path="/admin/verification" component={(props) => <AdminRoute component={AdminVerificationDashboard} {...props} />} />
       <Route path="/admin/security" component={(props) => <AdminRoute component={SecurityDashboard} {...props} />} />
