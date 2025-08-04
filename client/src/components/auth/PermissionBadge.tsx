@@ -77,7 +77,7 @@ export function PermissionBadge({
         </Badge>
       )}
       
-      {showSubscription && permissions.subscription !== 'wood' && (
+      {showSubscription && permissions.subscription !== 'wood' && permissions.tier !== permissions.subscription && (
         <Badge className={`${getSubscriptionColor(permissions.subscription)} flex items-center gap-1 text-xs`}>
           <Star className="h-3 w-3" />
           {permissions.subscription.charAt(0).toUpperCase() + permissions.subscription.slice(1)} Sub
