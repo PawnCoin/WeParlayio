@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Play, Users, Zap, Clock } from 'lucide-react';
 import TierGuard from '@/components/access/TierGuard';
+import LiveStreamPlayer from '@/components/LiveStreamPlayer';
 
 export default function VIPLiveStreaming() {
   const liveEvents = [
@@ -46,6 +47,22 @@ export default function VIPLiveStreaming() {
               <Play className="w-4 h-4 mr-2" />
               VIP Exclusive
             </Badge>
+          </div>
+
+          {/* Featured Live Stream */}
+          <div className="mb-8">
+            <LiveStreamPlayer
+              gameTitle="Chiefs vs Patriots"
+              homeTeam="Kansas City Chiefs"
+              awayTeam="New England Patriots"
+              league="NFL"
+              viewerCount={24567}
+              isLive={true}
+              userTier="platinum"
+              quality="HD"
+              eventId="nfl-chiefs-patriots-2025"
+              className="max-w-4xl mx-auto"
+            />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
