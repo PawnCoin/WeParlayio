@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { Zap, Share2, TrendingUp, Users, Target, Bot, Lock, Shield } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -29,89 +30,80 @@ interface BotSystemStatus {
 export default function SocialMediaBots() {
   const [isPosting, setIsPosting] = useState(false);
   const [lastPost, setLastPost] = useState<any>(null);
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [botStats, setBotStats] = useState<BotSystemStatus | null>(null);
   const { toast } = useToast();
+  const { user, isLoading, isAuthenticated } = useAuth();
 
   // Admin-only authentication - Only platform administrators can access
   const ADMIN_EMAIL = 'support@weparlay.io';
   const ADMIN_ROLES = ['admin', 'owner', 'super-admin'];
 
+  // Check if current user is admin
+  const isAdminUser = isAuthenticated && (
+    user?.isAdmin === true ||
+    user?.role === 'admin' ||
+    user?.email === 'support@weparlay.io' ||
+    user?.email === 'admin@weparlay.io' ||
+    user?.email === 'weparlay@admin.com'
+  );
+
   useEffect(() => {
-    // Check if user has admin privileges
-    const checkAdminAccess = () => {
-      // For now, using localStorage - in production this would be server-side auth
-      const userEmail = localStorage.getItem('weparlay-owner-email');
-      const hasAdminAccess = localStorage.getItem('weparlay-admin-access') === 'true';
-      const userRole = localStorage.getItem('weparlay-user-role');
-      
-      if (userEmail === ADMIN_EMAIL || hasAdminAccess || ADMIN_ROLES.includes(userRole || '')) {
-        setIsAuthorized(true);
-        fetchBotStats();
-      }
-      setIsLoading(false);
-    };
+    if (!isLoading && isAdminUser) {
+      fetchBotStats();
+    }
+  }, [isLoading, isAdminUser]);
 
-    const fetchBotStats = async () => {
-      try {
-        const response = await fetch('/api/community/bot-stats');
-        if (response.ok) {
-          const data = await response.json();
-          setBotStats(data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch bot stats:', error);
+  const fetchBotStats = async () => {
+    try {
+      const response = await fetch('/api/community/bot-stats');
+      if (response.ok) {
+        const data = await response.json();
+        setBotStats(data);
       }
-    };
-
-    checkAdminAccess();
-  }, []);
+    } catch (error) {
+      console.error('Failed to fetch bot stats:', error);
+    }
+  };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
         <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full" />
       </div>
     );
   }
 
-  if (!isAuthorized) {
+  if (!isAdminUser) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full border-2 border-red-200">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full border-2 border-red-200 dark:border-red-800">
           <CardHeader className="text-center">
-            <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
-              <Lock className="h-8 w-8 text-red-600" />
+            <div className="mx-auto w-16 h-16 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mb-4">
+              <Lock className="h-8 w-8 text-red-600 dark:text-red-400" />
             </div>
-            <CardTitle className="text-red-800">Owner Access Required</CardTitle>
+            <CardTitle className="text-red-800 dark:text-red-400">Admin Access Required</CardTitle>
           </CardHeader>
           <CardContent className="text-center space-y-4">
-            <div className="flex items-center justify-center gap-2 text-red-600">
+            <div className="flex items-center justify-center gap-2 text-red-600 dark:text-red-400">
               <Shield className="h-5 w-5" />
               <span className="font-medium">Restricted Area</span>
             </div>
-            <p className="text-gray-600">
-              This Social Media Bot Control Center is exclusively accessible to the platform owner:
+            <p className="text-gray-600 dark:text-gray-300">
+              This Social Media Bot Control Center is exclusively accessible to administrators:
             </p>
-            <div className="bg-red-50 p-3 rounded border text-sm">
+            <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded border text-sm">
               <strong>Authorized Users:</strong><br />
               Platform Administrators Only<br />
-              {ADMIN_EMAIL}
+              Current User: {user?.email || 'Not authenticated'}
             </div>
-            <p className="text-sm text-gray-500">
-              Only the platform owner can control the automated marketing bots to ensure security and prevent unauthorized access.
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Please log in as an administrator to access social media bot controls.
             </p>
             <Button 
-              onClick={() => {
-                // Temporary admin access for demo - remove in production
-                localStorage.setItem('weparlay-admin-access', 'true');
-                localStorage.setItem('weparlay-user-role', 'admin');
-                setIsAuthorized(true);
-              }}
-              className="w-full bg-blue-600 hover:bg-blue-700"
+              onClick={() => window.location.href = '/auth'}
+              className="w-full"
             >
-              Admin Access (Demo)
+              Login as Admin
             </Button>
           </CardContent>
         </Card>

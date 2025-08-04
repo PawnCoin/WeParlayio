@@ -10,7 +10,7 @@ const FinancialOverview = lazy(() => import("@/pages/admin/FinancialOverview"));
 const Analytics = lazy(() => import("@/pages/admin/Analytics"));
 const SimplePlatformSettings = lazy(() => import("@/pages/admin/SimplePlatformSettings"));
 const VisualComponentEditorPage = lazy(() => import("@/pages/admin/VisualComponentEditor"));
-const SocialMediaDashboard = lazy(() => import("@/pages/system/SocialMediaDashboard"));
+const SocialMediaBots = lazy(() => import("@/pages/SocialMediaBots"));
 const AdminVerificationDashboard = lazy(() => import("@/components/AdminVerificationDashboard"));
 const SecurityDashboard = lazy(() => import("@/pages/admin/SecurityDashboard"));
 
@@ -29,8 +29,8 @@ export function AdminRoutes() {
       <Route path="/admin/analytics" component={(props) => <AdminRoute component={Analytics} {...props} />} />
       <Route path="/admin/platform-settings" component={(props) => <AdminRoute component={SimplePlatformSettings} {...props} />} />
       <Route path="/admin/visual-component-editor" component={(props) => <AdminRoute component={VisualComponentEditorPage} {...props} />} />
-      <Route path="/social-media-bots" component={(props) => <AdminRoute component={SocialMediaDashboard} {...props} />} />
-      <Route path="/admin/social-media-dashboard" component={(props) => <AdminRoute component={SocialMediaDashboard} {...props} />} />
+      <Route path="/social-media-bots" component={(props) => <AdminRoute component={SocialMediaBots} {...props} />} />
+      <Route path="/admin/social-media-dashboard" component={(props) => <AdminRoute component={SocialMediaBots} {...props} />} />
       <Route path="/admin/verification" component={(props) => <AdminRoute component={AdminVerificationDashboard} {...props} />} />
       <Route path="/admin/security" component={(props) => <AdminRoute component={SecurityDashboard} {...props} />} />
     </Suspense>
