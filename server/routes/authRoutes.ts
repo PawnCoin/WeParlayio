@@ -491,6 +491,7 @@ router.get('/user', async (req, res) => {
           lastName: 'Admin',
           role: 'admin',
           tier: 'platinum',
+          subscriptionTier: 'platinum',
           isAdmin: true,
           status: 'active',
           balance: 1000000,
@@ -514,6 +515,12 @@ router.get('/user', async (req, res) => {
       // Ensure admin status is preserved from token
       userResponse.isAdmin = decoded.isAdmin || user.isAdmin || false;
       userResponse.role = decoded.role || (userResponse.isAdmin ? 'admin' : 'user');
+      
+      // Force platinum tier for admin users
+      if (userResponse.isAdmin && userResponse.tier !== 'platinum') {
+        userResponse.tier = 'platinum';
+        userResponse.subscriptionTier = 'platinum';
+      }
       
       return res.json(userResponse);
     } catch (jwtError) {
