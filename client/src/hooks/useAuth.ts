@@ -44,6 +44,12 @@ export function useAuth() {
     role: user.role || (user.isAdmin ? 'admin' : 'user')
   } : null;
 
+  // Set admin flag in localStorage when backend confirms admin status
+  if (user && (user.isAdmin || user.role === 'admin') && localStorage.getItem("weparlay-is-admin") !== "true") {
+    localStorage.setItem("weparlay-is-admin", "true");
+    localStorage.setItem("weparlay-admin-role", "admin");
+  }
+
   return {
     user: enhancedUser,
     isLoading,

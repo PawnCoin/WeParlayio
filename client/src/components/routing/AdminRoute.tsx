@@ -12,6 +12,11 @@ const isAdminUser = () => {
   const token = localStorage.getItem('auth-token') || localStorage.getItem('weparlay-admin-token');
   const isAdminFlag = localStorage.getItem('weparlay-is-admin') === 'true';
   
+  // If we have admin flag set, return true
+  if (isAdminFlag) {
+    return true;
+  }
+  
   if (!token) {
     return false;
   }
@@ -21,14 +26,24 @@ const isAdminUser = () => {
     const parts = token.split('.');
     if (parts.length === 3) {
       const payload = JSON.parse(atob(parts[1]));
-      return payload.isAdmin === true || payload.role === 'admin' || isAdminFlag;
+      
+      // Check for admin status in multiple ways
+      if (payload.isAdmin === true || 
+          payload.role === 'admin' || 
+          payload.userRole === 'admin' ||
+          payload.email === 'support@weparlay.io' ||
+          payload.email === 'admin@weparlay.io' ||
+          payload.email === 'weparlay@admin.com') {
+        // Set admin flag for future checks
+        localStorage.setItem('weparlay-is-admin', 'true');
+        return true;
+      }
     }
   } catch (e) {
-    // If token parsing fails, fall back to admin flag
-    return isAdminFlag;
+    console.warn('Token parsing failed:', e);
   }
   
-  return isAdminFlag;
+  return false;
 };
 
 export default function AdminRoute({ component: Component, ...props }: AdminRouteProps) {
