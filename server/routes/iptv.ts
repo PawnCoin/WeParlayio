@@ -7,28 +7,40 @@ import { isAuthenticated } from '../replitAuth';
 const router = Router();
 
 // VIP tier check middleware
-const requireVIPAccess = (req: any, res: any, next: any) => {
-  const user = req.user?.claims;
-  if (!user) {
-    return res.status(401).json({ error: 'Authentication required' });
+const requireVIPAccess = async (req: any, res: any, next: any) => {
+  try {
+    const user = req.user?.claims;
+    if (!user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    // Check if user has VIP access (admin bypass)
+    const isAdmin = user.email === 'support@weparlay.io' || user.sub === 'support@weparlay.io';
+    
+    // For admin users, we also need to check the stored user data
+    let hasVIPAccess = isAdmin;
+    
+    if (!isAdmin) {
+      // Check user tier from the claims or fetch from storage
+      const userTier = user.tier || user.subscriptionTier;
+      hasVIPAccess = userTier === 'vip' || 
+        userTier === 'gold' || 
+        userTier === 'platinum' || 
+        userTier === 'diamond';
+    }
+
+    if (!hasVIPAccess) {
+      return res.status(403).json({ 
+        error: 'VIP access required',
+        message: 'Upgrade to VIP to access live TV streaming'
+      });
+    }
+
+    next();
+  } catch (error) {
+    console.error('VIP access check error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
   }
-
-  // Check if user has VIP access (admin bypass)
-  const isAdmin = user.email === 'support@weparlay.io';
-  const hasVIPAccess = isAdmin || 
-    user.tier === 'vip' || 
-    user.tier === 'gold' || 
-    user.tier === 'platinum' || 
-    user.tier === 'diamond';
-
-  if (!hasVIPAccess) {
-    return res.status(403).json({ 
-      error: 'VIP access required',
-      message: 'Upgrade to VIP to access live TV streaming'
-    });
-  }
-
-  next();
 };
 
 // Mock IPTV channels data (replace with your actual IPTV provider data)
