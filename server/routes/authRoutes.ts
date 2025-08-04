@@ -172,14 +172,23 @@ router.post('/login', async (req, res) => {
     const userResponse = { ...user };
     delete userResponse.password;
 
+    // Force platinum tier for admin users in login response
+    const responseUser = {
+      ...userResponse,
+      isAdmin: isAdmin || user.isAdmin || false,
+      role: isAdmin ? 'admin' : (user.role || 'user')
+    };
+    
+    // Admin users always get platinum tier
+    if (responseUser.isAdmin) {
+      responseUser.tier = 'platinum';
+      responseUser.subscriptionTier = 'platinum';
+    }
+
     res.json({
       success: true,
       message: isAdmin ? 'Admin login successful' : 'Login successful',
-      user: {
-        ...userResponse,
-        isAdmin: isAdmin || user.isAdmin || false,
-        role: isAdmin ? 'admin' : (user.role || 'user')
-      },
+      user: responseUser,
       token,
       isAdmin: isAdmin || user.isAdmin || false
     });
