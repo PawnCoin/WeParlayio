@@ -58,20 +58,35 @@ export function OnboardingProvider({ children }: OnboardingProviderProps) {
   useEffect(() => {
     // Check if user has completed onboarding
     const completed = localStorage.getItem('weparlay-onboarding-completed');
+    const skipped = localStorage.getItem('weparlay-onboarding-skipped');
     const userData = localStorage.getItem('weparlay-onboarding-data');
+    
+    // Session-based tracking to prevent repeated shows
+    const sessionKey = 'weparlay-onboarding-shown-session';
+    const shownInSession = sessionStorage.getItem(sessionKey);
     
     if (completed === 'true' && userData) {
       setOnboardingData(JSON.parse(userData));
+      setShowOnboarding(false);
+    } else if (skipped === 'true' || shownInSession === 'true') {
+      // Don't show if skipped previously or already shown in this session
       setShowOnboarding(false);
     } else {
       // Check if this is a new user (no previous login data)
       const hasAccount = localStorage.getItem('weparlay-user-data') || 
                         localStorage.getItem('currentUser') ||
-                        localStorage.getItem('weparlay-demo-user');
+                        localStorage.getItem('weparlay-demo-user') ||
+                        localStorage.getItem('auth-token') ||
+                        localStorage.getItem('weparlay-admin-token');
       
-      if (!hasAccount) {
+      // Additional check for admin users - don't show onboarding for admin accounts
+      const isAdmin = localStorage.getItem('weparlay-is-admin') === 'true';
+      
+      if (!hasAccount && !isAdmin && !shownInSession) {
         setIsNewUser(true);
         setShowOnboarding(true);
+        // Mark as shown in this session to prevent repeated displays
+        sessionStorage.setItem(sessionKey, 'true');
       }
     }
   }, []);
@@ -102,6 +117,9 @@ export function OnboardingProvider({ children }: OnboardingProviderProps) {
       
       localStorage.setItem('weparlay-user-preferences', JSON.stringify(userPreferences));
       
+      // Mark as completed in session as well
+      sessionStorage.setItem('weparlay-onboarding-shown-session', 'true');
+      
       setOnboardingData(data);
       setShowOnboarding(false);
       setIsNewUser(false);
@@ -127,6 +145,8 @@ export function OnboardingProvider({ children }: OnboardingProviderProps) {
 
   const skipOnboarding = () => {
     localStorage.setItem('weparlay-onboarding-skipped', 'true');
+    // Also mark as shown in session to prevent re-showing
+    sessionStorage.setItem('weparlay-onboarding-shown-session', 'true');
     setShowOnboarding(false);
     setIsNewUser(false);
   };
