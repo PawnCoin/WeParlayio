@@ -9,6 +9,7 @@ import { initGA } from "@/lib/analytics";
 import { useAnalytics } from "@/hooks/use-analytics";
 import UserSatisfactionWidget from "@/components/UserSatisfactionWidget";
 import LoadingFallback from "@/components/routing/LoadingFallback";
+import SuspenseRoute from "@/components/routing/SuspenseRoute";
 import { AdminRoutes, DevRoutes, SystemRoutes } from "@/components/routing/RouteGroups";
 
 // Core page imports
@@ -120,16 +121,20 @@ function Router() {
       
       {/* Social Features */}
       <Route path="/social" component={SocialBetting} />
-      <Route path="/social-media-bots" component={SocialMediaBots} />
       <Route path="/head-to-head" component={HeadToHeadBetting} />
+      
+      {/* Social Media Bots with Suspense */}
+      <SuspenseRoute path="/social-media-bots" component={SocialMediaBots} />
 
       {/* User Profile & Settings */}
       <Route path="/profile" component={UserProfile} />
-      <Route path="/user-dashboard" component={AdminDashboard} />
-      <Route path="/users" component={UserDirectory} />
       <Route path="/settings" component={Settings} />
       <Route path="/security-settings" component={SecuritySettings} />
       <Route path="/upgrade-tier" component={UpgradeTier} />
+      
+      {/* Admin/Management Routes with Suspense */}
+      <SuspenseRoute path="/user-dashboard" component={AdminDashboard} />
+      <SuspenseRoute path="/users" component={UserDirectory} />
 
       {/* Lazy-loaded Feature Pages */}
       <Suspense fallback={<LoadingFallback />}>
