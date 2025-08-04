@@ -6,14 +6,29 @@ interface AdminRouteProps {
   [key: string]: any;
 }
 
-// Simple admin check - in production this would check against actual user role
+// Check if user has valid admin token and authentication
 const isAdminUser = () => {
-  // Check for admin tokens, user role, etc.
-  const adminEmails = ['support@weparlay.io', 'admin@weparlay.io', 'weparlay@admin.com'];
-  const userEmail = localStorage.getItem('userEmail') || '';
-  return adminEmails.includes(userEmail) || 
-         localStorage.getItem('isAdmin') === 'true' ||
-         sessionStorage.getItem('adminAccess') === 'true';
+  // Check for valid admin token
+  const token = localStorage.getItem('auth-token') || localStorage.getItem('weparlay-admin-token');
+  const isAdminFlag = localStorage.getItem('weparlay-is-admin') === 'true';
+  
+  if (!token) {
+    return false;
+  }
+  
+  try {
+    // Basic token validation - check if it's a JWT
+    const parts = token.split('.');
+    if (parts.length === 3) {
+      const payload = JSON.parse(atob(parts[1]));
+      return payload.isAdmin === true || payload.role === 'admin' || isAdminFlag;
+    }
+  } catch (e) {
+    // If token parsing fails, fall back to admin flag
+    return isAdminFlag;
+  }
+  
+  return isAdminFlag;
 };
 
 export default function AdminRoute({ component: Component, ...props }: AdminRouteProps) {

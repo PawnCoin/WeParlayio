@@ -35,7 +35,14 @@ export default function AdminDashboard() {
     queryKey: ['/api/admin/platform-settings']
   });
 
-  const AdminCard = ({ title, description, icon: Icon, onClick, status, value }) => (
+  const AdminCard = ({ title, description, icon: Icon, onClick, status, value }: {
+    title: string;
+    description: string;
+    icon: any;
+    onClick?: () => void;
+    status?: string;
+    value?: string | number;
+  }) => (
     <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={onClick}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
