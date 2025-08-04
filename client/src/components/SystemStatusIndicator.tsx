@@ -17,13 +17,12 @@ export default function SystemStatusIndicator() {
   const { user, isAuthenticated } = useAuth();
   const [status, setStatus] = useState<SystemStatus | null>(null);
   const [showDetails, setShowDetails] = useState(false);
-  
-  // Only show for admin users
-  if (!isAuthenticated || !user?.isAdmin) {
-    return null;
-  }
 
   useEffect(() => {
+    // Only fetch data for admin users
+    if (!isAuthenticated || !user?.isAdmin) {
+      return;
+    }
     async function checkSystemHealth() {
       try {
         const response = await fetch('/api/system/system-health');
@@ -42,7 +41,12 @@ export default function SystemStatusIndicator() {
     checkSystemHealth();
     const interval = setInterval(checkSystemHealth, 30000); // Check every 30 seconds
     return () => clearInterval(interval);
-  }, []);
+  }, [isAuthenticated, user?.isAdmin]);
+
+  // Only show for admin users
+  if (!isAuthenticated || !user?.isAdmin) {
+    return null;
+  }
 
   if (!status) return null;
 
