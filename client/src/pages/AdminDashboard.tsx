@@ -77,7 +77,7 @@ export default function AdminDashboard() {
           <Alert className="mb-6 border-green-200 bg-green-50">
             <Activity className="h-4 w-4" />
             <AlertDescription>
-              System Status: <strong>Online</strong> • Last Updated: {(systemHealth as any)?.timestamp ? new Date((systemHealth as any).timestamp).toLocaleTimeString() : 'Unknown'}
+              System Status: <strong>Online</strong> • Last Updated: {String((systemHealth as any)?.timestamp ? new Date((systemHealth as any).timestamp).toLocaleTimeString() : 'Unknown')}
             </AlertDescription>
           </Alert>
         )}
