@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Crown, Lock, Zap } from 'lucide-react';
 import { Link } from 'wouter';
-import AdminBypass from './AdminBypass';
+// AdminBypass logic is now integrated directly into TierGuard
 
 interface TierGuardProps {
   children: React.ReactNode;
@@ -21,19 +21,28 @@ const TierGuard: React.FC<TierGuardProps> = ({
 }) => {
   const { user } = useAuth();
   
-  // Admin users get access to EVERYTHING - wrap in AdminBypass
+  // Check if user is admin FIRST - if so, bypass ALL restrictions
+  const isAdmin = user?.email === 'support@weparlay.io' || 
+                  user?.email === 'admin@weparlay.io' ||
+                  user?.email === 'weparlay@admin.com' ||
+                  user?.role === 'admin' || 
+                  user?.isAdmin === true;
+
+  // Admin users bypass ALL restrictions
+  if (isAdmin) {
+    return <>{children}</>;
+  }
+
+  // For non-admin users, check tier requirements
   return (
-    <AdminBypass>
-      {/* For admin users, AdminBypass will just render children directly */}
-      <TierGuardContent 
-        user={user}
-        requiredTier={requiredTier}
-        feature={feature}
-        description={description}
-      >
-        {children}
-      </TierGuardContent>
-    </AdminBypass>
+    <TierGuardContent 
+      user={user}
+      requiredTier={requiredTier}
+      feature={feature}
+      description={description}
+    >
+      {children}
+    </TierGuardContent>
   );
 };
 
