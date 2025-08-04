@@ -106,21 +106,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         
         console.log('✅ Admin login successful, refreshing auth state...');
         
-        // First try to refresh auth state without full page reload
-        try {
-          // Invalidate and refetch auth queries
-          await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-          await refetchAuth();
-          console.log('✅ Auth state refreshed successfully');
-          
-          // Small delay to ensure state updates before continuing
-          setTimeout(() => {
-            console.log('🔄 Admin login complete - check dropdown now');
-          }, 500);
-        } catch (authError) {
-          console.log('🔄 Auth refresh failed, doing full page reload...', authError);
-          window.location.href = window.location.pathname;
-        }
+        // Force immediate UI update with page reload for reliable state refresh
+        console.log('🔄 Forcing page reload for complete state refresh...');
+        window.location.reload();
       } else {
         console.error('❌ Admin login failed:', data.message);
         alert('Login failed. Please try again.');

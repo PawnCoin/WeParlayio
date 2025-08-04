@@ -35,7 +35,7 @@ export function useAuth() {
   });
 
   // If there's a 401 error or no user data, user is not authenticated
-  const isAuthenticated = !!user && !error;
+  const isAuthenticated = !!user && !error && !!localStorage.getItem('auth-token');
   
   // Check if user is admin based on stored data and backend response
   const enhancedUser = user ? {
