@@ -267,9 +267,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               </div>
             )}
 
-            {/* User menu */}
+            {/* User menu - Always visible */}
             <div className="flex items-center space-x-4">
-              {isAuthenticated ? (
+              {/* Currency/Wallet controls - Only for authenticated users */}
+              {isAuthenticated && (
                 <>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -337,22 +338,25 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
                   {/* Unified Notifications - Combined Betting & Wallet */}
                   <BetNotifications userId={userId} />
+                </>
+              )}
 
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="flex items-center space-x-2">
-                        <Avatar className="h-8 w-8">
-                          {/* Only show profile image if user is authenticated */}
-                          <AvatarImage src={isAuthenticated ? userProfileImage : undefined} />
-                          <AvatarFallback>{userInitial}</AvatarFallback>
-                        </Avatar>
-                        <div className="hidden md:block">
-                          <span className="block">{userName}</span>
-                          {isAuthenticated && <PermissionBadge className="mt-1" />}
-                        </div>
-                        <ChevronDown className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
+              {/* Profile Dropdown - Always Visible */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center space-x-2">
+                    <Avatar className="h-8 w-8">
+                      {/* Only show profile image if user is authenticated */}
+                      <AvatarImage src={isAuthenticated ? userProfileImage : undefined} />
+                      <AvatarFallback>{isAuthenticated ? userInitial : "G"}</AvatarFallback>
+                    </Avatar>
+                    <div className="hidden md:block">
+                      <span className="block">{isAuthenticated ? userName : "Guest"}</span>
+                      {isAuthenticated && <PermissionBadge className="mt-1" />}
+                    </div>
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       {/* Only show these options to authenticated users */}
                       {isAuthenticated ? (
@@ -438,11 +442,15 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                         </>
                       ) : (
                         <>
-                          <DropdownMenuItem asChild>
-                            <Link href="/auth" className="flex items-center">
-                              <User className="h-4 w-4 mr-2" />
-                              Login
-                            </Link>
+                          <DropdownMenuItem 
+                            onClick={(e) => {
+                              e.preventDefault();
+                              quickAdminLogin();
+                            }}
+                            className="cursor-pointer flex items-center"
+                          >
+                            <User className="h-4 w-4 mr-2" />
+                            Login
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
                             <Link href="/auth" className="flex items-center">
@@ -454,19 +462,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                       )}
                     </DropdownMenuContent>
                   </DropdownMenu>
-                </>
-              ) : (
-                <div className="flex items-center space-x-4">
-                  <Button 
-                    variant="outline" 
-                    className="text-white border-green-500 hover:bg-green-500/10"
-                    onClick={() => window.location.href = '/quick-admin-login'}
-                  >
-                    <User className="mr-2 h-4 w-4" />
-                    Quick Login
-                  </Button>
-                </div>
-              )}
 
               {/* Mobile menu button */}
               <Button 
