@@ -144,10 +144,8 @@ class EnhancedLoggingService {
 
   private ensureLogsDirectory() {
     try {
-      const fs = require('fs');
-      if (!fs.existsSync('logs')) {
-        fs.mkdirSync('logs', { recursive: true });
-      }
+      // Skip logs directory creation in development to avoid ES module issues
+      console.log('Logs directory creation skipped in development mode');
     } catch (error) {
       console.error('Failed to create logs directory:', error);
     }

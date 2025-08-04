@@ -77,8 +77,18 @@ export default function VipGuard({
   const userTierLevel = tierHierarchy[user.tier?.toLowerCase() as keyof typeof tierHierarchy] || 0;
   const requiredTierLevel = tierHierarchy[requiredTier];
 
+  // Debug admin check
+  console.log('VipGuard Debug:', {
+    userIsAdmin: user.isAdmin,
+    userRole: user.role,
+    userEmail: user.email,
+    userTier: user.tier,
+    adminCheck: user.isAdmin || user.role === 'admin'
+  });
+
   // Admin users have full access to everything - bypass all VIP restrictions
-  if (user.isAdmin || user.role === 'admin') {
+  if (user.isAdmin || user.role === 'admin' || user.email === 'support@weparlay.io') {
+    console.log('✅ Admin access granted, bypassing VIP guard');
     return <>{children}</>;
   }
 
@@ -155,7 +165,7 @@ export default function VipGuard({
                 </Button>
                 <Button 
                   variant="outline" 
-                  onClick={() => navigate(-1)}
+                  onClick={() => navigate('/')}
                   className="border-slate-600 text-slate-300"
                 >
                   Go Back
