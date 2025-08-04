@@ -12,16 +12,13 @@ import {
   Clock, Eye, MessageCircle, Star
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import VipGuard from "@/components/access/VipGuard";
+import AdminBypass from "@/components/access/AdminBypass";
 
 export default function UnifiedGaming() {
   return (
-    <VipGuard 
-      requiredTier="gold" 
-      feature="Gaming & Esports Hub"
-    >
+    <AdminBypass>
       <UnifiedGamingContent />
-    </VipGuard>
+    </AdminBypass>
   );
 }
 

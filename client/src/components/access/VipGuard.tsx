@@ -66,16 +66,23 @@ export default function VipGuard({
     );
   }
 
-  // Admin users always have access
+  // ADMIN USERS ALWAYS HAVE FULL ACCESS - NO EXCEPTIONS
+  const isAdminUser = user?.isAdmin === true || 
+                     user?.role === 'admin' || 
+                     user?.email === 'support@weparlay.io' ||
+                     user?.email === 'admin@weparlay.io' ||
+                     user?.email === 'weparlay@admin.com';
+
   console.log('VipGuard Debug:', {
     userIsAdmin: user?.isAdmin,
     userRole: user?.role,
     userEmail: user?.email,
     userTier: user?.tier,
-    adminCheck: user?.isAdmin === true || user?.role === 'admin'
+    adminCheck: isAdminUser
   });
 
-  if (user?.isAdmin === true || user?.role === 'admin' || user?.email === 'support@weparlay.io') {
+  // IMMEDIATE ADMIN ACCESS - NO QUESTIONS ASKED
+  if (isAdminUser) {
     console.log('✅ Admin access granted, bypassing VIP guard');
     return <>{children}</>;
   }
@@ -90,21 +97,6 @@ export default function VipGuard({
 
   const userTierLevel = tierHierarchy[user.tier?.toLowerCase() as keyof typeof tierHierarchy] || 0;
   const requiredTierLevel = tierHierarchy[requiredTier];
-
-  // Debug admin check
-  console.log('VipGuard Debug:', {
-    userIsAdmin: user.isAdmin,
-    userRole: user.role,
-    userEmail: user.email,
-    userTier: user.tier,
-    adminCheck: user.isAdmin || user.role === 'admin'
-  });
-
-  // Admin users have full access to everything - bypass all VIP restrictions
-  if (user.isAdmin || user.role === 'admin' || user.email === 'support@weparlay.io') {
-    console.log('✅ Admin access granted, bypassing VIP guard');
-    return <>{children}</>;
-  }
 
   // Check if user has required tier
   if (userTierLevel < requiredTierLevel) {

@@ -5,16 +5,13 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Brain, Clock, Trophy, Zap, Star, Target, CheckCircle, XCircle } from "lucide-react";
-import VipGuard from "@/components/access/VipGuard";
+import AdminBypass from "@/components/access/AdminBypass";
 
 export default function Trivia() {
   return (
-    <VipGuard 
-      requiredTier="silver" 
-      feature="Sports Trivia Hub"
-    >
+    <AdminBypass>
       <TriviaContent />
-    </VipGuard>
+    </AdminBypass>
   );
 }
 
