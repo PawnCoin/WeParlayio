@@ -53,6 +53,7 @@ const VIPHeadToHead = React.lazy(() => import("@/pages/vip/HeadToHead"));
 const VIPTournaments = React.lazy(() => import("@/pages/vip/Tournaments"));
 const VIPGamingIntegration = React.lazy(() => import("@/pages/vip/GamingIntegration"));
 const VIPBlockchainPerformance = React.lazy(() => import("@/pages/vip/BlockchainPerformance"));
+const VIPIPTVStreaming = React.lazy(() => import("@/pages/vip/IPTVStreaming"));
 
 // Layout and context imports
 import MainLayout from "@/components/layout/MainLayout";
@@ -143,6 +144,7 @@ function Router() {
       <SuspenseRoute path="/vip/tournaments" component={VIPTournaments} />
       <SuspenseRoute path="/vip/gaming-integration" component={VIPGamingIntegration} />
       <SuspenseRoute path="/vip/blockchain-performance" component={VIPBlockchainPerformance} />
+      <SuspenseRoute path="/vip/iptv-streaming" component={VIPIPTVStreaming} />
       
       {/* Social Features */}
       <Route path="/social" component={SocialBetting} />

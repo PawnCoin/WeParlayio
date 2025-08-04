@@ -30,6 +30,7 @@ import rapidApiRoutes from "./routes/rapidApiRoutes";
 import espnFantasyRoutes from "./routes/espnFantasyRoutes";
 import feedbackRoutes from "./routes/feedbackRoutes";
 import yahooFantasyRoutes from "./routes/yahooFantasyRoutes";
+import iptvRoutes from "./routes/iptv";
 import { apiQuotaManager } from "./services/apiQuotaManager";
 import { primaryApiRouter } from "./services/primaryApiRouter";
 import primaryDataRoutes from "./routes/primaryDataRoutes";
@@ -630,6 +631,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register Unified Sports API routes
   app.use('/api/unified-sports', unifiedSportsRoutes);
+  
+  // Register IPTV API routes (VIP only)
+  app.use('/api/iptv', iptvRoutes);
 
   // SMS Betting Challenge Routes
   app.post('/api/sms/betting-challenge', isAuthenticated, async (req, res) => {
