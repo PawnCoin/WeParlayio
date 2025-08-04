@@ -77,14 +77,6 @@ export default function VIPDashboard() {
       path: '/plaid-banking',
       color: 'bg-indigo-600',
       features: ['Direct bank linking', 'Secure ACH transfers', 'Real-time balances', 'Industry-standard encryption']
-    },
-    {
-      title: 'IPTV Live TV',
-      description: 'Premium channels with sports, news & entertainment',
-      icon: Tv,
-      path: '/vip/iptv-streaming',
-      color: 'bg-blue-600',
-      features: ['Live sports channels', 'News & entertainment', 'HD/4K streaming', 'Electronic program guide']
     }
   ];
 

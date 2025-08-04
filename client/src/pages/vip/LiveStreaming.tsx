@@ -4,8 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Play, Users, Zap, Clock, Tv, Radio, Calendar } from 'lucide-react';
+import { Play, Users, Zap, Clock, Tv, Calendar } from 'lucide-react';
 import TierGuard from '@/components/access/TierGuard';
 import LiveStreamPlayer from '@/components/LiveStreamPlayer';
 
@@ -97,145 +96,79 @@ export default function VIPLiveStreaming() {
             </Badge>
           </div>
 
-          {/* Live Streaming Tabs */}
-          <Tabs defaultValue="sports" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-8">
-              <TabsTrigger value="sports" className="flex items-center gap-2">
-                <Play className="h-4 w-4" />
-                Sports Streams
-              </TabsTrigger>
-              <TabsTrigger value="tv" className="flex items-center gap-2">
-                <Tv className="h-4 w-4" />
-                Live TV Channels
-              </TabsTrigger>
-            </TabsList>
+          {/* Featured Live Stream */}
+          <div className="mb-8">
+            {selectedChannel ? (
+              <LiveStreamPlayer
+                gameTitle={selectedChannel.name}
+                homeTeam={getCurrentProgram(selectedChannel.id)?.title || selectedChannel.name}
+                awayTeam=""
+                league={selectedChannel.category}
+                viewerCount={Math.floor(Math.random() * 10000) + 1000}
+                isLive={selectedChannel.isLive}
+                userTier="platinum"
+                quality={selectedChannel.quality}
+                eventId={selectedChannel.id}
+                streamUrl={selectedChannel.streamUrl}
+                className="max-w-4xl mx-auto"
+              />
+            ) : (
+              <LiveStreamPlayer
+                gameTitle="Chiefs vs Patriots"
+                homeTeam="Kansas City Chiefs"
+                awayTeam="New England Patriots"
+                league="NFL"
+                viewerCount={24567}
+                isLive={true}
+                userTier="platinum"
+                quality="HD"
+                eventId="nfl-chiefs-patriots-2025"
+                className="max-w-4xl mx-auto"
+              />
+            )}
+          </div>
 
-            <TabsContent value="sports">
-              {/* Featured Sports Stream */}
-              <div className="mb-8">
-                <LiveStreamPlayer
-                  gameTitle="Chiefs vs Patriots"
-                  homeTeam="Kansas City Chiefs"
-                  awayTeam="New England Patriots"
-                  league="NFL"
-                  viewerCount={24567}
-                  isLive={true}
-                  userTier="platinum"
-                  quality="HD"
-                  eventId="nfl-chiefs-patriots-2025"
-                  className="max-w-4xl mx-auto"
-                />
-              </div>
-            </TabsContent>
-
-            <TabsContent value="tv">
-              {/* IPTV Live TV Section */}
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                {/* Channel List */}
-                <div className="lg:col-span-1">
-                  <div className="mb-4">
-                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map(cat => (
-                          <SelectItem key={cat} value={cat}>
-                            {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2 max-h-96 overflow-y-auto">
-                    {filteredChannels.map(channel => (
-                      <Card 
-                        key={channel.id} 
-                        onClick={() => setSelectedChannel(channel)}
-                        className={`p-3 cursor-pointer transition-all hover:bg-gray-700 ${
-                          selectedChannel?.id === channel.id ? 'bg-blue-700 border-blue-500' : 'bg-gray-800'
-                        }`}
-                      >
-                        <div className="flex gap-3 items-center">
-                          <img src={channel.logo} alt={channel.name} className="w-8 h-8 rounded" />
-                          <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-sm truncate">{channel.name}</div>
-                            <div className="text-xs text-blue-300 truncate">
-                              {getCurrentProgram(channel.id)?.title || 'No Info'}
-                            </div>
-                          </div>
-                          {channel.isLive && <Badge className="bg-red-500 text-xs">LIVE</Badge>}
-                        </div>
-                      </Card>
+          {/* Channel Selection - Integrated into existing layout */}
+          {iptvChannels.length > 0 && (
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold text-white">Live TV Channels</h2>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map(cat => (
+                      <SelectItem key={cat} value={cat}>
+                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                      </SelectItem>
                     ))}
-                  </div>
-                </div>
-
-                {/* Video Player */}
-                <div className="lg:col-span-2">
-                  {selectedChannel ? (
-                    <LiveStreamPlayer
-                      gameTitle={selectedChannel.name}
-                      homeTeam={getCurrentProgram(selectedChannel.id)?.title || selectedChannel.name}
-                      awayTeam=""
-                      league={selectedChannel.category}
-                      viewerCount={Math.floor(Math.random() * 10000) + 1000}
-                      isLive={selectedChannel.isLive}
-                      userTier="platinum"
-                      quality={selectedChannel.quality}
-                      eventId={selectedChannel.id}
-                      streamUrl={selectedChannel.streamUrl}
-                      className="w-full"
-                    />
-                  ) : (
-                    <Card className="bg-gray-800 border-gray-700">
-                      <CardContent className="aspect-video flex items-center justify-center">
-                        <div className="text-center text-gray-400">
-                          <Tv className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                          <p className="text-lg font-semibold mb-2">Select a Channel</p>
-                          <p className="text-sm">Choose a channel from the list to start watching</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
-
-                {/* Program Guide */}
-                <div className="lg:col-span-1">
-                  <Card className="bg-gray-800 border-gray-700">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-sm">
-                        <Calendar className="h-4 w-4" />
-                        Program Guide
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2 max-h-96 overflow-y-auto">
-                      {selectedChannel ? (
-                        epgData.find(e => e.channelId === selectedChannel.id)?.programs.map(program => (
-                          <div key={program.id} className={`p-2 rounded text-xs ${
-                            program.live ? 'bg-red-500/20 border border-red-500/30' : 'bg-gray-700'
-                          }`}>
-                            <div className="flex items-center gap-1 text-xs text-gray-300 mb-1">
-                              <Clock className="w-3 h-3" />
-                              <span>
-                                {new Date(program.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - 
-                                {new Date(program.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                              </span>
-                            </div>
-                            <div className="font-semibold text-white text-sm">{program.title}</div>
-                            <div className="text-xs text-blue-300">{program.category}</div>
-                          </div>
-                        )) || <p className="text-sm text-gray-400">No EPG available</p>
-                      ) : (
-                        <p className="text-sm text-gray-400">Select a channel to view program guide</p>
-                      )}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                {filteredChannels.map(channel => (
+                  <Card 
+                    key={channel.id} 
+                    onClick={() => setSelectedChannel(channel)}
+                    className={`cursor-pointer transition-all hover:scale-105 ${
+                      selectedChannel?.id === channel.id ? 'bg-blue-700 border-blue-500' : 'bg-gray-800 border-gray-700'
+                    }`}
+                  >
+                    <CardContent className="p-4 text-center">
+                      <img src={channel.logo} alt={channel.name} className="w-12 h-12 mx-auto mb-2 rounded" />
+                      <h3 className="text-white font-semibold text-sm mb-1">{channel.name}</h3>
+                      <p className="text-xs text-blue-300 mb-2">
+                        {getCurrentProgram(channel.id)?.title || 'No Info'}
+                      </p>
+                      {channel.isLive && <Badge className="bg-red-500 text-xs">LIVE</Badge>}
                     </CardContent>
                   </Card>
-                </div>
+                ))}
               </div>
-            </TabsContent>
-          </Tabs>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             {liveEvents.map((event) => (
