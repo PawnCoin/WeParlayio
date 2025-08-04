@@ -72,7 +72,7 @@ export default function UnifiedGaming() {
             <div className="flex items-center space-x-2">
               <Gamepad2 className="h-8 w-8 text-blue-600" />
               <div>
-                <p className="text-2xl font-bold">{gamingStats?.activePlayers || 1247}</p>
+                <p className="text-2xl font-bold">{(gamingStats as any)?.activePlayers || 1247}</p>
                 <p className="text-sm text-muted-foreground">Active Players</p>
               </div>
             </div>
@@ -84,7 +84,7 @@ export default function UnifiedGaming() {
             <div className="flex items-center space-x-2">
               <Trophy className="h-8 w-8 text-yellow-600" />
               <div>
-                <p className="text-2xl font-bold">{gamingStats?.liveTournaments || 18}</p>
+                <p className="text-2xl font-bold">{(gamingStats as any)?.liveTournaments || 18}</p>
                 <p className="text-sm text-muted-foreground">Live Tournaments</p>
               </div>
             </div>
@@ -96,7 +96,7 @@ export default function UnifiedGaming() {
             <div className="flex items-center space-x-2">
               <Target className="h-8 w-8 text-green-600" />
               <div>
-                <p className="text-2xl font-bold">${gamingStats?.totalPrizePool || '127,450'}</p>
+                <p className="text-2xl font-bold">${(gamingStats as any)?.totalPrizePool || '127,450'}</p>
                 <p className="text-sm text-muted-foreground">Prize Pool</p>
               </div>
             </div>
@@ -108,7 +108,7 @@ export default function UnifiedGaming() {
             <div className="flex items-center space-x-2">
               <BarChart3 className="h-8 w-8 text-purple-600" />
               <div>
-                <p className="text-2xl font-bold">{gamingStats?.avgViewership || '5.2K'}</p>
+                <p className="text-2xl font-bold">{(gamingStats as any)?.avgViewership || '5.2K'}</p>
                 <p className="text-sm text-muted-foreground">Avg Viewership</p>
               </div>
             </div>

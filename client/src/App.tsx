@@ -104,17 +104,9 @@ function Router() {
       <Route path="/sport/:sportKey" component={SportPage} />
       <Route path="/sports/:sportKey" component={SportPage} />
       <Route path="/sports" component={UnifiedSports} />
-      <Route path="/gaming">
-        <Suspense fallback={<LoadingFallback />}>
-          <UnifiedGaming />
-        </Suspense>
-      </Route>
+      <Route path="/gaming" component={UnifiedGaming} />
       {/* Redirect old esports routes to unified gaming */}
-      <Route path="/esports-hub">
-        <Suspense fallback={<LoadingFallback />}>
-          <UnifiedGaming />
-        </Suspense>
-      </Route>
+      <Route path="/esports-hub" component={UnifiedGaming} />
       <Route path="/tournaments" component={Tournaments} />
 
       {/* VIP Features (Single route per feature) */}

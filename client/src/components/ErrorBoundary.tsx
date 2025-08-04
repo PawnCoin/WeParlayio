@@ -1,5 +1,5 @@
 import React from 'react';
-import { ErrorReportingBoundary } from './ErrorReporting';
+import SimpleErrorBoundary from './SimpleErrorBoundary';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -7,8 +7,8 @@ interface ErrorBoundaryProps {
 
 export default function ErrorBoundary({ children }: ErrorBoundaryProps) {
   return (
-    <ErrorReportingBoundary>
+    <SimpleErrorBoundary>
       {children}
-    </ErrorReportingBoundary>
+    </SimpleErrorBoundary>
   );
 }
