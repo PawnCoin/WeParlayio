@@ -133,6 +133,7 @@ function Router() {
       <Route path="/upgrade-tier" component={UpgradeTier} />
       
       {/* Admin/Management Routes with Suspense */}
+      <SuspenseRoute path="/admin-dashboard" component={AdminDashboard} />
       <SuspenseRoute path="/user-dashboard" component={AdminDashboard} />
       <SuspenseRoute path="/users" component={UserDirectory} />
 
