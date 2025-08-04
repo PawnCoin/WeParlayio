@@ -29,7 +29,7 @@ import FaviconOptimization from "@/components/shared/FaviconOptimization";
 import SocialMediaOptimization from "@/components/shared/SocialMediaOptimization";
 import UserFriendlyDisconnection from "@/components/wallet/UserFriendlyDisconnection";
 import { useBetting } from "@/contexts/BettingContext";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import BusinessProposalModal from "@/components/business/BusinessProposalModal";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import OddsTicker from "../betting/OddsTicker";
@@ -40,7 +40,8 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [location] = useLocation();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, refetch: refetchAuth } = useAuth();
+  const queryClient = useQueryClient();
   
   // Handle missing user properties with proper defaults and admin status
   const currentUser = user as any || {};
@@ -74,10 +75,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const userBalance = currentUser.balance || 0;
   const userProfileImage = currentUser.profileImageUrl;
   
-  // Quick admin login function
+  // Quick admin login function with better state management
   const quickAdminLogin = async () => {
     try {
-      console.log('🔐 Quick admin login...');
+      console.log('🔐 Starting admin login...');
       
       const response = await fetch('/api/auth/admin-login', {
         method: 'POST',
@@ -94,22 +95,46 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       console.log('Admin login response:', data);
 
       if (data.success && data.token) {
-        // Store the token in localStorage
+        // Store the admin token
         localStorage.setItem('auth-token', data.token);
+        localStorage.setItem('weparlay-admin-token', data.token);
         localStorage.setItem('weparlay-is-admin', 'true');
         
-        // Force page reload to refresh auth state
-        window.location.reload();
+        // Set additional admin session data
+        localStorage.setItem('admin-email', 'support@weparlay.io');
+        localStorage.setItem('admin-login-time', Date.now().toString());
+        
+        console.log('✅ Admin login successful, refreshing auth state...');
+        
+        // First try to refresh auth state without full page reload
+        try {
+          // Invalidate and refetch auth queries
+          await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+          await refetchAuth();
+          console.log('✅ Auth state refreshed successfully');
+          
+          // Small delay to ensure state updates before continuing
+          setTimeout(() => {
+            console.log('🔄 Admin login complete - check dropdown now');
+          }, 500);
+        } catch (authError) {
+          console.log('🔄 Auth refresh failed, doing full page reload...', authError);
+          window.location.href = window.location.pathname;
+        }
       } else {
-        console.error('Admin login failed:', data.message);
+        console.error('❌ Admin login failed:', data.message);
+        alert('Login failed. Please try again.');
       }
     } catch (error) {
-      console.error('Admin login error:', error);
+      console.error('❌ Admin login error:', error);
+      alert('Login error. Please check your connection.');
     }
   };
 
-  // Simple logout function - use useAuth logout
+  // Enhanced logout function with proper cache clearing
   const logout = async () => {
+    console.log('🚪 Starting logout...');
+    
     try {
       // Call logout endpoint
       await fetch("/api/auth/logout", {
@@ -123,6 +148,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     // Clear all user data
     localStorage.clear(); // Clear all localStorage items
     sessionStorage.clear(); // Clear all sessionStorage items
+    
+    // Clear React Query cache
+    queryClient.clear();
+    
+    console.log('✅ Logout complete, reloading...');
     
     // Force reload to ensure clean state
     window.location.reload();

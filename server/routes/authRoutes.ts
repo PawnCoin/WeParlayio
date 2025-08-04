@@ -369,7 +369,7 @@ router.post('/admin-login', async (req, res) => {
       adminUser = await storage.upsertUser(adminUserData);
     }
 
-    // Generate JWT token
+    // Generate JWT token with long expiration for admin
     const token = jwt.sign(
       { 
         userId: adminUser.id, 
@@ -379,7 +379,7 @@ router.post('/admin-login', async (req, res) => {
         email: adminUser.email
       },
       process.env.JWT_SECRET || 'weparlay-secret-key',
-      { expiresIn: '24h' }
+      { expiresIn: '7d' } // Admin stays logged in for 7 days
     );
 
     // Remove password from response

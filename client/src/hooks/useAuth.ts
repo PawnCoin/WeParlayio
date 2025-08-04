@@ -28,9 +28,10 @@ export function useAuth() {
       return response.json();
     },
     retry: false,
-    staleTime: 1000 * 60 * 30, // 30 minutes for admin sessions
+    staleTime: 1000 * 60 * 60, // 1 hour for admin sessions (stay logged in longer)
     refetchOnWindowFocus: true,
-    refetchInterval: 1000 * 60 * 5, // Refetch every 5 minutes to keep auth state fresh
+    refetchInterval: 1000 * 60 * 10, // Refetch every 10 minutes to keep admin session fresh
+    gcTime: 1000 * 60 * 120, // Keep in cache for 2 hours
   });
 
   // If there's a 401 error or no user data, user is not authenticated
