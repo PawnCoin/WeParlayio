@@ -9,12 +9,8 @@ interface AdminBypassProps {
 export default function AdminBypass({ children }: AdminBypassProps) {
   const { user } = useAuth();
   
-  // Support@weparlay.io and all admin users get IMMEDIATE access
-  const isAdmin = user?.email === 'support@weparlay.io' || 
-                  user?.email === 'admin@weparlay.io' ||
-                  user?.email === 'weparlay@admin.com' ||
-                  user?.role === 'admin' || 
-                  user?.isAdmin === true;
+  // Only support@weparlay.io gets IMMEDIATE admin access
+  const isAdmin = user?.email === 'support@weparlay.io';
 
   // Admin users bypass ALL restrictions
   if (isAdmin) {

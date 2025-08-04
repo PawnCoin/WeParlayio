@@ -22,11 +22,7 @@ const TierGuard: React.FC<TierGuardProps> = ({
   const { user } = useAuth();
   
   // Check if user is admin FIRST - if so, bypass ALL restrictions
-  const isAdmin = user?.email === 'support@weparlay.io' || 
-                  user?.email === 'admin@weparlay.io' ||
-                  user?.email === 'weparlay@admin.com' ||
-                  user?.role === 'admin' || 
-                  user?.isAdmin === true;
+  const isAdmin = user?.email === 'support@weparlay.io';
 
   // Admin users bypass ALL restrictions
   if (isAdmin) {
