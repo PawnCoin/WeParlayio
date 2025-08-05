@@ -3,7 +3,7 @@ import { Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { StreamingGame, VideoPlayerState, StreamType } from './types';
 import { useVideoPlayer } from './hooks/useVideoPlayer';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 interface VideoPlayerProps {
   readonly game: StreamingGame;
