@@ -27,6 +27,10 @@ import BetSlip from '@/components/streaming/BetSlip';
 import UniversalSportsRouter from '@/components/streaming/UniversalSportsRouter';
 import EnhancedUniversalSportsRouter from '@/components/streaming/EnhancedUniversalSportsRouter';
 import YouTubeModal from '@/components/streaming/YouTubeModal';
+import AdvancedLiveStreamPlayer from '@/components/streaming/AdvancedLiveStreamPlayer';
+import ReactPlayerVideoPlayer from '@/components/streaming/ReactPlayerVideoPlayer';
+import UnifiedIPTVModule from '@/components/streaming/UnifiedIPTVModule';
+import AdvancedLiveStreaming from '@/pages/AdvancedLiveStreaming';
 import { StreamingGame, BetSlip as BetSlipType, BetType } from '@/components/streaming/types';
 
 // Legacy LiveGame interface for compatibility
@@ -59,6 +63,12 @@ interface LiveGame {
 }
 
 export default function LiveStreaming() {
+  // Early return for advanced mode
+  const [playerMode, setPlayerMode] = useState<'basic' | 'advanced'>('basic');
+  
+  if (playerMode === 'advanced') {
+    return <AdvancedLiveStreaming onBackToBasic={() => setPlayerMode('basic')} />;
+  }
   const [selectedGame, setSelectedGame] = useState<StreamingGame | null>(null);
   const [betSlip, setBetSlip] = useState<BetSlipType | null>(null);
   const [betAmount, setBetAmount] = useState<number>(10);
@@ -456,6 +466,18 @@ export default function LiveStreaming() {
             Live Sports Streaming
           </h1>
           <p className="text-gray-300 text-lg">Watch live sports and place real-time bets</p>
+          
+          {/* Player Mode Toggle */}
+          <div className="flex justify-center mt-6">
+            <Button
+              variant="outline"
+              onClick={() => setPlayerMode('advanced')}
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-purple-500"
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Switch to Advanced Player
+            </Button>
+          </div>
           
           {/* VIP Access Indicator */}
           {hasVIPAccess && (
