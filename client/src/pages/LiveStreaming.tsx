@@ -739,6 +739,62 @@ export default function LiveStreaming() {
           </Card>
         ) : (
           <div className="space-y-6">
+            {/* Live YouTube Streams */}
+            {youtubeStreams?.streams && youtubeStreams.streams.length > 0 && (
+              <Card className="bg-gray-900 border-gray-800">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <Youtube className="h-5 w-5 mr-2 text-red-500" />
+                    Live YouTube Streams
+                    <Badge className="ml-2 bg-red-600 text-white animate-pulse">LIVE</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {youtubeStreams.streams.map((stream: any) => (
+                      <Card key={stream.videoId} className="bg-gray-800 border-gray-700 hover:border-red-500 transition-colors cursor-pointer group">
+                        <CardContent className="p-4">
+                          <div className="space-y-3">
+                            <div className="relative">
+                              <img 
+                                src={stream.thumbnail} 
+                                alt={stream.title}
+                                className="w-full h-32 object-cover rounded-lg"
+                              />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                                <Play className="h-8 w-8 text-white" />
+                              </div>
+                              <Badge className="absolute top-2 right-2 bg-red-600 text-white text-xs animate-pulse">
+                                LIVE
+                              </Badge>
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-white text-sm line-clamp-2">{stream.title}</h4>
+                              <p className="text-gray-400 text-xs mt-1">{stream.channelTitle}</p>
+                              <div className="flex items-center justify-between mt-2">
+                                <div className="flex items-center text-xs text-gray-400">
+                                  <Users className="h-3 w-3 mr-1" />
+                                  {stream.viewerCount?.toLocaleString() || 'Live'}
+                                </div>
+                                <Button 
+                                  size="sm" 
+                                  className="bg-red-600 hover:bg-red-700 text-xs px-3 py-1"
+                                  onClick={() => handleOpenYouTubeModal(stream)}
+                                >
+                                  <Play className="h-3 w-3 mr-1" />
+                                  Watch
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* YouTube Search */}
             <Card className="bg-gray-900 border-gray-800">
               <CardHeader>
