@@ -15,7 +15,7 @@ class IPTVService {
   private channels: IPTVChannel[] = [];
   private lastFetch: number = 0;
   private readonly CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
-  private readonly GITHUB_PLAYLIST_URL = 'https://raw.githubusercontent.com/devsground/IPTV/master/all/grouped_by_country_and_content.m3u';
+  private readonly GITHUB_PLAYLIST_URL = 'https://raw.githubusercontent.com/iptv-org/iptv/master/streams/us.m3u';
 
   async getChannels(): Promise<IPTVChannel[]> {
     // Return cached channels if still valid
