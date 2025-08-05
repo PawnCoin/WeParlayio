@@ -1,5 +1,5 @@
 import { useRef, useEffect, useCallback, memo } from 'react';
-import { Users } from 'lucide-react';
+import { Users, Play } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { StreamingGame, VideoPlayerState, StreamType } from './types';
 import { useVideoPlayer } from './hooks/useVideoPlayer';
@@ -51,17 +51,22 @@ const VideoPlayer = memo(({ game, className = '' }: VideoPlayerProps) => {
 
     switch (streamType) {
       case 'youtube':
-        return (
-          <iframe
-            className="w-full h-full"
-            src={sanitizeYouTubeUrl(game.streamUrl)}
-            title={game.title}
-            frameBorder="0"
-            allowFullScreen
-            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-            sandbox="allow-scripts allow-same-origin allow-presentation"
-          />
-        );
+        // Create proper YouTube embed URL with autoplay
+        const videoId = game.streamUrl.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)?.[1];
+        if (videoId) {
+          return (
+            <iframe
+              className="w-full h-full"
+              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=1&rel=0&modestbranding=1`}
+              title={game.title}
+              frameBorder="0"
+              allowFullScreen
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+            />
+          );
+        }
+        break;
 
       case 'twitch':
         return (
@@ -83,6 +88,8 @@ const VideoPlayer = memo(({ game, className = '' }: VideoPlayerProps) => {
             ref={videoRef}
             className="w-full h-full object-cover"
             controls
+            autoPlay
+            muted
             playsInline
             crossOrigin="anonymous"
             preload="metadata"
@@ -95,7 +102,13 @@ const VideoPlayer = memo(({ game, className = '' }: VideoPlayerProps) => {
       default:
         return (
           <div className="w-full h-full bg-gray-900 flex items-center justify-center">
-            <p className="text-white">Unsupported stream format</p>
+            <div className="text-center text-white">
+              <div className="w-16 h-16 mx-auto mb-4 bg-red-600/20 rounded-full flex items-center justify-center">
+                <Play className="h-8 w-8 text-red-500" />
+              </div>
+              <p className="text-lg font-semibold">Stream Loading...</p>
+              <p className="text-sm text-gray-400">{game.title}</p>
+            </div>
           </div>
         );
     }
