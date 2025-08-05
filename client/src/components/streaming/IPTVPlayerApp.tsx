@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, Suspense, lazy } from 'react';
-import ReactPlayer from 'react-player/lazy';
+// @ts-ignore - ReactPlayer types may not be perfectly compatible
+import ReactPlayer from 'react-player';
 
 // M3U Parser utility
 const parseAttribute = (line: string, attributeName: string): string => {
@@ -126,19 +127,12 @@ const VideoPlayer = ({ url, channelName, playing }: { url?: string; channelName:
       {error && <ErrorOverlay message={error} />}
       <Suspense fallback={<div className="w-full h-full bg-black flex items-center justify-center text-white">Loading Player...</div>}>
         <ReactPlayer
-          key={url}
           url={url}
           playing={playing}
           controls={true}
           width="100%"
           height="100%"
-          className="absolute top-0 left-0"
-          config={{
-            file: {
-              hlsOptions: {},
-              forceHLS: true,
-            }
-          }}
+          style={{ position: 'absolute', top: 0, left: 0 }}
           onError={handleError}
         />
       </Suspense>

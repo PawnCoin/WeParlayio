@@ -53,7 +53,7 @@ export default function AdvancedLiveStreaming({ onBackToBasic }: AdvancedLiveStr
   }) as { data?: { streams?: any[] } };
 
   // Convert sports events to advanced format
-  const premiumStreams = sportsEvents?.slice(0, 6).map((event: any) => ({
+  const premiumStreams = (Array.isArray(sportsEvents) ? sportsEvents : []).slice(0, 6).map((event: any) => ({
     id: event.id,
     title: `${event.homeTeam.name} vs ${event.awayTeam.name}`,
     homeTeam: event.homeTeam.name,
@@ -177,23 +177,26 @@ export default function AdvancedLiveStreaming({ onBackToBasic }: AdvancedLiveStr
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {premiumStreams.map((stream) => (
-                  <AdvancedLiveStreamPlayer
+                {premiumStreams.map((stream: any) => (
+                  <div 
                     key={stream.id}
-                    streamUrl={stream.streamUrl}
-                    gameTitle={stream.title}
-                    homeTeam={stream.homeTeam}
-                    awayTeam={stream.awayTeam}
-                    league={stream.league}
-                    viewerCount={stream.viewerCount}
-                    isLive={stream.isLive}
-                    quality={stream.quality}
-                    userTier={stream.userTier}
-                    previewMode={stream.previewMode}
-                    onUpgradeClick={handleUpgradeClick}
                     className="cursor-pointer hover:scale-105 transition-transform"
                     onClick={() => handleSelectGame(stream)}
-                  />
+                  >
+                    <AdvancedLiveStreamPlayer
+                      streamUrl={stream.streamUrl}
+                      gameTitle={stream.title}
+                      homeTeam={stream.homeTeam}
+                      awayTeam={stream.awayTeam}
+                      league={stream.league}
+                      viewerCount={stream.viewerCount}
+                      isLive={stream.isLive}
+                      quality={stream.quality}
+                      userTier={stream.userTier}
+                      previewMode={stream.previewMode}
+                      onUpgradeClick={handleUpgradeClick}
+                    />
+                  </div>
                 ))}
               </div>
             )}
