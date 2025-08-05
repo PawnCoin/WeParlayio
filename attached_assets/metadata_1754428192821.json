@@ -1,0 +1,5 @@
+{
+  "name": "Wapp.tv IPTV Player",
+  "description": "A sleek IPTV player that loads a channel playlist and allows users to select and watch streams instantly. Built with React, TypeScript, and Tailwind CSS.",
+  "requestFramePermissions": []
+}

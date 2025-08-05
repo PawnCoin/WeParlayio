@@ -1,16 +1,56 @@
-import React, { useState, useEffect, useCallback, useMemo, Suspense, lazy } from 'react';
-// @ts-ignore - ReactPlayer types may not be perfectly compatible
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Search } from 'lucide-react';
+
+// Import ReactPlayer directly - available in project dependencies
 import ReactPlayer from 'react-player';
 
-// M3U Parser utility
+interface Channel {
+  name: string;
+  url: string;
+  group?: string;
+  logo?: string;
+  tvgId?: string;
+}
+
+// List of M3U playlists to fetch and combine
+const M3U_URLS = [
+  'https://iptv-org.github.io/iptv/index.m3u',
+  'https://www.apsattv.com/xumo.m3u',
+  'https://www.apsattv.com/ssungusa.m3u',
+  'https://www.apsattv.com/localnow.m3u',
+  'https://www.apsattv.com/lg.m3u',
+  'https://www.apsattv.com/rok.m3u',
+  'https://www.apsattv.com/redbox.m3u',
+  'https://www.apsattv.com/distro.m3u',
+  'https://www.apsattv.com/xiaomi.m3u',
+];
+
+const SPORTS_KEYWORDS = [
+  // General
+  'sport', 'sports', 'stadium', 'fans', 'espn',
+  // Major US Networks
+  'fs', 'fox sports', 'cbs sports', 'nbcsn', 'tnt', 'tbs',
+  // Leagues
+  'nfl', 'nba', 'mlb', 'nhl', 'mls', 'pga', 'lpga', 'wwe', 'ufc', 'nascar', 'f1', 'formula 1',
+  // College
+  'ncaaf', 'ncaam', 'sec network', 'big ten', 'acc network', 'pac-12',
+  // Soccer
+  'soccer', 'football', 'premier league', 'la liga', 'serie a', 'bundesliga', 'ligue 1', 'champions league',
+  // International Networks
+  'bein', 'dazn', 'sky sports', 'eurosport', 'tsn', 'sportsnet',
+  // Specific Sports
+  'racing', 'golf', 'tennis', 'cricket', 'rugby', 'boxing', 'mma', 'motorsport'
+];
+
+// M3U Parser function
 const parseAttribute = (line: string, attributeName: string): string => {
   const match = line.match(new RegExp(`${attributeName}="(.*?)"`));
   return match ? match[1] : '';
 };
 
-const parseM3U = (m3uContent: string) => {
+const parseM3U = (m3uContent: string): Channel[] => {
   const lines = m3uContent.split('\n').filter(line => line.trim() !== '');
-  const channels: any[] = [];
+  const channels: Channel[] = [];
 
   if (!lines[0] || !lines[0].startsWith('#EXTM3U')) {
     console.warn('M3U file does not start with #EXTM3U');
@@ -41,7 +81,7 @@ const parseM3U = (m3uContent: string) => {
 };
 
 // Spinner Component
-const Spinner = () => {
+const Spinner: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-center space-y-2">
       <svg
@@ -69,33 +109,8 @@ const Spinner = () => {
   );
 };
 
-// Header Component
-const Header = () => {
-  return (
-    <header className="bg-gray-800 shadow-md p-4 flex items-center space-x-3 flex-shrink-0 z-10">
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-400" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M4 3h16a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zm1 2v14h14V5H5zm7 3a1 1 0 0 1 1 .883V16.117a1 1 0 0 1-1.993.117L11 16.117V8.883A1 1 0 0 1 12 8zM8 10a1 1 0 0 1 1 .883v4.234a1 1 0 0 1-1.993.117L7 15.117v-4.234A1 1 0 0 1 8 10zm8 0a1 1 0 0 1 1 .883v4.234a1 1 0 0 1-1.993.117L15 15.117v-4.234A1 1 0 0 1 16 10z" />
-      </svg>
-      <h1 className="text-2xl font-bold text-white tracking-tight">
-        WeParlay IPTV Player
-      </h1>
-    </header>
-  );
-};
-
-// Error Overlay Component
-const ErrorOverlay = ({ message }: { message: string }) => (
-  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black bg-opacity-80 p-4 text-center">
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-red-500 mb-4" viewBox="0 0 20 20" fill="currentColor">
-      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-    </svg>
-    <h3 className="text-xl font-semibold text-red-400">Playback Error</h3>
-    <p className="text-gray-300">{message}</p>
-  </div>
-);
-
 // Player Placeholder Component
-const PlayerPlaceholder = () => (
+const PlayerPlaceholder: React.FC = () => (
   <div className="w-full h-full flex flex-col items-center justify-center bg-black text-gray-400">
     <svg xmlns="http://www.w3.org/2000/svg" className="h-24 w-24 mb-4" viewBox="0 0 20 20" fill="currentColor">
       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
@@ -105,11 +120,27 @@ const PlayerPlaceholder = () => (
   </div>
 );
 
+// Error Overlay Component
+const ErrorOverlay: React.FC<{ message: string }> = ({ message }) => (
+  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black bg-opacity-80 p-4 text-center">
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-red-500 mb-4" viewBox="0 0 20 20" fill="currentColor">
+      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+    </svg>
+    <h3 className="text-xl font-semibold text-red-400">Playback Error</h3>
+    <p className="text-gray-300">{message}</p>
+  </div>
+);
+
 // Video Player Component
-const VideoPlayer = ({ url, channelName, playing }: { url?: string; channelName: string; playing: boolean }) => {
+const VideoPlayer: React.FC<{
+  url?: string;
+  channelName?: string;
+  playing: boolean;
+}> = ({ url, channelName, playing }) => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Reset error state when channel changes
     setError(null);
   }, [url]);
 
@@ -125,30 +156,34 @@ const VideoPlayer = ({ url, channelName, playing }: { url?: string; channelName:
   return (
     <div className="w-full aspect-video bg-black relative flex items-center justify-center">
       {error && <ErrorOverlay message={error} />}
-      <Suspense fallback={<div className="w-full h-full bg-black flex items-center justify-center text-white">Loading Player...</div>}>
-        <ReactPlayer
-          url={url || ''}
-          playing={playing}
-          controls={true}
-          width="100%"
-          height="100%"
-          style={{ position: 'absolute', top: 0, left: 0 }}
-          onError={handleError}
-          config={{
-            file: {
-              attributes: {
-                crossOrigin: 'anonymous'
-              }
-            }
-          }}
-        />
-      </Suspense>
+      <ReactPlayer
+        key={url} // Important: re-mounts the player on URL change
+        url={url}
+        playing={playing}
+        controls={true}
+        width="100%"
+        height="100%"
+        className="absolute top-0 left-0"
+        config={{
+          file: {
+            hlsOptions: {
+              // You can add HLS.js specific options here if needed
+            },
+            forceHLS: true,
+          }
+        }}
+        onError={handleError}
+      />
     </div>
   );
 };
 
 // Channel List Item Component
-const ChannelListItem = ({ channel, isActive, onSelect }: { channel: any; isActive: boolean; onSelect: () => void }) => {
+const ChannelListItem: React.FC<{
+  channel: Channel;
+  isActive: boolean;
+  onSelect: () => void;
+}> = ({ channel, isActive, onSelect }) => {
   const preferredLogo = channel.tvgId ? `https://iptv-org.github.io/epg/logos/${channel.tvgId}.png` : channel.logo;
   const fallbackLogo = channel.logo;
 
@@ -164,9 +199,11 @@ const ChannelListItem = ({ channel, isActive, onSelect }: { channel: any; isActi
   }, [channel.tvgId, channel.logo]);
 
   const handleLogoError = () => {
+    // If the preferred logo failed, try the fallback, but only if it's different
     if (currentLogo === preferredLogo && fallbackLogo && fallbackLogo !== preferredLogo) {
       setCurrentLogo(fallbackLogo);
     } else {
+      // If all logos fail, show placeholder
       setShowPlaceholder(true);
     }
   };
@@ -189,7 +226,7 @@ const ChannelListItem = ({ channel, isActive, onSelect }: { channel: any; isActi
       ) : (
         <img
           src={currentLogo}
-          alt=""
+          alt="" // Decorative image
           aria-hidden="true"
           className="w-10 h-10 object-contain bg-gray-600/20 rounded-md flex-shrink-0 p-0.5"
           onError={handleLogoError}
@@ -206,12 +243,12 @@ const ChannelListItem = ({ channel, isActive, onSelect }: { channel: any; isActi
 };
 
 // Channel Group Component
-const ChannelGroup = ({ groupName, channels, currentChannelUrl, onSelectChannel }: {
+const ChannelGroup: React.FC<{
   groupName: string;
-  channels: any[];
-  currentChannelUrl?: string;
-  onSelectChannel: (channel: any) => void;
-}) => {
+  channels: Channel[];
+  currentChannelUrl: string | null;
+  onSelectChannel: (channel: Channel) => void;
+}> = ({ groupName, channels, currentChannelUrl, onSelectChannel }) => {
   const [isOpen, setIsOpen] = useState(true);
 
   return (
@@ -243,11 +280,11 @@ const ChannelGroup = ({ groupName, channels, currentChannelUrl, onSelectChannel 
 };
 
 // Channel List Component
-const ChannelList = ({ groupedChannels, currentChannelUrl, onSelectChannel }: {
-  groupedChannels: Record<string, any[]>;
-  currentChannelUrl?: string;
-  onSelectChannel: (channel: any) => void;
-}) => {
+const ChannelList: React.FC<{
+  groupedChannels: Record<string, Channel[]>;
+  currentChannelUrl: string | null;
+  onSelectChannel: (channel: Channel) => void;
+}> = ({ groupedChannels, currentChannelUrl, onSelectChannel }) => {
   const sortedGroupNames = Object.keys(groupedChannels).sort();
     
   return (
@@ -265,346 +302,164 @@ const ChannelList = ({ groupedChannels, currentChannelUrl, onSelectChannel }: {
   );
 };
 
-// Main IPTV Player App Component
-export default function IPTVPlayerApp() {
-  const M3U_URLS = [
-    'https://iptv-org.github.io/iptv/index.m3u',
-    'https://www.apsattv.com/xumo.m3u',
-    'https://www.apsattv.com/ssungusa.m3u',
-    'https://www.apsattv.com/localnow.m3u',
-    'https://www.apsattv.com/lg.m3u',
-    'https://www.apsattv.com/rok.m3u',
-    'https://www.apsattv.com/redbox.m3u',
-    'https://www.apsattv.com/distro.m3u',
-    'https://www.apsattv.com/xiaomi.m3u',
-  ];
+// Header Component
+const Header: React.FC = () => {
+  return (
+    <header className="bg-gray-800 shadow-md p-4 flex items-center space-x-3 flex-shrink-0 z-10">
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-400" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M4 3h16a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zm1 2v14h14V5H5zm7 3a1 1 0 0 1 1 .883V16.117a1 1 0 0 1-1.993.117L11 16.117V8.883A1 1 0 0 1 12 8zM8 10a1 1 0 0 1 1 .883v4.234a1 1 0 0 1-1.993.117L7 15.117v-4.234A1 1 0 0 1 8 10zm8 0a1 1 0 0 1 1 .883v4.234a1 1 0 0 1-1.993.117L15 15.117v-4.234A1 1 0 0 1 16 10z" />
+      </svg>
+      <h1 className="text-2xl font-bold text-white tracking-tight">
+        WeParlay Sports IPTV
+      </h1>
+    </header>
+  );
+};
 
-  const SPORTS_KEYWORDS = [
-    'sport', 'sports', 'stadium', 'fans', 'espn', 'fs', 'fox sports', 
-    'nfl', 'nba', 'mlb', 'nhl', 'soccer', 'football', 'basketball', 
-    'baseball', 'hockey', 'tennis', 'golf', 'racing', 'mma', 'ufc',
-    'boxing', 'olympics', 'fifa', 'premier league', 'champions league'
-  ];
-
-  // Comprehensive sports channels from working sources
-  const SPORTS_CHANNELS = [
-    // US Sports Networks
-    {
-      name: "ESPN",
-      url: "https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8",
-      group: "US Sports",
-      logo: "https://logos-world.net/wp-content/uploads/2021/08/ESPN-Logo.png"
-    },
-    {
-      name: "Fox Sports 1",
-      url: "https://d2gjhy8g9ziabr.cloudfront.net/v1/manifest/3fec3e5cac39a52b2132f9c66c83dae043dc17d4/prod-samsungtvplus-stitched/f9809543-257b-4684-8481-e618e3827a8a/0.m3u8",
-      group: "US Sports", 
-      logo: "https://logos-world.net/wp-content/uploads/2020/06/Fox-Sports-Logo.png"
-    },
-    {
-      name: "NBC Sports",
-      url: "https://d2gjhy8g9ziabr.cloudfront.net/v1/manifest/3fec3e5cac39a52b2132f9c66c83dae043dc17d4/prod-samsungtvplus-stitched/ba45aca1-8e21-4827-a94a-7b31779230a3/0.m3u8",
-      group: "US Sports",
-      logo: "https://logos-world.net/wp-content/uploads/2020/06/NBC-Sports-Logo.png"
-    },
-    {
-      name: "CBS Sports",
-      url: "https://cbssports-linear.cbsaavideo.com/out/v1/cc15e3c4f8434251b6dffe8138b86ae0/master.m3u8",
-      group: "US Sports",
-      logo: "https://logos-world.net/wp-content/uploads/2020/06/CBS-Sports-Logo.png"
-    },
-    {
-      name: "Tennis Channel",
-      url: "https://tennischannel-int-samsungau.amagi.tv/playlist720_p.m3u8",
-      group: "Tennis",
-      logo: "https://upload.wikimedia.org/wikipedia/commons/4/4f/Tennis_Channel_logo.svg"
-    },
-    {
-      name: "Olympic Channel",
-      url: "https://ott-live.olympicchannel.com/out/u/OC1_3.m3u8",
-      group: "Olympics",
-      logo: "https://upload.wikimedia.org/wikipedia/en/thumb/e/e4/Olympic_Channel_logo.svg/1200px-Olympic_Channel_logo.svg.png"
-    },
-    // Football/Soccer
-    {
-      name: "beIN Sports",
-      url: "https://d35j504z0x92k8.cloudfront.net/v1/manifest/44f73ba4d03e9607dcd9bebdcb8494d86964f1d8/AEW-YT/43347d00-b8f1-4f0f-b8e9-a5e8fefcfe0e/2.m3u8",
-      group: "Soccer",
-      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Bein_sport_logo.png/1200px-Bein_sport_logo.svg.png"
-    },
-    {
-      name: "Sky Sports Football",
-      url: "https://linear-abscbn.akamaized.net/streams/ono_abscbn_ako/playlist.m3u8",
-      group: "Soccer",
-      logo: "https://logos-world.net/wp-content/uploads/2020/06/Sky-Sports-Logo.png"
-    },
-    {
-      name: "Eurosport 1",
-      url: "https://eurosport1.mediaset.net/live/ch-ec/compat.m3u8",
-      group: "European Sports",
-      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Eurosport_1_logo.svg/1200px-Eurosport_1_logo.svg.png"
-    },
-    // Basketball
-    {
-      name: "NBA TV",
-      url: "https://nba-mobile-prod.akamaized.net/hls/live/1628971/nba_mobile/playlist.m3u8",
-      group: "Basketball",
-      logo: "https://upload.wikimedia.org/wikipedia/en/thumb/d/d2/NBA_TV.svg/1200px-NBA_TV.svg.png"
-    },
-    // Baseball
-    {
-      name: "MLB Network",
-      url: "https://mlb-mobile-prod.akamaized.net/hls/live/1628971/mlb_mobile/playlist.m3u8",
-      group: "Baseball",
-      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/MLB_Network_Logo.svg/1200px-MLB_Network_Logo.svg.png"
-    },
-    // Hockey
-    {
-      name: "NHL Network",
-      url: "https://nhl-mobile-prod.akamaized.net/hls/live/1628971/nhl_mobile/playlist.m3u8",
-      group: "Hockey",
-      logo: "https://upload.wikimedia.org/wikipedia/en/thumb/2/29/NHL_Network_logo.svg/1200px-NHL_Network_logo.svg.png"
-    },
-    // Combat Sports
-    {
-      name: "UFC Fight Pass",
-      url: "https://ufc-live-web.akamaized.net/out/u/1628971.m3u8",
-      group: "MMA",
-      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/UFC_Logo.svg/1200px-UFC_Logo.svg.png"
-    },
-    {
-      name: "Boxing TV",
-      url: "https://boxing-live.akamaized.net/out/u/boxing_live.m3u8",
-      group: "Boxing",
-      logo: "https://cdn-icons-png.flaticon.com/512/857/857418.png"
-    },
-    // Motorsports
-    {
-      name: "Motor Trend",
-      url: "https://motortv.akamaized.net/hls/live/1628971/motortv/playlist.m3u8",
-      group: "Motorsports",
-      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/MotorTrend_logo.svg/1200px-MotorTrend_logo.svg.png"
-    },
-    {
-      name: "Racing TV",
-      url: "https://racing-live.akamaized.net/out/u/racing_live.m3u8",
-      group: "Motorsports",
-      logo: "https://cdn-icons-png.flaticon.com/512/2418/2418750.png"
-    },
-    // Golf
-    {
-      name: "Golf Channel",
-      url: "https://golf-live.akamaized.net/out/u/golf_live.m3u8",
-      group: "Golf",
-      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Golf_Channel_logo.svg/1200px-Golf_Channel_logo.svg.png"
-    },
-    // International Sports
-    {
-      name: "ESPN International",
-      url: "https://espn-intl.akamaized.net/out/u/espn_intl.m3u8",
-      group: "International",
-      logo: "https://logos-world.net/wp-content/uploads/2021/08/ESPN-Logo.png"
-    },
-    {
-      name: "Sports TV Asia",
-      url: "https://sports-asia.akamaized.net/out/u/sports_asia.m3u8",
-      group: "Asian Sports",
-      logo: "https://cdn-icons-png.flaticon.com/512/857/857438.png"
-    },
-    // Esports
-    {
-      name: "Twitch Esports",
-      url: "https://twitch-esports.akamaized.net/out/u/twitch_esports.m3u8",
-      group: "Esports",
-      logo: "https://logos-world.net/wp-content/uploads/2021/02/Twitch-Logo.png"
-    }
-  ];
-
-  const [channels, setChannels] = useState<any[]>([]);
-  const [groupedChannels, setGroupedChannels] = useState<Record<string, any[]>>({});
-  const [currentChannel, setCurrentChannel] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(false);
+// Main App Component with Original Working Logic
+function IPTVPlayerApp() {
+  const [allChannels, setAllChannels] = useState<Channel[]>([]);
+  const [currentChannel, setCurrentChannel] = useState<Channel | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
 
-  const fetchM3UContent = useCallback(async (url: string): Promise<string> => {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return await response.text();
-    } catch (error) {
-      console.error(`Failed to fetch M3U from ${url}:`, error);
-      throw error;
-    }
-  }, []);
-
-  const loadChannels = useCallback(async () => {
+  const fetchAndProcessPlaylists = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    
     try {
-      const allChannels: any[] = [];
+      const proxyUrl = 'https://corsproxy.io/?';
       
-      for (const url of M3U_URLS) {
-        try {
-          const content = await fetchM3UContent(url);
-          const parsedChannels = parseM3U(content);
-          allChannels.push(...parsedChannels);
-        } catch (error: any) {
-          console.error(`Failed to load channels from ${url}:`, error);
-          console.log('🔄 Non-critical error handled gracefully:', error?.message || 'Unknown error');
-        }
-      }
-
-      // If no channels loaded from external sources, use comprehensive sports channels
-      if (allChannels.length === 0) {
-        console.log('🔄 External sources failed, using comprehensive sports channels');
-        allChannels.push(...SPORTS_CHANNELS);
-      }
-
-      // Filter for sports channels
-      const sportsChannels = allChannels.filter(channel => 
-        SPORTS_KEYWORDS.some(keyword => 
-          channel.name.toLowerCase().includes(keyword) ||
-          (channel.group && channel.group.toLowerCase().includes(keyword))
-        )
+      const responses = await Promise.allSettled(
+        M3U_URLS.map(url => fetch(proxyUrl + url).then(res => {
+          if (!res.ok) throw new Error(`Failed to fetch ${url}`);
+          return res.text();
+        }))
       );
 
-      // Use sports channels if available, otherwise use all channels
-      const channelsToUse = sportsChannels.length > 0 ? sportsChannels : allChannels.slice(0, 50);
-
-      setChannels(channelsToUse);
-
-      // Group channels
-      const grouped = channelsToUse.reduce((acc: Record<string, any[]>, channel: any) => {
-        const group = channel.group || 'Other';
-        if (!acc[group]) {
-          acc[group] = [];
+      const allParsedChannels: Channel[] = [];
+      responses.forEach(result => {
+        if (result.status === 'fulfilled') {
+          allParsedChannels.push(...parseM3U(result.value));
+        } else {
+          console.warn('A playlist failed to load:', result.reason);
         }
-        acc[group].push(channel);
-        return acc;
-      }, {});
-
-      setGroupedChannels(grouped);
+      });
       
-      // Auto-select first sports channel
-      if (channelsToUse.length > 0) {
-        setCurrentChannel(channelsToUse[0]);
+      const sportChannels = allParsedChannels.filter(channel => {
+        const nameLower = channel.name.toLowerCase();
+        const groupLower = channel.group?.toLowerCase() || '';
+        return SPORTS_KEYWORDS.some(keyword => nameLower.includes(keyword) || groupLower.includes(keyword));
+      });
+      
+      // Deduplicate channels based on URL
+      const uniqueChannels = Array.from(new Map(sportChannels.map(ch => [ch.url, ch])).values());
+
+      if (uniqueChannels.length === 0) {
+        throw new Error('No sports channels found. Check playlists or network.');
       }
       
-    } catch (error: any) {
-      console.error('Error loading channels:', error);
-      console.log('🔄 Non-critical error handled gracefully:', error?.message || 'Unknown error');
-      // Still set comprehensive sports channels even if there's an error
-      setChannels(SPORTS_CHANNELS);
-      const grouped = SPORTS_CHANNELS.reduce((acc: Record<string, any[]>, channel: any) => {
-        const group = channel.group || 'Other';
-        if (!acc[group]) {
-          acc[group] = [];
-        }
-        acc[group].push(channel);
-        return acc;
-      }, {});
-      setGroupedChannels(grouped);
-      if (SPORTS_CHANNELS.length > 0) {
-        setCurrentChannel(SPORTS_CHANNELS[0]);
+      setAllChannels(uniqueChannels);
+      setCurrentChannel(uniqueChannels[0]);
+      setIsPlaying(false);
+
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown error occurred while loading channels.');
       }
     } finally {
       setIsLoading(false);
     }
-  }, [fetchM3UContent]);
-
-  useEffect(() => {
-    loadChannels();
-  }, [loadChannels]);
-
-  const handleChannelSelect = useCallback((channel: any) => {
-    setCurrentChannel(channel);
-    setIsPlaying(true);
   }, []);
 
-  const retryLoading = useCallback(() => {
-    loadChannels();
-  }, [loadChannels]);
+  useEffect(() => {
+    fetchAndProcessPlaylists();
+  }, [fetchAndProcessPlaylists]);
 
-  if (isLoading) {
-    return (
-      <div className="h-screen bg-gray-900 text-white flex items-center justify-center">
-        <Spinner />
-      </div>
-    );
-  }
+  const handleSelectChannel = (channel: Channel) => {
+    setCurrentChannel(channel);
+    setIsPlaying(true);
+  };
 
-  if (error) {
-    return (
-      <div className="h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-4">
-        <div className="text-center max-w-md">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-red-500 mx-auto mb-4" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-          </svg>
-          <h2 className="text-2xl font-bold mb-2">Error Loading Channels</h2>
-          <p className="text-gray-400 mb-4">{error}</p>
-          <button
-            onClick={retryLoading}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const filteredChannels = useMemo(() => 
+    allChannels.filter(channel =>
+      channel.name.toLowerCase().includes(searchQuery.toLowerCase())
+    ),
+    [allChannels, searchQuery]
+  );
+  
+  const groupedChannels = useMemo(() => {
+    return filteredChannels.reduce((acc, channel) => {
+      const groupName = channel.group || 'General Sports';
+      if (!acc[groupName]) {
+        acc[groupName] = [];
+      }
+      acc[groupName].push(channel);
+      return acc;
+    }, {} as Record<string, Channel[]>);
+  }, [filteredChannels]);
 
   return (
     <div className="h-screen bg-gray-900 text-white flex flex-col">
       <Header />
-      <div className="flex flex-1 overflow-hidden">
-        {/* Channel List Sidebar */}
-        <div className="w-80 bg-gray-800 flex flex-col">
-          <div className="p-4 bg-gray-700 border-b border-gray-600">
-            <h2 className="text-lg font-semibold">Sports Channels ({channels.length})</h2>
+      <main className="flex-grow flex flex-row overflow-hidden">
+        <aside className="w-80 lg:w-96 bg-gray-800 flex-shrink-0 flex flex-col">
+          <div className="p-3 border-b border-gray-700">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search sports channels..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-gray-700 text-white placeholder-gray-400 rounded-md py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Search channels"
+              />
+              <Search className="h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            </div>
           </div>
-          <div className="flex-1 overflow-y-auto">
-            <ChannelList
-              groupedChannels={groupedChannels}
-              currentChannelUrl={currentChannel?.url}
-              onSelectChannel={handleChannelSelect}
-            />
+          <div className="flex-grow overflow-y-auto">
+            {isLoading && <div className="p-4"><Spinner /></div>}
+            {error && !isLoading && (
+              <div className="p-4 text-red-400">
+                <p className="font-bold">Error loading channels:</p>
+                <p className="text-sm">{error}</p>
+                <button
+                  onClick={fetchAndProcessPlaylists}
+                  className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+                  aria-label="Retry fetching playlist"
+                >
+                  Retry
+                </button>
+              </div>
+            )}
+            {!isLoading && !error && filteredChannels.length > 0 && (
+              <ChannelList
+                groupedChannels={groupedChannels}
+                currentChannelUrl={currentChannel?.url ?? null}
+                onSelectChannel={handleSelectChannel}
+              />
+            )}
+            {!isLoading && !error && filteredChannels.length === 0 && (
+              <div className="p-4 text-center text-gray-400">
+                <p className="font-bold">No results found</p>
+                <p>Try adjusting your search or check the playlists.</p>
+              </div>
+            )}
           </div>
-        </div>
-
-        {/* Video Player */}
-        <div className="flex-1 bg-black">
-          <VideoPlayer
-            url={currentChannel?.url}
-            channelName={currentChannel?.name || ''}
+        </aside>
+        <section className="flex-grow bg-black flex items-center justify-center">
+          <VideoPlayer 
+            url={currentChannel?.url} 
+            channelName={currentChannel?.name}
             playing={isPlaying}
           />
-          
-          {/* Channel Info */}
-          {currentChannel && (
-            <div className="p-4 bg-gray-800">
-              <h3 className="text-xl font-semibold">{currentChannel.name}</h3>
-              {currentChannel.group && (
-                <p className="text-gray-400">{currentChannel.group}</p>
-              )}
-              <div className="mt-2 flex items-center space-x-4">
-                <button
-                  onClick={() => setIsPlaying(!isPlaying)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
-                >
-                  {isPlaying ? 'Pause' : 'Play'}
-                </button>
-                <span className="text-gray-400">
-                  {isPlaying ? 'Playing' : 'Paused'}
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+        </section>
+      </main>
     </div>
   );
 }
+
+export default IPTVPlayerApp;
