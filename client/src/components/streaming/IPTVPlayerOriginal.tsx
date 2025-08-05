@@ -207,10 +207,15 @@ const VideoPlayer: React.FC<{
           muted={true} // Helps with autoplay policies
           className="absolute top-0 left-0"
           config={{
-            hlsOptions: {
-              enableWorker: true,
-              lowLatencyMode: false,
-              backBufferLength: 90
+            file: {
+              forceHLS: true,
+              hlsOptions: {
+                enableWorker: true,
+                lowLatencyMode: false,
+                backBufferLength: 90,
+                liveSyncDurationCount: 3,
+                liveMaxLatencyDurationCount: 10
+              }
             }
           }}
           onError={handleError}
