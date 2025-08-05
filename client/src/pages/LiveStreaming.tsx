@@ -78,7 +78,10 @@ export default function LiveStreaming() {
     queryKey: ['/api/youtube/live-streams'],
     refetchInterval: 60000, // Refresh every minute
     enabled: hasVIPAccess, // Only fetch for VIP users
-  });
+  }) as { data?: { streams?: any[] } };
+
+  // Type-safe access to YouTube streams
+  const youtubeStreamsList = youtubeStreams?.streams || [];
 
   // YouTube modal handlers
   const handleOpenYouTubeModal = useCallback((stream: any) => {
@@ -272,8 +275,8 @@ export default function LiveStreaming() {
     }
 
     // Add YouTube streams from Google API (if available)
-    if (youtubeStreams?.streams && Array.isArray(youtubeStreams.streams)) {
-      youtubeStreams.streams.forEach((stream: any, index: number) => {
+    if (youtubeStreamsList && Array.isArray(youtubeStreamsList)) {
+      youtubeStreamsList.forEach((stream: any, index: number) => {
         streamingGames.push({
           id: `youtube-${stream.videoId}`,
           title: stream.title,
@@ -740,7 +743,7 @@ export default function LiveStreaming() {
         ) : (
           <div className="space-y-6">
             {/* Live YouTube Streams */}
-            {youtubeStreams?.streams && youtubeStreams.streams.length > 0 && (
+            {youtubeStreamsList && youtubeStreamsList.length > 0 && (
               <Card className="bg-gray-900 border-gray-800">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center">
@@ -751,7 +754,7 @@ export default function LiveStreaming() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {youtubeStreams.streams.map((stream: any) => (
+                    {youtubeStreamsList.map((stream: any) => (
                       <Card key={stream.videoId} className="bg-gray-800 border-gray-700 hover:border-red-500 transition-colors cursor-pointer group">
                         <CardContent className="p-4">
                           <div className="space-y-3">
