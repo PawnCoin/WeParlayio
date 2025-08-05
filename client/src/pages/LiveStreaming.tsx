@@ -17,7 +17,9 @@ import {
   Youtube,
   Globe,
   Star,
-  Lock
+  Lock,
+  Tv,
+  Settings
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -468,14 +470,22 @@ export default function LiveStreaming() {
           <p className="text-gray-300 text-lg">Watch live sports and place real-time bets</p>
           
           {/* Player Mode Toggle */}
-          <div className="flex justify-center mt-6">
+          <div className="flex justify-center gap-4 mt-6">
             <Button
               variant="outline"
               onClick={() => setPlayerMode('advanced')}
               className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-purple-500"
             >
               <Settings className="h-4 w-4 mr-2" />
-              Switch to Advanced Player
+              Advanced Player
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => window.location.href = '/iptv-player'}
+              className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white border-green-500"
+            >
+              <Tv className="h-4 w-4 mr-2" />
+              IPTV Player
             </Button>
           </div>
           

@@ -22,6 +22,7 @@ import { useAuth } from '@/hooks/useAuth';
 import AdvancedLiveStreamPlayer from '@/components/streaming/AdvancedLiveStreamPlayer';
 import ReactPlayerVideoPlayer from '@/components/streaming/ReactPlayerVideoPlayer';
 import UnifiedIPTVModule from '@/components/streaming/UnifiedIPTVModule';
+import IPTVPlayerApp from '@/components/streaming/IPTVPlayerApp';
 
 interface AdvancedLiveStreamingProps {
   onBackToBasic?: () => void;
@@ -279,7 +280,9 @@ export default function AdvancedLiveStreaming({ onBackToBasic }: AdvancedLiveStr
 
           {/* IPTV Tab */}
           <TabsContent value="iptv" className="mt-6">
-            <UnifiedIPTVModule />
+            <div className="bg-gray-900 rounded-lg overflow-hidden">
+              <IPTVPlayerApp />
+            </div>
           </TabsContent>
         </Tabs>
       </div>
