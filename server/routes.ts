@@ -61,6 +61,7 @@ import { cryptoService } from "./services/cryptoService";
 import { allSportsApiService } from "./services/allSportsApiService";
 import { createCashAppPayment, getCashAppPaymentStatus, initiateCashAppPayout } from "./cashapp";
 import { youtubeRoutes } from "./youtube-api";
+import { iptvService } from "./iptv-service";
 
 // Export the routes so they can be imported by index.ts
 export { notificationRoutes, websocketPollingRoutes };
@@ -5564,57 +5565,29 @@ ${streamUrl}
     }
   });
 
-  // IPTV channels endpoint for streaming page
-  app.get('/api/iptv/channels', async (req, res) => {
+  // GitHub IPTV channels endpoint for streaming page  
+  app.get('/api/iptv/github-channels', async (req, res) => {
     try {
-      // Provide sample IPTV channels with thetv.to integration
-      const channels = [
-        {
-          id: 'espn',
-          name: 'ESPN Sports Center',
-          category: 'Sports',
-          url: 'https://thetv.to:443/live/espn/stream.m3u8',
-          logo: 'https://logos-world.net/wp-content/uploads/2021/08/ESPN-Logo.png'
-        },
-        {
-          id: 'fox-sports',
-          name: 'FOX Sports',
-          category: 'Sports',
-          url: 'https://thetv.to:443/live/foxsports/stream.m3u8',
-          logo: 'https://logos-world.net/wp-content/uploads/2020/06/Fox-Sports-Logo.png'
-        },
-        {
-          id: 'nfl-network',
-          name: 'NFL Network',
-          category: 'Sports',
-          url: 'https://thetv.to:443/live/nfl/stream.m3u8',
-          logo: 'https://logos-world.net/wp-content/uploads/2020/06/NFL-Network-Logo.png'
-        },
-        {
-          id: 'nba-tv',
-          name: 'NBA TV',
-          category: 'Sports',
-          url: 'https://thetv.to:443/live/nba/stream.m3u8',
-          logo: 'https://logos-world.net/wp-content/uploads/2020/06/NBA-TV-Logo.png'
-        },
-        {
-          id: 'mlb-network',
-          name: 'MLB Network',
-          category: 'Sports',
-          url: 'https://thetv.to:443/live/mlb/stream.m3u8',
-          logo: 'https://logos-world.net/wp-content/uploads/2020/06/MLB-Network-Logo.png'
-        }
-      ];
-
-      res.json({
+      console.log('🔄 Fetching GitHub IPTV channels...');
+      const channels = await iptvService.getChannels();
+      
+      res.json({ 
         success: true,
         channels,
         totalChannels: channels.length,
-        message: `${channels.length} sports channels available for streaming`
+        message: `Successfully loaded ${channels.length} channels from GitHub IPTV playlist`
       });
     } catch (error) {
-      console.error('Error loading IPTV channels:', error);
-      res.status(500).json({ success: false, message: 'Failed to load IPTV channels' });
+      console.error('❌ GitHub IPTV channels error:', error);
+      
+      // Return fallback channels on error
+      const fallbackChannels = await iptvService.getFallbackChannels();
+      res.json({ 
+        success: true,
+        channels: fallbackChannels,
+        totalChannels: fallbackChannels.length,
+        message: 'Using fallback channels due to GitHub API issue'
+      });
     }
   });
 

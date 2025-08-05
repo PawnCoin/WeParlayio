@@ -159,9 +159,9 @@ export default function LiveStreaming() {
     refetchInterval: 30000,
   });
 
-  // Fetch IPTV channels
+  // Fetch GitHub IPTV channels
   const { data: iptvResponse, isLoading: channelsLoading } = useQuery({
-    queryKey: ['/api/iptv/channels'],
+    queryKey: ['/api/iptv/github-channels'],
     refetchInterval: 60000,
   });
 
