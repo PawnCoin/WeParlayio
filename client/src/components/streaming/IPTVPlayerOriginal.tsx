@@ -284,30 +284,60 @@ const ChannelListItem: React.FC<{
   );
 };
 
+const ChannelGroup: React.FC<{
+    groupName: string;
+    channels: Channel[];
+    currentChannelUrl: string | null;
+    onSelectChannel: (channel: Channel) => void;
+}> = ({ groupName, channels, currentChannelUrl, onSelectChannel }) => {
+    const [isOpen, setIsOpen] = useState(true);
+
+    return (
+        <div className="border-b border-gray-700">
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="w-full text-left p-3 bg-gray-800 hover:bg-gray-700/70 transition-colors flex justify-between items-center"
+                aria-expanded={isOpen}
+            >
+                <h3 className="font-semibold text-gray-200">{groupName}</h3>
+                 <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+            </button>
+            {isOpen && (
+                 <ul>
+                    {channels.map((channel) => (
+                        <ChannelListItem
+                            key={channel.url}
+                            channel={channel}
+                            isActive={channel.url === currentChannelUrl}
+                            onSelect={() => onSelectChannel(channel)}
+                        />
+                    ))}
+                </ul>
+            )}
+        </div>
+    );
+};
+
 // Channel List Component
 const ChannelList: React.FC<{
   groupedChannels: Record<string, Channel[]>;
   currentChannelUrl: string | null;
   onSelectChannel: (channel: Channel) => void;
 }> = ({ groupedChannels, currentChannelUrl, onSelectChannel }) => {
+  const sortedGroupNames = Object.keys(groupedChannels).sort();
+    
   return (
-    <div className="overflow-y-auto h-full">
-      {Object.entries(groupedChannels).map(([group, channels]) => (
-        <div key={group} className="mb-4">
-          <h3 className="text-lg font-semibold text-gray-300 px-4 py-2 bg-gray-800 sticky top-0 z-10">
-            {group} ({channels.length})
-          </h3>
-          <ul className="divide-y divide-gray-700">
-            {channels.map((channel, index) => (
-              <ChannelListItem
-                key={`${channel.url}-${index}`}
-                channel={channel}
-                isActive={channel.url === currentChannelUrl}
-                onSelect={() => onSelectChannel(channel)}
-              />
-            ))}
-          </ul>
-        </div>
+    <div className="h-full bg-gray-800">
+      {sortedGroupNames.map((groupName) => (
+        <ChannelGroup
+            key={groupName}
+            groupName={groupName}
+            channels={groupedChannels[groupName]}
+            currentChannelUrl={currentChannelUrl}
+            onSelectChannel={onSelectChannel}
+        />
       ))}
     </div>
   );
