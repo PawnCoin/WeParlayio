@@ -259,7 +259,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Register Admin routes
-  app.use('/api/admin', adminRoutes);
+  app.use('/api/admin', adminRouter);
 
   // Register Social Media Bot routes
   app.use('/api/social-bots', socialMediaBotRouter);
@@ -5777,7 +5777,7 @@ ${streamUrl}
   app.use('/api', feedbackRoutes);
 
   // Add live streaming routes
-  const liveStreamingRoutes = require('./routes/liveStreamingRoutes').default;
+  const { liveStreamingRoutes } = await import('./routes/liveStreamingRoutes');
   app.use('/api/live-streaming', liveStreamingRoutes);
 
   // Return the HTTP server

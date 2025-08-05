@@ -236,48 +236,61 @@ export class LiveSportsRoutingService {
   }
 
   /**
-   * Find fallback stream using IPTV or YouTube search
+   * Find fallback stream using YouTube streaming service
    */
   private async findFallbackStream(sportKey: string): Promise<LiveStreamSource | null> {
     try {
-      // Try IPTV first
-      const { iptvService } = await import('./iptvService');
-      const channels = iptvService.getAllChannels();
+      // Use YouTube streaming service for authentic content
+      const { youtubeStreamingService } = await import('./youtubeStreamingService');
+      const youtubeStreams = await youtubeStreamingService.getOfficialSportStreams(sportKey);
       
-      const sportName = this.extractSportNameFromKey(sportKey);
-      const sportsChannel = channels.find(ch => 
-        ch.name.toLowerCase().includes(sportName.toLowerCase()) ||
-        ch.category.toLowerCase().includes('sport')
-      );
-
-      if (sportsChannel) {
+      if (youtubeStreams.length > 0) {
+        const stream = youtubeStreams[0];
         return {
-          id: `iptv-${sportsChannel.id}`,
-          name: sportsChannel.name,
-          sport: sportName,
-          league: 'Live TV',
-          streamUrl: sportsChannel.url,
-          streamType: 'iptv',
-          quality: 'HD',
-          isLive: true,
-          language: 'en',
-          country: 'US'
+          id: stream.id,
+          name: stream.title,
+          sport: stream.sport,
+          league: stream.league,
+          streamUrl: stream.streamUrl,
+          streamType: 'youtube',
+          quality: stream.quality,
+          isLive: stream.isLive,
+          viewers: undefined,
+          language: stream.language,
+          country: stream.country
         };
       }
 
-      // Fallback to generic YouTube sports streams
-      return {
-        id: `youtube-${sportKey}`,
-        name: `${sportName} Live`,
-        sport: sportName,
-        league: 'Live Sports',
-        streamUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent(sportName + ' live stream')}`,
-        streamType: 'youtube',
-        quality: 'HD',
-        isLive: true,
-        language: 'en',
-        country: 'US'
-      };
+      // Try IPTV sports channels as secondary fallback
+      try {
+        const { iptvService } = await import('./iptvService');
+        const channels = await iptvService.getAllChannels();
+        
+        const sportName = this.extractSportNameFromKey(sportKey);
+        const sportsChannel = channels.find(ch => 
+          ch.category?.toLowerCase().includes('sport') ||
+          ch.name.toLowerCase().includes(sportName.toLowerCase())
+        );
+
+        if (sportsChannel) {
+          return {
+            id: `iptv-${sportsChannel.id}`,
+            name: sportsChannel.name,
+            sport: sportName,
+            league: 'Live TV',
+            streamUrl: sportsChannel.url,
+            streamType: 'iptv',
+            quality: 'HD',
+            isLive: true,
+            language: 'en',
+            country: 'US'
+          };
+        }
+      } catch (iptvError) {
+        console.log('IPTV fallback not available');
+      }
+
+      return null;
     } catch (error) {
       console.error('Error finding fallback stream:', error);
       return null;
@@ -316,15 +329,65 @@ export class LiveSportsRoutingService {
   }
 
   /**
-   * Update stream availability
+   * Update stream availability using YouTube API
    */
   async updateStreamAvailability() {
-    // This could ping each stream to check if it's actually live
-    for (const [sportKey, streams] of this.sportsStreamMap.entries()) {
-      for (const stream of streams) {
-        // Simple availability check (can be enhanced)
-        stream.isLive = true; // Assume live for now
+    try {
+      const { youtubeStreamingService } = await import('./youtubeStreamingService');
+      
+      for (const [sportKey, streams] of this.sportsStreamMap.entries()) {
+        for (const stream of streams) {
+          if (stream.streamType === 'youtube') {
+            // Extract video ID from URL for validation
+            const videoIdMatch = stream.streamUrl.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+            if (videoIdMatch) {
+              stream.isLive = await youtubeStreamingService.validateStreamAvailability(videoIdMatch[1]);
+            }
+          } else {
+            // For IPTV and other sources, assume live (could be enhanced with actual checks)
+            stream.isLive = true;
+          }
+        }
       }
+    } catch (error) {
+      console.error('Error updating stream availability:', error);
+      // Fallback to assuming all streams are live
+      for (const [sportKey, streams] of this.sportsStreamMap.entries()) {
+        for (const stream of streams) {
+          stream.isLive = true;
+        }
+      }
+    }
+  }
+
+  /**
+   * Search for specific team matchup using YouTube
+   */
+  async searchTeamMatchup(homeTeam: string, awayTeam: string, sport?: string): Promise<LiveStreamSource | null> {
+    try {
+      const { youtubeStreamingService } = await import('./youtubeStreamingService');
+      const streams = await youtubeStreamingService.searchLiveStreams(homeTeam, awayTeam, sport);
+      
+      if (streams.length > 0) {
+        const stream = streams[0];
+        return {
+          id: stream.id,
+          name: stream.title,
+          sport: stream.sport,
+          league: stream.league,
+          streamUrl: stream.streamUrl,
+          streamType: 'youtube',
+          quality: stream.quality,
+          isLive: stream.isLive,
+          language: stream.language,
+          country: stream.country
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error searching team matchup:', error);
+      return null;
     }
   }
 }

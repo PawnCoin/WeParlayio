@@ -78,3 +78,6 @@ externalPort = 80
 [[ports]]
 localPort = 24678
 externalPort = 3000
+
+[agent]
+integrations = ["javascript_gemini==1.0.0"]
