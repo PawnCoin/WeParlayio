@@ -242,8 +242,10 @@ const VideoPlayer: React.FC<{
           }}
           onError={handleError}
           onReady={handleReady}
-          onStart={() => console.log(`🎬 Started playing: ${channelName}`)}
-          onPlay={() => console.log(`▶️ Playing: ${channelName}`)}
+          onPlay={() => {
+            console.log(`▶️ Playing: ${channelName}`);
+            console.log(`🎬 Started playing: ${channelName}`);
+          }}
           onPause={() => console.log(`⏸️ Paused: ${channelName}`)}
         />
       </Suspense>
