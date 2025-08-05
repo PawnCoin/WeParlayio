@@ -326,35 +326,84 @@ function IPTVPlayerOriginal() {
     setIsLoading(true);
     setError(null);
     try {
-      const proxyUrl = 'https://corsproxy.io/?';
+      let allParsedChannels: Channel[] = [];
       
-      const responses = await Promise.allSettled(
-        M3U_URLS.map(url => fetch(proxyUrl + url).then(res => {
-          if (!res.ok) throw new Error(`Failed to fetch ${url}`);
-          return res.text();
-        }))
-      );
-
-      const allParsedChannels: Channel[] = [];
-      responses.forEach(result => {
-        if (result.status === 'fulfilled') {
-          allParsedChannels.push(...parseM3U(result.value));
-        } else {
-          console.warn('A playlist failed to load:', result.reason);
+      // Try backend API first for reliable channels
+      try {
+        const backendResponse = await fetch('/api/iptv/channels');
+        if (backendResponse.ok) {
+          const backendChannels = await backendResponse.json();
+          if (backendChannels.length > 0) {
+            allParsedChannels = backendChannels;
+            console.log(`Loaded ${allParsedChannels.length} channels from backend API`);
+          }
         }
-      });
+      } catch (backendError) {
+        console.warn('Backend IPTV API not available, trying external sources');
+      }
+
+      // If backend didn't work or returned few channels, try your original M3U sources
+      if (allParsedChannels.length < 10) {
+        const corsProxies = [
+          'https://corsproxy.io/?',
+          'https://api.allorigins.win/raw?url=',
+          '' // Direct fetch as last resort
+        ];
+
+        for (const proxyUrl of corsProxies) {
+          try {
+            const responses = await Promise.allSettled(
+              M3U_URLS.slice(0, 5).map(url => // Limit to first 5 URLs for faster loading
+                fetch(proxyUrl + encodeURIComponent(url)).then(res => {
+                  if (!res.ok) throw new Error(`Failed to fetch ${url}`);
+                  return res.text();
+                })
+              )
+            );
+
+            const externalChannels: Channel[] = [];
+            responses.forEach(result => {
+              if (result.status === 'fulfilled') {
+                try {
+                  externalChannels.push(...parseM3U(result.value));
+                } catch (parseError) {
+                  console.warn('Failed to parse M3U:', parseError);
+                }
+              } else {
+                console.warn('A playlist failed to load:', result.reason);
+              }
+            });
+
+            if (externalChannels.length > 0) {
+              // Combine backend channels with external channels
+              const combinedChannels = [...allParsedChannels, ...externalChannels];
+              allParsedChannels = Array.from(new Map(combinedChannels.map(ch => [ch.url, ch])).values());
+              console.log(`Successfully fetched ${externalChannels.length} channels from external sources`);
+              break; // Success with this proxy
+            }
+          } catch (proxyError) {
+            console.warn(`Proxy ${proxyUrl} failed:`, proxyError);
+            continue; // Try next proxy
+          }
+        }
+      }
       
       const sportChannels = allParsedChannels.filter(channel => {
         const nameLower = channel.name.toLowerCase();
         const groupLower = channel.group?.toLowerCase() || '';
-        return SPORTS_KEYWORDS.some(keyword => nameLower.includes(keyword) || groupLower.includes(keyword));
+        return SPORTS_KEYWORDS.some(keyword => 
+          nameLower.includes(keyword) || 
+          groupLower.includes(keyword) ||
+          nameLower.includes('tv') ||
+          nameLower.includes('live')
+        );
       });
       
       // Deduplicate channels based on URL
       const uniqueChannels = Array.from(new Map(sportChannels.map(ch => [ch.url, ch])).values());
 
       if (uniqueChannels.length === 0) {
-        throw new Error('No sports channels found. Check playlists or network.');
+        throw new Error('No sports channels could be loaded. Please check your internet connection.');
       }
       
       setAllChannels(uniqueChannels);
