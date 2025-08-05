@@ -257,7 +257,7 @@ export default function VIPLiveStreaming() {
               {/* Live Games from Sports Data */}
               <div className="space-y-4">
                 <h3 className="text-xl font-bold text-white">Today's Live Games</h3>
-                {sportsData.slice(0, 6).map((game: any) => (
+                {Array.isArray(sportsData) ? sportsData.slice(0, 6).map((game: any) => (
                   <Card key={game.id} className="bg-gray-800 border-gray-700">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
@@ -290,7 +290,7 @@ export default function VIPLiveStreaming() {
                       </div>
                     </CardContent>
                   </Card>
-                ))}
+                )) : null}
               </div>
             </TabsContent>
 
@@ -449,70 +449,6 @@ export default function VIPLiveStreaming() {
             <p>⚠️ IPTV Service: Provider Blocked (Status 451)</p>
             <p>🚀 No Mock Data - All streams are from authentic sources</p>
           </div>
-        </div>
-      </div>
-    </TierGuard>
-  );
-}
-                <div className="text-gray-400">
-                  <Tv className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg font-semibold mb-2 text-red-400">IPTV Service Unavailable</p>
-                  <p className="text-sm">Your IPTV provider (thetv.to) is currently blocking access</p>
-                  <p className="text-xs mt-2">Status: 451 - Unavailable For Legal Reasons</p>
-                  <Badge variant="destructive" className="mt-4">
-                    No Mock Data - Showing Real Status Only
-                  </Badge>
-                </div>
-              </div>
-            ) : sportsChannels.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="text-gray-400">
-                  <Tv className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg font-semibold mb-2">No Sports Channels Found</p>
-                  <p className="text-sm">Your IPTV subscription may not include sports channels</p>
-                </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-                {sportsChannels.map((channel) => (
-                  <Card 
-                    key={channel.id} 
-                    className={`bg-gray-800 border-gray-700 cursor-pointer transition-all hover:bg-gray-700 ${
-                      selectedChannel?.id === channel.id ? 'ring-2 ring-blue-500' : ''
-                    }`}
-                    onClick={() => setSelectedChannel(channel)}
-                  >
-                    <CardContent className="p-3">
-                      <div className="flex flex-col items-center text-center">
-                        <img 
-                          src={channel.logo} 
-                          alt={channel.name}
-                          className="w-12 h-12 object-contain mb-2 bg-white rounded p-1"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/48x48?text=TV';
-                          }}
-                        />
-                        <h3 className="text-white font-semibold text-sm mb-1">{channel.name}</h3>
-                        <p className="text-xs text-blue-300 mb-2">
-                          {getCurrentProgram(channel.id)?.title || 'Live Sports'}
-                        </p>
-                        {channel.isLive && <Badge className="bg-red-500 text-xs">LIVE</Badge>}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Show connection status */}
-          {iptvChannels.length > 0 && (
-            <div className="mt-8 text-center">
-              <Badge variant="outline" className="text-green-500 border-green-500">
-                ✅ Connected to IPTV Service - {sportsChannels.length} Sports Channels Available
-              </Badge>
-            </div>
-          )}
         </div>
       </div>
     </TierGuard>
