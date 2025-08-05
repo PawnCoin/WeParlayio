@@ -70,6 +70,13 @@ export default function LiveStreaming() {
   // Check if user has VIP access
   const hasVIPAccess = user?.tier === 'platinum' || user?.tier === 'gold' || user?.isAdmin;
 
+  // Fetch YouTube live streams using Google credentials
+  const { data: youtubeStreams } = useQuery({
+    queryKey: ['/api/youtube/live-streams'],
+    refetchInterval: 60000, // Refresh every minute
+    enabled: hasVIPAccess, // Only fetch for VIP users
+  });
+
   // YouTube search functionality
   const searchYouTubeStreams = useCallback(async (query: string) => {
     if (!hasVIPAccess) {
@@ -219,6 +226,27 @@ export default function LiveStreaming() {
           streamUrl: channel.url || `https://thetv.to:443/live/${channel.id}/stream.m3u8`,
           odds: { homeWin: 1.5, awayWin: 2.5 },
           viewers: Math.floor(Math.random() * 10000) + 500,
+          period: 'LIVE',
+          timeRemaining: 'LIVE'
+        });
+      });
+    }
+
+    // Add YouTube streams from Google API (if available)
+    if (youtubeStreams?.streams && Array.isArray(youtubeStreams.streams)) {
+      youtubeStreams.streams.forEach((stream: any, index: number) => {
+        streamingGames.push({
+          id: `youtube-${stream.videoId}`,
+          title: stream.title,
+          homeTeam: { name: stream.channelTitle, score: 0 },
+          awayTeam: { name: 'Live Stream', score: 0 },
+          sport: 'Live Content',
+          league: 'YouTube Live',
+          status: 'live' as const,
+          startTime: new Date().toISOString(),
+          streamUrl: stream.embedUrl,
+          odds: { homeWin: 1.0, awayWin: 1.0 },
+          viewers: stream.viewerCount || (25000 + Math.floor(Math.random() * 15000)),
           period: 'LIVE',
           timeRemaining: 'LIVE'
         });

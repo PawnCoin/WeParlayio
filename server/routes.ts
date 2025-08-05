@@ -60,6 +60,7 @@ import { esportsApiService } from "./services/esportsApiService";
 import { cryptoService } from "./services/cryptoService";
 import { allSportsApiService } from "./services/allSportsApiService";
 import { createCashAppPayment, getCashAppPaymentStatus, initiateCashAppPayout } from "./cashapp";
+import { youtubeRoutes } from "./youtube-api";
 
 // Export the routes so they can be imported by index.ts
 export { notificationRoutes, websocketPollingRoutes };
@@ -158,6 +159,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Register fee routes for revenue generation
   app.use('/api/fees', feeRouter);
+  
+  // YouTube API routes for enhanced streaming
+  app.get('/api/youtube/live-streams', youtubeRoutes.getLiveStreams);
+  app.get('/api/youtube/video/:videoId', youtubeRoutes.getVideoInfo);
 
   // Direct Betting System (no authentication required)
   app.post('/api/bets', async (req, res) => {
