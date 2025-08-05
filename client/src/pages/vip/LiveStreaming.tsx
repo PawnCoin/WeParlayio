@@ -54,32 +54,16 @@ export default function VIPLiveStreaming() {
     const channelEPG = epgData.find(e => e.channelId === channelId);
     return channelEPG?.programs.find(p => new Date(p.startTime) <= now && new Date(p.endTime) >= now) || null;
   };
-  const liveEvents = [
-    {
-      id: 1,
-      title: 'Chiefs vs Patriots',
-      sport: 'NFL',
-      viewers: 24567,
-      status: 'LIVE',
-      timeRemaining: '3rd Quarter - 8:45'
-    },
-    {
-      id: 2,
-      title: 'Lakers vs Warriors',
-      sport: 'NBA',
-      viewers: 18234,
-      status: 'LIVE', 
-      timeRemaining: '2nd Quarter - 5:22'
-    },
-    {
-      id: 3,
-      title: 'Real Madrid vs Barcelona',
-      sport: 'Soccer',
-      viewers: 45123,
-      status: 'UPCOMING',
-      timeRemaining: 'Starts in 45 minutes'
-    }
-  ];
+  // Get real sports events
+  const { data: sportsEvents = [] } = useQuery({ 
+    queryKey: ['/api/sports'],
+    retry: false
+  });
+
+  // Filter for live and upcoming events only
+  const liveAndUpcomingEvents = sportsEvents.filter((event: any) => 
+    event.status === 'LIVE' || event.status === 'SCHEDULED' || event.status === 'UPCOMING'
+  );
 
   return (
     <TierGuard requiredTier="vip" feature="Live Streaming">
@@ -112,19 +96,29 @@ export default function VIPLiveStreaming() {
                 streamUrl={selectedChannel.streamUrl}
                 className="max-w-4xl mx-auto"
               />
-            ) : (
+            ) : liveAndUpcomingEvents.length > 0 ? (
               <LiveStreamPlayer
-                gameTitle="Chiefs vs Patriots"
-                homeTeam="Kansas City Chiefs"
-                awayTeam="New England Patriots"
-                league="NFL"
-                viewerCount={24567}
-                isLive={true}
+                gameTitle={`${liveAndUpcomingEvents[0].homeTeam.name} vs ${liveAndUpcomingEvents[0].awayTeam.name}`}
+                homeTeam={liveAndUpcomingEvents[0].homeTeam.name}
+                awayTeam={liveAndUpcomingEvents[0].awayTeam.name}
+                league={liveAndUpcomingEvents[0].sport}
+                viewerCount={liveAndUpcomingEvents[0].viewerCount || 0}
+                isLive={liveAndUpcomingEvents[0].status === 'LIVE'}
                 userTier="platinum"
                 quality="HD"
-                eventId="nfl-chiefs-patriots-2025"
+                eventId={liveAndUpcomingEvents[0].id}
                 className="max-w-4xl mx-auto"
               />
+            ) : (
+              <Card className="bg-gray-800 border-gray-700 max-w-4xl mx-auto">
+                <CardContent className="aspect-video flex items-center justify-center">
+                  <div className="text-center text-gray-400">
+                    <Play className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                    <p className="text-lg font-semibold mb-2">No Live Events</p>
+                    <p className="text-sm">Check back later for live sporting events</p>
+                  </div>
+                </CardContent>
+              </Card>
             )}
           </div>
 
@@ -171,11 +165,13 @@ export default function VIPLiveStreaming() {
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {liveEvents.map((event) => (
+            {liveAndUpcomingEvents.map((event: any) => (
               <Card key={event.id} className="bg-gray-800 border-gray-700">
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-white">{event.title}</CardTitle>
+                    <CardTitle className="text-white text-sm">
+                      {event.homeTeam.name} vs {event.awayTeam.name}
+                    </CardTitle>
                     <Badge 
                       variant={event.status === 'LIVE' ? 'destructive' : 'secondary'}
                       className={event.status === 'LIVE' ? 'bg-red-600' : 'bg-yellow-600'}
@@ -190,11 +186,14 @@ export default function VIPLiveStreaming() {
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center">
                         <Users className="w-4 h-4 mr-2 text-gray-400" />
-                        <span>{event.viewers.toLocaleString()} viewers</span>
+                        <span>{(event.viewerCount || 0).toLocaleString()} viewers</span>
                       </div>
                       <div className="flex items-center">
                         <Clock className="w-4 h-4 mr-2 text-gray-400" />
-                        <span>{event.timeRemaining}</span>
+                        <span>
+                          {event.status === 'LIVE' ? 'Live Now' : 
+                           event.startTime ? new Date(event.startTime).toLocaleString() : 'TBD'}
+                        </span>
                       </div>
                     </div>
                     
@@ -205,7 +204,7 @@ export default function VIPLiveStreaming() {
                     <div className="flex gap-2">
                       <Button className="flex-1" variant="default">
                         <Play className="w-4 h-4 mr-2" />
-                        Watch Live
+                        {event.status === 'LIVE' ? 'Watch Live' : 'View Details'}
                       </Button>
                       <Button variant="outline" className="flex-1">
                         <Zap className="w-4 h-4 mr-2" />
@@ -216,6 +215,16 @@ export default function VIPLiveStreaming() {
                 </CardContent>
               </Card>
             ))}
+            
+            {liveAndUpcomingEvents.length === 0 && (
+              <div className="col-span-full text-center py-12">
+                <div className="text-gray-400">
+                  <Play className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                  <p className="text-lg font-semibold mb-2">No Live or Upcoming Events</p>
+                  <p className="text-sm">Check back later for live sporting events</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
