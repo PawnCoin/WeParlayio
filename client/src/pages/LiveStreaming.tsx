@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import VideoPlayer from '@/components/streaming/VideoPlayer';
 import BettingPanel from '@/components/streaming/BettingPanel';
 import BetSlip from '@/components/streaming/BetSlip';
+import UniversalSportsRouter from '@/components/streaming/UniversalSportsRouter';
 import { StreamingGame, BetSlip as BetSlipType, BetType } from '@/components/streaming/types';
 
 // Legacy LiveGame interface for compatibility
@@ -366,14 +367,21 @@ export default function LiveStreaming() {
                           </div>
                         </div>
 
-                        {/* Enhanced Watch Button */}
-                        <Button 
-                          className="w-full bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-500 hover:to-teal-500 group-hover:from-blue-400 group-hover:to-teal-400 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold"
-                          onClick={() => handleGameSelect(game)}
+                        {/* Universal Sports Router Watch Button */}
+                        <UniversalSportsRouter
+                          sportKey={game.sport.toLowerCase().replace(' ', '_')}
+                          gameId={game.id}
+                          homeTeam={game.homeTeam.name}
+                          awayTeam={game.awayTeam.name}
+                          buttonText={game.status === 'live' ? 'Watch Live' : 'Watch Stream'}
                         >
-                          <Play className="h-4 w-4 mr-2" />
-                          {game.status === 'live' ? 'Watch Live' : 'Watch Stream'}
-                        </Button>
+                          <Button 
+                            className="w-full bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-500 hover:to-teal-500 group-hover:from-blue-400 group-hover:to-teal-400 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold"
+                          >
+                            <Play className="h-4 w-4 mr-2" />
+                            {game.status === 'live' ? 'Watch Live' : 'Watch Stream'}
+                          </Button>
+                        </UniversalSportsRouter>
                       </div>
                     </CardContent>
                   </Card>

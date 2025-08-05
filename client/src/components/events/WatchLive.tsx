@@ -256,18 +256,56 @@ export const WatchLive: React.FC<LiveStreamProps> = ({
   // Get stream category from sport key
   const streamCategory = STREAM_CATEGORIES[sportKey] || 'basketball';
   
-  // Stream URLs based on category
-  const streamUrls = {
-    basketball: "https://www.youtube.com/embed/Vx9aVOml_Qo",
-    football: "https://www.youtube.com/embed/cRW9MjYb4iw",
-    baseball: "https://www.youtube.com/embed/ZfZW3aBuG1w",
-    hockey: "https://www.youtube.com/embed/yJpj-GeGYwE",
-    soccer: "https://www.youtube.com/embed/HzEWH7W1r9A",
-    mma: "https://www.youtube.com/embed/UxqTSo122_U",
-    boxing: "https://www.youtube.com/embed/DcvHb17WeBQ",
-    nascar: "https://www.youtube.com/embed/q16oSfqFZhE",
-    tennis: "https://www.youtube.com/embed/qxfJSZdq4YQ"
-  };
+  // Dynamic stream URL state
+  const [dynamicStreamUrl, setDynamicStreamUrl] = useState<string>('');
+  const [streamInfo, setStreamInfo] = useState<any>(null);
+
+  // Load dynamic stream URL based on sport and event
+  useEffect(() => {
+    const loadDynamicStream = async () => {
+      try {
+        // Try to get specific live stream for this sport/event
+        const response = await fetch(`/api/live-streaming/sport/${sportKey}?gameId=${eventId}`);
+        const data = await response.json();
+
+        if (data.success && data.stream) {
+          setDynamicStreamUrl(data.stream.streamUrl);
+          setStreamInfo(data.stream);
+        } else {
+          // Try search by team names
+          const searchResponse = await fetch(`/api/live-streaming/search?team1=${encodeURIComponent(homeTeam)}&team2=${encodeURIComponent(awayTeam)}&sport=${encodeURIComponent(sportKey)}`);
+          const searchData = await searchResponse.json();
+          
+          if (searchData.success && searchData.stream) {
+            setDynamicStreamUrl(searchData.stream.streamUrl);
+            setStreamInfo(searchData.stream);
+          } else {
+            // Fallback to static URLs
+            const streamUrls = {
+              basketball: "https://www.youtube.com/embed/live_stream?channel=UCsH8-GlpE_4tM7lNx-VEOvQ",
+              football: "https://www.youtube.com/embed/live_stream?channel=UCsH8-GlpE_4tM7lNx-VEOvQ",
+              baseball: "https://www.youtube.com/embed/live_stream?channel=UCsH8-GlpE_4tM7lNx-VEOvQ",
+              hockey: "https://www.youtube.com/embed/live_stream?channel=UCsH8-GlpE_4tM7lNx-VEOvQ",
+              soccer: "https://www.youtube.com/embed/live_stream?channel=UCNAf1k0yIjyGu3k9BwAg3lg",
+              mma: "https://www.youtube.com/embed/live_stream?channel=UCvgfXK4nTYKudb0rFR6noLA",
+              boxing: "https://www.youtube.com/embed/live_stream?channel=UCEBOzwQqBmKWtLKVIbxSKig",
+              nascar: "https://www.youtube.com/embed/live_stream?channel=UCsH8-GlpE_4tM7lNx-VEOvQ",
+              tennis: "https://www.youtube.com/embed/live_stream?channel=UCbcxFkd6B9xUU54InHv4Vig"
+            };
+            setDynamicStreamUrl(streamUrls[streamCategory as keyof typeof streamUrls] || streamUrls.basketball);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading dynamic stream:', error);
+        // Final fallback
+        setDynamicStreamUrl("https://www.youtube.com/embed/live_stream?channel=UCsH8-GlpE_4tM7lNx-VEOvQ");
+      }
+    };
+
+    if (isOpen) {
+      loadDynamicStream();
+    }
+  }, [isOpen, sportKey, eventId, homeTeam, awayTeam, streamCategory]);
   
   // Load event data
   useEffect(() => {
@@ -456,12 +494,18 @@ export const WatchLive: React.FC<LiveStreamProps> = ({
               </div>
             ) : (
               <iframe
-                src={streamUrls[streamCategory as keyof typeof streamUrls]}
+                src={dynamicStreamUrl}
                 className="w-full h-full"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               ></iframe>
+              {streamInfo && (
+                <div className="absolute top-4 right-4 bg-black/80 backdrop-blur-sm rounded-lg p-2 text-white text-sm">
+                  <div className="font-semibold">{streamInfo.name}</div>
+                  <div className="text-xs opacity-75">{streamInfo.quality} • {streamInfo.language.toUpperCase()}</div>
+                </div>
+              )}
             )}
           </TabsContent>
           

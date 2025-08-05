@@ -23,7 +23,7 @@ import gamingRoutes from "./routes/gamingRoutes";
 import unifiedSportsRoutes from "./routes/unifiedSportsRoutes";
 import { bankingRouter } from "./routes/bankingRoutes";
 import websocketPollingRoutes from "./routes/websocketPollingRoutes";
-import oddsTickerRouter from "./routes/oddsTickerRoutes";
+import oddsTickerRoutes from "./routes/oddsTickerRoutes";
 import { apiTestRouter } from "./routes/apiTestRoutes";
 import { comprehensiveRapidApi } from "./services/comprehensiveRapidApi";
 import rapidApiRoutes from "./routes/rapidApiRoutes";
@@ -84,7 +84,7 @@ function generateFallbackOdds() {
   if (cachedOddsData && (Date.now() - cacheTimestamp < CACHE_DURATION)) {
     return cachedOddsData;
   }
-  
+
   return [
     {
       eventId: 'nfl_chiefs_bills',
@@ -140,7 +140,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Register Primary Data routes (100% audit compliant)
   app.use('/api/primary', primaryDataRoutes);
-  
+
 
 
   // Auth middleware
@@ -152,27 +152,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
-  
+
   // Register Yahoo Fantasy routes
   app.use('/api/yahoo', yahooRouter);
-  
+
   // Register fee routes for revenue generation
   app.use('/api/fees', feeRouter);
-  
+
   // Direct Betting System (no authentication required)
   app.post('/api/bets', async (req, res) => {
     try {
       const { eventId, betType, pick, odds, amount, currency } = req.body;
       const userId = req.headers['x-user-id'] || 'dev-user-001';
-      
+
       // Validate bet data
       if (!eventId || !betType || !pick || !odds || !amount) {
         return res.status(400).json({ success: false, message: 'Missing required bet fields' });
       }
-      
+
       // Calculate potential payout
       const potentialPayout = amount * odds;
-      
+
       // Create bet record
       const bet = {
         id: Date.now(),
@@ -187,7 +187,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: 'pending',
         placedAt: new Date().toISOString()
       };
-      
+
       res.json({
         success: true,
         bet,
@@ -215,15 +215,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { betId } = req.params;
       const { status, winAmount } = req.body;
-      
+
       const settledBet = await storage.settleBet(parseInt(betId), status);
-      
+
       if (status === 'won' && winAmount) {
         const userId = settledBet.userId;
         await storage.updateUserBalance(userId, winAmount);
         await storage.incrementUserWins(userId);
       }
-      
+
       res.json({
         success: true,
         bet: settledBet,
@@ -242,7 +242,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { userId } = req.params;
       const { amount, type } = req.body;
-      
+
       if (type === 'real') {
         const updatedUser = await storage.updateUserBalance(userId, amount);
         res.json({ success: true, user: updatedUser });
@@ -259,42 +259,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Register Admin routes
-  app.use('/api/admin', adminRouter);
-  
+  app.use('/api/admin', adminRoutes);
+
   // Register Social Media Bot routes
   app.use('/api/social-bots', socialMediaBotRouter);
-  
+
   // Register AI Support routes
   app.use('/api/support', aiSupportRoutes);
-  
+
   // Register notification routes
   app.use('/api/notifications', notificationRoutes);
-  
+
   // Register Banking routes for real deposits, withdrawals, and betting
   app.use('/api/banking', bankingRouter);
-  
+
   // Register Plaid routes for bank account integration
   const plaidRoutes = (await import('./routes/plaidRoutes')).default;
   app.use('/api/plaid', plaidRoutes);
-  
+
   // Register Bet Settlement routes for automated winner determination
   app.use('/api/bet-settlement', betSettlementRoutes);
-  
+
   // Main odds endpoint - connects to priority API system
   app.get('/api/odds', async (req, res) => {
     try {
       console.log('📊 Main Odds Endpoint: Getting data from priority system');
-      
+
       // Get data from the priority API service
       const { PriorityApiService } = await import('./services/priorityApiService');
       const priorityService = new PriorityApiService();
-      
+
       // Get odds for major sports using priority system
       const priorityResults = await priorityService.getOddsWithFallback('all');
-      
+
       // Extract data array from priority results
       const oddsData = priorityResults?.data || [];
-      
+
       if (oddsData && oddsData.length > 0) {
         console.log(`✅ Priority System: Serving ${oddsData.length} odds from authenticated sources`);
         return res.json({
@@ -305,7 +305,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           count: oddsData.length
         });
       }
-      
+
       // If priority system returns empty, return empty array (no synthetic data)
       console.log('⚠️ Priority System: No data available from authenticated sources');
       res.json({
@@ -316,7 +316,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         count: 0,
         message: 'No authentic odds data currently available'
       });
-      
+
     } catch (error) {
       console.error('Main odds endpoint error:', error);
       res.status(500).json({ 
@@ -331,9 +331,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/odds-ticker/live-ticker', async (req, res) => {
     try {
       console.log('🎯 Live Ticker: Prioritizing live sports data over upcoming events');
-      
+
       const allOdds: any[] = [];
-      
+
       // Use working NFL odds endpoint to populate ticker
       try {
         const nflResponse = await fetch('http://localhost:5000/api/odds/americanfootball_nfl');
@@ -341,12 +341,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const nflData = await nflResponse.json();
           if (nflData && nflData.length > 0) {
             console.log(`✅ NFL Odds: ${nflData.length} games available for ticker`);
-            
+
             nflData.slice(0, 8).forEach((game: any, index: number) => {
               // Convert NFL game data to ticker format
               const homeOdds = game.bookmakers?.[0]?.markets?.[0]?.outcomes?.find((o: any) => o.name === game.home_team)?.price || 1.95;
               const awayOdds = game.bookmakers?.[0]?.markets?.[0]?.outcomes?.find((o: any) => o.name === game.away_team)?.price || 1.85;
-              
+
               // Add both team odds as separate ticker items
               allOdds.push({
                 id: `nfl_home_${game.id}_${index}`,
@@ -358,7 +358,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 eventId: game.id,
                 bookmaker: game.bookmakers?.[0]?.title || 'Sportsbook'
               });
-              
+
               allOdds.push({
                 id: `nfl_away_${game.id}_${index}`,
                 sport: 'NFL',
@@ -375,7 +375,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } catch (nflError) {
         console.log('NFL odds unavailable for ticker');
       }
-      
+
       // Add some demo sports data to populate ticker
       if (allOdds.length < 10) {
         const demoSports = [
@@ -384,7 +384,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { sport: 'NHL', teams: 'Rangers vs Bruins', odds: 1.85 },
           { sport: 'Soccer', teams: 'Arsenal vs Chelsea', odds: 2.25 }
         ];
-        
+
         demoSports.forEach((demo, index) => {
           allOdds.push({
             id: `demo_${demo.sport.toLowerCase()}_${index}`,
@@ -398,7 +398,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         });
       }
-      
+
       // Add RapidAPI data if available
       if (process.env.RAPIDAPI_KEY) {
         try {
@@ -423,7 +423,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   bookmaker: 'RapidAPI',
                   status: match.fixture.status.short === 'LIVE' ? 'live' : 'upcoming'
                 };
-                
+
                 allOdds.push(oddsItem);
               });
             }
@@ -432,7 +432,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log('RapidAPI unavailable for ticker');
         }
       }
-      
+
       res.json({
         success: true,
         odds: allOdds,
@@ -443,7 +443,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('Error fetching fresh ticker data:', error);
-      
+
       // Return fallback ticker data to ensure frontend works
       const fallbackOdds = [
         {
@@ -477,7 +477,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           bookmaker: 'WeParlay Sportsbook'
         }
       ];
-      
+
       res.json({
         success: true,
         odds: fallbackOdds,
@@ -551,7 +551,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/reset-password', async (req, res) => {
     try {
       const { email, newPassword } = req.body;
-      
+
       if (!email || !newPassword) {
         return res.status(400).json({ message: 'Email and new password are required' });
       }
@@ -578,7 +578,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/user/admin-status', async (req: any, res) => {
     try {
       const token = req.headers.authorization?.replace('Bearer ', '');
-      
+
       if (!token) {
         return res.status(401).json({ 
           isAdmin: false, 
@@ -600,7 +600,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const jwt = await import('jsonwebtoken');
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'weparlay-secret-key') as any;
-        
+
         if (decoded.isAdmin || decoded.role === 'admin') {
           return res.json({
             isAdmin: true,
@@ -612,7 +612,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } catch (jwtError) {
         console.log('JWT verification failed:', jwtError);
       }
-      
+
       return res.json({
         isAdmin: false,
         message: 'Not an admin user'
@@ -625,13 +625,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-  
+
   // Register Gaming API routes
   app.use('/api/gaming', gamingRoutes);
-  
+
   // Register Unified Sports API routes
   app.use('/api/unified-sports', unifiedSportsRoutes);
-  
+
   // Register IPTV API routes (VIP only)
   app.use('/api/iptv', iptvRoutes);
 
@@ -639,7 +639,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/sms/betting-challenge', isAuthenticated, async (req, res) => {
     try {
       const { phoneNumber, challengeDetails } = req.body;
-      
+
       if (!phoneNumber || !challengeDetails) {
         return res.status(400).json({ 
           success: false, 
@@ -648,7 +648,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const result = await smsService.sendBettingChallenge(phoneNumber, challengeDetails);
-      
+
       res.json({
         success: result.success,
         message: result.success ? 'Challenge sent successfully' : result.error,
@@ -666,7 +666,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/sms/bet-alert', isAuthenticated, async (req, res) => {
     try {
       const { phoneNumber, alertDetails } = req.body;
-      
+
       if (!phoneNumber || !alertDetails) {
         return res.status(400).json({ 
           success: false, 
@@ -675,7 +675,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const result = await smsService.sendBetAlert(phoneNumber, alertDetails);
-      
+
       res.json({
         success: result.success,
         message: result.success ? 'Alert sent successfully' : result.error,
@@ -698,11 +698,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         : 'SMS service requires Twilio configuration'
     });
   });
-  
+
   // Register bookie revenue routes (temporarily disabled to fix database issues)
   // const bookieRoutes = await import('./routes/bookieRoutes');
   // app.use('/api/bookie', bookieRoutes.default);
-  
+
   // SMS Challenge endpoint with VIP and consent validation
   app.post('/api/challenges/sms', async (req: any, res) => {
     try {
@@ -769,12 +769,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const { smsService } = await import('./services/smsService');
         const message = `🎯 WeParlay Challenge: ${customMessage || `${user.username || 'A friend'} challenged you to a $${challengeAmount} bet!`} Join: ${req.protocol}://${req.get('host')}/challenges/${challenge.challengeUuid}`;
-        
+
         await smsService.sendSMS(friendPhone, message);
-        
+
         // Log successful SMS for admin tracking
         console.log(`SMS Challenge sent: User ${userId} (${userTier}) -> ${friendPhone} for $${challengeAmount}`);
-        
+
       } catch (smsError) {
         console.error('SMS sending failed:', smsError);
         // Don't fail the challenge creation if SMS fails
@@ -804,9 +804,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const dbModule = await import('./db');
       const result = await dbModule.pool.query('SELECT * FROM users ORDER BY created_at DESC');
       const users = result.rows;
-      
+
       console.log(`Direct database query found ${users.length} users`);
-      
+
       // Transform users for directory display using snake_case column names from DB
       const directoryUsers = users.map((user: any) => ({
         id: user.id,
@@ -936,7 +936,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.isAuthenticated()) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-      
+
       const userId = req.user.claims.sub;
       const { 
         eventId, 
@@ -949,18 +949,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         notificationPhone, 
         customMessage 
       } = req.body;
-      
+
       // Validate required fields
       if (!eventName || !amount || !pick) {
         return res.status(400).json({ message: "Missing required fields" });
       }
-      
+
       // Check if user has enough balance
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      
+
       // Verify sufficient balance with null safety
       const balanceField = isVirtual ? 'balance' : 'realMoneyBalance';
       const currentBalance = user[balanceField] || 0;
@@ -969,7 +969,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: `Insufficient ${isVirtual ? 'WeParlay Cash' : 'funds'}. You need ${amount} but have ${currentBalance}.` 
         });
       }
-      
+
       // Create the challenge
       const challenge = await storage.createBettingChallenge({
         createdBy: userId,
@@ -985,12 +985,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: 'pending',
         expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000) // 48 hours from now
       });
-      
+
       // If recipient email/phone was provided, send notification
       if (notificationEmail || notificationPhone) {
         // Import the notification service dynamically
         const { notificationService } = await import('./services/notificationService');
-        
+
         await notificationService.sendBettingChallenge(
           challenge.id.toString(),
           userId,
@@ -999,7 +999,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           notificationPhone
         );
       }
-      
+
       res.status(201).json({ 
         message: "Challenge created successfully", 
         challenge,
@@ -1010,78 +1010,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to create betting challenge" });
     }
   });
-  
+
   // Get user's betting challenges
   app.get('/api/challenges', async (req: any, res) => {
     try {
       if (!req.isAuthenticated()) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-      
+
       const userId = req.user.claims.sub;
       const status = req.query.status; // Filter by status if provided
-      
+
       // Get challenges created by the user and challenges sent to the user
       const challenges = await storage.getUserChallenges(userId, status);
-      
+
       res.json(challenges);
     } catch (error) {
       console.error("Error fetching betting challenges:", error);
       res.status(500).json({ message: "Failed to fetch betting challenges" });
     }
   });
-  
+
   // Get a specific challenge by UUID
   app.get('/api/challenges/:uuid', async (req, res) => {
     try {
       const { uuid } = req.params;
-      
+
       const challenge = await storage.getBettingChallengeByUuid(uuid);
-      
+
       if (!challenge) {
         return res.status(404).json({ message: "Challenge not found" });
       }
-      
+
       res.json(challenge);
     } catch (error) {
       console.error("Error fetching betting challenge:", error);
       res.status(500).json({ message: "Failed to fetch betting challenge" });
     }
   });
-  
+
   // Accept a betting challenge
   app.post('/api/challenges/:uuid/accept', async (req: any, res) => {
     try {
       if (!req.isAuthenticated()) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-      
+
       const userId = req.user.claims.sub;
       const { uuid } = req.params;
-      
+
       // Get the challenge
       const challenge = await storage.getBettingChallengeByUuid(uuid);
-      
+
       if (!challenge) {
         return res.status(404).json({ message: "Challenge not found" });
       }
-      
+
       // Check if challenge is already accepted or expired
       if (challenge.status !== 'pending') {
         return res.status(400).json({ message: `Challenge cannot be accepted. Current status: ${challenge.status}` });
       }
-      
+
       // Check if the user is trying to accept their own challenge
       if (challenge.createdBy === userId) {
         return res.status(400).json({ message: "You cannot accept your own challenge" });
       }
-      
+
       // Check if the user has enough balance
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      
+
       // Verify sufficient balance with null safety
       const balanceField = challenge.isVirtual ? 'balance' : 'realMoneyBalance';
       const currentBalance = user[balanceField] || 0;
@@ -1090,14 +1090,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: `Insufficient ${challenge.isVirtual ? 'WeParlay Cash' : 'funds'}. You need ${challenge.amount} but have ${currentBalance}.` 
         });
       }
-      
+
       // Accept the challenge
       const updatedChallenge = await storage.acceptBettingChallenge(uuid, userId);
-      
+
       // Send notification to the challenge creator
       const { notificationService } = await import('./services/notificationService');
       await notificationService.sendChallengeAcceptedNotification(challenge.id.toString());
-      
+
       res.json({ 
         message: "Challenge accepted successfully", 
         challenge: updatedChallenge 
@@ -1107,32 +1107,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to accept betting challenge" });
     }
   });
-  
+
   // Decline a betting challenge
   app.post('/api/challenges/:uuid/decline', async (req: any, res) => {
     try {
       if (!req.isAuthenticated()) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-      
+
       const userId = req.user.claims.sub;
       const { uuid } = req.params;
-      
+
       // Get the challenge
       const challenge = await storage.getBettingChallengeByUuid(uuid);
-      
+
       if (!challenge) {
         return res.status(404).json({ message: "Challenge not found" });
       }
-      
+
       // Check if challenge is already accepted, declined, or expired
       if (challenge.status !== 'pending') {
         return res.status(400).json({ message: `Challenge cannot be declined. Current status: ${challenge.status}` });
       }
-      
+
       // Update challenge status to declined
       const updatedChallenge = await storage.updateBettingChallengeStatus(uuid, 'declined');
-      
+
       res.json({ 
         message: "Challenge declined successfully", 
         challenge: updatedChallenge 
@@ -1142,37 +1142,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to decline betting challenge" });
     }
   });
-  
+
   // Cancel a betting challenge (only the creator can cancel)
   app.post('/api/challenges/:uuid/cancel', async (req: any, res) => {
     try {
       if (!req.isAuthenticated()) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-      
+
       const userId = req.user.claims.sub;
       const { uuid } = req.params;
-      
+
       // Get the challenge
       const challenge = await storage.getBettingChallengeByUuid(uuid);
-      
+
       if (!challenge) {
         return res.status(404).json({ message: "Challenge not found" });
       }
-      
+
       // Check if user is the creator
       if (challenge.createdBy !== userId) {
         return res.status(403).json({ message: "Only the challenge creator can cancel it" });
       }
-      
+
       // Check if challenge is already accepted, declined, or expired
       if (challenge.status !== 'pending') {
         return res.status(400).json({ message: `Challenge cannot be canceled. Current status: ${challenge.status}` });
       }
-      
+
       // Update challenge status to canceled
       const updatedChallenge = await storage.updateBettingChallengeStatus(uuid, 'canceled');
-      
+
       res.json({ 
         message: "Challenge canceled successfully", 
         challenge: updatedChallenge 
@@ -1182,55 +1182,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to cancel betting challenge" });
     }
   });
-  
+
   // Get user notifications
   app.get('/api/notifications', async (req: any, res) => {
     try {
       if (!req.isAuthenticated()) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-      
+
       const userId = req.user.claims.sub;
       const { unreadOnly } = req.query;
-      
+
       const notifications = await storage.getUserNotifications(userId, unreadOnly === 'true');
-      
+
       res.json(notifications);
     } catch (error) {
       console.error("Error fetching notifications:", error);
       res.status(500).json({ message: "Failed to fetch notifications" });
     }
   });
-  
+
   // Mark notification as read
   app.put('/api/notifications/:id/read', async (req: any, res) => {
     try {
       if (!req.isAuthenticated()) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-      
+
       const userId = req.user.claims.sub;
       const { id } = req.params;
-      
+
       const notification = await storage.markNotificationAsRead(parseInt(id), userId);
-      
+
       res.json({ message: "Notification marked as read", notification });
     } catch (error) {
       console.error("Error marking notification as read:", error);
       res.status(500).json({ message: "Failed to mark notification as read" });
     }
   });
-  
+
   // User consent preferences management
   app.post('/api/user/consent-preferences', async (req: any, res) => {
     try {
       if (!req.isAuthenticated()) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-      
+
       const userId = req.user.claims.sub;
       const { smsConsent, marketingConsent, emailConsent } = req.body;
-      
+
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -1264,10 +1264,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.isAuthenticated()) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-      
+
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
-      
+
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -1292,11 +1292,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.isAuthenticated()) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-      
+
       const { streamId } = req.params;
       const { isFavorited } = req.body;
       const userId = req.user.claims.sub;
-      
+
       // For now, return success - in production, this would update user favorites in database
       res.json({ 
         success: true, 
@@ -1316,17 +1316,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.isAuthenticated()) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-      
+
       const userId = req.user.id;
       const { oddsFormat, useVirtualCurrency, withdrawalSpeed, mobileOptimizedView } = req.body;
-      
+
       // Only update fields that were provided
       const updateData: any = {};
       if (oddsFormat) updateData.oddsFormat = oddsFormat;
       if (useVirtualCurrency !== undefined) updateData.useVirtualCurrency = useVirtualCurrency;
       if (withdrawalSpeed) updateData.withdrawalSpeed = withdrawalSpeed;
       if (mobileOptimizedView !== undefined) updateData.mobileOptimizedView = mobileOptimizedView;
-      
+
       const updatedUser = await storage.updateUserPreferences(userId, updateData);
       res.json(updatedUser);
     } catch (error) {
@@ -1336,7 +1336,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ===== Real-time Odds Prediction API Routes =====
-  
+
   // Predict odds movement for specific event
   app.post('/api/odds/predict', async (req, res) => {
     try {
@@ -1355,7 +1355,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const prediction = await oddsPredictionAlgorithm.predictOddsMovement(oddsData);
-      
+
       res.json({
         success: true,
         prediction,
@@ -1373,9 +1373,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { oddsPredictionAlgorithm } = await import('./services/oddsPredictionAlgorithm');
       const { sport } = req.params;
-      
+
       const insights = await oddsPredictionAlgorithm.getMarketInsights(sport);
-      
+
       res.json({
         success: true,
         insights,
@@ -1394,13 +1394,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get comprehensive sports list from unified API service
       // Get the massive sports list (110+ sports)
       const massiveSportsList = await unifiedSportsApi.getAllSportsOdds();
-      
+
       // Combine storage sports with massive API sports list
       const storageSports = await storage.getAllSports();
-      
+
       // Merge with massive sports list, prioritizing API data
       const allSports = [...massiveSportsList];
-      
+
       // Add any storage sports that aren't in the massive list
       for (const storageSport of storageSports) {
         const exists = allSports.find(sport => sport.key === storageSport.key);
@@ -1408,12 +1408,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           allSports.push(storageSport);
         }
       }
-      
+
       // Return the comprehensive sports list with real data
       res.json(allSports);
     } catch (error) {
       console.error("Error fetching comprehensive sports:", error);
-      
+
       // Fallback to storage sports if unified API fails
       const sports = await storage.getAllSports();
       res.json(sports);
@@ -1437,7 +1437,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/sports/:sportKey/live", async (req, res) => {
     try {
       const { sportKey } = req.params;
-      
+
       // Map to proper ESPN sport IDs for current live games
       const sportMapping: { [key: string]: string } = {
         'basketball_nba': 'nba',
@@ -1447,34 +1447,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'soccer_epl': 'eng.1',
         'basketball_wnba': 'wnba'
       };
-      
+
       const espnSport = sportMapping[sportKey];
       if (!espnSport) {
         return res.json([]);
       }
-      
+
       // Get actual live games from ESPN
       const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${espnSport === 'eng.1' ? 'soccer' : espnSport === 'mlb' ? 'baseball' : espnSport === 'nhl' ? 'hockey' : espnSport === 'nba' || espnSport === 'wnba' ? 'basketball' : 'football'}/${espnSport}/scoreboard`);
       const data = await response.json();
-      
+
       // ONLY return games that are actually live right now - no fake games
       const liveGames = data.events?.filter((event: any) => 
         event.status?.type?.state === 'in' && 
         event.status?.type?.completed === false
       );
-      
+
       // If no live games, return empty array (no fake data)
       if (!liveGames || liveGames.length === 0) {
         console.log(`No live ${sportKey} games currently happening - showing empty as requested`);
         return res.json([]);
       }
-      
+
       // Get real odds from your RapidAPI for these live games
       const gamesWithOdds = await Promise.all(liveGames.map(async (event: any) => {
         const competition = event.competitions?.[0];
         const homeTeam = competition?.competitors?.find((c: any) => c.homeAway === 'home');
         const awayTeam = competition?.competitors?.find((c: any) => c.homeAway === 'away');
-        
+
         try {
           // Get real odds from your working RapidAPI Odds API
           const { RapidApiOddsService } = await import('./services/rapidApiOddsService');
@@ -1483,7 +1483,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } catch (error) {
           console.log('Could not fetch real odds for event:', event.id);
         }
-        
+
         return {
           id: event.id,
           sport_key: sportKey,
@@ -1506,7 +1506,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }]
         };
       }));
-      
+
       res.json(gamesWithOdds);
     } catch (error) {
       console.error(`Error fetching live games for ${req.params.sportKey}:`, error);
@@ -1518,7 +1518,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/sports/:sportKey/upcoming", async (req, res) => {
     try {
       const { sportKey } = req.params;
-      
+
       // Map to proper ESPN sport IDs for in-season sports only
       const sportMapping: { [key: string]: string } = {
         'basketball_nba': 'nba',
@@ -1530,20 +1530,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'tennis_atp': 'tennis',
         'golf_pga': 'golf'
       };
-      
+
       const espnSport = sportMapping[sportKey];
       if (!espnSport) {
         return res.json([]);
       }
-      
+
       // Get actual upcoming games from ESPN
       const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${espnSport === 'eng.1' ? 'soccer' : espnSport === 'mlb' ? 'baseball' : espnSport === 'nhl' ? 'hockey' : espnSport === 'nba' || espnSport === 'wnba' ? 'basketball' : 'football'}/${espnSport}/scoreboard`);
       const data = await response.json();
-      
+
       // Get all scheduled future games (during offseason, look further ahead)
       const allEvents = data.events || [];
       console.log(`Found ${allEvents.length} total events for ${sportKey}`);
-      
+
       const upcomingGames = allEvents.filter((event: any) => {
         const eventDate = new Date(event.date);
         const now = new Date();
@@ -1555,7 +1555,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const competition = event.competitions?.[0];
         const homeTeam = competition?.competitors?.find((c: any) => c.homeAway === 'home');
         const awayTeam = competition?.competitors?.find((c: any) => c.homeAway === 'away');
-        
+
         return {
           id: event.id,
           sport_key: sportKey,
@@ -1582,7 +1582,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }]
         };
       }) || [];
-      
+
       res.json(upcomingGames);
     } catch (error) {
       console.error(`Error fetching upcoming games for ${req.params.sportKey}:`, error);
@@ -1623,10 +1623,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/live-streams", async (req, res) => {
     try {
       const { sport } = req.query;
-      
+
       // Get live events from existing database
       const liveEvents = await storage.getLiveEvents();
-      
+
       // Transform events into streaming format with real data only
       const liveStreams = liveEvents.map((event: any) => ({
         id: event.id?.toString() || Math.random().toString(),
@@ -1722,9 +1722,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: error.message });
     }
   });
-  
+
   // ===== AllSportsAPI Routes (Primary Data Source) =====
-  
+
   // Get sports from AllSportsAPI - PRIMARY SOURCE
   app.get("/api/allsports/sports", async (req, res) => {
     try {
@@ -1780,7 +1780,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ===== The Odds API Routes (Fallback) =====
-  
+
   // Get sports from The Odds API
   app.get("/api/odds-sports", async (req, res) => {
     try {
@@ -1791,40 +1791,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: error.message || "Failed to fetch sports from The Odds API" });
     }
   });
-  
+
   // Get live events for a specific sport
   app.get("/api/sports/:sportKey/live", async (req, res) => {
     try {
       const { sportKey } = req.params;
-      
+
       // Return empty array for new sports until real API integration
       const supportedNewSports = [
         'boxing_main', 'mma_ufc', 'motorsport_nascar', 'tennis_atp', 
         'tennis_wta', 'basketball_wnba', 'football_ufl', 'football_ncaaf',
         'basketball_ncaam', 'basketball_ncaaw'
       ];
-      
+
       if (supportedNewSports.includes(sportKey)) {
         // For our new sports, we'll pretend there are no live events currently
         // This could be enhanced to simulate live events if needed
         return res.json([]);
       }
-      
+
       try {
         // Try to get scores for the sport to find live events
         const scores = await oddsApiService.getScores(sportKey);
-        
+
         // Filter for only live events (started but not completed)
         const now = new Date();
         const liveEvents = scores.filter((event: any) => {
           const startTime = new Date(event.commence_time);
           return startTime <= now && !event.completed;
         });
-        
+
         // For each live event, add odds data if available
         try {
           const odds = await oddsApiService.getOdds(sportKey);
-          
+
           for (const event of liveEvents) {
             const eventOdds = odds.find((o: any) => o.id === event.id);
             if (eventOdds) {
@@ -1834,7 +1834,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } catch (oddsError) {
           console.warn("Could not fetch odds for live events:", oddsError);
         }
-        
+
         res.json(liveEvents);
       } catch (error: any) {
         console.error(`Error fetching live events for ${sportKey}:`, error);
@@ -1845,24 +1845,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: error.message || "Internal server error" });
     }
   });
-  
+
   // Get upcoming events for a specific sport - REAL DATA ONLY
   app.get("/api/sports/:sportKey/upcoming", async (req, res) => {
     try {
       const { sportKey } = req.params;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
-      
+
       try {
         // Use unified sports API to get REAL upcoming events from all sources
         const unifiedData = await unifiedSportsApiService.getUnifiedUpcomingEvents();
-        
+
         // Filter events for the specific sport
         const sportEvents = unifiedData.filter((event: any) => 
           event.sport_key === sportKey || 
           event.sport_key?.includes(sportKey) ||
           event.sport_title?.toLowerCase().includes(sportKey.toLowerCase())
         );
-        
+
         // Sort by start time and limit results
         const now = new Date();
         const upcomingEvents = sportEvents
@@ -1871,15 +1871,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             new Date(a.commence_time).getTime() - new Date(b.commence_time).getTime()
           )
           .slice(0, limit);
-        
+
         // If we have real data, return it
         if (upcomingEvents.length > 0) {
           return res.json(upcomingEvents);
         }
-        
+
         // Try The Odds API directly as fallback
         const odds = await oddsApiService.getOdds(sportKey);
-        
+
         // Filter for only upcoming events (not started yet) and sort by start time
         const directUpcomingEvents = odds
           .filter((event: any) => new Date(event.commence_time) > now)
@@ -1887,7 +1887,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             new Date(a.commence_time).getTime() - new Date(b.commence_time).getTime()
           )
           .slice(0, limit);
-        
+
         res.json(directUpcomingEvents);
       } catch (error: any) {
         console.error(`Error fetching upcoming events for ${sportKey}:`, error);
@@ -1900,17 +1900,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Enhanced API endpoints for comprehensive betting data
-  
+
   // Get player props for a specific event
   app.get("/api/events/:eventId/player-props", async (req, res) => {
     try {
       const { eventId } = req.params;
       const sportKey = req.query.sport as string;
-      
+
       if (!sportKey) {
         return res.status(400).json({ message: "Sport key is required" });
       }
-      
+
       const playerProps = await advancedOddsService.getPlayerProps(sportKey, eventId);
       res.json(playerProps);
     } catch (error: any) {
@@ -1918,17 +1918,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: error.message || "Failed to fetch player props" });
     }
   });
-  
+
   // Get team props for a specific event
   app.get("/api/events/:eventId/team-props", async (req, res) => {
     try {
       const { eventId } = req.params;
       const sportKey = req.query.sport as string;
-      
+
       if (!sportKey) {
         return res.status(400).json({ message: "Sport key is required" });
       }
-      
+
       const teamProps = await advancedOddsService.getTeamProps(sportKey, eventId);
       res.json(teamProps);
     } catch (error: any) {
@@ -1936,17 +1936,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: error.message || "Failed to fetch team props" });
     }
   });
-  
+
   // Get all betting markets for a specific event (game lines, player props, and team props)
   app.get("/api/events/:eventId/all-markets", async (req, res) => {
     try {
       const { eventId } = req.params;
       const sportKey = req.query.sport as string;
-      
+
       if (!sportKey) {
         return res.status(400).json({ message: "Sport key is required" });
       }
-      
+
       const allMarkets = await advancedOddsService.getAllMarkets(sportKey, eventId);
       res.json(allMarkets);
     } catch (error: any) {
@@ -1954,12 +1954,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: error.message || "Failed to fetch betting markets" });
     }
   });
-  
+
   // Enhanced live events endpoint with real-time data
   app.get("/api/events/:sportKey/live-enhanced", async (req, res) => {
     try {
       const { sportKey } = req.params;
-      
+
       const liveEvents = await advancedOddsService.getLiveEvents(sportKey);
       res.json(liveEvents);
     } catch (error: any) {
@@ -2036,7 +2036,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       let totalOdds = 1;
-      
+
       if (betType === 'parlay') {
         selections.forEach((selection: any) => {
           totalOdds *= parseFloat(selection.odds);
@@ -2070,7 +2070,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const challengeId = req.params.id;
       const challenge = await storage.getBettingChallengeByUuid(challengeId);
-      
+
       if (!challenge) {
         return res.status(404).json({ message: 'Challenge not found' });
       }
@@ -2080,7 +2080,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const acceptedChallenge = await storage.acceptBettingChallenge(challengeId, userId);
-      
+
       res.json({ 
         success: true, 
         challenge: acceptedChallenge,
@@ -2246,7 +2246,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const updates = req.body;
       const allowedFields = ['firstName', 'lastName', 'username', 'gamertag', 'profileImageUrl', 'oddsFormat', 'useVirtualCurrency'];
-      
+
       const filteredUpdates: any = {};
       Object.keys(updates).forEach(key => {
         if (allowedFields.includes(key)) {
@@ -2281,7 +2281,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { tier } = req.body;
       const validTiers = ['Bronze', 'Silver', 'Gold', 'Platinum'];
-      
+
       if (!validTiers.includes(tier)) {
         return res.status(400).json({ message: 'Invalid tier specified' });
       }
@@ -2359,7 +2359,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const eventId = parseInt(req.params.id);
       const event = await storage.getEvent(eventId);
-      
+
       if (!event) {
         return res.status(404).json({ message: 'Event not found' });
       }
@@ -2437,7 +2437,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.isAuthenticated || !req.isAuthenticated()) {
         return res.status(401).json({ message: 'Authentication required' });
       }
-      
+
       const userId = req.user?.claims?.sub || req.user?.id;
       if (!userId) {
         return res.status(401).json({ message: 'User not authenticated' });
@@ -2528,7 +2528,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { ticketNumber } = req.params;
 
       const ticket = await storage.getSupportTicketByNumber(ticketNumber);
-      
+
       if (!ticket) {
         return res.status(404).json({ message: 'Ticket not found' });
       }
@@ -2575,9 +2575,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = (req.user as any)?.claims?.sub;
       const user = await storage.getUser(userId);
-      
+
       const authenticated = !!(user?.yahooAccessToken && user?.yahooRefreshToken);
-      
+
       res.json({ 
         authenticated,
         tokenExpiry: user?.yahooTokenExpiry || null
@@ -2695,7 +2695,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = (req.user as any)?.claims?.sub;
       const { unreadOnly } = req.query;
-      
+
       const notifications = await storage.getUserNotifications(userId, unreadOnly === 'true');
       res.json(notifications);
     } catch (error) {
@@ -2751,10 +2751,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/leaderboard', async (req, res) => {
     try {
       const { type = 'wins', limit = 10 } = req.query;
-      
+
       // Get top users based on wins, balance, or other metrics
       const users = await storage.getAllUsers();
-      
+
       let sortedUsers;
       if (type === 'wins') {
         sortedUsers = users.sort((a, b) => (b.wins || 0) - (a.wins || 0));
@@ -2815,19 +2815,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Real odds endpoint with performance caching
   app.get('/api/real-odds', async (req, res) => {
     const { performanceCache } = await import('./utils/performanceCache');
-    
+
     // Check cache first for faster response times
     const cacheKey = 'real-odds-data';
     const cachedData = performanceCache.get(cacheKey);
-    
+
     if (cachedData) {
       return res.json(cachedData);
     }
-    
+
     // Fetch fresh data if not cached
     const { getRealOddsData } = await import('./routes/realOdds');
     const start = Date.now();
-    
+
     try {
       // Get fresh data
       const freshData = await new Promise<any>((resolve, reject) => {
@@ -2841,13 +2841,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } as any;
         getRealOddsData(req, mockRes);
       });
-      
+
       // Cache the fresh data
       performanceCache.set(cacheKey, freshData, 'odds-live');
-      
+
       const duration = Date.now() - start;
       console.log(`⚡ Real odds API response: ${duration}ms`);
-      
+
       res.json(freshData);
     } catch (error) {
       console.error('Real odds error:', error);
@@ -2982,12 +2982,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const bet = await storage.settleBet(parseInt(id), status);
-      
+
       // If bet won, add winnings to user balance
       if (status === 'won' && bet) {
         await storage.updateUserBalance(bet.userId, bet.potentialPayout || 0);
         await storage.incrementUserWins(bet.userId);
-        
+
         // Create notification for winning bet
         await storage.createNotification({
           userId: bet.userId,
@@ -3012,7 +3012,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { uuid } = req.params;
 
       const challenge = await storage.acceptBettingChallenge(uuid, userId);
-      
+
       // Create notification for challenge creator
       await storage.createNotification({
         userId: challenge.createdBy,
@@ -3039,7 +3039,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create notifications for both participants
       if (challenge.acceptedBy) {
         const participants = [challenge.createdBy, challenge.acceptedBy];
-        
+
         for (const participantId of participants) {
           await storage.createNotification({
             userId: participantId,
@@ -3070,7 +3070,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Add WeParlay Cash to user balance
       const updatedUser = await storage.updateUserWeplayTokenBalance(userId, amount);
-      
+
       // Create transaction record
       await storage.createTransaction({
         userId,
@@ -3101,7 +3101,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/user/admin-status', async (req, res) => {
     try {
       const token = req.headers.authorization?.replace('Bearer ', '');
-      
+
       if (!token) {
         return res.status(401).json({ 
           isAdmin: false, 
@@ -3123,7 +3123,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const jwt = await import('jsonwebtoken');
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'weparlay-secret-key') as any;
-        
+
         if (decoded.isAdmin || decoded.role === 'admin') {
           return res.json({
             isAdmin: true,
@@ -3135,7 +3135,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } catch (jwtError) {
         console.log('JWT verification failed:', jwtError);
       }
-      
+
       return res.json({
         isAdmin: false,
         message: 'Not an admin user'
@@ -3154,7 +3154,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = (req.user as any)?.claims?.sub;
       const user = await storage.getUser(userId);
-      
+
       if (!user || user.role !== 'admin') {
         return res.status(403).json({ message: 'Admin access required' });
       }
@@ -3171,7 +3171,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = (req.user as any)?.claims?.sub;
       const user = await storage.getUser(userId);
-      
+
       if (!user || user.role !== 'admin') {
         return res.status(403).json({ message: 'Admin access required' });
       }
@@ -3190,13 +3190,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = (req.user as any)?.claims?.sub;
       const user = await storage.getUser(userId);
-      
+
       if (!user || user.role !== 'admin') {
         return res.status(403).json({ message: 'Admin access required' });
       }
 
       const { amount, feeType } = req.body;
-      
+
       if (!amount || !feeType) {
         return res.status(400).json({ message: 'Amount and fee type are required' });
       }
@@ -3300,7 +3300,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (betMatch) {
           const amount = parseFloat(betMatch[1]);
           const description = betMatch[2];
-          
+
           responseMessage = `🎯 Bet created: $${amount} on "${description}". Reply with CONFIRM to place this bet or CANCEL to abort.`;
         } else {
           responseMessage = 'Format: BET $50 Lakers win tonight';
@@ -3312,7 +3312,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const opponent = challengeMatch[1];
           const amount = parseFloat(challengeMatch[2]);
           const description = challengeMatch[3] || 'Custom challenge';
-          
+
           responseMessage = `⚔️ Challenge sent to ${opponent}: $${amount} on "${description}". They'll receive a text to accept or decline.`;
         } else {
           responseMessage = 'Format: CHALLENGE @friend $25 Lakers win';
@@ -3367,7 +3367,7 @@ Start betting through text now!`;
     try {
       const { phone, amount, pick, message } = req.body;
       const userId = (req.user as any).claims.sub;
-      
+
       if (!phone || !amount || !pick) {
         return res.status(400).json({ 
           success: false, 
@@ -3388,7 +3388,7 @@ Start betting through text now!`;
 
       // Send SMS challenge
       const challengeMessage = `WeParlay Challenge: ${pick} for $${amount}. ${message || 'Accept at weparlay.io/challenge/' + challenge.challengeUuid}`;
-      
+
       const twilio2 = (await import('twilio')).default;
       const twilioClient = twilio2(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
       const smsResult = await twilioClient.messages.create({
@@ -3444,7 +3444,7 @@ Start betting through text now!`;
           message: 'Pawn Coin data not available'
         });
       }
-      
+
       res.json({
         success: true,
         symbol: '$Pc',
@@ -3465,7 +3465,7 @@ Start betting through text now!`;
   app.get('/api/crypto/live-prices', async (req, res) => {
     try {
       const supportedCryptos = await cryptoService.getSupportedCryptocurrencies();
-      
+
       // Transform data to match CryptoInformation component expectations
       const cryptoData = supportedCryptos.map(crypto => ({
         symbol: crypto.symbol || 'BTC',
@@ -3505,7 +3505,7 @@ Start betting through text now!`;
       // Create crypto bet record
       const bet = await storage.createBet({
         userId: user.claims.sub,
-        eventId: parseInt(eventId as string),
+        eventId: parseInt(eventId),
         amount: amount,
         odds: odds,
         status: 'pending',
@@ -3537,7 +3537,7 @@ Start betting through text now!`;
   app.get('/api/crypto/pawncoin', async (req, res) => {
     try {
       const pawnCoinData = await cryptoService.getPawnCoinData();
-      
+
       if (pawnCoinData) {
         res.json(pawnCoinData);
       } else {
@@ -3563,7 +3563,7 @@ Start betting through text now!`;
     try {
       const { symbols } = req.query;
       const symbolList = symbols ? (symbols as string).split(',') : [];
-      
+
       const prices = await cryptoService.getCryptoPrices(symbolList);
       res.json({
         success: true,
@@ -3584,14 +3584,14 @@ Start betting through text now!`;
     try {
       const { symbol } = req.params;
       const price = await cryptoService.getCryptoPrice(symbol);
-      
+
       if (!price) {
         return res.status(404).json({
           success: false,
           message: `Price data not found for ${symbol}`
         });
       }
-      
+
       res.json({
         success: true,
         ...price
@@ -3609,16 +3609,16 @@ Start betting through text now!`;
   app.post('/api/crypto/convert', async (req, res) => {
     try {
       const { fromSymbol, toSymbol, amount } = req.body;
-      
+
       if (!fromSymbol || !toSymbol || !amount) {
         return res.status(400).json({
           success: false,
           message: 'Missing required parameters: fromSymbol, toSymbol, amount'
         });
       }
-      
+
       const convertedAmount = await cryptoService.convertCrypto(fromSymbol, toSymbol, amount);
-      
+
       res.json({
         success: true,
         fromSymbol,
@@ -3640,16 +3640,16 @@ Start betting through text now!`;
   app.post('/api/crypto/validate-address', async (req, res) => {
     try {
       const { address, symbol } = req.body;
-      
+
       if (!address || !symbol) {
         return res.status(400).json({
           success: false,
           message: 'Missing required parameters: address, symbol'
         });
       }
-      
+
       const isValid = cryptoService.isValidCryptoAddress(address, symbol);
-      
+
       res.json({
         success: true,
         isValid,
@@ -3675,7 +3675,7 @@ Start betting through text now!`;
         minimumBet: cryptoService.getMinimumBetAmount(crypto.symbol),
         currentPrice: crypto.currentPrice
       }));
-      
+
       res.json({
         success: true,
         minimumBets
@@ -3769,9 +3769,9 @@ Start betting through text now!`;
     try {
       const userId = (req.user as any)?.claims?.sub;
       const bets = await storage.getUserBets(parseInt(userId));
-      
+
       const cryptoBets = bets.filter(bet => bet.betType === 'crypto');
-      
+
       res.json({
         success: true,
         bets: cryptoBets
@@ -3793,7 +3793,7 @@ Start betting through text now!`;
 
       // Get live crypto prices
       const supportedCryptos = await cryptoService.getSupportedCryptocurrencies();
-      
+
       // Sample user balances (in production, these would come from user's wallet)
       const userBalances = [
         { symbol: 'BTC', balance: '0.05' },
@@ -3806,7 +3806,7 @@ Start betting through text now!`;
         const crypto = supportedCryptos.find(c => c.symbol === userBalance.symbol);
         const balance = parseFloat(userBalance.balance);
         const price = crypto?.currentPrice || 0;
-        
+
         return {
           currency: crypto?.name || userBalance.symbol,
           symbol: userBalance.symbol,
@@ -3829,7 +3829,7 @@ Start betting through text now!`;
   app.get('/api/wallet/transactions', isAuthenticated, async (req, res) => {
     try {
       const userId = (req.user as any)?.claims?.sub;
-      
+
       // Mock transaction history
       const transactions = [
         {
@@ -3883,7 +3883,7 @@ Start betting through text now!`;
       // For your custom token (contract: 0x2Fe269292f74F0a98C5786088317B4f86313C211)
       // This would normally interact with Web3 provider
       const mockTxHash = `0x${Math.random().toString(16).substr(2, 64)}`;
-      
+
       // Create transaction record
       const transaction = {
         id: Date.now().toString(),
@@ -3949,7 +3949,7 @@ Start betting through text now!`;
 
       // Create PayPal order using existing PayPal service
       const { createPaypalOrder } = require('./paypal');
-      
+
       const mockReq = {
         body: {
           amount: tierData.amount.toString(),
@@ -4034,14 +4034,14 @@ Start betting through text now!`;
   app.post('/api/paypal/deposit', isAuthenticated, async (req, res) => {
     try {
       const { amount } = req.body;
-      
+
       if (!amount || amount <= 0) {
         return res.status(400).json({ message: 'Valid amount required' });
       }
 
       // Create PayPal order for deposit
       const { createPaypalOrder } = require('./paypal');
-      
+
       const mockReq = {
         body: {
           amount: amount.toString(),
@@ -4104,7 +4104,7 @@ Start betting through text now!`;
   app.get('/api/sms/statistics', isAuthenticated, async (req, res) => {
     try {
       const userId = (req.user as any)?.claims?.sub;
-      
+
       // Get actual SMS statistics from database
       const smsStats = {
         totalSent: 4, // Based on actual SMS tests performed
@@ -4193,7 +4193,7 @@ Start betting through text now!`;
       // Deduct WeParlay Cash and upgrade tier
       await storage.updateUserWeplayTokenBalance(userId, -tierInfo.amount);
       await storage.updateUserTier(userId, tierInfo.name);
-      
+
       // Record transaction
       await storage.createWeparlayCashTransaction({
         userId,
@@ -4265,7 +4265,7 @@ Start betting through text now!`;
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
-      
+
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
@@ -4285,7 +4285,7 @@ Start betting through text now!`;
     try {
       const userId = req.user.claims.sub;
       const transactions = await storage.getWeparlayCashTransactions(userId);
-      
+
       res.json({
         transactions: transactions.map(t => ({
           id: t.id,
@@ -4306,7 +4306,7 @@ Start betting through text now!`;
   app.get('/api/live-games', async (req, res) => {
     try {
       const liveGames: any[] = [];
-      
+
       // Normalize game object to ensure all required properties exist
       const normalizeGame = (game: any) => ({
         ...game,
@@ -4330,23 +4330,23 @@ Start betting through text now!`;
           draw: 3.2
         }
       });
-      
+
       // Get sports channels from IPTV service (229,451 channels from thetv.to)
       try {
         const { iptvService } = await import('./services/iptvService');
         const allChannels = iptvService.getAllChannels();
         console.log(`🔍 IPTV Debug: Total channels available: ${allChannels.length}`);
-        
+
         if (allChannels.length > 0) {
           console.log(`🔍 Sample channel names:`, allChannels.slice(0, 10).map(c => c.name));
           console.log(`🔍 Sample categories:`, Array.from(new Set(allChannels.slice(0, 100).map(c => c.category))));
         }
-        
+
         // Filter for ALL SPORTS - comprehensive sports filtering
         const sportsChannels = allChannels.filter(channel => {
           const nameLower = channel.name.toLowerCase();
           const categoryLower = channel.category.toLowerCase();
-          
+
           return (
             // Major Sports Networks
             nameLower.includes('espn') ||
@@ -4361,7 +4361,7 @@ Start betting through text now!`;
             nameLower.includes('sport tv') ||
             nameLower.includes('tsn') ||
             nameLower.includes('sportsnet') ||
-            
+
             // American Sports
             nameLower.includes('nfl') ||
             nameLower.includes('nba') ||
@@ -4370,7 +4370,7 @@ Start betting through text now!`;
             nameLower.includes('mls') ||
             nameLower.includes('ncaa') ||
             nameLower.includes('college') ||
-            
+
             // Global Sports
             nameLower.includes('football') && !nameLower.includes('news') ||
             nameLower.includes('soccer') ||
@@ -4391,7 +4391,7 @@ Start betting through text now!`;
             nameLower.includes('cycling') ||
             nameLower.includes('running') ||
             nameLower.includes('marathon') ||
-            
+
             // Racing & Motorsports
             nameLower.includes('formula') ||
             nameLower.includes('f1') ||
@@ -4404,7 +4404,7 @@ Start betting through text now!`;
             nameLower.includes('rally') ||
             nameLower.includes('racing') ||
             nameLower.includes('motorsport') ||
-            
+
             // Combat Sports
             nameLower.includes('boxing') ||
             nameLower.includes('mma') ||
@@ -4415,7 +4415,7 @@ Start betting through text now!`;
             nameLower.includes('karate') ||
             nameLower.includes('judo') ||
             nameLower.includes('taekwondo') ||
-            
+
             // Winter Sports
             nameLower.includes('skiing') ||
             nameLower.includes('snowboard') ||
@@ -4424,7 +4424,7 @@ Start betting through text now!`;
             nameLower.includes('bobsled') ||
             nameLower.includes('luge') ||
             nameLower.includes('biathlon') ||
-            
+
             // Olympic Sports
             nameLower.includes('olympics') ||
             nameLower.includes('olympic') ||
@@ -4438,7 +4438,7 @@ Start betting through text now!`;
             nameLower.includes('table tennis') ||
             nameLower.includes('ping pong') ||
             nameLower.includes('squash') ||
-            
+
             // Extreme Sports
             nameLower.includes('surfing') ||
             nameLower.includes('skateboard') ||
@@ -4446,7 +4446,7 @@ Start betting through text now!`;
             nameLower.includes('extreme') ||
             nameLower.includes('x games') ||
             nameLower.includes('snowmobile') ||
-            
+
             // League/Tournament Names
             nameLower.includes('premier league') ||
             nameLower.includes('champions league') ||
@@ -4465,7 +4465,7 @@ Start betting through text now!`;
             nameLower.includes('super bowl') ||
             nameLower.includes('world series') ||
             nameLower.includes('playoffs') ||
-            
+
             // Sports Categories (Multiple Languages)
             categoryLower === 'sports' ||
             categoryLower === 'sport' ||
@@ -4477,7 +4477,7 @@ Start betting through text now!`;
             categoryLower.includes('sport') ||
             categoryLower.includes('deportes') ||
             categoryLower.includes('esporte') ||
-            
+
             // Additional Sports Terms
             nameLower.includes('match') && categoryLower.includes('sport') ||
             nameLower.includes('game') && categoryLower.includes('sport') ||
@@ -4503,7 +4503,7 @@ Start betting through text now!`;
             !categoryLower.includes('movies')
           );
         });
-        
+
         // Convert IPTV sports channels to live games format
         sportsChannels.slice(0, 15).forEach((channel) => {
           liveGames.push({
@@ -4523,22 +4523,22 @@ Start betting through text now!`;
             timeRemaining: 'LIVE'
           });
         });
-        
+
       } catch (error) {
         console.error('Error loading IPTV sports channels:', error);
       }
-      
+
       // Add YouTube sports channels if API key available
       try {
         const youtubeApiKey = process.env.YOUTUBE_API_KEY;
         if (youtubeApiKey) {
           const sportsKeywords = ['ESPN', 'NBA', 'NFL', 'MLB', 'NHL', 'Soccer'];
-          
+
           for (const keyword of sportsKeywords.slice(0, 3)) {
             const youtubeResponse = await fetch(
               `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&eventType=live&videoCategoryId=17&q=${keyword}&key=${youtubeApiKey}&maxResults=2`
             );
-            
+
             if (youtubeResponse.ok) {
               const youtubeData = await youtubeResponse.json();
               youtubeData.items?.forEach((item: any) => {
@@ -4566,23 +4566,23 @@ Start betting through text now!`;
       } catch (error) {
         console.error('Error loading YouTube sports streams:', error);
       }
-      
+
       // Add Twitch sports channels if API keys available
       try {
         const twitchClientId = process.env.TWITCH_CLIENT_ID;
         const twitchClientSecret = process.env.TWITCH_CLIENT_SECRET;
-        
+
         if (twitchClientId && twitchClientSecret) {
           const tokenResponse = await fetch('https://id.twitch.tv/oauth2/token', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: `client_id=${twitchClientId}&client_secret=${twitchClientSecret}&grant_type=client_credentials`
           });
-          
+
           if (tokenResponse.ok) {
             const tokenData = await tokenResponse.json();
             const accessToken = tokenData.access_token;
-            
+
             // Multiple sports game IDs on Twitch
             const sportsGameIds = [
               '518203', // Sports
@@ -4591,7 +4591,7 @@ Start betting through text now!`;
               '515025', // Valorant (esports)
               '32982'   // Grand Theft Auto V (often has sports content)
             ];
-            
+
             const streamsResponse = await fetch(
               `https://api.twitch.tv/helix/streams?game_id=${sportsGameIds[0]}&game_id=${sportsGameIds[1]}&first=5`,
               {
@@ -4601,11 +4601,11 @@ Start betting through text now!`;
                 }
               }
             );
-            
+
             if (streamsResponse.ok) {
               const streamsData = await streamsResponse.json();
               console.log(`Twitch streams loaded: ${streamsData.data?.length || 0} channels`);
-              
+
               streamsData.data?.forEach((stream: any) => {
                 liveGames.push({
                   id: `twitch-${stream.id}`,
@@ -4629,7 +4629,7 @@ Start betting through text now!`;
       } catch (error) {
         console.error('Error loading Twitch sports streams:', error);
       }
-      
+
       // Apply normalization to all games before sending response
       const normalizedGames = liveGames.map(normalizeGame);
       res.json(normalizedGames);
@@ -4644,16 +4644,16 @@ Start betting through text now!`;
   app.get('/api/live-channels', async (req, res) => {
     try {
       const { category } = req.query;
-      
+
       // Get sports channels from IPTV service  
       const { iptvService } = await import('./services/iptvService');
       const allChannels = iptvService.getAllChannels();
-      
+
       // Filter for sports-only channels
       const sportsChannels = allChannels.filter(channel => {
         const nameLower = channel.name.toLowerCase();
         const categoryLower = channel.category.toLowerCase();
-        
+
         return (
           nameLower.includes('espn') ||
           nameLower.includes('fox sports') ||
@@ -4675,10 +4675,10 @@ Start betting through text now!`;
           !nameLower.includes('movie')
         );
       });
-      
+
       const events = sportsChannels;
       const channels = [];
-      
+
       for (const channel of events) {
         const categoryStr = typeof category === 'string' ? category : '';
         if (!categoryStr || channel.category.toLowerCase().includes(categoryStr.toLowerCase())) {
@@ -4695,7 +4695,7 @@ Start betting through text now!`;
           });
         }
       }
-      
+
       // Filter by category if specified
       let filteredChannels = channels;
       if (category && category !== 'all') {
@@ -4705,7 +4705,7 @@ Start betting through text now!`;
           channel.name.toLowerCase().includes(String(categoryStr).toLowerCase())
         );
       }
-      
+
       res.json({
         total: filteredChannels.length,
         channels: filteredChannels.slice(0, 50) // Limit to 50 channels per request
@@ -4720,15 +4720,15 @@ Start betting through text now!`;
   app.get('/api/channel-categories', async (req, res) => {
     try {
       const response = await fetch(`http://thetv.to:80/get.php?username=686140897&password=80274761&type=m3u_plus&output=ts`);
-      
+
       if (!response.ok) {
         return res.status(503).json({ message: 'Streaming service unavailable' });
       }
-      
+
       const m3uContent = await response.text();
       const categories = new Set();
       const lines = m3uContent.split('\n');
-      
+
       for (const line of lines) {
         if (line.startsWith('#EXTINF:')) {
           const groupMatch = line.match(/group-title="([^"]+)"/);
@@ -4737,7 +4737,7 @@ Start betting through text now!`;
           }
         }
       }
-      
+
       res.json(Array.from(categories).sort());
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -4762,11 +4762,11 @@ Start betting through text now!`;
     try {
       const { PriorityApiService } = await import('./services/priorityApiService');
       const priorityService = new PriorityApiService();
-      
+
       // Get live games with enhanced data
       const liveEvents = await priorityService.getOddsWithFallback('all');
       const events = liveEvents?.data || [];
-      
+
       // Transform to live game format with simulated live data
       const liveGames = events
         .filter((event: any) => event.status === 'live' || Math.random() > 0.7) // Simulate some live games
@@ -4775,7 +4775,7 @@ Start betting through text now!`;
           const isLive = event.status === 'live' || index < 3;
           const period = isLive ? ['1st Quarter', '2nd Quarter', 'Halftime', '3rd Quarter', '4th Quarter'][Math.floor(Math.random() * 5)] : '1st Quarter';
           const timeRemaining = isLive ? `${Math.floor(Math.random() * 15)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}` : '15:00';
-          
+
           return {
             id: event.id || `live-${index}`,
             sport: event.sport || 'NFL',
@@ -4831,7 +4831,7 @@ Start betting through text now!`;
   app.get('/api/prop-bets/:gameId', async (req, res) => {
     try {
       const { gameId } = req.params;
-      
+
       // Generate realistic prop bets
       const propBets = [
         // Player props
@@ -4839,12 +4839,12 @@ Start betting through text now!`;
         { id: 'prop-2', category: 'player', description: 'Josh Allen Over 275.5 Passing Yards', odds: -115, line: 275.5, player: 'Josh Allen' },
         { id: 'prop-3', category: 'player', description: 'Travis Kelce Anytime TD Scorer', odds: +175, player: 'Travis Kelce' },
         { id: 'prop-4', category: 'player', description: 'Stefon Diggs Over 75.5 Receiving Yards', odds: +105, line: 75.5, player: 'Stefon Diggs' },
-        
+
         // Team props
         { id: 'prop-5', category: 'team', description: 'Chiefs to Score First TD', odds: -130, team: 'Kansas City' },
         { id: 'prop-6', category: 'team', description: 'Bills Over 24.5 Team Total Points', odds: -110, line: 24.5, team: 'Buffalo' },
         { id: 'prop-7', category: 'team', description: 'Chiefs to Win Both Halves', odds: +250, team: 'Kansas City' },
-        
+
         // Special props
         { id: 'prop-8', category: 'special', description: 'Game to Go to Overtime', odds: +650 },
         { id: 'prop-9', category: 'special', description: 'Total Turnovers Over 2.5', odds: +120, line: 2.5 },
@@ -4862,7 +4862,7 @@ Start betting through text now!`;
   app.post('/api/parlay/build', async (req, res) => {
     try {
       const { selections } = req.body;
-      
+
       if (!selections || !Array.isArray(selections) || selections.length < 2) {
         return res.status(400).json({ error: 'Parlay requires at least 2 selections' });
       }
@@ -4870,7 +4870,7 @@ Start betting through text now!`;
       // Calculate parlay odds
       let totalOdds = 1;
       let totalAmericanOdds = 0;
-      
+
       selections.forEach((selection: any) => {
         const decimalOdds = selection.odds > 0 
           ? (selection.odds / 100) + 1 
@@ -4942,21 +4942,21 @@ Start betting through text now!`;
   app.get('/api/betting/analytics/:userId', async (req, res) => {
     try {
       const { userId } = req.params;
-      
+
       // Get user's betting history
       const userBets = await storage.getUserBets(parseInt(userId));
-      
+
       // Calculate analytics
       const totalBets = userBets.length;
       const totalWagered = userBets.reduce((sum: number, bet: any) => sum + bet.amount, 0);
       const totalWon = userBets.filter((bet: any) => bet.status === 'won').length;
       const totalLost = userBets.filter((bet: any) => bet.status === 'lost').length;
       const winRate = totalBets > 0 ? (totalWon / totalBets) * 100 : 0;
-      
+
       const totalPayout = userBets
         .filter((bet: any) => bet.status === 'won')
         .reduce((sum: number, bet: any) => sum + bet.potentialPayout, 0);
-      
+
       const roi = totalWagered > 0 ? ((totalPayout - totalWagered) / totalWagered) * 100 : 0;
 
       const analytics = {
@@ -5079,7 +5079,7 @@ Start betting through text now!`;
       if (streamUrl.includes('thetv.to')) {
         const tvUsername = process.env.THETVAPP_USERNAME;
         const tvPassword = process.env.THETVAPP_PASSWORD;
-        
+
         const headers: Record<string, string> = {
           'User-Agent': 'VLC/3.0.16 LibVLC/3.0.16',
           'Accept': '*/*',
@@ -5114,15 +5114,15 @@ Start betting through text now!`;
                 // Handle fallback response inline
                 const fallbackContentType = fallbackResponse.headers.get('content-type') || 'video/mp2t';
                 res.setHeader('Content-Type', fallbackContentType);
-                
+
                 const fallbackContentLength = fallbackResponse.headers.get('content-length');
                 if (fallbackContentLength) {
                   res.setHeader('Content-Length', fallbackContentLength);
                 }
-                
+
                 res.setHeader('Accept-Ranges', 'bytes');
                 res.setHeader('Cache-Control', 'no-cache');
-                
+
                 if (fallbackResponse.body) {
                   const reader = fallbackResponse.body.getReader();
                   const pump = (): Promise<void> => {
@@ -5145,7 +5145,7 @@ Start betting through text now!`;
           // Forward headers
           const contentType = response.headers.get('content-type') || 'video/mp2t';
           res.setHeader('Content-Type', contentType);
-          
+
           const contentLength = response.headers.get('content-length');
           if (contentLength) {
             res.setHeader('Content-Length', contentLength);
@@ -5186,7 +5186,7 @@ Start betting through text now!`;
 #EXTINF:10.0,
 ${streamUrl}
 #EXT-X-ENDLIST`;
-          
+
           res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
           return res.send(playlistContent);
         }
@@ -5246,7 +5246,7 @@ ${streamUrl}
 
   // ESPN Fantasy Football API routes
   app.use('/api/espn-fantasy', espnFantasyRoutes);
-  
+
   // Yahoo Fantasy Football API routes
   app.use('/api/yahoo-fantasy', yahooFantasyRoutes);
 
@@ -5338,7 +5338,7 @@ ${streamUrl}
   });
 
   // ==================== Friends System API Routes ====================
-  
+
   // Get user's friends list
   app.get('/api/friends', isAuthenticated, async (req: any, res) => {
     try {
@@ -5458,7 +5458,7 @@ ${streamUrl}
   app.get('/api/user/favorites', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.claims?.sub;
-      
+
       if (!userId) {
         return res.status(400).json({ error: 'User not authenticated' });
       }
@@ -5477,14 +5477,14 @@ ${streamUrl}
   app.post('/api/iptv/load-m3u', async (req, res) => {
     try {
       const { playlistUrl } = req.body;
-      
+
       if (!playlistUrl) {
         return res.status(400).json({ success: false, message: 'Playlist URL is required' });
       }
 
       const { iptvService } = await import('./services/iptvService');
       const channels = await iptvService.parseM3UPlaylist(playlistUrl);
-      
+
       res.json({ 
         success: true, 
         channels,
@@ -5500,16 +5500,16 @@ ${streamUrl}
   app.post('/api/iptv/connect-xtream', async (req, res) => {
     try {
       const { host, username, password, port } = req.body;
-      
+
       if (!host || !username || !password) {
         return res.status(400).json({ success: false, message: 'Host, username, and password are required' });
       }
 
       const { iptvService } = await import('./services/iptvService');
       const result = await iptvService.connectXtreamCodes({ host, username, password, port });
-      
+
       const totalChannels = result.channels.length + result.movies.length + result.series.length;
-      
+
       res.json({ 
         success: true, 
         ...result,
@@ -5527,7 +5527,7 @@ ${streamUrl}
       const { iptvService } = await import('./services/iptvService');
       const channels = iptvService.getAllChannels();
       const categories = iptvService.getCategories();
-      
+
       res.json({ 
         success: true, 
         channels,
@@ -5544,10 +5544,10 @@ ${streamUrl}
     try {
       const { channelId } = req.params;
       const { date } = req.query;
-      
+
       const { iptvService } = await import('./services/iptvService');
       const programs = iptvService.getChannelEPG(channelId, date ? new Date(date as string) : undefined);
-      
+
       res.json({ 
         success: true, 
         programs,
@@ -5624,10 +5624,10 @@ ${streamUrl}
       };
 
       const { iptvService } = await import('./services/iptvService');
-      
+
       // First try to load via M3U playlist
       const m3uUrl = 'https://thetv.to:443/get.php?username=686140897&password=80274761&type=m3u_plus&output=ts';
-      
+
       try {
         const channels = await iptvService.parseM3UPlaylist(m3uUrl);
         res.json({ 
@@ -5642,7 +5642,7 @@ ${streamUrl}
         console.log('M3U failed, trying Xtream Codes API...');
         const result = await iptvService.connectXtreamCodes(credentials);
         const totalChannels = result.channels.length + result.movies.length + result.series.length;
-        
+
         res.json({ 
           success: true, 
           ...result,
@@ -5706,15 +5706,15 @@ ${streamUrl}
     try {
       // Import the real social media service
       const { realSocialMediaService } = await import('./services/realSocialMediaService');
-      
+
       // Get real user data for authentic posts
       const activeUsers = await storage.getAllUsers();
       const recentBets = activeUsers.filter(u => u.betsCount > 0).length;
       const totalWins = activeUsers.reduce((sum, u) => sum + (u.wins || 0), 0);
-      
+
       // Post community highlight to real social platforms
       const result = await realSocialMediaService.postCommunityHighlight();
-      
+
       // Calculate real engagement metrics
       const engagementData = {
         expectedReach: result.totalReach,
@@ -5724,7 +5724,7 @@ ${streamUrl}
         recentActivity: recentBets,
         winningUsers: totalWins
       };
-      
+
       res.json({
         success: true,
         post: result.posts[0]?.content || 'Community highlight posted successfully!',
@@ -5734,7 +5734,7 @@ ${streamUrl}
         isLiveMode: true,
         timestamp: new Date().toISOString()
       });
-      
+
     } catch (error) {
       console.error('Auto-share error:', error);
       res.status(500).json({ 
@@ -5749,10 +5749,10 @@ ${streamUrl}
   app.get('/api/community/bot-stats', async (req, res) => {
     try {
       const { realSocialMediaService } = await import('./services/realSocialMediaService');
-      
+
       const metrics = realSocialMediaService.getRealMetrics();
       const status = realSocialMediaService.getSystemStatus();
-      
+
       res.json({
         success: true,
         isLiveMode: status.isLiveMode,
@@ -5776,9 +5776,13 @@ ${streamUrl}
   // User satisfaction and feedback routes
   app.use('/api', feedbackRoutes);
 
+  // Add live streaming routes
+  const liveStreamingRoutes = require('./routes/liveStreamingRoutes').default;
+  app.use('/api/live-streaming', liveStreamingRoutes);
+
   // Return the HTTP server
   const httpServer = createServer(app);
-  
+
   // Initialize Automated Bet Settlement Service
   try {
     betSettlementService.startAutomaticSettlement();
@@ -5786,9 +5790,9 @@ ${streamUrl}
   } catch (error) {
     console.error('❌ Failed to initialize bet settlement system:', error);
   }
-  
+
   // WebSocket service temporarily disabled to resolve port conflicts
   console.log('⚠️ WebSocket service disabled - Live streaming will work without real-time features');
-  
+
   return httpServer;
 }

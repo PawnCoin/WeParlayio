@@ -3,6 +3,7 @@ import { Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { StreamingGame, VideoPlayerState, StreamType } from './types';
 import { useVideoPlayer } from './hooks/useVideoPlayer';
+import { toast } from '@/components/ui/use-toast';
 
 interface VideoPlayerProps {
   readonly game: StreamingGame;
@@ -36,7 +37,7 @@ const VideoPlayer = memo(({ game, className = '' }: VideoPlayerProps) => {
 
   useEffect(() => {
     if (!game.streamUrl) return;
-    
+
     const streamType = getStreamType(game.streamUrl);
     if (streamType === 'hls' || streamType === 'mp4') {
       initializePlayer(game.streamUrl, streamType);
@@ -100,6 +101,61 @@ const VideoPlayer = memo(({ game, className = '' }: VideoPlayerProps) => {
     }
   };
 
+  const handleWatchLive = async () => {
+    try {
+      // Try to get specific live stream for this sport/game
+      const response = await fetch(`/api/live-streaming/sport/${game.sport}?gameId=${game.id}`);
+      const data = await response.json();
+
+      if (data.success && data.stream) {
+        // Use the routed live stream
+        window.open(data.stream.streamUrl, '_blank');
+        toast({
+          title: "Live Stream Found!",
+          description: `Opening ${data.stream.name} - ${data.stream.quality} quality`,
+        });
+      } else if (game.streamUrl) {
+        // Fallback to original stream URL
+        window.open(game.streamUrl, '_blank');
+        toast({
+          title: "Stream Opening",
+          description: "Opening backup stream",
+        });
+      } else {
+        // Search for live stream
+        const searchResponse = await fetch(`/api/live-streaming/search?team1=${encodeURIComponent(game.homeTeam.name)}&team2=${encodeURIComponent(game.awayTeam.name)}&sport=${encodeURIComponent(game.sport)}`);
+        const searchData = await searchResponse.json();
+
+        if (searchData.success && searchData.stream) {
+          window.open(searchData.stream.streamUrl, '_blank');
+          toast({
+            title: "Search Results",
+            description: "Opening live stream search results",
+          });
+        } else {
+          toast({
+            title: "Stream Unavailable",
+            description: "No live stream found for this game",
+            variant: "destructive"
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error finding live stream:', error);
+      // Final fallback
+      if (game.streamUrl) {
+        window.open(game.streamUrl, '_blank');
+      } else {
+        toast({
+          title: "Stream Error",
+          description: "Failed to find live stream",
+          variant: "destructive"
+        });
+      }
+    }
+  };
+
+
   if (!game.streamUrl) {
     return (
       <div className={`aspect-video bg-gray-900 flex items-center justify-center rounded-lg ${className}`}>
@@ -114,7 +170,7 @@ const VideoPlayer = memo(({ game, className = '' }: VideoPlayerProps) => {
   return (
     <div className={`relative aspect-video bg-black rounded-lg overflow-hidden ${className}`}>
       {renderVideoPlayer()}
-      
+
       {/* Viewer Count Overlay */}
       <div className="absolute bottom-4 right-4">
         <div className="bg-black/60 backdrop-blur-sm rounded-lg px-3 py-1">
@@ -124,7 +180,7 @@ const VideoPlayer = memo(({ game, className = '' }: VideoPlayerProps) => {
           </div>
         </div>
       </div>
-      
+
       {/* Game Info Overlay */}
       <div className="absolute top-4 left-4 right-4">
         <div className="bg-black/60 backdrop-blur-sm rounded-lg p-4">
@@ -138,7 +194,7 @@ const VideoPlayer = memo(({ game, className = '' }: VideoPlayerProps) => {
               LIVE
             </Badge>
           </div>
-          
+
           <div className="flex items-center justify-between mt-4">
             <div className="flex items-center space-x-4">
               <div className="text-center">
@@ -153,7 +209,7 @@ const VideoPlayer = memo(({ game, className = '' }: VideoPlayerProps) => {
                 <p className="text-2xl font-bold text-white">{game.awayTeam.score}</p>
               </div>
             </div>
-            
+
             <div className="text-right">
               <p className="text-sm text-gray-300">{game.period}</p>
               <p className="text-sm text-gray-300">{game.timeRemaining}</p>
@@ -169,7 +225,7 @@ const VideoPlayer = memo(({ game, className = '' }: VideoPlayerProps) => {
             <p className="text-lg font-semibold mb-2">Stream Error</p>
             <p className="text-sm text-gray-300">{error.message}</p>
             {error.recoverable && (
-              <button 
+              <button
                 onClick={() => initializePlayer(game.streamUrl, getStreamType(game.streamUrl))}
                 className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm"
               >
@@ -179,6 +235,14 @@ const VideoPlayer = memo(({ game, className = '' }: VideoPlayerProps) => {
           </div>
         </div>
       )}
+
+      {/* Watch Live Button */}
+      <button
+        onClick={handleWatchLive}
+        className="absolute bottom-4 left-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md"
+      >
+        Watch Live
+      </button>
     </div>
   );
 });
