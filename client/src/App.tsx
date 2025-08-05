@@ -167,7 +167,7 @@ function Router() {
       <SuspenseRoute path="/fantasy-football" component={FantasyFootball} />
       <SuspenseRoute path="/live-streaming" component={LiveStreaming} />
       <SuspenseRoute path="/iptv" component={IPTVStreaming} />
-      <SuspenseRoute path="/iptv-player" component={React.lazy(() => import('./components/streaming/IPTVPlayerApp'))} />
+      <SuspenseRoute path="/iptv-player" component={React.lazy(() => import('./components/streaming/IPTVPlayerOriginal'))} />
       <SuspenseRoute path="/tier-comparison" component={TierComparison} />
       <SuspenseRoute path="/weparlay-cash" component={WeParlayCash} />
       <SuspenseRoute path="/crypto-info" component={CryptoInformation} />

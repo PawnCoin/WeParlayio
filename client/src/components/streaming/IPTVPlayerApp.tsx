@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { Search } from 'lucide-react';
 
-// Import ReactPlayer directly - available in project dependencies
-import ReactPlayer from 'react-player';
+// Lazy load ReactPlayer to improve initial load time.
+const ReactPlayer = React.lazy(() => import('react-player/lazy'));
 
 interface Channel {
   name: string;
