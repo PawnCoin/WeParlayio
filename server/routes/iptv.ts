@@ -10,19 +10,19 @@ const router = Router();
 // VIP tier check middleware
 const requireVIPAccess = async (req: any, res: any, next: any) => {
   try {
-    const user = req.user?.claims;
+    const user = req.user;
     if (!user) {
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    // Check if user has VIP access (admin bypass)
-    const isAdmin = user.email === 'support@weparlay.io' || user.sub === 'support@weparlay.io';
+    // Check if user has VIP access (admin bypass for support@weparlay.io)
+    const isAdmin = user.email === 'support@weparlay.io';
     
-    // For admin users, we also need to check the stored user data
+    // For admin users, we allow access
     let hasVIPAccess = isAdmin;
     
     if (!isAdmin) {
-      // Check user tier from the claims or fetch from storage
+      // Check user tier from the user object
       const userTier = user.tier || user.subscriptionTier;
       hasVIPAccess = userTier === 'vip' || 
         userTier === 'gold' || 
@@ -37,6 +37,7 @@ const requireVIPAccess = async (req: any, res: any, next: any) => {
       });
     }
 
+    console.log('✅ VIP access granted for user:', user.email);
     next();
   } catch (error) {
     console.error('VIP access check error:', error);
@@ -136,7 +137,7 @@ function generateEPGData(channels: any[]): any[] {
 // Get channels list (VIP only)
 router.get('/channels', isAuthenticated, requireVIPAccess, async (req, res) => {
   try {
-    console.log('🔄 Admin user requesting IPTV channels:', req.user?.claims?.email);
+    console.log('🔄 Admin user requesting IPTV channels:', req.user?.email);
     const channels = await parseM3UPlaylist();
     
     if (channels.length === 0) {
