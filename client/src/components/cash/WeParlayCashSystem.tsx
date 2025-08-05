@@ -237,8 +237,8 @@ const WeParlayCashSystem: React.FC = () => {
   const levelInfo = cashData ? 
     getLevelInfo(cashData.balance) : 
     {
-      currentLevel: { name: sampleCashData.level, color: "bg-amber-700", threshold: 0 },
-      nextLevel: { name: sampleCashData.nextLevel, threshold: 5000, color: "bg-gray-400" },
+      currentLevel: { name: sampleCashData.level, color: "bg-amber-700" },
+      nextLevel: { name: sampleCashData.nextLevel, threshold: 5000 },
       progress: sampleCashData.progress
     };
   
@@ -284,6 +284,7 @@ const WeParlayCashSystem: React.FC = () => {
           <CardDescription className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             Virtual currency for practice betting - cannot be converted to real money
           </CardDescription>
+        </CardHeader>
         </CardHeader>
         
         <CardContent className="pt-2">

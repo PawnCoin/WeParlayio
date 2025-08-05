@@ -1,4 +1,5 @@
 
+<line_number>1</line_number>
 // ESPN Asset Service - Server-side asset management and caching
 import fetch from 'node-fetch';
 
@@ -56,7 +57,7 @@ export class ESPNAssetService {
         throw new Error(`ESPN API error: ${response.status}`);
       }
 
-      const data = await response.json() as any;
+      const data = await response.json();
       const teams = data.sports?.[0]?.leagues?.[0]?.teams?.map((team: any) => team.team) || [];
 
       this.cache.set(cacheKey, {
@@ -101,7 +102,7 @@ export class ESPNAssetService {
         throw new Error(`ESPN API error: ${response.status}`);
       }
 
-      const data = await response.json() as any;
+      const data = await response.json();
       const players = data.athletes || [];
 
       this.cache.set(cacheKey, {
