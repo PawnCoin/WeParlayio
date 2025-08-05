@@ -65,12 +65,7 @@ interface LiveGame {
 }
 
 export default function LiveStreaming() {
-  // Early return for advanced mode
   const [playerMode, setPlayerMode] = useState<'basic' | 'advanced'>('basic');
-  
-  if (playerMode === 'advanced') {
-    return <AdvancedLiveStreaming onBackToBasic={() => setPlayerMode('basic')} />;
-  }
   const [selectedGame, setSelectedGame] = useState<StreamingGame | null>(null);
   const [betSlip, setBetSlip] = useState<BetSlipType | null>(null);
   const [betAmount, setBetAmount] = useState<number>(10);
@@ -443,6 +438,11 @@ export default function LiveStreaming() {
         return status.toUpperCase();
     }
   }, []);
+
+  // Early return for advanced mode (after all hooks are defined)
+  if (playerMode === 'advanced') {
+    return <AdvancedLiveStreaming onBackToBasic={() => setPlayerMode('basic')} />;
+  }
 
   if (isLoading) {
     return (
