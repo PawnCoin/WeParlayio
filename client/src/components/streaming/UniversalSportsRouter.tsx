@@ -14,6 +14,7 @@ interface UniversalSportsRouterProps {
   children?: React.ReactNode;
   buttonText?: string;
   autoOpen?: boolean;
+  onStreamSelect?: (streamUrl: string) => void;
 }
 
 export const UniversalSportsRouter: React.FC<UniversalSportsRouterProps> = ({
@@ -23,7 +24,8 @@ export const UniversalSportsRouter: React.FC<UniversalSportsRouterProps> = ({
   awayTeam,
   children,
   buttonText = "Watch Live",
-  autoOpen = false
+  autoOpen = false,
+  onStreamSelect
 }) => {
   const [isOpen, setIsOpen] = useState(autoOpen);
   const [streamOptions, setStreamOptions] = useState<any[]>([]);
@@ -92,11 +94,20 @@ export const UniversalSportsRouter: React.FC<UniversalSportsRouterProps> = ({
   };
 
   const openStream = (stream: any) => {
-    window.open(stream.streamUrl, '_blank');
-    toast({
-      title: "Opening Live Stream",
-      description: `${stream.name} - ${stream.quality} quality`,
-    });
+    if (onStreamSelect) {
+      onStreamSelect(stream.streamUrl);
+      setIsOpen(false);
+      toast({
+        title: "Loading Live Stream",
+        description: `${stream.name} - ${stream.quality} quality`,
+      });
+    } else {
+      window.open(stream.streamUrl, '_blank');
+      toast({
+        title: "Opening Live Stream",
+        description: `${stream.name} - ${stream.quality} quality`,
+      });
+    }
   };
 
   const directWatch = async () => {
@@ -105,7 +116,15 @@ export const UniversalSportsRouter: React.FC<UniversalSportsRouterProps> = ({
       const data = await response.json();
 
       if (data.success && data.stream) {
-        openStream(data.stream);
+        if (onStreamSelect) {
+          onStreamSelect(data.stream.streamUrl);
+          toast({
+            title: "Loading Live Stream",
+            description: `${data.stream.name} - ${data.stream.quality} quality`,
+          });
+        } else {
+          openStream(data.stream);
+        }
       } else {
         setIsOpen(true);
       }

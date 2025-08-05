@@ -121,30 +121,26 @@ const VideoPlayer = memo(({ game, className = '' }: VideoPlayerProps) => {
       const data = await response.json();
 
       if (data.success && data.stream) {
-        // Use the routed live stream
-        window.open(data.stream.streamUrl, '_blank');
+        // Update the game's stream URL to play in the current player
+        game.streamUrl = data.stream.streamUrl;
         toast({
           title: "Live Stream Found!",
-          description: `Opening ${data.stream.name} - ${data.stream.quality} quality`,
+          description: `Loading ${data.stream.name} - ${data.stream.quality} quality`,
         });
-      } else if (game.streamUrl) {
-        // Fallback to original stream URL
-        window.open(game.streamUrl, '_blank');
-        toast({
-          title: "Stream Opening",
-          description: "Opening backup stream",
-        });
+        // Force re-render by updating the video source
+        window.location.reload();
       } else {
         // Search for live stream
         const searchResponse = await fetch(`/api/live-streaming/search?team1=${encodeURIComponent(game.homeTeam.name)}&team2=${encodeURIComponent(game.awayTeam.name)}&sport=${encodeURIComponent(game.sport)}`);
         const searchData = await searchResponse.json();
 
         if (searchData.success && searchData.stream) {
-          window.open(searchData.stream.streamUrl, '_blank');
+          game.streamUrl = searchData.stream.streamUrl;
           toast({
-            title: "Search Results",
-            description: "Opening live stream search results",
+            title: "Stream Found!",
+            description: "Loading live stream",
           });
+          window.location.reload();
         } else {
           toast({
             title: "Stream Unavailable",
@@ -155,16 +151,11 @@ const VideoPlayer = memo(({ game, className = '' }: VideoPlayerProps) => {
       }
     } catch (error) {
       console.error('Error finding live stream:', error);
-      // Final fallback
-      if (game.streamUrl) {
-        window.open(game.streamUrl, '_blank');
-      } else {
-        toast({
-          title: "Stream Error",
-          description: "Failed to find live stream",
-          variant: "destructive"
-        });
-      }
+      toast({
+        title: "Stream Error",
+        description: "Failed to find live stream",
+        variant: "destructive"
+      });
     }
   };
 
