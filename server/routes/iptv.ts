@@ -7,42 +7,28 @@ import axios from 'axios';
 
 const router = Router();
 
-// VIP tier check middleware - Allow admin bypass
+// VIP tier check middleware
 const requireVIPAccess = async (req: any, res: any, next: any) => {
   try {
-    if (!req.user) {
+    const user = req.user?.claims;
+    if (!user) {
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    // Get user claims from session
-    const claims = (req.user as any).claims;
-    if (!claims) {
-      return res.status(401).json({ error: 'No user claims found' });
-    }
-
-    // Admin bypass - support@weparlay.io gets automatic access
-    if (claims.email === 'support@weparlay.io' || claims.sub === 'support@weparlay.io') {
-      console.log('✅ Admin bypass granted for:', claims.email);
-      return next();
-    }
-
-    // Get user from storage to check tier
-    const { storage } = await import('../storage');
-    const user = await storage.getUser(claims.sub);
+    // Check if user has VIP access (admin bypass)
+    const isAdmin = user.email === 'support@weparlay.io' || user.sub === 'support@weparlay.io';
     
-    if (!user) {
-      return res.status(403).json({ 
-        error: 'User not found',
-        message: 'Please complete registration first'
-      });
+    // For admin users, we also need to check the stored user data
+    let hasVIPAccess = isAdmin;
+    
+    if (!isAdmin) {
+      // Check user tier from the claims or fetch from storage
+      const userTier = user.tier || user.subscriptionTier;
+      hasVIPAccess = userTier === 'vip' || 
+        userTier === 'gold' || 
+        userTier === 'platinum' || 
+        userTier === 'diamond';
     }
-
-    // Check user tier for non-admin users
-    const userTier = user.tier || user.subscriptionTier;
-    const hasVIPAccess = userTier === 'vip' || 
-      userTier === 'gold' || 
-      userTier === 'platinum' || 
-      userTier === 'diamond';
 
     if (!hasVIPAccess) {
       return res.status(403).json({ 
@@ -51,7 +37,6 @@ const requireVIPAccess = async (req: any, res: any, next: any) => {
       });
     }
 
-    console.log('✅ VIP access granted for user:', user.email);
     next();
   } catch (error) {
     console.error('VIP access check error:', error);
@@ -151,7 +136,7 @@ function generateEPGData(channels: any[]): any[] {
 // Get channels list (VIP only)
 router.get('/channels', isAuthenticated, requireVIPAccess, async (req, res) => {
   try {
-    console.log('🔄 User requesting IPTV channels:', (req.user as any)?.claims?.email);
+    console.log('🔄 Admin user requesting IPTV channels:', req.user?.claims?.email);
     const channels = await parseM3UPlaylist();
     
     if (channels.length === 0) {
