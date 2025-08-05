@@ -72,7 +72,7 @@ const WeParlayCashSystem: React.FC = () => {
       } else if (i === levels.length - 1) {
         // Max level reached
         currentLevel = levels[i];
-        nextLevel = null;
+        nextLevel = null as any;
         progress = 100;
       }
     }
@@ -233,16 +233,16 @@ const WeParlayCashSystem: React.FC = () => {
   const sampleTransactions: Transaction[] = [];
   
   // Use sample data for display (this would be replaced by real data in production)
-  const balance = cashData?.balance || sampleCashData.balance;
+  const balance = (cashData as any)?.balance || sampleCashData.balance;
   const levelInfo = cashData ? 
-    getLevelInfo(cashData.balance) : 
+    getLevelInfo((cashData as any).balance) : 
     {
-      currentLevel: { name: sampleCashData.level, color: "bg-amber-700" },
-      nextLevel: { name: sampleCashData.nextLevel, threshold: 5000 },
+      currentLevel: { name: sampleCashData.level, color: "bg-amber-700", threshold: 1000 },
+      nextLevel: { name: sampleCashData.nextLevel, threshold: 5000, color: "bg-gray-400" },
       progress: sampleCashData.progress
     };
   
-  const displayTransactions = transactions || sampleTransactions;
+  const displayTransactions = (transactions as any) || sampleTransactions;
   
   // Security measures section details
   const securityMeasures = [
@@ -284,7 +284,6 @@ const WeParlayCashSystem: React.FC = () => {
           <CardDescription className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             Virtual currency for practice betting - cannot be converted to real money
           </CardDescription>
-        </CardHeader>
         </CardHeader>
         
         <CardContent className="pt-2">
@@ -371,7 +370,7 @@ const WeParlayCashSystem: React.FC = () => {
             
             <TabsContent value="all" className="mt-0">
               <div className="space-y-3">
-                {displayTransactions.map(tx => (
+                {displayTransactions.map((tx: any) => (
                   <div key={tx.id} className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-800 last:border-0">
                     <div className="flex items-center">
                       <div className="mr-3">
@@ -401,8 +400,8 @@ const WeParlayCashSystem: React.FC = () => {
             <TabsContent value="earned" className="mt-0">
               <div className="space-y-3">
                 {displayTransactions
-                  .filter(tx => tx.type === 'earn' || tx.type === 'admin')
-                  .map(tx => (
+                  .filter((tx: any) => tx.type === 'earn' || tx.type === 'admin')
+                  .map((tx: any) => (
                     <div key={tx.id} className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-800 last:border-0">
                       <div className="flex items-center">
                         <div className="mr-3">
@@ -432,8 +431,8 @@ const WeParlayCashSystem: React.FC = () => {
             <TabsContent value="spent" className="mt-0">
               <div className="space-y-3">
                 {displayTransactions
-                  .filter(tx => tx.type === 'spend')
-                  .map(tx => (
+                  .filter((tx: any) => tx.type === 'spend')
+                  .map((tx: any) => (
                     <div key={tx.id} className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-800 last:border-0">
                       <div className="flex items-center">
                         <div className="mr-3">
@@ -463,8 +462,8 @@ const WeParlayCashSystem: React.FC = () => {
             <TabsContent value="referrals" className="mt-0">
               <div className="space-y-3">
                 {displayTransactions
-                  .filter(tx => tx.type === 'referral' || tx.type === 'invite')
-                  .map(tx => (
+                  .filter((tx: any) => tx.type === 'referral' || tx.type === 'invite')
+                  .map((tx: any) => (
                     <div key={tx.id} className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-800 last:border-0">
                       <div className="flex items-center">
                         <div className="mr-3">
