@@ -60,22 +60,35 @@ const requireVIPAccess = async (req: any, res: any, next: any) => {
   }
 };
 
-// Real IPTV Configuration
+// Real IPTV Configuration using secure environment variables
 const IPTV_CONFIG = {
-  host: 'https://thetv.to:443',
-  username: '686140897',
-  password: '80274761',
-  playlistUrl: 'https://thetv.to:443/get.php?username=686140897&password=80274761&type=m3u_plus&output=m3u8'
+  host: process.env.IPTV_HOST || 'thetv.to',
+  port: process.env.IPTV_PORT || '443',
+  username: process.env.IPTV_USERNAME,
+  password: process.env.IPTV_PASSWORD,
+  get playlistUrl() {
+    return `https://${this.host}:${this.port}/get.php?username=${this.username}&password=${this.password}&type=m3u_plus&output=m3u8`;
+  }
 };
 
-// Parse M3U playlist to extract channels
+// Parse M3U playlist to extract channels using secure credentials
 async function parseM3UPlaylist(): Promise<any[]> {
   try {
-    console.log('🔄 Fetching IPTV playlist from:', IPTV_CONFIG.playlistUrl);
+    if (!IPTV_CONFIG.username || !IPTV_CONFIG.password) {
+      console.error('❌ IPTV credentials not found in environment variables');
+      return [];
+    }
+    
+    console.log(`🔄 Fetching IPTV playlist from: ${IPTV_CONFIG.host}:${IPTV_CONFIG.port} (user: ${IPTV_CONFIG.username})`);
     const response = await axios.get(IPTV_CONFIG.playlistUrl, {
-      timeout: 10000,
+      timeout: 15000,
       headers: {
-        'User-Agent': 'WeParlay IPTV Player'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': '*/*',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1'
       }
     });
 
