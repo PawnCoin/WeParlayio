@@ -221,7 +221,6 @@ const VideoPlayer: React.FC<{
           onError={handleError}
           onReady={() => console.log(`Player ready for: ${channelName}`)}
           onStart={() => console.log(`Started playing: ${channelName}`)}
-          onProgress={() => console.log(`Playing: ${channelName}`)}
         />
       </Suspense>
     </div>

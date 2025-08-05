@@ -31,6 +31,7 @@ import espnFantasyRoutes from "./routes/espnFantasyRoutes";
 import feedbackRoutes from "./routes/feedbackRoutes";
 import yahooFantasyRoutes from "./routes/yahooFantasyRoutes";
 import iptvRoutes from "./routes/iptv";
+import iptvProxyRoutes from "./routes/iptv-proxy";
 import { apiQuotaManager } from "./services/apiQuotaManager";
 import { primaryApiRouter } from "./services/primaryApiRouter";
 import primaryDataRoutes from "./routes/primaryDataRoutes";
@@ -640,6 +641,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Register IPTV API routes (VIP only)
   app.use('/api/iptv', iptvRoutes);
+  app.use('/api/iptv', iptvProxyRoutes);
 
   // SMS Betting Challenge Routes
   app.post('/api/sms/betting-challenge', isAuthenticated, async (req, res) => {
