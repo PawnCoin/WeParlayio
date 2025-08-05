@@ -182,9 +182,11 @@ const VideoPlayer: React.FC<{
 
   useEffect(() => {
     // Reset error state when channel changes
+    console.log(`🔄 Step 4: VideoPlayer received new URL: ${url}`);
+    console.log(`📺 Channel: ${channelName}, Playing: ${playing}`);
     setError(null);
     setIsPlayerReady(false);
-  }, [url]);
+  }, [url, channelName, playing]);
 
   const handleError = (e: any) => {
     console.error(`Error playing ${channelName}:`, e);
@@ -192,7 +194,8 @@ const VideoPlayer: React.FC<{
   };
 
   const handleReady = () => {
-    console.log(`Player ready for: ${channelName}`);
+    console.log(`✅ Step 5: ReactPlayer ready for: ${channelName}`);
+    console.log(`🎯 Stream URL loaded: ${url}`);
     setIsPlayerReady(true);
   };
 
@@ -239,9 +242,9 @@ const VideoPlayer: React.FC<{
           }}
           onError={handleError}
           onReady={handleReady}
-          onStart={() => console.log(`Started playing: ${channelName}`)}
-          onPlay={() => console.log(`Playing: ${channelName}`)}
-          onPause={() => console.log(`Paused: ${channelName}`)}
+          onStart={() => console.log(`🎬 Started playing: ${channelName}`)}
+          onPlay={() => console.log(`▶️ Playing: ${channelName}`)}
+          onPause={() => console.log(`⏸️ Paused: ${channelName}`)}
         />
       </Suspense>
       
@@ -486,9 +489,10 @@ function IPTVPlayerOriginal() {
       
       setAllChannels(uniqueChannels);
       setCurrentChannel(uniqueChannels[0]);
-      setIsPlaying(false);
+      setIsPlaying(true); // Auto-start the first channel
 
       console.log(`Successfully loaded ${uniqueChannels.length} sports channels`);
+      console.log(`Auto-starting first channel: ${uniqueChannels[0].name} - ${uniqueChannels[0].url}`);
 
     } catch (err) {
       if (err instanceof Error) {
@@ -525,7 +529,8 @@ function IPTVPlayerOriginal() {
   }, [filteredChannels]);
 
   const handleSelectChannel = useCallback((channel: Channel) => {
-    console.log(`Switching to channel: ${channel.name} - ${channel.url}`);
+    console.log(`🔄 User selected channel: ${channel.name}`);
+    console.log(`📺 Stream URL: ${channel.url}`);
     setCurrentChannel(channel);
     setIsPlaying(true);
   }, []);
@@ -581,6 +586,13 @@ function IPTVPlayerOriginal() {
             channelName={currentChannel?.name}
             playing={isPlaying}
           />
+          {/* Debug info overlay */}
+          <div className="absolute top-20 right-4 bg-black bg-opacity-70 text-white p-2 text-xs rounded hidden">
+            <div>Channel: {currentChannel?.name || 'None'}</div>
+            <div>URL: {currentChannel?.url ? 'Set' : 'Missing'}</div>
+            <div>Playing: {isPlaying ? 'Yes' : 'No'}</div>
+            <div>Total Channels: {allChannels.length}</div>
+          </div>
         </section>
       </main>
     </div>
