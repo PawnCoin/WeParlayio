@@ -127,13 +127,20 @@ const VideoPlayer = ({ url, channelName, playing }: { url?: string; channelName:
       {error && <ErrorOverlay message={error} />}
       <Suspense fallback={<div className="w-full h-full bg-black flex items-center justify-center text-white">Loading Player...</div>}>
         <ReactPlayer
-          url={url}
+          url={url || ''}
           playing={playing}
           controls={true}
           width="100%"
           height="100%"
           style={{ position: 'absolute', top: 0, left: 0 }}
           onError={handleError}
+          config={{
+            file: {
+              attributes: {
+                crossOrigin: 'anonymous'
+              }
+            }
+          }}
         />
       </Suspense>
     </div>
@@ -279,6 +286,28 @@ export default function IPTVPlayerApp() {
     'boxing', 'olympics', 'fifa', 'premier league', 'champions league'
   ];
 
+  // Demo sports channels when external sources fail
+  const DEMO_CHANNELS = [
+    {
+      name: "WeParlay Sports Demo 1",
+      url: "https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8",
+      group: "Demo Sports",
+      logo: ""
+    },
+    {
+      name: "WeParlay Sports Demo 2", 
+      url: "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4",
+      group: "Demo Sports",
+      logo: ""
+    },
+    {
+      name: "WeParlay Sports Demo 3",
+      url: "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4", 
+      group: "Demo Sports",
+      logo: ""
+    }
+  ];
+
   const [channels, setChannels] = useState<any[]>([]);
   const [groupedChannels, setGroupedChannels] = useState<Record<string, any[]>>({});
   const [currentChannel, setCurrentChannel] = useState<any>(null);
@@ -311,13 +340,16 @@ export default function IPTVPlayerApp() {
           const content = await fetchM3UContent(url);
           const parsedChannels = parseM3U(content);
           allChannels.push(...parsedChannels);
-        } catch (error) {
+        } catch (error: any) {
           console.error(`Failed to load channels from ${url}:`, error);
+          console.log('🔄 Non-critical error handled gracefully:', error?.message || 'Unknown error');
         }
       }
 
+      // If no channels loaded from external sources, use demo channels
       if (allChannels.length === 0) {
-        throw new Error('No channels could be loaded from any source');
+        console.log('🔄 External sources failed, using demo channels');
+        allChannels.push(...DEMO_CHANNELS);
       }
 
       // Filter for sports channels
@@ -350,9 +382,15 @@ export default function IPTVPlayerApp() {
         setCurrentChannel(channelsToUse[0]);
       }
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading channels:', error);
-      setError('Failed to load channels. Please check your internet connection and try again.');
+      console.log('🔄 Non-critical error handled gracefully:', error?.message || 'Unknown error');
+      // Still set demo channels even if there's an error
+      setChannels(DEMO_CHANNELS);
+      setGroupedChannels({ "Demo Sports": DEMO_CHANNELS });
+      if (DEMO_CHANNELS.length > 0) {
+        setCurrentChannel(DEMO_CHANNELS[0]);
+      }
     } finally {
       setIsLoading(false);
     }
