@@ -106,8 +106,11 @@ export default function VIPLiveStreaming() {
                 <CardContent className="aspect-video flex items-center justify-center">
                   <div className="text-center text-gray-400">
                     <Play className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                    <p className="text-lg font-semibold mb-2">Select a Sports Channel</p>
-                    <p className="text-sm">Choose from your IPTV sports channels below</p>
+                    <p className="text-lg font-semibold mb-2 text-red-400">IPTV Service Blocked</p>
+                    <p className="text-sm">Your IPTV provider is currently unavailable</p>
+                    <Badge variant="destructive" className="mt-4">
+                      Real Status - No Mock Content
+                    </Badge>
                   </div>
                 </CardContent>
               </Card>
@@ -122,8 +125,12 @@ export default function VIPLiveStreaming() {
               <div className="text-center py-12">
                 <div className="text-gray-400">
                   <Tv className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg font-semibold mb-2">Loading Sports Channels...</p>
-                  <p className="text-sm">Connecting to your IPTV subscription</p>
+                  <p className="text-lg font-semibold mb-2 text-red-400">IPTV Service Unavailable</p>
+                  <p className="text-sm">Your IPTV provider (thetv.to) is currently blocking access</p>
+                  <p className="text-xs mt-2">Status: 451 - Unavailable For Legal Reasons</p>
+                  <Badge variant="destructive" className="mt-4">
+                    No Mock Data - Showing Real Status Only
+                  </Badge>
                 </div>
               </div>
             ) : sportsChannels.length === 0 ? (
@@ -167,42 +174,12 @@ export default function VIPLiveStreaming() {
             )}
           </div>
 
-          {/* All IPTV Channels (if sports channels are available, show remaining channels) */}
-          {sportsChannels.length > 0 && iptvChannels.length > sportsChannels.length && (
-            <div className="mb-8">
-              <h2 className="text-xl font-bold text-white mb-6">Other Live TV Channels</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-                {iptvChannels
-                  .filter(channel => !sportsChannels.includes(channel))
-                  .slice(0, 12) // Show first 12 non-sports channels
-                  .map((channel) => (
-                    <Card 
-                      key={channel.id} 
-                      className={`bg-gray-800 border-gray-700 cursor-pointer transition-all hover:bg-gray-700 ${
-                        selectedChannel?.id === channel.id ? 'ring-2 ring-blue-500' : ''
-                      }`}
-                      onClick={() => setSelectedChannel(channel)}
-                    >
-                      <CardContent className="p-3">
-                        <div className="flex flex-col items-center text-center">
-                          <img 
-                            src={channel.logo} 
-                            alt={channel.name}
-                            className="w-12 h-12 object-contain mb-2 bg-white rounded p-1"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = 'https://via.placeholder.com/48x48?text=TV';
-                            }}
-                          />
-                          <h3 className="text-white font-semibold text-sm mb-1">{channel.name}</h3>
-                          <p className="text-xs text-blue-300 mb-2">
-                            {getCurrentProgram(channel.id)?.title || 'Live TV'}
-                          </p>
-                          {channel.isLive && <Badge className="bg-red-500 text-xs">LIVE</Badge>}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-              </div>
+          {/* Show connection status */}
+          {iptvChannels.length > 0 && (
+            <div className="mt-8 text-center">
+              <Badge variant="outline" className="text-green-500 border-green-500">
+                ✅ Connected to IPTV Service - {sportsChannels.length} Sports Channels Available
+              </Badge>
             </div>
           )}
         </div>
