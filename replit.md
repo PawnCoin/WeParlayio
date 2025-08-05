@@ -6,12 +6,6 @@ WeParlay.io is a full-stack sports betting platform that integrates real-time sp
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
-## Recent Changes (August 2025)
-- **VIP Page Cleanup**: Removed redundant VIP-specific pages (/vip/fantasy, /vip/live-streaming) 
-- **Unified Routing**: Main pages (/fantasy, /live-streaming) are now the primary routes for all users
-- **Integrated Video Player**: Implemented seamless stream switching within embedded player (no popups)
-- **Multi-Source Streaming**: YouTube, IPTV, and HLS streams all play in the same integrated player
-
 ## System Architecture
 
 ### Frontend
