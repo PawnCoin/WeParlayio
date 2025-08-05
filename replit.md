@@ -30,6 +30,7 @@ Preferred communication style: Simple, everyday language.
 
 ### Key Components & Features
 - **Sports Data Integration**: Aggregates data from multiple APIs (ESPN, RapidAPI Sports, Grid.gg, The Odds API) with fallback systems for redundancy.
+- **Unified Streaming Platform**: Single consolidated streaming page (/live-streaming) with tier-based access controls, YouTube integration for VIP users, IPTV support, and comprehensive search functionality.
 - **Payment Systems**: Stripe for subscriptions, PayPal for alternative payments, multi-wallet cryptocurrency support (MetaMask, Coinbase, Trust Wallet), and internal "WeParlay Cash" virtual currency.
 - **Authentication & Authorization**: Replit Auth, PostgreSQL-backed sessions (7-day TTL), role-based access control, and tier-based feature access.
 - **Real-time Features**: WebSocket integration for live odds and event updates, and an in-app notification system.

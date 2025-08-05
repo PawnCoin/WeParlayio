@@ -47,7 +47,6 @@ import SecurityInfo from "@/pages/SecurityInfo";
 import EnhancedFeatures from "@/pages/EnhancedFeatures";
 
 // VIP Feature Pages
-const VIPLiveStreaming = React.lazy(() => import("@/pages/vip/LiveStreaming"));
 const VIPFantasy = React.lazy(() => import("@/pages/vip/Fantasy"));
 const VIPHeadToHead = React.lazy(() => import("@/pages/vip/HeadToHead"));
 const VIPTournaments = React.lazy(() => import("@/pages/vip/Tournaments"));
@@ -138,7 +137,6 @@ function Router() {
       <Route path="/crypto-wallet" component={CryptoWallet} />
       
       {/* VIP Feature Pages with SuspenseRoute and AdminBypass */}
-      <SuspenseRoute path="/vip/live-streaming" component={VIPLiveStreaming} />
       <SuspenseRoute path="/vip/fantasy" component={VIPFantasy} />
       <SuspenseRoute path="/vip/head-to-head" component={VIPHeadToHead} />
       <SuspenseRoute path="/vip/tournaments" component={VIPTournaments} />
