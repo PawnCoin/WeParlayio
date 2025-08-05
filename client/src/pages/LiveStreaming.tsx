@@ -399,6 +399,80 @@ export default function LiveStreaming() {
           )}
         </div>
 
+        {/* Main Video Player Section - Always Visible */}
+        <div className="mb-8">
+          <Card className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border-gray-700">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-2xl font-bold text-white flex items-center">
+                  <Play className="h-6 w-6 mr-3 text-red-500" />
+                  Live Sports Center
+                  <Badge className="ml-3 bg-red-600 text-white animate-pulse">LIVE</Badge>
+                </CardTitle>
+                <div className="flex items-center space-x-2 text-sm text-gray-400">
+                  <Users className="h-4 w-4" />
+                  <span>{(45000 + Math.floor(Math.random() * 5000)).toLocaleString()} viewers</span>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="aspect-video bg-black rounded-lg overflow-hidden mb-4">
+                {liveGames.length > 0 ? (
+                  <VideoPlayer 
+                    game={selectedGame || liveGames.find(g => g.sport === 'Sports News') || liveGames[0]} 
+                    className="w-full h-full" 
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
+                    <div className="text-center">
+                      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-600/20 flex items-center justify-center">
+                        <Play className="h-8 w-8 text-red-500" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-white mb-2">Loading Live Sports</h3>
+                      <p className="text-gray-400">Connecting to live streams...</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {/* Current Stream Info */}
+              {(selectedGame || liveGames[0]) && (
+                <div className="flex items-center justify-between bg-gray-800/50 rounded-lg p-4">
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                      <Badge variant="outline" className="text-blue-400 border-blue-400">
+                        {(selectedGame || liveGames[0])?.sport}
+                      </Badge>
+                      <Badge className="bg-green-600 text-white">
+                        {(selectedGame || liveGames[0])?.league}
+                      </Badge>
+                    </div>
+                    <h3 className="text-lg font-semibold text-white">
+                      {(selectedGame || liveGames[0])?.title}
+                    </h3>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <div className="text-right">
+                      <p className="text-sm text-gray-400">Status</p>
+                      <p className="font-semibold text-green-400">
+                        {(selectedGame || liveGames[0])?.timeRemaining}
+                      </p>
+                    </div>
+                    <Button
+                      onClick={() => setSelectedGame(null)}
+                      variant="outline"
+                      size="sm"
+                      className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                    >
+                      Change Stream
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Tabbed Interface */}
         <Tabs defaultValue="streams" className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-6 bg-gray-800">
