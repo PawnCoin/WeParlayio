@@ -178,10 +178,12 @@ const VideoPlayer: React.FC<{
   playing: boolean;
 }> = ({ url, channelName, playing }) => {
   const [error, setError] = useState<string | null>(null);
+  const [isPlayerReady, setIsPlayerReady] = useState(false);
 
   useEffect(() => {
     // Reset error state when channel changes
     setError(null);
+    setIsPlayerReady(false);
   }, [url]);
 
   const handleError = (e: any) => {
@@ -189,13 +191,25 @@ const VideoPlayer: React.FC<{
     setError("This channel could not be loaded. It might be offline or unavailable. Please try another channel.");
   };
 
+  const handleReady = () => {
+    console.log(`Player ready for: ${channelName}`);
+    setIsPlayerReady(true);
+  };
+
   if (!url) {
     return <PlayerPlaceholder />;
   }
 
   return (
-    <div className="w-full aspect-video bg-black relative flex items-center justify-center">
+    <div className="w-full aspect-video bg-black relative group">
       {error && <ErrorOverlay message={error} />}
+      
+      {/* Channel Info Overlay */}
+      <div className="absolute top-4 left-4 z-10 bg-black bg-opacity-70 px-3 py-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <p className="text-white text-sm font-medium">{channelName}</p>
+        <p className="text-gray-300 text-xs">{playing ? 'Live' : 'Paused'}</p>
+      </div>
+
       <Suspense fallback={<div className="w-full h-full bg-black flex items-center justify-center text-white">Loading Player...</div>}>
         <ReactPlayer
           key={url} // Important: re-mounts the player on URL change
@@ -204,8 +218,8 @@ const VideoPlayer: React.FC<{
           controls={true}
           width="100%"
           height="100%"
-          muted={true} // Helps with autoplay policies
-          className="absolute top-0 left-0"
+          muted={false} // Enable sound by default
+          style={{ position: 'absolute', top: 0, left: 0 }}
           config={{
             file: {
               forceHLS: true,
@@ -215,14 +229,31 @@ const VideoPlayer: React.FC<{
                 backBufferLength: 90,
                 liveSyncDurationCount: 3,
                 liveMaxLatencyDurationCount: 10
+              },
+              attributes: {
+                crossOrigin: 'anonymous',
+                controlsList: 'nodownload',
+                disablePictureInPicture: false
               }
             }
           }}
           onError={handleError}
-          onReady={() => console.log(`Player ready for: ${channelName}`)}
+          onReady={handleReady}
           onStart={() => console.log(`Started playing: ${channelName}`)}
+          onPlay={() => console.log(`Playing: ${channelName}`)}
+          onPause={() => console.log(`Paused: ${channelName}`)}
         />
       </Suspense>
+      
+      {/* Loading indicator when player is not ready */}
+      {!isPlayerReady && !error && (
+        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-5">
+          <div className="text-white">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mb-2"></div>
+            <p className="text-sm">Loading {channelName}...</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
