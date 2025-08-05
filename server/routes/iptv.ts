@@ -7,39 +7,55 @@ import axios from 'axios';
 
 const router = Router();
 
-// VIP tier check middleware
+// VIP tier check middleware - Admin bypass for support@weparlay.io
 const requireVIPAccess = async (req: any, res: any, next: any) => {
   try {
-    const user = req.user?.claims;
-    if (!user) {
+    // First check if user is authenticated
+    if (!req.isAuthenticated || !req.isAuthenticated()) {
+      console.log('❌ IPTV Access: User not authenticated');
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    // Check if user has VIP access (admin bypass)
-    const isAdmin = user.email === 'support@weparlay.io' || user.sub === 'support@weparlay.io';
-    
-    // For admin users, we also need to check the stored user data
-    let hasVIPAccess = isAdmin;
-    
-    if (!isAdmin) {
-      // Check user tier from the claims or fetch from storage
-      const userTier = user.tier || user.subscriptionTier;
-      hasVIPAccess = userTier === 'vip' || 
-        userTier === 'gold' || 
-        userTier === 'platinum' || 
-        userTier === 'diamond';
+    const user = req.user?.claims;
+    if (!user) {
+      console.log('❌ IPTV Access: No user claims found');
+      return res.status(401).json({ error: 'Authentication required' });
     }
 
+    console.log('🔍 IPTV Access Check:', {
+      email: user.email,
+      sub: user.sub,
+      tier: user.tier,
+      subscriptionTier: user.subscriptionTier
+    });
+
+    // Admin bypass - support@weparlay.io has unlimited access
+    const isAdmin = user.email === 'support@weparlay.io' || user.sub === 'support@weparlay.io';
+    
+    if (isAdmin) {
+      console.log('✅ IPTV Access: Admin user granted full access');
+      return next();
+    }
+    
+    // Check user tier for regular users
+    const userTier = user.tier || user.subscriptionTier;
+    const hasVIPAccess = userTier === 'vip' || 
+      userTier === 'gold' || 
+      userTier === 'platinum' || 
+      userTier === 'diamond';
+
     if (!hasVIPAccess) {
+      console.log('❌ IPTV Access: User does not have VIP tier');
       return res.status(403).json({ 
         error: 'VIP access required',
         message: 'Upgrade to VIP to access live TV streaming'
       });
     }
 
+    console.log('✅ IPTV Access: VIP user granted access');
     next();
   } catch (error) {
-    console.error('VIP access check error:', error);
+    console.error('❌ VIP access check error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
