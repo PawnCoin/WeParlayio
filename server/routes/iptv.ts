@@ -3,6 +3,7 @@
 
 import { Router } from 'express';
 import { isAuthenticated } from '../replitAuth';
+import axios from 'axios';
 
 const router = Router();
 
@@ -43,119 +44,159 @@ const requireVIPAccess = async (req: any, res: any, next: any) => {
   }
 };
 
-// Mock IPTV channels data (replace with your actual IPTV provider data)
-const mockChannels = [
-  {
-    id: 'espn',
-    name: 'ESPN',
-    category: 'Sports',
-    logo: 'https://logos-world.net/wp-content/uploads/2021/08/ESPN-Logo.png',
-    streamUrl: '', // Will be populated by stream endpoint
-    quality: 'HD',
-    isLive: true
-  },
-  {
-    id: 'fox-sports',
-    name: 'FOX Sports',
-    category: 'Sports',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Fox_Sports_logo.svg/512px-Fox_Sports_logo.svg.png',
-    streamUrl: '',
-    quality: 'HD',
-    isLive: true
-  },
-  {
-    id: 'cnn',
-    name: 'CNN',
-    category: 'News',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/CNN.svg/512px-CNN.svg.png',
-    streamUrl: '',
-    quality: 'HD',
-    isLive: true
-  },
-  {
-    id: 'discovery',
-    name: 'Discovery Channel',
-    category: 'Documentary',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Discovery_Channel_-_Logo_2019.svg/512px-Discovery_Channel_-_Logo_2019.svg.png',
-    streamUrl: '',
-    quality: 'HD',
-    isLive: true
-  }
-];
+// Real IPTV Configuration
+const IPTV_CONFIG = {
+  host: 'https://thetv.to:443',
+  username: '686140897',
+  password: '80274761',
+  playlistUrl: 'https://thetv.to:443/get.php?username=686140897&password=80274761&type=m3u_plus&output=m3u8'
+};
 
-// Mock EPG data
-const mockEPG = [
-  {
-    channelId: 'espn',
-    programs: [
-      {
-        id: 'espn-1',
-        title: 'NFL Sunday Night Football',
-        startTime: new Date(Date.now() - 3600000).toISOString(),
-        endTime: new Date(Date.now() + 3600000).toISOString(),
-        category: 'Sports',
-        live: true
-      },
-      {
-        id: 'espn-2',
-        title: 'SportsCenter',
-        startTime: new Date(Date.now() + 3600000).toISOString(),
-        endTime: new Date(Date.now() + 7200000).toISOString(),
-        category: 'Sports',
-        live: false
+// Parse M3U playlist to extract channels
+async function parseM3UPlaylist(): Promise<any[]> {
+  try {
+    console.log('🔄 Fetching IPTV playlist from:', IPTV_CONFIG.playlistUrl);
+    const response = await axios.get(IPTV_CONFIG.playlistUrl, {
+      timeout: 10000,
+      headers: {
+        'User-Agent': 'WeParlay IPTV Player'
       }
-    ]
-  },
-  {
-    channelId: 'fox-sports',
-    programs: [
-      {
-        id: 'fox-1',
-        title: 'NBA Finals Game 7',
-        startTime: new Date(Date.now() - 1800000).toISOString(),
-        endTime: new Date(Date.now() + 5400000).toISOString(),
-        category: 'Sports',
-        live: true
+    });
+
+    const content = response.data;
+    const lines = content.split('\n');
+    const channels = [];
+    
+    let currentChannel: any = null;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      
+      if (line.startsWith('#EXTINF:')) {
+        // Parse channel info
+        const match = line.match(/#EXTINF:-1\s*(.*?)tvg-name="([^"]*)".*?tvg-logo="([^"]*)".*?group-title="([^"]*)".*?,(.+)/);
+        if (match) {
+          currentChannel = {
+            id: match[2] || `channel_${channels.length}`,
+            name: match[5] || match[2] || 'Unknown Channel',
+            category: match[4] || 'General',
+            logo: match[3] || 'https://via.placeholder.com/64x64?text=TV',
+            quality: 'HD',
+            isLive: true
+          };
+        }
+      } else if (line.startsWith('http') && currentChannel) {
+        // This is the stream URL
+        currentChannel.streamUrl = line;
+        channels.push(currentChannel);
+        currentChannel = null;
       }
-    ]
+    }
+    
+    console.log(`✅ Parsed ${channels.length} IPTV channels`);
+    return channels;
+  } catch (error) {
+    console.error('❌ Error fetching IPTV playlist:', error);
+    return [];
   }
-];
+}
+
+// Generate EPG data for channels
+function generateEPGData(channels: any[]): any[] {
+  const epgData = [];
+  const now = new Date();
+  
+  for (const channel of channels.slice(0, 20)) { // Limit EPG to first 20 channels
+    const programs = [];
+    
+    // Generate 3 programs for each channel
+    for (let i = 0; i < 3; i++) {
+      const startTime = new Date(now.getTime() + (i - 1) * 2 * 60 * 60 * 1000); // 2 hour slots
+      const endTime = new Date(startTime.getTime() + 2 * 60 * 60 * 1000);
+      
+      programs.push({
+        id: `${channel.id}_${i}`,
+        title: i === 1 ? 'Live Sports' : i === 0 ? 'Previous Show' : 'Next Show',
+        startTime: startTime.toISOString(),
+        endTime: endTime.toISOString(),
+        category: channel.category,
+        live: i === 1
+      });
+    }
+    
+    epgData.push({
+      channelId: channel.id,
+      programs
+    });
+  }
+  
+  return epgData;
+}
 
 // Get channels list (VIP only)
-router.get('/channels', isAuthenticated, requireVIPAccess, (req, res) => {
-  res.json(mockChannels);
+router.get('/channels', isAuthenticated, requireVIPAccess, async (req, res) => {
+  try {
+    console.log('🔄 Admin user requesting IPTV channels:', req.user?.claims?.email);
+    const channels = await parseM3UPlaylist();
+    
+    if (channels.length === 0) {
+      return res.status(503).json({ 
+        error: 'IPTV service unavailable',
+        message: 'Unable to fetch channel list from IPTV provider'
+      });
+    }
+    
+    res.json(channels);
+  } catch (error) {
+    console.error('❌ Error in /channels:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // Get EPG data (VIP only)
-router.get('/epg', isAuthenticated, requireVIPAccess, (req, res) => {
-  res.json(mockEPG);
+router.get('/epg', isAuthenticated, requireVIPAccess, async (req, res) => {
+  try {
+    const channels = await parseM3UPlaylist();
+    const epgData = generateEPGData(channels);
+    res.json(epgData);
+  } catch (error) {
+    console.error('❌ Error in /epg:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // Get secure stream URL (VIP only)
-router.get('/stream', isAuthenticated, requireVIPAccess, (req, res) => {
-  const { channelId } = req.query;
+router.get('/stream', isAuthenticated, requireVIPAccess, async (req, res) => {
+  try {
+    const { channelId } = req.query;
 
-  if (!channelId) {
-    return res.status(400).json({ error: 'Missing channel ID' });
+    if (!channelId) {
+      return res.status(400).json({ error: 'Missing channel ID' });
+    }
+
+    // Find the channel in our playlist
+    const channels = await parseM3UPlaylist();
+    const channel = channels.find(c => c.id === channelId);
+    
+    if (!channel) {
+      return res.status(404).json({ error: 'Channel not found' });
+    }
+
+    res.json({
+      channelId,
+      streamUrl: channel.streamUrl,
+      headers: {
+        'User-Agent': 'WeParlay IPTV Player',
+        'Referer': 'https://weparlay.io'
+      },
+      quality: channel.quality || 'HD',
+      format: 'HLS',
+      authenticated: true
+    });
+  } catch (error) {
+    console.error('❌ Error in /stream:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
-
-  // In production, this would fetch from your IPTV provider
-  // Example: const streamUrl = `${process.env.IPTV_HOST}/live/${process.env.IPTV_USERNAME}/${process.env.IPTV_PASSWORD}/${channelId}.ts`;
-  
-  // For demo purposes, returning a demo stream URL
-  const streamUrl = `https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8`;
-
-  res.json({
-    channelId,
-    streamUrl,
-    headers: {
-      'User-Agent': 'WeParlay IPTV Player',
-      'Referer': 'https://weparlay.io'
-    },
-    quality: 'HD',
-    format: 'HLS',
-    authenticated: true
-  });
 });
 
 export default router;
