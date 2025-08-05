@@ -17,16 +17,16 @@ import {
   Youtube,
   Globe,
   Star,
-  Lock
+  Lock,
+  X
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import VideoPlayer from '@/components/streaming/VideoPlayer';
+import IntegratedVideoPlayer from '@/components/streaming/IntegratedVideoPlayer';
 import BettingPanel from '@/components/streaming/BettingPanel';
 import BetSlip from '@/components/streaming/BetSlip';
 import UniversalSportsRouter from '@/components/streaming/UniversalSportsRouter';
 import EnhancedUniversalSportsRouter from '@/components/streaming/EnhancedUniversalSportsRouter';
-import YouTubeModal from '@/components/streaming/YouTubeModal';
 import { StreamingGame, BetSlip as BetSlipType, BetType } from '@/components/streaming/types';
 
 // Legacy LiveGame interface for compatibility
@@ -65,8 +65,7 @@ export default function LiveStreaming() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedStream, setSelectedStream] = useState<any>(null);
-  const [youtubeModalStream, setYoutubeModalStream] = useState<any>(null);
-  const [isYoutubeModalOpen, setIsYoutubeModalOpen] = useState(false);
+  const [showStreamSelector, setShowStreamSelector] = useState(false);
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
 
@@ -80,41 +79,66 @@ export default function LiveStreaming() {
     enabled: hasVIPAccess, // Only fetch for VIP users
   });
 
-  // YouTube modal handlers
-  const handleOpenYouTubeModal = useCallback((stream: any) => {
-    setYoutubeModalStream(stream);
-    setIsYoutubeModalOpen(true);
-  }, []);
+  // Stream selection handlers
+  const handleStreamSelect = useCallback((stream: any, type: 'youtube' | 'iptv' | 'sports') => {
+    let streamGame: StreamingGame;
 
-  const handleCloseYouTubeModal = useCallback(() => {
-    setIsYoutubeModalOpen(false);
-    setYoutubeModalStream(null);
-  }, []);
-
-  const handlePlayYouTubeInMain = useCallback((stream: any) => {
-    // Convert YouTube stream to StreamingGame format
-    const youtubeGame: StreamingGame = {
-      id: `youtube-${stream.videoId}`,
-      title: stream.title,
-      homeTeam: { name: stream.channelTitle, score: 0 },
-      awayTeam: { name: 'Live Stream', score: 0 },
-      sport: 'Live Content',
-      league: 'YouTube Live',
-      status: 'live' as const,
-      startTime: new Date().toISOString(),
-      streamUrl: `https://www.youtube.com/watch?v=${stream.videoId}`,
-      odds: { homeWin: 1.0, awayWin: 1.0 },
-      viewers: stream.viewerCount || 25000,
-      period: 'LIVE',
-      timeRemaining: 'LIVE'
-    };
+    switch (type) {
+      case 'youtube':
+        streamGame = {
+          id: `youtube-${stream.videoId}`,
+          title: stream.title,
+          homeTeam: { name: stream.channelTitle, score: 0 },
+          awayTeam: { name: 'Live Stream', score: 0 },
+          sport: 'Live Content',
+          league: 'YouTube Live',
+          status: 'live' as const,
+          startTime: new Date().toISOString(),
+          streamUrl: `https://www.youtube.com/watch?v=${stream.videoId}`,
+          odds: { homeWin: 1.0, awayWin: 1.0 },
+          viewers: stream.viewerCount || 25000,
+          period: 'LIVE',
+          timeRemaining: 'LIVE'
+        };
+        break;
+      
+      case 'iptv':
+        streamGame = {
+          id: `iptv-${stream.id}`,
+          title: stream.name,
+          homeTeam: { name: stream.category, score: 0 },
+          awayTeam: { name: 'Live TV', score: 0 },
+          sport: stream.category || 'Live TV',
+          league: 'IPTV Network',
+          status: 'live' as const,
+          startTime: new Date().toISOString(),
+          streamUrl: stream.url,
+          odds: { homeWin: 1.0, awayWin: 1.0 },
+          viewers: Math.floor(Math.random() * 10000) + 1000,
+          period: 'LIVE',
+          timeRemaining: 'LIVE'
+        };
+        break;
+      
+      default:
+        streamGame = stream;
+    }
     
-    setSelectedGame(youtubeGame);
+    setSelectedGame(streamGame);
+    setShowStreamSelector(false);
     toast({
-      title: "Now Playing",
-      description: `${stream.title} is now playing in the main player`
+      title: "Stream Updated",
+      description: `Now playing: ${streamGame.title}`
     });
   }, [toast]);
+
+  const handleFindStream = useCallback(() => {
+    setShowStreamSelector(true);
+  }, []);
+
+  const handleChangeStream = useCallback(() => {
+    setShowStreamSelector(true);
+  }, []);
 
   // YouTube search functionality
   const searchYouTubeStreams = useCallback(async (query: string) => {
@@ -483,24 +507,12 @@ export default function LiveStreaming() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="aspect-video bg-black rounded-lg overflow-hidden mb-4">
-                {liveGames.length > 0 ? (
-                  <VideoPlayer 
-                    game={selectedGame || liveGames.find(g => g.sport === 'Sports News') || liveGames[0]} 
-                    className="w-full h-full" 
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
-                    <div className="text-center">
-                      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-600/20 flex items-center justify-center">
-                        <Play className="h-8 w-8 text-red-500" />
-                      </div>
-                      <h3 className="text-lg font-semibold text-white mb-2">Loading Live Sports</h3>
-                      <p className="text-gray-400">Connecting to live streams...</p>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <IntegratedVideoPlayer
+                game={selectedGame || (liveGames.length > 0 ? liveGames.find(g => g.sport === 'Sports News') || liveGames[0] : null)}
+                className="mb-4"
+                onFindStream={handleFindStream}
+                onChangeStream={handleChangeStream}
+              />
               
               {/* Current Stream Info */}
               {(selectedGame || liveGames[0]) && (
@@ -740,7 +752,7 @@ export default function LiveStreaming() {
         ) : (
           <div className="space-y-6">
             {/* Live YouTube Streams */}
-            {youtubeStreams?.streams && youtubeStreams.streams.length > 0 && (
+            {youtubeStreams && 'streams' in youtubeStreams && Array.isArray(youtubeStreams.streams) && youtubeStreams.streams.length > 0 && (
               <Card className="bg-gray-900 border-gray-800">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center">
@@ -779,10 +791,10 @@ export default function LiveStreaming() {
                                 <Button 
                                   size="sm" 
                                   className="bg-red-600 hover:bg-red-700 text-xs px-3 py-1"
-                                  onClick={() => handleOpenYouTubeModal(stream)}
+                                  onClick={() => handleStreamSelect(stream, 'youtube')}
                                 >
                                   <Play className="h-3 w-3 mr-1" />
-                                  Watch
+                                  Watch Live
                                 </Button>
                               </div>
                             </div>
@@ -916,13 +928,108 @@ export default function LiveStreaming() {
     </Tabs>
       </div>
 
-      {/* YouTube Modal */}
-      <YouTubeModal 
-        stream={youtubeModalStream}
-        isOpen={isYoutubeModalOpen}
-        onClose={handleCloseYouTubeModal}
-        onPlayInMain={handlePlayYouTubeInMain}
-      />
+      {/* Stream Selector Overlay */}
+      {showStreamSelector && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+          <div className="bg-gray-900 rounded-lg max-w-4xl w-full max-h-[80vh] overflow-hidden">
+            <div className="p-6 border-b border-gray-700">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-white">Select Live Stream</h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowStreamSelector(false)}
+                  className="text-gray-400 hover:text-white"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
+            
+            <div className="p-6 overflow-y-auto max-h-[60vh]">
+              <Tabs defaultValue="live-games" className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="live-games">Live Sports</TabsTrigger>
+                  <TabsTrigger value="youtube">YouTube Live</TabsTrigger>
+                  <TabsTrigger value="iptv">IPTV Channels</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="live-games" className="mt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {liveGames.slice(0, 9).map((game) => (
+                      <Card key={game.id} className="bg-gray-800 border-gray-700 hover:border-blue-500 transition-colors cursor-pointer" onClick={() => handleStreamSelect(game, 'sports')}>
+                        <CardContent className="p-4">
+                          <div className="space-y-2">
+                            <Badge variant="outline" className="text-blue-400 border-blue-400 text-xs">
+                              {game.sport}
+                            </Badge>
+                            <h4 className="font-semibold text-white text-sm">{game.title}</h4>
+                            <p className="text-gray-400 text-xs">{game.league}</p>
+                            <Button size="sm" className="w-full bg-blue-600 hover:bg-blue-700">
+                              <Play className="h-3 w-3 mr-1" />
+                              Watch
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="youtube" className="mt-4">
+                  {hasVIPAccess ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {youtubeStreams && 'streams' in youtubeStreams && Array.isArray(youtubeStreams.streams) ? youtubeStreams.streams.slice(0, 9).map((stream: any) => (
+                        <Card key={stream.videoId} className="bg-gray-800 border-gray-700 hover:border-red-500 transition-colors cursor-pointer" onClick={() => handleStreamSelect(stream, 'youtube')}>
+                          <CardContent className="p-4">
+                            <div className="space-y-2">
+                              <img src={stream.thumbnail} alt={stream.title} className="w-full h-20 object-cover rounded" />
+                              <h4 className="font-semibold text-white text-sm line-clamp-2">{stream.title}</h4>
+                              <p className="text-gray-400 text-xs">{stream.channelTitle}</p>
+                              <Button size="sm" className="w-full bg-red-600 hover:bg-red-700">
+                                <Play className="h-3 w-3 mr-1" />
+                                Watch
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )) : null}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <Lock className="h-12 w-12 mx-auto mb-4 text-gray-600" />
+                      <h3 className="text-lg font-semibold text-white mb-2">VIP Access Required</h3>
+                      <p className="text-gray-400">YouTube streaming is available for VIP members only.</p>
+                    </div>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="iptv" className="mt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {iptvChannels?.channels?.slice(0, 9).map((channel: any) => (
+                      <Card key={channel.id} className="bg-gray-800 border-gray-700 hover:border-green-500 transition-colors cursor-pointer" onClick={() => handleStreamSelect(channel, 'iptv')}>
+                        <CardContent className="p-4">
+                          <div className="space-y-2">
+                            <Badge variant="outline" className="text-green-400 border-green-400 text-xs">
+                              {channel.category}
+                            </Badge>
+                            <h4 className="font-semibold text-white text-sm">{channel.name}</h4>
+                            <p className="text-gray-400 text-xs">{channel.country} • {channel.language}</p>
+                            <Button size="sm" className="w-full bg-green-600 hover:bg-green-700">
+                              <Play className="h-3 w-3 mr-1" />
+                              Watch
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

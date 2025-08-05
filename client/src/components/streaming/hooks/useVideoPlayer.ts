@@ -1,116 +1,71 @@
-import { useState, useCallback, useRef, RefObject } from 'react';
-import Hls from 'hls.js';
-import { VideoPlayerState, StreamingError, StreamType } from '../types';
+import { useState, useCallback, useRef } from 'react';
+import { StreamType } from '../types';
 
-export const useVideoPlayer = (videoRef: RefObject<HTMLVideoElement>) => {
+export interface VideoPlayerState {
+  isLoading: boolean;
+  isPlaying: boolean;
+  currentTime: number;
+  duration: number;
+  volume: number;
+  muted: boolean;
+}
+
+export const useVideoPlayer = (videoRef: React.RefObject<HTMLVideoElement>) => {
   const [playerState, setPlayerState] = useState<VideoPlayerState>({
+    isLoading: false,
     isPlaying: false,
-    isMuted: false,
-    isFullscreen: false,
-    hasError: false,
-    isLoading: false
+    currentTime: 0,
+    duration: 0,
+    volume: 1,
+    muted: true
   });
+  const [error, setError] = useState<string | null>(null);
 
-  const [error, setError] = useState<StreamingError | null>(null);
-  const hlsRef = useRef<Hls | null>(null);
-
-  const updatePlayerState = useCallback((updates: Partial<VideoPlayerState>) => {
-    setPlayerState(prev => ({ ...prev, ...updates }));
-  }, []);
-
-  const handleError = useCallback((errorType: StreamingError['type'], message: string, recoverable = true) => {
-    const streamingError: StreamingError = {
-      type: errorType,
-      message,
-      recoverable
-    };
-    setError(streamingError);
-    updatePlayerState({ hasError: true, isLoading: false });
-  }, [updatePlayerState]);
-
-  const cleanup = useCallback(() => {
-    if (hlsRef.current) {
-      hlsRef.current.destroy();
-      hlsRef.current = null;
-    }
-    setError(null);
-    updatePlayerState({
-      isPlaying: false,
-      hasError: false,
-      isLoading: false
-    });
-  }, [updatePlayerState]);
-
-  const initializeHLS = useCallback((url: string) => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    if (Hls.isSupported()) {
-      cleanup();
-      
-      const hls = new Hls({
-        enableWorker: false,
-        lowLatencyMode: false,
-        maxLoadingDelay: 4,
-        maxBufferLength: 30,
-        maxBufferSize: 60 * 1000 * 1000,
-        xhrSetup: (xhr) => {
-          xhr.withCredentials = false;
-          xhr.timeout = 30000;
-        }
-      });
-
-      hlsRef.current = hls;
-      
-      hls.loadSource(url);
-      hls.attachMedia(video);
-
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        updatePlayerState({ isLoading: false });
-      });
-
-      hls.on(Hls.Events.ERROR, (event, data) => {
-        if (data.fatal) {
-          switch (data.type) {
-            case Hls.ErrorTypes.NETWORK_ERROR:
-              handleError('network', 'Network connection failed', true);
-              break;
-            case Hls.ErrorTypes.MEDIA_ERROR:
-              handleError('media', 'Media format not supported', true);
-              break;
-            default:
-              handleError('unknown', 'Stream playback failed', false);
-              break;
-          }
-        }
-      });
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      // Native HLS support (Safari)
-      video.src = url;
-    } else {
-      handleError('media', 'HLS not supported on this browser', false);
-    }
-  }, [videoRef, cleanup, updatePlayerState, handleError]);
-
-  const initializePlayer = useCallback((url: string, streamType: StreamType) => {
+  const initializePlayer = useCallback(async (url: string, streamType: StreamType) => {
     if (!videoRef.current) return;
 
     setError(null);
-    updatePlayerState({ isLoading: true, hasError: false });
+    setPlayerState(prev => ({ ...prev, isLoading: true }));
 
-    switch (streamType) {
-      case 'hls':
-        initializeHLS(url);
-        break;
-      case 'mp4':
-        videoRef.current.src = url;
-        updatePlayerState({ isLoading: false });
-        break;
-      default:
-        handleError('media', 'Unsupported stream type', false);
-        break;
+    try {
+      const video = videoRef.current;
+      
+      if (streamType === 'hls') {
+        // For HLS streams, we would use hls.js in production
+        // For now, we'll try native support
+        if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = url;
+        } else {
+          throw new Error('HLS streams not supported in this browser');
+        }
+      } else {
+        video.src = url;
+      }
+
+      video.load();
+      
+      setPlayerState(prev => ({ ...prev, isLoading: false }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load stream');
+      setPlayerState(prev => ({ ...prev, isLoading: false }));
     }
-  }, [videoRef, updatePlayerState, initializeHLS, handleError]);
+  }, [videoRef]);
+
+  const cleanup = useCallback(() => {
+    if (videoRef.current) {
+      videoRef.current.src = '';
+      videoRef.current.load();
+    }
+    setError(null);
+    setPlayerState({
+      isLoading: false,
+      isPlaying: false,
+      currentTime: 0,
+      duration: 0,
+      volume: 1,
+      muted: true
+    });
+  }, [videoRef]);
 
   return {
     playerState,

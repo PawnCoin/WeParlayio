@@ -1,24 +1,22 @@
-
-import React, { useRef, useEffect, useCallback, memo, useState } from 'react';
-import { Users, Play, Settings, Volume2, VolumeX, Maximize } from 'lucide-react';
+import { useRef, useEffect, useCallback, memo, useState } from 'react';
+import { Users, Play, Settings, RotateCcw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { StreamingGame, VideoPlayerState, StreamType } from './types';
+import { StreamingGame, StreamType } from './types';
 import { useVideoPlayer } from './hooks/useVideoPlayer';
-import { toast } from '@/hooks/use-toast';
-import { UniversalSportsRouter } from './UniversalSportsRouter';
+
 
 interface IntegratedVideoPlayerProps {
-  readonly game: StreamingGame;
+  readonly game: StreamingGame | null;
   readonly className?: string;
+  readonly onFindStream?: () => void;
+  readonly onChangeStream?: () => void;
 }
 
-const IntegratedVideoPlayer = memo(({ game, className = '' }: IntegratedVideoPlayerProps) => {
+const IntegratedVideoPlayer = memo(({ game, className = '', onFindStream, onChangeStream }: IntegratedVideoPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
   const { playerState, error, initializePlayer, cleanup } = useVideoPlayer(videoRef);
-  const [currentStreamUrl, setCurrentStreamUrl] = useState(game.streamUrl);
-  const [streamType, setStreamType] = useState<StreamType>('youtube');
+  const [currentStreamType, setCurrentStreamType] = useState<StreamType | null>(null);
 
   const getStreamType = useCallback((url: string): StreamType => {
     if (url.includes('youtube.com') || url.includes('youtu.be')) return 'youtube';
@@ -27,44 +25,60 @@ const IntegratedVideoPlayer = memo(({ game, className = '' }: IntegratedVideoPla
     return 'mp4';
   }, []);
 
-  const handleStreamSelect = useCallback((newStreamUrl: string) => {
-    setCurrentStreamUrl(newStreamUrl);
-    setStreamType(getStreamType(newStreamUrl));
-    
-    // Clean up previous stream
-    cleanup();
-    
-    // Initialize new stream
-    const type = getStreamType(newStreamUrl);
-    if (type === 'hls' || type === 'mp4') {
-      initializePlayer(newStreamUrl, type);
-    }
-    
-    toast({
-      title: "Stream Updated",
-      description: "Loading new live stream...",
-    });
-  }, [getStreamType, cleanup, initializePlayer]);
+  const extractYouTubeVideoId = useCallback((url: string): string | null => {
+    const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+    return match?.[1] || null;
+  }, []);
+
+  const extractTwitchChannel = useCallback((url: string): string | null => {
+    const match = url.match(/twitch\.tv\/(\w+)/);
+    return match?.[1] || null;
+  }, []);
 
   useEffect(() => {
-    if (currentStreamUrl) {
-      const type = getStreamType(currentStreamUrl);
-      setStreamType(type);
-      if (type === 'hls' || type === 'mp4') {
-        initializePlayer(currentStreamUrl, type);
-      }
+    if (!game?.streamUrl) {
+      cleanup();
+      setCurrentStreamType(null);
+      return;
     }
+
+    const streamType = getStreamType(game.streamUrl);
+    setCurrentStreamType(streamType);
+
+    if (streamType === 'hls' || streamType === 'mp4') {
+      initializePlayer(game.streamUrl, streamType);
+    }
+
     return cleanup;
-  }, [currentStreamUrl, initializePlayer, cleanup, getStreamType]);
+  }, [game?.streamUrl, initializePlayer, cleanup, getStreamType]);
 
   const renderVideoPlayer = () => {
-    switch (streamType) {
+    if (!game?.streamUrl) {
+      return (
+        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
+          <div className="text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-600/20 flex items-center justify-center">
+              <Play className="h-8 w-8 text-blue-500" />
+            </div>
+            <h3 className="text-lg font-semibold text-white mb-2">No Stream Selected</h3>
+            <p className="text-gray-400 mb-4">Choose a live stream to start watching</p>
+            {onFindStream && (
+              <Button onClick={onFindStream} className="bg-blue-600 hover:bg-blue-700">
+                <Play className="h-4 w-4 mr-2" />
+                Find Live Stream
+              </Button>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    switch (currentStreamType) {
       case 'youtube':
-        const videoId = currentStreamUrl?.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)?.[1];
+        const videoId = extractYouTubeVideoId(game.streamUrl);
         if (videoId) {
           return (
             <iframe
-              ref={iframeRef}
               className="w-full h-full"
               src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=1&rel=0&modestbranding=1`}
               title={game.title}
@@ -78,18 +92,16 @@ const IntegratedVideoPlayer = memo(({ game, className = '' }: IntegratedVideoPla
         break;
 
       case 'twitch':
-        const channelMatch = currentStreamUrl?.match(/twitch\.tv\/(\w+)/);
-        if (channelMatch) {
+        const channel = extractTwitchChannel(game.streamUrl);
+        if (channel) {
           return (
             <iframe
-              ref={iframeRef}
               className="w-full h-full"
-              src={`https://player.twitch.tv/?channel=${channelMatch[1]}&parent=${window.location.hostname}`}
+              src={`https://player.twitch.tv/?channel=${channel}&parent=${window.location.hostname}&autoplay=true&muted=true`}
               title={game.title}
               frameBorder="0"
               allowFullScreen
-              allow="accelerometer; autoplay; encrypted-media; fullscreen"
-              sandbox="allow-scripts allow-same-origin allow-presentation"
+              allow="autoplay; fullscreen"
             />
           );
         }
@@ -105,173 +117,93 @@ const IntegratedVideoPlayer = memo(({ game, className = '' }: IntegratedVideoPla
             autoPlay
             muted
             playsInline
-            crossOrigin="anonymous"
-            preload="metadata"
           >
-            <source src={currentStreamUrl} type={streamType === 'hls' ? 'application/x-mpegURL' : 'video/mp4'} />
-            Your browser does not support this video format.
+            <source src={game.streamUrl} type={currentStreamType === 'hls' ? 'application/x-mpegURL' : 'video/mp4'} />
+            Your browser does not support the video tag.
           </video>
         );
 
       default:
         return (
-          <div className="w-full h-full bg-gray-900 flex items-center justify-center">
-            <div className="text-center text-white">
-              <div className="w-16 h-16 mx-auto mb-4 bg-red-600/20 rounded-full flex items-center justify-center">
-                <Play className="h-8 w-8 text-red-500" />
+          <div className="w-full h-full flex items-center justify-center bg-gray-900">
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-600/20 flex items-center justify-center">
+                <Settings className="h-8 w-8 text-red-500" />
               </div>
-              <p className="text-lg font-semibold">Select Stream Source</p>
-              <p className="text-sm text-gray-400">Click "Find Live Stream" to start watching</p>
+              <h3 className="text-lg font-semibold text-white mb-2">Unsupported Stream Format</h3>
+              <p className="text-gray-400">This stream type is not supported</p>
             </div>
           </div>
         );
     }
-  };
 
-  if (!currentStreamUrl) {
     return (
-      <div className={`relative aspect-video bg-black rounded-lg overflow-hidden ${className}`}>
-        <div className="w-full h-full bg-gray-900 flex items-center justify-center">
-          <div className="text-center text-white">
-            <div className="w-16 h-16 mx-auto mb-4 bg-blue-600/20 rounded-full flex items-center justify-center">
-              <Play className="h-8 w-8 text-blue-500" />
-            </div>
-            <p className="text-lg font-semibold mb-4">{game.title}</p>
-            <UniversalSportsRouter
-              sportKey={game.sport}
-              gameId={game.id}
-              homeTeam={game.homeTeam.name}
-              awayTeam={game.awayTeam.name}
-              onStreamSelect={handleStreamSelect}
-              buttonText="Find Live Stream"
-            />
+      <div className="w-full h-full flex items-center justify-center bg-gray-900">
+        <div className="text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-yellow-600/20 flex items-center justify-center">
+            <RotateCcw className="h-8 w-8 text-yellow-500 animate-spin" />
           </div>
-        </div>
-
-        {/* Game Info Overlay */}
-        <div className="absolute top-4 left-4 right-4">
-          <div className="bg-black/60 backdrop-blur-sm rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-white">{game.title}</h3>
-                <p className="text-sm text-gray-300">{game.league}</p>
-              </div>
-              <Badge className="bg-blue-600 hover:bg-blue-700">
-                <div className="w-2 h-2 bg-white rounded-full mr-2"></div>
-                READY
-              </Badge>
-            </div>
-
-            <div className="flex items-center justify-between mt-4">
-              <div className="flex items-center space-x-4">
-                <div className="text-center">
-                  <p className="text-sm font-medium text-white">{game.homeTeam.name}</p>
-                  <p className="text-2xl font-bold text-white">{game.homeTeam.score}</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-xs text-gray-400">VS</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-sm font-medium text-white">{game.awayTeam.name}</p>
-                  <p className="text-2xl font-bold text-white">{game.awayTeam.score}</p>
-                </div>
-              </div>
-
-              <div className="text-right">
-                <p className="text-sm text-gray-300">{game.period}</p>
-                <p className="text-sm text-gray-300">{game.timeRemaining}</p>
-              </div>
-            </div>
-          </div>
+          <h3 className="text-lg font-semibold text-white mb-2">Loading Stream</h3>
+          <p className="text-gray-400">Connecting to live stream...</p>
         </div>
       </div>
     );
-  }
+  };
 
   return (
-    <div className={`relative aspect-video bg-black rounded-lg overflow-hidden ${className}`}>
-      {renderVideoPlayer()}
-
-      {/* Viewer Count Overlay */}
-      <div className="absolute bottom-4 right-4">
-        <div className="bg-black/60 backdrop-blur-sm rounded-lg px-3 py-1">
-          <div className="flex items-center space-x-2 text-white">
-            <Users className="h-4 w-4" />
-            <span className="text-sm">{game.viewers.toLocaleString()} viewers</span>
-          </div>
-        </div>
+    <div className={`relative bg-black rounded-lg overflow-hidden ${className}`}>
+      <div className="aspect-video">
+        {renderVideoPlayer()}
       </div>
-
-      {/* Game Info Overlay */}
-      <div className="absolute top-4 left-4 right-4">
-        <div className="bg-black/60 backdrop-blur-sm rounded-lg p-4">
+      
+      {/* Stream Controls Overlay */}
+      {game && (
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-white">{game.title}</h3>
-              <p className="text-sm text-gray-300">{game.league}</p>
-            </div>
-            <Badge className="bg-red-600 hover:bg-red-700">
-              <div className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></div>
-              LIVE
-            </Badge>
-          </div>
-
-          <div className="flex items-center justify-between mt-4">
-            <div className="flex items-center space-x-4">
-              <div className="text-center">
-                <p className="text-sm font-medium text-white">{game.homeTeam.name}</p>
-                <p className="text-2xl font-bold text-white">{game.homeTeam.score}</p>
-              </div>
-              <div className="text-center">
-                <p className="text-xs text-gray-400">VS</p>
-              </div>
-              <div className="text-center">
-                <p className="text-sm font-medium text-white">{game.awayTeam.name}</p>
-                <p className="text-2xl font-bold text-white">{game.awayTeam.score}</p>
+            <div className="flex items-center space-x-3">
+              <Badge variant="destructive" className="animate-pulse">
+                LIVE
+              </Badge>
+              <div className="text-white">
+                <h4 className="font-semibold text-sm">{game.title}</h4>
+                <p className="text-xs text-gray-300">{game.sport} • {game.league}</p>
               </div>
             </div>
-
-            <div className="text-right">
-              <p className="text-sm text-gray-300">{game.period}</p>
-              <p className="text-sm text-gray-300">{game.timeRemaining}</p>
+            
+            <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1 text-xs text-white bg-black/50 px-2 py-1 rounded">
+                <Users className="h-3 w-3" />
+                <span>{game.viewers?.toLocaleString() || '0'}</span>
+              </div>
+              
+              {onChangeStream && (
+                <Button size="sm" variant="outline" onClick={onChangeStream} className="text-xs">
+                  <Settings className="h-3 w-3 mr-1" />
+                  Change Stream
+                </Button>
+              )}
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Error Display */}
-      {error && (
-        <div className="absolute inset-0 bg-black/80 flex items-center justify-center">
-          <div className="text-center text-white">
-            <p className="text-lg font-semibold mb-2">Stream Error</p>
-            <p className="text-sm text-gray-300 mb-4">{error.message}</p>
-            <UniversalSportsRouter
-              sportKey={game.sport}
-              gameId={game.id}
-              homeTeam={game.homeTeam.name}
-              awayTeam={game.awayTeam.name}
-              onStreamSelect={handleStreamSelect}
-              buttonText="Find Different Stream"
-            />
           </div>
         </div>
       )}
 
-      {/* Change Stream Button */}
-      <div className="absolute bottom-4 left-4">
-        <UniversalSportsRouter
-          sportKey={game.sport}
-          gameId={game.id}
-          homeTeam={game.homeTeam.name}
-          awayTeam={game.awayTeam.name}
-          onStreamSelect={handleStreamSelect}
-          buttonText="Change Stream"
-        >
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md">
-            Change Stream
-          </Button>
-        </UniversalSportsRouter>
-      </div>
+      {/* Error State */}
+      {error && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+          <div className="text-center text-white">
+            <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-red-600/20 flex items-center justify-center">
+              <Settings className="h-6 w-6 text-red-500" />
+            </div>
+            <h4 className="font-semibold mb-2">Stream Error</h4>
+            <p className="text-sm text-gray-300 mb-3">{error}</p>
+            {onChangeStream && (
+              <Button size="sm" onClick={onChangeStream} className="bg-red-600 hover:bg-red-700">
+                Try Different Stream
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 });
