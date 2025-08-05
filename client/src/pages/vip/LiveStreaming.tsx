@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Play, Users, Zap, Clock, Tv, Calendar } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Play, Users, Clock, Zap, Tv } from 'lucide-react';
 import TierGuard from '@/components/access/TierGuard';
 import LiveStreamPlayer from '@/components/LiveStreamPlayer';
 
@@ -34,7 +33,6 @@ interface EPGData {
 
 export default function VIPLiveStreaming() {
   const [selectedChannel, setSelectedChannel] = useState<IPTVChannel | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState('all');
 
   const { data: iptvChannels = [] } = useQuery<IPTVChannel[]>({ 
     queryKey: ['/api/iptv/channels'],
@@ -46,23 +44,30 @@ export default function VIPLiveStreaming() {
     retry: false
   });
 
-  const categories = ['all', ...Array.from(new Set(iptvChannels.map(c => c.category)))];
-  const filteredChannels = selectedCategory === 'all' ? iptvChannels : iptvChannels.filter(c => c.category === selectedCategory);
-
   const getCurrentProgram = (channelId: string) => {
     const now = new Date();
     const channelEPG = epgData.find(e => e.channelId === channelId);
     return channelEPG?.programs.find(p => new Date(p.startTime) <= now && new Date(p.endTime) >= now) || null;
   };
-  // Get real sports events
-  const { data: sportsEvents = [] } = useQuery({ 
-    queryKey: ['/api/sports'],
-    retry: false
-  });
 
-  // Filter for live and upcoming events only
-  const liveAndUpcomingEvents = sportsEvents.filter((event: any) => 
-    event.status === 'LIVE' || event.status === 'SCHEDULED' || event.status === 'UPCOMING'
+  // Filter for sports and esports channels only
+  const sportsChannels = iptvChannels.filter(channel => 
+    channel.category?.toLowerCase().includes('sport') || 
+    channel.name?.toLowerCase().includes('sport') ||
+    channel.name?.toLowerCase().includes('espn') ||
+    channel.name?.toLowerCase().includes('fox sport') ||
+    channel.name?.toLowerCase().includes('nfl') ||
+    channel.name?.toLowerCase().includes('nba') ||
+    channel.name?.toLowerCase().includes('mlb') ||
+    channel.name?.toLowerCase().includes('nhl') ||
+    channel.name?.toLowerCase().includes('soccer') ||
+    channel.name?.toLowerCase().includes('football') ||
+    channel.name?.toLowerCase().includes('basketball') ||
+    channel.name?.toLowerCase().includes('baseball') ||
+    channel.name?.toLowerCase().includes('hockey') ||
+    channel.category?.toLowerCase().includes('esports') ||
+    channel.name?.toLowerCase().includes('esports') ||
+    channel.name?.toLowerCase().includes('gaming')
   );
 
   return (
@@ -96,136 +101,110 @@ export default function VIPLiveStreaming() {
                 streamUrl={selectedChannel.streamUrl}
                 className="max-w-4xl mx-auto"
               />
-            ) : liveAndUpcomingEvents.length > 0 ? (
-              <LiveStreamPlayer
-                gameTitle={`${liveAndUpcomingEvents[0].homeTeam.name} vs ${liveAndUpcomingEvents[0].awayTeam.name}`}
-                homeTeam={liveAndUpcomingEvents[0].homeTeam.name}
-                awayTeam={liveAndUpcomingEvents[0].awayTeam.name}
-                league={liveAndUpcomingEvents[0].sport}
-                viewerCount={liveAndUpcomingEvents[0].viewerCount || 0}
-                isLive={liveAndUpcomingEvents[0].status === 'LIVE'}
-                userTier="platinum"
-                quality="HD"
-                eventId={liveAndUpcomingEvents[0].id}
-                className="max-w-4xl mx-auto"
-              />
             ) : (
               <Card className="bg-gray-800 border-gray-700 max-w-4xl mx-auto">
                 <CardContent className="aspect-video flex items-center justify-center">
                   <div className="text-center text-gray-400">
                     <Play className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                    <p className="text-lg font-semibold mb-2">No Live Events</p>
-                    <p className="text-sm">Check back later for live sporting events</p>
+                    <p className="text-lg font-semibold mb-2">Select a Sports Channel</p>
+                    <p className="text-sm">Choose from your IPTV sports channels below</p>
                   </div>
                 </CardContent>
               </Card>
             )}
           </div>
 
-          {/* Channel Selection - Integrated into existing layout */}
-          {iptvChannels.length > 0 && (
-            <div className="mb-8">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold text-white">Live TV Channels</h2>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map(cat => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+          {/* Live Sports & Esports Channels */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-white mb-6">Live Sports & Esports Channels</h2>
+            
+            {iptvChannels.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-gray-400">
+                  <Tv className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                  <p className="text-lg font-semibold mb-2">Loading Sports Channels...</p>
+                  <p className="text-sm">Connecting to your IPTV subscription</p>
+                </div>
               </div>
-              
+            ) : sportsChannels.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-gray-400">
+                  <Tv className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                  <p className="text-lg font-semibold mb-2">No Sports Channels Found</p>
+                  <p className="text-sm">Your IPTV subscription may not include sports channels</p>
+                </div>
+              </div>
+            ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-                {filteredChannels.map(channel => (
+                {sportsChannels.map((channel) => (
                   <Card 
                     key={channel.id} 
-                    onClick={() => setSelectedChannel(channel)}
-                    className={`cursor-pointer transition-all hover:scale-105 ${
-                      selectedChannel?.id === channel.id ? 'bg-blue-700 border-blue-500' : 'bg-gray-800 border-gray-700'
+                    className={`bg-gray-800 border-gray-700 cursor-pointer transition-all hover:bg-gray-700 ${
+                      selectedChannel?.id === channel.id ? 'ring-2 ring-blue-500' : ''
                     }`}
+                    onClick={() => setSelectedChannel(channel)}
                   >
-                    <CardContent className="p-4 text-center">
-                      <img src={channel.logo} alt={channel.name} className="w-12 h-12 mx-auto mb-2 rounded" />
-                      <h3 className="text-white font-semibold text-sm mb-1">{channel.name}</h3>
-                      <p className="text-xs text-blue-300 mb-2">
-                        {getCurrentProgram(channel.id)?.title || 'No Info'}
-                      </p>
-                      {channel.isLive && <Badge className="bg-red-500 text-xs">LIVE</Badge>}
+                    <CardContent className="p-3">
+                      <div className="flex flex-col items-center text-center">
+                        <img 
+                          src={channel.logo} 
+                          alt={channel.name}
+                          className="w-12 h-12 object-contain mb-2 bg-white rounded p-1"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/48x48?text=TV';
+                          }}
+                        />
+                        <h3 className="text-white font-semibold text-sm mb-1">{channel.name}</h3>
+                        <p className="text-xs text-blue-300 mb-2">
+                          {getCurrentProgram(channel.id)?.title || 'Live Sports'}
+                        </p>
+                        {channel.isLive && <Badge className="bg-red-500 text-xs">LIVE</Badge>}
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
               </div>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {liveAndUpcomingEvents.map((event: any) => (
-              <Card key={event.id} className="bg-gray-800 border-gray-700">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-white text-sm">
-                      {event.homeTeam.name} vs {event.awayTeam.name}
-                    </CardTitle>
-                    <Badge 
-                      variant={event.status === 'LIVE' ? 'destructive' : 'secondary'}
-                      className={event.status === 'LIVE' ? 'bg-red-600' : 'bg-yellow-600'}
-                    >
-                      {event.status}
-                    </Badge>
-                  </div>
-                  <p className="text-gray-400">{event.sport}</p>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center">
-                        <Users className="w-4 h-4 mr-2 text-gray-400" />
-                        <span>{(event.viewerCount || 0).toLocaleString()} viewers</span>
-                      </div>
-                      <div className="flex items-center">
-                        <Clock className="w-4 h-4 mr-2 text-gray-400" />
-                        <span>
-                          {event.status === 'LIVE' ? 'Live Now' : 
-                           event.startTime ? new Date(event.startTime).toLocaleString() : 'TBD'}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div className="bg-black rounded-lg aspect-video flex items-center justify-center">
-                      <Play className="w-16 h-16 text-gray-600" />
-                    </div>
-                    
-                    <div className="flex gap-2">
-                      <Button className="flex-1" variant="default">
-                        <Play className="w-4 h-4 mr-2" />
-                        {event.status === 'LIVE' ? 'Watch Live' : 'View Details'}
-                      </Button>
-                      <Button variant="outline" className="flex-1">
-                        <Zap className="w-4 h-4 mr-2" />
-                        Live Bet
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            
-            {liveAndUpcomingEvents.length === 0 && (
-              <div className="col-span-full text-center py-12">
-                <div className="text-gray-400">
-                  <Play className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg font-semibold mb-2">No Live or Upcoming Events</p>
-                  <p className="text-sm">Check back later for live sporting events</p>
-                </div>
-              </div>
             )}
           </div>
+
+          {/* All IPTV Channels (if sports channels are available, show remaining channels) */}
+          {sportsChannels.length > 0 && iptvChannels.length > sportsChannels.length && (
+            <div className="mb-8">
+              <h2 className="text-xl font-bold text-white mb-6">Other Live TV Channels</h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                {iptvChannels
+                  .filter(channel => !sportsChannels.includes(channel))
+                  .slice(0, 12) // Show first 12 non-sports channels
+                  .map((channel) => (
+                    <Card 
+                      key={channel.id} 
+                      className={`bg-gray-800 border-gray-700 cursor-pointer transition-all hover:bg-gray-700 ${
+                        selectedChannel?.id === channel.id ? 'ring-2 ring-blue-500' : ''
+                      }`}
+                      onClick={() => setSelectedChannel(channel)}
+                    >
+                      <CardContent className="p-3">
+                        <div className="flex flex-col items-center text-center">
+                          <img 
+                            src={channel.logo} 
+                            alt={channel.name}
+                            className="w-12 h-12 object-contain mb-2 bg-white rounded p-1"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = 'https://via.placeholder.com/48x48?text=TV';
+                            }}
+                          />
+                          <h3 className="text-white font-semibold text-sm mb-1">{channel.name}</h3>
+                          <p className="text-xs text-blue-300 mb-2">
+                            {getCurrentProgram(channel.id)?.title || 'Live TV'}
+                          </p>
+                          {channel.isLive && <Badge className="bg-red-500 text-xs">LIVE</Badge>}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </TierGuard>
