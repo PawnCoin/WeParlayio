@@ -204,16 +204,18 @@ const VideoPlayer: React.FC<{
           controls={true}
           width="100%"
           height="100%"
+          muted={true} // Helps with autoplay policies
           className="absolute top-0 left-0"
           config={{
-            file: {
-              hlsOptions: {
-                // You can add HLS.js specific options here if needed
-              },
-              forceHLS: true,
+            hlsOptions: {
+              enableWorker: true,
+              lowLatencyMode: false,
+              backBufferLength: 90
             }
           }}
           onError={handleError}
+          onReady={() => console.log(`Player ready for: ${channelName}`)}
+          onStart={() => console.log(`Started playing: ${channelName}`)}
         />
       </Suspense>
     </div>
@@ -372,49 +374,52 @@ function IPTVPlayerOriginal() {
         console.warn('Backend IPTV API not available, trying external sources');
       }
 
-      // If backend didn't work or returned few channels, try your original M3U sources
-      if (allParsedChannels.length < 10) {
-        const corsProxies = [
-          'https://corsproxy.io/?',
-          'https://api.allorigins.win/raw?url=',
-          '' // Direct fetch as last resort
-        ];
+      // Always try to load M3U sources to get maximum channels
+      console.log('Loading M3U sources to expand channel list...');
+      const corsProxies = [
+        'https://corsproxy.io/?',
+        'https://api.allorigins.win/raw?url=',
+        'https://api.codetabs.com/v1/proxy?quest=',
+        '' // Direct fetch as last resort
+      ];
 
-        for (const proxyUrl of corsProxies) {
-          try {
-            const responses = await Promise.allSettled(
-              M3U_URLS.slice(0, 5).map(url => // Limit to first 5 URLs for faster loading
-                fetch(proxyUrl + encodeURIComponent(url)).then(res => {
-                  if (!res.ok) throw new Error(`Failed to fetch ${url}`);
-                  return res.text();
-                })
-              )
-            );
+      for (const proxyUrl of corsProxies) {
+        try {
+          console.log(`Trying proxy: ${proxyUrl || 'direct'}`);
+          const responses = await Promise.allSettled(
+            M3U_URLS.map(url => // Try all URLs for maximum channels
+              fetch(proxyUrl + encodeURIComponent(url)).then(res => {
+                if (!res.ok) throw new Error(`Failed to fetch ${url}`);
+                return res.text();
+              })
+            )
+          );
 
-            const externalChannels: Channel[] = [];
-            responses.forEach(result => {
-              if (result.status === 'fulfilled') {
-                try {
-                  externalChannels.push(...parseM3U(result.value));
-                } catch (parseError) {
-                  console.warn('Failed to parse M3U:', parseError);
-                }
-              } else {
-                console.warn('A playlist failed to load:', result.reason);
+          const externalChannels: Channel[] = [];
+          responses.forEach((result, index) => {
+            if (result.status === 'fulfilled') {
+              try {
+                const channels = parseM3U(result.value);
+                externalChannels.push(...channels);
+                console.log(`Parsed ${channels.length} channels from ${M3U_URLS[index]}`);
+              } catch (parseError) {
+                console.warn(`Failed to parse M3U from ${M3U_URLS[index]}:`, parseError);
               }
-            });
-
-            if (externalChannels.length > 0) {
-              // Combine backend channels with external channels
-              const combinedChannels = [...allParsedChannels, ...externalChannels];
-              allParsedChannels = Array.from(new Map(combinedChannels.map(ch => [ch.url, ch])).values());
-              console.log(`Successfully fetched ${externalChannels.length} channels from external sources`);
-              break; // Success with this proxy
+            } else {
+              console.warn(`Failed to load ${M3U_URLS[index]}:`, result.reason);
             }
-          } catch (proxyError) {
-            console.warn(`Proxy ${proxyUrl} failed:`, proxyError);
-            continue; // Try next proxy
+          });
+
+          if (externalChannels.length > 0) {
+            // Combine backend channels with external channels
+            const combinedChannels = [...allParsedChannels, ...externalChannels];
+            allParsedChannels = Array.from(new Map(combinedChannels.map(ch => [ch.url, ch])).values());
+            console.log(`Successfully fetched ${externalChannels.length} external channels, total: ${allParsedChannels.length}`);
+            break; // Success with this proxy
           }
+        } catch (proxyError) {
+          console.warn(`Proxy ${proxyUrl || 'direct'} failed:`, proxyError);
+          continue; // Try next proxy
         }
       }
       
@@ -477,6 +482,7 @@ function IPTVPlayerOriginal() {
   }, [filteredChannels]);
 
   const handleSelectChannel = useCallback((channel: Channel) => {
+    console.log(`Switching to channel: ${channel.name} - ${channel.url}`);
     setCurrentChannel(channel);
     setIsPlaying(true);
   }, []);
