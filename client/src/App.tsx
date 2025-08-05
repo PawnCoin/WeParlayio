@@ -46,12 +46,7 @@ import SecurityInfo from "@/pages/SecurityInfo";
 // Enhanced Features
 import EnhancedFeatures from "@/pages/EnhancedFeatures";
 
-// VIP Feature Pages
-const VIPFantasy = React.lazy(() => import("@/pages/vip/Fantasy"));
-const VIPHeadToHead = React.lazy(() => import("@/pages/vip/HeadToHead"));
-const VIPTournaments = React.lazy(() => import("@/pages/vip/Tournaments"));
-const VIPGamingIntegration = React.lazy(() => import("@/pages/vip/GamingIntegration"));
-const VIPBlockchainPerformance = React.lazy(() => import("@/pages/vip/BlockchainPerformance"));
+// VIP Feature Pages - Removed redundant VIP pages, using main pages instead
 
 
 // Layout and context imports
@@ -136,14 +131,13 @@ function Router() {
       <Route path="/plaid-banking" component={PlaidBanking} />
       <Route path="/crypto-wallet" component={CryptoWallet} />
       
-      {/* VIP Feature Pages with SuspenseRoute and AdminBypass */}
-      <SuspenseRoute path="/vip/fantasy" component={VIPFantasy} />
-      <SuspenseRoute path="/vip/head-to-head" component={VIPHeadToHead} />
-      <SuspenseRoute path="/vip/tournaments" component={VIPTournaments} />
-      <SuspenseRoute path="/vip/gaming-integration" component={VIPGamingIntegration} />
-      <SuspenseRoute path="/vip/blockchain-performance" component={VIPBlockchainPerformance} />
+      {/* VIP Feature Pages removed - using main pages instead:
+          - /fantasy (main Fantasy page)
+          - /live-streaming (main Live Streaming page)
+          - /head-to-head (main Head to Head page)
+          - /tournaments (main Tournaments page)
+      */}
 
-      
       {/* Social Features */}
       <Route path="/social" component={SocialBetting} />
       <Route path="/head-to-head" component={HeadToHeadBetting} />
