@@ -273,7 +273,7 @@ export default function VIPLiveStreaming() {
                             )}
                           </div>
                           <h4 className="font-semibold text-white text-lg">
-                            {game.homeTeam} vs {game.awayTeam}
+                            {game.homeTeam?.name || game.homeTeam} vs {game.awayTeam?.name || game.awayTeam}
                           </h4>
                           <p className="text-gray-400 text-sm">{game.league}</p>
                         </div>
@@ -281,8 +281,8 @@ export default function VIPLiveStreaming() {
                           <EnhancedUniversalSportsRouter
                             sportKey={game.sport_key || 'general_sports'}
                             gameId={game.id}
-                            homeTeam={game.homeTeam}
-                            awayTeam={game.awayTeam}
+                            homeTeam={game.homeTeam?.name || game.homeTeam}
+                            awayTeam={game.awayTeam?.name || game.awayTeam}
                             variant="default"
                             enableEmbedMode={true}
                           />
