@@ -26,6 +26,7 @@ import BettingPanel from '@/components/streaming/BettingPanel';
 import BetSlip from '@/components/streaming/BetSlip';
 import UniversalSportsRouter from '@/components/streaming/UniversalSportsRouter';
 import EnhancedUniversalSportsRouter from '@/components/streaming/EnhancedUniversalSportsRouter';
+import YouTubeModal from '@/components/streaming/YouTubeModal';
 import { StreamingGame, BetSlip as BetSlipType, BetType } from '@/components/streaming/types';
 
 // Legacy LiveGame interface for compatibility
@@ -64,6 +65,8 @@ export default function LiveStreaming() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedStream, setSelectedStream] = useState<any>(null);
+  const [youtubeModalStream, setYoutubeModalStream] = useState<any>(null);
+  const [isYoutubeModalOpen, setIsYoutubeModalOpen] = useState(false);
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
 
@@ -76,6 +79,42 @@ export default function LiveStreaming() {
     refetchInterval: 60000, // Refresh every minute
     enabled: hasVIPAccess, // Only fetch for VIP users
   });
+
+  // YouTube modal handlers
+  const handleOpenYouTubeModal = useCallback((stream: any) => {
+    setYoutubeModalStream(stream);
+    setIsYoutubeModalOpen(true);
+  }, []);
+
+  const handleCloseYouTubeModal = useCallback(() => {
+    setIsYoutubeModalOpen(false);
+    setYoutubeModalStream(null);
+  }, []);
+
+  const handlePlayYouTubeInMain = useCallback((stream: any) => {
+    // Convert YouTube stream to StreamingGame format
+    const youtubeGame: StreamingGame = {
+      id: `youtube-${stream.videoId}`,
+      title: stream.title,
+      homeTeam: { name: stream.channelTitle, score: 0 },
+      awayTeam: { name: 'Live Stream', score: 0 },
+      sport: 'Live Content',
+      league: 'YouTube Live',
+      status: 'live' as const,
+      startTime: new Date().toISOString(),
+      streamUrl: `https://www.youtube.com/watch?v=${stream.videoId}`,
+      odds: { homeWin: 1.0, awayWin: 1.0 },
+      viewers: stream.viewerCount || 25000,
+      period: 'LIVE',
+      timeRemaining: 'LIVE'
+    };
+    
+    setSelectedGame(youtubeGame);
+    toast({
+      title: "Now Playing",
+      description: `${stream.title} is now playing in the main player`
+    });
+  }, [toast]);
 
   // YouTube search functionality
   const searchYouTubeStreams = useCallback(async (query: string) => {
@@ -820,6 +859,14 @@ export default function LiveStreaming() {
       </TabsContent>
     </Tabs>
       </div>
+
+      {/* YouTube Modal */}
+      <YouTubeModal 
+        stream={youtubeModalStream}
+        isOpen={isYoutubeModalOpen}
+        onClose={handleCloseYouTubeModal}
+        onPlayInMain={handlePlayYouTubeInMain}
+      />
     </div>
   );
 }
