@@ -193,11 +193,7 @@ const VideoPlayer: React.FC<{
     setError("This channel could not be loaded. It might be offline or unavailable. Please try another channel.");
   };
 
-  const handleReady = () => {
-    console.log(`✅ Step 5: ReactPlayer ready for: ${channelName}`);
-    console.log(`🎯 Stream URL loaded: ${url}`);
-    setIsPlayerReady(true);
-  };
+
 
   if (!url) {
     return <PlayerPlaceholder />;
@@ -241,7 +237,11 @@ const VideoPlayer: React.FC<{
             }
           }}
           onError={handleError}
-          onReady={handleReady}
+          onReady={() => {
+            console.log(`✅ Step 5: ReactPlayer ready for: ${channelName}`);
+            console.log(`🎯 Stream URL loaded: ${url}`);
+            setIsPlayerReady(true);
+          }}
           onPlay={() => {
             console.log(`▶️ Playing: ${channelName}`);
             console.log(`🎬 Started playing: ${channelName}`);
