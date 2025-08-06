@@ -30,14 +30,12 @@ export class RealYahooApiService {
     // Use the new Confidential Client credentials directly
     this.clientId = 'dj0yJmk9Q3M1RmNFNjBHTVhtJmQ9WVdrOU1tbFRbmhSTUhVbWNHbzlNQT09JnM9Y29uc3VtZXJzZWNyZXQmc3Y9MCZ4PTA4';
     this.clientSecret = 'fa79ff6266fcdc9852ac00cf57a63fc316a91c1f';
-    // Use the correct Replit domain format
-    const replitDomain = process.env.REPLIT_DOMAINS?.split(',')[0] || 'f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev';
-    this.redirectUri = `https://${replitDomain}/api/yahoo-real/oauth/callback`;
+    // Use a simple redirect URI that might be already configured
+    this.redirectUri = 'https://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/api/yahoo-real/oauth/callback';
     
     console.log('Yahoo OAuth Configuration (Confidential Client):');
     console.log('- Client ID:', this.clientId ? `${this.clientId.substring(0, 15)}...` : 'NOT SET');
     console.log('- Redirect URI:', this.redirectUri);
-    console.log('- Domain:', replitDomain);
     
     if (!this.clientId || !this.clientSecret) {
       console.warn('⚠️ Yahoo OAuth credentials not configured.');
