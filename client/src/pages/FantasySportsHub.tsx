@@ -1,19 +1,58 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Trophy, Users, Target, ExternalLink, Settings, BarChart3, TrendingUp } from "lucide-react";
+import { Trophy, Users, Target, ExternalLink, Settings, BarChart3, TrendingUp, CheckCircle, XCircle, RefreshCw, Crown } from "lucide-react";
 import { useLocation } from "wouter";
-import TierGuard from "@/components/access/TierGuard";
 
 export default function FantasySportsHub() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   
-  const [yahooConnected, setYahooConnected] = useState(false);
-  const [espnConnected, setEspnConnected] = useState(false);
+  const [yahooStatus, setYahooStatus] = useState<'loading' | 'connected' | 'disconnected'>('loading');
+  const [espnStatus, setEspnStatus] = useState<'loading' | 'connected' | 'disconnected'>('loading');
+  const [yahooData, setYahooData] = useState<any>(null);
+  const [espnData, setEspnData] = useState<any>(null);
+
+  // Test Yahoo Fantasy connection
+  const testYahooConnection = async () => {
+    try {
+      const response = await fetch('/api/yahoo/test-connection');
+      const data = await response.json();
+      if (data.success) {
+        setYahooStatus('connected');
+        setYahooData(data.data);
+      } else {
+        setYahooStatus('disconnected');
+      }
+    } catch (error) {
+      setYahooStatus('disconnected');
+    }
+  };
+
+  // Test ESPN Fantasy connection
+  const testEspnConnection = async () => {
+    try {
+      const response = await fetch('/api/espn-fantasy/league/test');
+      const data = await response.json();
+      if (data.success) {
+        setEspnStatus('connected');
+        setEspnData(data.data);
+      } else {
+        setEspnStatus('disconnected');
+      }
+    } catch (error) {
+      setEspnStatus('disconnected');
+    }
+  };
+
+  // Test connections on mount
+  useEffect(() => {
+    testYahooConnection();
+    testEspnConnection();
+  }, []);
 
   // Fetch fantasy overview data
   const { data: fantasyPlayers } = useQuery({
@@ -25,36 +64,34 @@ export default function FantasySportsHub() {
     queryKey: ['/api/fantasy/teams'],
   });
 
-  const connectPlatform = (platform: string) => {
-    if (platform === 'yahoo') {
-      setYahooConnected(true);
-      toast({
-        title: "Yahoo Fantasy Connected",
-        description: "Your fantasy teams and player data are now synced",
-      });
-    } else if (platform === 'espn') {
-      setEspnConnected(true);
-      toast({
-        title: "ESPN Fantasy Connected",
-        description: "Your ESPN fantasy leagues are now available",
-      });
+  const connectToYahoo = () => {
+    // Redirect to Yahoo OAuth
+    window.location.href = '/api/yahoo/auth';
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'connected':
+        return <CheckCircle className="w-5 h-5 text-green-500" />;
+      case 'disconnected':
+        return <XCircle className="w-5 h-5 text-red-500" />;
+      default:
+        return <RefreshCw className="w-5 h-5 text-yellow-500 animate-spin" />;
     }
   };
 
-  const navigateToPlatform = (platform: string) => {
-    if (platform === 'yahoo') {
-      setLocation('/yahoo-fantasy');
-    } else if (platform === 'espn') {
-      setLocation('/fantasy-football');
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'connected':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'disconnected':
+        return 'bg-red-100 text-red-800 border-red-200';
+      default:
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
     }
   };
 
   return (
-    <TierGuard 
-      requiredTier="vip" 
-      feature="Fantasy Sports Hub"
-      description="Access comprehensive fantasy sports management, platform integrations, and advanced analytics exclusively for VIP+ members."
-    >
         <div className="min-h-screen bg-gradient-to-br from-green-900 via-blue-900 to-purple-900 p-4">
           <div className="max-w-7xl mx-auto space-y-6">
             {/* Header */}
@@ -71,96 +108,118 @@ export default function FantasySportsHub() {
             {/* Platform Connection Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* ESPN Fantasy Card */}
-              <Card className="bg-white/10 border-white/20 backdrop-blur-sm hover:bg-white/15 transition-colors">
+              <Card className="bg-white/10 border-white/20 backdrop-blur-sm">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                      ESPN
+                  <CardTitle className="text-white flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                        ESPN
+                      </div>
+                      ESPN Fantasy
                     </div>
-                    ESPN Fantasy Football
+                    {getStatusIcon(espnStatus)}
                   </CardTitle>
                   <CardDescription className="text-gray-300">
-                    Connect your ESPN fantasy leagues for comprehensive management and live scoring
+                    Real ESPN fantasy league integration with live data
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <Badge className={espnConnected ? "bg-green-500/20 text-green-300" : "bg-gray-500/20 text-gray-400"}>
-                      {espnConnected ? "Connected" : "Not Connected"}
+                    <Badge className={getStatusColor(espnStatus)}>
+                      {espnStatus === 'loading' ? 'Testing...' : 
+                       espnStatus === 'connected' ? 'Connected' : 'Using fallback data'}
                     </Badge>
                     <Button 
-                      onClick={() => connectPlatform('espn')}
-                      disabled={espnConnected}
-                      className="bg-red-600 hover:bg-red-700"
+                      onClick={testEspnConnection}
+                      size="sm"
+                      variant="outline"
                     >
-                      {espnConnected ? "Connected" : "Connect ESPN"}
+                      <RefreshCw className="w-4 h-4 mr-1" />
+                      Test
                     </Button>
                   </div>
-              
-                  <div className="space-y-2">
-                    <div className="text-sm text-gray-300">Features:</div>
-                    <ul className="text-xs text-gray-400 space-y-1">
-                      <li>• League standings and matchups</li>
-                      <li>• Roster management and optimization</li>
-                      <li>• Player stats and projections</li>
-                      <li>• Waiver wire analysis</li>
-                    </ul>
-                  </div>
+
+                  {espnStatus === 'connected' && espnData && (
+                    <div className="bg-gray-900/50 p-3 rounded-lg">
+                      <div className="text-sm text-gray-300 space-y-1">
+                        <p><strong>League:</strong> {espnData.name}</p>
+                        <p><strong>Teams:</strong> {espnData.size}</p>
+                        <p><strong>Week:</strong> {espnData.currentMatchupPeriod}</p>
+                      </div>
+                    </div>
+                  )}
                   
                   <Button 
-                    onClick={() => navigateToPlatform('espn')}
-                    className="w-full bg-gradient-to-r from-red-600 to-orange-600"
+                    onClick={() => setLocation('/fantasy-football')}
+                    className="w-full bg-red-600 hover:bg-red-700"
                   >
                     <ExternalLink className="h-4 w-4 mr-2" />
-                    Open ESPN Fantasy
+                    View ESPN Fantasy
                   </Button>
                 </CardContent>
               </Card>
 
               {/* Yahoo Fantasy Card */}
-              <Card className="bg-white/10 border-white/20 backdrop-blur-sm hover:bg-white/15 transition-colors">
+              <Card className="bg-white/10 border-white/20 backdrop-blur-sm">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                      Y!
+                  <CardTitle className="text-white flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                        Y!
+                      </div>
+                      Yahoo Fantasy
                     </div>
-                    Yahoo Fantasy Football
+                    {getStatusIcon(yahooStatus)}
                   </CardTitle>
                   <CardDescription className="text-gray-300">
-                    Access your Yahoo fantasy leagues with advanced research tools and analytics
+                    Yahoo fantasy league connection with OAuth authentication
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <Badge className={yahooConnected ? "bg-green-500/20 text-green-300" : "bg-gray-500/20 text-gray-400"}>
-                      {yahooConnected ? "Connected" : "Not Connected"}
+                    <Badge className={getStatusColor(yahooStatus)}>
+                      {yahooStatus === 'loading' ? 'Testing...' : 
+                       yahooStatus === 'connected' ? 'Connected' : 'Using fallback data'}
                     </Badge>
                     <Button 
-                      onClick={() => connectPlatform('yahoo')}
-                      disabled={yahooConnected}
-                      className="bg-purple-600 hover:bg-purple-700"
+                      onClick={testYahooConnection}
+                      size="sm"
+                      variant="outline"
                     >
-                      {yahooConnected ? "Connected" : "Connect Yahoo"}
+                      <RefreshCw className="w-4 h-4 mr-1" />
+                      Test
                     </Button>
                   </div>
-              
+
+                  {yahooStatus === 'connected' && yahooData && yahooData.data && yahooData.data.league && (
+                    <div className="bg-gray-900/50 p-3 rounded-lg">
+                      <div className="text-sm text-gray-300 space-y-1">
+                        <p><strong>League:</strong> {yahooData.data.league.name}</p>
+                        <p><strong>Teams:</strong> {yahooData.data.league.size}</p>
+                        <p><strong>Week:</strong> {yahooData.data.league.currentMatchupPeriod}</p>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="space-y-2">
-                    <div className="text-sm text-gray-300">Features:</div>
-                    <ul className="text-xs text-gray-400 space-y-1">
-                      <li>• Complete league management</li>
-                      <li>• Player research and analytics</li>
-                      <li>• Waiver wire recommendations</li>
-                      <li>• Advanced scoring projections</li>
-                    </ul>
+                    <Button 
+                      onClick={connectToYahoo}
+                      className="w-full bg-purple-600 hover:bg-purple-700"
+                      size="sm"
+                    >
+                      <Crown className="h-4 w-4 mr-2" />
+                      Connect Yahoo Account
+                    </Button>
+                    <Button 
+                      onClick={() => window.open('/api/yahoo-fantasy', '_blank')}
+                      variant="outline"
+                      className="w-full"
+                      size="sm"
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      View Yahoo Data
+                    </Button>
                   </div>
-                  
-                  <Button 
-                    onClick={() => navigateToPlatform('yahoo')}
-                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600"
-                  >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Open Yahoo Fantasy
-                  </Button>
                 </CardContent>
               </Card>
             </div>
@@ -172,9 +231,9 @@ export default function FantasySportsHub() {
                   <div className="flex items-center gap-3">
                     <Users className="h-8 w-8 text-blue-400" />
                     <div>
-                      <div className="text-white font-semibold">Connected Leagues</div>
+                      <div className="text-white font-semibold">Connected Platforms</div>
                       <div className="text-gray-400 text-sm">
-                        {(espnConnected ? 1 : 0) + (yahooConnected ? 1 : 0)} platforms
+                        {(espnStatus === 'connected' ? 1 : 0) + (yahooStatus === 'connected' ? 1 : 0)} of 2 active
                       </div>
                     </div>
                   </div>
@@ -290,7 +349,6 @@ export default function FantasySportsHub() {
           </CardContent>
         </Card>
       </div>
-      </div>
-    </TierGuard>
+    </div>
   );
 }
