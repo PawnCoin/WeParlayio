@@ -16,14 +16,14 @@ export default function FantasySportsHub() {
   const [yahooData, setYahooData] = useState<any>(null);
   const [espnData, setEspnData] = useState<any>(null);
 
-  // Test Yahoo Fantasy connection
+  // Test Real Yahoo Fantasy connection
   const testYahooConnection = async () => {
     try {
-      const response = await fetch('/api/yahoo/test-connection');
+      const response = await fetch('/api/yahoo-real/test');
       const data = await response.json();
-      if (data.success) {
+      if (data.success && data.authenticated) {
         setYahooStatus('connected');
-        setYahooData(data.data);
+        setYahooData(data);
       } else {
         setYahooStatus('disconnected');
       }
@@ -65,8 +65,8 @@ export default function FantasySportsHub() {
   });
 
   const connectToYahoo = () => {
-    // Redirect to Yahoo OAuth
-    window.location.href = '/api/yahoo/auth';
+    // Redirect to Real Yahoo OAuth 2.0
+    window.location.href = '/api/yahoo-real/oauth/start';
   };
 
   const getStatusIcon = (status: string) => {

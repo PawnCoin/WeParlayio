@@ -30,6 +30,7 @@ import rapidApiRoutes from "./routes/rapidApiRoutes";
 import espnFantasyRoutes from "./routes/espnFantasyRoutes";
 import feedbackRoutes from "./routes/feedbackRoutes";
 import yahooFantasyRoutes from "./routes/yahooFantasyRoutes";
+import { realYahooRouter } from "./routes/realYahooRoutes";
 import iptvRoutes from "./routes/iptv";
 import iptvProxyRoutes from "./routes/iptv-proxy";
 import { apiQuotaManager } from "./services/apiQuotaManager";
@@ -158,6 +159,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Register Yahoo Fantasy routes
   app.use('/api/yahoo', yahooRouter);
+  app.use('/api/yahoo-real', realYahooRouter);
 
   // Register fee routes for revenue generation
   app.use('/api/fees', feeRouter);

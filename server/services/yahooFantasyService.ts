@@ -10,9 +10,9 @@ const CALLBACK_URL = process.env.REPLIT_DOMAINS
   : 'http://localhost:5000/api/yahoo/callback';
 
 // Yahoo API URLs
-const REQUEST_TOKEN_URL = 'https://api.login.yahoo.com/oauth/v2/get_request_token';
-const AUTH_URL = 'https://api.login.yahoo.com/oauth/v2/request_auth';
-const ACCESS_TOKEN_URL = 'https://api.login.yahoo.com/oauth/v2/get_token';
+const REQUEST_TOKEN_URL = 'https://api.login.yahoo.com/oauth2/request_auth';
+const AUTH_URL = 'https://api.login.yahoo.com/oauth2/request_auth';
+const ACCESS_TOKEN_URL = 'https://api.login.yahoo.com/oauth2/get_token';
 const YAHOO_FANTASY_API_BASE = 'https://fantasysports.yahooapis.com/fantasy/v2';
 
 // Create OAuth client
