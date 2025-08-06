@@ -207,6 +207,100 @@ export class RealYahooApiService {
     }
   }
 
+  private parseTeamsResponse(data: any): any[] {
+    try {
+      const teams = data?.fantasy_content?.users?.[0]?.user?.[1]?.games?.[0]?.game?.[1]?.teams;
+      if (!teams) return [];
+
+      return Object.values(teams)
+        .filter((item: any) => item?.team)
+        .map((item: any) => {
+          const team = item.team[0];
+          const standings = team.team_standings?.[0];
+          return {
+            team_key: team.team_key,
+            team_id: team.team_id,
+            name: team.name,
+            managers: team.managers?.map((m: any) => ({ nickname: m.manager?.nickname })) || [],
+            wins: parseInt(standings?.outcome_totals?.wins || '0'),
+            losses: parseInt(standings?.outcome_totals?.losses || '0'),
+            ties: parseInt(standings?.outcome_totals?.ties || '0'),
+            percentage: parseFloat(standings?.outcome_totals?.percentage || '0'),
+            points_for: parseFloat(standings?.points_for || '0'),
+            points_against: parseFloat(standings?.points_against || '0'),
+            rank: parseInt(standings?.rank || '1')
+          };
+        });
+    } catch (error) {
+      console.error('Error parsing Yahoo teams response:', error);
+      return [];
+    }
+  }
+
+  private parsePlayersResponse(data: any): any[] {
+    try {
+      const players = data?.fantasy_content?.league?.[1]?.players;
+      if (!players) return [];
+
+      return Object.values(players)
+        .filter((item: any) => item?.player)
+        .map((item: any) => {
+          const player = item.player[0];
+          return {
+            player_key: player.player_key,
+            player_id: player.player_id,
+            name: {
+              full: player.name?.full || '',
+              first: player.name?.first || '',
+              last: player.name?.last || ''
+            },
+            editorial_team_abbr: player.editorial_team_abbr || '',
+            display_position: player.display_positions?.[0]?.display_position || '',
+            position_type: player.position_type || '',
+            bye_weeks: player.bye_weeks || [],
+            image_url: player.image_url || '',
+            is_undroppable: player.is_undroppable === '1',
+            ownership: {
+              ownership_type: player.ownership?.ownership_type || 'free_agents',
+              owner_team_key: player.ownership?.owner_team_key,
+              owner_team_name: player.ownership?.owner_team_name
+            },
+            percent_owned: parseFloat(player.percent_owned?.value || '0'),
+            fantasy_points: parseFloat(player.player_points?.total || '0'),
+            projected_points: parseFloat(player.player_projected_points?.total || '0')
+          };
+        });
+    } catch (error) {
+      console.error('Error parsing Yahoo players response:', error);
+      return [];
+    }
+  }
+
+  private parseLeagueDetailsResponse(data: any): any {
+    try {
+      const league = data?.fantasy_content?.league?.[0];
+      if (!league) return null;
+
+      return {
+        league_key: league.league_key,
+        league_id: league.league_id,
+        name: league.name,
+        num_teams: parseInt(league.num_teams),
+        scoring_type: league.scoring_type,
+        current_week: parseInt(league.current_week || '1'),
+        season: league.season,
+        start_date: league.start_date,
+        end_date: league.end_date,
+        start_week: parseInt(league.start_week || '1'),
+        end_week: parseInt(league.end_week || '17'),
+        is_finished: league.is_finished === '1'
+      };
+    } catch (error) {
+      console.error('Error parsing Yahoo league details:', error);
+      return null;
+    }
+  }
+
   private parseLeagueDetails(data: any): any {
     try {
       const league = data?.fantasy_content?.league?.[0];

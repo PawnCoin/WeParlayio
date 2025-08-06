@@ -75,6 +75,70 @@ realYahooRouter.get('/leagues', async (req: Request, res: Response) => {
   }
 });
 
+// Get user's teams
+realYahooRouter.get('/teams', async (req: Request, res: Response) => {
+  try {
+    const sessionId = (req as any).sessionID || 'temp-session';
+    
+    if (!realYahooApiService.isAuthenticated(sessionId)) {
+      return res.status(401).json({ error: 'Yahoo authentication required' });
+    }
+    
+    const teams = await realYahooApiService.getUserTeams(sessionId);
+    res.json({ success: true, teams });
+  } catch (error) {
+    console.error('Error fetching Yahoo teams:', error);
+    res.status(500).json({ error: 'Failed to fetch teams' });
+  }
+});
+
+// Get player data
+realYahooRouter.get('/players', async (req: Request, res: Response) => {
+  try {
+    const sessionId = (req as any).sessionID || 'temp-session';
+    
+    if (!realYahooApiService.isAuthenticated(sessionId)) {
+      return res.status(401).json({ error: 'Yahoo authentication required' });
+    }
+    
+    const players = await realYahooApiService.getPlayerData(sessionId);
+    res.json({ success: true, players });
+  } catch (error) {
+    console.error('Error fetching Yahoo players:', error);
+    res.status(500).json({ error: 'Failed to fetch players' });
+  }
+});
+
+// Get league details
+realYahooRouter.get('/leagues/:leagueKey', async (req: Request, res: Response) => {
+  try {
+    const sessionId = (req as any).sessionID || 'temp-session';
+    const { leagueKey } = req.params;
+    
+    if (!realYahooApiService.isAuthenticated(sessionId)) {
+      return res.status(401).json({ error: 'Yahoo authentication required' });
+    }
+    
+    const leagueDetails = await realYahooApiService.getLeagueDetails(sessionId, leagueKey);
+    res.json({ success: true, league: leagueDetails });
+  } catch (error) {
+    console.error('Error fetching Yahoo league details:', error);
+    res.status(500).json({ error: 'Failed to fetch league details' });
+  }
+});
+
+// Authentication check endpoint
+realYahooRouter.get('/auth', (req: Request, res: Response) => {
+  try {
+    const sessionId = (req as any).sessionID || 'temp-session-' + Date.now();
+    const authUrl = realYahooApiService.getAuthUrl(sessionId);
+    res.redirect(authUrl);
+  } catch (error) {
+    console.error('Error starting Yahoo OAuth:', error);
+    res.status(500).json({ error: 'Failed to start authentication' });
+  }
+});
+
 // Get league details
 realYahooRouter.get('/league/:leagueKey', async (req: Request, res: Response) => {
   try {
