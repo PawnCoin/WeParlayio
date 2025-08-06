@@ -48,15 +48,28 @@ export class RealYahooApiService {
    * Get OAuth 2.0 authorization URL
    */
   getAuthUrl(sessionId: string): string {
+    // Use the exact scope that matches your Yahoo app permissions
     const params = new URLSearchParams({
       client_id: this.clientId,
       redirect_uri: this.redirectUri,
       response_type: 'code',
-      scope: 'fspt-r', // Fantasy Sports Read permission
+      scope: 'fspt-r openid profile', // Fantasy Sports Read + basic profile
       state: sessionId // Pass session ID as state for security
     });
 
-    return `https://api.login.yahoo.com/oauth2/request_auth?${params.toString()}`;
+    // Log for debugging
+    console.log('🔍 OAuth URL generation:');
+    console.log('- Client ID:', this.clientId.substring(0, 20) + '...');
+    console.log('- Redirect URI:', this.redirectUri);
+    console.log('- Full URL:', `https://api.login.yahoo.com/oauth2/request_auth?${params.toString()}`);
+
+    // Try the older OAuth endpoint that might be more accessible
+    const baseUrl = 'https://api.login.yahoo.com/oauth2/request_auth';
+    const fullUrl = `${baseUrl}?${params.toString()}`;
+    
+    console.log('🔍 Attempting Yahoo OAuth with URL:', fullUrl.substring(0, 120) + '...');
+    
+    return fullUrl;
   }
 
   /**
