@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Trophy, Users, Target, ExternalLink, Settings, BarChart3, TrendingUp, CheckCircle, XCircle, RefreshCw, Crown } from "lucide-react";
 import { useLocation } from "wouter";
+import ESPNFantasyEmbed from "@/components/ESPNFantasyEmbed";
 
 export default function FantasySportsHub() {
   const { toast } = useToast();
@@ -104,6 +105,9 @@ export default function FantasySportsHub() {
                 Your unified fantasy sports dashboard connecting ESPN and Yahoo platforms with advanced analytics and betting integration
               </p>
             </div>
+
+            {/* ESPN Fantasy League Embed */}
+            <ESPNFantasyEmbed />
 
             {/* Platform Connection Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
