@@ -16,9 +16,16 @@ You're getting the error `invalid client id` because the Yahoo OAuth credentials
    - **Redirect URI**: `https://your-replit-domain.replit.dev/api/yahoo-real/oauth/callback`
 
 ### 2. Required Permissions
-Select these APIs for your Yahoo app:
-- **Fantasy Sports** (Read access)
-- Scope: `fspt-r` (Fantasy Sports Read)
+**🚨 CRITICAL: Your Yahoo app MUST have Fantasy Sports API enabled**
+
+When creating/editing your Yahoo app:
+- **Application Type**: Select "Web Application" 
+- **API Permissions**: ✅ Check "Fantasy Sports" 
+- **Read/Write Access**: Select "Read" (for fspt-r scope)
+- **Callback Domain**: Add your Replit domain
+- **Scope**: `fspt-r` (Fantasy Sports Read)
+
+**⚠️ Current Issue**: You're getting "invalid_scope" error because your Yahoo app doesn't have Fantasy Sports API permission enabled.
 
 ### 3. Get Your Credentials
 After creating the app, Yahoo will provide:
@@ -56,6 +63,19 @@ https://your-replit-domain.replit.dev/api/yahoo-real/oauth/callback
 ## Current Configuration Status
 - Current Client ID: `YthhJ5AU` (INVALID)
 - Expected Redirect URI: `https://your-replit-domain.replit.dev/api/yahoo-real/oauth/callback`
+
+## Current Error Analysis
+You're getting "invalid_scope" error when trying to connect Yahoo account. This happens because:
+
+1. **Your Yahoo app doesn't have Fantasy Sports API permission enabled**
+2. The scope `fspt-r` requires Fantasy Sports API to be selected in your Yahoo app settings
+
+## How to Fix in Yahoo Developer Console:
+1. Go to your Yahoo app settings
+2. Look for "API Permissions" or "Product APIs" section  
+3. ✅ Enable "Fantasy Sports" API
+4. Save changes
+5. Try connecting again
 
 ## Next Steps
 1. Create a new Yahoo Developer app with correct settings

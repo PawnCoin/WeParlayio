@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Crown, Trophy, Users, TrendingUp, Calendar, Clock, Star, Target, AlertTriangle, RefreshCw } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import YahooErrorHelper from "./YahooErrorHelper";
 
 export default function YahooFantasyDashboard() {
   const [selectedLeague, setSelectedLeague] = useState<string | null>(null);
@@ -134,7 +135,8 @@ export default function YahooFantasyDashboard() {
         </CardHeader>
         <CardContent>
           {!isAuthenticated && (
-            <div className="mb-6">
+            <div className="mb-6 space-y-4">
+              <YahooErrorHelper />
               <Card className="bg-purple-900/20 border-purple-700/50">
                 <CardContent className="p-6">
                   <div className="flex items-start gap-3">
@@ -142,7 +144,7 @@ export default function YahooFantasyDashboard() {
                     <div>
                       <h4 className="text-purple-300 font-medium mb-1">Connect Your Yahoo Fantasy Account</h4>
                       <p className="text-purple-200 text-sm mb-3">
-                        Connect your Yahoo account to view your real fantasy leagues, teams, and players within WeParlay's interface.
+                        After enabling Fantasy Sports API in Yahoo Developer Console, connect your account to view real fantasy data.
                       </p>
                       <Button 
                         onClick={handleConnectYahoo}
@@ -150,7 +152,7 @@ export default function YahooFantasyDashboard() {
                         size="lg"
                       >
                         <Crown className="w-4 h-4 mr-2" />
-                        Connect Yahoo Account
+                        Try Connection (After Yahoo Fix)
                       </Button>
                     </div>
                   </div>
