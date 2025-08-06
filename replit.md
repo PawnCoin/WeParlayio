@@ -32,11 +32,12 @@ Preferred communication style: Simple, everyday language.
 - **Sports Data Integration**: Aggregates data from multiple APIs (ESPN, RapidAPI Sports, Grid.gg, The Odds API) with fallback systems for redundancy.
 - **VIP Live Streaming Platform**: Exclusive streaming at `/vip/live-streaming` with 296+ IPTV sports channels, tier-based access controls (Platinum/Diamond/Admin only), complete 5-step video workflow with channel browsing, search, and controls.
 - **Fantasy League Integration**: 
-  - Working Yahoo OAuth integration with real-time data fetching for leagues, teams, and players
+  - Yahoo OAuth 2.0 with Confidential Client configuration (Aug 2025)
+  - Hardcoded credentials for Yahoo app: dj0yJmk9Q3M1RmNFNjBHTVht... 
   - Custom Yahoo Fantasy Dashboard at `/yahoo-fantasy` with WeParlay native styling
   - ESPN public data integration with direct link generation (ESPN blocks iframe embedding)
   - Real Yahoo API endpoints: leagues, teams, players, league details with authentication
-  - Authentic data structures replacing mock data when user connects Yahoo account
+  - Redirect URI configured: https://f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev/api/yahoo-real/oauth/callback
 - **Payment Systems**: Stripe for subscriptions, PayPal for alternative payments, multi-wallet cryptocurrency support (MetaMask, Coinbase, Trust Wallet), and internal "WeParlay Cash" virtual currency.
 - **Authentication & Authorization**: Replit Auth, PostgreSQL-backed sessions (7-day TTL), role-based access control, and tier-based feature access.
 - **Real-time Features**: WebSocket integration for live odds and event updates, and an in-app notification system.
