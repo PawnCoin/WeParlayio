@@ -3,11 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ExternalLink, Trophy, Info } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ExternalLink, Trophy, Info, Maximize2, X } from "lucide-react";
 
 export default function SimpleESPNViewer() {
   const [leagueId, setLeagueId] = useState('');
   const [seasonYear, setSeasonYear] = useState('2024');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const getESPNUrl = () => {
     if (!leagueId) return '#';
@@ -65,22 +67,53 @@ export default function SimpleESPNViewer() {
         </div>
 
         <div className="flex gap-2">
+          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-red-600 hover:bg-red-700">
+                <Maximize2 className="w-4 h-4 mr-2" />
+                View ESPN in WeParlay
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-6xl w-[95vw] h-[90vh] bg-gray-900 border-gray-700">
+              <DialogHeader className="border-b border-gray-700 pb-4">
+                <DialogTitle className="text-white flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Trophy className="w-5 h-5 text-red-500" />
+                    ESPN Fantasy Football
+                    {leagueId && <span className="text-sm text-gray-400">- League {leagueId}</span>}
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setIsModalOpen(false)}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </DialogTitle>
+                <DialogDescription className="text-gray-400">
+                  ESPN Fantasy Football embedded in WeParlay - Stay on our site while managing your fantasy team
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex-1 mt-4">
+                <iframe
+                  src={leagueId ? getESPNUrl() : 'https://fantasy.espn.com/football/'}
+                  className="w-full h-full rounded-lg border border-gray-600"
+                  title="ESPN Fantasy Football"
+                  allow="fullscreen"
+                />
+              </div>
+            </DialogContent>
+          </Dialog>
+          
           <Button 
             onClick={() => window.open('https://fantasy.espn.com/football/', '_blank')}
-            className="bg-red-600 hover:bg-red-700"
+            variant="outline"
+            className="border-white/20 text-white hover:bg-white/10"
           >
             <ExternalLink className="w-4 h-4 mr-2" />
-            Open ESPN Fantasy
+            Open ESPN Directly
           </Button>
-          {leagueId && (
-            <Button 
-              variant="outline" 
-              onClick={() => window.open(getESPNUrl(), '_blank')}
-              className="border-white/20 text-white hover:bg-white/10"
-            >
-              View Specific League
-            </Button>
-          )}
         </div>
 
         <div className="bg-gray-900/30 rounded-lg p-4">

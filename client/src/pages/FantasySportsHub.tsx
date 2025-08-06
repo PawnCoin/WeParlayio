@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Trophy, Users, Target, ExternalLink, Settings, BarChart3, TrendingUp, CheckCircle, XCircle, RefreshCw, Crown } from "lucide-react";
+import { Trophy, Users, Target, ExternalLink, Settings, BarChart3, TrendingUp, CheckCircle, XCircle, RefreshCw, Crown, Maximize2 } from "lucide-react";
 import { useLocation } from "wouter";
 import SimpleESPNViewer from "@/components/fantasy/SimpleESPNViewer";
 
@@ -150,13 +150,23 @@ export default function FantasySportsHub() {
                     </div>
                   </div>
                   
-                  <Button 
-                    onClick={() => setLocation('/fantasy-football')}
-                    className="w-full bg-red-600 hover:bg-red-700"
-                  >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    View Public ESPN Data
-                  </Button>
+                  <div className="space-y-2">
+                    <Button 
+                      onClick={() => setLocation('/espn-fantasy')}
+                      className="w-full bg-red-600 hover:bg-red-700"
+                    >
+                      <Maximize2 className="h-4 w-4 mr-2" />
+                      View ESPN in WeParlay
+                    </Button>
+                    <Button 
+                      onClick={() => setLocation('/fantasy-football')}
+                      variant="outline"
+                      className="w-full border-white/20 text-white hover:bg-white/10"
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      View Public ESPN Data
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
 
