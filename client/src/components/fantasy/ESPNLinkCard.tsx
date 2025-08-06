@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function ESPNLinkCard() {
   const [leagueId, setLeagueId] = useState('');
-  const [seasonYear, setSeasonYear] = useState('2024');
+  const [seasonYear, setSeasonYear] = useState('2025');
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
@@ -73,7 +73,7 @@ export default function ESPNLinkCard() {
             <Label htmlFor="season" className="text-white">Season</Label>
             <Input
               id="season"
-              placeholder="2024"
+              placeholder="2025"
               value={seasonYear}
               onChange={(e) => setSeasonYear(e.target.value)}
               className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"

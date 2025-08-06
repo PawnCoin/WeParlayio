@@ -151,23 +151,13 @@ export default function FantasySportsHub() {
                     </div>
                   </div>
                   
-                  <div className="space-y-2">
-                    <Button 
-                      onClick={() => setLocation('/espn-fantasy')}
-                      className="w-full bg-red-600 hover:bg-red-700"
-                    >
-                      <Maximize2 className="h-4 w-4 mr-2" />
-                      View ESPN in WeParlay
-                    </Button>
-                    <Button 
-                      onClick={() => setLocation('/fantasy-football')}
-                      variant="outline"
-                      className="w-full border-white/20 text-white hover:bg-white/10"
-                    >
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      View Public ESPN Data
-                    </Button>
-                  </div>
+                  <Button 
+                    onClick={() => setLocation('/fantasy-football')}
+                    className="w-full bg-red-600 hover:bg-red-700"
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    View Public ESPN Data
+                  </Button>
                 </CardContent>
               </Card>
 
