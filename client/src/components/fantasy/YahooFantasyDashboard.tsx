@@ -151,7 +151,13 @@ export default function YahooFantasyDashboard() {
                           Try Yahoo OAuth (Will fail until configured)
                         </Button>
                         <div className="text-xs text-amber-300 p-2 bg-amber-900/20 rounded">
-                          Need help? Check the YAHOO_OAUTH_SETUP_GUIDE.md file for configuration instructions.
+                          <p className="mb-1">Need help? Check the YAHOO_OAUTH_SETUP_GUIDE.md file for configuration instructions.</p>
+                          <p className="text-amber-400">In Yahoo Developer Console, look for:</p>
+                          <ul className="list-disc list-inside mt-1 space-y-1">
+                            <li>"App Information" or "Credentials" section</li>
+                            <li>Click "Show" or "Reveal" next to Client Secret</li>
+                            <li>Look under "Security" or "API Keys" tab</li>
+                          </ul>
                         </div>
                       </div>
                     </div>

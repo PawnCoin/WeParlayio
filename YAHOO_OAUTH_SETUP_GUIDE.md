@@ -25,6 +25,21 @@ After creating the app, Yahoo will provide:
 - **Client ID** (not "YthhJ5AU" - that's invalid)
 - **Client Secret**
 
+#### Where to Find Your Client Secret:
+1. In Yahoo Developer Console, go to your app
+2. Look for the "App Information" or "Credentials" section
+3. You'll see:
+   - **Client ID**: Long string starting with "dj0y..." 
+   - **Client Secret**: Another long string (often shorter than Client ID)
+4. If you can't see the secret, click "Show" or "Reveal" button next to it
+5. Sometimes it's under "App Details" > "Security" section
+
+#### Common Locations in Yahoo Developer Console:
+- Main app dashboard
+- "API Keys" tab
+- "Security" or "Credentials" section
+- "App Information" panel
+
 ### 4. Update Replit Secrets
 In your Replit project, update these secrets:
 ```
