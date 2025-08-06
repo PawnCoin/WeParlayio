@@ -128,13 +128,27 @@ export default function ESPNFantasyPage() {
                 </Button>
               </div>
             )}
-            <div className={`bg-white rounded-lg ${isFullscreen ? 'h-[calc(100vh-12rem)]' : 'h-96 md:h-[32rem]'}`}>
-              <iframe
-                src={getESPNUrl()}
-                className="w-full h-full rounded-lg border-0"
-                title="ESPN Fantasy Football"
-                allow="fullscreen"
-              />
+            <div className={`bg-gray-800 rounded-lg border border-gray-600 ${isFullscreen ? 'h-[calc(100vh-12rem)]' : 'h-96 md:h-[32rem]'} flex flex-col items-center justify-center text-center p-8`}>
+              <Trophy className="w-20 h-20 text-red-500 mb-6" />
+              <h2 className="text-white text-2xl font-bold mb-4">ESPN Embedding Blocked</h2>
+              <p className="text-gray-300 mb-6 max-w-md">ESPN uses security measures that prevent embedding their site in other domains. This protects users from clickjacking attacks.</p>
+              
+              <div className="space-y-4 w-full max-w-sm">
+                <Button 
+                  onClick={() => window.open(getESPNUrl(), '_blank')}
+                  className="w-full bg-red-600 hover:bg-red-700"
+                  size="lg"
+                >
+                  <ExternalLink className="w-5 h-5 mr-2" />
+                  Open ESPN Fantasy
+                </Button>
+                
+                <div className="bg-blue-900/20 border border-blue-700/30 rounded-lg p-4">
+                  <p className="text-blue-200 text-sm">
+                    <strong>Tip:</strong> Open ESPN in a new tab and switch between tabs to use both WeParlay and ESPN seamlessly.
+                  </p>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>

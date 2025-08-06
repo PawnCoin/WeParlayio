@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Trophy, Users, Target, ExternalLink, Settings, BarChart3, TrendingUp, CheckCircle, XCircle, RefreshCw, Crown, Maximize2 } from "lucide-react";
 import { useLocation } from "wouter";
-import SimpleESPNViewer from "@/components/fantasy/SimpleESPNViewer";
+// import SimpleESPNViewer from "@/components/fantasy/SimpleESPNViewer";
+import ESPNLinkCard from "@/components/fantasy/ESPNLinkCard";
 
 export default function FantasySportsHub() {
   const { toast } = useToast();
@@ -106,8 +107,8 @@ export default function FantasySportsHub() {
               </p>
             </div>
 
-            {/* ESPN Fantasy League Viewer */}
-            <SimpleESPNViewer />
+            {/* ESPN Fantasy Quick Access */}
+            <ESPNLinkCard />
 
             {/* Platform Connection Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

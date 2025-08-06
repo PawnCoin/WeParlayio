@@ -96,12 +96,21 @@ export default function SimpleESPNViewer() {
                 </DialogDescription>
               </DialogHeader>
               <div className="flex-1 mt-4">
-                <iframe
-                  src={leagueId ? getESPNUrl() : 'https://fantasy.espn.com/football/'}
-                  className="w-full h-full rounded-lg border border-gray-600"
-                  title="ESPN Fantasy Football"
-                  allow="fullscreen"
-                />
+                <div className="bg-red-900/20 border border-red-700/50 rounded-lg p-6 flex flex-col items-center justify-center h-full text-center">
+                  <Trophy className="w-16 h-16 text-red-500 mb-4" />
+                  <h3 className="text-white text-xl font-semibold mb-2">ESPN Blocks Embedding</h3>
+                  <p className="text-gray-300 mb-4">ESPN prevents their site from being displayed in frames for security reasons.</p>
+                  <div className="space-y-3">
+                    <Button 
+                      onClick={() => window.open(leagueId ? getESPNUrl() : 'https://fantasy.espn.com/football/', '_blank')}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Open ESPN in New Tab
+                    </Button>
+                    <p className="text-gray-400 text-sm">Opens in a new tab so you can switch back to WeParlay</p>
+                  </div>
+                </div>
               </div>
             </DialogContent>
           </Dialog>
