@@ -34,7 +34,16 @@ export class ESPNFantasyApiService {
       };
     } catch (error) {
       console.error('ESPN Fantasy League error:', error);
-      return this.getFallbackLeagueData(leagueId);
+      // Return helpful message about ESPN limitations
+      return {
+        id: leagueId || 'demo-league',
+        name: 'ESPN Fantasy League (Manual Entry Required)',
+        size: 12,
+        currentMatchupPeriod: 1,
+        scoringType: 'Standard',
+        note: 'ESPN requires manual league sharing or public leagues only',
+        teams: []
+      };
     }
   }
 
