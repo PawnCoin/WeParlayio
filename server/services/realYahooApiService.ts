@@ -33,7 +33,16 @@ export class RealYahooApiService {
     const replitDomain = process.env.REPLIT_DOMAINS?.split(',')[0] || 'f7097b10-74b9-45ad-9152-e5c7329e5010-00-dwypxvoq2aso.worf.replit.dev';
     this.redirectUri = `https://${replitDomain}/api/yahoo-real/oauth/callback`;
     
-    console.log('✅ Real Yahoo Fantasy API service initialized');
+    console.log('Yahoo OAuth Configuration:');
+    console.log('- Client ID:', this.clientId ? `${this.clientId.substring(0, 8)}...` : 'NOT SET');
+    console.log('- Redirect URI:', this.redirectUri);
+    console.log('- Domain:', replitDomain);
+    
+    if (!this.clientId || !this.clientSecret) {
+      console.warn('⚠️ Yahoo OAuth credentials not configured. The client ID "YthhJ5AU" appears invalid.');
+    } else {
+      console.log('✅ Real Yahoo Fantasy API service initialized');
+    }
   }
 
   /**

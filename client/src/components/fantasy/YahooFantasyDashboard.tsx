@@ -139,16 +139,21 @@ export default function YahooFantasyDashboard() {
                     <div>
                       <h4 className="text-amber-300 font-medium mb-1">Yahoo Authentication Required</h4>
                       <p className="text-amber-200 text-sm mb-3">
-                        Connect your Yahoo account to view your real fantasy leagues, teams, and player data.
+                        To connect your Yahoo account, you need to set up Yahoo OAuth credentials. The current client ID is invalid.
                       </p>
-                      <Button 
-                        onClick={() => window.open('/api/yahoo-real/auth', '_blank')}
-                        className="bg-purple-600 hover:bg-purple-700"
-                        size="sm"
-                      >
-                        <Crown className="w-4 h-4 mr-2" />
-                        Connect Yahoo Account
-                      </Button>
+                      <div className="space-y-2">
+                        <Button 
+                          onClick={() => window.open('/api/yahoo-real/auth', '_blank')}
+                          className="bg-purple-600 hover:bg-purple-700 w-full"
+                          size="sm"
+                        >
+                          <Crown className="w-4 h-4 mr-2" />
+                          Try Yahoo OAuth (Will fail until configured)
+                        </Button>
+                        <div className="text-xs text-amber-300 p-2 bg-amber-900/20 rounded">
+                          Need help? Check the YAHOO_OAUTH_SETUP_GUIDE.md file for configuration instructions.
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </CardContent>

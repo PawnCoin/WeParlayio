@@ -139,6 +139,22 @@ realYahooRouter.get('/auth', (req: Request, res: Response) => {
   }
 });
 
+// Configuration status endpoint
+realYahooRouter.get('/config', (req: Request, res: Response) => {
+  const clientId = process.env.YAHOO_CLIENT_ID || '';
+  const clientSecret = process.env.YAHOO_CLIENT_SECRET || '';
+  const replitDomain = process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:3000';
+  
+  res.json({
+    configured: !!(clientId && clientSecret),
+    clientId: clientId ? `${clientId.substring(0, 8)}...` : 'NOT_SET',
+    hasSecret: !!clientSecret,
+    redirectUri: `https://${replitDomain}/api/yahoo-real/oauth/callback`,
+    domain: replitDomain,
+    issue: clientId === 'YthhJ5AU' ? 'INVALID_CLIENT_ID' : clientId ? 'UNKNOWN' : 'MISSING_CREDENTIALS'
+  });
+});
+
 // Get league details
 realYahooRouter.get('/league/:leagueKey', async (req: Request, res: Response) => {
   try {
