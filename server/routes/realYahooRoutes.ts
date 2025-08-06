@@ -24,21 +24,21 @@ realYahooRouter.get('/oauth/callback', async (req: Request, res: Response) => {
     
     if (error) {
       console.error('Yahoo OAuth error:', error);
-      return res.redirect('/fantasy?error=oauth_denied');
+      return res.redirect('/yahoo-fantasy?error=oauth_denied');
     }
     
     if (!code || !state) {
-      return res.redirect('/fantasy?error=missing_params');
+      return res.redirect('/yahoo-fantasy?error=missing_params');
     }
     
     const sessionId = state as string;
     await realYahooApiService.exchangeCodeForToken(code as string, sessionId);
     
     console.log('✅ Yahoo OAuth completed successfully');
-    res.redirect('/fantasy?connected=yahoo');
+    res.redirect('/yahoo-fantasy?connected=true');
   } catch (error) {
     console.error('Error in Yahoo OAuth callback:', error);
-    res.redirect('/fantasy?error=oauth_failed');
+    res.redirect('/yahoo-fantasy?error=oauth_failed');
   }
 });
 

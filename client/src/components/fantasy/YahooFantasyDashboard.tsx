@@ -9,105 +9,108 @@ import { useQuery } from "@tanstack/react-query";
 export default function YahooFantasyDashboard() {
   const [selectedLeague, setSelectedLeague] = useState<string | null>(null);
 
-  // Fetch Yahoo leagues - use real data when available
+  // Check URL params for authentication status
+  const urlParams = new URLSearchParams(window.location.search);
+  const isJustConnected = urlParams.get('connected') === 'true';
+
+  // Auth status query
+  const { data: authStatus, refetch: refetchAuthStatus } = useQuery({
+    queryKey: ['/api/yahoo-real/status'],
+    refetchInterval: isJustConnected ? 2000 : 10000,
+  });
+
+  const isAuthenticated = authStatus?.authenticated === true;
+
+  // Fetch Yahoo leagues - only when authenticated
   const { data: yahooLeagues, isLoading: leaguesLoading, error: leaguesError, refetch: refetchLeagues } = useQuery({
     queryKey: ['/api/yahoo-real/leagues'],
-    enabled: true,
-    retry: 1,
-    staleTime: 30000, // 30 seconds
+    enabled: isAuthenticated,
+    retry: 2,
+    staleTime: 30000,
   });
 
-  // Fetch user's Yahoo teams
+  // Fetch user's Yahoo teams - only when authenticated
   const { data: yahooTeams, isLoading: teamsLoading, error: teamsError, refetch: refetchTeams } = useQuery({
     queryKey: ['/api/yahoo-real/teams'],
-    enabled: true,
-    retry: 1,
+    enabled: isAuthenticated,
+    retry: 2,
     staleTime: 30000,
   });
 
-  // Fetch Yahoo players data
+  // Fetch Yahoo players data - only when authenticated
   const { data: yahooPlayers, isLoading: playersLoading, error: playersError, refetch: refetchPlayers } = useQuery({
     queryKey: ['/api/yahoo-real/players'],
-    enabled: true,
-    retry: 1,
+    enabled: isAuthenticated,
+    retry: 2,
     staleTime: 30000,
   });
 
-  // Auth check query
-  const { data: authCheck, error: authError } = useQuery({
-    queryKey: ['/api/yahoo-real/test'],
-    enabled: true,
-    retry: 1,
-  });
-
-  const isAuthenticated = authCheck?.success === true;
-  const hasAuthError = authError || authCheck?.success === false;
-
-  // Mock data for demonstration when no real data available
-  const mockLeagues = [
-    {
-      league_key: "nfl.l.demo1",
-      name: "Demo League - Connect Yahoo for Real Data",
-      league_id: "demo1",
-      season: "2025",
-      num_teams: 12,
-      current_week: 8,
-      start_week: 1,
-      end_week: 17,
-      is_finished: false
+  // Handle post-authentication data refresh
+  React.useEffect(() => {
+    if (isJustConnected) {
+      setTimeout(() => {
+        refetchAuthStatus();
+        if (isAuthenticated) {
+          refetchLeagues();
+          refetchTeams();
+          refetchPlayers();
+        }
+      }, 1500);
+      
+      // Clean URL
+      window.history.replaceState({}, '', '/yahoo-fantasy');
     }
-  ];
-
-  const mockTeams = [
-    {
-      team_key: "demo.t.1",
-      team_id: "1",
-      name: "Connect Yahoo Account",
-      managers: [{ nickname: "YourTeam", email: "demo@example.com" }],
-      wins: 0,
-      losses: 0,
-      ties: 0,
-      percentage: 0,
-      points_for: 0,
-      points_against: 0,
-      rank: 1
-    }
-  ];
-
-  const mockPlayers = [
-    {
-      player_key: "demo.p.1",
-      player_id: "1",
-      name: { full: "Connect Yahoo to View Players", first: "Connect", last: "Yahoo" },
-      editorial_team_abbr: "NYA",
-      display_position: "QB",
-      position_type: "O",
-      bye_weeks: [],
-      image_url: "",
-      is_undroppable: false,
-      ownership: { ownership_type: "free_agents" },
-      percent_owned: 0,
-      fantasy_points: 0,
-      projected_points: 0
-    }
-  ];
+  }, [isJustConnected, isAuthenticated, refetchAuthStatus, refetchLeagues, refetchTeams, refetchPlayers]);
 
   const handleRefreshData = () => {
-    refetchLeagues();
-    refetchTeams();
-    refetchPlayers();
+    refetchAuthStatus();
+    if (isAuthenticated) {
+      refetchLeagues();
+      refetchTeams();
+      refetchPlayers();
+    }
   };
+
+  const handleConnectYahoo = () => {
+    window.location.href = '/api/yahoo-real/oauth/start';
+  };
+
+  // Show connection success message
+  if (isJustConnected) {
+    return (
+      <div className="space-y-6">
+        <Card className="bg-green-500/10 border-green-500/20">
+          <CardHeader>
+            <CardTitle className="text-green-400 flex items-center gap-2">
+              <Crown className="w-5 h-5" />
+              Yahoo Fantasy Connected!
+            </CardTitle>
+            <CardDescription className="text-green-300">
+              Loading your fantasy data...
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2 text-green-400">
+              <RefreshCw className="w-4 h-4 animate-spin" />
+              Fetching your leagues, teams, and players...
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
+      {/* Connection Status */}
       <Card className="bg-white/5 border-white/10">
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
             <Crown className="w-6 h-6 text-purple-500" />
             Yahoo Fantasy Dashboard
-            {hasAuthError && (
-              <Badge variant="outline" className="border-red-500/50 text-red-400 ml-2">
-                Authentication Required
+            {!isAuthenticated && (
+              <Badge variant="outline" className="border-amber-500/50 text-amber-400 ml-2">
+                Connect Yahoo Account
               </Badge>
             )}
             {isAuthenticated && (
@@ -130,36 +133,25 @@ export default function YahooFantasyDashboard() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {hasAuthError && (
+          {!isAuthenticated && (
             <div className="mb-6">
-              <Card className="bg-amber-900/20 border-amber-700/50">
-                <CardContent className="p-4">
+              <Card className="bg-purple-900/20 border-purple-700/50">
+                <CardContent className="p-6">
                   <div className="flex items-start gap-3">
-                    <AlertTriangle className="w-5 h-5 text-amber-400 mt-0.5 flex-shrink-0" />
+                    <Crown className="w-5 h-5 text-purple-400 mt-0.5 flex-shrink-0" />
                     <div>
-                      <h4 className="text-amber-300 font-medium mb-1">Yahoo Authentication Required</h4>
-                      <p className="text-amber-200 text-sm mb-3">
-                        To connect your Yahoo account, you need to set up Yahoo OAuth credentials. The current client ID is invalid.
+                      <h4 className="text-purple-300 font-medium mb-1">Connect Your Yahoo Fantasy Account</h4>
+                      <p className="text-purple-200 text-sm mb-3">
+                        Connect your Yahoo account to view your real fantasy leagues, teams, and players within WeParlay's interface.
                       </p>
-                      <div className="space-y-2">
-                        <Button 
-                          onClick={() => window.open('/api/yahoo-real/auth', '_blank')}
-                          className="bg-purple-600 hover:bg-purple-700 w-full"
-                          size="sm"
-                        >
-                          <Crown className="w-4 h-4 mr-2" />
-                          Try Yahoo OAuth (Will fail until configured)
-                        </Button>
-                        <div className="text-xs text-amber-300 p-2 bg-amber-900/20 rounded">
-                          <p className="mb-1">Need help? Check the YAHOO_OAUTH_SETUP_GUIDE.md file for configuration instructions.</p>
-                          <p className="text-amber-400">In Yahoo Developer Console, look for:</p>
-                          <ul className="list-disc list-inside mt-1 space-y-1">
-                            <li>"App Information" or "Credentials" section</li>
-                            <li>Click "Show" or "Reveal" next to Client Secret</li>
-                            <li>Look under "Security" or "API Keys" tab</li>
-                          </ul>
-                        </div>
-                      </div>
+                      <Button 
+                        onClick={handleConnectYahoo}
+                        className="bg-purple-600 hover:bg-purple-700 w-full"
+                        size="lg"
+                      >
+                        <Crown className="w-4 h-4 mr-2" />
+                        Connect Yahoo Account
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
@@ -203,37 +195,57 @@ export default function YahooFantasyDashboard() {
                 </div>
               ) : (
                 <div className="grid gap-4">
-                  {(yahooLeagues?.leagues || mockLeagues).map((league) => (
-                    <Card key={league.league_key} className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors">
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="space-y-2">
-                            <h3 className="text-white font-semibold text-lg">{league.name}</h3>
-                            <div className="flex items-center gap-4 text-sm text-gray-300">
-                              <div className="flex items-center gap-1">
-                                <Users className="w-4 h-4" />
-                                {league.num_teams} teams
+                  {isAuthenticated && yahooLeagues?.leagues && yahooLeagues.leagues.length > 0 ? (
+                    yahooLeagues.leagues.map((league: any) => (
+                      <Card key={league.league_key} className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="space-y-2">
+                              <h3 className="text-white font-semibold text-lg">{league.name}</h3>
+                              <div className="flex items-center gap-4 text-sm text-gray-300">
+                                <div className="flex items-center gap-1">
+                                  <Users className="w-4 h-4" />
+                                  {league.num_teams} teams
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Calendar className="w-4 h-4" />
+                                  Week {league.current_week}
+                                </div>
+                                <Badge variant="outline" className="border-purple-500/50 text-purple-400">
+                                  {league.season || '2025'} Season
+                                </Badge>
                               </div>
-                              <div className="flex items-center gap-1">
-                                <Calendar className="w-4 h-4" />
-                                Week {league.current_week} of {league.end_week}
-                              </div>
-                              <Badge variant="outline" className="border-purple-500/50 text-purple-400">
-                                {league.season} Season
-                              </Badge>
                             </div>
+                            <Button 
+                              onClick={() => setSelectedLeague(league.league_key)}
+                              className="bg-purple-600 hover:bg-purple-700"
+                            >
+                              View Details
+                            </Button>
                           </div>
-                          <Button 
-                            onClick={() => setSelectedLeague(league.league_key)}
-                            className="bg-purple-600 hover:bg-purple-700"
-                            disabled={!isAuthenticated && league.league_key.includes('demo')}
-                          >
-                            {!isAuthenticated && league.league_key.includes('demo') ? 'Demo Data' : 'View Details'}
-                          </Button>
-                        </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  ) : !isAuthenticated ? (
+                    <Card className="bg-white/5 border-white/10">
+                      <CardContent className="p-6 text-center">
+                        <Crown className="w-12 h-12 text-purple-400 mx-auto mb-3" />
+                        <h3 className="text-white font-semibold mb-2">Connect Yahoo to View Leagues</h3>
+                        <p className="text-gray-300 mb-4">Your Yahoo Fantasy leagues will appear here after authentication</p>
+                        <Button onClick={handleConnectYahoo} className="bg-purple-600 hover:bg-purple-700">
+                          Connect Yahoo Account
+                        </Button>
                       </CardContent>
                     </Card>
-                  ))}
+                  ) : (
+                    <Card className="bg-white/5 border-white/10">
+                      <CardContent className="p-6 text-center">
+                        <Trophy className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                        <h3 className="text-white font-semibold mb-2">No Leagues Found</h3>
+                        <p className="text-gray-300">No fantasy leagues found in your Yahoo account</p>
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
               )}
             </TabsContent>
@@ -254,32 +266,51 @@ export default function YahooFantasyDashboard() {
                 </div>
               ) : (
                 <div className="grid gap-4">
-                  {(yahooTeams?.teams || mockTeams).map((team, index) => (
-                    <Card key={team.team_key} className="bg-white/5 border-white/10">
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-3">
-                              <Badge variant="outline" className="border-purple-500/50 text-purple-400">
-                                #{team.rank}
-                              </Badge>
-                              <h3 className="text-white font-semibold">{team.name}</h3>
+                  {isAuthenticated && yahooTeams?.teams && yahooTeams.teams.length > 0 ? (
+                    yahooTeams.teams.map((team: any) => (
+                      <Card key={team.team_key} className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="space-y-2">
+                              <h3 className="text-white font-semibold text-lg">{team.name}</h3>
+                              <div className="flex items-center gap-4 text-sm text-gray-300">
+                                <div className="flex items-center gap-1">
+                                  <Trophy className="w-4 h-4" />
+                                  {team.wins || 0}-{team.losses || 0}
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <TrendingUp className="w-4 h-4" />
+                                  {team.points_for || 0} PF
+                                </div>
+                                <Badge variant="outline" className="border-blue-500/50 text-blue-400">
+                                  Rank #{team.rank || 1}
+                                </Badge>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-4 text-sm text-gray-300">
-                              <span>Record: {team.wins}-{team.losses}-{team.ties}</span>
-                              <span>Points For: {team.points_for}</span>
-                              <span>Points Against: {team.points_against}</span>
-                            </div>
-                            <p className="text-gray-400 text-sm">Manager: {team.managers[0]?.nickname}</p>
                           </div>
-                          <div className="text-right">
-                            <div className="text-2xl font-bold text-white">{(team.percentage * 100).toFixed(1)}%</div>
-                            <div className="text-sm text-gray-400">Win Rate</div>
-                          </div>
-                        </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  ) : !isAuthenticated ? (
+                    <Card className="bg-white/5 border-white/10">
+                      <CardContent className="p-6 text-center">
+                        <Users className="w-12 h-12 text-purple-400 mx-auto mb-3" />
+                        <h3 className="text-white font-semibold mb-2">Connect Yahoo to View Teams</h3>
+                        <p className="text-gray-300 mb-4">Your fantasy teams will appear here after authentication</p>
+                        <Button onClick={handleConnectYahoo} className="bg-purple-600 hover:bg-purple-700">
+                          Connect Yahoo Account
+                        </Button>
                       </CardContent>
                     </Card>
-                  ))}
+                  ) : (
+                    <Card className="bg-white/5 border-white/10">
+                      <CardContent className="p-6 text-center">
+                        <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                        <h3 className="text-white font-semibold mb-2">No Teams Found</h3>
+                        <p className="text-gray-300">No fantasy teams found in your Yahoo account</p>
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
               )}
             </TabsContent>
@@ -300,40 +331,51 @@ export default function YahooFantasyDashboard() {
                 </div>
               ) : (
                 <div className="grid gap-4">
-                  {(yahooPlayers?.players || mockPlayers).map((player) => (
-                    <Card key={player.player_key} className="bg-white/5 border-white/10">
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-purple-600/20 rounded-full flex items-center justify-center">
-                              <span className="text-purple-400 font-bold">{player.display_position}</span>
-                            </div>
-                            <div className="space-y-1">
-                              <h3 className="text-white font-semibold">{player.name.full}</h3>
-                              <div className="flex items-center gap-2 text-sm text-gray-300">
-                                <span>{player.editorial_team_abbr}</span>
-                                <span>•</span>
-                                <span>{player.display_position}</span>
-                                {player.is_undroppable && (
-                                  <Badge variant="outline" className="border-yellow-500/50 text-yellow-400 text-xs">
-                                    Undroppable
-                                  </Badge>
-                                )}
+                  {isAuthenticated && yahooPlayers?.players && yahooPlayers.players.length > 0 ? (
+                    yahooPlayers.players.slice(0, 10).map((player: any) => (
+                      <Card key={player.player_key} className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="space-y-2">
+                              <h3 className="text-white font-semibold">{player.name?.full || 'Unknown Player'}</h3>
+                              <div className="flex items-center gap-4 text-sm text-gray-300">
+                                <div className="flex items-center gap-1">
+                                  <Star className="w-4 h-4" />
+                                  {player.display_position || 'N/A'}
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Target className="w-4 h-4" />
+                                  {player.editorial_team_abbr || 'FA'}
+                                </div>
+                                <Badge variant="outline" className="border-green-500/50 text-green-400">
+                                  {player.fantasy_points || 0} pts
+                                </Badge>
                               </div>
-                              {player.ownership.owner_team_name && (
-                                <p className="text-purple-400 text-sm">Owned by: {player.ownership.owner_team_name}</p>
-                              )}
                             </div>
                           </div>
-                          <div className="text-right space-y-1">
-                            <div className="text-xl font-bold text-white">{player.fantasy_points || 0}</div>
-                            <div className="text-sm text-gray-400">Points</div>
-                            <div className="text-sm text-green-400">Proj: {player.projected_points || 0}</div>
-                          </div>
-                        </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  ) : !isAuthenticated ? (
+                    <Card className="bg-white/5 border-white/10">
+                      <CardContent className="p-6 text-center">
+                        <Star className="w-12 h-12 text-purple-400 mx-auto mb-3" />
+                        <h3 className="text-white font-semibold mb-2">Connect Yahoo to View Players</h3>
+                        <p className="text-gray-300 mb-4">Your fantasy players will appear here after authentication</p>
+                        <Button onClick={handleConnectYahoo} className="bg-purple-600 hover:bg-purple-700">
+                          Connect Yahoo Account
+                        </Button>
                       </CardContent>
                     </Card>
-                  ))}
+                  ) : (
+                    <Card className="bg-white/5 border-white/10">
+                      <CardContent className="p-6 text-center">
+                        <Star className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                        <h3 className="text-white font-semibold mb-2">No Players Found</h3>
+                        <p className="text-gray-300">No fantasy players found in your Yahoo account</p>
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
               )}
             </TabsContent>
@@ -341,39 +383,13 @@ export default function YahooFantasyDashboard() {
             <TabsContent value="matchups" className="space-y-4 mt-6">
               <Card className="bg-white/5 border-white/10">
                 <CardContent className="p-6 text-center">
-                  <Clock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-white text-xl font-semibold mb-2">
-                    {isAuthenticated ? 'Matchups Coming Soon' : 'Connect Yahoo for Matchups'}
-                  </h3>
-                  <p className="text-gray-300 mb-4">
-                    {isAuthenticated 
-                      ? 'Weekly matchup data will be displayed here when connected to your Yahoo account'
-                      : 'Connect your Yahoo account to view weekly matchups and head-to-head comparisons'
-                    }
-                  </p>
-                  {!isAuthenticated && (
-                    <Button className="bg-purple-600 hover:bg-purple-700">
-                      <Crown className="w-4 h-4 mr-2" />
-                      Connect Yahoo Account
-                    </Button>
-                  )}
+                  <Target className="w-12 h-12 text-blue-400 mx-auto mb-3" />
+                  <h3 className="text-white font-semibold mb-2">Weekly Matchups</h3>
+                  <p className="text-gray-300">Matchup data will be available with full Yahoo integration</p>
                 </CardContent>
               </Card>
             </TabsContent>
           </Tabs>
-        </CardContent>
-      </Card>
-
-      <Card className="bg-purple-900/20 border-purple-700/30">
-        <CardContent className="p-4">
-          <h4 className="text-purple-300 font-medium mb-2">Yahoo Fantasy + WeParlay Integration:</h4>
-          <ul className="text-purple-200 text-sm space-y-1 list-disc list-inside">
-            <li>View all your Yahoo Fantasy leagues in one unified dashboard</li>
-            <li>Analyze player performance data to inform your WeParlay bets</li>
-            <li>Track team standings and matchups without leaving WeParlay</li>
-            <li>Use fantasy insights to make smarter sports betting decisions</li>
-            <li>Real-time data updates when connected to your Yahoo account</li>
-          </ul>
         </CardContent>
       </Card>
     </div>
