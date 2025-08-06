@@ -8,6 +8,7 @@ import { Trophy, Users, Target, ExternalLink, Settings, BarChart3, TrendingUp, C
 import { useLocation } from "wouter";
 // import SimpleESPNViewer from "@/components/fantasy/SimpleESPNViewer";
 import ESPNLinkCard from "@/components/fantasy/ESPNLinkCard";
+import YahooEmbedViewer from "@/components/fantasy/YahooEmbedViewer";
 
 export default function FantasySportsHub() {
   const { toast } = useToast();
@@ -110,6 +111,9 @@ export default function FantasySportsHub() {
             {/* ESPN Fantasy Quick Access */}
             <ESPNLinkCard />
 
+            {/* Yahoo Embed Test */}
+            <YahooEmbedViewer />
+
             {/* Platform Connection Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* ESPN Fantasy Card */}
@@ -211,21 +215,21 @@ export default function FantasySportsHub() {
                       </div>
                     </div>
                     <Button 
-                      onClick={connectToYahoo}
+                      onClick={() => setLocation('/yahoo-fantasy')}
                       className="w-full bg-purple-600 hover:bg-purple-700"
                       size="sm"
                     >
                       <Crown className="h-4 w-4 mr-2" />
-                      Try Yahoo OAuth (Development)
+                      View Yahoo Dashboard
                     </Button>
                     <Button 
-                      onClick={() => window.open('/api/yahoo-fantasy', '_blank')}
+                      onClick={connectToYahoo}
                       variant="outline"
-                      className="w-full"
+                      className="w-full border-white/20 text-white hover:bg-white/10"
                       size="sm"
                     >
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      View Yahoo Data
+                      <Crown className="h-4 w-4 mr-2" />
+                      Try Yahoo OAuth
                     </Button>
                   </div>
                 </CardContent>
