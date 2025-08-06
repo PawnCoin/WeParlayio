@@ -203,13 +203,19 @@ export default function FantasySportsHub() {
                   )}
 
                   <div className="space-y-2">
+                    <div className="bg-yellow-900/20 border border-yellow-700/30 rounded-lg p-3 mb-3">
+                      <div className="text-yellow-200 text-xs">
+                        <p className="font-medium">Yahoo OAuth Notice:</p>
+                        <p>Yahoo requires HTTPS and domain verification for OAuth. Connection may fail in development environment.</p>
+                      </div>
+                    </div>
                     <Button 
                       onClick={connectToYahoo}
                       className="w-full bg-purple-600 hover:bg-purple-700"
                       size="sm"
                     >
                       <Crown className="h-4 w-4 mr-2" />
-                      Connect Yahoo Account
+                      Try Yahoo OAuth (Development)
                     </Button>
                     <Button 
                       onClick={() => window.open('/api/yahoo-fantasy', '_blank')}

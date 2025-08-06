@@ -6,7 +6,7 @@ export const realYahooRouter = Router();
 // Start OAuth 2.0 flow
 realYahooRouter.get('/oauth/start', (req: Request, res: Response) => {
   try {
-    const sessionId = req.sessionID;
+    const sessionId = (req as any).sessionID || 'temp-session-' + Date.now();
     const authUrl = realYahooApiService.getAuthUrl(sessionId);
     
     console.log('Redirecting to Yahoo OAuth URL:', authUrl);
@@ -45,7 +45,7 @@ realYahooRouter.get('/oauth/callback', async (req: Request, res: Response) => {
 // Get authentication status
 realYahooRouter.get('/status', (req: Request, res: Response) => {
   try {
-    const sessionId = req.sessionID;
+    const sessionId = (req as any).sessionID || 'temp-session';
     const status = realYahooApiService.getAuthStatus(sessionId);
     
     res.json({
@@ -61,7 +61,7 @@ realYahooRouter.get('/status', (req: Request, res: Response) => {
 // Get user's leagues
 realYahooRouter.get('/leagues', async (req: Request, res: Response) => {
   try {
-    const sessionId = req.sessionID;
+    const sessionId = (req as any).sessionID || 'temp-session';
     
     if (!realYahooApiService.isAuthenticated(sessionId)) {
       return res.status(401).json({ error: 'Yahoo authentication required' });
@@ -78,7 +78,7 @@ realYahooRouter.get('/leagues', async (req: Request, res: Response) => {
 // Get league details
 realYahooRouter.get('/league/:leagueKey', async (req: Request, res: Response) => {
   try {
-    const sessionId = req.sessionID;
+    const sessionId = (req as any).sessionID || 'temp-session';
     const { leagueKey } = req.params;
     
     if (!realYahooApiService.isAuthenticated(sessionId)) {
@@ -96,7 +96,7 @@ realYahooRouter.get('/league/:leagueKey', async (req: Request, res: Response) =>
 // Test connection
 realYahooRouter.get('/test', async (req: Request, res: Response) => {
   try {
-    const sessionId = req.sessionID;
+    const sessionId = (req as any).sessionID || 'temp-session';
     const status = realYahooApiService.getAuthStatus(sessionId);
     
     if (status.authenticated) {
