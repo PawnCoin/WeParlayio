@@ -6,7 +6,7 @@ import sportsBetAPI from "@/lib/sportsBetAPI";
 import GameCard from "@/components/betting/GameCard";
 import UpcomingGameCard from "@/components/betting/UpcomingGameCard";
 import BracketView from "@/components/tournaments/BracketView";
-import YahooFootballFantasyIntegration from "@/components/fantasy/YahooFootballFantasyIntegration";
+
 import PlayerPropsTable from "@/components/betting/PlayerPropsTable";
 import { StatsCarousel } from "@/components/StatsCarousel";
 import WelcomeDashboard from "@/components/dashboard/WelcomeDashboard";
@@ -403,10 +403,7 @@ const Home: React.FC = () => {
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-4">Fantasy Tools</h2>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Fantasy Team Builder */}
-          <YahooFootballFantasyIntegration />
-
+        <div className="grid grid-cols-1 gap-6">
           {/* Player Props Tool */}
           <Card>
             <CardContent className="p-0">

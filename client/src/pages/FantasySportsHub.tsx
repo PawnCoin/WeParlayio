@@ -8,32 +8,14 @@ import { Trophy, Users, Target, ExternalLink, Settings, BarChart3, TrendingUp, C
 import { useLocation } from "wouter";
 // import SimpleESPNViewer from "@/components/fantasy/SimpleESPNViewer";
 import ESPNLinkCard from "@/components/fantasy/ESPNLinkCard";
-import YahooEmbedViewer from "@/components/fantasy/YahooEmbedViewer";
+
 
 export default function FantasySportsHub() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   
-  const [yahooStatus, setYahooStatus] = useState<'loading' | 'connected' | 'disconnected'>('loading');
   const [espnStatus, setEspnStatus] = useState<'loading' | 'connected' | 'disconnected'>('loading');
-  const [yahooData, setYahooData] = useState<any>(null);
   const [espnData, setEspnData] = useState<any>(null);
-
-  // Test Real Yahoo Fantasy connection
-  const testYahooConnection = async () => {
-    try {
-      const response = await fetch('/api/yahoo-real/test');
-      const data = await response.json();
-      if (data.success && data.authenticated) {
-        setYahooStatus('connected');
-        setYahooData(data);
-      } else {
-        setYahooStatus('disconnected');
-      }
-    } catch (error) {
-      setYahooStatus('disconnected');
-    }
-  };
 
   // Test ESPN Fantasy connection
   const testEspnConnection = async () => {
@@ -53,7 +35,6 @@ export default function FantasySportsHub() {
 
   // Test connections on mount
   useEffect(() => {
-    testYahooConnection();
     testEspnConnection();
   }, []);
 
@@ -67,10 +48,7 @@ export default function FantasySportsHub() {
     queryKey: ['/api/fantasy/teams'],
   });
 
-  const connectToYahoo = () => {
-    // Redirect to Real Yahoo OAuth 2.0
-    window.location.href = '/api/yahoo-real/oauth/start';
-  };
+
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -104,18 +82,15 @@ export default function FantasySportsHub() {
                 Fantasy Sports Hub
               </h1>
               <p className="text-gray-300 max-w-2xl mx-auto">
-                Your unified fantasy sports dashboard connecting ESPN and Yahoo platforms with advanced analytics and betting integration
+                Your fantasy sports dashboard connecting ESPN with advanced analytics and betting integration
               </p>
             </div>
 
             {/* ESPN Fantasy Quick Access */}
             <ESPNLinkCard />
 
-            {/* Yahoo Embed Test */}
-            <YahooEmbedViewer />
-
             {/* Platform Connection Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6">
               {/* ESPN Fantasy Card */}
               <Card className="bg-white/10 border-white/20 backdrop-blur-sm">
                 <CardHeader>
@@ -165,75 +140,7 @@ export default function FantasySportsHub() {
                 </CardContent>
               </Card>
 
-              {/* Yahoo Fantasy Card */}
-              <Card className="bg-white/10 border-white/20 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                        Y!
-                      </div>
-                      Yahoo Fantasy
-                    </div>
-                    {getStatusIcon(yahooStatus)}
-                  </CardTitle>
-                  <CardDescription className="text-gray-300">
-                    Yahoo fantasy league connection with OAuth authentication
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Badge className={getStatusColor(yahooStatus)}>
-                      {yahooStatus === 'loading' ? 'Testing...' : 
-                       yahooStatus === 'connected' ? 'Connected' : 'Using fallback data'}
-                    </Badge>
-                    <Button 
-                      onClick={testYahooConnection}
-                      size="sm"
-                      variant="outline"
-                    >
-                      <RefreshCw className="w-4 h-4 mr-1" />
-                      Test
-                    </Button>
-                  </div>
 
-                  {yahooStatus === 'connected' && yahooData && yahooData.data && yahooData.data.league && (
-                    <div className="bg-gray-900/50 p-3 rounded-lg">
-                      <div className="text-sm text-gray-300 space-y-1">
-                        <p><strong>League:</strong> {yahooData.data.league.name}</p>
-                        <p><strong>Teams:</strong> {yahooData.data.league.size}</p>
-                        <p><strong>Week:</strong> {yahooData.data.league.currentMatchupPeriod}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="space-y-2">
-                    <div className="bg-yellow-900/20 border border-yellow-700/30 rounded-lg p-3 mb-3">
-                      <div className="text-yellow-200 text-xs">
-                        <p className="font-medium">Yahoo OAuth Notice:</p>
-                        <p>Yahoo requires HTTPS and domain verification for OAuth. Connection may fail in development environment.</p>
-                      </div>
-                    </div>
-                    <Button 
-                      onClick={() => setLocation('/yahoo-fantasy')}
-                      className="w-full bg-purple-600 hover:bg-purple-700"
-                      size="sm"
-                    >
-                      <Crown className="h-4 w-4 mr-2" />
-                      View Yahoo Dashboard
-                    </Button>
-                    <Button 
-                      onClick={connectToYahoo}
-                      variant="outline"
-                      className="w-full border-white/20 text-white hover:bg-white/10"
-                      size="sm"
-                    >
-                      <Crown className="h-4 w-4 mr-2" />
-                      Try Yahoo OAuth
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
 
             {/* Quick Stats */}
@@ -245,7 +152,7 @@ export default function FantasySportsHub() {
                     <div>
                       <div className="text-white font-semibold">Connected Platforms</div>
                       <div className="text-gray-400 text-sm">
-                        {(espnStatus === 'connected' ? 1 : 0) + (yahooStatus === 'connected' ? 1 : 0)} of 2 active
+                        {espnStatus === 'connected' ? 1 : 0} of 1 active
                       </div>
                     </div>
                   </div>
@@ -259,7 +166,7 @@ export default function FantasySportsHub() {
                 <div>
                   <div className="text-white font-semibold">Active Players</div>
                   <div className="text-gray-400 text-sm">
-                    {fantasyPlayers?.length || 0} tracked
+                    {Array.isArray(fantasyPlayers) ? fantasyPlayers.length : 0} tracked
                   </div>
                 </div>
               </div>
@@ -294,33 +201,27 @@ export default function FantasySportsHub() {
                   <tr className="border-b border-white/20">
                     <th className="text-left text-white p-2">Feature</th>
                     <th className="text-center text-white p-2">ESPN</th>
-                    <th className="text-center text-white p-2">Yahoo</th>
                   </tr>
                 </thead>
                 <tbody className="text-gray-300">
                   <tr className="border-b border-white/10">
                     <td className="p-2">League Management</td>
                     <td className="p-2 text-center">✓</td>
-                    <td className="p-2 text-center">✓</td>
                   </tr>
                   <tr className="border-b border-white/10">
                     <td className="p-2">Live Scoring</td>
-                    <td className="p-2 text-center">✓</td>
                     <td className="p-2 text-center">✓</td>
                   </tr>
                   <tr className="border-b border-white/10">
                     <td className="p-2">Player Research</td>
                     <td className="p-2 text-center">✓</td>
-                    <td className="p-2 text-center">✓</td>
                   </tr>
                   <tr className="border-b border-white/10">
                     <td className="p-2">Advanced Analytics</td>
                     <td className="p-2 text-center">✓</td>
-                    <td className="p-2 text-center">✓</td>
                   </tr>
                   <tr>
                     <td className="p-2">WeParlay Integration</td>
-                    <td className="p-2 text-center">✓</td>
                     <td className="p-2 text-center">✓</td>
                   </tr>
                 </tbody>

@@ -14,7 +14,7 @@ import { RapidApiService } from "./services/rapidApiService";
 import { SportsGameOddsService } from "./services/sportsGameOddsService";
 import { freeApiService } from "./services/freeApiService";
 import { espnApiService } from "./services/espnApiService";
-import { yahooRouter } from "./routes/yahooRoutes";
+
 import { feeRouter } from "./routes/feeRoutes";
 import { adminRouter } from "./routes/adminRoutes";
 import notificationRoutes from "./routes/notificationRoutes-simplified";
@@ -29,8 +29,7 @@ import { comprehensiveRapidApi } from "./services/comprehensiveRapidApi";
 import rapidApiRoutes from "./routes/rapidApiRoutes";
 import espnFantasyRoutes from "./routes/espnFantasyRoutes";
 import feedbackRoutes from "./routes/feedbackRoutes";
-import yahooFantasyRoutes from "./routes/yahooFantasyRoutes";
-import { realYahooRouter } from "./routes/realYahooRoutes";
+
 import iptvRoutes from "./routes/iptv";
 import iptvProxyRoutes from "./routes/iptv-proxy";
 import { apiQuotaManager } from "./services/apiQuotaManager";
@@ -157,9 +156,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
-  // Register Yahoo Fantasy routes
-  app.use('/api/yahoo', yahooRouter);
-  app.use('/api/yahoo-real', realYahooRouter);
+
 
   // Register fee routes for revenue generation
   app.use('/api/fees', feeRouter);
@@ -2580,41 +2577,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // CRITICAL: Yahoo Fantasy Sports integration endpoints
-  app.get('/api/yahoo/status', isAuthenticated, async (req, res) => {
-    try {
-      const userId = (req.user as any)?.claims?.sub;
-      const user = await storage.getUser(userId);
 
-      const authenticated = !!(user?.yahooAccessToken && user?.yahooRefreshToken);
-
-      res.json({ 
-        authenticated,
-        tokenExpiry: user?.yahooTokenExpiry || null
-      });
-    } catch (error) {
-      console.error('Error checking Yahoo status:', error);
-      res.status(500).json({ message: 'Failed to check Yahoo status' });
-    }
-  });
-
-  app.post('/api/yahoo/connect', isAuthenticated, async (req, res) => {
-    try {
-      const userId = (req.user as any)?.claims?.sub;
-      const { accessToken, refreshToken, expiry } = req.body;
-
-      if (!accessToken || !refreshToken) {
-        return res.status(400).json({ message: 'Access token and refresh token are required' });
-      }
-
-      await storage.updateYahooIntegration(userId, accessToken, refreshToken, new Date(expiry));
-
-      res.json({ success: true, message: 'Yahoo account connected successfully' });
-    } catch (error) {
-      console.error('Error connecting Yahoo account:', error);
-      res.status(500).json({ message: 'Failed to connect Yahoo account' });
-    }
-  });
 
   // REMOVED: Conflicting tournament endpoints
 
@@ -5257,8 +5220,7 @@ ${streamUrl}
   // ESPN Fantasy Football API routes
   app.use('/api/espn-fantasy', espnFantasyRoutes);
 
-  // Yahoo Fantasy Football API routes
-  app.use('/api/yahoo-fantasy', yahooFantasyRoutes);
+
 
   // Fantasy Analytics endpoints - placeholder routes for advanced features
   app.get('/api/fantasy-analytics/player/:playerId', (req, res) => {
