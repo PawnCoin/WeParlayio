@@ -252,7 +252,7 @@ const OnboardingExperience: React.FC = () => {
                         </li>
                         <li className="flex items-center">
                           <Check className="h-4 w-4 mr-2 text-green-500" />
-                          Facebook integrations
+                          ESPN Fantasy integration
                         </li>
                       </ul>
                     </div>

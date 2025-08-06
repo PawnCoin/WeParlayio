@@ -358,7 +358,7 @@ export const fetchEsportsOdds = async (): Promise<EsportsOdds[]> => {
     const oddsData = await Promise.allSettled([
       fetchPinnacleEsportsOdds(),
       fetchBet365EsportsOdds(),
-      fetchDraftKingsEsportsOdds()
+
     ]);
 
     const consolidatedOdds: EsportsOdds[] = [];
@@ -456,11 +456,6 @@ async function fetchPinnacleEsportsOdds(): Promise<EsportsOdds[]> {
 
 async function fetchBet365EsportsOdds(): Promise<EsportsOdds[]> {
   // Bet365 API integration
-  return [];
-}
-
-async function fetchDraftKingsEsportsOdds(): Promise<EsportsOdds[]> {
-  // DraftKings API integration
   return [];
 }
 

@@ -24,7 +24,7 @@ export class RealSocialMediaService {
   private twitterClient: TwitterApi | null = null;
   private isLiveMode: boolean = true;
   private twitterConfigured: boolean = false;
-  private facebookConfigured: boolean = false;
+
 
   constructor() {
     this.initializeTwitter();

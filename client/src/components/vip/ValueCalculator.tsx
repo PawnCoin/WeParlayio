@@ -20,10 +20,10 @@ const ValueCalculator: React.FC = () => {
   // Calculate the value based on the tier and inputs
   const calculateValue = () => {
     const tiers = {
-      bronze: { oddsBoost: 0.025, voiceBettingLimit: 5, fantasySyncValue: 0, facebookValue: 0 },
-      silver: { oddsBoost: 0.035, voiceBettingLimit: 20, fantasySyncValue: 5, facebookValue: 2 },
-      gold: { oddsBoost: 0.05, voiceBettingLimit: 999, fantasySyncValue: 10, facebookValue: 5 },
-      platinum: { oddsBoost: 0.075, voiceBettingLimit: 999, fantasySyncValue: 15, facebookValue: 15 }
+      bronze: { oddsBoost: 0.025, voiceBettingLimit: 5, fantasySyncValue: 0 },
+      silver: { oddsBoost: 0.035, voiceBettingLimit: 20, fantasySyncValue: 5 },
+      gold: { oddsBoost: 0.05, voiceBettingLimit: 999, fantasySyncValue: 10 },
+      platinum: { oddsBoost: 0.075, voiceBettingLimit: 999, fantasySyncValue: 15 }
     };
     
     const tierData = tiers[selectedTier as keyof typeof tiers];
@@ -45,18 +45,14 @@ const ValueCalculator: React.FC = () => {
       
 
       
-    // Calculate Facebook integration value
-    const facebookValue = selectedFeatures.includes('facebook') && tierData.facebookValue > 0
-      ? tierData.facebookValue
-      : 0;
+
     
     // Sum up the total value
     return {
       oddsBoostValue,
       voiceBettingValue,
       fantasySyncValue,
-      facebookValue,
-      total: oddsBoostValue + voiceBettingValue + fantasySyncValue + facebookValue
+      total: oddsBoostValue + voiceBettingValue + fantasySyncValue
     };
   };
   
@@ -269,16 +265,7 @@ const ValueCalculator: React.FC = () => {
                     
 
                     
-                    {value.facebookValue > 0 && (
-                      <motion.div 
-                        className="flex justify-between"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                      >
-                        <span>Facebook App Value:</span>
-                        <span className="font-medium">${value.facebookValue.toFixed(2)}</span>
-                      </motion.div>
-                    )}
+
                     
                     <div className="pt-2 border-t border-green-200 dark:border-green-800 flex justify-between font-bold text-green-700 dark:text-green-400">
                       <span>Total Value:</span>

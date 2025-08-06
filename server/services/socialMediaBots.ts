@@ -1,7 +1,7 @@
 import { storage } from "../storage";
 
 interface SocialPost {
-  platform: 'twitter' | 'instagram' | 'facebook' | 'reddit' | 'tiktok' | 'snapchat';
+  platform: 'twitter' | 'instagram' | 'reddit' | 'tiktok' | 'snapchat';
   content: string;
   hashtags: string[];
   imageUrl?: string;
@@ -25,7 +25,7 @@ export class SocialMediaBotsService {
       personality: 'enthusiast',
       preferredSports: ['NFL', 'NBA'],
       postingFrequency: 3,
-      platforms: ['twitter', 'facebook']
+      platforms: ['twitter']
     },
     {
       id: 'bot_sarah_crypto',
@@ -49,7 +49,7 @@ export class SocialMediaBotsService {
       personality: 'casual',
       preferredSports: ['NFL', 'NBA', 'MLB'],
       postingFrequency: 2,
-      platforms: ['facebook', 'instagram']
+      platforms: ['instagram']
     },
     {
       id: 'bot_james_vip',

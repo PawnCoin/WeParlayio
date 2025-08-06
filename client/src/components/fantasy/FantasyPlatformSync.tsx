@@ -11,8 +11,7 @@ import {
   Repeat, Shield, Check, AlertTriangle, Download, 
   RefreshCw, LogOut, Inbox, ArrowRight 
 } from "lucide-react";
-import { FaFootballBall, FaGamepad } from "react-icons/fa";
-import { SiEa } from "react-icons/si";
+import { FaFootballBall } from "react-icons/fa";
 
 interface FantasyPlatform {
   id: string;
@@ -34,27 +33,7 @@ const FantasyPlatformSync: React.FC = () => {
       connected: false,
       teamsCount: 0
     },
-    { 
-      id: 'draftkings', 
-      name: 'DraftKings', 
-      icon: <FaGamepad className="h-6 w-6 text-green-600" />, 
-      connected: false,
-      teamsCount: 0
-    },
-    { 
-      id: 'fanduel', 
-      name: 'FanDuel', 
-      icon: <SiEa className="h-6 w-6 text-blue-600" />, 
-      connected: false,
-      teamsCount: 0
-    },
-    { 
-      id: 'nfl', 
-      name: 'NFL Fantasy', 
-      icon: <FaFootballBall className="h-6 w-6 text-gray-800 dark:text-gray-200" />, 
-      connected: false,
-      teamsCount: 0
-    }
+
   ]);
   
   const [isSyncing, setIsSyncing] = useState(false);
