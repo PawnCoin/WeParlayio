@@ -65,6 +65,7 @@ export class RealYahooApiService {
    */
   async exchangeCodeForToken(code: string, sessionId: string): Promise<YahooOAuthTokens> {
     try {
+      console.log('🔄 Exchanging authorization code for tokens...');
       const response = await fetch('https://api.login.yahoo.com/oauth2/get_token', {
         method: 'POST',
         headers: {
@@ -78,11 +79,15 @@ export class RealYahooApiService {
         })
       });
 
+      const responseText = await response.text();
+      console.log('Yahoo OAuth response status:', response.status);
+      console.log('Yahoo OAuth response:', responseText);
+      
       if (!response.ok) {
-        throw new Error(`Yahoo OAuth error: ${response.status} ${response.statusText}`);
+        throw new Error(`Yahoo OAuth error: ${response.status} ${response.statusText} - ${responseText}`);
       }
 
-      const tokens: YahooOAuthTokens = await response.json();
+      const tokens: YahooOAuthTokens = JSON.parse(responseText);
       tokens.expires_at = Date.now() + (tokens.expires_in * 1000);
       
       // Store tokens for this session

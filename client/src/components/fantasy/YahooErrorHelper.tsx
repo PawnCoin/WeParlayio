@@ -12,7 +12,7 @@ export default function YahooErrorHelper() {
           Yahoo OAuth Configuration Issue
         </CardTitle>
         <CardDescription className="text-red-300">
-          The "invalid_scope" error means your Yahoo app needs Fantasy Sports API enabled
+          The "invalid_scope" error means your Yahoo app needs to be configured as "Confidential Client"
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -21,7 +21,8 @@ export default function YahooErrorHelper() {
           <ol className="text-red-200 text-sm space-y-1 list-decimal list-inside">
             <li>Go to Yahoo Developer Console</li>
             <li>Edit your WeParlay app</li>
-            <li>Enable "Fantasy Sports" API permission</li>
+            <li>Change OAuth Client Type from "Public Client" to "Confidential Client"</li>
+            <li>Ensure "Fantasy Sports" API is enabled with Read permission</li>
             <li>Save and try connecting again</li>
           </ol>
         </div>
@@ -47,8 +48,8 @@ export default function YahooErrorHelper() {
         <div className="text-xs text-red-300 bg-red-900/20 p-3 rounded">
           <p className="font-medium mb-1">What to look for in Yahoo Developer Console:</p>
           <ul className="list-disc list-inside space-y-1">
-            <li>"API Permissions" or "Product APIs" section</li>
-            <li>Checkbox for "Fantasy Sports" - make sure it's checked</li>
+            <li>"OAuth Client Type" - change from "Public Client" to "Confidential Client"</li>
+            <li>"API Permissions" - ensure "Fantasy Sports" is checked</li>
             <li>Select "Read" access level for fspt-r scope</li>
           </ul>
         </div>
