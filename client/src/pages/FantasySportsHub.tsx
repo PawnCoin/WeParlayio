@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Trophy, Users, Target, ExternalLink, Settings, BarChart3, TrendingUp, CheckCircle, XCircle, RefreshCw, Crown } from "lucide-react";
 import { useLocation } from "wouter";
-import ESPNFantasyEmbed from "@/components/ESPNFantasyEmbed";
+import ESPNFantasyEmbed from "../components/ESPNFantasyEmbed";
 
 export default function FantasySportsHub() {
   const { toast } = useToast();
