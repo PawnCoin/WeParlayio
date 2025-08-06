@@ -86,14 +86,7 @@ export class PriorityApiService {
         getOdds: async (sport) => this.getEspnApiData(sport),
         rateLimit: 100
       },
-      {
-        name: 'Yahoo Sports API',
-        service: null,
-        priority: 8,
-        healthCheck: async () => this.checkYahooApi(),
-        getOdds: async (sport) => this.getYahooApiData(sport),
-        rateLimit: 300
-      },
+
       {
         name: 'Twitch API',
         service: null,
@@ -364,10 +357,7 @@ export class PriorityApiService {
     } catch { return false; }
   }
 
-  private async checkYahooApi(): Promise<boolean> {
-    if (!process.env.YAHOO_CLIENT_ID) return false;
-    return true; // Yahoo API requires OAuth, assume healthy if credentials exist
-  }
+
 
   private async checkTwitchApi(): Promise<boolean> {
     if (!process.env.TWITCH_CLIENT_ID) return false;
@@ -561,10 +551,7 @@ export class PriorityApiService {
     return allSportsData;
   }
 
-  private async getYahooApiData(sport?: string): Promise<any[]> {
-    // Implementation for Yahoo API
-    return [];
-  }
+
 
   private async getTwitchApiData(sport?: string): Promise<any[]> {
     // Implementation for Twitch API (esports data)

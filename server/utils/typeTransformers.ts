@@ -26,13 +26,12 @@ export function transformDatabaseUser(dbUser: any): User {
   if (transformed.walletAddress === null) transformed.walletAddress = undefined;
   if (transformed.walletType === null) transformed.walletType = undefined;
   if (transformed.password === null) transformed.password = undefined;
-  if (transformed.yahooAccessToken === null) transformed.yahooAccessToken = undefined;
-  if (transformed.yahooRefreshToken === null) transformed.yahooRefreshToken = undefined;
+
   
   // Handle optional date fields
   if (transformed.lastActivity === null) transformed.lastActivity = undefined;
   if (transformed.subscriptionExpiry === null) transformed.subscriptionExpiry = undefined;
-  if (transformed.yahooTokenExpiry === null) transformed.yahooTokenExpiry = undefined;
+
   
   // Handle optional object fields
   if (transformed.preferences === null) transformed.preferences = undefined;

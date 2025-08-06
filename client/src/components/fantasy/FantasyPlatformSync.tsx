@@ -11,7 +11,7 @@ import {
   Repeat, Shield, Check, AlertTriangle, Download, 
   RefreshCw, LogOut, Inbox, ArrowRight 
 } from "lucide-react";
-import { FaYahoo, FaFootballBall, FaGamepad } from "react-icons/fa";
+import { FaFootballBall, FaGamepad } from "react-icons/fa";
 import { SiEa } from "react-icons/si";
 
 interface FantasyPlatform {
@@ -26,13 +26,7 @@ const FantasyPlatformSync: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [platforms, setPlatforms] = useState<FantasyPlatform[]>([
-    { 
-      id: 'yahoo', 
-      name: 'Yahoo Fantasy', 
-      icon: <FaYahoo className="h-6 w-6 text-purple-600" />, 
-      connected: false,
-      teamsCount: 0
-    },
+
     { 
       id: 'espn', 
       name: 'ESPN Fantasy', 

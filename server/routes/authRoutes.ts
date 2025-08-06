@@ -578,8 +578,7 @@ router.get('/user', async (req, res) => {
           biggestWin: 0,
           preferences: null,
           socialLinks: null,
-          yahooRefreshToken: null,
-          yahooTokenExpiry: null,
+
           stripeCustomerId: null,
           stripeSubscriptionId: null,
           plaidAccessToken: null,

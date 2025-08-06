@@ -8,7 +8,7 @@ import { Request, Response } from 'express';
 interface FantasyBettingPool {
   poolId: string;
   leagueId: string;
-  platform: 'espn' | 'yahoo';
+  platform: 'espn';
   poolType: 'weekly' | 'monthly' | 'season';
   entryFee: number;
   currency: 'usd' | 'weparlay_cash' | 'pawn_coin';
@@ -124,7 +124,7 @@ class FantasySocialEngine {
   /**
    * Create fantasy league betting pool
    */
-  async createBettingPool(leagueId: string, platform: 'espn' | 'yahoo', poolConfig: {
+  async createBettingPool(leagueId: string, platform: 'espn', poolConfig: {
     poolType: 'weekly' | 'monthly' | 'season';
     entryFee: number;
     currency: 'usd' | 'weparlay_cash' | 'pawn_coin';

@@ -90,8 +90,7 @@ export interface IStorage {
   getTicketMessages(ticketId: number): Promise<SupportTicketMessage[]>;
   addTicketMessage(message: InsertSupportTicketMessage): Promise<SupportTicketMessage>;
   
-  // Yahoo integration
-  updateYahooIntegration(userId: string, token: string, refreshToken: string, expiry: Date): Promise<User>;
+
   
   // Fantasy operations
   getFantasyTeam(id: number): Promise<FantasyTeam | undefined>;
@@ -423,18 +422,7 @@ export class SimpleStorage implements IStorage {
     return { ...message, id, createdAt: new Date() };
   }
 
-  async updateYahooIntegration(userId: string, token: string, refreshToken: string, expiry: Date): Promise<User> {
-    const user = await this.getUser(userId);
-    if (!user) throw new Error('User not found');
-    const updatedUser = { 
-      ...user, 
-      yahooAccessToken: token, 
-      yahooRefreshToken: refreshToken,
-      yahooTokenExpiry: expiry
-    };
-    this.users.set(userId, updatedUser);
-    return updatedUser;
-  }
+
 
   async getFantasyTeam(id: number): Promise<FantasyTeam | undefined> { return undefined; }
   async addPlayerToFantasyTeam(fantasyTeamPlayer: InsertFantasyTeamPlayer): Promise<FantasyTeamPlayer> {

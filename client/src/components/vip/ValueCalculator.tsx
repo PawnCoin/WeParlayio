@@ -20,10 +20,10 @@ const ValueCalculator: React.FC = () => {
   // Calculate the value based on the tier and inputs
   const calculateValue = () => {
     const tiers = {
-      bronze: { oddsBoost: 0.025, voiceBettingLimit: 5, fantasySyncValue: 0, yahooFantasyValue: 0, facebookValue: 0 },
-      silver: { oddsBoost: 0.035, voiceBettingLimit: 20, fantasySyncValue: 5, yahooFantasyValue: 0, facebookValue: 2 },
-      gold: { oddsBoost: 0.05, voiceBettingLimit: 999, fantasySyncValue: 10, yahooFantasyValue: 15, facebookValue: 5 },
-      platinum: { oddsBoost: 0.075, voiceBettingLimit: 999, fantasySyncValue: 15, yahooFantasyValue: 25, facebookValue: 15 }
+      bronze: { oddsBoost: 0.025, voiceBettingLimit: 5, fantasySyncValue: 0, facebookValue: 0 },
+      silver: { oddsBoost: 0.035, voiceBettingLimit: 20, fantasySyncValue: 5, facebookValue: 2 },
+      gold: { oddsBoost: 0.05, voiceBettingLimit: 999, fantasySyncValue: 10, facebookValue: 5 },
+      platinum: { oddsBoost: 0.075, voiceBettingLimit: 999, fantasySyncValue: 15, facebookValue: 15 }
     };
     
     const tierData = tiers[selectedTier as keyof typeof tiers];
@@ -43,10 +43,7 @@ const ValueCalculator: React.FC = () => {
       ? tierData.fantasySyncValue
       : 0;
       
-    // Calculate Yahoo Fantasy value
-    const yahooFantasyValue = selectedFeatures.includes('yahooFantasy') && tierData.yahooFantasyValue > 0
-      ? tierData.yahooFantasyValue
-      : 0;
+
       
     // Calculate Facebook integration value
     const facebookValue = selectedFeatures.includes('facebook') && tierData.facebookValue > 0
@@ -58,9 +55,8 @@ const ValueCalculator: React.FC = () => {
       oddsBoostValue,
       voiceBettingValue,
       fantasySyncValue,
-      yahooFantasyValue,
       facebookValue,
-      total: oddsBoostValue + voiceBettingValue + fantasySyncValue + yahooFantasyValue + facebookValue
+      total: oddsBoostValue + voiceBettingValue + fantasySyncValue + facebookValue
     };
   };
   
@@ -271,16 +267,7 @@ const ValueCalculator: React.FC = () => {
                       </motion.div>
                     )}
                     
-                    {value.yahooFantasyValue > 0 && (
-                      <motion.div 
-                        className="flex justify-between"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                      >
-                        <span>Yahoo Fantasy Value:</span>
-                        <span className="font-medium">${value.yahooFantasyValue.toFixed(2)}</span>
-                      </motion.div>
-                    )}
+
                     
                     {value.facebookValue > 0 && (
                       <motion.div 

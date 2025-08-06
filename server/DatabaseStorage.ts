@@ -91,25 +91,7 @@ export class DatabaseStorage implements IStorage {
     return transformDatabaseUser(updatedUser);
   }
 
-  async updateYahooIntegration(
-    userId: string, 
-    token: string, 
-    refreshToken: string, 
-    expiry: Date
-  ): Promise<User> {
-    const [updatedUser] = await db
-      .update(users)
-      .set({ 
-        yahooToken: token,
-        yahooRefreshToken: refreshToken,
-        yahooTokenExpiry: expiry,
-        // updatedAt removed for schema compliance
-      })
-      .where(eq(users.id, userId))
-      .returning();
-    
-    return transformDatabaseUser(updatedUser);
-  }
+
 
   async getAllUsers(): Promise<User[]> {
     const dbUsers = await db.select().from(users);

@@ -62,7 +62,7 @@ export interface IStorage {
   getSupportTicketByNumber(ticketNumber: string): Promise<SupportTicket | undefined>;
   getTicketMessages(ticketId: number): Promise<SupportTicketMessage[]>;
   addTicketMessage(message: InsertSupportTicketMessage): Promise<SupportTicketMessage>;
-  updateYahooIntegration(userId: string, token: string, refreshToken: string, expiry: Date): Promise<User>;
+
   getFantasyTeam(id: number): Promise<FantasyTeam | undefined>;
   addPlayerToFantasyTeam(fantasyTeamPlayer: InsertFantasyTeamPlayer): Promise<FantasyTeamPlayer>;
   getUserByGamertag(gamertag: string): Promise<User | undefined>;
@@ -102,7 +102,7 @@ export interface IStorage {
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
   getTransactions(limit: number, offset: number): Promise<Transaction[]>;
   incrementUserWins(userId: string): Promise<User>;
-  updateYahooIntegration(userId: string, accessToken: string, refreshToken: string, expiry: Date): Promise<User>;
+
   getFantasyTeam(id: number): Promise<FantasyTeam | undefined>;
   addPlayerToFantasyTeam(fantasyTeamPlayer: InsertFantasyTeamPlayer): Promise<FantasyTeamPlayer>;
   updatePlatformRevenue(amount: number, feeType: string): Promise<any>;
@@ -175,9 +175,7 @@ export class MemStorage implements IStorage {
       socialLinks: null,
       password: undefined,
       subscriptionExpiry: undefined,
-      yahooAccessToken: undefined,
-      yahooRefreshToken: null,
-      yahooTokenExpiry: null,
+
       stripeCustomerId: null,
       stripeSubscriptionId: null,
       plaidAccessToken: null,

@@ -56,7 +56,7 @@ interface InjuryReport {
 }
 
 interface OptimizedLineup {
-  platform: 'espn' | 'yahoo';
+  platform: 'espn';
   leagueId: string;
   roster: Array<{
     position: string;
@@ -164,7 +164,7 @@ class FantasyAnalyticsEngine {
   /**
    * Optimize lineup based on projections and constraints
    */
-  async optimizeLineup(platform: 'espn' | 'yahoo', leagueId: string, riskLevel: 'conservative' | 'balanced' | 'aggressive'): Promise<OptimizedLineup> {
+  async optimizeLineup(platform: 'espn', leagueId: string, riskLevel: 'conservative' | 'balanced' | 'aggressive'): Promise<OptimizedLineup> {
     const availablePlayers = await this.getAvailablePlayers(platform, leagueId);
     const playerAnalytics = await Promise.all(
       availablePlayers.map(p => this.generatePlayerAnalytics(p.id))
@@ -201,7 +201,7 @@ class FantasyAnalyticsEngine {
   /**
    * Generate waiver wire recommendations
    */
-  async generateWaiverRecommendations(platform: 'espn' | 'yahoo', leagueId: string): Promise<Array<{
+  async generateWaiverRecommendations(platform: 'espn', leagueId: string): Promise<Array<{
     player: PlayerAnalytics;
     priority: number;
     reasoning: string;
@@ -231,7 +231,7 @@ class FantasyAnalyticsEngine {
 
   // Private helper methods
   private async getPlayerBaseStats(playerId: string): Promise<any> {
-    // Integration with existing ESPN/Yahoo APIs
+    // Integration with existing ESPN APIs
     return {
       name: "Player Name",
       position: "RB",
@@ -445,7 +445,7 @@ export async function getSleeperPicks(req: Request, res: Response) {
 export async function getWaiverRecommendations(req: Request, res: Response) {
   try {
     const { platform, leagueId } = req.params;
-    const recommendations = await fantasyAnalyticsEngine.generateWaiverRecommendations(platform as 'espn' | 'yahoo', leagueId);
+    const recommendations = await fantasyAnalyticsEngine.generateWaiverRecommendations(platform as 'espn', leagueId);
     res.json({ success: true, data: recommendations });
   } catch (error) {
     console.error('Waiver recommendations error:', error);
