@@ -36,7 +36,8 @@ Preferred communication style: Simple, everyday language.
   - Fantasy Sports Hub streamlined for ESPN exclusive integration
   - Real-time ESPN fantasy data aggregation and player statistics
   - Removed: Yahoo, DraftKings, FanDuel integrations for focused architecture
-- **Payment Systems**: Stripe for subscriptions, PayPal for alternative payments, multi-wallet cryptocurrency support (MetaMask, Coinbase, Trust Wallet), and internal "WeParlay Cash" virtual currency.
+- **Social Media Integration**: Completely removed all social media bots, marketing automation, and platform integrations (Twitter, Facebook, Instagram) for streamlined core functionality
+- **Payment Systems**: Streamlined to core betting with internal "WeParlay Cash" virtual currency (removed: Stripe, PayPal, Plaid banking, cryptocurrency integrations).
 - **Authentication & Authorization**: Replit Auth, PostgreSQL-backed sessions (7-day TTL), role-based access control, and tier-based feature access.
 - **Real-time Features**: WebSocket integration for live odds and event updates, and an in-app notification system.
 - **API Data Pipeline**: Data aggregation, normalization, smart caching, rate limiting, and fallback systems.
