@@ -120,7 +120,7 @@ export default function FantasySportsHub() {
                     {getStatusIcon(espnStatus)}
                   </CardTitle>
                   <CardDescription className="text-gray-300">
-                    Public ESPN data (user leagues require manual sharing)
+                    Public ESPN data only - ESPN doesn't offer OAuth for fantasy leagues
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -139,22 +139,19 @@ export default function FantasySportsHub() {
                     </Button>
                   </div>
 
-                  {espnStatus === 'connected' && espnData && (
-                    <div className="bg-gray-900/50 p-3 rounded-lg">
-                      <div className="text-sm text-gray-300 space-y-1">
-                        <p><strong>League:</strong> {espnData.name}</p>
-                        <p><strong>Teams:</strong> {espnData.size}</p>
-                        <p><strong>Week:</strong> {espnData.currentMatchupPeriod}</p>
-                      </div>
+                  <div className="bg-orange-900/30 p-3 rounded-lg border border-orange-700/50">
+                    <div className="text-sm text-orange-300 space-y-1">
+                      <p className="font-medium">ESPN Limitation:</p>
+                      <p className="text-xs">ESPN does not provide OAuth authentication for personal fantasy leagues. Users must manually share league URLs.</p>
                     </div>
-                  )}
+                  </div>
                   
                   <Button 
                     onClick={() => setLocation('/fantasy-football')}
                     className="w-full bg-red-600 hover:bg-red-700"
                   >
                     <ExternalLink className="h-4 w-4 mr-2" />
-                    View ESPN Fantasy
+                    View Public ESPN Data
                   </Button>
                 </CardContent>
               </Card>
