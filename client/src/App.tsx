@@ -85,6 +85,7 @@ const UnifiedGaming = React.lazy(() => import("@/pages/UnifiedGaming"));
 const SocialMediaBots = React.lazy(() => import("@/pages/SocialMediaBots"));
 const AdminDashboard = React.lazy(() => import("@/pages/AdminDashboard"));
 const UserDirectory = React.lazy(() => import("@/pages/UserDirectory"));
+const FantasyLeagueTest = React.lazy(() => import("@/pages/FantasyLeagueTest"));
 
 // Development/Testing imports (conditional)
 const TokenCleanupTest = React.lazy(() => import("@/pages/TokenCleanupTest"));
@@ -138,7 +139,7 @@ function Router() {
       
       {/* VIP Feature Pages with SuspenseRoute and AdminBypass */}
       <SuspenseRoute path="/vip/fantasy" component={VIPFantasy} />
-      <SuspenseRoute path="/vip/head-to-head" component={VIPHeadToHead} />
+      {/* Head-to-head moved to public access */}
       <SuspenseRoute path="/vip/tournaments" component={VIPTournaments} />
       <SuspenseRoute path="/vip/gaming-integration" component={VIPGamingIntegration} />
       <SuspenseRoute path="/vip/blockchain-performance" component={VIPBlockchainPerformance} />
@@ -165,6 +166,7 @@ function Router() {
       {/* Lazy-loaded Feature Pages with SuspenseRoute */}
       <SuspenseRoute path="/fantasy" component={FantasySportsHub} />
       <SuspenseRoute path="/fantasy-football" component={FantasyFootball} />
+      <SuspenseRoute path="/fantasy-test" component={FantasyLeagueTest} />
       <SuspenseRoute path="/vip/live-streaming" component={VipLiveStreaming} />
       <SuspenseRoute path="/iptv-player" component={React.lazy(() => import('./components/streaming/IPTVPlayerOriginal'))} />
       <SuspenseRoute path="/tier-comparison" component={TierComparison} />

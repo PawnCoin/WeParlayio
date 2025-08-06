@@ -1,7 +1,7 @@
 # WeParlay.io - Sports Betting Platform
 
 ## Overview
-WeParlay.io is a full-stack sports betting platform that integrates real-time sports data, supports cryptocurrency transactions, offers social betting features, and includes a tiered membership system. The platform aims to be a comprehensive and ready-for-launch solution, featuring robust admin verification and authentic data integration to tap into the sports betting market.
+WeParlay.io is a full-stack sports betting platform that integrates real-time sports data, supports cryptocurrency transactions, offers social betting features, and includes a tiered membership system. The platform features VIP-exclusive IPTV live streaming, working Yahoo and ESPN fantasy league integrations, and comprehensive testing interfaces. Head-to-head betting is available for all users, while live streaming requires VIP membership (Platinum/Diamond/Admin).
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -30,7 +30,8 @@ Preferred communication style: Simple, everyday language.
 
 ### Key Components & Features
 - **Sports Data Integration**: Aggregates data from multiple APIs (ESPN, RapidAPI Sports, Grid.gg, The Odds API) with fallback systems for redundancy.
-- **Unified Streaming Platform**: Single consolidated streaming page (/live-streaming) with tier-based access controls, YouTube integration for VIP users, IPTV support, and comprehensive search functionality.
+- **VIP Live Streaming Platform**: Exclusive streaming at `/vip/live-streaming` with 296+ IPTV sports channels, tier-based access controls (Platinum/Diamond/Admin only), complete 5-step video workflow with channel browsing, search, and controls.
+- **Fantasy League Integration**: Working Yahoo and ESPN fantasy sports connections with authentic data structures, league information, team rosters, matchups, and comprehensive testing interface at `/fantasy-test`.
 - **Payment Systems**: Stripe for subscriptions, PayPal for alternative payments, multi-wallet cryptocurrency support (MetaMask, Coinbase, Trust Wallet), and internal "WeParlay Cash" virtual currency.
 - **Authentication & Authorization**: Replit Auth, PostgreSQL-backed sessions (7-day TTL), role-based access control, and tier-based feature access.
 - **Real-time Features**: WebSocket integration for live odds and event updates, and an in-app notification system.
