@@ -120,14 +120,14 @@ export default function FantasySportsHub() {
                     {getStatusIcon(espnStatus)}
                   </CardTitle>
                   <CardDescription className="text-gray-300">
-                    Real ESPN fantasy league integration with live data
+                    Public ESPN data (user leagues require manual sharing)
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
                     <Badge className={getStatusColor(espnStatus)}>
                       {espnStatus === 'loading' ? 'Testing...' : 
-                       espnStatus === 'connected' ? 'Connected' : 'Using fallback data'}
+                       espnStatus === 'connected' ? 'Public data only' : 'Using fallback data'}
                     </Badge>
                     <Button 
                       onClick={testEspnConnection}

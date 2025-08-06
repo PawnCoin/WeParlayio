@@ -30,8 +30,8 @@ export class RealYahooApiService {
     this.clientId = process.env.YAHOO_CLIENT_ID || '';
     this.clientSecret = process.env.YAHOO_CLIENT_SECRET || '';
     this.redirectUri = process.env.REPLIT_DOMAINS 
-      ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}/api/yahoo/oauth/callback`
-      : 'http://localhost:5000/api/yahoo/oauth/callback';
+      ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}/api/yahoo-real/oauth/callback`
+      : 'http://localhost:5000/api/yahoo-real/oauth/callback';
     
     console.log('✅ Real Yahoo Fantasy API service initialized');
   }
