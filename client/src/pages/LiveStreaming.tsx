@@ -32,7 +32,7 @@ import YouTubeModal from '@/components/streaming/YouTubeModal';
 import AdvancedLiveStreamPlayer from '@/components/streaming/AdvancedLiveStreamPlayer';
 import ReactPlayerVideoPlayer from '@/components/streaming/ReactPlayerVideoPlayer';
 import UnifiedIPTVModule from '@/components/streaming/UnifiedIPTVModule';
-import AdvancedLiveStreaming from '@/pages/AdvancedLiveStreaming';
+// import AdvancedLiveStreaming from '@/pages/AdvancedLiveStreaming'; // Removed circular import
 import { StreamingGame, BetSlip as BetSlipType, BetType } from '@/components/streaming/types';
 
 // Legacy LiveGame interface for compatibility
@@ -441,7 +441,20 @@ export default function LiveStreaming() {
 
   // Early return for advanced mode (after all hooks are defined)
   if (playerMode === 'advanced') {
-    return <AdvancedLiveStreaming onBackToBasic={() => setPlayerMode('basic')} />;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 p-4">
+        <div className="max-w-7xl mx-auto">
+          <Button 
+            onClick={() => setPlayerMode('basic')}
+            className="mb-4"
+            variant="outline"
+          >
+            ← Back to Basic Mode
+          </Button>
+          <UnifiedIPTVModule />
+        </div>
+      </div>
+    );
   }
 
   if (isLoading) {
