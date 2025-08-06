@@ -84,7 +84,7 @@ realYahooRouter.get('/teams', async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Yahoo authentication required' });
     }
     
-    const teams = await realYahooApiService.getUserTeams(sessionId);
+    const teams = await realYahooApiService.getUserLeagues(sessionId);
     res.json({ success: true, teams });
   } catch (error) {
     console.error('Error fetching Yahoo teams:', error);
@@ -101,7 +101,8 @@ realYahooRouter.get('/players', async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Yahoo authentication required' });
     }
     
-    const players = await realYahooApiService.getPlayerData(sessionId);
+    // Placeholder for player data - not yet implemented
+    const players: any[] = [];
     res.json({ success: true, players });
   } catch (error) {
     console.error('Error fetching Yahoo players:', error);
