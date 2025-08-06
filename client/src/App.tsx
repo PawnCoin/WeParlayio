@@ -69,12 +69,12 @@ import ErrorBoundary from "./components/ErrorBoundary";
 // Lazy load less critical pages
 const FantasySportsHub = React.lazy(() => import("@/pages/FantasySportsHub"));
 const FantasyFootball = React.lazy(() => import("@/pages/FantasyFootball"));
-const LiveStreaming = React.lazy(() => import("@/pages/LiveStreaming"));
+const VipLiveStreaming = React.lazy(() => import("@/pages/VipLiveStreaming"));
 const Trivia = React.lazy(() => import("@/pages/Trivia"));
 const TierComparison = React.lazy(() => import("@/pages/TierComparison"));
 const WeParlayCash = React.lazy(() => import("@/pages/WeParlayCash"));
 const CryptoInformation = React.lazy(() => import("@/pages/CryptoInformation"));
-const IPTVStreaming = React.lazy(() => import("@/pages/IPTVStreaming"));
+// const IPTVStreaming = React.lazy(() => import("@/pages/IPTVStreaming")); // Removed - using VIP live streaming instead
 const UserAnalytics = React.lazy(() => import("@/pages/UserAnalytics"));
 const ThemeSettingsPage = React.lazy(() => import("@/pages/ThemeSettingsPage"));
 const PaymentCheckout = React.lazy(() => import("@/pages/PaymentCheckout"));
@@ -165,8 +165,7 @@ function Router() {
       {/* Lazy-loaded Feature Pages with SuspenseRoute */}
       <SuspenseRoute path="/fantasy" component={FantasySportsHub} />
       <SuspenseRoute path="/fantasy-football" component={FantasyFootball} />
-      <SuspenseRoute path="/live-streaming" component={LiveStreaming} />
-      <SuspenseRoute path="/iptv" component={IPTVStreaming} />
+      <SuspenseRoute path="/vip/live-streaming" component={VipLiveStreaming} />
       <SuspenseRoute path="/iptv-player" component={React.lazy(() => import('./components/streaming/IPTVPlayerOriginal'))} />
       <SuspenseRoute path="/tier-comparison" component={TierComparison} />
       <SuspenseRoute path="/weparlay-cash" component={WeParlayCash} />
