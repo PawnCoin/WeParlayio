@@ -191,25 +191,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/unified-sports/upcoming-events', async (req, res) => {
     try {
       const events = await espnApiService.getLiveEvents();
-      const upcomingEvents = events.map(event => ({
-        id: event.id,
-        name: event.name,
-        sport: event.sport,
-        league: event.league || 'Professional',
-        startTime: event.startTime,
-        homeTeam: event.homeTeam,
-        awayTeam: event.awayTeam,
-        status: event.status,
-        odds: {
-          homeWin: 1.95,
-          awayWin: 1.85,
-          draw: event.sport === 'soccer' ? 3.20 : undefined
+      const upcomingEvents = events.map(event => {
+        // Generate sport-specific realistic betting lines
+        const isFootball = event.sport === 'NFL' || event.sport === 'Football';
+        const isBasketball = event.sport === 'NBA' || event.sport === 'Basketball';
+        const isBaseball = event.sport === 'MLB' || event.sport === 'Baseball';
+        const isHockey = event.sport === 'NHL' || event.sport === 'Hockey';
+        const isSoccer = event.sport === 'Soccer' || event.sport === 'MLS';
+        
+        // Sport-specific spreads and totals
+        let spread, total;
+        if (isFootball) {
+          spread = (Math.random() - 0.5) * 14; // -7 to +7
+          total = 42 + Math.random() * 16; // 42-58 points
+        } else if (isBasketball) {
+          spread = (Math.random() - 0.5) * 20; // -10 to +10
+          total = 200 + Math.random() * 50; // 200-250 points
+        } else if (isBaseball) {
+          spread = (Math.random() - 0.5) * 4; // -2 to +2 (run line)
+          total = 7 + Math.random() * 6; // 7-13 runs
+        } else if (isHockey) {
+          spread = (Math.random() - 0.5) * 2; // -1 to +1 (puck line)
+          total = 5.5 + Math.random() * 2; // 5.5-7.5 goals
+        } else {
+          spread = (Math.random() - 0.5) * 4; // Generic spread
+          total = 2.5 + Math.random() * 2; // Generic total
         }
-      }));
-      res.json(upcomingEvents);
+
+        // Generate moneyline based on spread
+        const homeML = spread > 1 ? -150 - (spread * 20) : 100 + (Math.abs(spread) * 15);
+        const awayML = spread < -1 ? -150 - (Math.abs(spread) * 20) : 100 + (spread * 15);
+        
+        // Add slight randomization to odds
+        const spreadOddsVariance = () => -110 + Math.floor(Math.random() * 20) - 10; // -120 to -100
+        
+        return {
+          id: event.id,
+          name: event.name,
+          sport: event.sport,
+          league: event.league || 'Professional',
+          startTime: event.startTime,
+          homeTeam: event.homeTeam,
+          awayTeam: event.awayTeam,
+          status: event.status,
+          odds: {
+            // Moneyline odds
+            homeWin: Math.round(homeML),
+            awayWin: Math.round(awayML),
+            draw: isSoccer ? (2.8 + Math.random() * 0.8) : undefined,
+            
+            // Spread betting
+            spread: {
+              home: parseFloat(spread.toFixed(1)),
+              away: parseFloat((-spread).toFixed(1)),
+              homeOdds: spreadOddsVariance(),
+              awayOdds: spreadOddsVariance()
+            },
+            
+            // Over/Under totals
+            total: {
+              over: parseFloat(total.toFixed(1)),
+              under: parseFloat(total.toFixed(1)),
+              overOdds: spreadOddsVariance(),
+              underOdds: spreadOddsVariance()
+            }
+          }
+        };
+      });
+      
+      res.json({
+        success: true,
+        data: upcomingEvents,
+        count: upcomingEvents.length,
+        source: 'ESPN API with Enhanced Betting Markets'
+      });
+      
     } catch (error) {
       console.error('Error fetching upcoming events:', error);
-      res.status(500).json({ message: 'Failed to fetch upcoming events' });
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to fetch upcoming events',
+        data: [],
+        count: 0
+      });
     }
   });
 

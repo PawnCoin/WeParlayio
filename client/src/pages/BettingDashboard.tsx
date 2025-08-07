@@ -183,24 +183,118 @@ const BettingDashboard: React.FC = () => {
                           </div>
                         </div>
                         
-                        {/* Simple Betting Options */}
-                        <div className="grid grid-cols-2 gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="border-slate-600 hover:bg-slate-700"
-                            onClick={() => handleAddBet(event, 'moneyline', getTeamName(event, false), event.odds?.awayWin || -110)}
-                          >
-                            {getTeamName(event, false)} {formatOdds(event.odds?.awayWin || -110)}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="border-slate-600 hover:bg-slate-700"
-                            onClick={() => handleAddBet(event, 'moneyline', getTeamName(event, true), event.odds?.homeWin || -110)}
-                          >
-                            {getTeamName(event, true)} {formatOdds(event.odds?.homeWin || -110)}
-                          </Button>
+                        {/* Comprehensive Betting Options */}
+                        <div className="space-y-3">
+                          {/* Moneyline */}
+                          <div>
+                            <p className="text-xs text-slate-400 mb-2 font-medium">MONEYLINE</p>
+                            <div className="grid grid-cols-2 gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-slate-600 hover:bg-slate-700 text-xs"
+                                onClick={() => handleAddBet(event, 'moneyline', getTeamName(event, false), event.odds?.awayWin || -110)}
+                              >
+                                <div className="flex flex-col items-center">
+                                  <span className="font-medium truncate">{getTeamName(event, false)}</span>
+                                  <span className="text-green-400">{formatOdds(event.odds?.awayWin || -110)}</span>
+                                </div>
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-slate-600 hover:bg-slate-700 text-xs"
+                                onClick={() => handleAddBet(event, 'moneyline', getTeamName(event, true), event.odds?.homeWin || -110)}
+                              >
+                                <div className="flex flex-col items-center">
+                                  <span className="font-medium truncate">{getTeamName(event, true)}</span>
+                                  <span className="text-green-400">{formatOdds(event.odds?.homeWin || -110)}</span>
+                                </div>
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* Spread */}
+                          <div>
+                            <p className="text-xs text-slate-400 mb-2 font-medium">SPREAD</p>
+                            <div className="grid grid-cols-2 gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-slate-600 hover:bg-slate-700 text-xs"
+                                onClick={() => {
+                                  const spread = event.odds?.spread?.away || -3.5;
+                                  const spreadOdds = event.odds?.spread?.awayOdds || -110;
+                                  handleAddBet(event, 'spread', `${getTeamName(event, false)} ${spread > 0 ? '+' : ''}${spread}`, spreadOdds);
+                                }}
+                              >
+                                <div className="flex flex-col items-center">
+                                  <span className="font-medium truncate">{getTeamName(event, false)}</span>
+                                  <span className="text-blue-400">
+                                    {(event.odds?.spread?.away || -3.5) > 0 ? '+' : ''}{(event.odds?.spread?.away || -3.5)} ({formatOdds(event.odds?.spread?.awayOdds || -110)})
+                                  </span>
+                                </div>
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-slate-600 hover:bg-slate-700 text-xs"
+                                onClick={() => {
+                                  const spread = event.odds?.spread?.home || 3.5;
+                                  const spreadOdds = event.odds?.spread?.homeOdds || -110;
+                                  handleAddBet(event, 'spread', `${getTeamName(event, true)} ${spread > 0 ? '+' : ''}${spread}`, spreadOdds);
+                                }}
+                              >
+                                <div className="flex flex-col items-center">
+                                  <span className="font-medium truncate">{getTeamName(event, true)}</span>
+                                  <span className="text-blue-400">
+                                    {(event.odds?.spread?.home || 3.5) > 0 ? '+' : ''}{(event.odds?.spread?.home || 3.5)} ({formatOdds(event.odds?.spread?.homeOdds || -110)})
+                                  </span>
+                                </div>
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* Totals (Over/Under) */}
+                          <div>
+                            <p className="text-xs text-slate-400 mb-2 font-medium">TOTAL</p>
+                            <div className="grid grid-cols-2 gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-slate-600 hover:bg-slate-700 text-xs"
+                                onClick={() => {
+                                  const total = event.odds?.total?.over || 45.5;
+                                  const overOdds = event.odds?.total?.overOdds || -110;
+                                  handleAddBet(event, 'total', `Over ${total}`, overOdds);
+                                }}
+                              >
+                                <div className="flex flex-col items-center">
+                                  <span className="font-medium">Over</span>
+                                  <span className="text-purple-400">
+                                    {event.odds?.total?.over || 45.5} ({formatOdds(event.odds?.total?.overOdds || -110)})
+                                  </span>
+                                </div>
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-slate-600 hover:bg-slate-700 text-xs"
+                                onClick={() => {
+                                  const total = event.odds?.total?.under || 45.5;
+                                  const underOdds = event.odds?.total?.underOdds || -110;
+                                  handleAddBet(event, 'total', `Under ${total}`, underOdds);
+                                }}
+                              >
+                                <div className="flex flex-col items-center">
+                                  <span className="font-medium">Under</span>
+                                  <span className="text-purple-400">
+                                    {event.odds?.total?.under || 45.5} ({formatOdds(event.odds?.total?.underOdds || -110)})
+                                  </span>
+                                </div>
+                              </Button>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     ))}
