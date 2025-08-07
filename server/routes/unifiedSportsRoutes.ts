@@ -57,7 +57,7 @@ router.get('/upcoming-events', async (req, res) => {
     const upcomingEvents = await unifiedSportsAPI.getUnifiedUpcomingEvents();
 
     // If no real data available, provide realistic fallback data
-    if (allEvents.length === 0) {
+    if (upcomingEvents.length === 0) {
       console.log('📭 No unified sports data available - providing fallback events');
       const fallbackEvents = [
         {

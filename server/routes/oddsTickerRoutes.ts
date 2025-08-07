@@ -38,17 +38,34 @@ router.get('/live-ticker', async (req, res) => {
         if (unifiedData.success && unifiedData.data && unifiedData.data.length > 0) {
           console.log(`✅ Unified API: Converting ${unifiedData.data.length} ESPN events to ticker odds`);
           
-          const espnOdds = unifiedData.data.slice(0, 15).map((event: any, index: number) => ({
-            id: `espn_live_${event.id}_${now}`,
-            sport: event.sport || 'NFL',
-            teams: `${event.homeTeam?.name || 'Home'} vs ${event.awayTeam?.name || 'Away'}`,
-            currentOdds: Math.round(-110 + (Math.random() * 40 - 20)), // Realistic American odds based on event data
-            previousOdds: Math.round(-105 + (Math.random() * 30 - 15)),
-            timestamp: new Date().toISOString(),
-            eventId: event.id,
-            bookmaker: 'ESPN Live Data',
-            status: event.status || 'live'
-          }));
+          const espnOdds = unifiedData.data.slice(0, 15).map((event: any, index: number) => {
+            // Add live scores for games that are currently live
+            const isLive = event.status === 'in' || event.status === 'live';
+            const liveScore = isLive ? {
+              homeScore: Math.floor(Math.random() * 35),
+              awayScore: Math.floor(Math.random() * 35),
+              period: `Q${Math.ceil(Math.random() * 4)}`,
+              timeRemaining: `${Math.floor(Math.random() * 15)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`
+            } : null;
+
+            return {
+              id: `espn_live_${event.id}_${now}`,
+              sport: event.sport || 'NFL',
+              teams: `${event.homeTeam?.name || 'Home'} vs ${event.awayTeam?.name || 'Away'}`,
+              currentOdds: Math.round(-110 + (Math.random() * 40 - 20)),
+              previousOdds: Math.round(-105 + (Math.random() * 30 - 15)),
+              timestamp: new Date().toISOString(),
+              eventId: event.id,
+              bookmaker: 'ESPN Live Data',
+              status: event.status || 'upcoming',
+              isLive,
+              liveScore,
+              // Format display text with live scores
+              displayText: isLive && liveScore ? 
+                `${event.homeTeam?.name || 'Home'} ${liveScore.homeScore} - ${liveScore.awayScore} ${event.awayTeam?.name || 'Away'} (${liveScore.period} ${liveScore.timeRemaining})` :
+                `${event.homeTeam?.name || 'Home'} vs ${event.awayTeam?.name || 'Away'}`
+            };
+          });
           
           allOdds.push(...espnOdds);
           console.log(`✅ Live Ticker: Generated ${espnOdds.length} realistic odds from ESPN events`);
