@@ -245,6 +245,71 @@ const registerRoutes = async (app: Express): Promise<Server> => {
     }
   });
 
+  // API Status endpoint for the admin dashboard
+  app.get('/api/system/api-status', async (req, res) => {
+    try {
+      const mockApiData = [
+        {
+          name: 'ESPN Sports API',
+          url: '/api/sports/espn',
+          healthy: true,
+          responseTime: 120,
+          uptime: 99.9,
+          description: 'Primary sports data provider',
+          type: 'external',
+          lastChecked: new Date().toISOString()
+        },
+        {
+          name: 'The Odds API', 
+          url: '/api/odds',
+          healthy: false,
+          responseTime: 450,
+          uptime: 95.2,
+          description: 'Live betting odds provider',
+          type: 'external',
+          lastChecked: new Date().toISOString()
+        },
+        {
+          name: 'Database Connection',
+          url: '/api/db/health',
+          healthy: true,
+          responseTime: 25,
+          uptime: 99.99,
+          description: 'PostgreSQL database connection',
+          type: 'database',
+          lastChecked: new Date().toISOString()
+        },
+        {
+          name: 'User Authentication',
+          url: '/api/auth',
+          healthy: true,
+          responseTime: 85,
+          uptime: 99.8,
+          description: 'Replit authentication service',
+          type: 'internal',
+          lastChecked: new Date().toISOString()
+        }
+      ];
+
+      const healthyServices = mockApiData.filter(service => service.healthy).length;
+      const totalServices = mockApiData.length;
+      const avgResponseTime = Math.round(mockApiData.reduce((sum, service) => sum + service.responseTime, 0) / totalServices);
+
+      res.json({
+        totalEndpoints: totalServices,
+        healthyEndpoints: healthyServices,
+        overallStatus: healthyServices === totalServices ? 'operational' : 'degraded',
+        apiData: mockApiData,
+        avgResponseTime: avgResponseTime,
+        systemUptime: 99.9,
+        lastUpdated: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error getting API status:', error);
+      res.status(500).json({ success: false, message: 'Failed to get API status' });
+    }
+  });
+
   // SMS challenge endpoint
   app.post('/api/sms/challenge', async (req, res) => {
     try {
