@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { useLocation } from "wouter";
 import ESPNLinkCard from "@/components/fantasy/ESPNLinkCard";
+import YahooLinkCard from "@/components/fantasy/YahooLinkCard";
 
 
 const FantasySportsHub: React.FC = () => {
@@ -148,8 +149,11 @@ const FantasySportsHub: React.FC = () => {
               </p>
             </div>
 
-            {/* ESPN Fantasy Quick Access */}
-            <ESPNLinkCard />
+            {/* Quick Access Cards */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <ESPNLinkCard />
+              <YahooLinkCard />
+            </div>
 
             {/* Platform Connection Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
