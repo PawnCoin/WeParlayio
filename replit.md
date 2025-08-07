@@ -37,7 +37,7 @@ Preferred communication style: Simple, everyday language.
 - **Performance Analytics**: Real-time ROI tracking, win rate analysis, betting pattern insights, and profitability metrics
 
 ### Core Platform Features
-- **Sports Data Integration**: **Primary source: Pinnacle Odds API** for all sports categories (Basketball, Football, Soccer, Tennis, Baseball, Ice Hockey, Combat Sports, Other Sports). Aggregates data from multiple APIs (ESPN, RapidAPI Sports, Grid.gg, The Odds API) as fallback systems for redundancy.
+- **Sports Data Integration**: **Primary source: Pinnacle Odds API via RapidAPI** for all sports categories (Basketball, Football, Soccer, Tennis, Baseball, Ice Hockey, Combat Sports, Other Sports). Aggregates data from multiple APIs (ESPN, The Odds API, Grid.gg, RapidAPI Sports) as secondary/fallback systems for redundancy.
 - **VIP Live Streaming Platform**: Exclusive streaming at `/vip/live-streaming` with 296+ IPTV sports channels, tier-based access controls (Platinum/Diamond/Admin only), complete 5-step video workflow with channel browsing, search, and controls.
 - **Fantasy League Integration**: 
   - Unified Fantasy Sports Hub with both ESPN AND Yahoo fantasy platforms on same page
@@ -57,11 +57,11 @@ Preferred communication style: Simple, everyday language.
 ## External Dependencies
 
 ### Core APIs
-- **Pinnacle Odds API**: **PRIMARY** - All sports categories betting odds (Basketball, Football, Soccer, Tennis, Baseball, Ice Hockey, Combat Sports, Other Sports).
-- **ESPN API**: Secondary sports data and event information.
-- **RapidAPI Sports**: Tertiary sports data and odds fallback.
+- **Pinnacle Odds API via RapidAPI**: **PRIMARY** - All sports categories betting odds (Basketball, Football, Soccer, Tennis, Baseball, Ice Hockey, Combat Sports, Other Sports).
+- **ESPN API**: Secondary sports data and event information with real team names.
+- **The Odds API**: Tertiary real-time betting odds fallback.
 - **Grid.gg API**: Esports tournament and match data.
-- **The Odds API**: Quaternary real-time betting odds fallback.
+- **RapidAPI Sports**: Quaternary sports data and odds fallback.
 
 ### Payment Providers
 - **Stripe**: Credit card processing and subscriptions.
