@@ -43,6 +43,10 @@ import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
 import SecurityInfo from "@/pages/SecurityInfo";
 
+// Wallet & Social Features
+import WalletTutorial from "@/pages/WalletTutorial";
+import SocialSharing from "@/pages/SocialSharing";
+
 // Enhanced Features
 import EnhancedFeatures from "@/pages/EnhancedFeatures";
 
@@ -182,6 +186,10 @@ function Router() {
       <SuspenseRoute path="/payment-checkout" component={PaymentCheckout} />
       <SuspenseRoute path="/crypto-checkout" component={CryptoCheckout} />
       <SuspenseRoute path="/tier-upgrade-success" component={TierUpgradeSuccess} />
+
+      {/* Wallet & Social Routes */}
+      <SuspenseRoute path="/wallet-tutorial" component={WalletTutorial} />
+      <SuspenseRoute path="/social-sharing" component={SocialSharing} />
 
       {/* Support & Legal */}
       <Route path="/support" component={Support} />
