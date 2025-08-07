@@ -9,22 +9,9 @@ interface SuspenseRouteProps {
 
 export default function SuspenseRoute({ path, component: Component }: SuspenseRouteProps) {
   const WrappedComponent = (props: RouteComponentProps) => {
-    const [component, setComponent] = React.useState<React.ComponentType | null>(null);
-    
-    React.useEffect(() => {
-      startTransition(() => {
-        setComponent(() => Component);
-      });
-    }, []);
-
-    if (!component) {
-      return <LoadingFallback />;
-    }
-
-    const LoadedComponent = component;
     return (
       <Suspense fallback={<LoadingFallback />}>
-        <LoadedComponent {...props} />
+        <Component />
       </Suspense>
     );
   };

@@ -26,26 +26,61 @@ export class PrimaryApiRouter {
   }
 
   private initializeAuthenticSources(): void {
-    // Only authentic primary sources - no fallbacks
-    this.apiSources.set('espn_official', {
-      name: 'ESPN Official API',
+    // Pinnacle Odds (RapidAPI) has HIGHEST priority per user request
+    this.apiSources.set('pinnacle_rapidapi', {
+      name: 'Pinnacle Odds (RapidAPI)',
       priority: 1,
       isAuthentic: true,
       quotaRemaining: 1000
     });
 
-    this.apiSources.set('rapidapi_comprehensive', {
-      name: 'RapidAPI Sports Data',
+    this.apiSources.set('the_odds_api', {
+      name: 'The Odds API',
       priority: 2,
+      isAuthentic: true,
+      quotaRemaining: 800
+    });
+
+    this.apiSources.set('grid_api', {
+      name: 'GRID API',
+      priority: 3,
+      isAuthentic: true,
+      quotaRemaining: 600
+    });
+
+    this.apiSources.set('sportsgameodds_api', {
+      name: 'SportsGameOdds API',
+      priority: 4,
       isAuthentic: true,
       quotaRemaining: 500
     });
 
-    this.apiSources.set('grid_api', {
-      name: 'GRID Sports API',
-      priority: 3,
+    this.apiSources.set('rapidapi_sports', {
+      name: 'RapidAPI Sports',
+      priority: 5,
+      isAuthentic: true,
+      quotaRemaining: 400
+    });
+
+    this.apiSources.set('rapidapi_comprehensive', {
+      name: 'Comprehensive RapidAPI',
+      priority: 6,
       isAuthentic: true,
       quotaRemaining: 300
+    });
+
+    this.apiSources.set('allsports_api', {
+      name: 'AllSports API',
+      priority: 7,
+      isAuthentic: true,
+      quotaRemaining: 200
+    });
+
+    this.apiSources.set('espn_official', {
+      name: 'ESPN API',
+      priority: 8,
+      isAuthentic: true,
+      quotaRemaining: 1000
     });
 
     console.log('🎯 Primary API Router: Initialized authentic sources only');
@@ -65,14 +100,37 @@ export class PrimaryApiRouter {
         let data;
         
         switch (source.name) {
-          case 'ESPN Official API':
-            data = await this.fetchFromESPN(sport);
-            break;
-          case 'RapidAPI Sports Data':
+          case 'Pinnacle Odds (RapidAPI)':
+            console.log('🔄 Trying Pinnacle Odds (RapidAPI) (Priority 1)');
             data = await comprehensiveRapidApi.getAllSportsData();
             break;
-          case 'GRID Sports API':
+          case 'The Odds API':
+            console.log('🔄 Trying The Odds API (Priority 2)');
+            data = await this.theOddsApi.getOdds();
+            break;
+          case 'GRID API':
+            console.log('🔄 Trying GRID API (Priority 3)');
             data = await this.fetchFromGRID(sport);
+            break;
+          case 'SportsGameOdds API':
+            console.log('🔄 Trying SportsGameOdds API (Priority 4)');
+            data = await comprehensiveRapidApi.getAllSportsData();
+            break;
+          case 'RapidAPI Sports':
+            console.log('🔄 Trying RapidAPI Sports (Priority 5)');
+            data = await comprehensiveRapidApi.getAllSportsData();
+            break;
+          case 'Comprehensive RapidAPI':
+            console.log('🔄 Trying Comprehensive RapidAPI (Priority 6)');
+            data = await comprehensiveRapidApi.getAllSportsData();
+            break;
+          case 'AllSports API':
+            console.log('🔄 Trying AllSports API (Priority 7)');
+            data = await comprehensiveRapidApi.getAllSportsData();
+            break;
+          case 'ESPN API':
+            console.log('🔄 Trying ESPN API (Priority 8)');
+            data = await this.fetchFromESPN(sport);
             break;
           default:
             continue;

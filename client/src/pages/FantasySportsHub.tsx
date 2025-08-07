@@ -172,8 +172,7 @@ const FantasySportsHub: React.FC = () => {
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
                     <Badge className={getStatusColor(espnStatus)}>
-                      {espnStatus === 'loading' ? 'Testing...' : 
-                       espnStatus === 'connected' ? 'Public data only' : 'Using fallback data'}
+                      {espnStatus === 'loading' ? 'Testing...' : espnStatus === 'connected' ? 'Public data only' : 'Using fallback data'}
                     </Badge>
                     <Button 
                       onClick={testEspnConnection}
@@ -326,4 +325,6 @@ const FantasySportsHub: React.FC = () => {
       </div>
     </div>
   );
-}
+};
+
+export default FantasySportsHub;
