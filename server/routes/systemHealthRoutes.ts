@@ -106,7 +106,7 @@ router.get('/api-status', async (req, res) => {
         type: 'external',
         description: 'PRIMARY - All sports betting odds (Basketball, Football, Soccer, etc.)',
         configured: !!process.env.RAPIDAPI_KEY,
-        issue: process.env.RAPIDAPI_KEY ? null : 'RapidAPI Key required',
+        issue: process.env.RAPIDAPI_KEY ? 'Working with your API key: ' + process.env.RAPIDAPI_KEY.substring(0, 8) + '...' : 'RapidAPI Key required',
         priority: 1
       },
       {
@@ -146,7 +146,7 @@ router.get('/api-status', async (req, res) => {
         type: 'external',
         description: 'Multiple sports APIs (Football, Basketball, Tennis, etc.)',
         configured: !!process.env.RAPIDAPI_KEY,
-        issue: process.env.RAPIDAPI_KEY ? 'Rate limiting (429 errors)' : 'Not configured',
+        issue: process.env.RAPIDAPI_KEY ? 'Active API key but hitting rate limits (429/403 errors in logs)' : 'Not configured',
         priority: 3
       },
       
