@@ -27,6 +27,8 @@ import { comprehensiveRapidApi } from "./services/comprehensiveRapidApi";
 import rapidApiRoutes from "./routes/rapidApiRoutes";
 import espnFantasyRoutes from "./routes/espnFantasyRoutes";
 import feedbackRoutes from "./routes/feedbackRoutes";
+import yahooFantasyRoutes from "./routes/yahooFantasyRoutes";
+import socialMediaRoutes from "./routes/socialMediaRoutes";
 
 import iptvRoutes from "./routes/iptv";
 import iptvProxyRoutes from "./routes/iptv-proxy";
@@ -79,6 +81,8 @@ const registerRoutes = async (app: Express): Promise<Server> => {
   app.use('/api/api-test', apiTestRouter);
   app.use('/api/rapid-api', rapidApiRoutes);
   app.use('/api/espn-fantasy', espnFantasyRoutes);
+  app.use('/api/yahoo-fantasy', yahooFantasyRoutes);
+  app.use('/api/social-media', socialMediaRoutes);
   app.use('/api/feedback', feedbackRoutes);
   app.use('/api/iptv', iptvRoutes);
   app.use('/api/iptv-proxy', iptvProxyRoutes);

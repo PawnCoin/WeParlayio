@@ -3,19 +3,64 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { Trophy, Users, Target, ExternalLink, Settings, BarChart3, TrendingUp, CheckCircle, XCircle, RefreshCw, Crown, Maximize2 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { 
+  Trophy, 
+  Users, 
+  Target, 
+  ExternalLink, 
+  Settings, 
+  BarChart3, 
+  TrendingUp, 
+  CheckCircle, 
+  XCircle, 
+  RefreshCw, 
+  Crown, 
+  Maximize2,
+  Star,
+  Calendar,
+  Zap,
+  Shield,
+  DollarSign,
+  Clock
+} from "lucide-react";
 import { useLocation } from "wouter";
-// import SimpleESPNViewer from "@/components/fantasy/SimpleESPNViewer";
 import ESPNLinkCard from "@/components/fantasy/ESPNLinkCard";
 
 
-export default function FantasySportsHub() {
+const FantasySportsHub: React.FC = () => {
+  const { user } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const [selectedSport, setSelectedSport] = useState<string>('nfl');
+  const [selectedPlatform, setSelectedPlatform] = useState<string>('both');
   
   const [espnStatus, setEspnStatus] = useState<'loading' | 'connected' | 'disconnected'>('loading');
+  const [yahooStatus, setYahooStatus] = useState<'loading' | 'connected' | 'disconnected'>('loading');
   const [espnData, setEspnData] = useState<any>(null);
+  const [yahooData, setYahooData] = useState<any>(null);
+
+  // Query ESPN fantasy data
+  const { data: espnLeagues, isLoading: espnLoading, error: espnError } = useQuery({
+    queryKey: ['/api/espn-fantasy/leagues', selectedSport],
+    enabled: !!user && (selectedPlatform === 'espn' || selectedPlatform === 'both')
+  });
+
+  // Query Yahoo fantasy data
+  const { data: yahooLeagues, isLoading: yahooLoading, error: yahooError } = useQuery({
+    queryKey: ['/api/yahoo-fantasy/leagues'],
+    enabled: !!user && (selectedPlatform === 'yahoo' || selectedPlatform === 'both')
+  });
+
+  // Query unified dashboard data (ESPN + Yahoo combined)
+  const { data: unifiedData, isLoading: unifiedLoading } = useQuery({
+    queryKey: ['/api/yahoo-fantasy/unified/dashboard'],
+    enabled: !!user && selectedPlatform === 'both'
+  });
 
   // Test ESPN Fantasy connection
   const testEspnConnection = async () => {
@@ -33,9 +78,26 @@ export default function FantasySportsHub() {
     }
   };
 
+  // Test Yahoo Fantasy connection
+  const testYahooConnection = async () => {
+    try {
+      const response = await fetch('/api/yahoo-fantasy/leagues');
+      const data = await response.json();
+      if (data.success) {
+        setYahooStatus('connected');
+        setYahooData(data);
+      } else {
+        setYahooStatus('disconnected');
+      }
+    } catch (error) {
+      setYahooStatus('disconnected');
+    }
+  };
+
   // Test connections on mount
   useEffect(() => {
     testEspnConnection();
+    testYahooConnection();
   }, []);
 
   // Fetch fantasy overview data

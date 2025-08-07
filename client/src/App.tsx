@@ -73,6 +73,7 @@ const VipLiveStreaming = React.lazy(() => import("@/pages/VipLiveStreaming"));
 const Trivia = React.lazy(() => import("@/pages/Trivia"));
 const TierComparison = React.lazy(() => import("@/pages/TierComparison"));
 const WeParlayCash = React.lazy(() => import("@/pages/WeParlayCash"));
+const StreamingRecommendations = React.lazy(() => import("@/pages/StreamingRecommendations"));
 const CryptoInformation = React.lazy(() => import("@/pages/CryptoInformation"));
 // const IPTVStreaming = React.lazy(() => import("@/pages/IPTVStreaming")); // Removed - using VIP live streaming instead
 const UserAnalytics = React.lazy(() => import("@/pages/UserAnalytics"));
@@ -125,7 +126,8 @@ function Router() {
       <Route path="/esports-hub" component={UnifiedGaming} />
       <SuspenseRoute path="/tournaments" component={Tournaments} />
 
-      {/* REMOVED: enhanced-features endpoint */}
+      {/* Enhanced Features with SuspenseRoute */}
+      <SuspenseRoute path="/enhanced-features" component={EnhancedFeatures} />
       
       {/* Additional Feature Pages with SuspenseRoute */}
       <SuspenseRoute path="/api-status" component={React.lazy(() => import("@/pages/system/ApiStatus"))} />
@@ -141,7 +143,8 @@ function Router() {
       {/* Head-to-head moved to public access */}
       <SuspenseRoute path="/vip/tournaments" component={VIPTournaments} />
       <SuspenseRoute path="/vip/gaming-integration" component={VIPGamingIntegration} />
-      {/* REMOVED: blockchain-performance endpoint */}
+      <SuspenseRoute path="/vip/blockchain-performance" component={VIPBlockchainPerformance} />
+      <SuspenseRoute path="/streaming-recommendations" component={StreamingRecommendations} />
 
       
       {/* Social Features */}

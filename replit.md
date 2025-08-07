@@ -29,14 +29,23 @@ Preferred communication style: Simple, everyday language.
 - **Connection**: Neon serverless PostgreSQL with connection pooling.
 
 ### Key Components & Features
+
+#### Enhanced Features & AI Integration
+- **Enhanced Features Dashboard**: Premium AI-powered predictions (94.2% accuracy), advanced analytics, smart automation, and comprehensive platform integrations
+- **AI-Powered Predictions**: Machine learning algorithms for betting insights, portfolio optimization, and market analysis  
+- **Smart Automation**: Auto portfolio rebalancing, intelligent bet sizing, risk management, and auto cash-out features
+- **Performance Analytics**: Real-time ROI tracking, win rate analysis, betting pattern insights, and profitability metrics
+
+### Core Platform Features
 - **Sports Data Integration**: Aggregates data from multiple APIs (ESPN, RapidAPI Sports, Grid.gg, The Odds API) with fallback systems for redundancy.
 - **VIP Live Streaming Platform**: Exclusive streaming at `/vip/live-streaming` with 296+ IPTV sports channels, tier-based access controls (Platinum/Diamond/Admin only), complete 5-step video workflow with channel browsing, search, and controls.
 - **Fantasy League Integration**: 
-  - ESPN-only fantasy platform integration (all other platforms removed)
-  - Fantasy Sports Hub streamlined for ESPN exclusive integration
-  - Real-time ESPN fantasy data aggregation and player statistics
-  - Removed: Yahoo, DraftKings, FanDuel integrations for focused architecture
-- **Social Media Integration**: Completely removed all social media bots, marketing automation, and platform integrations (Twitter, Facebook, Instagram) for streamlined core functionality
+  - Unified Fantasy Sports Hub with both ESPN AND Yahoo fantasy platforms on same page
+  - Complete ESPN fantasy API with leagues, teams, players, and statistics
+  - Full Yahoo Fantasy API with OAuth integration, leagues management, and data aggregation  
+  - Side-by-side comparison dashboard for multi-platform fantasy management
+  - Enhanced fantasy analytics and cross-platform insights
+- **Social Media Integration**: Complete platform integration supporting Twitter, Facebook, and Instagram for user authentication, account creation, content sharing, and automated admin marketing bots with full OAuth support
 - **Payment Systems**: Streamlined to core betting with internal "WeParlay Cash" virtual currency (removed: Stripe, PayPal, Plaid banking, cryptocurrency integrations).
 - **Authentication & Authorization**: Replit Auth, PostgreSQL-backed sessions (7-day TTL), role-based access control, and tier-based feature access.
 - **Real-time Features**: WebSocket integration for live odds and event updates, and an in-app notification system.

@@ -290,7 +290,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
           <li>
             <details className="group">
               <summary className={`flex items-center py-2 px-4 rounded-md cursor-pointer list-none ${
-                ['/vip', '/head-to-head', '/gaming'].includes(location) 
+                ['/vip', '/enhanced-features', '/blockchain-performance', '/streaming-recommendations', '/head-to-head', '/gaming'].includes(location) 
                   ? "bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900/40 dark:to-yellow-900/40" 
                   : "bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 hover:from-amber-100 hover:to-yellow-100 dark:hover:from-amber-900/40 dark:hover:to-yellow-900/40"
               }`}>
@@ -392,7 +392,45 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                     </div>
                   </Link>
                 </li>
-                {/* REMOVED: enhanced-features endpoint */}
+                <li>
+                  <Link href="/enhanced-features">
+                    <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${
+                      location === '/enhanced-features' 
+                        ? "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300" 
+                        : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}>
+                      <Zap className="h-4 w-4 mr-2 text-amber-500" />
+                      <span>Enhanced Features</span>
+                      <span className="ml-auto text-xs bg-amber-100 text-amber-700 dark:bg-amber-800 dark:text-amber-300 px-2 py-0.5 rounded-full">PRO</span>
+                    </div>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/blockchain-performance">
+                    <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${
+                      location === '/blockchain-performance' 
+                        ? "bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 dark:bg-gradient-to-r dark:from-blue-900 dark:to-purple-900 dark:text-blue-300" 
+                        : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}>
+                      <BarChart3 className="h-4 w-4 mr-2 text-blue-600" />
+                      <span className="font-medium">Blockchain Analytics</span>
+                      <span className="ml-auto text-xs bg-blue-100 text-blue-700 dark:bg-blue-800 dark:text-blue-300 px-2 py-0.5 rounded-full">PRO</span>
+                    </div>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/streaming-recommendations">
+                    <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${
+                      location === '/streaming-recommendations' 
+                        ? "bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 dark:bg-gradient-to-r dark:from-purple-900 dark:to-pink-900 dark:text-purple-300" 
+                        : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}>
+                      <Brain className="h-4 w-4 mr-2 text-purple-600" />
+                      <span className="font-medium">AI Stream Intel</span>
+                      <span className="ml-auto text-xs bg-purple-100 text-purple-700 dark:bg-purple-800 dark:text-purple-300 px-2 py-0.5 rounded-full">AI</span>
+                    </div>
+                  </Link>
+                </li>
                 <li>
                   <Link href="/api-status">
                     <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${

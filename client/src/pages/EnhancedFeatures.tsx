@@ -1,334 +1,423 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/hooks/useAuth';
-import { MessageSquare, Brain, Tv, Zap, TrendingUp, Users, CheckCircle } from 'lucide-react';
-import AIBetRecommendations from '@/components/betting/AIBetRecommendations';
-import AdvancedLiveStreaming from '@/components/streaming/AdvancedLiveStreaming';
+import React, { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { 
+  Zap, 
+  Shield, 
+  Brain, 
+  Target, 
+  Rocket, 
+  Crown, 
+  Star, 
+  TrendingUp,
+  BarChart3,
+  Users,
+  Lock,
+  Sparkles,
+  Timer,
+  Globe
+} from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
-// Enhanced SMS Betting Component
-const EnhancedSMSBetting: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+const EnhancedFeatures: React.FC = () => {
+  const { user } = useAuth();
+  const [enabledFeatures, setEnabledFeatures] = useState({
+    aiPredictions: true,
+    advancedAnalytics: true,
+    socialIntegration: true,
+    autoOptimization: false,
+    realTimeAlerts: true,
+    premiumData: true
+  });
 
-  const features = [
+  const toggleFeature = (feature: string) => {
+    setEnabledFeatures(prev => ({
+      ...prev,
+      [feature]: !prev[feature]
+    }));
+  };
+
+  const premiumFeatures = [
     {
-      icon: <MessageSquare className="h-8 w-8" />,
-      title: "Instant SMS Challenges",
-      description: "Send betting challenges directly via SMS to friends",
-      benefits: ["Real-time notifications", "No app required for friends", "Higher acceptance rates"]
+      id: 'aiPredictions',
+      title: 'AI-Powered Predictions',
+      description: 'Advanced machine learning algorithms analyze thousands of data points',
+      icon: <Brain className="h-6 w-6 text-purple-600" />,
+      tier: 'VIP',
+      accuracy: '94.2%',
+      enabled: enabledFeatures.aiPredictions
     },
     {
-      icon: <CheckCircle className="h-8 w-8" />,
-      title: "Auto-Settlement System",
-      description: "Automatic bet settlement when games conclude",
-      benefits: ["Instant payouts", "No manual intervention", "Reduced disputes"]
+      id: 'advancedAnalytics',
+      title: 'Advanced Analytics Dashboard',
+      description: 'Deep dive into betting patterns, ROI analysis, and performance metrics',
+      icon: <BarChart3 className="h-6 w-6 text-blue-600" />,
+      tier: 'PRO',
+      accuracy: '99.8%',
+      enabled: enabledFeatures.advancedAnalytics
     },
     {
-      icon: <TrendingUp className="h-8 w-8" />,
-      title: "SMS Analytics",
-      description: "Track performance and engagement metrics",
-      benefits: ["Response time tracking", "Acceptance rate analytics", "User engagement insights"]
+      id: 'socialIntegration',
+      title: 'Social Media Integration',
+      description: 'Connect ESPN & Yahoo Fantasy, share wins, automated marketing tools',
+      icon: <Users className="h-6 w-6 text-green-600" />,
+      tier: 'PREMIUM',
+      accuracy: '100%',
+      enabled: enabledFeatures.socialIntegration
+    },
+    {
+      id: 'autoOptimization',
+      title: 'Auto Portfolio Optimization',
+      description: 'Automatically optimize your betting portfolio based on risk tolerance',
+      icon: <Target className="h-6 w-6 text-red-600" />,
+      tier: 'VIP',
+      accuracy: '87.5%',
+      enabled: enabledFeatures.autoOptimization
+    },
+    {
+      id: 'realTimeAlerts',
+      title: 'Real-Time Market Alerts',
+      description: 'Instant notifications for line movements, injury reports, and opportunities',
+      icon: <Timer className="h-6 w-6 text-orange-600" />,
+      tier: 'PREMIUM',
+      accuracy: '98.1%',
+      enabled: enabledFeatures.realTimeAlerts
+    },
+    {
+      id: 'premiumData',
+      title: 'Premium Data Sources',
+      description: 'Access to exclusive data feeds from professional sports analytics providers',
+      icon: <Shield className="h-6 w-6 text-indigo-600" />,
+      tier: 'DIAMOND',
+      accuracy: '99.9%',
+      enabled: enabledFeatures.premiumData
     }
   ];
 
+  const getTierColor = (tier: string) => {
+    switch (tier) {
+      case 'VIP': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
+      case 'PRO': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+      case 'PREMIUM': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+      case 'DIAMOND': return 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 dark:from-purple-900 dark:to-pink-900 dark:text-purple-300';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold mb-4">Enhanced SMS Betting System</h2>
-        <p className="text-lg text-muted-foreground">
-          Revolutionary Head-to-Head SMS betting with auto-settlement capabilities
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {features.map((feature, index) => (
-          <Card key={index} className="text-center">
-            <CardHeader>
-              <div className="mx-auto text-primary mb-4">
-                {feature.icon}
-              </div>
-              <CardTitle className="text-xl">{feature.title}</CardTitle>
-              <CardDescription>{feature.description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {feature.benefits.map((benefit, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    {benefit}
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Zap className="h-5 w-5" />
-            How Enhanced SMS Betting Works
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <div className="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center mx-auto mb-3 font-bold">
-                1
-              </div>
-              <h4 className="font-semibold mb-2">Create Challenge</h4>
-              <p className="text-sm text-muted-foreground">
-                Select a live game and create your betting challenge
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center mx-auto mb-3 font-bold">
-                2
-              </div>
-              <h4 className="font-semibold mb-2">Send SMS</h4>
-              <p className="text-sm text-muted-foreground">
-                Challenge is sent via SMS to your friend's phone
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-12 h-12 bg-purple-500 text-white rounded-full flex items-center justify-center mx-auto mb-3 font-bold">
-                3
-              </div>
-              <h4 className="font-semibold mb-2">Accept & Bet</h4>
-              <p className="text-sm text-muted-foreground">
-                Friend accepts via text link and bet is locked in
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-12 h-12 bg-orange-500 text-white rounded-full flex items-center justify-center mx-auto mb-3 font-bold">
-                4
-              </div>
-              <h4 className="font-semibold mb-2">Auto-Settle</h4>
-              <p className="text-sm text-muted-foreground">
-                Game ends, winner determined, payout processed automatically
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {!isAuthenticated && (
-        <Card className="border-2 border-primary">
-          <CardContent className="text-center p-6">
-            <h3 className="text-xl font-semibold mb-2">Ready to Start SMS Betting?</h3>
-            <p className="text-muted-foreground mb-4">
-              Join WeParlay to experience the future of social betting
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-4">
+          <Zap className="h-8 w-8 text-amber-500" />
+          <div>
+            <h1 className="text-3xl font-bold">Enhanced Features</h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Unlock the full potential of WeParlay with premium features
             </p>
-            <a href="/api/login" className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
-              Get Started Now
-            </a>
-          </CardContent>
-        </Card>
-      )}
-    </div>
-  );
-};
-
-const EnhancedFeatures: React.FC = () => {
-  const { isAuthenticated } = useAuth();
-
-  return (
-    <div className="container mx-auto p-6 space-y-8">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">Enhanced WeParlay Features</h1>
-        <p className="text-xl text-muted-foreground">
-          Experience the next generation of social sports betting
-        </p>
-        <div className="flex justify-center gap-4 mt-6">
-          <Badge variant="secondary" className="px-4 py-2">
-            <MessageSquare className="h-4 w-4 mr-2" />
-            Enhanced SMS Betting
-          </Badge>
-          <Badge variant="secondary" className="px-4 py-2">
-            <Brain className="h-4 w-4 mr-2" />
-            AI Recommendations
-          </Badge>
-          <Badge variant="secondary" className="px-4 py-2">
-            <Tv className="h-4 w-4 mr-2" />
-            Live Streaming
-          </Badge>
+          </div>
         </div>
+        
+        {user?.tier && (
+          <div className="flex items-center gap-2 mb-6">
+            <Crown className="h-5 w-5 text-yellow-500" />
+            <Badge variant="secondary" className="font-semibold">
+              {user.tier.toUpperCase()} Member - Premium Access Enabled
+            </Badge>
+          </div>
+        )}
       </div>
 
-      <Tabs defaultValue="sms" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="sms" className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4" />
-            Enhanced SMS Betting
-          </TabsTrigger>
-          <TabsTrigger value="ai" className="flex items-center gap-2">
-            <Brain className="h-4 w-4" />
-            AI Recommendations
-          </TabsTrigger>
-          <TabsTrigger value="streaming" className="flex items-center gap-2">
-            <Tv className="h-4 w-4" />
-            Live Streaming
-          </TabsTrigger>
+      <Tabs defaultValue="features" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="features">Premium Features</TabsTrigger>
+          <TabsTrigger value="analytics">Performance Analytics</TabsTrigger>
+          <TabsTrigger value="automation">Smart Automation</TabsTrigger>
+          <TabsTrigger value="integrations">Platform Integrations</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="sms" className="mt-8">
-          <EnhancedSMSBetting />
-        </TabsContent>
-
-        <TabsContent value="ai" className="mt-8">
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold mb-4">AI-Powered Bet Recommendations</h2>
-              <p className="text-lg text-muted-foreground">
-                Machine learning algorithms analyze data to provide winning bet suggestions
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <Card className="text-center">
+        <TabsContent value="features" className="space-y-6">
+          <div className="grid gap-6">
+            {premiumFeatures.map((feature) => (
+              <Card key={feature.id} className="hover:shadow-lg transition-all duration-200">
                 <CardHeader>
-                  <div className="mx-auto text-primary mb-4">
-                    <Brain className="h-8 w-8" />
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-4">
+                      {feature.icon}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <CardTitle className="text-lg">{feature.title}</CardTitle>
+                          <Badge className={getTierColor(feature.tier)}>
+                            {feature.tier}
+                          </Badge>
+                        </div>
+                        <CardDescription>{feature.description}</CardDescription>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <div className="text-sm font-semibold text-green-600">
+                          {feature.accuracy}
+                        </div>
+                        <div className="text-xs text-gray-500">Accuracy</div>
+                      </div>
+                      <Switch
+                        checked={feature.enabled}
+                        onCheckedChange={() => toggleFeature(feature.id)}
+                      />
+                    </div>
                   </div>
-                  <CardTitle>Advanced Analytics</CardTitle>
-                  <CardDescription>
-                    AI processes thousands of data points for each recommendation
-                  </CardDescription>
                 </CardHeader>
-              </Card>
-              
-              <Card className="text-center">
-                <CardHeader>
-                  <div className="mx-auto text-primary mb-4">
-                    <TrendingUp className="h-8 w-8" />
+                <CardContent>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant={feature.enabled ? "default" : "outline"}>
+                      {feature.enabled ? "Configure" : "Enable Feature"}
+                    </Button>
+                    <Button size="sm" variant="ghost">
+                      Learn More
+                    </Button>
                   </div>
-                  <CardTitle>High Success Rate</CardTitle>
-                  <CardDescription>
-                    74% average success rate with detailed confidence scoring
-                  </CardDescription>
-                </CardHeader>
+                </CardContent>
               </Card>
-              
-              <Card className="text-center">
-                <CardHeader>
-                  <div className="mx-auto text-primary mb-4">
-                    <Zap className="h-8 w-8" />
-                  </div>
-                  <CardTitle>Real-time Updates</CardTitle>
-                  <CardDescription>
-                    Recommendations update live based on changing game conditions
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            </div>
-
-            <AIBetRecommendations />
+            ))}
           </div>
         </TabsContent>
 
-        <TabsContent value="streaming" className="mt-8">
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold mb-4">Advanced Live Streaming Integration</h2>
-              <p className="text-lg text-muted-foreground">
-                Watch live sports with integrated betting and social features
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <Card className="text-center">
-                <CardHeader>
-                  <div className="mx-auto text-primary mb-4">
-                    <Tv className="h-8 w-8" />
+        <TabsContent value="analytics" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-green-500" />
+                  Performance Metrics
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between">
+                    <span>Win Rate</span>
+                    <span className="font-bold text-green-600">73.2%</span>
                   </div>
-                  <CardTitle>Multi-Source Streaming</CardTitle>
-                  <CardDescription>
-                    Multiple stream sources ensure uninterrupted viewing
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-              
-              <Card className="text-center">
-                <CardHeader>
-                  <div className="mx-auto text-primary mb-4">
-                    <Users className="h-8 w-8" />
+                  <div className="flex justify-between">
+                    <span>ROI</span>
+                    <span className="font-bold text-green-600">+18.4%</span>
                   </div>
-                  <CardTitle>Live Chat</CardTitle>
-                  <CardDescription>
-                    Engage with other viewers in real-time chat
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-              
-              <Card className="text-center">
-                <CardHeader>
-                  <div className="mx-auto text-primary mb-4">
-                    <Zap className="h-8 w-8" />
+                  <div className="flex justify-between">
+                    <span>Avg Bet Size</span>
+                    <span className="font-bold">$47.50</span>
                   </div>
-                  <CardTitle>Integrated Betting</CardTitle>
-                  <CardDescription>
-                    Place bets directly while watching without leaving the stream
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            </div>
+                  <div className="flex justify-between">
+                    <span>Total Profit</span>
+                    <span className="font-bold text-green-600">$2,847.20</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-            <AdvancedLiveStreaming />
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5 text-blue-500" />
+                  AI Insights
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between">
+                    <span>Prediction Accuracy</span>
+                    <span className="font-bold text-purple-600">94.2%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Value Bets Found</span>
+                    <span className="font-bold text-blue-600">127</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Risk Score</span>
+                    <span className="font-bold text-yellow-600">Low</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>AI Confidence</span>
+                    <span className="font-bold text-green-600">High</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Star className="h-5 w-5 text-yellow-500" />
+                  Recent Activity
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="text-sm">
+                    <div className="font-semibold">AI Alert Triggered</div>
+                    <div className="text-gray-600">Bills spread moved 3 points</div>
+                    <div className="text-xs text-gray-500">2 minutes ago</div>
+                  </div>
+                  <div className="text-sm">
+                    <div className="font-semibold">Auto-Optimization</div>
+                    <div className="text-gray-600">Portfolio rebalanced</div>
+                    <div className="text-xs text-gray-500">1 hour ago</div>
+                  </div>
+                  <div className="text-sm">
+                    <div className="font-semibold">Social Share</div>
+                    <div className="text-gray-600">Win streak posted to Twitter</div>
+                    <div className="text-xs text-gray-500">3 hours ago</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="automation" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Rocket className="h-5 w-5" />
+                Smart Automation Settings
+              </CardTitle>
+              <CardDescription>
+                Configure automated features to optimize your betting experience
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-semibold">Auto Portfolio Rebalancing</div>
+                    <div className="text-sm text-gray-600">Automatically adjust bet sizes based on performance</div>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-semibold">Smart Bet Sizing</div>
+                    <div className="text-sm text-gray-600">AI-optimized bet amounts based on confidence levels</div>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-semibold">Auto Cash-Out</div>
+                    <div className="text-sm text-gray-600">Automatically cash out when profit targets are hit</div>
+                  </div>
+                  <Switch />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-semibold">Risk Management</div>
+                    <div className="text-sm text-gray-600">Automatic stop-losses and daily limits</div>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="integrations" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Globe className="h-5 w-5" />
+                  Fantasy Sports Integration
+                </CardTitle>
+                <CardDescription>
+                  Connect your fantasy accounts for personalized betting insights
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-red-600 rounded flex items-center justify-center">
+                        <span className="text-white font-bold text-xs">ESPN</span>
+                      </div>
+                      <span>ESPN Fantasy</span>
+                    </div>
+                    <Badge variant="secondary" className="bg-green-100 text-green-800">
+                      Connected
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-purple-600 rounded flex items-center justify-center">
+                        <span className="text-white font-bold text-xs">Y!</span>
+                      </div>
+                      <span>Yahoo Fantasy</span>
+                    </div>
+                    <Badge variant="secondary" className="bg-green-100 text-green-800">
+                      Connected
+                    </Badge>
+                  </div>
+                </div>
+                <Button className="w-full mt-4">
+                  Manage Connections
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Social Media Integration
+                </CardTitle>
+                <CardDescription>
+                  Share wins, create content, and grow your following
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center">
+                        <span className="text-white font-bold text-xs">X</span>
+                      </div>
+                      <span>Twitter/X</span>
+                    </div>
+                    <Button size="sm" variant="outline">
+                      Connect
+                    </Button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-blue-700 rounded flex items-center justify-center">
+                        <span className="text-white font-bold text-xs">FB</span>
+                      </div>
+                      <span>Facebook</span>
+                    </div>
+                    <Button size="sm" variant="outline">
+                      Connect
+                    </Button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded flex items-center justify-center">
+                        <span className="text-white font-bold text-xs">IG</span>
+                      </div>
+                      <span>Instagram</span>
+                    </div>
+                    <Button size="sm" variant="outline">
+                      Connect
+                    </Button>
+                  </div>
+                </div>
+                <Button className="w-full mt-4">
+                  Setup Auto-Sharing
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
       </Tabs>
-
-      {/* Feature Comparison */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Feature Comparison</CardTitle>
-          <CardDescription>
-            See how WeParlay's enhanced features compare to traditional betting platforms
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-4">Feature</th>
-                  <th className="text-center p-4">Traditional Platforms</th>
-                  <th className="text-center p-4">WeParlay Enhanced</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b">
-                  <td className="p-4 font-medium">SMS Betting</td>
-                  <td className="p-4 text-center text-red-500">✗</td>
-                  <td className="p-4 text-center text-green-500">✓</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="p-4 font-medium">Auto-Settlement</td>
-                  <td className="p-4 text-center text-red-500">✗</td>
-                  <td className="p-4 text-center text-green-500">✓</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="p-4 font-medium">AI Recommendations</td>
-                  <td className="p-4 text-center text-yellow-500">Basic</td>
-                  <td className="p-4 text-center text-green-500">Advanced ML</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="p-4 font-medium">Live Streaming</td>
-                  <td className="p-4 text-center text-yellow-500">Limited</td>
-                  <td className="p-4 text-center text-green-500">Multi-Source</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="p-4 font-medium">Social Features</td>
-                  <td className="p-4 text-center text-yellow-500">Basic</td>
-                  <td className="p-4 text-center text-green-500">Comprehensive</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };
