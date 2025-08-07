@@ -87,7 +87,7 @@ const BettingDashboard: React.FC = () => {
   
   // Use user object from auth context for balance data
   const balances = {
-    weparlay_cash: user?.weparlayCashBalance || user?.balance || 1000000,
+    weparlay_cash: user?.weplayTokenBalance || user?.weparlayCashBalance || user?.balance || 1000000,
     real_money: user?.cashBalance || 0,
     crypto: 0
   };
