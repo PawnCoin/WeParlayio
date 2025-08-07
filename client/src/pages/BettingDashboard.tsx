@@ -56,7 +56,7 @@ interface BetSlipItem {
 
 const BettingDashboard: React.FC = () => {
   const { user } = useAuth();
-  const { betSlip: contextBetSlip, bets: contextBets, addBet, removeFromBetSlip, clearBetSlip } = useBetSlip();
+  const { betSlip: contextBetSlip, bets: contextBets, addBet, removeFromBetSlip, clearBetSlip, addToBothSlips } = useBetSlip();
   const [localBetSlip, setLocalBetSlip] = useState<BetSlipItem[]>([]);
   const [selectedCurrency, setSelectedCurrency] = useState<'weparlay_cash' | 'real_money' | 'crypto'>('weparlay_cash');
   const [activeSlipType, setActiveSlipType] = useState<'traditional' | 'crypto'>('traditional');
@@ -106,9 +106,17 @@ const BettingDashboard: React.FC = () => {
     if (!event) return isHome ? 'Home Team' : 'Away Team';
     
     if (isHome) {
-      return event.homeTeam || event.home_team || event.homeTeamName || 'Home Team';
+      // Handle different API response structures - extract name string from nested objects
+      const homeTeam = event.homeTeam || event.home_team || event.homeTeamName;
+      if (typeof homeTeam === 'string') return homeTeam;
+      if (typeof homeTeam === 'object' && homeTeam?.name) return homeTeam.name;
+      return 'Home Team';
     } else {
-      return event.awayTeam || event.away_team || event.awayTeamName || 'Away Team';
+      // Handle different API response structures - extract name string from nested objects  
+      const awayTeam = event.awayTeam || event.away_team || event.awayTeamName;
+      if (typeof awayTeam === 'string') return awayTeam;
+      if (typeof awayTeam === 'object' && awayTeam?.name) return awayTeam.name;
+      return 'Away Team';
     }
   };
 
@@ -132,8 +140,21 @@ const BettingDashboard: React.FC = () => {
       pick: selection
     };
     
-    // Add to context (this will update the left bet slip)
-    addBet(newBet);
+    // Use addToBothSlips for perfect synchronization
+    addToBothSlips({
+      eventId: newBet.eventId,
+      betType: newBet.betType,
+      selection: newBet.selection,
+      homeTeam: newBet.homeTeam,
+      awayTeam: newBet.awayTeam,
+      odds: newBet.odds,
+      point: newBet.point,
+      sport: newBet.sport,
+      amount: newBet.amount,
+      potential: newBet.potential,
+      gameTitle: newBet.gameTitle,
+      pick: newBet.pick
+    });
   };
 
   // Remove bet from slip - only use context for perfect sync

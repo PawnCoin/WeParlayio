@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -56,6 +56,55 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
   const queryClient = useQueryClient();
   const [selectedCurrency, setSelectedCurrency] = useState<'weparlay_cash' | 'real_money' | 'crypto'>('weparlay_cash');
   const [slipType, setSlipType] = useState<'traditional' | 'crypto'>('traditional');
+  const [localBetSlip, setLocalBetSlip] = useState<BetSlipItem[]>([]);
+
+  // Listen for custom bet slip events from addToBothSlips
+  useEffect(() => {
+    const handleBetSlipUpdate = (event: CustomEvent) => {
+      const { type, bet } = event.detail;
+      
+      if (type === 'add') {
+        // Convert bet to BetSlipItem format
+        const betSlipItem: BetSlipItem = {
+          id: bet.id,
+          eventId: bet.eventId || '',
+          betType: bet.betType,
+          selection: bet.selection || bet.pick,
+          odds: bet.odds,
+          amount: bet.amount || 0,
+          potential: bet.potential || 0,
+          point: bet.point,
+          sport: bet.sport,
+          gameInfo: {
+            homeTeam: bet.homeTeam || '',
+            awayTeam: bet.awayTeam || '',
+            startTime: bet.startTime || ''
+          }
+        };
+        
+        setLocalBetSlip(prev => [...prev, betSlipItem]);
+        
+        toast({
+          title: "Bet Synchronized",
+          description: `${bet.pick || bet.selection} synced to unified bet slip`,
+          variant: "default",
+        });
+      }
+    };
+
+    window.addEventListener('betSlipUpdate', handleBetSlipUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('betSlipUpdate', handleBetSlipUpdate as EventListener);
+    };
+  }, [toast]);
+
+  // Update local slip when props change
+  useEffect(() => {
+    if (Array.isArray(betSlip)) {
+      setLocalBetSlip(betSlip);
+    }
+  }, [betSlip]);
 
   // Place bets mutation
   const placeBetsMutation = useMutation({
@@ -80,12 +129,23 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
     }
   });
 
-  const totalAmount = (betSlip || []).reduce((sum, bet) => sum + (bet.amount || 0), 0);
-  const totalPotential = (betSlip || []).reduce((sum, bet) => sum + (bet.potential || 0), 0);
+  // Render with combined bet slip data (context + local)  
+  const safeBetSlip = Array.isArray(betSlip) ? betSlip : [];
+  const safeLocalBetSlip = Array.isArray(localBetSlip) ? localBetSlip : [];
+  
+  const displayBetSlip = [
+    ...safeBetSlip, 
+    ...safeLocalBetSlip.filter(local => 
+      !safeBetSlip.some(context => context.id === local.id)
+    )
+  ];
+
+  const totalAmount = displayBetSlip.reduce((sum, bet) => sum + (bet.amount || 0), 0);
+  const totalPotential = displayBetSlip.reduce((sum, bet) => sum + (bet.potential || 0), 0);
   const currentBalance = (balances && balances[selectedCurrency]) || 0;
 
   const handlePlaceBets = () => {
-    if (!betSlip || betSlip.length === 0) {
+    if (displayBetSlip.length === 0) {
       toast({
         title: 'No Bets Selected',
         description: 'Add some bets to your slip first',
@@ -104,7 +164,7 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
     }
 
     const betsData = {
-      bets: (betSlip || []).map(bet => ({
+      bets: displayBetSlip.map(bet => ({
         eventId: bet.eventId,
         betType: bet.betType,
         selection: bet.selection,
@@ -161,7 +221,7 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
           <div className="flex items-center justify-between">
             <CardTitle className="text-white flex items-center">
               <Target className="h-5 w-5 mr-2 text-blue-400" />
-              Bet Slip ({betSlip?.length || 0})
+              Bet Slip ({displayBetSlip.length || 0})
             </CardTitle>
             <div className="flex space-x-2">
               <Button
@@ -251,7 +311,7 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
             </div>
           </div>
 
-          {(!betSlip || betSlip.length === 0) ? (
+          {displayBetSlip.length === 0 ? (
             <div className="text-center py-8">
               <Target className="h-12 w-12 text-slate-500 mx-auto mb-4" />
               <p className="text-slate-400">Add bets to your slip to get started</p>
@@ -259,7 +319,7 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
           ) : (
             <div className="space-y-3">
               {/* Individual Bets */}
-              {(betSlip || []).map((bet, index) => (
+              {displayBetSlip.map((bet, index) => (
                 <div key={bet.id} className="bg-slate-800 p-3 rounded-lg">
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
