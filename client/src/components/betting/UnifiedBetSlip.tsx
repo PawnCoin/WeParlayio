@@ -109,7 +109,7 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
   // Place bets mutation
   const placeBetsMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest('/api/bets/place', 'POST', data);
+      return apiRequest('POST', '/api/bets/place', data);
     },
     onSuccess: (data) => {
       toast({
