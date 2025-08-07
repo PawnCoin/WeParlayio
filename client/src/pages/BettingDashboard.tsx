@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { getLeagueLogo } from '@/utils/sportsLogosSimple';
-import CurrencyBetSlip from '@/components/betting/CurrencyBetSlip';
+import UnifiedBetSlip from '@/components/betting/UnifiedBetSlip';
 import BettingTestPanel from '@/components/betting/BettingTestPanel';
 import BetSettlementPanel from '@/components/betting/BetSettlementPanel';
 import { DollarSign, TrendingUp, Trophy, Clock, Target } from 'lucide-react';
@@ -50,6 +50,8 @@ interface BetSlipItem {
 const BettingDashboard: React.FC = () => {
   const { user } = useAuth();
   const [betSlip, setBetSlip] = useState<BetSlipItem[]>([]);
+  const [selectedCurrency, setSelectedCurrency] = useState<'weparlay_cash' | 'real_money' | 'crypto'>('weparlay_cash');
+  const [activeSlipType, setActiveSlipType] = useState<'traditional' | 'crypto'>('traditional');
 
   // Fetch live odds data from priority API system
   const { data: oddsResponse, isLoading: isLoadingOdds } = useQuery({
@@ -116,6 +118,17 @@ const BettingDashboard: React.FC = () => {
   // Clear all bets
   const handleClearAll = () => {
     setBetSlip([]);
+  };
+
+  // Update bet amount and calculate potential payout
+  const handleUpdateBet = (betId: string, amount: number) => {
+    setBetSlip(prev => prev.map(bet => {
+      if (bet.id === betId) {
+        const potential = amount * (bet.odds > 0 ? (bet.odds / 100) + 1 : (100 / Math.abs(bet.odds)) + 1);
+        return { ...bet, amount, potential };
+      }
+      return bet;
+    }));
   };
 
   // Calculate user stats
@@ -305,8 +318,10 @@ const BettingDashboard: React.FC = () => {
 
         {/* Enhanced Bet Slip with Currency Selection */}
         <div className="lg:col-span-1 space-y-4">
-          <CurrencyBetSlip
-            bets={betSlip}
+          <UnifiedBetSlip
+            betSlip={betSlip}
+            balances={balances}
+            onUpdateBet={handleUpdateBet}
             onRemoveBet={handleRemoveBet}
             onClearAll={handleClearAll}
           />

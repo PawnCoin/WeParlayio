@@ -1,181 +1,348 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Wallet, 
-  CreditCard, 
-  X,
-  DollarSign
-} from 'lucide-react';
-import { useBetSlip } from '@/contexts/BetSlipContext';
-import CryptoBetSlip from './CryptoBetSlip';
-import PawnCoinIntegration from '@/components/crypto/PawnCoinIntegration';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
+import { Trash2, Wallet, CreditCard, Bitcoin, DollarSign, Target } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 
-interface Bet {
+interface BetSlipItem {
   id: string;
   eventId: string;
+  betType: string;
   selection: string;
   odds: number;
-  betType: string;
-  gameInfo: string;
+  amount: number;
+  potential: number;
+  point?: number;
+  sport: string;
+  gameInfo?: {
+    homeTeam: string;
+    awayTeam: string;
+    startTime?: string;
+  };
 }
 
 interface UnifiedBetSlipProps {
-  bets?: Bet[];
-  onRemoveBet?: (betId: string) => void;
-  onClearAll?: () => void;
+  betSlip: BetSlipItem[];
+  onUpdateBet: (id: string, amount: number) => void;
+  onRemoveBet: (id: string) => void;
+  onClearAll: () => void;
+  balances: {
+    weparlay_cash: number;
+    real_money: number;
+    crypto: number;
+  };
 }
 
-export default function UnifiedBetSlip({ bets: propBets, onRemoveBet: propOnRemoveBet, onClearAll: propOnClearAll }: UnifiedBetSlipProps = {}) {
-  // Use BetSlip context if props are not provided
-  const betSlipContext = useBetSlip?.() || {} as any;
-  const { bets: contextBets = [], removeBet, clearBetSlip } = betSlipContext;
-  
-  // Use props if provided, otherwise fall back to context
-  const bets = propBets || contextBets || [];
-  const onRemoveBet = propOnRemoveBet || removeBet || (() => {});
-  const onClearAll = propOnClearAll || clearBetSlip || (() => {});
-  const [paymentMethod, setPaymentMethod] = useState<'crypto' | 'fiat' | 'pawncoin'>('crypto');
+const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
+  betSlip,
+  onUpdateBet,
+  onRemoveBet,
+  onClearAll,
+  balances
+}) => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [selectedCurrency, setSelectedCurrency] = useState<'weparlay_cash' | 'real_money' | 'crypto'>('weparlay_cash');
+  const [slipType, setSlipType] = useState<'traditional' | 'crypto'>('traditional');
 
-  if (!bets || bets.length === 0) {
-    return (
-      <Card className="bg-slate-900 border-slate-700">
-        <CardHeader>
-          <CardTitle className="flex items-center text-white">
-            <Wallet className="h-5 w-5 mr-2 text-blue-400" />
-            Bet Slip
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-center py-8">
-          <p className="text-slate-400 mb-4">Add bets to your slip to get started</p>
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <div className="flex items-center justify-center gap-2 text-slate-500">
-              <Wallet className="h-4 w-4" />
-              <span>Crypto Betting</span>
-            </div>
-            <div className="flex items-center justify-center gap-2 text-slate-500">
-              <CreditCard className="h-4 w-4" />
-              <span>Traditional Betting</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  // Place bets mutation
+  const placeBetsMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return apiRequest('/api/bets/place', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    },
+    onSuccess: (data) => {
+      toast({
+        title: 'Bets Placed Successfully!',
+        description: data.message,
+      });
+      onClearAll();
+      queryClient.invalidateQueries({ queryKey: ['/api/bets/user'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user/balances'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Bet Placement Failed',
+        description: error.message || 'Failed to place bets',
+        variant: 'destructive'
+      });
+    }
+  });
+
+  const totalAmount = (betSlip || []).reduce((sum, bet) => sum + (bet.amount || 0), 0);
+  const totalPotential = (betSlip || []).reduce((sum, bet) => sum + (bet.potential || 0), 0);
+  const currentBalance = (balances && balances[selectedCurrency]) || 0;
+
+  const handlePlaceBets = () => {
+    if (!betSlip || betSlip.length === 0) {
+      toast({
+        title: 'No Bets Selected',
+        description: 'Add some bets to your slip first',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    if (totalAmount > currentBalance) {
+      toast({
+        title: 'Insufficient Balance',
+        description: `You need $${totalAmount.toFixed(2)} but only have $${currentBalance.toFixed(2)}`,
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    const betsData = {
+      bets: (betSlip || []).map(bet => ({
+        eventId: bet.eventId,
+        betType: bet.betType,
+        selection: bet.selection,
+        odds: bet.odds,
+        amount: bet.amount,
+        potential: bet.potential,
+        point: bet.point,
+        gameInfo: bet.gameInfo
+      })),
+      currency: selectedCurrency,
+      ...(selectedCurrency === 'crypto' && { cryptocurrencyType: 'BTC' })
+    };
+
+    placeBetsMutation.mutate(betsData);
+  };
+
+  const getCurrencyIcon = (currency: string) => {
+    switch (currency) {
+      case 'weparlay_cash':
+        return <Wallet className="h-4 w-4" />;
+      case 'real_money':
+        return <DollarSign className="h-4 w-4" />;
+      case 'crypto':
+        return <Bitcoin className="h-4 w-4" />;
+      default:
+        return <CreditCard className="h-4 w-4" />;
+    }
+  };
+
+  const getCurrencyLabel = (currency: string) => {
+    switch (currency) {
+      case 'weparlay_cash':
+        return 'WeParlay Cash';
+      case 'real_money':
+        return 'Real Money';
+      case 'crypto':
+        return 'Cryptocurrency';
+      default:
+        return 'USD';
+    }
+  };
+
+  // Sync slip type with currency selection
+  const handleCurrencyChange = (currency: 'weparlay_cash' | 'real_money' | 'crypto') => {
+    setSelectedCurrency(currency);
+    setSlipType(currency === 'crypto' ? 'crypto' : 'traditional');
+  };
 
   return (
-    <Card className="bg-slate-900 border-slate-700">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center text-white">
-            <Wallet className="h-5 w-5 mr-2 text-blue-400" />
-            Bet Slip ({bets.length})
-          </CardTitle>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClearAll}
-            className="text-slate-400 hover:text-white"
-          >
-            Clear All
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <Tabs value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as 'crypto' | 'fiat' | 'pawncoin')}>
-          <TabsList className="grid w-full grid-cols-3 bg-slate-800">
-            <TabsTrigger value="crypto" className="text-white data-[state=active]:bg-blue-600">
-              <Wallet className="h-4 w-4 mr-2" />
-              Crypto
-            </TabsTrigger>
-            <TabsTrigger value="pawncoin" className="text-white data-[state=active]:bg-amber-600">
-              <DollarSign className="h-4 w-4 mr-2" />
-              Pawn Coin
-            </TabsTrigger>
-            <TabsTrigger value="fiat" className="text-white data-[state=active]:bg-green-600">
-              <CreditCard className="h-4 w-4 mr-2" />
-              Traditional
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="crypto" className="mt-4">
-            <div className="mt-[-16px]">
-              <CryptoBetSlip 
-                bets={bets as any}
-                onRemoveBet={onRemoveBet}
-                onClearAll={onClearAll}
-              />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="pawncoin" className="mt-4">
-            <div className="mt-[-16px]">
-              <PawnCoinIntegration 
-                betAmount={bets.reduce((total, bet) => total + 50, 0)}
-                eventId={bets[0]?.eventId}
-                selection={bets[0]?.selection}
-                odds={bets[0]?.odds}
-                onBetPlaced={(amount, transactionHash) => {
-                  console.log('Pawn Coin bet placed:', { amount, transactionHash });
-                }}
-              />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="fiat" className="mt-4">
-            <div className="space-y-4">
-              {/* Traditional Bet Slip Content */}
-              <div className="space-y-3">
-                {bets.map((bet) => (
-                  <div key={bet.id} className="p-3 bg-slate-800 rounded-lg">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex-1">
-                        <p className="text-white font-semibold text-sm">{bet.selection}</p>
-                        <p className="text-slate-400 text-xs">{(bet as any).gameInfo || `${bet.betType} Bet`}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="outline" className="border-green-500 text-green-400 text-xs">
-                            {bet.odds > 0 ? `+${bet.odds}` : bet.odds}
-                          </Badge>
-                          <Badge variant="secondary" className="text-xs">{bet.betType}</Badge>
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onRemoveBet(bet.id)}
-                        className="text-slate-400 hover:text-red-400 p-1"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="p-3 bg-orange-950/30 border border-orange-500/30 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-orange-400" />
-                  <span className="text-orange-300 text-sm">
-                    Traditional betting with USD coming soon
-                  </span>
-                </div>
-                <p className="text-orange-400/80 text-xs mt-1">
-                  For now, use crypto betting for the complete experience
-                </p>
-              </div>
-
+    <div className="space-y-4">
+      {/* Unified Bet Slip Header with Currency Toggle */}
+      <Card className="bg-slate-900 border-slate-700">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-white flex items-center">
+              <Target className="h-5 w-5 mr-2 text-blue-400" />
+              Bet Slip ({betSlip?.length || 0})
+            </CardTitle>
+            <div className="flex space-x-2">
               <Button
-                onClick={() => setPaymentMethod('crypto')}
-                className="w-full bg-blue-600 hover:bg-blue-700"
+                variant={slipType === 'traditional' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  setSlipType('traditional');
+                  if (selectedCurrency === 'crypto') {
+                    setSelectedCurrency('weparlay_cash');
+                  }
+                }}
+                className="text-xs"
               >
-                Switch to Crypto Betting
+                <CreditCard className="h-3 w-3 mr-1" />
+                Traditional
+              </Button>
+              <Button
+                variant={slipType === 'crypto' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  setSlipType('crypto');
+                  setSelectedCurrency('crypto');
+                }}
+                className="text-xs"
+              >
+                <Bitcoin className="h-3 w-3 mr-1" />
+                Crypto
               </Button>
             </div>
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+          </div>
+        </CardHeader>
+        
+        <CardContent className="space-y-4">
+          {/* Currency Selection */}
+          <div>
+            <label className="block text-white text-sm font-medium mb-2">
+              Choose Your Currency
+            </label>
+            <Select value={selectedCurrency} onValueChange={handleCurrencyChange}>
+              <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+                <SelectValue placeholder="Select currency..." />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-800 border-slate-600">
+                <SelectItem value="weparlay_cash" className="text-white hover:bg-slate-700">
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center">
+                      <Wallet className="h-4 w-4 mr-2 text-blue-400" />
+                      WeParlay Cash
+                    </div>
+                    <span className="text-green-400">${(balances?.weparlay_cash || 0).toFixed(2)}</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="real_money" className="text-white hover:bg-slate-700">
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center">
+                      <DollarSign className="h-4 w-4 mr-2 text-green-400" />
+                      Real Money (USD)
+                    </div>
+                    <span className="text-green-400">${(balances?.real_money || 0).toFixed(2)}</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="crypto" className="text-white hover:bg-slate-700">
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center">
+                      <Bitcoin className="h-4 w-4 mr-2 text-orange-400" />
+                      Cryptocurrency (BTC)
+                    </div>
+                    <span className="text-green-400">${(balances?.crypto || 0).toFixed(2)}</span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Current Balance Display */}
+          <div className="bg-slate-800 p-3 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                {getCurrencyIcon(selectedCurrency)}
+                <span className="text-white ml-2 font-medium">
+                  {getCurrencyLabel(selectedCurrency)} Balance:
+                </span>
+              </div>
+              <span className="text-green-400 font-bold text-lg">
+                ${currentBalance.toFixed(2)}
+              </span>
+            </div>
+          </div>
+
+          {(!betSlip || betSlip.length === 0) ? (
+            <div className="text-center py-8">
+              <Target className="h-12 w-12 text-slate-500 mx-auto mb-4" />
+              <p className="text-slate-400">Add bets to your slip to get started</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {/* Individual Bets */}
+              {(betSlip || []).map((bet, index) => (
+                <div key={bet.id} className="bg-slate-800 p-3 rounded-lg">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <div className="text-white font-medium text-sm">
+                        {bet.gameInfo?.homeTeam} vs {bet.gameInfo?.awayTeam}
+                      </div>
+                      <div className="text-slate-400 text-xs">
+                        {bet.selection} {bet.point && `(${bet.point > 0 ? '+' : ''}${bet.point})`}
+                      </div>
+                      <Badge variant="outline" className="mt-1 text-xs">
+                        {bet.odds > 0 ? `+${bet.odds}` : bet.odds}
+                      </Badge>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onRemoveBet(bet.id)}
+                      className="text-red-400 hover:text-red-300 p-1"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <div className="flex-1">
+                      <Input
+                        type="number"
+                        placeholder="Bet amount"
+                        value={bet.amount || ''}
+                        onChange={(e) => onUpdateBet(bet.id, parseFloat(e.target.value) || 0)}
+                        className="bg-slate-700 border-slate-600 text-white text-sm"
+                        min="1"
+                        max={currentBalance}
+                      />
+                    </div>
+                    <div className="text-right">
+                      <div className="text-green-400 text-sm font-medium">
+                        ${bet.potential?.toFixed(2) || '0.00'}
+                      </div>
+                      <div className="text-slate-400 text-xs">potential</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              <Separator className="bg-slate-700" />
+
+              {/* Totals */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-white">
+                  <span>Total Bet:</span>
+                  <span className="font-bold">${totalAmount.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-green-400">
+                  <span>Potential Win:</span>
+                  <span className="font-bold">${totalPotential.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-amber-400">
+                  <span>Remaining Balance:</span>
+                  <span className="font-bold">${(currentBalance - totalAmount).toFixed(2)}</span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex space-x-2 pt-2">
+                <Button
+                  onClick={handlePlaceBets}
+                  disabled={placeBetsMutation.isPending || totalAmount === 0 || totalAmount > currentBalance}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                >
+                  {placeBetsMutation.isPending ? 'Placing...' : `Place Bets ($${totalAmount.toFixed(2)})`}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={onClearAll}
+                  className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                >
+                  Clear All
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
-}
+};
+
+export default UnifiedBetSlip;
