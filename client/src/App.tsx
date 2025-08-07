@@ -28,7 +28,7 @@ import SportPage from "@/pages/SportPage";
 import BettingDashboard from "@/pages/BettingDashboard";
 import UnifiedBettingHub from "@/pages/UnifiedBettingHub";
 import UnifiedSports from "@/pages/UnifiedSports";
-// Removed Odds page - functionality consolidated into LiveBetting
+import Odds from "@/pages/Odds";
 import Parlays from "@/pages/Parlays";
 import BettingAcademy from "@/pages/BettingAcademy";
 import LiveHeatmap from "@/pages/LiveHeatmap";
@@ -114,7 +114,7 @@ function Router() {
       <Route path="/betting-hub" component={UnifiedBettingHub} />
       <Route path="/betting-dashboard" component={BettingDashboard} />
       <Route path="/live-betting" component={LiveBetting} />
-      {/* Odds functionality consolidated into Live Betting */}
+      <Route path="/odds" component={Odds} />
       <Route path="/parlays" component={Parlays} />
       <Route path="/live-heatmap" component={LiveHeatmap} />
       <Route path="/betting-academy" component={BettingAcademy} />
