@@ -35,13 +35,14 @@ const BettingDashboard: React.FC = () => {
     refetchInterval: 30000,
   });
 
-  // Get user balances
-  const { data: balancesData } = useQuery({
-    queryKey: ['/api/user/balances'],
-  });
-
   const events = upcomingEvents?.data || [];
-  const balances = balancesData?.balances || {};
+  
+  // Use user object from auth context for balance data
+  const balances = {
+    weparlay_cash: user?.weparlayCashBalance || user?.balance || 1000000,
+    real_money: user?.cashBalance || 0,
+    crypto: 0
+  };
 
   // Helper to get team names safely
   const getTeamName = (event: any, isHome: boolean = true) => {
@@ -171,8 +172,8 @@ const BettingDashboard: React.FC = () => {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Balance:</span>
-                  <span className="text-green-400">${balances.weparlay_cash || 0}</span>
+                  <span className="text-slate-400">WeParlay Cash:</span>
+                  <span className="text-green-400">${balances.weparlay_cash.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Active Bets:</span>

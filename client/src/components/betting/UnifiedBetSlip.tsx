@@ -39,9 +39,9 @@ interface UnifiedBetSlipProps {
   onRemoveBet: (id: string) => void;
   onClearAll: () => void;
   balances: {
-    weparlay_cash: number;
-    real_money: number;
-    crypto: number;
+    weparlay_cash?: number;
+    real_money?: number;
+    crypto?: number;
   };
 }
 
@@ -142,7 +142,7 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
 
   const totalAmount = displayBetSlip.reduce((sum, bet) => sum + (bet.amount || 0), 0);
   const totalPotential = displayBetSlip.reduce((sum, bet) => sum + (bet.potential || 0), 0);
-  const currentBalance = (balances && balances[selectedCurrency]) || 0;
+  const currentBalance = balances?.[selectedCurrency] || 0;
 
   const handlePlaceBets = () => {
     if (displayBetSlip.length === 0) {
