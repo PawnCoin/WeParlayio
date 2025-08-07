@@ -431,20 +431,20 @@ const registerRoutes = async (app: Express): Promise<Server> => {
             } : undefined,
             odds: {
               spread: {
-                home: homeSpread > 0 ? homeSpread : homeSpread,
+                home: homeSpread,
                 away: -homeSpread,
-                homeOdds: -110 + Math.round((Math.random() - 0.5) * 20),
-                awayOdds: -110 + Math.round((Math.random() - 0.5) * 20)
+                homeOdds: -110,
+                awayOdds: -110
               },
               moneyline: {
                 home: homeML,
                 away: awayML
               },
               total: {
-                over: totalPoints,
-                under: totalPoints,
-                overOdds: -110 + Math.round((Math.random() - 0.5) * 20),
-                underOdds: -110 + Math.round((Math.random() - 0.5) * 20)
+                over: totalPoints + 0.5,
+                under: totalPoints + 0.5,
+                overOdds: -110,
+                underOdds: -110
               }
             }
           };

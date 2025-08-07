@@ -343,13 +343,13 @@ export default function LiveBetting() {
                         onClick={() => handleAddToBetSlip(
                           game.eventId, 
                           'spread_away', 
-                          `${game.awayTeam} ${game.odds?.spread?.away || 0}`, 
+                          `${game.awayTeam} ${game.odds?.spread?.away > 0 ? '+' : ''}${game.odds?.spread?.away?.toFixed(1) || '+3.5'}`, 
                           game.odds?.spread?.awayOdds || -110
                         )}
                         className="flex justify-between p-3 h-auto"
                       >
-                        <span>{game.awayTeam} {formatOdds(game.odds?.spread?.away || 0)}</span>
-                        <span className="font-bold">{formatOdds(game.odds?.spread?.awayOdds || -110)}</span>
+                        <span>{game.awayTeam} {game.odds?.spread?.away > 0 ? '+' : ''}{game.odds?.spread?.away?.toFixed(1) || '+3.5'}</span>
+                        <span className="font-bold">{formatOddsForDisplay(game.odds?.spread?.awayOdds || -110)}</span>
                       </Button>
                       
                       <Button
@@ -357,13 +357,13 @@ export default function LiveBetting() {
                         onClick={() => handleAddToBetSlip(
                           game.eventId, 
                           'spread_home', 
-                          `${game.homeTeam} ${game.odds?.spread?.home || 0}`, 
+                          `${game.homeTeam} ${game.odds?.spread?.home > 0 ? '+' : ''}${game.odds?.spread?.home?.toFixed(1) || '-3.5'}`, 
                           game.odds?.spread?.homeOdds || -110
                         )}
                         className="flex justify-between p-3 h-auto"
                       >
-                        <span>{game.homeTeam} {formatOdds(game.odds?.spread?.home || 0)}</span>
-                        <span className="font-bold">{formatOdds(game.odds?.spread?.homeOdds || -110)}</span>
+                        <span>{game.homeTeam} {game.odds?.spread?.home > 0 ? '+' : ''}{game.odds?.spread?.home?.toFixed(1) || '-3.5'}</span>
+                        <span className="font-bold">{formatOddsForDisplay(game.odds?.spread?.homeOdds || -110)}</span>
                       </Button>
                     </div>
                   </div>
