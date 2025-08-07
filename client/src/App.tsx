@@ -143,7 +143,7 @@ function Router() {
       {/* Head-to-head moved to public access */}
       <SuspenseRoute path="/vip/tournaments" component={VIPTournaments} />
       <SuspenseRoute path="/vip/gaming-integration" component={VIPGamingIntegration} />
-      <SuspenseRoute path="/vip/blockchain-performance" component={VIPBlockchainPerformance} />
+
       <SuspenseRoute path="/streaming-recommendations" component={StreamingRecommendations} />
 
       
