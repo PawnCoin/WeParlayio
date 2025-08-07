@@ -37,6 +37,30 @@ const BettingDashboard: React.FC = () => {
 
   const events = upcomingEvents?.data || [];
   
+  // Debug: Log API data to see what's being returned
+  React.useEffect(() => {
+    if (events.length > 0) {
+      console.log('🎯 Total events received:', events.length);
+      
+      // Show first 5 events to check data structure
+      console.log('🎯 First 5 events:', events.slice(0, 5).map(e => ({
+        sport: e.sport,
+        league: e.league,
+        homeTeam: e.homeTeam,
+        awayTeam: e.awayTeam,
+        id: e.id
+      })));
+      
+      // Count by sport
+      const sportCounts = {};
+      events.forEach(event => {
+        const sport = event.sport || event.league || 'Unknown';
+        sportCounts[sport] = (sportCounts[sport] || 0) + 1;
+      });
+      console.log('🎯 Sports breakdown:', sportCounts);
+    }
+  }, [events]);
+  
   // Use user object from auth context for balance data
   const balances = {
     weparlay_cash: user?.weparlayCashBalance || user?.balance || 1000000,
@@ -85,19 +109,20 @@ const BettingDashboard: React.FC = () => {
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold mb-2">Betting Dashboard</h1>
-          <p className="text-slate-400">Place your bets and track your winnings</p>
+          <p className="text-slate-400">Place your bets on upcoming games across all sports</p>
         </div>
 
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Live Games - Takes 2/3 of the width */}
+          {/* Upcoming Games - Takes 2/3 of the width */}
           <div className="lg:col-span-2 space-y-4">
             <Card className="bg-slate-900 border-slate-700">
               <CardHeader>
                 <CardTitle className="text-white flex items-center">
                   <Target className="h-5 w-5 mr-2 text-blue-400" />
-                  Live Games
+                  Upcoming Games ({events.length})
                 </CardTitle>
+                <p className="text-slate-400 text-sm">All sports available for betting</p>
               </CardHeader>
               <CardContent>
                 {isLoading ? (
@@ -107,17 +132,17 @@ const BettingDashboard: React.FC = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {events.slice(0, 6).map((event: any, index: number) => (
+                    {events.slice(0, 12).map((event: any, index: number) => (
                       <div key={event.id || index} className="bg-slate-800 p-4 rounded-lg">
                         {/* Game Info */}
                         <div className="flex items-center justify-between mb-3">
                           <div>
                             <div className="flex items-center gap-2 mb-1">
                               <Badge variant="outline" className="text-xs">
-                                {event.sport || 'NFL'}
+                                {event.sport || event.league || 'NFL'}
                               </Badge>
                               <span className="text-slate-400 text-xs">
-                                {formatGameTime(event.startTime)}
+                                {formatGameTime(event.date || event.startTime)}
                               </span>
                             </div>
                             <p className="text-white font-medium">
