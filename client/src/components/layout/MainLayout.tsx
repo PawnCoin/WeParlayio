@@ -29,6 +29,7 @@ import FaviconOptimization from "@/components/shared/FaviconOptimization";
 import SocialMediaOptimization from "@/components/shared/SocialMediaOptimization";
 import UserFriendlyDisconnection from "@/components/wallet/UserFriendlyDisconnection";
 import { useBetting } from "@/contexts/BettingContext";
+import { useBetSlip } from "@/contexts/BetSlipContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import BusinessProposalModal from "@/components/business/BusinessProposalModal";
 import { useWebSocket } from "@/hooks/useWebSocket";
@@ -161,6 +162,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     }
   }, []);
   const { selectedCurrency, setSelectedCurrency } = useBetting();
+  const { betSlip, updateBet, removeFromBetSlip, clearBetSlip } = useBetSlip();
   const { toast } = useToast();
 
   // Initialize WebSocket connection for real-time updates
@@ -519,12 +521,32 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
           {/* Betting Slip Column - Mobile Bottom Sheet */}
           <div className="hidden md:block w-80 bg-card shadow-md flex-shrink-0 overflow-y-auto custom-scrollbar betting-slip-shadow border-l border-border">
-            <UnifiedBetSlip />
+            <UnifiedBetSlip 
+              betSlip={betSlip || []}
+              onUpdateBet={updateBet}
+              onRemoveBet={removeFromBetSlip}
+              onClearAll={clearBetSlip}
+              balances={{
+                weparlay_cash: currentUser.weplayTokenBalance || currentUser.weparlayCashBalance || currentUser.balance || 1000000,
+                real_money: currentUser.cashBalance || 0,
+                crypto: 0
+              }}
+            />
           </div>
 
           {/* Mobile Betting Slip - Fixed Bottom */}
           <div className="md:hidden fixed bottom-16 left-0 right-0 bg-card border-t border-border shadow-lg z-40 max-h-60 overflow-y-auto">
-            <UnifiedBetSlip />
+            <UnifiedBetSlip 
+              betSlip={betSlip || []}
+              onUpdateBet={updateBet}
+              onRemoveBet={removeFromBetSlip}
+              onClearAll={clearBetSlip}
+              balances={{
+                weparlay_cash: currentUser.weplayTokenBalance || currentUser.weparlayCashBalance || currentUser.balance || 1000000,
+                real_money: currentUser.cashBalance || 0,
+                crypto: 0
+              }}
+            />
           </div>
         </div>
       </main>
