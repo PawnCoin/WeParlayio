@@ -25,10 +25,10 @@ export default function Odds() {
   const [refreshing, setRefreshing] = useState(false);
   const { toast } = useToast();
 
-  // Fetch real odds data from the priority API system - with cache busting
+  // Fetch real odds data from the unified sports API 
   const { data: realOddsResponse, refetch: refetchRealOdds, isLoading } = useQuery({
-    queryKey: ["/api/odds"],
-    refetchInterval: 10000, // Update every 10 seconds
+    queryKey: ["/api/unified-sports/upcoming-events"],
+    refetchInterval: 30000, // Update every 30 seconds
     staleTime: 0, // Never use stale data
     gcTime: 0, // TanStack Query v5 - don't cache
     refetchOnMount: true,
@@ -36,8 +36,8 @@ export default function Odds() {
     retry: 1,
   });
 
-  // Extract data from priority API response - handle the success/odds wrapper
-  const realOddsData: any[] = realOddsResponse?.success ? realOddsResponse.odds : (realOddsResponse?.odds || realOddsResponse?.data || realOddsResponse || []);
+  // Extract data from unified sports API response 
+  const realOddsData: any[] = realOddsResponse?.success ? realOddsResponse.data : (realOddsResponse?.data || realOddsResponse || []);
   
   console.log('📊 Live Odds Data:', {
     dataCount: realOddsData?.length,

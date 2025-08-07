@@ -40,30 +40,45 @@ const SportPage = () => {
   const currentSport = sports && Array.isArray(sports) ? 
     sports.find((sport: Sport) => sport.key === sportKey) : undefined;
 
-  // Get live events for this sport
+  // Get live events for this sport using the ticker API
   const { data: liveEvents, isLoading: isLoadingLiveEvents } = useQuery({
-    queryKey: [`/api/sports/${sportKey}/live`],
+    queryKey: ['/api/odds-ticker/live-ticker'],
     refetchInterval: 30000, // Refetch every 30 seconds
-    enabled: !!sportKey,
   });
 
-  // Get upcoming events for this sport
-  const { data: upcomingEvents, isLoading: isLoadingUpcomingEvents } = useQuery({
-    queryKey: [`/api/sports/${sportKey}/upcoming`],
+  // Get upcoming events for this sport using unified sports API
+  const { data: upcomingEventsResponse, isLoading: isLoadingUpcomingEvents } = useQuery({
+    queryKey: ['/api/unified-sports/upcoming-events'],
     staleTime: 1000 * 60 * 15, // 15 minutes
-    enabled: !!sportKey,
   });
 
-  // Get odds for this sport
-  const { data: odds, isLoading: isLoadingOdds } = useQuery({
-    queryKey: ['/api/odds', sportKey],
-    enabled: !!sportKey,
+  // Extract upcoming events data
+  const upcomingEvents = upcomingEventsResponse?.success ? upcomingEventsResponse.data : (upcomingEventsResponse?.data || upcomingEventsResponse || []);
+
+  // Extract live events data  
+  const liveEventsData = liveEvents?.success ? liveEvents.odds : (liveEvents?.odds || liveEvents || []);
+
+  // Get odds for this sport from the live ticker API
+  const { data: oddsResponse, isLoading: isLoadingOdds } = useQuery({
+    queryKey: ['/api/odds-ticker/live-ticker'],
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // No need to filter - the API already returns sport-specific data
-  const filteredLiveEvents = liveEvents && Array.isArray(liveEvents) ? liveEvents : [];
-  const filteredUpcomingEvents = upcomingEvents && Array.isArray(upcomingEvents) ? upcomingEvents : [];
+  // Extract odds data
+  const odds = oddsResponse?.success ? oddsResponse.odds : (oddsResponse?.odds || oddsResponse || []);
+
+  // Filter events by sport if needed, or show all if no sport filter
+  const filteredLiveEvents = liveEventsData && Array.isArray(liveEventsData) ? 
+    (sportKey ? liveEventsData.filter((event: any) => 
+      event.sport?.toLowerCase().includes(sportKey.toLowerCase()) || 
+      event.sport_key?.toLowerCase() === sportKey.toLowerCase()
+    ) : liveEventsData) : [];
+  
+  const filteredUpcomingEvents = upcomingEvents && Array.isArray(upcomingEvents) ? 
+    (sportKey ? upcomingEvents.filter((event: any) => 
+      event.sport?.toLowerCase().includes(sportKey.toLowerCase()) || 
+      event.sport_key?.toLowerCase() === sportKey.toLowerCase()
+    ) : upcomingEvents) : [];
 
   // Helper function to get odds for an event
   const getOddsForEvent = (eventId: number) => {

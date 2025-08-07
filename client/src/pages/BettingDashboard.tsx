@@ -79,9 +79,9 @@ const BettingDashboard: React.FC = () => {
     }
   } as BetSlipItem)), ...localBetSlip];
 
-  // Fetch live odds data from priority API system
+  // Fetch live odds data from unified sports API
   const { data: oddsResponse, isLoading: isLoadingOdds } = useQuery({
-    queryKey: ['/api/odds'],
+    queryKey: ['/api/unified-sports/upcoming-events'],
     refetchInterval: 30000,
   });
 
@@ -96,8 +96,8 @@ const BettingDashboard: React.FC = () => {
     refetchInterval: 10000,
   });
 
-  // Extract authentic odds data
-  const oddsData: any[] = (oddsResponse as any)?.success ? (oddsResponse as any).odds : [];
+  // Extract authentic events data from unified sports API
+  const oddsData: any[] = (oddsResponse as any)?.success ? (oddsResponse as any).data : (oddsResponse as any)?.data || [];
   const userBets = (userBetsData as any)?.bets || [];
   const balances = (balancesData as any)?.balances || {};
 
