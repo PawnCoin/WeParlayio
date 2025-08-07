@@ -35,6 +35,7 @@ interface BetSlipContextType {
   addToBetSlip: (bet: Omit<Bet, 'id'>) => void;
   addBet: (bet: Bet) => void;
   addToBothSlips: (bet: Omit<Bet, 'id'>) => void;
+  updateBet: (id: string, updates: Partial<Bet>) => void;
   removeFromBetSlip: (id: string) => void;
   clearBetSlip: () => void;
   saveBetSlip: (name: string) => void;
@@ -69,11 +70,29 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Add a bet directly (new method for enhanced features)
   const addBet = (bet: Bet) => {
-    setBetSlip(prev => [...prev, bet]);
-    toast({
-      title: "Bet Added!",
-      description: `${bet.gameTitle || bet.selection || 'Bet'} added to your bet slip`,
+    setBetSlip(prev => {
+      const existingIndex = prev.findIndex(b => b.id === bet.id);
+      if (existingIndex >= 0) {
+        // Update existing bet
+        const updated = [...prev];
+        updated[existingIndex] = bet;
+        return updated;
+      } else {
+        // Add new bet
+        return [...prev, bet];
+      }
     });
+  };
+
+  // Update an existing bet
+  const updateBet = (id: string, updates: Partial<Bet>) => {
+    setBetSlip(prev => 
+      prev.map(bet => 
+        bet.id === id 
+          ? { ...bet, ...updates }
+          : bet
+      )
+    );
   };
 
   // NEW: Add to both slips with event synchronization
@@ -227,6 +246,7 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
         addToBetSlip,
         addBet,
         addToBothSlips,
+        updateBet,
         removeFromBetSlip,
         clearBetSlip,
         saveBetSlip,

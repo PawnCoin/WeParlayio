@@ -27,7 +27,7 @@ const formatOdds = (odds: number) => {
 
 const BettingDashboard: React.FC = () => {
   const { user } = useAuth();
-  const { betSlip, addBet, removeFromBetSlip, clearBetSlip } = useBetSlip();
+  const { betSlip, addBet, updateBet, removeFromBetSlip, clearBetSlip } = useBetSlip();
 
   // Get upcoming events
   const { data: upcomingEvents, isLoading } = useQuery({
@@ -159,7 +159,22 @@ const BettingDashboard: React.FC = () => {
               betSlip={betSlip}
               balances={balances}
               onUpdateBet={(betId, amount) => {
-                // Handle bet update logic
+                // Calculate potential winnings based on American odds
+                const bet = betSlip.find(b => b.id === betId);
+                if (bet) {
+                  let potential = 0;
+                  if (bet.odds > 0) {
+                    potential = amount * (bet.odds / 100);
+                  } else {
+                    potential = amount * (100 / Math.abs(bet.odds));
+                  }
+                  
+                  // Update the existing bet with new amount and potential
+                  updateBet(betId, {
+                    amount: amount,
+                    potential: potential + amount // Include original bet amount
+                  });
+                }
               }}
               onRemoveBet={removeFromBetSlip}
               onClearAll={clearBetSlip}
