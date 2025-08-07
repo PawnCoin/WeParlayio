@@ -619,6 +619,58 @@ export class ESPNApiService {
     
     return results;
   }
+
+  // New method for getting recent completed games (results)
+  async getRecentResults(): Promise<any[]> {
+    try {
+      console.log('🏆 ESPN: Fetching recent completed games for results');
+      
+      // Get recent completed games from ESPN API
+      const sports = ['football', 'basketball', 'baseball', 'hockey'];
+      const allResults = [];
+      
+      for (const sport of sports) {
+        try {
+          const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/nfl/scoreboard`, {
+            timeout: 10000
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            const completedGames = data.events?.filter((event: any) => 
+              event.status?.type?.completed === true || 
+              event.status?.type?.name === 'STATUS_FINAL'
+            ) || [];
+            
+            const formattedResults = completedGames.slice(0, 10).map((event: any) => ({
+              id: event.id,
+              sport: sport.toUpperCase(),
+              homeTeam: event.competitions?.[0]?.competitors?.find((c: any) => c.homeAway === 'home')?.team?.displayName || 'Home',
+              awayTeam: event.competitions?.[0]?.competitors?.find((c: any) => c.homeAway === 'away')?.team?.displayName || 'Away',
+              homeScore: parseInt(event.competitions?.[0]?.competitors?.find((c: any) => c.homeAway === 'home')?.score || '0'),
+              awayScore: parseInt(event.competitions?.[0]?.competitors?.find((c: any) => c.homeAway === 'away')?.score || '0'),
+              status: 'completed',
+              completedAt: event.date,
+              league: event.league?.name || sport.toUpperCase(),
+              week: event.week?.number,
+              season: event.season?.year
+            }));
+            
+            allResults.push(...formattedResults);
+          }
+        } catch (error) {
+          console.log(`⚠️ ESPN ${sport} results unavailable:`, error.message);
+        }
+      }
+      
+      console.log(`✅ ESPN: Retrieved ${allResults.length} recent completed games`);
+      return allResults;
+      
+    } catch (error) {
+      console.error('ESPN results error:', error);
+      return [];
+    }
+  }
 }
 
 export const espnApiService = new ESPNApiService();
