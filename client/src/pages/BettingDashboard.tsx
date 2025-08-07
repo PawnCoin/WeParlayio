@@ -35,25 +35,49 @@ const BettingDashboard: React.FC = () => {
     refetchInterval: 30000,
   });
 
-  const events = upcomingEvents?.data || [];
+  const rawEvents = (upcomingEvents as any)?.data || [];
+  
+  // Sort events to show variety across sports instead of all NFL first
+  const events = React.useMemo(() => {
+    if (!rawEvents.length) return [];
+    
+    // Group by sport first
+    const groupedBySport: { [key: string]: any[] } = {};
+    rawEvents.forEach((event: any) => {
+      const sport = event.sport || event.league || 'Unknown';
+      if (!groupedBySport[sport]) groupedBySport[sport] = [];
+      groupedBySport[sport].push(event);
+    });
+    
+    // Create a mixed array by taking events from each sport in round-robin fashion
+    const sportKeys = Object.keys(groupedBySport);
+    const mixedEvents: any[] = [];
+    let maxLength = Math.max(...Object.values(groupedBySport).map((arr: any[]) => arr.length));
+    
+    for (let i = 0; i < maxLength; i++) {
+      for (const sport of sportKeys) {
+        if (groupedBySport[sport] && groupedBySport[sport][i]) {
+          mixedEvents.push(groupedBySport[sport][i]);
+        }
+      }
+    }
+    
+    return mixedEvents;
+  }, [rawEvents]);
   
   // Debug: Log API data to see what's being returned
   React.useEffect(() => {
     if (events.length > 0) {
       console.log('🎯 Total events received:', events.length);
-      
-      // Show first 5 events to check data structure
-      console.log('🎯 First 5 events:', events.slice(0, 5).map(e => ({
+      console.log('🎯 Mixed events (first 12):', events.slice(0, 12).map(e => ({
         sport: e.sport,
-        league: e.league,
-        homeTeam: e.homeTeam,
-        awayTeam: e.awayTeam,
-        id: e.id
+        homeTeam: e.homeTeam?.name,
+        awayTeam: e.awayTeam?.name
       })));
       
       // Count by sport
-      const sportCounts = {};
-      events.forEach(event => {
+      const sportCounts: { [key: string]: number } = {};
+      events.forEach((event: any) => {
         const sport = event.sport || event.league || 'Unknown';
         sportCounts[sport] = (sportCounts[sport] || 0) + 1;
       });
@@ -81,25 +105,33 @@ const BettingDashboard: React.FC = () => {
     }
   };
 
-  // Add bet to slip
+  // Add bet to slip - Fixed to match other slips functionality
   const handleAddBet = (event: any, betType: string, selection: string, odds: number) => {
-    if (!event) return;
+    if (!event) {
+      console.warn('🚨 handleAddBet: No event provided');
+      return;
+    }
+    
+    const homeTeamName = getTeamName(event, true);
+    const awayTeamName = getTeamName(event, false);
     
     const newBet = {
-      id: `${event.id || event.eventId}-${betType}-${Date.now()}`,
-      eventId: event.id || event.eventId,
+      id: `${event.id || event.eventId || Date.now()}-${betType}-${selection.replace(/\s+/g, '-')}-${Date.now()}`,
+      eventId: String(event.id || event.eventId || `event-${Date.now()}`),
       betType,
       selection,
-      homeTeam: getTeamName(event, true),
-      awayTeam: getTeamName(event, false),
-      odds,
-      sport: event.sport || 'Football',
+      homeTeam: homeTeamName,
+      awayTeam: awayTeamName,
+      odds: Number(odds) || -110,
+      sport: event.sport || event.league || 'Football',
       amount: 0,
       potential: 0,
-      gameTitle: `${getTeamName(event, false)} @ ${getTeamName(event, true)}`,
-      pick: selection
+      gameTitle: `${awayTeamName} @ ${homeTeamName}`,
+      pick: selection,
+      date: event.date || event.startTime || new Date().toISOString()
     };
     
+    console.log('🎯 Adding bet to slip:', newBet);
     addBet(newBet);
   };
 
@@ -181,7 +213,15 @@ const BettingDashboard: React.FC = () => {
           {/* Bet Slip - Takes 1/3 of the width */}
           <div className="space-y-4">
             <UnifiedBetSlip
-              betSlip={betSlip}
+              betSlip={betSlip.map(bet => ({
+                ...bet,
+                eventId: bet.eventId || 'unknown',
+                gameInfo: {
+                  homeTeam: bet.homeTeam || 'Home',
+                  awayTeam: bet.awayTeam || 'Away',
+                  startTime: bet.date
+                }
+              }))}
               balances={balances}
               onUpdateBet={(betId, amount) => {
                 // Calculate potential winnings based on American odds

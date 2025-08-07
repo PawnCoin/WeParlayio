@@ -4,7 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 // Define the bet structure
 export interface Bet {
   id: string;
-  eventId?: string;
+  eventId: string;
   gameTitle?: string;
   pick?: string;
   homeTeam?: string;
