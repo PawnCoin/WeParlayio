@@ -165,11 +165,10 @@ export default function ApiStatus() {
               <div className="space-y-4">
                 {isLoading ? (
                   <div className="text-center py-8">Loading service status...</div>
-                ) : apiData?.services?.length > 0 ? (
-                  apiData.services.map((service: any) => {
-                    const mappedStatus = service.status === 'operational' ? 'online' : service.status === 'degraded' ? 'degraded' : 'offline';
+                ) : apiData?.apiData?.length > 0 ? (
+                  apiData.apiData.map((service: any) => {
+                    const mappedStatus = service.healthy ? 'online' : 'offline';
                     const StatusIcon = getStatusIcon(mappedStatus);
-                    const serviceType = service.type || 'external';
                     return (
                       <div key={service.name} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex items-center gap-4">

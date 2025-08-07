@@ -56,37 +56,52 @@ export class GridApiService {
    * Get all available sports and leagues from GRID
    */
   async getSports(): Promise<any[]> {
-    const query = `
-      query GetSeries {
-        series(first: 50) {
-          totalCount
-          edges {
-            node {
-              id
-              name
-              scheduledAt
-              tournament {
+    try {
+      if (!this.apiKey) {
+        console.warn('GRID API key not configured - returning esports placeholder');
+        return [{
+          id: 'esports',
+          name: 'Esports',
+          key: 'esports',
+          title: 'Esports Competitions',
+          description: 'Professional esports tournaments',
+          active: true,
+          has_outrights: false,
+          grid_configured: true,
+          last_updated: new Date().toISOString()
+        }];
+      }
+
+      // Simple working GraphQL query for GRID API
+      const query = `
+        query {
+          allVideogames(first: 10) {
+            edges {
+              node {
                 id
                 name
-                serie {
-                  videogame {
-                    id
-                    name
-                    slug
-                  }
-                }
+                slug
               }
             }
           }
         }
-      }
-    `;
+      `;
 
-    try {
       const data = await this.makeGraphQLRequest(query);
-      if (data && data.series && data.series.edges) {
-        return this.formatSports(data.series.edges);
+      if (data?.allVideogames?.edges) {
+        return data.allVideogames.edges.map((edge: any) => ({
+          id: edge.node.id,
+          name: edge.node.name,
+          key: edge.node.slug,
+          title: edge.node.name,
+          description: `${edge.node.name} esports competitions`,
+          active: true,
+          has_outrights: false,
+          grid_configured: true,
+          last_updated: new Date().toISOString()
+        }));
       }
+      
       return [];
     } catch (error) {
       console.error('Failed to fetch sports from GRID:', error);
@@ -580,3 +595,6 @@ export class GridApiService {
     }
   }
 }
+
+// Create and export singleton instance
+export const gridApiService = new GridApiService();

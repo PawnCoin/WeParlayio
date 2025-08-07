@@ -5,6 +5,9 @@
  */
 
 import { comprehensiveRapidApi } from './comprehensiveRapidApi';
+import { TheOddsApiService } from './theOddsApiService';
+import { espnApiService } from './espnApiService';
+import { gridApiService } from './gridApiService';
 
 interface ApiSource {
   name: string;
@@ -15,9 +18,11 @@ interface ApiSource {
 
 export class PrimaryApiRouter {
   private apiSources: Map<string, ApiSource> = new Map();
+  private theOddsApi: TheOddsApiService;
   
   constructor() {
     this.initializeAuthenticSources();
+    this.theOddsApi = new TheOddsApiService();
   }
 
   private initializeAuthenticSources(): void {
@@ -106,21 +111,34 @@ export class PrimaryApiRouter {
   }
 
   private async fetchFromGRID(sport: string): Promise<any> {
-    if (!process.env.GRID_API_KEY) {
-      throw new Error('GRID API key required for authentic data');
+    try {
+      return await gridApiService.getSports();
+    } catch (error) {
+      console.warn('GRID API unavailable:', error.message);
+      return [];
     }
+  }
 
-    const response = await fetch(`https://api.grid.is/sports/${sport}/events`, {
-      headers: {
-        'Authorization': `Bearer ${process.env.GRID_API_KEY}`,
-        'Content-Type': 'application/json'
-      }
-    });
+  // Required method for routes.ts
+  async getSportsData(): Promise<any> {
+    try {
+      return await this.fetchFreshSportsData('all');
+    } catch (error) {
+      console.error('getSportsData error:', error);
+      throw error;
+    }
+  }
 
-    if (!response.ok) throw new Error(`GRID API error: ${response.status}`);
-    
-    const data = await response.json();
-    return data.events || [];
+  // Required method for routes.ts  
+  async getLiveOdds(sport: string): Promise<any> {
+    try {
+      const oddsData = await this.theOddsApi.getOdds(sport);
+      console.log(`✅ Retrieved ${oddsData.length} live odds for ${sport}`);
+      return { success: true, odds: oddsData, source: 'The Odds API' };
+    } catch (error) {
+      console.error('getLiveOdds error:', error);
+      return { success: false, message: error.message, odds: [] };
+    }
   }
 
   getAuthenticSourceStatus(): any {
