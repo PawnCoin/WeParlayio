@@ -53,6 +53,19 @@ const BettingDashboard: React.FC = () => {
 
   // Extract authentic data from priority API response - handle odds API structure
   const liveEvents: any[] = liveEventsResponse?.success ? liveEventsResponse.odds : (liveEventsResponse?.odds || liveEventsResponse?.data || liveEventsResponse || []);
+  
+  // Debug logging for betting dashboard
+  console.log('🎯 Betting Dashboard - API Response Debug:', {
+    hasResponse: !!liveEventsResponse,
+    success: liveEventsResponse?.success,
+    oddsCount: liveEventsResponse?.odds?.length || 0,
+    dataCount: liveEventsResponse?.data?.length || 0,
+    liveEventsCount: liveEvents.length,
+    firstEvent: liveEvents[0],
+    selectedLeagues: selectedLeagues.length,
+    filteredLiveCount: filteredLiveEvents.length,
+    filteredUpcomingCount: filteredUpcomingEvents.length
+  });
 
   // Use same data for upcoming events since they're from the same authentic source
   const isLoadingUpcoming = isLoadingLive;
@@ -117,7 +130,9 @@ const BettingDashboard: React.FC = () => {
   
   const filteredLiveEvents = Array.isArray(liveEvents) ? liveEvents.filter((event: any) => {
     if (selectedLeagues.length === 0) return true;
-    return selectedLeagues.includes(event.sport_key);
+    // Handle different sport key formats from different APIs
+    const sportKey = event.sport_key || event.sport || event.sport_title;
+    return selectedLeagues.includes(sportKey);
   }) : [];
   
   const filteredUpcomingEvents = Array.isArray(liveEvents) ? liveEvents.filter((event: any) => {
@@ -127,9 +142,13 @@ const BettingDashboard: React.FC = () => {
       'NBA Basketball': 'basketball_nba',
       'NFL Football': 'americanfootball_nfl',
       'MLB Baseball': 'baseball_mlb',
-      'NHL Hockey': 'icehockey_nhl'
+      'NHL Hockey': 'icehockey_nhl',
+      'BASKETBALL': 'basketball_nba',
+      'AMERICANFOOTBALL': 'americanfootball_nfl',
+      'FOOTBALL': 'americanfootball_nfl'
     };
-    const mappedSport = sportMapping[event.sport] || event.sport_key || event.sport;
+    const rawSport = event.sport || event.sport_key || event.sport_title;
+    const mappedSport = sportMapping[rawSport] || rawSport;
     return selectedLeagues.includes(mappedSport);
   }) : [];
 

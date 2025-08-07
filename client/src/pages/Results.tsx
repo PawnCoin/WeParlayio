@@ -72,13 +72,16 @@ const Results: React.FC = () => {
   });
 
   // Fetch real completed game results from ESPN
-  const { data: recentResults = [], isLoading: resultsLoading } = useQuery({
+  const { data: resultsResponse, isLoading: resultsLoading } = useQuery({
     queryKey: ["/api/results/recent"],
     refetchInterval: 30000, // Refresh every 30 seconds for updated results
   });
   
+  // Extract results from API response
+  const recentResults = resultsResponse?.success ? resultsResponse.results : (resultsResponse?.results || resultsResponse || []);
+  
   // Filter real game results based on filters
-  const filteredResults = recentResults.filter((game: any) => {
+  const filteredResults = (recentResults || []).filter((game: any) => {
     // Date filter
     if (dateFilter && !game.date.includes(dateFilter)) {
       return false;
