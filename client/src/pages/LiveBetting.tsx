@@ -7,6 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Play, Pause, TrendingUp, TrendingDown, DollarSign, Clock, Target } from 'lucide-react';
+import { useBetSlip } from '@/contexts/BetSlipContext';
+import UnifiedBetSlip from '@/components/betting/UnifiedBetSlip';
+import { useAuth } from '@/hooks/useAuth';
 
 interface LiveOdds {
   eventId: string;
@@ -26,19 +29,14 @@ interface LiveOdds {
   startTime?: string;
 }
 
-interface BetSlip {
-  eventId: string;
-  betType: string;
-  selection: string;
-  odds: number;
-  amount: number;
-}
+
 
 export default function LiveBetting() {
-  const [selectedBets, setSelectedBets] = useState<BetSlip[]>([]);
   const [isAutoRefresh, setIsAutoRefresh] = useState(true);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { betSlip, addToBetSlip, updateBet, removeFromBetSlip, clearBetSlip } = useBetSlip();
 
   const { data: liveOddsResponse, isLoading } = useQuery({
     queryKey: ['/api/odds/americanfootball_nfl'],
@@ -62,51 +60,29 @@ export default function LiveBetting() {
     );
   }
 
-  const placeBetMutation = useMutation({
-    mutationFn: async (betData: any) => {
-      const response = await fetch('/api/betting/place-bet', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(betData),
-      });
-      if (!response.ok) throw new Error('Failed to place bet');
-      return response.json();
-    },
-    onSuccess: (data) => {
-      toast({
-        title: "Bet Placed Successfully!",
-        description: `Your bet has been placed. Potential payout: $${data.bet.potentialPayout.toFixed(2)}`,
-      });
-      setSelectedBets([]);
-      queryClient.invalidateQueries({ queryKey: ['/api/user/analytics'] });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Bet Failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
 
-  const addToBetSlip = (eventId: string, betType: string, selection: string, odds: number) => {
-    const existingBet = selectedBets.find(bet => bet.eventId === eventId && bet.betType === betType);
+
+  const handleAddToBetSlip = (eventId: string, betType: string, selection: string, odds: number) => {
+    const gameInfo = liveOdds.find(game => game.eventId === eventId);
+    if (!gameInfo) return;
     
-    if (existingBet) {
-      setSelectedBets(prev => prev.filter(bet => !(bet.eventId === eventId && bet.betType === betType)));
-    } else {
-      setSelectedBets(prev => [...prev, { eventId, betType, selection, odds, amount: 10 }]);
-    }
-  };
-
-  const updateBetAmount = (index: number, amount: number) => {
-    setSelectedBets(prev => prev.map((bet, i) => i === index ? { ...bet, amount } : bet));
-  };
-
-  const placeBets = () => {
-    selectedBets.forEach(bet => {
-      placeBetMutation.mutate(bet);
-    });
+    const betData = {
+      id: `${eventId}-${betType}-${selection.replace(/\s+/g, '-')}-${Date.now()}`,
+      eventId,
+      betType,
+      selection,
+      homeTeam: gameInfo.homeTeam,
+      awayTeam: gameInfo.awayTeam,
+      odds,
+      sport: gameInfo.sport || 'NFL',
+      amount: 0,
+      potential: 0,
+      gameTitle: `${gameInfo.awayTeam} @ ${gameInfo.homeTeam}`,
+      pick: selection,
+      date: gameInfo.startTime || new Date().toISOString()
+    };
+    
+    addToBetSlip(betData);
   };
 
   const formatOdds = (odds: number) => {
@@ -114,13 +90,10 @@ export default function LiveBetting() {
   };
 
   const isSelected = (eventId: string, betType: string) => {
-    return selectedBets.some(bet => bet.eventId === eventId && bet.betType === betType);
+    return betSlip?.some(bet => bet.eventId === eventId && bet.betType === betType) || false;
   };
 
-  const totalPotentialPayout = selectedBets.reduce((sum, bet) => {
-    const decimalOdds = bet.odds > 0 ? (bet.odds / 100) + 1 : (100 / Math.abs(bet.odds)) + 1;
-    return sum + (bet.amount * decimalOdds);
-  }, 0);
+
 
   if (isLoading) {
     return (
@@ -205,7 +178,7 @@ export default function LiveBetting() {
                     <div className="grid grid-cols-2 gap-2">
                       <Button
                         variant={isSelected(game.eventId, 'spread_away') ? "default" : "outline"}
-                        onClick={() => addToBetSlip(
+                        onClick={() => handleAddToBetSlip(
                           game.eventId, 
                           'spread_away', 
                           `${game.awayTeam} ${game.odds?.spread?.away || 0}`, 
@@ -219,7 +192,7 @@ export default function LiveBetting() {
                       
                       <Button
                         variant={isSelected(game.eventId, 'spread_home') ? "default" : "outline"}
-                        onClick={() => addToBetSlip(
+                        onClick={() => handleAddToBetSlip(
                           game.eventId, 
                           'spread_home', 
                           `${game.homeTeam} ${game.odds?.spread?.home || 0}`, 
@@ -239,7 +212,7 @@ export default function LiveBetting() {
                     <div className="grid grid-cols-2 gap-2">
                       <Button
                         variant={isSelected(game.eventId, 'moneyline_away') ? "default" : "outline"}
-                        onClick={() => addToBetSlip(
+                        onClick={() => handleAddToBetSlip(
                           game.eventId, 
                           'moneyline_away', 
                           `${game.awayTeam} Win`, 
@@ -253,7 +226,7 @@ export default function LiveBetting() {
                       
                       <Button
                         variant={isSelected(game.eventId, 'moneyline_home') ? "default" : "outline"}
-                        onClick={() => addToBetSlip(
+                        onClick={() => handleAddToBetSlip(
                           game.eventId, 
                           'moneyline_home', 
                           `${game.homeTeam} Win`, 
@@ -273,7 +246,7 @@ export default function LiveBetting() {
                     <div className="grid grid-cols-2 gap-2">
                       <Button
                         variant={isSelected(game.eventId, 'total_over') ? "default" : "outline"}
-                        onClick={() => addToBetSlip(
+                        onClick={() => handleAddToBetSlip(
                           game.eventId, 
                           'total_over', 
                           `Over ${game.odds?.total?.over || 50}`, 
@@ -287,7 +260,7 @@ export default function LiveBetting() {
                       
                       <Button
                         variant={isSelected(game.eventId, 'total_under') ? "default" : "outline"}
-                        onClick={() => addToBetSlip(
+                        onClick={() => handleAddToBetSlip(
                           game.eventId, 
                           'total_under', 
                           `Under ${game.odds?.total?.under || 50}`, 
@@ -306,84 +279,19 @@ export default function LiveBetting() {
             ))}
           </div>
 
-          {/* Bet Slip */}
+          {/* Unified Bet Slip */}
           <div>
-            <Card className="bg-slate-800/50 border-slate-700 sticky top-4">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Target className="w-5 h-5" />
-                  Bet Slip ({selectedBets.length})
-                </CardTitle>
-              </CardHeader>
-              
-              <CardContent className="space-y-4">
-                {selectedBets.length === 0 ? (
-                  <p className="text-slate-400 text-center py-8">
-                    Select bets to add to your slip
-                  </p>
-                ) : (
-                  <>
-                    {selectedBets.map((bet, index) => (
-                      <div key={`${bet.eventId}-${bet.betType}`} className="p-3 bg-slate-700/50 rounded-lg">
-                        <div className="text-sm text-blue-300 mb-1">{bet.selection}</div>
-                        <div className="text-white font-medium mb-2">
-                          Odds: {formatOdds(bet.odds)}
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
-                          <Label className="text-xs text-slate-300">Amount:</Label>
-                          <Input
-                            type="number"
-                            value={bet.amount}
-                            onChange={(e) => updateBetAmount(index, Number(e.target.value))}
-                            className="flex-1 h-8 bg-slate-600 border-slate-500"
-                            min="1"
-                          />
-                        </div>
-                        
-                        <div className="text-xs text-green-400 mt-1">
-                          Potential payout: ${((bet.odds > 0 ? (bet.odds / 100) + 1 : (100 / Math.abs(bet.odds)) + 1) * bet.amount).toFixed(2)}
-                        </div>
-                      </div>
-                    ))}
-                    
-                    <div className="border-t border-slate-600 pt-4">
-                      <div className="flex justify-between text-sm mb-2">
-                        <span className="text-slate-300">Total Wager:</span>
-                        <span className="text-white font-medium">
-                          ${selectedBets.reduce((sum, bet) => sum + bet.amount, 0).toFixed(2)}
-                        </span>
-                      </div>
-                      
-                      <div className="flex justify-between text-sm mb-4">
-                        <span className="text-slate-300">Potential Payout:</span>
-                        <span className="text-green-400 font-bold">
-                          ${totalPotentialPayout.toFixed(2)}
-                        </span>
-                      </div>
-                      
-                      <Button 
-                        onClick={placeBets}
-                        disabled={placeBetMutation.isPending}
-                        className="w-full bg-blue-600 hover:bg-blue-700"
-                      >
-                        {placeBetMutation.isPending ? (
-                          <div className="flex items-center gap-2">
-                            <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
-                            Placing Bets...
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            <DollarSign className="w-4 h-4" />
-                            Place All Bets
-                          </div>
-                        )}
-                      </Button>
-                    </div>
-                  </>
-                )}
-              </CardContent>
-            </Card>
+            <UnifiedBetSlip 
+              betSlip={betSlip || []}
+              onUpdateBet={updateBet}
+              onRemoveBet={removeFromBetSlip}
+              onClearAll={clearBetSlip}
+              balances={{
+                weparlay_cash: user?.weplayTokenBalance || user?.weparlayCashBalance || user?.balance || 1000000,
+                real_money: user?.cashBalance || 0,
+                crypto: 0
+              }}
+            />
           </div>
           
         </div>
