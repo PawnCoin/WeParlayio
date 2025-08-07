@@ -24,6 +24,7 @@ interface UseWalletReturn {
 declare global {
   interface Window {
     ethereum?: any;
+    solana?: any;
   }
 }
 
@@ -185,40 +186,7 @@ export function useWallet(): UseWalletReturn {
   }, [disconnect]);
 
   // Check if already connected on mount
-  useEffect(() => {
-    const checkConnection = async () => {
-      if (!window.ethereum) return;
-
-      try {
-        const accounts = await window.ethereum.request({
-          method: 'eth_accounts',
-        });
-
-        if (accounts.length > 0) {
-          const chainId = await window.ethereum.request({
-            method: 'eth_chainId',
-          });
-
-          const balance = await window.ethereum.request({
-            method: 'eth_getBalance',
-            params: [accounts[0], 'latest'],
-          });
-
-          setWalletState({
-            isConnected: true,
-            address: accounts[0],
-            chainId: parseInt(chainId, 16),
-            balance: (parseInt(balance, 16) / 1e18).toFixed(4),
-            walletType: 'MetaMask',
-          });
-        }
-      } catch (error) {
-        console.error('Error checking wallet connection:', error);
-      }
-    };
-
-    checkConnection();
-  }, []);
+  // Removed automatic connection check - only connect when user explicitly requests
 
   return {
     isConnected: walletState.isConnected,

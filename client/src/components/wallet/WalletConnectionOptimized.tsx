@@ -72,29 +72,7 @@ const WalletConnectionOptimized: React.FC<WalletConnectionProps> = ({ onConnect,
     }
   ];
 
-  // Check for existing wallet connection on component mount
-  useEffect(() => {
-    checkExistingConnection();
-  }, []);
-
-  const checkExistingConnection = async () => {
-    try {
-      if (typeof (window as any).ethereum !== 'undefined') {
-        const accounts = await (window as any).ethereum.request({ method: 'eth_accounts' });
-        if (accounts.length > 0) {
-          const chainId = await (window as any).ethereum.request({ method: 'eth_chainId' });
-          setConnectedWallet({
-            address: accounts[0],
-            type: 'metamask',
-            chainId
-          });
-          updateNetworkInfo(chainId);
-        }
-      }
-    } catch (error) {
-      console.log('No existing wallet connection found');
-    }
-  };
+  // Removed automatic connection check - MetaMask popup only shows when user clicks "Connect Wallet"
 
   const updateNetworkInfo = (chainId: string) => {
     const networks: { [key: string]: NetworkInfo } = {
