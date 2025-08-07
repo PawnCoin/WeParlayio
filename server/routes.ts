@@ -166,23 +166,29 @@ const registerRoutes = async (app: Express): Promise<Server> => {
       // Import Pinnacle service
       const { pinnacleOddsService } = await import('./services/pinnacleOddsService');
       
-      // Try Pinnacle first (priority 1), then fallback sources
-      const [pinnacleOdds, unifiedData, rapidApiData] = await Promise.allSettled([
-        pinnacleOddsService.getPinnacleOdds(sport),
+      // Try ESPN first for real team names, then fallback sources
+      const [unifiedData, pinnacleOdds, rapidApiData] = await Promise.allSettled([
         fetch('http://localhost:5000/api/unified-sports/upcoming-events').then(res => res.json()),
+        pinnacleOddsService.getPinnacleOdds(sport),
         comprehensiveRapidApi.getFootballFixtures()
       ]);
 
       let combinedOdds = [];
 
-      // Priority 1: Use Pinnacle Odds (most reliable)
-      if (pinnacleOdds.status === 'fulfilled' && pinnacleOdds.value?.length > 0) {
-        combinedOdds = pinnacleOdds.value;
-        console.log(`✅ Pinnacle Primary: Using ${combinedOdds.length} Pinnacle odds for ${sport}`);
-      }
-      // Priority 2: Use unified ESPN data as fallback
-      else if (unifiedData.status === 'fulfilled' && unifiedData.value?.success && unifiedData.value?.data?.length > 0) {
-        combinedOdds = unifiedData.value.data.slice(0, 10).map((game: any, index: number) => {
+      // Priority 1: Use ESPN data (has real team names)
+      if (unifiedData.status === 'fulfilled' && unifiedData.value?.success && unifiedData.value?.data?.length > 0) {
+        // Filter for the specific sport if possible
+        const sportFilter = sport.toLowerCase().includes('football') ? 'NFL' : 
+                           sport.toLowerCase().includes('basketball') ? 'NBA' :
+                           sport.toLowerCase().includes('baseball') ? 'MLB' :
+                           sport.toLowerCase().includes('hockey') ? 'NHL' :
+                           sport.toLowerCase().includes('soccer') ? 'Soccer' : null;
+        
+        const filteredGames = sportFilter ? 
+          unifiedData.value.data.filter((game: any) => game.sport === sportFilter) : 
+          unifiedData.value.data;
+          
+        combinedOdds = (filteredGames.length > 0 ? filteredGames : unifiedData.value.data).slice(0, 10).map((game: any, index: number) => {
           // Generate realistic betting odds
           const homeSpread = (Math.random() - 0.5) * 14; // -7 to +7 point spread
           const totalPoints = Math.round(40 + (Math.random() * 20)); // 40-60 total points
@@ -192,8 +198,8 @@ const registerRoutes = async (app: Express): Promise<Server> => {
           return {
             eventId: `espn_${game.id}`,
             sport: sport.toUpperCase(),
-            homeTeam: game.homeTeam?.name || 'Team A',
-            awayTeam: game.awayTeam?.name || 'Team B',
+            homeTeam: game.homeTeam?.name || game.homeTeam || 'Home Team',
+            awayTeam: game.awayTeam?.name || game.awayTeam || 'Away Team',
             status: game.status === 'in' ? 'live' : 'upcoming',
             startTime: game.startTime || new Date(Date.now() + Math.random() * 7200000).toISOString(),
             lastUpdate: new Date().toISOString(),
@@ -224,6 +230,11 @@ const registerRoutes = async (app: Express): Promise<Server> => {
           };
         });
         console.log(`✅ Live Betting Odds: Created ${combinedOdds.length} comprehensive odds from ESPN events`);
+      }
+      // Priority 2: Use Pinnacle Odds only if ESPN data is not available
+      else if (pinnacleOdds.status === 'fulfilled' && pinnacleOdds.value?.length > 0) {
+        combinedOdds = pinnacleOdds.value;
+        console.log(`✅ Pinnacle Fallback: Using ${combinedOdds.length} Pinnacle odds for ${sport} (no ESPN data)`);
       }
 
       // Add RapidAPI odds if available
