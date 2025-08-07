@@ -3,6 +3,9 @@
  * Integrates multiple RapidAPI endpoints for complete sports coverage
  */
 
+import { smartRateLimiter } from '../utils/smartRateLimiter';
+import { apiOptimizer } from '../utils/apiOptimizer';
+
 export class ComprehensiveRapidApiService {
   private apiKey: string;
   private endpoints = {
@@ -23,9 +26,26 @@ export class ComprehensiveRapidApiService {
     }
   }
 
-  // Football (Soccer) API Integration
+  // Football (Soccer) API Integration with Smart Rate Limiting
   async getFootballFixtures(): Promise<any[]> {
     if (!this.apiKey) return [];
+    
+    const endpointName = 'rapidapi-football';
+    const cacheKey = 'football-fixtures-live';
+    
+    // Check cache first
+    const cached = smartRateLimiter.getCached(cacheKey);
+    if (cached) {
+      console.log('✅ Using cached football data');
+      return cached;
+    }
+    
+    // Check rate limits
+    if (!smartRateLimiter.canMakeRequest(endpointName)) {
+      const backoffTime = smartRateLimiter.getBackoffTime(endpointName);
+      console.log(`⏳ Football API rate limited, backing off for ${backoffTime}ms`);
+      return [];
+    }
     
     try {
       const response = await fetch('https://api-football-v1.p.rapidapi.com/v3/fixtures?live=all', {
@@ -35,9 +55,16 @@ export class ComprehensiveRapidApiService {
         }
       });
 
+      if (response.status === 429) {
+        smartRateLimiter.recordRateLimit(endpointName);
+        return [];
+      }
+
       if (!response.ok) {
         throw new Error(`Football API error: ${response.status}`);
       }
+      
+      smartRateLimiter.recordSuccess(endpointName);
 
       const data = await response.json();
       const fixtures = data.response?.slice(0, 15) || [];
@@ -65,9 +92,26 @@ export class ComprehensiveRapidApiService {
     }
   }
 
-  // Basketball API Integration
+  // Basketball API Integration with Smart Rate Limiting
   async getBasketballGames(): Promise<any[]> {
     if (!this.apiKey) return [];
+    
+    const endpointName = 'rapidapi-basketball';
+    const cacheKey = 'basketball-games-live';
+    
+    // Check cache first
+    const cached = smartRateLimiter.getCached(cacheKey);
+    if (cached) {
+      console.log('✅ Using cached basketball data');
+      return cached;
+    }
+    
+    // Check rate limits
+    if (!smartRateLimiter.canMakeRequest(endpointName)) {
+      const backoffTime = smartRateLimiter.getBackoffTime(endpointName);
+      console.log(`⏳ Basketball API rate limited, backing off for ${backoffTime}ms`);
+      return [];
+    }
     
     try {
       const response = await fetch('https://api-basketball.p.rapidapi.com/games?live=all', {
@@ -77,16 +121,22 @@ export class ComprehensiveRapidApiService {
         }
       });
 
+      if (response.status === 429) {
+        smartRateLimiter.recordRateLimit(endpointName);
+        return [];
+      }
+
       if (!response.ok) {
         throw new Error(`Basketball API error: ${response.status}`);
       }
+      
+      smartRateLimiter.recordSuccess(endpointName);
 
       const data = await response.json();
       const games = data.response?.slice(0, 10) || [];
       
-      console.log(`✅ RapidAPI Basketball: ${games.length} live games retrieved`);
-      
-      return games.map((game: any) => ({
+      // Cache successful response for 5 minutes
+      const processedGames = games.map((game: any) => ({
         id: `rapid_basketball_${game.id}`,
         sport: 'Basketball',
         homeTeam: game.teams.home.name,
@@ -100,6 +150,11 @@ export class ComprehensiveRapidApiService {
         },
         source: 'RapidAPI'
       }));
+      
+      smartRateLimiter.setCached(cacheKey, processedGames, 300000);
+      console.log(`✅ RapidAPI Basketball: ${processedGames.length} live games retrieved and cached`);
+      
+      return processedGames;
     } catch (error) {
       console.error('RapidAPI Basketball error:', error);
       return [];
