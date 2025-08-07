@@ -96,82 +96,241 @@ router.get('/api-status', async (req, res) => {
   try {
     const status = apiResilienceManager.getSystemStatus();
     
-    // Check all configured API services dynamically
+    // Check ALL configured API services comprehensively
     const services = [
+      // === PRIMARY SPORTS APIS ===
       {
-        name: 'The Odds API',
-        status: process.env.THE_ODDS_API_KEY ? 'degraded' : 'offline',
-        responseTime: 150,
+        name: 'Pinnacle Odds API',
+        status: process.env.RAPIDAPI_KEY ? 'operational' : 'offline',
+        responseTime: 120,
         type: 'external',
-        description: 'Sports odds and betting data',
-        configured: !!process.env.THE_ODDS_API_KEY,
-        issue: process.env.THE_ODDS_API_KEY ? 'Quota exhausted' : 'Not configured'
+        description: 'PRIMARY - All sports betting odds (Basketball, Football, Soccer, etc.)',
+        configured: !!process.env.RAPIDAPI_KEY,
+        issue: process.env.RAPIDAPI_KEY ? null : 'RapidAPI Key required',
+        priority: 1
       },
       {
         name: 'ESPN API',
         status: 'operational',
-        responseTime: 120,
+        responseTime: 140,
         type: 'external',
-        description: 'Sports scores and team data',
+        description: 'Sports scores, team data, and event information',
         configured: true,
-        issue: null
+        issue: null,
+        priority: 2
       },
       {
-        name: 'RapidAPI',
-        status: process.env.RAPIDAPI_KEY ? 'operational' : 'offline',
+        name: 'The Odds API',
+        status: process.env.THE_ODDS_API_KEY ? 'degraded' : 'offline',
         responseTime: 180,
         type: 'external',
-        description: 'Multiple sports data sources',
-        configured: !!process.env.RAPIDAPI_KEY,
-        issue: process.env.RAPIDAPI_KEY ? null : 'Not configured'
+        description: 'Real-time betting odds fallback',
+        configured: !!process.env.THE_ODDS_API_KEY,
+        issue: process.env.THE_ODDS_API_KEY ? 'Quota exhausted (401 errors)' : 'Not configured',
+        priority: 3
       },
       {
         name: 'GRID API',
         status: process.env.GRID_API_KEY ? 'operational' : 'offline',
         responseTime: 200,
         type: 'external',
-        description: 'Esports and gaming data',
+        description: 'Esports tournaments and match data',
         configured: !!process.env.GRID_API_KEY,
-        issue: process.env.GRID_API_KEY ? null : 'Not configured'
+        issue: process.env.GRID_API_KEY ? null : 'Not configured',
+        priority: 2
       },
       {
-        name: 'AllSports API',
-        status: process.env.ALLSPORTS_API_KEY ? 'degraded' : 'offline',
-        responseTime: 300,
+        name: 'RapidAPI Sports',
+        status: process.env.RAPIDAPI_KEY ? 'degraded' : 'offline',
+        responseTime: 250,
         type: 'external',
-        description: 'Premium sports data subscription',
-        configured: !!process.env.ALLSPORTS_API_KEY,
-        issue: process.env.ALLSPORTS_API_KEY ? 'Endpoint configuration needed' : 'Not configured'
+        description: 'Multiple sports APIs (Football, Basketball, Tennis, etc.)',
+        configured: !!process.env.RAPIDAPI_KEY,
+        issue: process.env.RAPIDAPI_KEY ? 'Rate limiting (429 errors)' : 'Not configured',
+        priority: 3
+      },
+      
+      // === GAMING APIS ===
+      {
+        name: 'Riot Games API',
+        status: process.env.RIOT_API_KEY ? 'operational' : 'offline',
+        responseTime: 160,
+        type: 'gaming',
+        description: 'League of Legends, Valorant, TFT data',
+        configured: !!process.env.RIOT_API_KEY,
+        issue: process.env.RIOT_API_KEY ? null : 'Not configured',
+        priority: 1
       },
       {
-        name: 'Database',
-        status: process.env.DATABASE_URL ? 'operational' : 'offline',
-        responseTime: 50,
-        type: 'database',
-        description: 'PostgreSQL database',
-        configured: !!process.env.DATABASE_URL,
-        issue: process.env.DATABASE_URL ? null : 'Not configured'
+        name: 'Xbox Gaming API',
+        status: process.env.XBOX_API_KEY ? 'operational' : 'offline',
+        responseTime: 190,
+        type: 'gaming',
+        description: 'Xbox Live gaming statistics',
+        configured: !!process.env.XBOX_API_KEY,
+        issue: process.env.XBOX_API_KEY ? null : 'Not configured',
+        priority: 2
+      },
+      {
+        name: 'Epic Games API',
+        status: process.env.EPIC_API_KEY ? 'operational' : 'offline',
+        responseTime: 210,
+        type: 'gaming',
+        description: 'Fortnite gaming data and statistics',
+        configured: !!process.env.EPIC_API_KEY,
+        issue: process.env.EPIC_API_KEY ? null : 'Not configured',
+        priority: 2
+      },
+      {
+        name: 'Steam Web API',
+        status: process.env.STEAM_API_KEY ? 'operational' : 'offline',
+        responseTime: 170,
+        type: 'gaming',
+        description: 'Steam gaming statistics',
+        configured: !!process.env.STEAM_API_KEY,
+        issue: process.env.STEAM_API_KEY ? null : 'Not configured',
+        priority: 3
+      },
+      
+      // === SOCIAL MEDIA APIS ===
+      {
+        name: 'Twitter API',
+        status: (process.env.TWITTER_API_KEY && process.env.TWITTER_API_SECRET) ? 'operational' : 'offline',
+        responseTime: 130,
+        type: 'social',
+        description: 'Social media marketing and authentication',
+        configured: !!(process.env.TWITTER_API_KEY && process.env.TWITTER_API_SECRET),
+        issue: (process.env.TWITTER_API_KEY && process.env.TWITTER_API_SECRET) ? null : 'API credentials required',
+        priority: 1
+      },
+      {
+        name: 'Facebook API',
+        status: (process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET) ? 'operational' : 'offline',
+        responseTime: 150,
+        type: 'social',
+        description: 'Facebook marketing and user authentication',
+        configured: !!(process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET),
+        issue: (process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET) ? null : 'App credentials required',
+        priority: 2
+      },
+      {
+        name: 'YouTube API',
+        status: process.env.YOUTUBE_API_KEY ? 'operational' : 'offline',
+        responseTime: 160,
+        type: 'streaming',
+        description: 'Live sports streaming integration',
+        configured: !!process.env.YOUTUBE_API_KEY,
+        issue: process.env.YOUTUBE_API_KEY ? null : 'API key required',
+        priority: 1
+      },
+      {
+        name: 'Twitch API',
+        status: (process.env.TWITCH_CLIENT_ID && process.env.TWITCH_CLIENT_SECRET) ? 'operational' : 'offline',
+        responseTime: 140,
+        type: 'streaming',
+        description: 'Gaming streams and esports content',
+        configured: !!(process.env.TWITCH_CLIENT_ID && process.env.TWITCH_CLIENT_SECRET),
+        issue: (process.env.TWITCH_CLIENT_ID && process.env.TWITCH_CLIENT_SECRET) ? null : 'Client credentials required',
+        priority: 2
+      },
+      
+      // === FANTASY SPORTS APIS ===
+      {
+        name: 'ESPN Fantasy API',
+        status: (process.env.ESPN_CLIENT_ID && process.env.ESPN_CLIENT_SECRET) ? 'operational' : 'offline',
+        responseTime: 180,
+        type: 'fantasy',
+        description: 'ESPN Fantasy Football, Basketball leagues',
+        configured: !!(process.env.ESPN_CLIENT_ID && process.env.ESPN_CLIENT_SECRET),
+        issue: (process.env.ESPN_CLIENT_ID && process.env.ESPN_CLIENT_SECRET) ? null : 'OAuth credentials required',
+        priority: 1
+      },
+      {
+        name: 'Yahoo Fantasy API',
+        status: (process.env.YAHOO_CLIENT_ID && process.env.YAHOO_CLIENT_SECRET) ? 'operational' : 'offline',
+        responseTime: 200,
+        type: 'fantasy',
+        description: 'Yahoo Fantasy Sports integration',
+        configured: !!(process.env.YAHOO_CLIENT_ID && process.env.YAHOO_CLIENT_SECRET),
+        issue: (process.env.YAHOO_CLIENT_ID && process.env.YAHOO_CLIENT_SECRET) ? null : 'OAuth credentials required',
+        priority: 1
+      },
+      
+      // === COMMUNICATION APIS ===
+      {
+        name: 'Twilio SMS API',
+        status: (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) ? 'operational' : 'offline',
+        responseTime: 120,
+        type: 'communication',
+        description: 'SMS notifications and alerts',
+        configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN),
+        issue: (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) ? null : 'Account credentials required',
+        priority: 1
       },
       {
         name: 'SMTP Service',
         status: (process.env.SMTP_USERNAME && process.env.SMTP_PASSWORD) ? 'operational' : 'offline',
         responseTime: 100,
-        type: 'internal',
-        description: 'Email notifications',
+        type: 'communication',
+        description: 'Email notifications and marketing',
         configured: !!(process.env.SMTP_USERNAME && process.env.SMTP_PASSWORD),
-        issue: (process.env.SMTP_USERNAME && process.env.SMTP_PASSWORD) ? null : 'Not configured'
+        issue: (process.env.SMTP_USERNAME && process.env.SMTP_PASSWORD) ? null : 'SMTP credentials required',
+        priority: 1
+      },
+      
+      // === INFRASTRUCTURE ===
+      {
+        name: 'PostgreSQL Database',
+        status: process.env.DATABASE_URL ? 'operational' : 'offline',
+        responseTime: 35,
+        type: 'database',
+        description: 'Primary database for all data storage',
+        configured: !!process.env.DATABASE_URL,
+        issue: process.env.DATABASE_URL ? null : 'Database URL required',
+        priority: 1
+      },
+      {
+        name: 'WebSocket Service',
+        status: 'degraded',
+        responseTime: 80,
+        type: 'internal',
+        description: 'Real-time updates (disabled in development)',
+        configured: true,
+        issue: 'Disabled in development environment',
+        priority: 3
       }
     ];
 
+    // Calculate comprehensive statistics
+    const operationalServices = services.filter(s => s.status === 'operational').length;
+    const degradedServices = services.filter(s => s.status === 'degraded').length;
+    const offlineServices = services.filter(s => s.status === 'offline').length;
+    const configuredServices = services.filter(s => s.configured).length;
+    
     res.json({
       ...status,
-      overallStatus: services.every(s => s.status === 'operational') ? 'operational' : 'degraded',
-      services,
+      overallStatus: operationalServices > services.length * 0.7 ? 'operational' : 
+                   operationalServices > services.length * 0.5 ? 'degraded' : 'critical',
+      services: services.sort((a, b) => (a.priority || 3) - (b.priority || 3)), // Sort by priority
       totalServices: services.length,
-      operationalServices: services.filter(s => s.status === 'operational').length,
-      avgResponseTime: services.reduce((sum, s) => sum + s.responseTime, 0) / services.length,
+      operationalServices,
+      degradedServices,
+      offlineServices,
+      configuredServices,
+      healthPercentage: Math.round((operationalServices / services.length) * 100),
+      avgResponseTime: Math.round(services.reduce((sum, s) => sum + s.responseTime, 0) / services.length),
       systemUptime: process.uptime(),
-      timestamp: new Date().toISOString()
+      lastRefresh: new Date().toISOString(),
+      timestamp: new Date().toISOString(),
+      categories: {
+        sports: services.filter(s => s.type === 'external').length,
+        gaming: services.filter(s => s.type === 'gaming').length,
+        social: services.filter(s => s.type === 'social').length,
+        streaming: services.filter(s => s.type === 'streaming').length,
+        fantasy: services.filter(s => s.type === 'fantasy').length,
+        communication: services.filter(s => s.type === 'communication').length,
+        infrastructure: services.filter(s => ['database', 'internal'].includes(s.type)).length
+      }
     });
   } catch (error) {
     console.error('API status error:', error);

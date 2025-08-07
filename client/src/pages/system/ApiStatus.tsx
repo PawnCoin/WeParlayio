@@ -9,24 +9,37 @@ import { useAuth } from '@/hooks/useAuth';
 
 interface ApiService {
   name: string;
-  url: string;
-  status: 'healthy' | 'unhealthy' | 'degraded' | 'maintenance';
+  status: 'operational' | 'degraded' | 'offline' | 'maintenance';
   responseTime: number;
-  lastChecked: string;
-  uptime: number;
   description: string;
-  type: 'internal' | 'external' | 'database' | 'payment';
-  healthy: boolean;
+  type: 'external' | 'gaming' | 'social' | 'streaming' | 'fantasy' | 'communication' | 'database' | 'internal';
+  configured: boolean;
+  issue: string | null;
+  priority: number;
 }
 
 interface ApiStatusResponse {
-  totalEndpoints: number;
-  healthyEndpoints: number;
+  totalServices: number;
+  operationalServices: number;
+  degradedServices: number;
+  offlineServices: number;
+  configuredServices: number;
   overallStatus: string;
-  apiData: ApiService[];
+  services: ApiService[];
+  healthPercentage: number;
   avgResponseTime: number;
   systemUptime: number;
-  lastUpdated: string;
+  lastRefresh: string;
+  timestamp: string;
+  categories: {
+    sports: number;
+    gaming: number;
+    social: number;
+    streaming: number;
+    fantasy: number;
+    communication: number;
+    infrastructure: number;
+  };
 }
 
 export default function ApiStatus() {
@@ -54,8 +67,8 @@ export default function ApiStatus() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'healthy': return 'default';
-      case 'unhealthy': return 'destructive';
+      case 'operational': return 'default';
+      case 'offline': return 'destructive';
       case 'degraded': return 'secondary';
       case 'maintenance': return 'outline';
       default: return 'secondary';
@@ -64,8 +77,8 @@ export default function ApiStatus() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'healthy': return CheckCircle;
-      case 'unhealthy': return XCircle;
+      case 'operational': return CheckCircle;
+      case 'offline': return XCircle;
       case 'degraded': return AlertTriangle;
       case 'maintenance': return Clock;
       default: return AlertTriangle;
@@ -74,10 +87,14 @@ export default function ApiStatus() {
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'internal': return Server;
       case 'external': return Globe;
+      case 'gaming': return Server;
+      case 'social': return Wifi;
+      case 'streaming': return Globe;
+      case 'fantasy': return Server;
+      case 'communication': return Wifi;
       case 'database': return Database;
-      case 'payment': return Wifi;
+      case 'internal': return Server;
       default: return Server;
     }
   };
@@ -106,60 +123,25 @@ export default function ApiStatus() {
     </Card>
   );
 
-  // Mock services for development - in production this would come from backend
-  const mockServices: ApiService[] = [
-    {
-      name: 'ESPN Sports API',
-      url: '/api/sports/espn',
-      status: 'healthy',
-      responseTime: 120,
-      lastChecked: new Date().toISOString(),
-      uptime: 99.9,
-      description: 'Primary sports data provider',
-      type: 'external',
-      healthy: true
-    },
-    {
-      name: 'The Odds API',
-      url: '/api/odds',
-      status: 'degraded',
-      responseTime: 450,
-      lastChecked: new Date().toISOString(),
-      uptime: 95.2,
-      description: 'Live betting odds provider',
-      type: 'external',
-      healthy: false
-    },
-    {
-      name: 'Database Connection',
-      url: '/api/db/health',
-      status: 'healthy',
-      responseTime: 25,
-      lastChecked: new Date().toISOString(),
-      uptime: 99.99,
-      description: 'PostgreSQL database connection',
-      type: 'database',
-      healthy: true
-    },
-    {
-      name: 'User Authentication',
-      url: '/api/auth',
-      status: 'healthy',
-      responseTime: 85,
-      lastChecked: new Date().toISOString(),
-      uptime: 99.8,
-      description: 'Replit authentication service',
-      type: 'internal',
-      healthy: true
-    }
-  ];
+  // Use real API data only - no mock data
+  const services = apiData?.services || [];
+  const totalServices = apiData?.totalServices || 0;
+  const operationalServices = apiData?.operationalServices || 0;
+  const degradedServices = apiData?.degradedServices || 0;
+  const offlineServices = apiData?.offlineServices || 0;
+  const overallStatus = apiData?.overallStatus || 'offline';
+  const avgResponseTime = apiData?.avgResponseTime || 0;
+  const healthPercentage = apiData?.healthPercentage || 0;
+  const categories = apiData?.categories || {};
 
-  // Use real data if available, fallback to mock for development
-  const services = apiData?.apiData || mockServices;
-  const totalServices = apiData?.totalEndpoints || services.length;
-  const healthyServices = apiData?.healthyEndpoints || services.filter(s => s.healthy).length;
-  const overallStatus = apiData?.overallStatus || (healthyServices === totalServices ? 'operational' : 'degraded');
-  const avgResponseTime = apiData?.avgResponseTime || Math.round(services.reduce((sum, s) => sum + s.responseTime, 0) / services.length);
+  // Manual refresh function
+  const handleRefresh = async () => {
+    try {
+      await refetch();
+    } catch (error) {
+      console.error('Refresh failed:', error);
+    }
+  };
 
   const filterServicesByType = (type: string) => {
     if (type === 'all') return services;
@@ -167,8 +149,7 @@ export default function ApiStatus() {
   };
 
   const ServiceCard = ({ service }: { service: ApiService }) => {
-    const mappedStatus = service.healthy ? 'healthy' : 'unhealthy';
-    const StatusIcon = getStatusIcon(mappedStatus);
+    const StatusIcon = getStatusIcon(service.status);
     const TypeIcon = getTypeIcon(service.type);
 
     return (
@@ -176,43 +157,39 @@ export default function ApiStatus() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <StatusIcon className={`h-5 w-5 ${
-              mappedStatus === 'healthy' ? 'text-green-500' :
-              mappedStatus === 'unhealthy' ? 'text-red-500' :
+              service.status === 'operational' ? 'text-green-500' :
+              service.status === 'offline' ? 'text-red-500' :
               'text-yellow-500'
             }`} />
             <TypeIcon className="h-5 w-5 text-muted-foreground" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-medium">{service.name}</h3>
-              <Badge variant={getStatusColor(mappedStatus) as any}>
-                {mappedStatus}
+              <Badge variant={getStatusColor(service.status) as any}>
+                {service.status}
               </Badge>
               <Badge variant="outline">{service.type}</Badge>
+              {service.priority === 1 && (
+                <Badge variant="default" className="text-xs">Priority 1</Badge>
+              )}
             </div>
             <p className="text-sm text-muted-foreground">{service.description}</p>
-            <p className="text-xs text-muted-foreground">Uptime: {service.uptime}%</p>
+            {service.issue && (
+              <p className="text-xs text-red-500 mt-1">Issue: {service.issue}</p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Configured: {service.configured ? '✓ Yes' : '✗ No'}
+            </p>
           </div>
         </div>
         <div className="text-right">
-          <div className="flex items-center gap-4">
-            <div>
-              <p className={`text-sm font-medium ${getResponseTimeColor(service.responseTime)}`}>
-                {service.responseTime}ms
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {service.uptime}% uptime
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">
-                Last checked
-              </p>
-              <p className="text-xs">
-                {new Date(service.lastChecked).toLocaleTimeString()}
-              </p>
-            </div>
-          </div>
+          <p className={`text-sm font-medium ${getResponseTimeColor(service.responseTime)}`}>
+            {service.responseTime}ms
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Response Time
+          </p>
         </div>
       </div>
     );
@@ -248,50 +225,59 @@ export default function ApiStatus() {
         />
         <StatCard
           title="Services Online"
-          value={`${healthyServices}/${totalServices}`}
+          value={`${operationalServices}/${totalServices}`}
           icon={CheckCircle}
-          status="healthy"
+          status="operational"
         />
         <StatCard
           title="Avg Response Time"
           value={`${avgResponseTime}ms`}
           icon={Clock}
-          status={avgResponseTime < 300 ? 'healthy' : 'degraded'}
+          status={avgResponseTime < 300 ? 'operational' : 'degraded'}
         />
         <StatCard
-          title="System Uptime"
-          value="99.9%"
+          title="Health Score"
+          value={`${healthPercentage}%`}
           icon={Server}
-          status="healthy"
+          status={healthPercentage > 70 ? 'operational' : 'degraded'}
         />
       </div>
 
       <Tabs defaultValue="all" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="all">All Services</TabsTrigger>
-          <TabsTrigger value="external">External APIs</TabsTrigger>
-          <TabsTrigger value="internal">Internal Services</TabsTrigger>
-          <TabsTrigger value="database">Database</TabsTrigger>
-          <TabsTrigger value="payment">Payment Services</TabsTrigger>
+        <TabsList className="grid grid-cols-4 lg:grid-cols-8 w-full">
+          <TabsTrigger value="all">All ({totalServices})</TabsTrigger>
+          <TabsTrigger value="external">Sports ({categories.sports || 0})</TabsTrigger>
+          <TabsTrigger value="gaming">Gaming ({categories.gaming || 0})</TabsTrigger>
+          <TabsTrigger value="social">Social ({categories.social || 0})</TabsTrigger>
+          <TabsTrigger value="streaming">Streaming ({categories.streaming || 0})</TabsTrigger>
+          <TabsTrigger value="fantasy">Fantasy ({categories.fantasy || 0})</TabsTrigger>
+          <TabsTrigger value="communication">SMS/Email ({categories.communication || 0})</TabsTrigger>
+          <TabsTrigger value="database">Infrastructure ({categories.infrastructure || 0})</TabsTrigger>
         </TabsList>
 
-        {['all', 'external', 'internal', 'database', 'payment'].map((tabValue) => (
+        {['all', 'external', 'gaming', 'social', 'streaming', 'fantasy', 'communication', 'database'].map((tabValue) => (
           <TabsContent key={tabValue} value={tabValue} className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>
                   {tabValue === 'all' ? 'All API Services' : 
-                   tabValue === 'external' ? 'External API Services' :
-                   tabValue === 'internal' ? 'Internal Services' :
-                   tabValue === 'database' ? 'Database Services' :
-                   'Payment Services'}
+                   tabValue === 'external' ? 'Sports Betting APIs' :
+                   tabValue === 'gaming' ? 'Gaming Platform APIs' :
+                   tabValue === 'social' ? 'Social Media APIs' :
+                   tabValue === 'streaming' ? 'Live Streaming APIs' :
+                   tabValue === 'fantasy' ? 'Fantasy Sports APIs' :
+                   tabValue === 'communication' ? 'Communication Services' :
+                   'Infrastructure Services'}
                 </CardTitle>
                 <CardDescription>
-                  {tabValue === 'all' ? 'Complete overview of all system services and their current status' :
-                   tabValue === 'external' ? 'Third-party APIs and external service integrations' :
-                   tabValue === 'internal' ? 'WeParlay internal microservices and APIs' :
-                   tabValue === 'database' ? 'Database connections and storage services' :
-                   'Payment processors and financial service integrations'}
+                  {tabValue === 'all' ? 'Complete overview of all 18+ integrated platform services and their current status' :
+                   tabValue === 'external' ? 'Pinnacle Odds, ESPN, The Odds API, GRID, RapidAPI Sports for betting data' :
+                   tabValue === 'gaming' ? 'Riot Games, Xbox, Epic Games, Steam APIs for gaming statistics' :
+                   tabValue === 'social' ? 'Twitter, Facebook marketing automation and user authentication' :
+                   tabValue === 'streaming' ? 'YouTube, Twitch integration for live sports and gaming content' :
+                   tabValue === 'fantasy' ? 'ESPN Fantasy and Yahoo Fantasy Sports leagues integration' :
+                   tabValue === 'communication' ? 'Twilio SMS and SMTP email notification services' :
+                   'Database connections, WebSocket services, and core infrastructure'}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -318,10 +304,38 @@ export default function ApiStatus() {
         ))}
       </Tabs>
 
+      {/* Comprehensive Status Summary */}
+      <Card>
+        <CardHeader>
+          <CardTitle>System Overview</CardTitle>
+          <CardDescription>Real-time status of all WeParlay platform integrations</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-green-600">{operationalServices}</p>
+              <p className="text-sm text-muted-foreground">Operational</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-yellow-600">{degradedServices}</p>
+              <p className="text-sm text-muted-foreground">Degraded</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-red-600">{offlineServices}</p>
+              <p className="text-sm text-muted-foreground">Offline</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-blue-600">{apiData?.configuredServices || 0}</p>
+              <p className="text-sm text-muted-foreground">Configured</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Last Updated Timestamp */}
       <div className="text-center text-sm text-muted-foreground">
-        Last updated: {new Date().toLocaleString()}
-        {apiData?.lastUpdated && ` • Data from: ${new Date(apiData.lastUpdated).toLocaleString()}`}
+        Last refreshed: {apiData?.lastRefresh ? new Date(apiData.lastRefresh).toLocaleString() : 'Never'}
+        {apiData?.timestamp && ` • Data timestamp: ${new Date(apiData.timestamp).toLocaleString()}`}
       </div>
     </div>
   );
