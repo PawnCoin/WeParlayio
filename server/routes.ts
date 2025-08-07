@@ -29,6 +29,7 @@ import espnFantasyRoutes from "./routes/espnFantasyRoutes";
 import feedbackRoutes from "./routes/feedbackRoutes";
 import yahooFantasyRoutes from "./routes/yahooFantasyRoutes";
 import socialMediaRoutes from "./routes/socialMediaRoutes";
+import sportsCategories from "./routes/sportsCategories";
 
 import iptvRoutes from "./routes/iptv";
 import iptvProxyRoutes from "./routes/iptv-proxy";
@@ -73,6 +74,7 @@ const registerRoutes = async (app: Express): Promise<Server> => {
   app.use('/api/admin', adminRouter);
   app.use('/api/support', aiSupportRoutes);
   app.use('/api/notifications', notificationRoutes);
+  app.use('/api/sports-categories', sportsCategories);
   app.use('/api/bet-settlement', betSettlementRoutes);
   app.use('/api/auth', authRoutes);
   // Gaming routes registered via registerGamingRoutes function below
@@ -156,22 +158,30 @@ const registerRoutes = async (app: Express): Promise<Server> => {
     }
   });
 
-  // Live odds endpoints with multiple sources
+  // Live odds endpoints with Pinnacle Odds as primary source
   app.get('/api/odds/:sport', async (req, res) => {
     try {
       const { sport } = req.params;
       
-      // Try multiple sources for comprehensive odds coverage
-      const [primaryOdds, unifiedData, rapidApiData] = await Promise.allSettled([
-        primaryApiRouter.getLiveOdds(sport),
+      // Import Pinnacle service
+      const { pinnacleOddsService } = await import('./services/pinnacleOddsService');
+      
+      // Try Pinnacle first (priority 1), then fallback sources
+      const [pinnacleOdds, unifiedData, rapidApiData] = await Promise.allSettled([
+        pinnacleOddsService.getPinnacleOdds(sport),
         fetch('http://localhost:5000/api/unified-sports/upcoming-events').then(res => res.json()),
         comprehensiveRapidApi.getFootballFixtures()
       ]);
 
       let combinedOdds = [];
 
-      // Use unified ESPN data to create comprehensive live betting odds
-      if (unifiedData.status === 'fulfilled' && unifiedData.value?.success && unifiedData.value?.data?.length > 0) {
+      // Priority 1: Use Pinnacle Odds (most reliable)
+      if (pinnacleOdds.status === 'fulfilled' && pinnacleOdds.value?.length > 0) {
+        combinedOdds = pinnacleOdds.value;
+        console.log(`✅ Pinnacle Primary: Using ${combinedOdds.length} Pinnacle odds for ${sport}`);
+      }
+      // Priority 2: Use unified ESPN data as fallback
+      else if (unifiedData.status === 'fulfilled' && unifiedData.value?.success && unifiedData.value?.data?.length > 0) {
         combinedOdds = unifiedData.value.data.slice(0, 10).map((game: any, index: number) => {
           // Generate realistic betting odds
           const homeSpread = (Math.random() - 0.5) * 14; // -7 to +7 point spread
