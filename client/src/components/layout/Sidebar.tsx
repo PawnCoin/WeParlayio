@@ -338,19 +338,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                     </div>
                   </Link>
                 </li>
-                <li>
-                  <Link href="/blockchain-performance">
-                    <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${
-                      location === '/blockchain-performance' 
-                        ? "bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 dark:bg-gradient-to-r dark:from-blue-900 dark:to-purple-900 dark:text-blue-300" 
-                        : "hover:bg-gray-100 dark:hover:bg-gray-800"
-                    }`}>
-                      <BarChart3 className="h-4 w-4 mr-2 text-blue-600" />
-                      <span className="font-medium">Performance Analytics</span>
-                      <span className="ml-auto text-xs bg-blue-100 text-blue-700 dark:bg-blue-800 dark:text-blue-300 px-2 py-0.5 rounded-full">PRO</span>
-                    </div>
-                  </Link>
-                </li>
+                {/* REMOVED: blockchain-performance endpoint */}
                 <li>
                   <Link href="/wallet-tutorial">
                     <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${
@@ -364,19 +352,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                     </div>
                   </Link>
                 </li>
-                <li>
-                  <Link href="/streaming-recommendations">
-                    <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${
-                      location === '/streaming-recommendations' 
-                        ? "bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 dark:bg-gradient-to-r dark:from-purple-900 dark:to-pink-900 dark:text-purple-300" 
-                        : "hover:bg-gray-100 dark:hover:bg-gray-800"
-                    }`}>
-                      <Brain className="h-4 w-4 mr-2 text-purple-600" />
-                      <span className="font-medium">AI Stream Intel</span>
-                      <span className="ml-auto text-xs bg-purple-100 text-purple-700 dark:bg-purple-800 dark:text-purple-300 px-2 py-0.5 rounded-full">AI</span>
-                    </div>
-                  </Link>
-                </li>
+                {/* REMOVED: streaming-recommendations endpoint */}
                 <li>
                   <Link href="/social-sharing">
                     <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${

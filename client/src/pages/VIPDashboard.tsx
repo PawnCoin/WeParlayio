@@ -63,12 +63,12 @@ export default function VIPDashboard() {
       features: ['Esports betting', 'Gaming tournaments', 'Live streams', 'Player stats']
     },
     {
-      title: 'Blockchain Performance',
-      description: 'Advanced Web3 analytics and Pawn Coin tracking',
-      icon: Zap,
-      path: '/vip/blockchain-performance',
+      title: 'Live Streaming',
+      description: 'Premium IPTV sports channels for VIP members',
+      icon: Tv,
+      path: '/vip/live-streaming',
       color: 'bg-green-600',
-      features: ['Pawn Coin analytics', 'Web3 integration', 'Crypto betting', 'Portfolio tracking']
+      features: ['296+ sports channels', 'HD streaming', 'Live events', 'VIP-only access']
     },
     {
       title: 'Plaid Banking',
