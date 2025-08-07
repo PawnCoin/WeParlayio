@@ -209,19 +209,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                     </div>
                   </Link>
                 </li>
-                <li>
-                  <Link href="/odds">
-                    <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${
-                      location === '/odds' 
-                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300" 
-                        : "hover:bg-gray-100 dark:hover:bg-gray-800"
-                    }`}>
-                      <TrendingUp className="h-4 w-4 mr-2" />
-                      Live Odds
-                      <span className="ml-auto text-xs bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-300 px-2 py-0.5 rounded-full">FREE</span>
-                    </div>
-                  </Link>
-                </li>
+
                 <li>
                   <Link href="/parlays">
                     <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${
