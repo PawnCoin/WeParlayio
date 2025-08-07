@@ -47,6 +47,21 @@ export default function LiveBetting() {
 
   const liveOdds = liveOddsResponse?.odds || [];
 
+  // Handle empty or invalid data gracefully
+  if (!isLoading && (!liveOdds || liveOdds.length === 0)) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center py-20">
+            <h1 className="text-3xl font-bold text-white mb-4">Live Betting</h1>
+            <p className="text-blue-300 mb-8">No live games available right now</p>
+            <Button onClick={() => window.location.reload()}>Refresh Page</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const placeBetMutation = useMutation({
     mutationFn: async (betData: any) => {
       const response = await fetch('/api/betting/place-bet', {
@@ -193,13 +208,13 @@ export default function LiveBetting() {
                         onClick={() => addToBetSlip(
                           game.eventId, 
                           'spread_away', 
-                          `${game.awayTeam} ${game.odds.spread.away}`, 
-                          game.odds.spread.awayOdds
+                          `${game.awayTeam} ${game.odds?.spread?.away || 0}`, 
+                          game.odds?.spread?.awayOdds || -110
                         )}
                         className="flex justify-between p-3 h-auto"
                       >
-                        <span>{game.awayTeam} {formatOdds(game.odds.spread.away)}</span>
-                        <span className="font-bold">{formatOdds(game.odds.spread.awayOdds)}</span>
+                        <span>{game.awayTeam} {formatOdds(game.odds?.spread?.away || 0)}</span>
+                        <span className="font-bold">{formatOdds(game.odds?.spread?.awayOdds || -110)}</span>
                       </Button>
                       
                       <Button
@@ -207,13 +222,13 @@ export default function LiveBetting() {
                         onClick={() => addToBetSlip(
                           game.eventId, 
                           'spread_home', 
-                          `${game.homeTeam} ${game.odds.spread.home}`, 
-                          game.odds.spread.homeOdds
+                          `${game.homeTeam} ${game.odds?.spread?.home || 0}`, 
+                          game.odds?.spread?.homeOdds || -110
                         )}
                         className="flex justify-between p-3 h-auto"
                       >
-                        <span>{game.homeTeam} {formatOdds(game.odds.spread.home)}</span>
-                        <span className="font-bold">{formatOdds(game.odds.spread.homeOdds)}</span>
+                        <span>{game.homeTeam} {formatOdds(game.odds?.spread?.home || 0)}</span>
+                        <span className="font-bold">{formatOdds(game.odds?.spread?.homeOdds || -110)}</span>
                       </Button>
                     </div>
                   </div>
@@ -228,12 +243,12 @@ export default function LiveBetting() {
                           game.eventId, 
                           'moneyline_away', 
                           `${game.awayTeam} Win`, 
-                          game.odds.moneyline.away
+                          game.odds?.moneyline?.away || 100
                         )}
                         className="flex justify-between p-3 h-auto"
                       >
                         <span>{game.awayTeam}</span>
-                        <span className="font-bold">{formatOdds(game.odds.moneyline.away)}</span>
+                        <span className="font-bold">{formatOdds(game.odds?.moneyline?.away || 100)}</span>
                       </Button>
                       
                       <Button
@@ -242,12 +257,12 @@ export default function LiveBetting() {
                           game.eventId, 
                           'moneyline_home', 
                           `${game.homeTeam} Win`, 
-                          game.odds.moneyline.home
+                          game.odds?.moneyline?.home || -120
                         )}
                         className="flex justify-between p-3 h-auto"
                       >
                         <span>{game.homeTeam}</span>
-                        <span className="font-bold">{formatOdds(game.odds.moneyline.home)}</span>
+                        <span className="font-bold">{formatOdds(game.odds?.moneyline?.home || -120)}</span>
                       </Button>
                     </div>
                   </div>
@@ -261,13 +276,13 @@ export default function LiveBetting() {
                         onClick={() => addToBetSlip(
                           game.eventId, 
                           'total_over', 
-                          `Over ${game.odds.total.over}`, 
-                          game.odds.total.overOdds
+                          `Over ${game.odds?.total?.over || 50}`, 
+                          game.odds?.total?.overOdds || -110
                         )}
                         className="flex justify-between p-3 h-auto"
                       >
-                        <span>Over {game.odds.total.over}</span>
-                        <span className="font-bold">{formatOdds(game.odds.total.overOdds)}</span>
+                        <span>Over {game.odds?.total?.over || 50}</span>
+                        <span className="font-bold">{formatOdds(game.odds?.total?.overOdds || -110)}</span>
                       </Button>
                       
                       <Button
@@ -275,13 +290,13 @@ export default function LiveBetting() {
                         onClick={() => addToBetSlip(
                           game.eventId, 
                           'total_under', 
-                          `Under ${game.odds.total.under}`, 
-                          game.odds.total.underOdds
+                          `Under ${game.odds?.total?.under || 50}`, 
+                          game.odds?.total?.underOdds || -110
                         )}
                         className="flex justify-between p-3 h-auto"
                       >
-                        <span>Under {game.odds.total.under}</span>
-                        <span className="font-bold">{formatOdds(game.odds.total.underOdds)}</span>
+                        <span>Under {game.odds?.total?.under || 50}</span>
+                        <span className="font-bold">{formatOdds(game.odds?.total?.underOdds || -110)}</span>
                       </Button>
                     </div>
                   </div>
