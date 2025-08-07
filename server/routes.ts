@@ -296,15 +296,12 @@ const registerRoutes = async (app: Express): Promise<Server> => {
       }
 
       const challenge = Math.floor(100000 + Math.random() * 900000).toString();
-      const smsResult = await smsService.sendSMS({
-        message: `WeParlay verification code: ${challenge}`,
-        to: phone
-      });
+      const smsResult = await smsService.sendSMS(phone, `WeParlay verification code: ${challenge}`);
 
       res.json({
         success: true,
         challenge,
-        smsSid: smsResult.sid,
+        messageId: smsResult.messageId,
         message: 'SMS challenge sent successfully'
       });
     } catch (error) {
@@ -312,6 +309,39 @@ const registerRoutes = async (app: Express): Promise<Server> => {
       res.status(500).json({ 
         success: false, 
         message: 'Failed to send SMS challenge' 
+      });
+    }
+  });
+
+  // SMS test message endpoint
+  app.post('/api/sms/test-message', async (req, res) => {
+    try {
+      const { phone, message } = req.body;
+      if (!phone) {
+        return res.status(400).json({ success: false, message: 'Phone number required' });
+      }
+
+      const testMessage = message || 'WeParlay SMS System Test - Your platform is working perfectly! 🚀';
+      const smsResult = await smsService.sendSMS(phone, testMessage);
+
+      if (smsResult.success) {
+        res.json({
+          success: true,
+          messageId: smsResult.messageId,
+          message: 'Test SMS sent successfully',
+          to: phone
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: smsResult.error || 'Failed to send test SMS'
+        });
+      }
+    } catch (error) {
+      console.error('SMS test message error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to send test SMS' 
       });
     }
   });
