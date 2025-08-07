@@ -276,16 +276,13 @@ const OddsTicker = memo(() => {
 
         <div className={`flex whitespace-nowrap ${!isPaused ? 'animate-ticker' : ''}`}>
           {/* Continuous loading messages */}
-          {Array(6).fill(null).map((_, index) => (
+          {Array(3).fill(null).map((_, index) => (
             <div key={index} className="inline-flex items-center mr-12">
               <span className="px-2 py-0.5 text-xs font-medium rounded bg-blue-900/30 text-blue-400 animate-pulse">
                 LIVE
               </span>
-              <span className="mx-2 text-gray-300 font-medium">
-                Connecting to real-time odds feeds...
-              </span>
-              <span className="font-mono font-bold text-yellow-400 animate-pulse">
-                ⚡
+              <span className="mx-2 text-white font-medium">
+                Loading live odds...
               </span>
             </div>
           ))}

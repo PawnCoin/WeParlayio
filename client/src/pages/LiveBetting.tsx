@@ -40,10 +40,12 @@ export default function LiveBetting() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: liveOdds = [], isLoading } = useQuery({
-    queryKey: ['/api/odds/live-feed'],
+  const { data: liveOddsResponse, isLoading } = useQuery({
+    queryKey: ['/api/odds/americanfootball_nfl'],
     refetchInterval: isAutoRefresh ? 5000 : false, // Auto-refresh every 5 seconds
   });
+
+  const liveOdds = liveOddsResponse?.odds || [];
 
   const placeBetMutation = useMutation({
     mutationFn: async (betData: any) => {

@@ -32,7 +32,7 @@ import { useBetting } from "@/contexts/BettingContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import BusinessProposalModal from "@/components/business/BusinessProposalModal";
 import { useWebSocket } from "@/hooks/useWebSocket";
-import OddsTicker from "../betting/OddsTicker";
+import ImprovedOddsTicker from "../betting/ImprovedOddsTicker";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -528,7 +528,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           </div>
         </div>
       </main>
-      <OddsTicker />
+      <ImprovedOddsTicker />
       {/* Footer */}
       <Footer />
 
