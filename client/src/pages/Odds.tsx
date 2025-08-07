@@ -36,8 +36,8 @@ export default function Odds() {
     retry: 1,
   });
 
-  // Extract data from priority API response - handle the success/data wrapper
-  const realOddsData: any[] = realOddsResponse?.success ? realOddsResponse.data : (realOddsResponse?.data || realOddsResponse || []);
+  // Extract data from priority API response - handle the success/odds wrapper
+  const realOddsData: any[] = realOddsResponse?.success ? realOddsResponse.odds : (realOddsResponse?.odds || realOddsResponse?.data || realOddsResponse || []);
   
   console.log('📊 Live Odds Data:', {
     dataCount: realOddsData?.length,

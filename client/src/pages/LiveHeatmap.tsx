@@ -18,8 +18,8 @@ export default function LiveHeatmap() {
     refetchInterval: refreshInterval,
   });
 
-  // Extract authentic data from priority API response
-  const sportsData: any[] = sportsDataResponse?.success ? sportsDataResponse.data : (sportsDataResponse?.data || sportsDataResponse || []);
+  // Extract authentic data from priority API response - handle odds API structure
+  const sportsData: any[] = sportsDataResponse?.success ? sportsDataResponse.odds : (sportsDataResponse?.odds || sportsDataResponse?.data || sportsDataResponse || []);
   
   console.log('🎯 Live Heatmap - Authentic Data:', {
     totalEvents: sportsData.length,

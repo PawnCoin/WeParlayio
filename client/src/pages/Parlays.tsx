@@ -66,8 +66,8 @@ export default function Parlays() {
     refetchInterval: 30000,
   });
 
-  // Extract authentic data from priority API response
-  const sportsData: any[] = sportsDataResponse?.success ? sportsDataResponse.data : (sportsDataResponse?.data || sportsDataResponse || []);
+  // Extract authentic data from priority API response - handle odds API structure
+  const sportsData: any[] = sportsDataResponse?.success ? sportsDataResponse.odds : (sportsDataResponse?.odds || sportsDataResponse?.data || sportsDataResponse || []);
   
   console.log('🎯 Parlays Page - Authentic Data:', {
     totalEvents: sportsData.length,

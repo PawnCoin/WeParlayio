@@ -361,19 +361,19 @@ const registerRoutes = async (app: Express): Promise<Server> => {
       const pinnacleModule = await import('./services/pinnacleOddsService.js');
       const pinnacleOddsService = pinnacleModule.pinnacleOddsService;
       
-      // Try Pinnacle FIRST (primary source), then ESPN for team names, then fallback sources
-      const [pinnacleOdds, unifiedData, rapidApiData] = await Promise.allSettled([
-        pinnacleOddsService.getPinnacleOdds(sport),
+      // NEW HIERARCHY: RapidAPI FIRST (since Pinnacle is sub-API of RapidAPI), then ESPN, then Pinnacle fallback
+      const [rapidApiData, unifiedData, pinnacleOdds] = await Promise.allSettled([
+        comprehensiveRapidApi.getFootballFixtures(),
         fetch('http://localhost:5000/api/unified-sports/upcoming-events').then(res => res.json()),
-        comprehensiveRapidApi.getFootballFixtures()
+        pinnacleOddsService.getPinnacleOdds(sport)
       ]);
 
       let combinedOdds = [];
 
-      // Priority 1: Use Pinnacle data (primary source) if available
-      if (pinnacleOdds.status === 'fulfilled' && pinnacleOdds.value?.length > 0) {
-        combinedOdds = pinnacleOdds.value.slice(0, 15).map((event: any) => ({
-          eventId: `pinnacle_${event.eventId || event.id || Date.now()}`,
+      // Priority 1: Use RapidAPI data (primary source since Pinnacle is sub-API) if available
+      if (rapidApiData.status === 'fulfilled' && rapidApiData.value?.length > 0) {
+        combinedOdds = rapidApiData.value.slice(0, 15).map((event: any) => ({
+          eventId: `rapidapi_${event.eventId || event.id || Date.now()}`,
           sport: sport.toUpperCase(),
           homeTeam: event.homeTeam || 'Home Team',
           awayTeam: event.awayTeam || 'Away Team',
@@ -393,9 +393,9 @@ const registerRoutes = async (app: Express): Promise<Server> => {
           }
         }));
         
-        console.log(`✅ Live Betting Odds: Using ${combinedOdds.length} Pinnacle events (PRIMARY SOURCE)`);
+        console.log(`✅ Live Betting Odds: Using ${combinedOdds.length} RapidAPI events (PRIMARY SOURCE)`);
       }
-      // Priority 2: Fallback to ESPN data if Pinnacle unavailable
+      // Priority 2: Fallback to ESPN data if RapidAPI unavailable
       else if (unifiedData.status === 'fulfilled' && unifiedData.value?.success && unifiedData.value?.data?.length > 0) {
         // Filter for the specific sport if possible
         const sportFilter = sport.toLowerCase().includes('football') ? 'NFL' : 

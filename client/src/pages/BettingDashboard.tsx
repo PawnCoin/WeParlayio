@@ -51,8 +51,8 @@ const BettingDashboard: React.FC = () => {
     refetchInterval: 30000,
   });
 
-  // Extract authentic data from priority API response
-  const liveEvents: any[] = liveEventsResponse?.success ? liveEventsResponse.data : (liveEventsResponse?.data || liveEventsResponse || []);
+  // Extract authentic data from priority API response - handle odds API structure
+  const liveEvents: any[] = liveEventsResponse?.success ? liveEventsResponse.odds : (liveEventsResponse?.odds || liveEventsResponse?.data || liveEventsResponse || []);
 
   // Use same data for upcoming events since they're from the same authentic source
   const isLoadingUpcoming = isLoadingLive;
