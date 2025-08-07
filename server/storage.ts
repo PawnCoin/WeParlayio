@@ -520,8 +520,77 @@ export class MemStorage implements IStorage {
       settledAt: status !== 'pending' ? new Date() : null,
       updatedAt: new Date()
     };
+    
+    // Handle winnings and refunds based on status
+    if (status === 'won' && bet.potentialPayout) {
+      // Credit full payout (original bet + winnings) to user's balance
+      await this.creditUserBalance(bet.userId, bet.currency || 'default', bet.potentialPayout);
+      console.log(`✅ Bet ${betId} WON: Credited $${bet.potentialPayout} to user ${bet.userId} (${bet.currency || 'default'})`);
+    } else if (status === 'push' || status === 'cancelled') {
+      // Refund original bet amount
+      await this.creditUserBalance(bet.userId, bet.currency || 'default', bet.amount);
+      console.log(`↩️ Bet ${betId} ${status.toUpperCase()}: Refunded $${bet.amount} to user ${bet.userId} (${bet.currency || 'default'})`);
+    } else if (status === 'lost') {
+      console.log(`❌ Bet ${betId} LOST: No payout for user ${bet.userId}`);
+      // No payout for lost bets - money was already deducted when bet was placed
+    }
+    
     this.bets.set(betId, updatedBet);
     return updatedBet;
+  }
+
+  // Credit user balance (for winnings and refunds)
+  async creditUserBalance(userId: string, currency: string, amount: number): Promise<void> {
+    const user = this.users.get(userId);
+    if (!user) {
+      console.error(`User ${userId} not found for balance credit`);
+      return;
+    }
+    
+    console.log(`💰 Crediting $${amount} to user ${userId} (${currency})`);
+    
+    switch (currency) {
+      case 'weparlay_cash':
+        user.weparlayCashBalance = (user.weparlayCashBalance || 0) + amount;
+        break;
+      case 'real_money':
+        user.balance = (user.balance || 0) + amount;
+        break;
+      case 'crypto':
+        user.cryptoBalance = (user.cryptoBalance || 0) + amount;
+        break;
+      default:
+        user.balance = (user.balance || 0) + amount;
+        break;
+    }
+    
+    // Update user statistics for winnings (not refunds)
+    if (amount > 0) {
+      user.totalWinnings = (user.totalWinnings || 0) + amount;
+      user.biggestWin = Math.max(user.biggestWin || 0, amount);
+      user.winsCount = (user.winsCount || 0) + 1;
+      
+      // Recalculate win rate
+      const totalBets = user.betsCount || 0;
+      user.winRate = totalBets > 0 ? (user.winsCount / totalBets * 100) : 0;
+    }
+    
+    console.log(`✅ Balance updated: User ${userId} now has $${this.getUserBalance(userId, currency)} in ${currency}`);
+  }
+
+  // Settle bets automatically (for admin or automatic settlement)
+  async settleBet(betId: number, result: 'won' | 'lost' | 'push' | 'cancelled'): Promise<{ success: boolean; message: string; bet?: Bet }> {
+    try {
+      const bet = await this.updateBetStatus(betId, result, result);
+      return { 
+        success: true, 
+        message: `Bet settled as ${result}${result === 'won' ? ` - $${bet.potentialPayout} credited` : result === 'push' || result === 'cancelled' ? ` - $${bet.amount} refunded` : ''}`, 
+        bet 
+      };
+    } catch (error) {
+      console.error('Error settling bet:', error);
+      return { success: false, message: 'Settlement failed' };
+    }
   }
 
   async processBetPayout(betId: number, payout: number): Promise<Bet> {

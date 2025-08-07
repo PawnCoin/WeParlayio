@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { getLeagueLogo } from '@/utils/sportsLogosSimple';
 import CurrencyBetSlip from '@/components/betting/CurrencyBetSlip';
 import BettingTestPanel from '@/components/betting/BettingTestPanel';
+import BetSettlementPanel from '@/components/betting/BetSettlementPanel';
 import { DollarSign, TrendingUp, Trophy, Clock, Target } from 'lucide-react';
 
 // Helper function to format game time
@@ -312,6 +313,9 @@ const BettingDashboard: React.FC = () => {
           
           {/* Test Panel for Development */}
           <BettingTestPanel />
+          
+          {/* Admin Settlement Panel */}
+          <BetSettlementPanel userBets={userBets} />
         </div>
       </div>
 

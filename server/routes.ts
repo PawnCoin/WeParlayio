@@ -827,6 +827,32 @@ const registerRoutes = async (app: Express): Promise<Server> => {
     }
   });
 
+  // Settle bet endpoint (admin access for manual settlement, automated later)
+  app.post('/api/bets/:betId/settle', isAuthenticated, async (req: any, res) => {
+    try {
+      const { betId } = req.params;
+      const { result } = req.body; // 'won', 'lost', 'push', 'cancelled'
+      
+      // For now, only admins can settle bets manually
+      // In production, this would be automated based on real game results
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ success: false, message: 'Admin access required for manual settlement' });
+      }
+      
+      const settlement = await storage.settleBet(parseInt(betId), result);
+      
+      if (settlement.success) {
+        res.json({ success: true, message: settlement.message, bet: settlement.bet });
+      } else {
+        res.status(400).json({ success: false, message: settlement.message });
+      }
+    } catch (error: any) {
+      console.error('Error settling bet:', error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  });
+
   return server;
 };
 
