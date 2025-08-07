@@ -76,7 +76,7 @@ const WelcomeDashboard: React.FC = () => {
         title: 'Try Voice Betting',
         description: "Place bets faster with our new voice command feature. Just tap the mic and say your bet!",
         icon: <Zap className="h-5 w-5 text-blue-500" />,
-        link: '/enhanced-features',
+        link: '/vip/live-streaming',
         linkText: 'Try It Now',
         type: 'feature',
         matchPercentage: 85

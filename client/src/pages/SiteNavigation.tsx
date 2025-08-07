@@ -103,7 +103,7 @@ const SiteNavigation: React.FC = () => {
       icon: <Crown className="h-5 w-5" />,
       pages: [
         { name: "VIP Features", path: "/vip-features", description: "Premium user features", status: "premium" },
-        { name: "Enhanced Features", path: "/enhanced-features", description: "Advanced platform features", status: "premium" },
+        { name: "VIP Live Streaming", path: "/vip/live-streaming", description: "Premium sports streaming", status: "premium" },
         { name: "Betting Academy", path: "/betting-academy", description: "Learn advanced betting", status: "live" }
       ]
     },

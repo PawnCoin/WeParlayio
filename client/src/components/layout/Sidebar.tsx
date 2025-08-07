@@ -290,7 +290,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
           <li>
             <details className="group">
               <summary className={`flex items-center py-2 px-4 rounded-md cursor-pointer list-none ${
-                ['/vip', '/enhanced-features', '/head-to-head', '/gaming'].includes(location) 
+                ['/vip', '/head-to-head', '/gaming'].includes(location) 
                   ? "bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900/40 dark:to-yellow-900/40" 
                   : "bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 hover:from-amber-100 hover:to-yellow-100 dark:hover:from-amber-900/40 dark:hover:to-yellow-900/40"
               }`}>
@@ -392,19 +392,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                     </div>
                   </Link>
                 </li>
-                <li>
-                  <Link href="/enhanced-features">
-                    <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${
-                      location === '/enhanced-features' 
-                        ? "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300" 
-                        : "hover:bg-gray-100 dark:hover:bg-gray-800"
-                    }`}>
-                      <Zap className="h-4 w-4 mr-2 text-amber-500" />
-                      <span>Enhanced Features</span>
-                      <span className="ml-auto text-xs bg-amber-100 text-amber-700 dark:bg-amber-800 dark:text-amber-300 px-2 py-0.5 rounded-full">PRO</span>
-                    </div>
-                  </Link>
-                </li>
+                {/* REMOVED: enhanced-features endpoint */}
                 <li>
                   <Link href="/api-status">
                     <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${

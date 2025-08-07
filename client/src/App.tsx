@@ -125,8 +125,7 @@ function Router() {
       <Route path="/esports-hub" component={UnifiedGaming} />
       <SuspenseRoute path="/tournaments" component={Tournaments} />
 
-      {/* Enhanced Features with SuspenseRoute */}
-      <SuspenseRoute path="/enhanced-features" component={EnhancedFeatures} />
+      {/* REMOVED: enhanced-features endpoint */}
       
       {/* Additional Feature Pages with SuspenseRoute */}
       <SuspenseRoute path="/api-status" component={React.lazy(() => import("@/pages/system/ApiStatus"))} />

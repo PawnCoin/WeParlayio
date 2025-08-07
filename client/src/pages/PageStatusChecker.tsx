@@ -78,7 +78,7 @@ const PageStatusChecker: React.FC = () => {
     
     // VIP & Premium
     { name: "VIP Features", path: "/vip-features" },
-    { name: "Enhanced Features", path: "/enhanced-features" },
+    { name: "VIP Live Streaming", path: "/vip/live-streaming" },
     { name: "Betting Academy", path: "/betting-academy" },
     
     // Live Streaming
