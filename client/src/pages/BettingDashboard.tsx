@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { getLeagueLogo } from '@/utils/sportsLogosSimple';
-import UnifiedBetSlip from '@/components/betting/UnifiedBetSlip';
+import CurrencyBetSlip from '@/components/betting/CurrencyBetSlip';
+import BettingTestPanel from '@/components/betting/BettingTestPanel';
+import { DollarSign, TrendingUp, Trophy, Clock, Target } from 'lucide-react';
 
 // Helper function to format game time
 const formatGameTime = (dateString: string) => {
@@ -25,50 +27,50 @@ const PROFESSIONAL_LEAGUES = [
   { name: 'MLB', key: 'baseball_mlb', displayName: 'MLB (Baseball)' },
   { name: 'NHL', key: 'icehockey_nhl', displayName: 'NHL (Ice Hockey)' },
   { name: 'MLS', key: 'soccer_usa_mls', displayName: 'MLS (Soccer)' },
-  { name: 'Premier League', key: 'soccer_epl', displayName: 'Premier League (Soccer)' },
-  { name: 'NCAA Football', key: 'americanfootball_ncaaf', displayName: 'NCAA Football' },
-  { name: 'NCAA Basketball', key: 'basketball_ncaab', displayName: 'NCAA Basketball' },
-  { name: 'UFC', key: 'mma_ufc', displayName: 'UFC (MMA)' },
-  { name: 'Boxing', key: 'boxing_main', displayName: 'Boxing' },
-  { name: 'NASCAR', key: 'motorsport_nascar', displayName: 'NASCAR (Motorsport)' },
-  { name: 'Tennis', key: 'tennis_atp', displayName: 'ATP (Tennis)' },
 ];
 
-type BetType = 'moneyline' | 'spread' | 'total' | 'player-props' | 'team-props' | 'parlays';
+interface BetSlipItem {
+  id: string;
+  eventId: string;
+  betType: string;
+  selection: string;
+  odds: number;
+  amount: number;
+  potential: number;
+  point?: number;
+  sport: string;
+  gameInfo?: {
+    homeTeam: string;
+    awayTeam: string;
+    startTime?: string;
+  };
+}
 
 const BettingDashboard: React.FC = () => {
   const { user } = useAuth();
-  const [selectedLeagues, setSelectedLeagues] = useState<string[]>(PROFESSIONAL_LEAGUES.map(league => league.key));
-  const [betTypes, setBetTypes] = useState<BetType[]>(['moneyline', 'spread', 'total']);
-  const [betSlip, setBetSlip] = useState<any[]>([]);
+  const [betSlip, setBetSlip] = useState<BetSlipItem[]>([]);
 
-  // Mock user tier for demonstration
-  const userTier = user?.tier || 'Bronze';
-
-  // Fetch live events from priority API system (same as odds page)
-  const { data: liveEventsResponse, isLoading: isLoadingLive, error: liveError } = useQuery({
+  // Fetch live odds data from priority API system
+  const { data: oddsResponse, isLoading: isLoadingOdds } = useQuery({
     queryKey: ['/api/odds'],
     refetchInterval: 30000,
   });
 
-  // Extract authentic data from priority API response - handle odds API structure
-  const liveEvents: any[] = liveEventsResponse?.success ? liveEventsResponse.odds : (liveEventsResponse?.odds || liveEventsResponse?.data || liveEventsResponse || []);
-  
-  // Debug logging for betting dashboard
-  console.log('🎯 Betting Dashboard - API Response Debug:', {
-    hasResponse: !!liveEventsResponse,
-    success: liveEventsResponse?.success,
-    oddsCount: liveEventsResponse?.odds?.length || 0,
-    dataCount: liveEventsResponse?.data?.length || 0,
-    liveEventsCount: liveEvents.length,
-    firstEvent: liveEvents[0],
-    selectedLeagues: selectedLeagues.length,
-    filteredLiveCount: filteredLiveEvents.length,
-    filteredUpcomingCount: filteredUpcomingEvents.length
+  // Fetch user bets history
+  const { data: userBetsData } = useQuery({
+    queryKey: ['/api/bets/user'],
   });
 
-  // Use same data for upcoming events since they're from the same authentic source
-  const isLoadingUpcoming = isLoadingLive;
+  // Fetch user balances
+  const { data: balancesData } = useQuery({
+    queryKey: ['/api/user/balances'],
+    refetchInterval: 10000,
+  });
+
+  // Extract authentic odds data
+  const oddsData: any[] = (oddsResponse as any)?.success ? (oddsResponse as any).odds : [];
+  const userBets = userBetsData?.bets || [];
+  const balances = balancesData?.balances || {};
 
   // Helper to safely get team name from real API data
   const getTeamName = (event: any, isHome: boolean = true) => {
@@ -81,289 +83,268 @@ const BettingDashboard: React.FC = () => {
     }
   };
 
-  // Helper to get sport name by key
-  const getSportName = (sportKey: string) => {
-    const league = PROFESSIONAL_LEAGUES.find(l => l.key === sportKey);
-    return league ? league.displayName : (sportKey || 'Live Event');
-  };
-
   // Handle adding a bet to the bet slip
   const handleAddBet = (event: any, betType: string, selection: string, odds: number, point?: number) => {
     if (!event) return;
     
-    const newBet = {
-      id: `${event.id}-${betType}-${selection}`,
-      eventId: event.id,
-      gameTitle: `${getTeamName(event, false)} vs ${getTeamName(event, true)}`,
+    const newBet: BetSlipItem = {
+      id: `${event.eventId || event.id}-${betType}-${selection}-${Date.now()}`,
+      eventId: event.eventId || event.id,
       betType,
       selection,
       odds,
-      point,
       amount: 0,
       potential: 0,
-      sport: event.sport_title || getSportName(event.sport_key) || 'Live Event',
+      point,
+      sport: event.sport || 'American Football',
+      gameInfo: {
+        homeTeam: getTeamName(event, true),
+        awayTeam: getTeamName(event, false),
+        startTime: event.startTime || event.commence_time
+      }
     };
     
     setBetSlip(prev => [...prev, newBet]);
   };
 
-  // Toggle league selection
-  const toggleLeague = (leagueKey: string) => {
-    if (selectedLeagues.includes(leagueKey)) {
-      setSelectedLeagues(selectedLeagues.filter(key => key !== leagueKey));
-    } else {
-      setSelectedLeagues([...selectedLeagues, leagueKey]);
-    }
+  // Remove bet from slip
+  const handleRemoveBet = (betId: string) => {
+    setBetSlip(prev => prev.filter(bet => bet.id !== betId));
   };
 
-  // Toggle bet type selection
-  const toggleBetType = (type: BetType) => {
-    if (betTypes.includes(type)) {
-      setBetTypes(betTypes.filter(t => t !== type));
-    } else {
-      setBetTypes([...betTypes, type]);
-    }
+  // Clear all bets
+  const handleClearAll = () => {
+    setBetSlip([]);
   };
 
-  // Process and filter events - handle real API response structure
-  // upcomingEvents already declared above from authentic data
-  
-  const filteredLiveEvents = Array.isArray(liveEvents) ? liveEvents.filter((event: any) => {
-    if (selectedLeagues.length === 0) return true;
-    // Handle different sport key formats from different APIs
-    const sportKey = event.sport_key || event.sport || event.sport_title;
-    return selectedLeagues.includes(sportKey);
-  }) : [];
-  
-  const filteredUpcomingEvents = Array.isArray(liveEvents) ? liveEvents.filter((event: any) => {
-    if (selectedLeagues.length === 0) return true;
-    // Map real sport names to our league keys
-    const sportMapping: any = {
-      'NBA Basketball': 'basketball_nba',
-      'NFL Football': 'americanfootball_nfl',
-      'MLB Baseball': 'baseball_mlb',
-      'NHL Hockey': 'icehockey_nhl',
-      'BASKETBALL': 'basketball_nba',
-      'AMERICANFOOTBALL': 'americanfootball_nfl',
-      'FOOTBALL': 'americanfootball_nfl'
-    };
-    const rawSport = event.sport || event.sport_key || event.sport_title;
-    const mappedSport = sportMapping[rawSport] || rawSport;
-    return selectedLeagues.includes(mappedSport);
-  }) : [];
-
-  // Sort leagues alphabetically for display
-  const sortedLeagues = [...PROFESSIONAL_LEAGUES].sort((a, b) => a.displayName.localeCompare(b.displayName));
+  // Calculate user stats
+  const totalPendingBets = userBets.filter((bet: any) => bet.status === 'pending').length;
+  const totalWinnings = userBets
+    .filter((bet: any) => bet.status === 'won')
+    .reduce((sum: number, bet: any) => sum + (bet.potentialPayout || 0), 0);
+  const winRate = userBets.length > 0 
+    ? (userBets.filter((bet: any) => bet.status === 'won').length / userBets.length * 100).toFixed(1)
+    : '0.0';
 
   return (
     <div className="container px-4 max-w-7xl mx-auto py-6">
-      <h1 className="text-3xl font-bold mb-6">Professional Sports Betting Dashboard</h1>
+      <h1 className="text-3xl font-bold mb-6 text-white">Betting Dashboard</h1>
       
-      {(isLoadingLive || isLoadingUpcoming) && (
-        <div className="mb-6">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                <span className="ml-2">Loading betting data...</span>
+      {/* User Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <Card className="bg-slate-900 border-slate-700">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-slate-400 text-sm">WeParlay Cash</p>
+                <p className="text-2xl font-bold text-amber-500">${balances.weparlay_cash?.toFixed(2) || '0.00'}</p>
+              </div>
+              <DollarSign className="h-8 w-8 text-amber-500" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-slate-900 border-slate-700">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-slate-400 text-sm">Total Winnings</p>
+                <p className="text-2xl font-bold text-green-500">${totalWinnings.toFixed(2)}</p>
+              </div>
+              <TrendingUp className="h-8 w-8 text-green-500" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-slate-900 border-slate-700">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-slate-400 text-sm">Win Rate</p>
+                <p className="text-2xl font-bold text-blue-500">{winRate}%</p>
+              </div>
+              <Trophy className="h-8 w-8 text-blue-500" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-slate-900 border-slate-700">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-slate-400 text-sm">Pending Bets</p>
+                <p className="text-2xl font-bold text-orange-500">{totalPendingBets}</p>
+              </div>
+              <Clock className="h-8 w-8 text-orange-500" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Live Odds Section */}
+        <div className="lg:col-span-2">
+          <Card className="bg-slate-900 border-slate-700">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center">
+                <Target className="h-5 w-5 mr-2 text-blue-400" />
+                Live Betting Odds
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoadingOdds ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                  <span className="ml-2 text-slate-400">Loading odds...</span>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {oddsData.slice(0, 8).map((event: any, index: number) => (
+                    <div key={event.eventId || index} className="bg-slate-800 p-4 rounded-lg">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Badge variant="outline" className="text-xs">
+                              {event.sport || 'Football'}
+                            </Badge>
+                            <span className="text-slate-400 text-xs">
+                              {formatGameTime(event.startTime || event.commence_time)}
+                            </span>
+                          </div>
+                          <p className="text-white font-medium">
+                            {getTeamName(event, false)} @ {getTeamName(event, true)}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* Betting Options */}
+                      <div className="grid grid-cols-3 gap-2">
+                        {/* Moneyline */}
+                        {event.odds?.moneyline && (
+                          <div className="space-y-1">
+                            <p className="text-slate-400 text-xs text-center">Moneyline</p>
+                            <div className="grid grid-cols-2 gap-1">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-xs h-8 border-slate-600 hover:bg-slate-700"
+                                onClick={() => handleAddBet(event, 'moneyline', getTeamName(event, false), event.odds.moneyline.away)}
+                              >
+                                {getTeamName(event, false).slice(0, 3)} {event.odds.moneyline.away > 0 ? '+' : ''}{event.odds.moneyline.away}
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-xs h-8 border-slate-600 hover:bg-slate-700"
+                                onClick={() => handleAddBet(event, 'moneyline', getTeamName(event, true), event.odds.moneyline.home)}
+                              >
+                                {getTeamName(event, true).slice(0, 3)} {event.odds.moneyline.home > 0 ? '+' : ''}{event.odds.moneyline.home}
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Spread */}
+                        {event.odds?.spread && (
+                          <div className="space-y-1">
+                            <p className="text-slate-400 text-xs text-center">Spread</p>
+                            <div className="grid grid-cols-2 gap-1">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-xs h-8 border-slate-600 hover:bg-slate-700"
+                                onClick={() => handleAddBet(event, 'spread', `${getTeamName(event, false)} ${event.odds.spread.away > 0 ? '+' : ''}${event.odds.spread.away}`, event.odds.spread.awayOdds, event.odds.spread.away)}
+                              >
+                                {event.odds.spread.away > 0 ? '+' : ''}{event.odds.spread.away} ({event.odds.spread.awayOdds > 0 ? '+' : ''}{event.odds.spread.awayOdds})
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-xs h-8 border-slate-600 hover:bg-slate-700"
+                                onClick={() => handleAddBet(event, 'spread', `${getTeamName(event, true)} ${event.odds.spread.home > 0 ? '+' : ''}${event.odds.spread.home}`, event.odds.spread.homeOdds, event.odds.spread.home)}
+                              >
+                                {event.odds.spread.home > 0 ? '+' : ''}{event.odds.spread.home} ({event.odds.spread.homeOdds > 0 ? '+' : ''}{event.odds.spread.homeOdds})
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Total */}
+                        {event.odds?.total && (
+                          <div className="space-y-1">
+                            <p className="text-slate-400 text-xs text-center">Total</p>
+                            <div className="grid grid-cols-2 gap-1">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-xs h-8 border-slate-600 hover:bg-slate-700"
+                                onClick={() => handleAddBet(event, 'total', `Over ${event.odds.total.over}`, event.odds.total.overOdds, event.odds.total.over)}
+                              >
+                                O {event.odds.total.over} ({event.odds.total.overOdds > 0 ? '+' : ''}{event.odds.total.overOdds})
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-xs h-8 border-slate-600 hover:bg-slate-700"
+                                onClick={() => handleAddBet(event, 'total', `Under ${event.odds.total.under}`, event.odds.total.underOdds, event.odds.total.under)}
+                              >
+                                U {event.odds.total.under} ({event.odds.total.underOdds > 0 ? '+' : ''}{event.odds.total.underOdds})
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Enhanced Bet Slip with Currency Selection */}
+        <div className="lg:col-span-1 space-y-4">
+          <CurrencyBetSlip
+            bets={betSlip}
+            onRemoveBet={handleRemoveBet}
+            onClearAll={handleClearAll}
+          />
+          
+          {/* Test Panel for Development */}
+          <BettingTestPanel />
+        </div>
+      </div>
+
+      {/* Recent Bets */}
+      {userBets.length > 0 && (
+        <div className="mt-6">
+          <Card className="bg-slate-900 border-slate-700">
+            <CardHeader>
+              <CardTitle className="text-white">Recent Bets</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {userBets.slice(0, 5).map((bet: any, index: number) => (
+                  <div key={bet.id || index} className="flex items-center justify-between p-3 bg-slate-800 rounded-lg">
+                    <div className="flex-1">
+                      <p className="text-white text-sm font-medium">{bet.selection}</p>
+                      <p className="text-slate-400 text-xs">{bet.betType} • {bet.odds > 0 ? '+' : ''}{bet.odds}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-white text-sm">${bet.amount}</p>
+                      <Badge 
+                        variant={bet.status === 'won' ? 'default' : bet.status === 'lost' ? 'destructive' : 'secondary'}
+                        className="text-xs"
+                      >
+                        {bet.status}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
         </div>
-      )}
-
-      {/* Unified Crypto Bet Slip */}
-      <div className="mb-6">
-        <UnifiedBetSlip 
-          bets={betSlip}
-          onRemoveBet={(betId) => setBetSlip(prev => prev.filter(bet => bet.id !== betId))}
-          onClearAll={() => setBetSlip([])}
-        />
-      </div>
-
-      {/* League Filter */}
-      <div className="mb-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Select Sports Leagues</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {sortedLeagues.map((league) => (
-                <Button
-                  key={league.key}
-                  variant={selectedLeagues.includes(league.key) ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => toggleLeague(league.key)}
-                  className="flex items-center gap-2"
-                >
-                  <img
-                    src={getLeagueLogo(league.key)}
-                    alt={`${league.name} logo`}
-                    className="w-5 h-5 object-contain"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                    }}
-                  />
-                  {league.displayName}
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Bet Type Filter */}
-      <div className="mb-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Bet Types</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {(['moneyline', 'spread', 'total', 'player-props', 'team-props', 'parlays'] as BetType[]).map((type) => (
-                <Button
-                  key={type}
-                  variant={betTypes.includes(type) ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => toggleBetType(type)}
-                >
-                  {type.charAt(0).toUpperCase() + type.slice(1)}
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Live Events */}
-      {filteredLiveEvents.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">🔴 Live Games</h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredLiveEvents.map((event: any) => (
-              <Card key={event.id} className="border-red-200">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <Badge variant="destructive">LIVE</Badge>
-                    <span className="text-sm text-gray-500">{getSportName(event.sport_key)}</span>
-                  </div>
-                  <CardTitle className="text-lg">
-                    {getTeamName(event, false)} vs {getTeamName(event, true)}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-2">
-                    {betTypes.includes('moneyline') && (
-                      <>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full"
-                          onClick={() => handleAddBet(event, 'moneyline', getTeamName(event, false), +120)}
-                        >
-                          {getTeamName(event, false).slice(0, 3)} +120
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full"
-                          onClick={() => handleAddBet(event, 'moneyline', getTeamName(event, true), -140)}
-                        >
-                          {getTeamName(event, true).slice(0, 3)} -140
-                        </Button>
-                      </>
-                    )}
-                    {betTypes.includes('spread') && (
-                      <>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full"
-                          onClick={() => handleAddBet(event, 'spread', getTeamName(event, false), -110, +3.5)}
-                        >
-                          {getTeamName(event, false).slice(0, 3)} +3.5
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full"
-                          onClick={() => handleAddBet(event, 'spread', getTeamName(event, true), -110, -3.5)}
-                        >
-                          {getTeamName(event, true).slice(0, 3)} -3.5
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Upcoming Events */}
-      {filteredUpcomingEvents.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">📅 Upcoming Games</h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredUpcomingEvents.slice(0, 12).map((event: any) => (
-              <Card key={event.id}>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <Badge variant="secondary">
-                      {formatGameTime(event.startTime || event.commence_time)}
-                    </Badge>
-                    <span className="text-sm text-gray-500">{getSportName(event.sport_key || event.sport)}</span>
-                  </div>
-                  <CardTitle className="text-lg">
-                    {getTeamName(event, false)} vs {getTeamName(event, true)}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-2">
-                    {betTypes.includes('moneyline') && (
-                      <>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full"
-                          onClick={() => handleAddBet(event, 'moneyline', getTeamName(event, false), +110)}
-                        >
-                          {getTeamName(event, false).slice(0, 3)} +110
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full"
-                          onClick={() => handleAddBet(event, 'moneyline', getTeamName(event, true), -130)}
-                        >
-                          {getTeamName(event, true).slice(0, 3)} -130
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Empty State */}
-      {filteredLiveEvents.length === 0 && filteredUpcomingEvents.length === 0 && !isLoadingLive && !isLoadingUpcoming && (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <h3 className="text-xl font-semibold mb-2">No events available</h3>
-            <p className="text-gray-500 mb-4">
-              Try selecting different leagues or check back later for more games.
-            </p>
-            <Button onClick={() => setSelectedLeagues(PROFESSIONAL_LEAGUES.map(l => l.key))}>
-              Show All Leagues
-            </Button>
-          </CardContent>
-        </Card>
       )}
     </div>
   );

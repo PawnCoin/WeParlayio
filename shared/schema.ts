@@ -313,24 +313,28 @@ export const insertEventSchema = createInsertSchema(events).pick({
   status: true,
 });
 
-// Bets model
+// Bets model - Enhanced with full currency support
 export const bets = pgTable("bets", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull(),
-  eventId: integer("event_id").notNull(),
-  betType: text("bet_type").notNull(),
+  eventId: varchar("event_id").notNull(), // String to handle external API IDs
+  betType: text("bet_type").notNull(), // moneyline, spread, total, parlay
   pick: text("pick").notNull(),
+  selection: text("selection").notNull(), // Team/outcome selected
   odds: doublePrecision("odds").notNull(),
   amount: doublePrecision("amount").notNull(),
   potentialPayout: doublePrecision("potential_payout").notNull(),
-  status: text("status").default("pending"),
+  currency: text("currency").notNull().default("weparlay_cash"), // weparlay_cash, real_money, crypto
+  cryptocurrencyType: text("cryptocurrency_type"), // BTC, ETH, etc. (if crypto)
+  walletAddress: text("wallet_address"), // crypto wallet address
+  transactionHash: text("transaction_hash"), // blockchain transaction hash
+  point: doublePrecision("point"), // spread/total point (if applicable)
+  gameInfo: jsonb("game_info"), // store game details for reference
+  status: text("status").default("pending"), // pending, won, lost, cancelled, processing
   placedAt: timestamp("placed_at").defaultNow(),
   settledAt: timestamp("settled_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-  // Additional fields to fix TypeScript errors
-  selection: text("selection"),
-  currency: text("currency").default("USD"),
 });
 
 export const insertBetSchema = createInsertSchema(bets).pick({
@@ -338,13 +342,47 @@ export const insertBetSchema = createInsertSchema(bets).pick({
   eventId: true,
   betType: true,
   pick: true,
+  selection: true,
   odds: true,
   amount: true,
   potentialPayout: true,
-  selection: true,
-  status: true,
   currency: true,
+  cryptocurrencyType: true,
+  walletAddress: true,
+  point: true,
+  gameInfo: true,
+  status: true,
 });
+
+// Bet slip item schema for frontend
+export const betSlipItemSchema = z.object({
+  id: z.string(),
+  eventId: z.string(),
+  betType: z.string(),
+  selection: z.string(),
+  odds: z.number(),
+  amount: z.number().default(0),
+  potential: z.number().default(0),
+  point: z.number().optional(),
+  sport: z.string(),
+  gameInfo: z.object({
+    homeTeam: z.string(),
+    awayTeam: z.string(),
+    startTime: z.string().optional(),
+  }).optional(),
+});
+
+export type BetSlipItem = z.infer<typeof betSlipItemSchema>;
+
+// Place bet request schema
+export const placeBetRequestSchema = z.object({
+  bets: z.array(betSlipItemSchema),
+  currency: z.enum(["weparlay_cash", "real_money", "crypto"]),
+  cryptocurrencyType: z.string().optional(),
+  walletAddress: z.string().optional(),
+});
+
+export type PlaceBetRequest = z.infer<typeof placeBetRequestSchema>;
 
 // Tournaments model
 export const tournaments = pgTable("tournaments", {

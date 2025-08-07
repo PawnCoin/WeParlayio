@@ -53,6 +53,15 @@ export interface IStorage {
   acceptBettingChallenge(uuid: string, acceptedBy: string): Promise<BettingChallenge>;
   updateBettingChallengeStatus(uuid: string, status: string): Promise<BettingChallenge>;
   getUserNotifications(userId: string, unreadOnly?: boolean): Promise<Notification[]>;
+  
+  // Enhanced betting operations with currency support
+  placeBet(bet: InsertBet): Promise<Bet>;
+  getUserBets(userId: string, status?: string): Promise<Bet[]>;
+  updateBetStatus(betId: number, status: string, result?: string): Promise<Bet>;
+  processBetPayout(betId: number, payout: number): Promise<Bet>;
+  getUserBalance(userId: string, currency: string): Promise<number>;
+  updateUserCurrencyBalance(userId: string, currency: string, amount: number): Promise<User>;
+  validateUserBalance(userId: string, currency: string, amount: number): Promise<boolean>;
   markNotificationAsRead(id: number, userId: string): Promise<Notification>;
   getTransactions(limit: number, offset: number): Promise<Transaction[]>;
   incrementUserWins(userId: string): Promise<User>;
@@ -466,6 +475,114 @@ export class MemStorage implements IStorage {
       user.firstName.toLowerCase().includes(query.toLowerCase()) ||
       user.lastName.toLowerCase().includes(query.toLowerCase())
     );
+  }
+
+  // Enhanced betting operations implementation
+  private bets = new Map<number, Bet>();
+
+  async placeBet(bet: InsertBet): Promise<Bet> {
+    const id = this.nextId++;
+    const newBet: Bet = {
+      ...bet,
+      id,
+      placedAt: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      settledAt: null
+    };
+    this.bets.set(id, newBet);
+    
+    // Update user balance based on currency
+    const user = await this.getUser(bet.userId);
+    if (user) {
+      await this.deductUserBalance(bet.userId, bet.currency, bet.amount);
+    }
+    
+    return newBet;
+  }
+
+  async getUserBets(userId: string, status?: string): Promise<Bet[]> {
+    const userBets = Array.from(this.bets.values()).filter(bet => bet.userId === userId);
+    if (status) {
+      return userBets.filter(bet => bet.status === status);
+    }
+    return userBets;
+  }
+
+  async updateBetStatus(betId: number, status: string, result?: string): Promise<Bet> {
+    const bet = this.bets.get(betId);
+    if (!bet) throw new Error('Bet not found');
+    
+    const updatedBet = {
+      ...bet,
+      status,
+      result,
+      settledAt: status !== 'pending' ? new Date() : null,
+      updatedAt: new Date()
+    };
+    this.bets.set(betId, updatedBet);
+    return updatedBet;
+  }
+
+  async processBetPayout(betId: number, payout: number): Promise<Bet> {
+    const bet = this.bets.get(betId);
+    if (!bet) throw new Error('Bet not found');
+    
+    // Credit user account
+    await this.creditUserBalance(bet.userId, bet.currency, payout);
+    
+    return this.updateBetStatus(betId, 'won');
+  }
+
+  async getUserBalance(userId: string, currency: string): Promise<number> {
+    const user = await this.getUser(userId);
+    if (!user) return 0;
+    
+    switch (currency) {
+      case 'weparlay_cash':
+        return user.weparlayCashBalance || 0;
+      case 'real_money':
+        return user.cashBalance || 0;
+      case 'crypto':
+        return user.weplayTokenBalance || 0;
+      default:
+        return user.balance || 0;
+    }
+  }
+
+  async validateUserBalance(userId: string, currency: string, amount: number): Promise<boolean> {
+    const balance = await this.getUserBalance(userId, currency);
+    return balance >= amount;
+  }
+
+  async updateUserCurrencyBalance(userId: string, currency: string, amount: number): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error('User not found');
+
+    const updates: Partial<User> = {};
+    switch (currency) {
+      case 'weparlay_cash':
+        updates.weparlayCashBalance = (user.weparlayCashBalance || 0) + amount;
+        break;
+      case 'real_money':
+        updates.cashBalance = (user.cashBalance || 0) + amount;
+        break;
+      case 'crypto':
+        updates.weplayTokenBalance = (user.weplayTokenBalance || 0) + amount;
+        break;
+      default:
+        updates.balance = (user.balance || 0) + amount;
+    }
+
+    return this.upsertUser({ ...user, ...updates });
+  }
+
+  private async deductUserBalance(userId: string, currency: string, amount: number): Promise<User> {
+    return this.updateUserCurrencyBalance(userId, currency, -amount);
+  }
+
+  private async creditUserBalance(userId: string, currency: string, amount: number): Promise<User> {
+    return this.updateUserCurrencyBalance(userId, currency, amount);
   }
   async getFinancialSummary(): Promise<any> {
     const totalUsers = this.users.size;

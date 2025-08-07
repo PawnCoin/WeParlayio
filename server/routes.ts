@@ -687,6 +687,146 @@ const registerRoutes = async (app: Express): Promise<Server> => {
     }
   });
 
+  // ==========================================
+  // ENHANCED BETTING ENDPOINTS WITH CURRENCY SELECTION
+  // ==========================================
+
+  // Place bet(s) with currency selection
+  app.post('/api/bets/place', isAuthenticated, async (req: any, res) => {
+    try {
+      const { bets, currency, cryptocurrencyType, walletAddress } = req.body;
+      const userId = req.user?.claims?.sub;
+
+      if (!userId) {
+        return res.status(401).json({ success: false, message: 'User not authenticated' });
+      }
+
+      if (!bets || !Array.isArray(bets) || bets.length === 0) {
+        return res.status(400).json({ success: false, message: 'No bets provided' });
+      }
+
+      const results = [];
+      let totalAmount = 0;
+
+      // Calculate total bet amount
+      for (const betData of bets) {
+        totalAmount += betData.amount || 0;
+      }
+
+      // Validate user balance
+      const hasBalance = await storage.validateUserBalance(userId, currency, totalAmount);
+      if (!hasBalance) {
+        return res.status(400).json({ 
+          success: false, 
+          message: `Insufficient ${currency.replace('_', ' ')} balance`,
+          requiredAmount: totalAmount,
+          currentBalance: await storage.getUserBalance(userId, currency)
+        });
+      }
+
+      // Place each bet
+      for (const betData of bets) {
+        const bet = {
+          userId,
+          eventId: betData.eventId,
+          betType: betData.betType,
+          pick: betData.selection,
+          selection: betData.selection,
+          odds: betData.odds,
+          amount: betData.amount,
+          potentialPayout: betData.potential || (betData.amount * (betData.odds > 0 ? (betData.odds / 100) + 1 : (100 / Math.abs(betData.odds)) + 1)),
+          currency,
+          cryptocurrencyType,
+          walletAddress,
+          point: betData.point,
+          gameInfo: betData.gameInfo,
+          status: 'pending'
+        };
+
+        const placedBet = await storage.placeBet(bet);
+        results.push(placedBet);
+      }
+
+      res.json({ 
+        success: true, 
+        message: `Successfully placed ${results.length} bet(s) using ${currency.replace('_', ' ')}`,
+        bets: results,
+        totalAmount,
+        currency,
+        remainingBalance: await storage.getUserBalance(userId, currency)
+      });
+    } catch (error) {
+      console.error('Error placing bets:', error);
+      res.status(500).json({ success: false, message: 'Failed to place bets' });
+    }
+  });
+
+  // Get user bets
+  app.get('/api/bets/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { status } = req.query;
+
+      if (!userId) {
+        return res.status(401).json({ success: false, message: 'User not authenticated' });
+      }
+
+      const bets = await storage.getUserBets(userId, status);
+      res.json({ success: true, bets });
+    } catch (error) {
+      console.error('Error fetching user bets:', error);
+      res.status(500).json({ success: false, message: 'Failed to fetch bets' });
+    }
+  });
+
+  // Get user balances for all currencies
+  app.get('/api/user/balances', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+
+      if (!userId) {
+        return res.status(401).json({ success: false, message: 'User not authenticated' });
+      }
+
+      const balances = {
+        weparlay_cash: await storage.getUserBalance(userId, 'weparlay_cash'),
+        real_money: await storage.getUserBalance(userId, 'real_money'),
+        crypto: await storage.getUserBalance(userId, 'crypto'),
+        default: await storage.getUserBalance(userId, 'default')
+      };
+
+      res.json({ success: true, balances });
+    } catch (error) {
+      console.error('Error fetching user balances:', error);
+      res.status(500).json({ success: false, message: 'Failed to fetch balances' });
+    }
+  });
+
+  // Update user balance (admin only for testing)
+  app.post('/api/user/add-balance', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { currency, amount } = req.body;
+
+      if (!userId) {
+        return res.status(401).json({ success: false, message: 'User not authenticated' });
+      }
+
+      const updatedUser = await storage.updateUserCurrencyBalance(userId, currency, amount);
+      const newBalance = await storage.getUserBalance(userId, currency);
+
+      res.json({ 
+        success: true, 
+        message: `Added ${amount} to ${currency.replace('_', ' ')} balance`,
+        newBalance,
+        currency
+      });
+    } catch (error) {
+      console.error('Error updating balance:', error);
+      res.status(500).json({ success: false, message: 'Failed to update balance' });
+    }
+  });
+
   return server;
 };
 
