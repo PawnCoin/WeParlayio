@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
+import { useBetSlip } from '@/contexts/BetSlipContext';
 import { getLeagueLogo } from '@/utils/sportsLogosSimple';
 import UnifiedBetSlip from '@/components/betting/UnifiedBetSlip';
 import BettingTestPanel from '@/components/betting/BettingTestPanel';
@@ -49,9 +50,28 @@ interface BetSlipItem {
 
 const BettingDashboard: React.FC = () => {
   const { user } = useAuth();
-  const [betSlip, setBetSlip] = useState<BetSlipItem[]>([]);
+  const { betSlip: contextBetSlip, bets: contextBets, addBet, removeFromBetSlip, clearBetSlip } = useBetSlip();
+  const [localBetSlip, setLocalBetSlip] = useState<BetSlipItem[]>([]);
   const [selectedCurrency, setSelectedCurrency] = useState<'weparlay_cash' | 'real_money' | 'crypto'>('weparlay_cash');
   const [activeSlipType, setActiveSlipType] = useState<'traditional' | 'crypto'>('traditional');
+
+  // Use unified bet slip that combines both context and local state
+  const betSlip = [...contextBetSlip.map(bet => ({
+    id: bet.id,
+    eventId: bet.eventId || '',
+    betType: bet.betType,
+    selection: bet.selection || bet.pick || '',
+    odds: bet.odds,
+    amount: bet.amount || 0,
+    potential: bet.potential || 0,
+    point: bet.point,
+    sport: bet.sport || '',
+    gameInfo: {
+      homeTeam: bet.homeTeam || '',
+      awayTeam: bet.awayTeam || '',
+      startTime: ''
+    }
+  } as BetSlipItem)), ...localBetSlip];
 
   // Fetch live odds data from priority API system
   const { data: oddsResponse, isLoading: isLoadingOdds } = useQuery({
@@ -72,8 +92,8 @@ const BettingDashboard: React.FC = () => {
 
   // Extract authentic odds data
   const oddsData: any[] = (oddsResponse as any)?.success ? (oddsResponse as any).odds : [];
-  const userBets = userBetsData?.bets || [];
-  const balances = balancesData?.balances || {};
+  const userBets = (userBetsData as any)?.bets || [];
+  const balances = (balancesData as any)?.balances || {};
 
   // Helper to safely get team name from real API data
   const getTeamName = (event: any, isHome: boolean = true) => {
@@ -86,45 +106,59 @@ const BettingDashboard: React.FC = () => {
     }
   };
 
-  // Handle adding a bet to the bet slip
+  // Handle adding a bet to the bet slip - use context to sync both slips
   const handleAddBet = (event: any, betType: string, selection: string, odds: number, point?: number) => {
     if (!event) return;
     
-    const newBet: BetSlipItem = {
+    const newBet = {
       id: `${event.eventId || event.id}-${betType}-${selection}-${Date.now()}`,
       eventId: event.eventId || event.id,
       betType,
       selection,
+      homeTeam: getTeamName(event, true),
+      awayTeam: getTeamName(event, false),
       odds,
-      amount: 0,
-      potential: 0,
       point,
       sport: event.sport || 'American Football',
-      gameInfo: {
-        homeTeam: getTeamName(event, true),
-        awayTeam: getTeamName(event, false),
-        startTime: event.startTime || event.commence_time
-      }
+      amount: 0,
+      potential: 0,
+      gameTitle: `${getTeamName(event, false)} vs ${getTeamName(event, true)}`,
+      pick: selection
     };
     
-    setBetSlip(prev => [...prev, newBet]);
+    // Add to context (this will update the left bet slip)
+    addBet(newBet);
   };
 
-  // Remove bet from slip
+  // Remove bet from slip - sync both slips
   const handleRemoveBet = (betId: string) => {
-    setBetSlip(prev => prev.filter(bet => bet.id !== betId));
+    removeFromBetSlip(betId);
+    setLocalBetSlip(prev => prev.filter(bet => bet.id !== betId));
   };
 
-  // Clear all bets
+  // Clear all bets - sync both slips  
   const handleClearAll = () => {
-    setBetSlip([]);
+    clearBetSlip();
+    setLocalBetSlip([]);
   };
 
-  // Update bet amount and calculate potential payout
+  // Update bet amount and calculate potential payout - sync both slips
   const handleUpdateBet = (betId: string, amount: number) => {
-    setBetSlip(prev => prev.map(bet => {
+    const potential = amount * (betSlip.find(bet => bet.id === betId)?.odds || 1 > 0 
+      ? (betSlip.find(bet => bet.id === betId)?.odds || 1) / 100 + 1 
+      : 100 / Math.abs(betSlip.find(bet => bet.id === betId)?.odds || 1) + 1);
+    
+    // Update in context
+    const contextBet = contextBetSlip.find(bet => bet.id === betId);
+    if (contextBet) {
+      const updatedBet = { ...contextBet, amount, potential };
+      removeFromBetSlip(betId);
+      addBet(updatedBet);
+    }
+    
+    // Update local bet slip
+    setLocalBetSlip(prev => prev.map(bet => {
       if (bet.id === betId) {
-        const potential = amount * (bet.odds > 0 ? (bet.odds / 100) + 1 : (100 / Math.abs(bet.odds)) + 1);
         return { ...bet, amount, potential };
       }
       return bet;
