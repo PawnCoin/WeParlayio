@@ -309,10 +309,10 @@ export default function Odds() {
                       className="w-full" 
                       onClick={() => {
                         toast({
-                          title: "Redirecting to Live Betting",
+                          title: "Opening Bet Slip",
                           description: `${odds.awayTeam?.name || odds.away_team} @ ${odds.homeTeam?.name || odds.home_team}`,
                         });
-                        window.location.href = '/live-betting';
+                        window.location.href = '/betting-dashboard';
                       }}
                     >
                       <DollarSign className="h-4 w-4 mr-2" />
