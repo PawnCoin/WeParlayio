@@ -28,9 +28,9 @@ export default function Odds() {
   // Fetch real odds data from the unified sports API 
   const { data: realOddsResponse, refetch: refetchRealOdds, isLoading } = useQuery({
     queryKey: ["/api/unified-sports/upcoming-events"],
-    refetchInterval: 30000, // Update every 30 seconds
-    staleTime: 0, // Never use stale data
-    gcTime: 0, // TanStack Query v5 - don't cache
+    refetchInterval: 60000, // Update every 60 seconds (1 minute)
+    staleTime: 30000, // Use cached data for 30 seconds
+    gcTime: 300000, // Keep cache for 5 minutes
     refetchOnMount: true,
     refetchOnWindowFocus: true,
     retry: 1,
@@ -61,13 +61,13 @@ export default function Odds() {
   // Fetch live markets count across all sports
   const { data: liveMarketsData } = useQuery({
     queryKey: ["/api/sports/baseball_mlb/live"],
-    refetchInterval: 30000,
+    refetchInterval: 60000, // Update every minute
   });
 
   // Fetch NFL live data
   const { data: nflLiveData } = useQuery({
     queryKey: ["/api/odds/americanfootball_nfl"],
-    refetchInterval: 30000,
+    refetchInterval: 60000, // Update every minute
   });
 
   // Manual refresh function
@@ -254,10 +254,12 @@ export default function Odds() {
               <Card key={`odds-${odds.id || index}`} className="border-l-4 border-l-blue-500">
                 <CardHeader>
                   <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-3">
-                      <CardTitle className="text-lg">{odds.sport || 'NFL'}</CardTitle>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {odds.homeTeam?.name || odds.home_team} vs {odds.awayTeam?.name || odds.away_team}
+                    <div className="flex flex-col gap-1">
+                      <CardTitle className="text-lg">
+                        {odds.awayTeam?.name || odds.away_team || 'Away Team'} @ {odds.homeTeam?.name || odds.home_team || 'Home Team'}
+                      </CardTitle>
+                      <p className="text-sm text-gray-600">
+                        {odds.sport || 'NFL'} • {odds.startTime ? new Date(odds.startTime).toLocaleDateString() : 'Today'}
                       </p>
                     </div>
                     <Badge className="bg-green-100 text-green-800">
@@ -266,48 +268,51 @@ export default function Odds() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {(odds.homeTeam?.name || odds.home_team) && (
-                      <div className="text-center p-3 bg-gray-50 rounded">
-                        <p className="text-sm font-medium text-gray-700">{odds.homeTeam?.name || odds.home_team}</p>
-                        <p className="text-lg font-bold text-blue-600">
-                          {formatOdds(odds.odds?.homeWin || odds.home_odds || 1.95)}
-                        </p>
-                      </div>
-                    )}
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    {/* Away Team */}
+                    <div className="text-center p-3 bg-slate-50 rounded-lg border-2 hover:border-blue-300 transition-colors cursor-pointer">
+                      <p className="font-semibold text-slate-800">
+                        {odds.awayTeam?.name || odds.away_team || 'Away Team'}
+                      </p>
+                      <p className="text-xl font-bold text-blue-600 mt-1">
+                        {formatOdds(odds.odds?.awayWin || odds.away_odds || 1.95)}
+                      </p>
+                      {odds.awayTeam?.score !== undefined && (
+                        <p className="text-sm text-slate-600">Score: {odds.awayTeam.score}</p>
+                      )}
+                    </div>
                     
-                    {odds.odds?.draw && (
-                      <div className="text-center p-3 bg-gray-50 rounded">
-                        <p className="text-sm font-medium text-gray-700">Draw</p>
-                        <p className="text-lg font-bold text-green-600">
-                          {formatOdds(odds.odds.draw)}
-                        </p>
-                      </div>
-                    )}
-                    
-                    {(odds.awayTeam?.name || odds.away_team) && (
-                      <div className="text-center p-3 bg-gray-50 rounded">
-                        <p className="text-sm font-medium text-gray-700">{odds.awayTeam?.name || odds.away_team}</p>
-                        <p className="text-lg font-bold text-red-600">
-                          {formatOdds(odds.odds?.awayWin || odds.away_odds || 1.95)}
-                        </p>
-                      </div>
+                    {/* Home Team */}
+                    <div className="text-center p-3 bg-slate-50 rounded-lg border-2 hover:border-red-300 transition-colors cursor-pointer">
+                      <p className="font-semibold text-slate-800">
+                        {odds.homeTeam?.name || odds.home_team || 'Home Team'}
+                      </p>
+                      <p className="text-xl font-bold text-red-600 mt-1">
+                        {formatOdds(odds.odds?.homeWin || odds.home_odds || 1.95)}
+                      </p>
+                      {odds.homeTeam?.score !== undefined && (
+                        <p className="text-sm text-slate-600">Score: {odds.homeTeam.score}</p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Game Status and Time */}
+                  <div className="flex justify-between items-center text-sm text-gray-600 mb-3">
+                    <span>Status: {odds.status || 'Scheduled'}</span>
+                    {odds.startTime && (
+                      <span>Start: {new Date(odds.startTime).toLocaleTimeString()}</span>
                     )}
                   </div>
                   
-                  <div className="mt-4 flex justify-between items-center">
-                    <span className="text-xs text-gray-500">
-                      Game Time: {new Date(odds.startTime || Date.now()).toLocaleTimeString()}
-                    </span>
+                  <div className="mt-4 pt-4 border-t">
                     <Button 
-                      size="sm"
+                      className="w-full" 
                       onClick={() => {
                         toast({
-                          title: "Bet Added to Slip",
-                          description: `${odds.homeTeam?.name || odds.home_team} vs ${odds.awayTeam?.name || odds.away_team} added to your betting slip`,
+                          title: "Redirecting to Live Betting",
+                          description: `${odds.awayTeam?.name || odds.away_team} @ ${odds.homeTeam?.name || odds.home_team}`,
                         });
-                        // Redirect to betting page
-                        window.location.href = '/comprehensive-betting';
+                        window.location.href = '/live-betting';
                       }}
                     >
                       <DollarSign className="h-4 w-4 mr-2" />

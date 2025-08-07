@@ -42,7 +42,7 @@ export default function LiveBetting() {
 
   const { data: liveOddsResponse, isLoading } = useQuery({
     queryKey: ['/api/odds/americanfootball_nfl'],
-    refetchInterval: isAutoRefresh ? 5000 : false, // Auto-refresh every 5 seconds
+    refetchInterval: isAutoRefresh ? 60000 : false, // Auto-refresh every 60 seconds
   });
 
   const liveOdds = liveOddsResponse?.odds || [];

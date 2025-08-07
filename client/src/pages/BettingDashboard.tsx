@@ -82,7 +82,7 @@ const BettingDashboard: React.FC = () => {
   // Fetch live odds data from unified sports API
   const { data: oddsResponse, isLoading: isLoadingOdds } = useQuery({
     queryKey: ['/api/unified-sports/upcoming-events'],
-    refetchInterval: 30000,
+    refetchInterval: 60000, // Update every 60 seconds
   });
 
   // Fetch user bets history
