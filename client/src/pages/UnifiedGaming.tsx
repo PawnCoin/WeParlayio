@@ -28,25 +28,39 @@ function UnifiedGamingContent() {
   const [selectedPlayer, setSelectedPlayer] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Fetch gaming API status from GRID API (authentic esports data)
+  // Fetch gaming API status from multiple gaming sources
   const { data: apiStatus } = useQuery({
-    queryKey: ['/api/grid/status'],
+    queryKey: ['/api/gaming/status'],
     refetchInterval: 30000,
     initialData: {}
   });
 
-  // Fetch real tournaments from GRID API
+  // Fetch tournaments from GRID and Riot APIs
   const { data: tournaments } = useQuery({
-    queryKey: ['/api/grid/tournaments'],
+    queryKey: ['/api/gaming/tournaments'],
     refetchInterval: 60000,
     initialData: []
   });
 
-  // Fetch authentic live matches from unified sports API
+  // Fetch live gaming matches from SportsGameOdds and other gaming APIs
   const { data: liveMatches } = useQuery({
-    queryKey: ['/api/unified-sports/upcoming-events'],
+    queryKey: ['/api/gaming/live-matches'],
     refetchInterval: 15000,
     initialData: []
+  });
+
+  // Fetch Twitch streams
+  const { data: twitchStreams } = useQuery({
+    queryKey: ['/api/gaming/twitch/streams'],
+    refetchInterval: 30000,
+    initialData: []
+  });
+
+  // Fetch Fortnite data
+  const { data: fortniteData } = useQuery({
+    queryKey: ['/api/gaming/fortnite/stats'],
+    refetchInterval: 60000,
+    initialData: {}
   });
 
   const liveStreams = [
@@ -128,7 +142,7 @@ function UnifiedGamingContent() {
         <Alert className="mb-6 bg-green-900/50 border-green-700">
           <Wifi className="h-4 w-4" />
           <AlertDescription className="text-green-200">
-            Connected to GRID API for authentic esports data. Live streaming requires VIP access.
+            Connected to Fortnite, Xbox, SportsGameOdds, Riot, Twitch, and GRID APIs. Live streaming requires VIP access.
           </AlertDescription>
         </Alert>
 
@@ -253,7 +267,8 @@ function UnifiedGamingContent() {
           {/* Live Streams Tab */}
           <TabsContent value="streaming" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {liveStreams.map((stream) => (
+              {Array.isArray(twitchStreams?.data) && twitchStreams.data.length > 0 ? (
+                twitchStreams.data.map((stream) => (
                 <Card key={stream.id} className="bg-slate-800/50 border-slate-700 hover:border-red-500 transition-colors">
                   <CardHeader>
                     <CardTitle className="text-white flex items-center justify-between">
@@ -297,7 +312,18 @@ function UnifiedGamingContent() {
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+                ))
+              ) : (
+                <div className="col-span-full">
+                  <Card className="bg-slate-800/50 border-slate-700">
+                    <CardContent className="text-center py-8">
+                      <Tv className="h-12 w-12 text-gray-500 mx-auto mb-4" />
+                      <p className="text-gray-400">No live streams available</p>
+                      <p className="text-sm text-gray-500 mt-2">Check back for live gaming streams</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
             </div>
           </TabsContent>
 

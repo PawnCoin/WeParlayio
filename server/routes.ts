@@ -18,7 +18,7 @@ import { espnApiService } from "./services/espnApiService";
 import { feeRouter } from "./routes/feeRoutes";
 import { adminRouter } from "./routes/adminRoutes";
 import notificationRoutes from "./routes/notificationRoutes-simplified";
-import gamingRoutes from "./routes/gamingRoutes";
+// Gaming routes are now registered via registerGamingRoutes function
 import unifiedSportsRoutes from "./routes/unifiedSportsRoutes";
 import websocketPollingRoutes from "./routes/websocketPollingRoutes";
 import oddsTickerRoutes from "./routes/oddsTickerRoutes";
@@ -60,6 +60,7 @@ import { allSportsApiService } from "./services/allSportsApiService";
 import { createCashAppPayment, getCashAppPaymentStatus, initiateCashAppPayout } from "./cashapp";
 import { youtubeRoutes } from "./youtube-api";
 import { iptvService } from "./iptv-service";
+import { registerGamingRoutes } from "./routes/gamingRoutes";
 
 const registerRoutes = async (app: Express): Promise<Server> => {
   const server = createServer(app);
@@ -74,7 +75,7 @@ const registerRoutes = async (app: Express): Promise<Server> => {
   app.use('/api/notifications', notificationRoutes);
   app.use('/api/bet-settlement', betSettlementRoutes);
   app.use('/api/auth', authRoutes);
-  app.use('/api/gaming', gamingRoutes);
+  // Gaming routes registered via registerGamingRoutes function below
   app.use('/api/unified-sports', unifiedSportsRoutes);
   app.use('/api/websocket-polling', websocketPollingRoutes);
   app.use('/api/odds-ticker', oddsTickerRoutes);
@@ -91,6 +92,9 @@ const registerRoutes = async (app: Express): Promise<Server> => {
   // YouTube API routes for enhanced streaming
   app.get('/api/youtube/live-streams', youtubeRoutes.getLiveStreams);
   app.get('/api/youtube/video/:videoId', youtubeRoutes.getVideoInfo);
+  
+  // Register the new gaming routes for Fortnite, Xbox, SportsGameOdds, Riot, Twitch, GRID
+  registerGamingRoutes(app);
 
   // Direct Betting System
   app.post('/api/bets', async (req, res) => {
