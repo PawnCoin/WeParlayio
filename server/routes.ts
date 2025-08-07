@@ -724,8 +724,23 @@ const registerRoutes = async (app: Express): Promise<Server> => {
         });
       }
 
-      // Place each bet
+      // Place each bet with game timing validation
       for (const betData of bets) {
+        // Check if game has started (bets close at game start)
+        const gameStartTime = betData.gameInfo?.startTime;
+        if (gameStartTime) {
+          const startTime = new Date(gameStartTime);
+          const now = new Date();
+          
+          if (now >= startTime) {
+            return res.status(400).json({
+              success: false,
+              message: `Betting is closed for this game. Game started at ${startTime.toLocaleString()}`,
+              gameStarted: true
+            });
+          }
+        }
+
         const bet = {
           userId,
           eventId: betData.eventId,
@@ -740,7 +755,8 @@ const registerRoutes = async (app: Express): Promise<Server> => {
           walletAddress,
           point: betData.point,
           gameInfo: betData.gameInfo,
-          status: 'pending'
+          status: 'pending',
+          gameStartTime: gameStartTime
         };
 
         const placedBet = await storage.placeBet(bet);
@@ -758,6 +774,80 @@ const registerRoutes = async (app: Express): Promise<Server> => {
     } catch (error) {
       console.error('Error placing bets:', error);
       res.status(500).json({ success: false, message: 'Failed to place bets' });
+    }
+  });
+
+  // Bet settlement endpoint (payouts after game completion)
+  app.post('/api/bets/settle', isAuthenticated, async (req: any, res) => {
+    try {
+      const { eventId, results } = req.body; // results: { homeScore, awayScore, status: 'completed' }
+      
+      if (!eventId || !results) {
+        return res.status(400).json({ success: false, message: 'Event ID and results required' });
+      }
+
+      // Only settle bets for completed games
+      if (results.status !== 'completed') {
+        return res.status(400).json({ success: false, message: 'Game is not officially completed' });
+      }
+
+      // Find all pending bets for this event
+      const pendingBets = await storage.getBetsByEvent(eventId, 'pending');
+      
+      const settledBets = [];
+      
+      for (const bet of pendingBets) {
+        let won = false;
+        
+        // Determine if bet won based on bet type
+        switch (bet.betType) {
+          case 'moneyline_home':
+            won = results.homeScore > results.awayScore;
+            break;
+          case 'moneyline_away':
+            won = results.awayScore > results.homeScore;
+            break;
+          case 'spread_home':
+            const homeSpread = parseFloat(bet.point) || -3.5;
+            won = (results.homeScore + homeSpread) > results.awayScore;
+            break;
+          case 'spread_away':
+            const awaySpread = parseFloat(bet.point) || 3.5;
+            won = (results.awayScore + awaySpread) > results.homeScore;
+            break;
+          case 'total_over':
+            const overTotal = parseFloat(bet.point) || 45.5;
+            won = (results.homeScore + results.awayScore) > overTotal;
+            break;
+          case 'total_under':
+            const underTotal = parseFloat(bet.point) || 45.5;
+            won = (results.homeScore + results.awayScore) < underTotal;
+            break;
+        }
+
+        // Update bet status and process payout
+        const newStatus = won ? 'won' : 'lost';
+        const updatedBet = await storage.updateBetStatus(bet.id, newStatus);
+        
+        if (won) {
+          // Add winnings to user balance
+          await storage.addToUserBalance(bet.userId, bet.currency, bet.potentialPayout);
+          console.log(`💰 Payout: $${bet.potentialPayout} to user ${bet.userId} for winning bet ${bet.id}`);
+        }
+        
+        settledBets.push({...updatedBet, won, payout: won ? bet.potentialPayout : 0});
+      }
+
+      res.json({
+        success: true,
+        message: `Settled ${settledBets.length} bets for event ${eventId}`,
+        settledBets,
+        eventResults: results
+      });
+      
+    } catch (error) {
+      console.error('Error settling bets:', error);
+      res.status(500).json({ success: false, message: 'Failed to settle bets' });
     }
   });
 
