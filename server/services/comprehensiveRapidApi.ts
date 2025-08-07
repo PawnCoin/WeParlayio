@@ -366,3 +366,48 @@ export class ComprehensiveRapidApiService {
 }
 
 export const comprehensiveRapidApi = new ComprehensiveRapidApiService();
+
+// Pinnacle Odds API through RapidAPI
+export class PinnacleOddsService {
+  private apiKey: string;
+  private baseUrl = 'https://pinnacle-odds.p.rapidapi.com';
+
+  constructor() {
+    this.apiKey = process.env.RAPIDAPI_KEY!;
+  }
+
+  async getPinnacleOdds(sport: string = 'football'): Promise<any[]> {
+    if (!this.apiKey) return [];
+
+    try {
+      const response = await fetch(`${this.baseUrl}/kit/v1/markets`, {
+        headers: {
+          'X-RapidAPI-Key': this.apiKey,
+          'X-RapidAPI-Host': 'pinnacle-odds.p.rapidapi.com'
+        }
+      });
+
+      if (!response.ok) {
+        console.warn(`Pinnacle API ${response.status}: ${response.statusText}`);
+        return [];
+      }
+
+      const data = await response.json();
+      console.log(`✅ Pinnacle API: Retrieved ${data.length || 0} odds`);
+      
+      return data.map((odds: any) => ({
+        id: `pinnacle_${odds.id}`,
+        sport: sport,
+        teams: `${odds.home_team} vs ${odds.away_team}`,
+        currentOdds: odds.odds,
+        bookmaker: 'Pinnacle',
+        source: 'RapidAPI-Pinnacle'
+      })) || [];
+    } catch (error) {
+      console.error('Pinnacle Odds API error:', error);
+      return [];
+    }
+  }
+}
+
+export const pinnacleOddsService = new PinnacleOddsService();
