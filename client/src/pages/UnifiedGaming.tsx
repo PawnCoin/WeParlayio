@@ -28,23 +28,23 @@ function UnifiedGamingContent() {
   const [selectedPlayer, setSelectedPlayer] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Fetch gaming API status
+  // Fetch gaming API status from GRID API (authentic esports data)
   const { data: apiStatus } = useQuery({
-    queryKey: ['/api/gaming/api-status'],
+    queryKey: ['/api/grid/status'],
     refetchInterval: 30000,
     initialData: {}
   });
 
-  // Fetch tournaments
+  // Fetch real tournaments from GRID API
   const { data: tournaments } = useQuery({
-    queryKey: ['/api/gaming/leaguepedia/tournaments'],
+    queryKey: ['/api/grid/tournaments'],
     refetchInterval: 60000,
     initialData: []
   });
 
-  // Fetch live matches
+  // Fetch authentic live matches from unified sports API
   const { data: liveMatches } = useQuery({
-    queryKey: ['/api/gaming/leaguepedia/live'],
+    queryKey: ['/api/unified-sports/upcoming-events'],
     refetchInterval: 15000,
     initialData: []
   });
@@ -128,7 +128,7 @@ function UnifiedGamingContent() {
         <Alert className="mb-6 bg-green-900/50 border-green-700">
           <Wifi className="h-4 w-4" />
           <AlertDescription className="text-green-200">
-            All gaming APIs are operational. Real-time data streaming active.
+            Connected to GRID API for authentic esports data. Live streaming requires VIP access.
           </AlertDescription>
         </Alert>
 
@@ -159,16 +159,16 @@ function UnifiedGamingContent() {
           {/* Live Betting Tab */}
           <TabsContent value="live-betting" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array.isArray(liveMatches) && liveMatches.length > 0 ? (
-                liveMatches.slice(0, 6).map((match: any, index: number) => (
+              {Array.isArray(liveMatches?.data) && liveMatches.data.length > 0 ? (
+                liveMatches.data.slice(0, 6).map((match: any, index: number) => (
                   <Card key={index} className="bg-slate-800/50 border-slate-700 hover:border-purple-500 transition-colors">
                     <CardHeader>
                       <CardTitle className="text-white flex items-center justify-between">
-                        <span>{match.homeTeam} vs {match.awayTeam}</span>
-                        <Badge variant="destructive" className="bg-red-600">LIVE</Badge>
+                        <span>{match.homeTeam || match.teams} vs {match.awayTeam || 'TBD'}</span>
+                        <Badge variant="destructive" className="bg-red-600">{match.status || 'LIVE'}</Badge>
                       </CardTitle>
                       <CardDescription className="text-gray-300">
-                        {match.game || 'Professional Match'}
+                        {match.sport || match.game || 'Professional Match'}
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -283,7 +283,10 @@ function UnifiedGamingContent() {
                         <Button 
                           size="sm" 
                           className="bg-red-600 hover:bg-red-700"
-                          onClick={() => handlePlayerSelect(stream.streamer)}
+                          onClick={() => {
+                            handlePlayerSelect(stream.streamer);
+                            window.open('/vip/live-streaming', '_blank');
+                          }}
                         >
                           Watch Live
                         </Button>

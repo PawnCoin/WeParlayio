@@ -144,7 +144,7 @@ const FantasySportsHub: React.FC = () => {
                 Fantasy Sports Hub
               </h1>
               <p className="text-gray-300 max-w-2xl mx-auto">
-                Your fantasy sports dashboard connecting ESPN with advanced analytics and betting integration
+                Your unified fantasy sports dashboard connecting ESPN and Yahoo with advanced analytics and betting integration
               </p>
             </div>
 
@@ -152,7 +152,7 @@ const FantasySportsHub: React.FC = () => {
             <ESPNLinkCard />
 
             {/* Platform Connection Cards */}
-            <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* ESPN Fantasy Card */}
               <Card className="bg-white/10 border-white/20 backdrop-blur-sm">
                 <CardHeader>
@@ -166,13 +166,13 @@ const FantasySportsHub: React.FC = () => {
                     {getStatusIcon(espnStatus)}
                   </CardTitle>
                   <CardDescription className="text-gray-300">
-                    Public ESPN data only - ESPN doesn't offer OAuth for fantasy leagues
+                    Connect to ESPN Fantasy for league management and scoring
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
                     <Badge className={getStatusColor(espnStatus)}>
-                      {espnStatus === 'loading' ? 'Testing...' : espnStatus === 'connected' ? 'Public data only' : 'Using fallback data'}
+                      {espnStatus === 'loading' ? 'Testing...' : espnStatus === 'connected' ? 'Connected' : 'Disconnected'}
                     </Badge>
                     <Button 
                       onClick={testEspnConnection}
@@ -183,25 +183,57 @@ const FantasySportsHub: React.FC = () => {
                       Test
                     </Button>
                   </div>
-
-                  <div className="bg-orange-900/30 p-3 rounded-lg border border-orange-700/50">
-                    <div className="text-sm text-orange-300 space-y-1">
-                      <p className="font-medium">ESPN Limitation:</p>
-                      <p className="text-xs">ESPN does not provide OAuth authentication for personal fantasy leagues. Users must manually share league URLs.</p>
-                    </div>
-                  </div>
                   
                   <Button 
                     onClick={() => setLocation('/fantasy-football')}
                     className="w-full bg-red-600 hover:bg-red-700"
                   >
                     <ExternalLink className="h-4 w-4 mr-2" />
-                    View Public ESPN Data
+                    View ESPN Data
                   </Button>
                 </CardContent>
               </Card>
 
-
+              {/* Yahoo Fantasy Card */}
+              <Card className="bg-white/10 border-white/20 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                        Y!
+                      </div>
+                      Yahoo Fantasy
+                    </div>
+                    {getStatusIcon(yahooStatus)}
+                  </CardTitle>
+                  <CardDescription className="text-gray-300">
+                    Full OAuth integration with Yahoo Fantasy Sports API
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Badge className={getStatusColor(yahooStatus)}>
+                      {yahooStatus === 'loading' ? 'Testing...' : yahooStatus === 'connected' ? 'Connected' : 'Disconnected'}
+                    </Badge>
+                    <Button 
+                      onClick={testYahooConnection}
+                      size="sm"
+                      variant="outline"
+                    >
+                      <RefreshCw className="w-4 h-4 mr-1" />
+                      Test
+                    </Button>
+                  </div>
+                  
+                  <Button 
+                    className="w-full bg-purple-600 hover:bg-purple-700"
+                    onClick={() => window.open('/api/yahoo-fantasy/auth', '_blank')}
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Connect Yahoo Fantasy
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Quick Stats */}
@@ -213,7 +245,7 @@ const FantasySportsHub: React.FC = () => {
                     <div>
                       <div className="text-white font-semibold">Connected Platforms</div>
                       <div className="text-gray-400 text-sm">
-                        {espnStatus === 'connected' ? 1 : 0} of 1 active
+                        {(espnStatus === 'connected' ? 1 : 0) + (yahooStatus === 'connected' ? 1 : 0)} of 2 active
                       </div>
                     </div>
                   </div>
