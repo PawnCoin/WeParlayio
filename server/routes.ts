@@ -697,10 +697,6 @@ const registerRoutes = async (app: Express): Promise<Server> => {
       const { bets, currency, cryptocurrencyType, walletAddress } = req.body;
       const userId = req.user?.claims?.sub || 'admin-support-1754266931489';
 
-      if (!userId) {
-        return res.status(401).json({ success: false, message: 'User not authenticated' });
-      }
-
       if (!bets || !Array.isArray(bets) || bets.length === 0) {
         return res.status(400).json({ success: false, message: 'No bets provided' });
       }
