@@ -20,7 +20,19 @@ export async function apiRequest(
 ): Promise<Response> {
   // Get auth headers for all users
   const userEmail = localStorage.getItem('weparlay-user-email') || localStorage.getItem('weparlay-admin-email');
-  const authHeaders = userEmail ? { 'X-User-Email': userEmail } : {};
+  const token = localStorage.getItem('auth-token') || localStorage.getItem('weparlay-admin-token');
+  
+  const authHeaders: Record<string, string> = {};
+  
+  // Add email header if available
+  if (userEmail) {
+    authHeaders['X-User-Email'] = userEmail;
+  }
+  
+  // Add authorization header if token available
+  if (token) {
+    authHeaders['Authorization'] = `Bearer ${token}`;
+  }
   
   const res = await fetch(url, {
     method,
