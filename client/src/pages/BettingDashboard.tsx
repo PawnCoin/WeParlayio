@@ -22,6 +22,12 @@ const formatGameTime = (dateString: string) => {
   }
 };
 
+// Helper function to format odds to 2 decimal places
+const formatOdds = (odds: number) => {
+  if (!odds && odds !== 0) return '0';
+  return Number(odds).toFixed(2).replace(/\.?0+$/, '');
+};
+
 // Professional leagues configuration
 const PROFESSIONAL_LEAGUES = [
   { name: 'NFL', key: 'americanfootball_nfl', displayName: 'NFL (American Football)' },
@@ -278,7 +284,7 @@ const BettingDashboard: React.FC = () => {
                                 className="text-xs h-8 border-slate-600 hover:bg-slate-700"
                                 onClick={() => handleAddBet(event, 'moneyline', getTeamName(event, false), event.odds.moneyline.away)}
                               >
-                                {getTeamName(event, false).slice(0, 3)} {event.odds.moneyline.away > 0 ? '+' : ''}{event.odds.moneyline.away}
+                                {getTeamName(event, false).slice(0, 3)} {event.odds.moneyline.away > 0 ? '+' : ''}{formatOdds(event.odds.moneyline.away)}
                               </Button>
                               <Button
                                 variant="outline"
@@ -286,7 +292,7 @@ const BettingDashboard: React.FC = () => {
                                 className="text-xs h-8 border-slate-600 hover:bg-slate-700"
                                 onClick={() => handleAddBet(event, 'moneyline', getTeamName(event, true), event.odds.moneyline.home)}
                               >
-                                {getTeamName(event, true).slice(0, 3)} {event.odds.moneyline.home > 0 ? '+' : ''}{event.odds.moneyline.home}
+                                {getTeamName(event, true).slice(0, 3)} {event.odds.moneyline.home > 0 ? '+' : ''}{formatOdds(event.odds.moneyline.home)}
                               </Button>
                             </div>
                           </div>
@@ -303,7 +309,7 @@ const BettingDashboard: React.FC = () => {
                                 className="text-xs h-8 border-slate-600 hover:bg-slate-700"
                                 onClick={() => handleAddBet(event, 'spread', `${getTeamName(event, false)} ${event.odds.spread.away > 0 ? '+' : ''}${event.odds.spread.away}`, event.odds.spread.awayOdds, event.odds.spread.away)}
                               >
-                                {event.odds.spread.away > 0 ? '+' : ''}{event.odds.spread.away} ({event.odds.spread.awayOdds > 0 ? '+' : ''}{event.odds.spread.awayOdds})
+                                {event.odds.spread.away > 0 ? '+' : ''}{formatOdds(event.odds.spread.away)} ({event.odds.spread.awayOdds > 0 ? '+' : ''}{formatOdds(event.odds.spread.awayOdds)})
                               </Button>
                               <Button
                                 variant="outline"
@@ -311,7 +317,7 @@ const BettingDashboard: React.FC = () => {
                                 className="text-xs h-8 border-slate-600 hover:bg-slate-700"
                                 onClick={() => handleAddBet(event, 'spread', `${getTeamName(event, true)} ${event.odds.spread.home > 0 ? '+' : ''}${event.odds.spread.home}`, event.odds.spread.homeOdds, event.odds.spread.home)}
                               >
-                                {event.odds.spread.home > 0 ? '+' : ''}{event.odds.spread.home} ({event.odds.spread.homeOdds > 0 ? '+' : ''}{event.odds.spread.homeOdds})
+                                {event.odds.spread.home > 0 ? '+' : ''}{formatOdds(event.odds.spread.home)} ({event.odds.spread.homeOdds > 0 ? '+' : ''}{formatOdds(event.odds.spread.homeOdds)})
                               </Button>
                             </div>
                           </div>
@@ -328,7 +334,7 @@ const BettingDashboard: React.FC = () => {
                                 className="text-xs h-8 border-slate-600 hover:bg-slate-700"
                                 onClick={() => handleAddBet(event, 'total', `Over ${event.odds.total.over}`, event.odds.total.overOdds, event.odds.total.over)}
                               >
-                                O {event.odds.total.over} ({event.odds.total.overOdds > 0 ? '+' : ''}{event.odds.total.overOdds})
+                                O {formatOdds(event.odds.total.over)} ({event.odds.total.overOdds > 0 ? '+' : ''}{formatOdds(event.odds.total.overOdds)})
                               </Button>
                               <Button
                                 variant="outline"
@@ -336,7 +342,7 @@ const BettingDashboard: React.FC = () => {
                                 className="text-xs h-8 border-slate-600 hover:bg-slate-700"
                                 onClick={() => handleAddBet(event, 'total', `Under ${event.odds.total.under}`, event.odds.total.underOdds, event.odds.total.under)}
                               >
-                                U {event.odds.total.under} ({event.odds.total.underOdds > 0 ? '+' : ''}{event.odds.total.underOdds})
+                                U {formatOdds(event.odds.total.under)} ({event.odds.total.underOdds > 0 ? '+' : ''}{formatOdds(event.odds.total.underOdds)})
                               </Button>
                             </div>
                           </div>

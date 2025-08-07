@@ -10,6 +10,12 @@ import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 
+// Helper function to format odds to 2 decimal places
+const formatOdds = (odds: number) => {
+  if (!odds && odds !== 0) return '0';
+  return Number(odds).toFixed(2).replace(/\.?0+$/, '');
+};
+
 interface BetSlipItem {
   id: string;
   eventId: string;
@@ -54,10 +60,7 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
   // Place bets mutation
   const placeBetsMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest('/api/bets/place', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      return apiRequest('/api/bets/place', 'POST', data);
     },
     onSuccess: (data) => {
       toast({
@@ -264,10 +267,10 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
                         {bet.gameInfo?.homeTeam} vs {bet.gameInfo?.awayTeam}
                       </div>
                       <div className="text-slate-400 text-xs">
-                        {bet.selection} {bet.point && `(${bet.point > 0 ? '+' : ''}${bet.point})`}
+                        {bet.selection} {bet.point && `(${bet.point > 0 ? '+' : ''}${formatOdds(bet.point)})`}
                       </div>
                       <Badge variant="outline" className="mt-1 text-xs">
-                        {bet.odds > 0 ? `+${bet.odds}` : bet.odds}
+                        {bet.odds > 0 ? `+${formatOdds(bet.odds)}` : formatOdds(bet.odds)}
                       </Badge>
                     </div>
                     <Button
