@@ -140,104 +140,15 @@ const registerRoutes = async (app: Express): Promise<Server> => {
     }
   });
 
-  // User bets endpoint for CompleteBettingSystem
-  app.get('/api/betting/user-bets', async (req, res) => {
-    try {
-      // Return user's betting history
-      res.json({ success: true, bets: [], count: 0 });
-    } catch (error) {
-      console.error('Error fetching user bets:', error);
-      res.status(500).json({ success: false, message: 'Failed to fetch user bets', bets: [] });
-    }
-  });
+  // REMOVED DUPLICATE: Use /api/bets/user (authenticated) instead for user betting history
 
-  // User balance endpoint
-  app.get('/api/user/balance', async (req, res) => {
-    try {
-      res.json({ success: true, balance: 1000 });
-    } catch (error) {
-      console.error('Error fetching user balance:', error);
-      res.status(500).json({ success: false, message: 'Failed to fetch balance', balance: 0 });
-    }
-  });
+  // REMOVED DUPLICATE: Use /api/user/cash-balance (authenticated) instead of hardcoded balance
 
-  // Place bet endpoint
-  app.post('/api/betting/place-bet', async (req, res) => {
-    try {
-      const { eventId, betType, selection, odds, amount } = req.body;
-      
-      if (!eventId || !betType || !selection || !odds || !amount) {
-        return res.status(400).json({ success: false, message: 'Missing required bet fields' });
-      }
+  // REMOVED DUPLICATE: Use /api/bets/place instead for authenticated, multi-currency betting
 
-      const bet = {
-        id: Date.now(),
-        eventId,
-        betType,
-        selection,
-        odds,
-        amount,
-        potentialPayout: amount * odds,
-        status: 'pending',
-        placedAt: new Date().toISOString()
-      };
+  // REMOVED DUPLICATE: Use /api/bets/place instead for authenticated, secure betting
 
-      console.log(`✅ Bet Placed: ${betType} on ${selection} for $${amount}`);
-      res.json({ success: true, bet, message: 'Bet placed successfully' });
-    } catch (error) {
-      console.error('Error placing bet:', error);
-      res.status(500).json({ success: false, message: 'Failed to place bet' });
-    }
-  });
-
-  // Direct Betting System
-  app.post('/api/bets', async (req, res) => {
-    try {
-      const { eventId, betType, pick, odds, amount, currency } = req.body;
-      const userId = req.headers['x-user-id'] || 'dev-user-001';
-
-      if (!eventId || !betType || !pick || !odds || !amount) {
-        return res.status(400).json({ success: false, message: 'Missing required bet fields' });
-      }
-
-      const potentialPayout = amount * odds;
-      const bet = {
-        id: Date.now(),
-        userId,
-        eventId: parseInt(eventId),
-        betType,
-        pick,
-        odds,
-        amount,
-        potentialPayout,
-        currency: currency || 'weparlay_cash',
-        status: 'pending',
-        placedAt: new Date().toISOString()
-      };
-
-      res.json({
-        success: true,
-        bet,
-        message: 'Bet placed successfully',
-        remainingBalance: 950
-      });
-    } catch (error) {
-      console.error('Bet placement error:', error);
-      res.status(500).json({ success: false, message: 'Failed to place bet' });
-    }
-  });
-
-  // Get user bets
-  app.get('/api/bets/user/:userId', async (req, res) => {
-    try {
-      const { userId } = req.params;
-      const bets = await storage.getBetsByUserId(userId);
-      res.json({ success: true, bets });
-    } catch (error) {
-      console.error('Error fetching user bets:', error);
-      res.status(500).json({ success: false, message: 'Failed to fetch bets' });
-    }
-  });
+  // REMOVED DUPLICATE: Use /api/bets/user (authenticated) instead of user ID parameter
 
   // Sports data endpoints
   app.get('/api/sports', async (req, res) => {

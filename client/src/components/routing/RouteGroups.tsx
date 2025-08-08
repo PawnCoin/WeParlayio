@@ -3,14 +3,13 @@ import { Route } from 'wouter';
 import AdminRoute from './AdminRoute';
 import LoadingFallback from './LoadingFallback';
 
-// Lazy load admin components for better performance
-const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
+// REMOVED UNUSED: AdminDashboard import - handled in main App.tsx instead
 const ManageUsers = lazy(() => import("@/pages/admin/ManageUsers"));
 const FinancialOverview = lazy(() => import("@/pages/admin/FinancialOverview"));
 const Analytics = lazy(() => import("@/pages/admin/Analytics"));
 const SimplePlatformSettings = lazy(() => import("@/pages/admin/SimplePlatformSettings"));
 const VisualComponentEditorPage = lazy(() => import("@/pages/admin/VisualComponentEditor"));
-const SocialMediaBots = lazy(() => import("@/pages/SocialMediaBots"));
+// REMOVED UNUSED: SocialMediaBots import - route moved to main App.tsx
 const AdminVerificationDashboard = lazy(() => import("@/components/AdminVerificationDashboard"));
 const SecurityDashboard = lazy(() => import("@/pages/admin/SecurityDashboard"));
 
@@ -21,16 +20,14 @@ const ApiTestPage = lazy(() => import("@/pages/ApiTestPage"));
 export function AdminRoutes() {
   return (
     <Suspense fallback={<LoadingFallback />}>
-      <Route path="/admin" component={(props) => <AdminRoute component={AdminDashboard} {...props} />} />
-      <Route path="/admin-dashboard" component={(props) => <AdminRoute component={AdminDashboard} {...props} />} />
+      {/* Admin dashboard route managed in main App.tsx */}
       <Route path="/users" component={(props) => <AdminRoute component={ManageUsers} {...props} />} />
-      <Route path="/admin/manage-users" component={(props) => <AdminRoute component={ManageUsers} {...props} />} />
+      {/* REMOVED DUPLICATE: /admin/manage-users - use /users instead */}
       <Route path="/admin/financial-overview" component={(props) => <AdminRoute component={FinancialOverview} {...props} />} />
-      <Route path="/admin/analytics" component={(props) => <AdminRoute component={Analytics} {...props} />} />
+      {/* REMOVED CONFLICT: /admin/analytics conflicts with /admin-analytics - use /admin-analytics instead */}
       <Route path="/admin/platform-settings" component={(props) => <AdminRoute component={SimplePlatformSettings} {...props} />} />
       <Route path="/admin/visual-component-editor" component={(props) => <AdminRoute component={VisualComponentEditorPage} {...props} />} />
-      <Route path="/social-media-bots" component={(props) => <AdminRoute component={SocialMediaBots} {...props} />} />
-      <Route path="/admin/social-media-dashboard" component={(props) => <AdminRoute component={SocialMediaBots} {...props} />} />
+      {/* REMOVED DUPLICATE: /admin/social-media-dashboard - use /social-media-bots instead */}
       <Route path="/admin/verification" component={(props) => <AdminRoute component={AdminVerificationDashboard} {...props} />} />
       <Route path="/admin/security" component={(props) => <AdminRoute component={SecurityDashboard} {...props} />} />
     </Suspense>

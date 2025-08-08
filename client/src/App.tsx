@@ -90,7 +90,6 @@ const UnifiedGaming = React.lazy(() => import("@/pages/UnifiedGaming"));
 const SocialMediaBots = React.lazy(() => import("@/pages/SocialMediaBots"));
 const AdminDashboard = React.lazy(() => import("@/pages/AdminDashboard"));
 const UserDirectory = React.lazy(() => import("@/pages/UserDirectory"));
-const SystemSettings = React.lazy(() => import("@/pages/SystemSettings"));
 const AdminAnalyticsDashboard = React.lazy(() => import("@/pages/AdminAnalyticsDashboard"));
 
 
@@ -167,10 +166,9 @@ function Router() {
       <Route path="/upgrade-tier" component={UpgradeTier} />
       
       {/* Admin/Management Routes with Suspense */}
+      {/* Admin Dashboard - Single route only */}
       <SuspenseRoute path="/admin-dashboard" component={AdminDashboard} />
-      <SuspenseRoute path="/user-dashboard" component={AdminDashboard} />
-      <SuspenseRoute path="/users" component={UserDirectory} />
-      <SuspenseRoute path="/system-settings" component={SystemSettings} />
+      {/* User Directory moved to admin routes */}
       <SuspenseRoute path="/admin-analytics" component={AdminAnalyticsDashboard} />
 
       {/* Lazy-loaded Feature Pages with SuspenseRoute */}

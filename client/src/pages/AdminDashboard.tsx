@@ -7,12 +7,22 @@ import { useQuery } from "@tanstack/react-query";
 import { 
   Settings, Users, DollarSign, BarChart3, Shield, Database,
   MessageSquare, Mail, Bell, Globe, Zap, Activity, TrendingUp,
-  Server, FileText, Lock, Eye, RefreshCw, AlertTriangle, Trophy
+  Server, FileText, Lock, Eye, RefreshCw, AlertTriangle, Trophy,
+  Download, Cpu, MemoryStick, CheckCircle, XCircle, Key
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function AdminDashboard() {
   const [activeSection, setActiveSection] = useState('overview');
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // System Health Check
   const { data: systemHealth } = useQuery({
@@ -37,6 +47,52 @@ export default function AdminDashboard() {
     queryKey: ['/api/admin/platform-settings'],
     initialData: {}
   });
+
+  // Admin Settings
+  const { data: adminSettings } = useQuery({
+    queryKey: ['/api/settings/admin'],
+    refetchInterval: 30000
+  });
+
+  // System Configuration
+  const { data: systemConfig } = useQuery({
+    queryKey: ['/api/settings/system'],
+    refetchInterval: 30000
+  });
+
+  // Update admin settings mutation
+  const updateAdminMutation = useMutation({
+    mutationFn: async (updates: any) => {
+      return await apiRequest('PUT', '/api/settings/admin', updates);
+    },
+    onSuccess: () => {
+      toast({ title: 'Settings updated successfully', variant: 'default' });
+      queryClient.invalidateQueries({ queryKey: ['/api/settings/admin'] });
+    },
+    onError: () => {
+      toast({ title: 'Failed to update settings', variant: 'destructive' });
+    }
+  });
+
+  const handleAdminSettingsUpdate = (key: string, value: any) => {
+    const currentSettings = (adminSettings as any)?.settings || {};
+    updateAdminMutation.mutate({ ...currentSettings, [key]: value });
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'healthy':
+      case 'operational':
+        return <Badge className="bg-green-500 text-white"><CheckCircle className="w-3 h-3 mr-1" />Healthy</Badge>;
+      case 'warning':
+        return <Badge className="bg-yellow-500 text-white"><AlertTriangle className="w-3 h-3 mr-1" />Warning</Badge>;
+      case 'critical':
+      case 'error':
+        return <Badge className="bg-red-500 text-white"><XCircle className="w-3 h-3 mr-1" />Critical</Badge>;
+      default:
+        return <Badge variant="outline">Unknown</Badge>;
+    }
+  };
 
   const AdminCard = ({ title, description, icon: Icon, onClick, status, value }: {
     title: string;
@@ -77,7 +133,7 @@ export default function AdminDashboard() {
           <Alert className="mb-6 border-green-200 bg-green-50">
             <Activity className="h-4 w-4" />
             <AlertDescription>
-              System Status: <strong>Online</strong> • Last Updated: {String((systemHealth as any)?.timestamp ? new Date((systemHealth as any).timestamp).toLocaleTimeString() : 'Unknown')}
+              System Status: <strong>Online</strong> • Last Updated: {(systemHealth as any)?.timestamp ? new Date((systemHealth as any).timestamp).toLocaleTimeString() : 'Unknown'}
             </AlertDescription>
           </Alert>
         )}
@@ -172,13 +228,13 @@ export default function AdminDashboard() {
                     <Users className="h-6 w-6 mb-2" />
                     User Directory
                   </Button>
-                  <Button className="h-20 flex-col" onClick={() => window.location.href = '/admin/user-analytics'}>
+                  <Button className="h-20 flex-col" onClick={() => window.location.href = '/admin-analytics'}>
                     <BarChart3 className="h-6 w-6 mb-2" />
                     User Analytics
                   </Button>
-                  <Button className="h-20 flex-col" onClick={() => window.open('/admin/support', '_blank')}>
+                  <Button className="h-20 flex-col" onClick={() => window.open('/system/notifications', '_blank')}>
                     <MessageSquare className="h-6 w-6 mb-2" />
-                    Support Tickets
+                    Support & Notifications
                   </Button>
                 </div>
               </CardContent>
@@ -198,11 +254,11 @@ export default function AdminDashboard() {
                     <DollarSign className="h-6 w-6 mb-2" />
                     Financial Overview
                   </Button>
-                  <Button className="h-20 flex-col" onClick={() => window.open('/admin/transactions', '_blank')}>
+                  <Button className="h-20 flex-col" onClick={() => window.open('/system/transactions', '_blank')}>
                     <FileText className="h-6 w-6 mb-2" />
                     Transaction History
                   </Button>
-                  <Button className="h-20 flex-col" onClick={() => window.open('/admin/payouts', '_blank')}>
+                  <Button className="h-20 flex-col" onClick={() => window.open('/system/payouts', '_blank')}>
                     <TrendingUp className="h-6 w-6 mb-2" />
                     Manage Payouts
                   </Button>
@@ -246,11 +302,11 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Button className="h-20 flex-col" onClick={() => window.open('/admin/system-health', '_blank')}>
+                  <Button className="h-20 flex-col" onClick={() => window.open('/system/health', '_blank')}>
                     <Activity className="h-6 w-6 mb-2" />
                     System Health
                   </Button>
-                  <Button className="h-20 flex-col" onClick={() => window.open('/admin/api-status', '_blank')}>
+                  <Button className="h-20 flex-col" onClick={() => window.open('/system/api-status', '_blank')}>
                     <Database className="h-6 w-6 mb-2" />
                     API Status
                   </Button>
@@ -258,7 +314,7 @@ export default function AdminDashboard() {
                     <Server className="h-6 w-6 mb-2" />
                     RapidAPI Testing
                   </Button>
-                  <Button className="h-20 flex-col" onClick={() => window.open('/admin/logs', '_blank')}>
+                  <Button className="h-20 flex-col" onClick={() => window.open('/system/logs', '_blank')}>
                     <Eye className="h-6 w-6 mb-2" />
                     System Logs
                   </Button>
@@ -279,7 +335,7 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <Button className="w-full justify-start" variant="outline" 
-                    onClick={() => window.open('/admin/social-media-dashboard', '_blank')}>
+                    onClick={() => window.open('/social-media-bots', '_blank')}>
                     <Globe className="h-4 w-4 mr-2" />
                     Social Media Dashboard
                   </Button>
@@ -381,23 +437,170 @@ export default function AdminDashboard() {
 
           {/* Settings Tab */}
           <TabsContent value="settings" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Admin Settings */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Shield className="w-5 h-5 mr-2 text-blue-600" />
+                    Platform Administration
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Platform Fees */}
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="platformFee" className="flex items-center">
+                        <DollarSign className="w-4 h-4 mr-2" />
+                        Platform Fee (%)
+                      </Label>
+                      <Input
+                        id="platformFee"
+                        type="number"
+                        step="0.01"
+                        value={((adminSettings as any)?.settings?.platformFee || 0.05) * 100}
+                        onChange={(e) => handleAdminSettingsUpdate('platformFee', parseFloat(e.target.value) / 100)}
+                        placeholder="5.0"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="maxWithdrawal" className="flex items-center">
+                        <DollarSign className="w-4 h-4 mr-2" />
+                        Max Withdrawal Limit
+                      </Label>
+                      <Input
+                        id="maxWithdrawal"
+                        type="number"
+                        value={(adminSettings as any)?.settings?.maxWithdrawalLimit || 10000}
+                        onChange={(e) => handleAdminSettingsUpdate('maxWithdrawalLimit', parseFloat(e.target.value))}
+                        placeholder="10000"
+                      />
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Platform Controls */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Platform Controls</h3>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label className="text-base">Maintenance Mode</Label>
+                        <p className="text-sm text-gray-600">Temporarily disable platform access</p>
+                      </div>
+                      <Switch
+                        checked={(adminSettings as any)?.settings?.maintenanceMode || false}
+                        onCheckedChange={(checked) => handleAdminSettingsUpdate('maintenanceMode', checked)}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label className="text-base">User Registration</Label>
+                        <p className="text-sm text-gray-600">Allow new users to register</p>
+                      </div>
+                      <Switch
+                        checked={(adminSettings as any)?.settings?.registrationEnabled ?? true}
+                        onCheckedChange={(checked) => handleAdminSettingsUpdate('registrationEnabled', checked)}
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* System Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Server className="w-5 h-5 mr-2 text-green-600" />
+                    System Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="flex items-center"><Globe className="w-4 h-4 mr-2" />Environment:</span>
+                    <Badge variant="outline">{(systemConfig as any)?.config?.environment || 'development'}</Badge>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="flex items-center"><Cpu className="w-4 h-4 mr-2" />Uptime:</span>
+                    <span>{Math.floor(((systemConfig as any)?.config?.uptime || 0) / 3600)}h {Math.floor((((systemConfig as any)?.config?.uptime || 0) % 3600) / 60)}m</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="flex items-center"><Database className="w-4 h-4 mr-2" />Database:</span>
+                    {getStatusBadge((systemConfig as any)?.config?.databaseConnected ? 'healthy' : 'critical')}
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="flex items-center"><Activity className="w-4 h-4 mr-2" />System Health:</span>
+                    {getStatusBadge((systemConfig as any)?.config?.systemHealth || 'operational')}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* API Configuration */}
             <Card>
               <CardHeader>
-                <CardTitle>Platform Settings</CardTitle>
-                <CardDescription>Configure platform-wide settings and preferences</CardDescription>
+                <CardTitle className="flex items-center">
+                  <Key className="w-5 h-5 mr-2 text-purple-600" />
+                  API Configuration Status
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span>Configured APIs:</span>
+                  <Badge className="bg-blue-500 text-white">
+                    {(systemConfig as any)?.config?.apis?.totalConfigured || 0} / {(systemConfig as any)?.config?.apis?.totalRequired || 0}
+                  </Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Health Status:</span>
+                  {getStatusBadge((systemConfig as any)?.config?.apis?.healthStatus || 'warning')}
+                </div>
+                
+                {(systemConfig as any)?.config?.apis?.configured?.length > 0 && (
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold">Working APIs:</Label>
+                    <div className="flex flex-wrap gap-1">
+                      {(systemConfig as any).config.apis.configured.map((api: string) => (
+                        <Badge key={api} className="bg-green-500 text-white text-xs">{api}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {(systemConfig as any)?.config?.apis?.missing?.length > 0 && (
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold">Missing APIs:</Label>
+                    <div className="flex flex-wrap gap-1">
+                      {(systemConfig as any).config.apis.missing.map((api: string) => (
+                        <Badge key={api} className="bg-red-500 text-white text-xs">{api}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Actions</CardTitle>
+                <CardDescription>Advanced administrative functions</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Button className="h-20 flex-col" onClick={() => window.open('/admin/platform-settings', '_blank')}>
-                    <Settings className="h-6 w-6 mb-2" />
+                  <Button variant="outline" onClick={() => window.open('/admin/platform-settings', '_blank')}>
+                    <Settings className="h-4 w-4 mr-2" />
                     Platform Config
                   </Button>
-                  <Button className="h-20 flex-col" onClick={() => window.open('/admin/security', '_blank')}>
-                    <Shield className="h-6 w-6 mb-2" />
+                  <Button variant="outline" onClick={() => window.open('/admin/security', '_blank')}>
+                    <Shield className="h-4 w-4 mr-2" />
                     Security Settings
                   </Button>
-                  <Button className="h-20 flex-col" onClick={() => window.open('/admin/notifications', '_blank')}>
-                    <Bell className="h-6 w-6 mb-2" />
+                  <Button variant="outline" onClick={() => window.open('/system/notifications', '_blank')}>
+                    <Bell className="h-4 w-4 mr-2" />
                     Notifications
                   </Button>
                 </div>

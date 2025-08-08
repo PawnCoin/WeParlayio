@@ -1,7 +1,7 @@
 import { ReactNode, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
-import { canUserAccess, SubscriptionTier } from '../../../shared/tierSystem';
+import { canUserAccess, SubscriptionTier, TierFeatures } from '@shared/tierSystem';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Shield, Crown, Lock, User } from 'lucide-react';
@@ -12,7 +12,7 @@ interface ProtectedRouteProps {
   requireAuth?: boolean;
   requireTier?: SubscriptionTier;
   requireAdmin?: boolean;
-  requiredFeature?: string;
+  requiredFeature?: keyof TierFeatures;
   redirectTo?: string;
   fallback?: ReactNode;
 }

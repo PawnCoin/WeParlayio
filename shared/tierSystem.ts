@@ -15,6 +15,7 @@ export type TierFeatures = {
   socialFeatures: boolean;
   gamingAccess: boolean;
   tournamentAccess: boolean;
+  premiumFeatures: boolean;
 }
 
 const TIER_FEATURES: Record<SubscriptionTier, TierFeatures> = {
@@ -26,7 +27,8 @@ const TIER_FEATURES: Record<SubscriptionTier, TierFeatures> = {
     customBets: false,
     socialFeatures: true,
     gamingAccess: false,
-    tournamentAccess: false
+    tournamentAccess: false,
+    premiumFeatures: false
   },
   [SubscriptionTier.SILVER]: {
     liveStreamingAccess: true,
@@ -36,7 +38,8 @@ const TIER_FEATURES: Record<SubscriptionTier, TierFeatures> = {
     customBets: false,
     socialFeatures: true,
     gamingAccess: true,
-    tournamentAccess: true
+    tournamentAccess: true,
+    premiumFeatures: true
   },
   [SubscriptionTier.GOLD]: {
     liveStreamingAccess: true,
@@ -46,7 +49,8 @@ const TIER_FEATURES: Record<SubscriptionTier, TierFeatures> = {
     customBets: true,
     socialFeatures: true,
     gamingAccess: true,
-    tournamentAccess: true
+    tournamentAccess: true,
+    premiumFeatures: true
   },
   [SubscriptionTier.PLATINUM]: {
     liveStreamingAccess: true,
@@ -56,12 +60,14 @@ const TIER_FEATURES: Record<SubscriptionTier, TierFeatures> = {
     customBets: true,
     socialFeatures: true,
     gamingAccess: true,
-    tournamentAccess: true
+    tournamentAccess: true,
+    premiumFeatures: true
   }
 };
 
-export function canUserAccess(userTier: SubscriptionTier, feature: keyof TierFeatures): boolean {
-  return TIER_FEATURES[userTier][feature];
+export function canUserAccess(userTier: SubscriptionTier, feature: keyof TierFeatures | string): boolean {
+  if (feature === 'basicAccess') return true;
+  return TIER_FEATURES[userTier][feature as keyof TierFeatures];
 }
 
 export function getTierFeatures(tier: SubscriptionTier): TierFeatures {
