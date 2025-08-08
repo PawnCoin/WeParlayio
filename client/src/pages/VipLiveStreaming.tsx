@@ -16,8 +16,8 @@ export default function VipLiveStreaming() {
   const { user } = useAuth();
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Check VIP access
-  const hasVipAccess = user?.tier === 'platinum' || user?.tier === 'diamond' || user?.isAdmin;
+  // Check VIP access - Silver tier and above now have live streaming access
+  const hasVipAccess = user?.tier === 'silver' || user?.tier === 'gold' || user?.tier === 'platinum' || user?.tier === 'diamond' || user?.isAdmin;
 
   if (!hasVipAccess) {
     return (

@@ -1,10 +1,17 @@
 import { Request, Response, Router } from 'express';
+import { isAuthenticated } from '../replitAuth';
 
 interface IPTVChannel {
+  id: string;
   name: string;
   url: string;
   group: string;
-  logo: string;
+  logo?: string;
+  category: string;
+  quality?: string;
+  language?: string;
+  country?: string;
+  isVip?: boolean;
 }
 
 // Working sports channels with verified streaming URLs

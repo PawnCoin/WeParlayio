@@ -30,6 +30,7 @@ import feedbackRoutes from "./routes/feedbackRoutes";
 import yahooFantasyRoutes from "./routes/yahooFantasyRoutes";
 import socialMediaRoutes from "./routes/socialMediaRoutes";
 import sportsCategories from "./routes/sportsCategories";
+import tierRoutes from "./routes/tierRoutes";
 
 import iptvRoutes from "./routes/iptv";
 import iptvProxyRoutes from "./routes/iptv-proxy";
@@ -77,6 +78,7 @@ const registerRoutes = async (app: Express): Promise<Server> => {
   app.use('/api/sports-categories', sportsCategories);
   app.use('/api/bet-settlement', betSettlementRoutes);
   app.use('/api/auth', authRoutes);
+  app.use('/api/tier', tierRoutes);
   // Gaming routes registered via registerGamingRoutes function below
   app.use('/api/unified-sports', unifiedSportsRoutes);
   app.use('/api/websocket-polling', websocketPollingRoutes);
