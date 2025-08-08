@@ -28,6 +28,7 @@ import WalletNotifications from "@/components/wallet/WalletNotifications";
 import FaviconOptimization from "@/components/shared/FaviconOptimization";
 import SocialMediaOptimization from "@/components/shared/SocialMediaOptimization";
 import UserFriendlyDisconnection from "@/components/wallet/UserFriendlyDisconnection";
+import MobileNavigation from "@/components/mobile/MobileNavigation";
 import { useBetting } from "@/contexts/BettingContext";
 import { useBetSlip } from "@/contexts/BetSlipContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -571,6 +572,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           <FeedbackButton variant="floating" />
         </div>
       </div>
+      <MobileNavigation />
     </div>
   );
 };

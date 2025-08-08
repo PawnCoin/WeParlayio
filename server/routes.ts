@@ -31,6 +31,8 @@ import yahooFantasyRoutes from "./routes/yahooFantasyRoutes";
 import socialMediaRoutes from "./routes/socialMediaRoutes";
 import sportsCategories from "./routes/sportsCategories";
 import tierRoutes from "./routes/tierRoutes";
+import paymentRoutesNoStripe from "./routes/paymentRoutesNoStripe";
+import settingsRouter from "./routes/settingsRoutes";
 
 import iptvRoutes from "./routes/iptv";
 import iptvProxyRoutes from "./routes/iptv-proxy";
@@ -60,6 +62,7 @@ import {
 import { esportsApiService } from "./services/esportsApiService";
 import { allSportsApiService } from "./services/allSportsApiService";
 import { createCashAppPayment, getCashAppPaymentStatus, initiateCashAppPayout } from "./cashapp";
+import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
 import { youtubeRoutes } from "./youtube-api";
 import { iptvService } from "./iptv-service";
 import { registerGamingRoutes } from "./routes/gamingRoutes";
@@ -79,6 +82,8 @@ const registerRoutes = async (app: Express): Promise<Server> => {
   app.use('/api/bet-settlement', betSettlementRoutes);
   app.use('/api/auth', authRoutes);
   app.use('/api/tier', tierRoutes);
+  app.use('/api/payments', paymentRoutesNoStripe);
+  app.use('/api/settings', settingsRouter);
   // Gaming routes registered via registerGamingRoutes function below
   app.use('/api/unified-sports', unifiedSportsRoutes);
   app.use('/api/websocket-polling', websocketPollingRoutes);
@@ -824,6 +829,16 @@ const registerRoutes = async (app: Express): Promise<Server> => {
       res.status(500).json({ success: false, message: 'Failed to update balance' });
     }
   });
+
+  // PayPal payment routes
+  app.post('/api/paypal/create-order', isAuthenticated, createPaypalOrder);
+  app.post('/api/paypal/capture/:orderID', isAuthenticated, capturePaypalOrder);
+  app.get('/api/paypal/config', isAuthenticated, loadPaypalDefault);
+
+  // CashApp payment routes
+  app.post('/api/cashapp/payment', isAuthenticated, createCashAppPayment);
+  app.get('/api/cashapp/payment/:paymentId/status', isAuthenticated, getCashAppPaymentStatus);
+  app.post('/api/cashapp/payout', isAuthenticated, initiateCashAppPayout);
 
   // Settle bet endpoint (admin access for manual settlement, automated later)
   app.post('/api/bets/:betId/settle', isAuthenticated, async (req: any, res) => {

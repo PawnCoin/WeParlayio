@@ -11,6 +11,7 @@ import UserSatisfactionWidget from "@/components/UserSatisfactionWidget";
 import LoadingFallback from "@/components/routing/LoadingFallback";
 import SuspenseRoute from "@/components/routing/SuspenseRoute";
 import { AdminRoutes, DevRoutes, SystemRoutes } from "@/components/routing/RouteGroups";
+import RouteGuard from "@/components/auth/RouteGuard";
 
 // Core page imports
 import NotFound from "@/pages/not-found";
@@ -89,6 +90,8 @@ const UnifiedGaming = React.lazy(() => import("@/pages/UnifiedGaming"));
 const SocialMediaBots = React.lazy(() => import("@/pages/SocialMediaBots"));
 const AdminDashboard = React.lazy(() => import("@/pages/AdminDashboard"));
 const UserDirectory = React.lazy(() => import("@/pages/UserDirectory"));
+const SystemSettings = React.lazy(() => import("@/pages/SystemSettings"));
+const AdminAnalyticsDashboard = React.lazy(() => import("@/pages/AdminAnalyticsDashboard"));
 
 
 // Development/Testing imports (conditional)
@@ -167,6 +170,8 @@ function Router() {
       <SuspenseRoute path="/admin-dashboard" component={AdminDashboard} />
       <SuspenseRoute path="/user-dashboard" component={AdminDashboard} />
       <SuspenseRoute path="/users" component={UserDirectory} />
+      <SuspenseRoute path="/system-settings" component={SystemSettings} />
+      <SuspenseRoute path="/admin-analytics" component={AdminAnalyticsDashboard} />
 
       {/* Lazy-loaded Feature Pages with SuspenseRoute */}
       <SuspenseRoute path="/fantasy" component={FantasySportsHub} />

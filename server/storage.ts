@@ -130,6 +130,18 @@ export interface IStorage {
   getUserFriends(userId: string): Promise<any[]>;
   getPendingFriendRequests(userId: string): Promise<any[]>;
   searchUsers(query: string, currentUserId: string): Promise<any[]>;
+  
+  // Platform settings and configuration management
+  getPlatformSetting(key: string): Promise<any>;
+  setPlatformSetting(key: string, value: any): Promise<any>;
+  getAllPlatformSettings(): Promise<any[]>;
+  getAdminSettings(): Promise<any>;
+  updateAdminSettings(settings: any): Promise<any>;
+  getSystemConfiguration(): Promise<any>;
+  updateSystemConfiguration(config: any): Promise<any>;
+  getOwnerBankAccount(): Promise<any>;
+  updateUserStatus(userId: string, status: string): Promise<User | null>;
+  getUserGrowthMetrics(range: string): Promise<any[]>;
 }
 
 // Simple memory storage implementation
@@ -320,6 +332,102 @@ export class MemStorage implements IStorage {
 
   async getBettingChallengeByUuid(uuid: string): Promise<BettingChallenge | undefined> {
     return this.challenges.get(uuid);
+  }
+
+  // Platform settings and configuration management
+  private platformSettings = new Map<string, any>();
+  private adminSettings: any = {
+    platformFee: 0.05,
+    maxWithdrawalLimit: 10000,
+    minWithdrawalAmount: 20,
+    maintenanceMode: false,
+    registrationEnabled: true,
+    apiKeysValid: true
+  };
+  
+  async getPlatformSetting(key: string): Promise<any> {
+    return this.platformSettings.get(key) || null;
+  }
+  
+  async setPlatformSetting(key: string, value: any): Promise<any> {
+    const setting = { key, value, updatedAt: new Date() };
+    this.platformSettings.set(key, setting);
+    return setting;
+  }
+  
+  async getAllPlatformSettings(): Promise<any[]> {
+    return Array.from(this.platformSettings.values());
+  }
+  
+  async getAdminSettings(): Promise<any> {
+    return { ...this.adminSettings, updatedAt: new Date() };
+  }
+  
+  async updateAdminSettings(settings: any): Promise<any> {
+    this.adminSettings = { ...this.adminSettings, ...settings, updatedAt: new Date() };
+    return this.adminSettings;
+  }
+  
+  async getSystemConfiguration(): Promise<any> {
+    return {
+      environment: process.env.NODE_ENV || 'development',
+      databaseConnected: true,
+      apiKeysConfigured: {
+        rapidapi: !!process.env.RAPIDAPI_KEY,
+        theOddsApi: !!process.env.THE_ODDS_API_KEY,
+        gridApi: !!process.env.GRID_API_KEY
+      },
+      systemHealth: 'operational',
+      uptime: process.uptime(),
+      lastUpdated: new Date()
+    };
+  }
+  
+  async updateSystemConfiguration(config: any): Promise<any> {
+    // In real implementation, this would update system config
+    return { ...config, updated: true, timestamp: new Date() };
+  }
+  
+  async getOwnerBankAccount(): Promise<any> {
+    // Return mock bank account for demo
+    return {
+      id: 1,
+      userId: 'admin-owner',
+      accountName: 'WeParlay Business Account',
+      bankName: 'Example Bank',
+      accountNumber: '****1234',
+      routingNumber: '****5678',
+      isDefault: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+  }
+  
+  async updateUserStatus(userId: string, status: string): Promise<User | null> {
+    const user = this.users.get(userId);
+    if (!user) return null;
+    
+    const updatedUser = { ...user, status, updatedAt: new Date() };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+  
+  async getUserGrowthMetrics(range: string): Promise<any[]> {
+    // Generate mock growth data based on range
+    const days = range === '7d' ? 7 : range === '30d' ? 30 : 90;
+    const data = [];
+    
+    for (let i = days; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      data.push({
+        date: date.toISOString().split('T')[0],
+        newUsers: Math.floor(Math.random() * 10) + 1,
+        totalUsers: 150 + (days - i) * 2,
+        activeUsers: Math.floor(Math.random() * 30) + 20
+      });
+    }
+    return data;
   }
 
   // WeParlay Cash system implementations

@@ -9,11 +9,10 @@ import {
   Zap,
   Lock
 } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
+import { StreamingRoute } from '@/components/auth/ProtectedRoute';
 import IPTVPlayerOriginal from '@/components/streaming/IPTVPlayerOriginal';
 
 export default function VipLiveStreaming() {
-  const { user } = useAuth();
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Check VIP access - Silver tier and above now have live streaming access
@@ -40,7 +39,8 @@ export default function VipLiveStreaming() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 p-4">
+    <StreamingRoute>
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 p-4">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -108,5 +108,6 @@ export default function VipLiveStreaming() {
         </Card>
       </div>
     </div>
+    </StreamingRoute>
   );
 }

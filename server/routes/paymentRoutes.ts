@@ -17,11 +17,11 @@ const TIER_PRICES_CENTS = {
 // Payment method schema
 const createPaymentIntentSchema = z.object({
   tier: z.enum([SubscriptionTier.SILVER, SubscriptionTier.GOLD, SubscriptionTier.PLATINUM]),
-  paymentMethod: z.enum(['stripe', 'paypal']),
+  paymentMethod: z.enum(['paypal', 'crypto', 'cashapp']),
   currency: z.string().default('usd')
 });
 
-// Create Stripe payment intent
+// Create payment intent
 router.post('/create-payment-intent', isAuthenticated, async (req: any, res) => {
   try {
     const userId = req.user?.claims?.sub;
