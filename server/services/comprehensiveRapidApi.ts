@@ -26,25 +26,28 @@ export class ComprehensiveRapidApiService {
     }
   }
 
-  // Football (Soccer) API Integration with Smart Rate Limiting
+  // 🔧 AUDIT ITEM 1: Football API with aggressive caching and rate limiting
   async getFootballFixtures(): Promise<any[]> {
-    if (!this.apiKey) return [];
+    if (!this.apiKey) {
+      console.log('🔑 RapidAPI key missing - using cache-only mode');
+      return [];
+    }
     
     const endpointName = 'rapidapi-football';
-    const cacheKey = 'football-fixtures-live';
+    const cacheKey = 'rapidapi-football-fixtures';
     
-    // Check cache first
+    // PRIORITY 1: Check cache first (extended TTL)
     const cached = smartRateLimiter.getCached(cacheKey);
     if (cached) {
-      console.log('✅ Using cached football data');
+      console.log('✅ CACHE HIT: Using cached football data (API protected)');
       return cached;
     }
     
-    // Check rate limits
+    // PRIORITY 2: Strict rate limit check before ANY API call
     if (!smartRateLimiter.canMakeRequest(endpointName)) {
       const backoffTime = smartRateLimiter.getBackoffTime(endpointName);
-      console.log(`⏳ Football API rate limited, backing off for ${backoffTime}ms`);
-      return [];
+      console.log(`⛔ Football API blocked: ${Math.round(backoffTime / 1000)}s remaining`);
+      return []; // Return empty instead of hitting API
     }
     
     try {
@@ -69,9 +72,7 @@ export class ComprehensiveRapidApiService {
       const data = await response.json();
       const fixtures = data.response?.slice(0, 15) || [];
       
-      console.log(`✅ RapidAPI Football: ${fixtures.length} live fixtures retrieved`);
-      
-      return fixtures.map((fixture: any) => ({
+      const mappedFixtures = fixtures.map((fixture: any) => ({
         id: `rapid_football_${fixture.fixture.id}`,
         sport: 'Football',
         homeTeam: fixture.teams.home.name,
@@ -86,8 +87,20 @@ export class ComprehensiveRapidApiService {
         },
         source: 'RapidAPI'
       }));
+      
+      // 🔧 AUDIT ITEM 1: Cache with extended TTL (10 minutes) to prevent API overuse
+      smartRateLimiter.setCached(cacheKey, mappedFixtures, 600000); // 10 minutes
+      console.log(`✅ Football: ${mappedFixtures.length} fixtures cached for 10 min`);
+      
+      return mappedFixtures;
     } catch (error) {
-      console.error('RapidAPI Football error:', error);
+      console.error('🚨 RapidAPI Football error:', error);
+      
+      // If it's a 429 error, record it for aggressive backoff
+      if (error.message && error.message.includes('429')) {
+        smartRateLimiter.recordRateLimit(endpointName);
+      }
+      
       return [];
     }
   }

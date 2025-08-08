@@ -56,22 +56,21 @@ export class SmartRateLimiter {
     endpoint.backoffUntil = 0;
   }
 
-  // Record a rate limit failure (429 error)
+  // Record a rate limit failure (429 error) with aggressive backoff
   recordRateLimit(endpointName: string): void {
     const endpoint = this.getEndpoint(endpointName);
     const now = Date.now();
     
     endpoint.consecutiveFailures++;
     
-    // Calculate exponential backoff
-    const backoffMs = Math.min(
-      this.config.minBackoffMs * Math.pow(this.config.backoffMultiplier, endpoint.consecutiveFailures - 1),
-      this.config.maxBackoffMs
-    );
+    // Calculate exponential backoff with more aggressive penalties
+    const baseBackoff = this.config.minBackoffMs * Math.pow(this.config.backoffMultiplier, endpoint.consecutiveFailures);
+    const jitter = Math.random() * 0.3 * baseBackoff; // Add jitter to prevent thundering herd
+    const backoffMs = Math.min(baseBackoff + jitter, this.config.maxBackoffMs);
     
     endpoint.backoffUntil = now + backoffMs;
     
-    console.log(`🚫 Rate limit hit for ${endpointName}. Backing off for ${backoffMs}ms`);
+    console.log(`🚫 AGGRESSIVE BACKOFF for ${endpointName}: ${Math.round(backoffMs / 1000)}s (failure #${endpoint.consecutiveFailures})`);
   }
 
   // Get cached response if available and not expired
@@ -88,13 +87,14 @@ export class SmartRateLimiter {
     return cached.data;
   }
 
-  // Store response in cache
-  setCached(key: string, data: any, ttlMs: number = 300000): void {
+  // Store response in cache with extended TTL for API protection
+  setCached(key: string, data: any, ttlMs: number = 600000): void { // Default 10 minutes
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
       ttl: ttlMs
     });
+    console.log(`💾 Smart Cache SET: ${key} (TTL: ${ttlMs / 1000}s)`);
   }
 
   // Get time until next allowed request
@@ -155,11 +155,11 @@ export class SmartRateLimiter {
   }
 }
 
-// Global smart rate limiter instance
+// 🔧 AUDIT ITEM 1: Ultra-conservative global smart rate limiter to prevent 429 errors
 export const smartRateLimiter = new SmartRateLimiter({
-  maxRequests: 8, // Conservative limit
-  windowMs: 60000, // 1 minute window
-  backoffMultiplier: 2,
-  maxBackoffMs: 600000, // 10 minutes max backoff
-  minBackoffMs: 2000 // 2 second min backoff
+  maxRequests: 3, // Ultra-conservative limit for RapidAPI
+  windowMs: 120000, // 2 minute window
+  backoffMultiplier: 3, // More aggressive backoff
+  maxBackoffMs: 1800000, // 30 minutes max backoff
+  minBackoffMs: 5000 // 5 second min backoff
 });
