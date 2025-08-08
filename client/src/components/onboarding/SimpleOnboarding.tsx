@@ -14,31 +14,31 @@ const SimpleOnboarding: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   
-  // Tour steps configuration
+  // Updated tour steps for current WeParlay platform
   const steps: TourStep[] = [
     {
-      title: "Welcome to WeParlay.io! 🎉",
-      description: "Let's take a quick tour to help you get started with our platform. We'll show you the basics of sports betting and how to place your first bet.",
+      title: "Welcome to WeParlay! 🎉",
+      description: "Your premier destination for sports betting with live odds, VIP features, and social betting challenges. Let's show you around!",
       icon: <Lightbulb className="h-8 w-8 text-yellow-400" />
     },
     {
-      title: "Connect Your Wallet",
-      description: "Click the 'Connect Wallet' button in the top right to login with your crypto wallet or social media account.",
-      icon: <User className="h-8 w-8 text-blue-500" />
-    },
-    {
-      title: "Browse Live Events",
-      description: "Check out the latest sports events happening right now. You can place bets on ongoing games in real-time.",
+      title: "Explore Sports & Odds",
+      description: "Navigate to 'Sports' or 'Betting Hub' in the sidebar to see live odds for NFL, NBA, MLB, NHL and more. All odds update in real-time!",
       icon: <DollarSign className="h-8 w-8 text-green-500" />
     },
     {
-      title: "Build Your Bet Slip",
-      description: "Add bets to your slip by clicking on odds you want to bet on. Combine multiple selections for bigger potential payouts!",
+      title: "Place Your Bets",
+      description: "Click on any odds to add them to your bet slip. Build parlays, set your amount, and place bets with your $1,000,000 WeParlay Cash balance!",
       icon: <Trophy className="h-8 w-8 text-purple-500" />
     },
     {
-      title: "Track Your Bets",
-      description: "After placing a bet, track your bets in the My Bets section. You'll see live updates as the games progress.",
+      title: "VIP Features & Live Streaming",
+      description: "Access VIP live streaming with 296+ sports channels, exclusive tournaments, and advanced analytics. Upgrade your tier for premium features!",
+      icon: <User className="h-8 w-8 text-blue-500" />
+    },
+    {
+      title: "Track Everything",
+      description: "Monitor your bets in 'My Bets', check your balance, and join head-to-head challenges with other users. Good luck!",
       icon: <History className="h-8 w-8 text-orange-500" />
     }
   ];

@@ -65,9 +65,8 @@ import MobileVoiceBetting from "@/components/mobile/MobileVoiceBetting";
 import { CurrencyModeProvider } from "./contexts/CurrencyModeContext";
 import { TeamThemeProvider } from "./contexts/TeamThemeContext";
 import { BetSlipProvider } from "./contexts/BetSlipContext";
-import { OnboardingProvider, useOnboarding } from "./contexts/OnboardingContext";
+import { OnboardingProvider } from "./contexts/OnboardingContext";
 import { BettingProvider } from "./contexts/BettingContext";
-import InteractiveOnboardingWizard from "./components/onboarding/InteractiveOnboardingWizard";
 import ErrorBoundary from "./components/ErrorBoundary";
 
 // Lazy load less critical pages
@@ -223,8 +222,6 @@ function Router() {
 }
 
 function AppContent() {
-  const { showOnboarding, completeOnboarding, skipOnboarding } = useOnboarding();
-
   return (
     <>
       <Toaster />
@@ -239,14 +236,6 @@ function AppContent() {
       
       {/* User satisfaction monitoring widget */}
       <UserSatisfactionWidget />
-
-      {/* Interactive Onboarding Wizard for new users */}
-      {showOnboarding && (
-        <InteractiveOnboardingWizard
-          onComplete={completeOnboarding}
-          onSkip={skipOnboarding}
-        />
-      )}
     </>
   );
 }
@@ -278,17 +267,15 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <OnboardingProvider>
-          <CurrencyModeProvider>
-            <TeamThemeProvider>
-              <BetSlipProvider>
-                <BettingProvider>
-                  <AppContent />
-                </BettingProvider>
-              </BetSlipProvider>
-            </TeamThemeProvider>
-          </CurrencyModeProvider>
-        </OnboardingProvider>
+        <CurrencyModeProvider>
+          <TeamThemeProvider>
+            <BetSlipProvider>
+              <BettingProvider>
+                <AppContent />
+              </BettingProvider>
+            </BetSlipProvider>
+          </TeamThemeProvider>
+        </CurrencyModeProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
