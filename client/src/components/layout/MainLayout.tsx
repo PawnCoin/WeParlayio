@@ -555,18 +555,20 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <Footer />
 
       {/* Bottom Right Corner - Professionally Organized */}
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 items-end">
-        {/* Feedback Button - Top */}
-        <FeedbackButton variant="floating" />
-        
-        {/* System Status - Middle */}
-        <div className="bg-black/10 backdrop-blur-sm rounded-lg p-2 shadow-lg">
+      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-3 items-end">
+        {/* System Status - Top (most important) */}
+        <div className="bg-black/20 backdrop-blur-sm rounded-lg p-2 shadow-xl border border-white/10">
           <SystemStatusIndicator />
         </div>
-
-        {/* Quick Navigation - Bottom */}
-        <div className="bg-black/10 backdrop-blur-sm rounded-lg p-2 shadow-lg">
+        
+        {/* Quick Navigation - Middle */}
+        <div className="bg-black/20 backdrop-blur-sm rounded-lg p-2 shadow-xl border border-white/10">
           <QuickNavButton />
+        </div>
+
+        {/* Feedback Button - Bottom */}
+        <div className="transform transition-transform hover:scale-105">
+          <FeedbackButton variant="floating" />
         </div>
       </div>
     </div>

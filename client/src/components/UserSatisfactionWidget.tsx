@@ -70,7 +70,7 @@ const UserSatisfactionWidget: React.FC = () => {
   if (!showWidget) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 w-80">
+    <div className="fixed bottom-20 right-4 z-50 w-80">
       <Card className="shadow-lg border-2 border-primary/20">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-lg">

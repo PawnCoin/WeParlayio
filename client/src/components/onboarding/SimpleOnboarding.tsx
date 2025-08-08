@@ -85,9 +85,9 @@ const SimpleOnboarding: React.FC = () => {
 
   return (
     <>
-      {/* Tour Guide Button - Fixed at bottom right */}
+      {/* Tour Guide Button - Positioned left of other buttons */}
       <motion.div 
-        className="fixed bottom-4 right-4 z-50"
+        className="fixed bottom-4 right-20 z-50"
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 3 }}
@@ -95,6 +95,7 @@ const SimpleOnboarding: React.FC = () => {
         <Button 
           onClick={restartTour} 
           className="bg-blue-600 hover:bg-blue-700 rounded-full h-12 w-12 p-0 shadow-lg"
+          title="Take Platform Tour"
         >
           <Lightbulb className="h-6 w-6" />
         </Button>
