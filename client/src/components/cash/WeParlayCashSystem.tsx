@@ -285,7 +285,6 @@ const WeParlayCashSystem: React.FC = () => {
             Virtual currency for practice betting - cannot be converted to real money
           </CardDescription>
         </CardHeader>
-        </CardHeader>
         
         <CardContent className="pt-2">
           <div className="mb-4">

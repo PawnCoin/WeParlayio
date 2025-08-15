@@ -1,5 +1,4 @@
 
-<line_number>1</line_number>
 // ESPN Asset Service - Server-side asset management and caching
 import fetch from 'node-fetch';
 

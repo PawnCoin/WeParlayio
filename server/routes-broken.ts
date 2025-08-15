@@ -4960,4 +4960,6 @@ ${streamUrl}
   console.log('⚠️ WebSocket service disabled - Live streaming will work without real-time features');
 
   return httpServer;
-}export default registerRoutes;
+}
+
+export default registerRoutes;
