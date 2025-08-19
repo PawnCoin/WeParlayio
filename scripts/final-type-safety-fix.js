@@ -75,7 +75,7 @@ databaseContent = databaseContent.replace(/knownIssues\.status/g, 'knownIssues.a
 
 // Remove duplicate function implementations
 const duplicateFunctions = [
-  /async getWeparlayCashTransactions\(userId: string\): Promise<any\[\]> \{[\s\S]*?\n  \}/g
+  /async getWeparlayCashTransactions\(userId: string\): Promise<any\[\]> \{[\s\S]*?\n {2}\}/g
 ];
 
 duplicateFunctions.forEach(pattern => {

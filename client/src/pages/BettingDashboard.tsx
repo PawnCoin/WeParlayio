@@ -52,7 +52,7 @@ const BettingDashboard: React.FC = () => {
     // Create a mixed array by taking events from each sport in round-robin fashion
     const sportKeys = Object.keys(groupedBySport);
     const mixedEvents: any[] = [];
-    let maxLength = Math.max(...Object.values(groupedBySport).map((arr: any[]) => arr.length));
+    const maxLength = Math.max(...Object.values(groupedBySport).map((arr: any[]) => arr.length));
     
     for (let i = 0; i < maxLength; i++) {
       for (const sport of sportKeys) {

@@ -28,7 +28,7 @@ const databaseFixes = [
   },
   // Fix duplicate method implementations
   {
-    search: /async getWeparlayCashTransactions\(userId: string\): Promise<any\[\]> \{[\s\S]*?\n  \}/g,
+    search: /async getWeparlayCashTransactions\(userId: string\): Promise<any\[\]> \{[\s\S]*?\n {2}\}/g,
     replace: ''
   },
   // Fix betting challenge query issues

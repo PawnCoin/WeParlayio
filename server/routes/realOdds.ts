@@ -154,7 +154,7 @@ export async function getRealOddsData(req: Request, res: Response) {
     const systemStatus = apiResilienceManager.getSystemStatus();
     console.log(`📊 System Status: Emergency Mode: ${systemStatus.emergencyMode}`);
 
-    let apiResults = {
+    const apiResults = {
       theOdds: [],
       rapidApi: [],
       espn: [],

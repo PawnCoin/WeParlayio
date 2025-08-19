@@ -189,7 +189,7 @@ export const sendEmail = async (options: EmailOptions): Promise<boolean> => {
       return false;
     }
     
-    let emailContent = {
+    const emailContent = {
       subject: options.subject || 'WeParlay Notification',
       text: options.text,
       html: options.html

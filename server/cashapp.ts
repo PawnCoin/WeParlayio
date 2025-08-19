@@ -4,7 +4,7 @@ import { Request, Response } from "express";
 const CASH_APP_CLIENT_ID = process.env.CASH_APP_CLIENT_ID;
 const CASH_APP_CLIENT_SECRET = process.env.CASH_APP_CLIENT_SECRET;
 const CASH_APP_ENVIRONMENT = process.env.NODE_ENV === 'production' ? 'production' : 'sandbox';
-const WEPARLAY_CASHAPP_ACCOUNT = '$Lusterenllc'; // WeParlay's official Cash App account
+const WEPARLAY_CASHAPP_ACCOUNT = process.env.CASHAPP_CASHTAG || '$lusterentllc'; // WeParlay's official Cash App account
 
 if (!CASH_APP_CLIENT_ID || !CASH_APP_CLIENT_SECRET) {
   console.warn('Cash App credentials not configured. Cash App payments will be disabled.');

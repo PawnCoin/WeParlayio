@@ -50,7 +50,7 @@ export class SocialMediaService {
         throw new Error('Twitter client not initialized');
       }
 
-      let mediaIds: string[] = [];
+      const mediaIds: string[] = [];
       if (mediaUrls && mediaUrls.length > 0) {
         for (const url of mediaUrls) {
           const mediaId = await this.uploadTwitterMedia(url);

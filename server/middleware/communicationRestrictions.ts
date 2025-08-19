@@ -133,7 +133,7 @@ export const checkMessagingPermission = async (
 
     // Check VIP status for enhanced messaging features
     let canSendSMS = false;
-    let canSendEmail = true; // Email is always allowed
+    const canSendEmail = true; // Email is always allowed
 
     if (user.subscriptionTier) {
       const tierFeatures = getTierFeatures(user.subscriptionTier);

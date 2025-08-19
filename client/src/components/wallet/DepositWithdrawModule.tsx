@@ -40,7 +40,7 @@ const DepositWithdrawModule: React.FC = () => {
   // Handler for wallet connection
   const handleWalletConnect = (walletAddress: string, walletType: string) => {
     // Determine network and balance based on wallet type
-    let network = walletType === 'phantom' ? 'Solana' : 'Ethereum';
+    const network = walletType === 'phantom' ? 'Solana' : 'Ethereum';
     let balance = '0.00';
     
     if (window.ethereum) {

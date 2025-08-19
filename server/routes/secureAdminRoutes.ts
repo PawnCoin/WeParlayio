@@ -98,8 +98,8 @@ secureAdminRouter.get('/admin-dashboard-data', verifyAdminToken, async (req: Req
       systemStatus: 'operational',
       apiStatus: {
         espn: 'active',
-        rapid: !!process.env.RAPIDAPI_KEY ? 'active' : 'inactive',
-        grid: !!process.env.GRID_API_KEY ? 'active' : 'inactive'
+        rapid: process.env.RAPIDAPI_KEY ? 'active' : 'inactive',
+        grid: process.env.GRID_API_KEY ? 'active' : 'inactive'
       },
       recentActivity: users.slice(-10).map(user => ({
         id: user.id,

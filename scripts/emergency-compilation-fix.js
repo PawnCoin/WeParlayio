@@ -49,8 +49,8 @@ databaseContent = databaseContent.replace(
 
 // Remove duplicate function implementations
 const functionPatterns = [
-  /async getWeparlayCashTransactions\(userId: string\): Promise<any\[\]> \{[\s\S]*?\n  \}/g,
-  /async getUserChallenges\(userId: string\): Promise<any\[\]> \{[\s\S]*?\n  \}/g
+  /async getWeparlayCashTransactions\(userId: string\): Promise<any\[\]> \{[\s\S]*?\n {2}\}/g,
+  /async getUserChallenges\(userId: string\): Promise<any\[\]> \{[\s\S]*?\n {2}\}/g
 ];
 
 functionPatterns.forEach(pattern => {
