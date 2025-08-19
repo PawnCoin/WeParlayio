@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getTeamLogoUrl } from "@/lib/sportsDataUtils";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
-import { SubscriptionTier, canUserAccess } from '../../../shared/tierSystem';
+import { SubscriptionTier, canUserAccess } from '@shared/tierSystem';
 import { Crown, Lock } from 'lucide-react';
 
 type LiveStreamProps = {
@@ -500,12 +500,12 @@ export const WatchLive: React.FC<LiveStreamProps> = ({
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               ></iframe>
-              {streamInfo && (
+            )}
+            {streamInfo && (
                 <div className="absolute top-4 right-4 bg-black/80 backdrop-blur-sm rounded-lg p-2 text-white text-sm">
                   <div className="font-semibold">{streamInfo.name}</div>
                   <div className="text-xs opacity-75">{streamInfo.quality} • {streamInfo.language.toUpperCase()}</div>
                 </div>
-              )}
             )}
           </TabsContent>
           

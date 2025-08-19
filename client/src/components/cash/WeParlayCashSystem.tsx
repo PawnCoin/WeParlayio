@@ -72,7 +72,7 @@ const WeParlayCashSystem: React.FC = () => {
       } else if (i === levels.length - 1) {
         // Max level reached
         currentLevel = levels[i];
-        nextLevel = null;
+        nextLevel = null as any;
         progress = 100;
       }
     }
@@ -233,16 +233,16 @@ const WeParlayCashSystem: React.FC = () => {
   const sampleTransactions: Transaction[] = [];
   
   // Use sample data for display (this would be replaced by real data in production)
-  const balance = cashData?.balance || sampleCashData.balance;
+  const balance = (cashData as any)?.balance ?? sampleCashData.balance;
   const levelInfo = cashData ? 
-    getLevelInfo(cashData.balance) : 
+    getLevelInfo((cashData as any).balance) : 
     {
       currentLevel: { name: sampleCashData.level, color: "bg-amber-700" },
-      nextLevel: { name: sampleCashData.nextLevel, threshold: 5000 },
+      nextLevel: { name: sampleCashData.nextLevel, threshold: 5000 } as any,
       progress: sampleCashData.progress
     };
   
-  const displayTransactions = transactions || sampleTransactions;
+  const displayTransactions = (transactions as Transaction[]) ?? sampleTransactions;
   
   // Security measures section details
   const securityMeasures = [
