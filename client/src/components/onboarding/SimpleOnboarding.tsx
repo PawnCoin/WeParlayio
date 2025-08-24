@@ -45,7 +45,7 @@ const SimpleOnboarding: React.FC = () => {
 
   // Start tour automatically on first visit
   useEffect(() => {
-    const hasTakenTour = localStorage.getItem('weparlay_tour_completed');
+    const hasTakenTour = localStorage.getItem('weparlay_simple_tour_completed');
     if (!hasTakenTour) {
       setTimeout(() => {
         setOpen(true);
@@ -69,7 +69,7 @@ const SimpleOnboarding: React.FC = () => {
 
   const completeTour = () => {
     setOpen(false);
-    localStorage.setItem('weparlay_tour_completed', 'true');
+    localStorage.setItem('weparlay_simple_tour_completed', 'true');
     
     // Reset for the next time
     setTimeout(() => {
@@ -78,7 +78,7 @@ const SimpleOnboarding: React.FC = () => {
   };
 
   const restartTour = () => {
-    localStorage.removeItem('weparlay_tour_completed');
+    localStorage.removeItem('weparlay_simple_tour_completed');
     setCurrentStep(0);
     setOpen(true);
   };

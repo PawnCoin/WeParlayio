@@ -35,6 +35,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import BusinessProposalModal from "@/components/business/BusinessProposalModal";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import ImprovedOddsTicker from "../betting/ImprovedOddsTicker";
+import SimpleOnboarding from "../onboarding/SimpleOnboarding";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -44,10 +45,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [location] = useLocation();
   const { user, isAuthenticated, refetch: refetchAuth } = useAuth();
   const queryClient = useQueryClient();
-  
+
   // Handle missing user properties with proper defaults and admin status
   const currentUser = user as any || {};
-  
+
   // Check admin status from multiple sources (memoized to prevent infinite loops)
   const isAdmin = React.useMemo(() => {
     return currentUser.isAdmin || 
@@ -55,11 +56,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
            localStorage.getItem("weparlay-is-admin") === "true" || 
            ['support@weparlay.io', 'admin@weparlay.io', 'weparlay@admin.com'].includes(currentUser.email || '');
   }, [currentUser.isAdmin, currentUser.role, currentUser.email]);
-  
+
   // Enhance user object with admin status
   currentUser.isAdmin = isAdmin;
   currentUser.role = isAdmin ? 'admin' : (currentUser.role || 'user');
-  
+
   // Debug logging for authentication state
   React.useEffect(() => {
     console.log('🔍 Auth Debug:', {
@@ -70,18 +71,18 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       user: currentUser
     });
   }, [isAuthenticated, currentUser.email, isAdmin]);
-  
+
   const userId = currentUser.id || 'guest';
   const userName = currentUser.firstName || currentUser.email?.split('@')[0] || 'User';
   const userInitial = currentUser.firstName?.charAt(0) || currentUser.email?.charAt(0) || "W";
   const userBalance = currentUser.balance || 0;
   const userProfileImage = currentUser.profileImageUrl;
-  
+
   // Quick admin login function with better state management
   const quickAdminLogin = async () => {
     try {
       console.log('🔐 Starting admin login...');
-      
+
       const response = await fetch('/api/auth/admin-login', {
         method: 'POST',
         headers: {
@@ -101,13 +102,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         localStorage.setItem('auth-token', data.token);
         localStorage.setItem('weparlay-admin-token', data.token);
         localStorage.setItem('weparlay-is-admin', 'true');
-        
+
         // Set additional admin session data
         localStorage.setItem('admin-email', 'support@weparlay.io');
         localStorage.setItem('admin-login-time', Date.now().toString());
-        
+
         console.log('✅ Admin login successful, refreshing auth state...');
-        
+
         // Force immediate UI update with page reload for reliable state refresh
         console.log('🔄 Forcing page reload for complete state refresh...');
         window.location.reload();
@@ -124,7 +125,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   // Enhanced logout function with proper cache clearing
   const logout = async () => {
     console.log('🚪 Starting logout...');
-    
+
     try {
       // Call logout endpoint
       await fetch("/api/auth/logout", {
@@ -134,16 +135,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     } catch (error) {
       console.error("Logout error:", error);
     }
-    
+
     // Clear all user data
     localStorage.clear(); // Clear all localStorage items
     sessionStorage.clear(); // Clear all sessionStorage items
-    
+
     // Clear React Query cache
     queryClient.clear();
-    
+
     console.log('✅ Logout complete, reloading...');
-    
+
     // Force reload to ensure clean state
     window.location.reload();
   };
@@ -210,6 +211,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
   return (
     <div className="flex flex-col h-screen">
+      {/* Onboarding Component - Singular */}
+      <SimpleOnboarding />
+      
       {/* Optimization Components */}
       <FaviconOptimization />
       <SocialMediaOptimization 
@@ -561,7 +565,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         <div className="bg-black/20 backdrop-blur-sm rounded-lg p-2 shadow-xl border border-white/10">
           <SystemStatusIndicator />
         </div>
-        
+
         {/* Quick Navigation - Middle */}
         <div className="bg-black/20 backdrop-blur-sm rounded-lg p-2 shadow-xl border border-white/10">
           <QuickNavButton />
