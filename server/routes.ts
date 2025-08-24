@@ -681,7 +681,7 @@ const registerRoutes = async (app: Express): Promise<Server> => {
         return res.status(401).json({ success: false, message: 'User not authenticated' });
       }
 
-      const bets = await storage.getUserBets(userId, status);
+      const bets = await storage.getUserBets(userId);
       res.json({ success: true, bets });
     } catch (error) {
       console.error('Error fetching user bets:', error);

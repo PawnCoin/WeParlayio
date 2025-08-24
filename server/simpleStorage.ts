@@ -165,8 +165,6 @@ export class SimpleStorage implements IStorage {
       weplayTokenBalance: 0,
       tier: 'bronze',
       winsCount: 0,
-      twoFactorEnabled: false,
-      emailVerified: false,
       createdAt: null,
       updatedAt: null
     };
@@ -280,7 +278,8 @@ export class SimpleStorage implements IStorage {
       id,
       createdAt: null,
       updatedAt: null,
-      eventCount: null
+      eventCount: null,
+      icon: insertSport.icon ?? null
     };
     this.sports.set(id, sport);
     return sport;
@@ -304,8 +303,6 @@ export class SimpleStorage implements IStorage {
       ...insertEvent, 
       id,
       status: insertEvent.status || 'upcoming',
-      homeScore: insertEvent.homeScore || 0,
-      awayScore: insertEvent.awayScore || 0,
       createdAt: null,
       updatedAt: null,
       odds: null,
@@ -329,11 +326,42 @@ export class SimpleStorage implements IStorage {
 
   async createBet(bet: InsertBet): Promise<Bet> {
     const id = this.nextId++;
-    return { ...bet, id, status: bet.status || 'pending' };
+    return { 
+      ...bet, 
+      id, 
+      status: bet.status || 'pending',
+      placedAt: null,
+      settledAt: null,
+      createdAt: null,
+      updatedAt: null,
+      transactionHash: null,
+      gameInfo: null
+    };
   }
 
   async settleBet(betId: number, status: string): Promise<Bet> {
-    return { id: betId, userId: 'system', eventId: 1, amount: 0, odds: 0, potentialPayout: 0, status };
+    return { 
+      id: betId, 
+      userId: 'system', 
+      eventId: '1',
+      betType: 'moneyline',
+      pick: 'win',
+      amount: 0, 
+      odds: 0, 
+      potentialPayout: 0, 
+      status,
+      placedAt: null,
+      settledAt: null,
+      createdAt: null,
+      updatedAt: null,
+      selection: 'team1',
+      currency: null,
+      cryptocurrencyType: null,
+      walletAddress: null,
+      transactionHash: null,
+      point: null,
+      gameInfo: null
+    };
   }
 
   async getUserBets(userId: number): Promise<Bet[]> { return []; }
@@ -343,8 +371,11 @@ export class SimpleStorage implements IStorage {
     const uuid = challenge.uuid || `challenge-${id}`;
     const newChallenge: BettingChallenge = { 
       id, 
-      uuid,
+      challengeUuid: uuid,
       ...challenge,
+      settledAt: null,
+      notificationSent: null,
+      acceptedAt: null,
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -358,7 +389,7 @@ export class SimpleStorage implements IStorage {
 
   async getUserChallenges(userId: string, status?: string): Promise<BettingChallenge[]> {
     return Array.from(this.challenges.values()).filter(challenge => 
-      (challenge.challengerId === userId || challenge.acceptedBy === userId) &&
+      (challenge.createdBy === userId || challenge.acceptedBy === userId) &&
       (!status || challenge.status === status)
     );
   }
@@ -384,7 +415,7 @@ export class SimpleStorage implements IStorage {
     if (!challenge) throw new Error('Challenge not found');
     const updatedChallenge = { 
       ...challenge, 
-      winnerId, 
+      winnerId: winnerId || null, 
       isDraw, 
       status: 'settled', 
       updatedAt: new Date() 
@@ -396,17 +427,42 @@ export class SimpleStorage implements IStorage {
   // Simplified implementations for remaining methods
   async createNotification(notification: InsertNotification): Promise<Notification> {
     const id = this.nextId++;
-    return { ...notification, id, createdAt: new Date() };
+    return { 
+      ...notification, 
+      id, 
+      createdAt: new Date(),
+      updatedAt: null,
+      readAt: null,
+      link: notification.link ?? null,
+      title: notification.title ?? null
+    };
   }
 
   async getUserNotifications(userId: string, unreadOnly: boolean = false): Promise<Notification[]> { return []; }
   async markNotificationAsRead(id: number, userId: string): Promise<Notification> { 
-    return { id, userId, type: 'info', title: 'Test', message: 'Test', read: true, createdAt: new Date() };
+    return { 
+      id, 
+      userId, 
+      type: 'info', 
+      title: 'Test', 
+      message: 'Test', 
+      read: true, 
+      createdAt: new Date(),
+      updatedAt: null,
+      readAt: null,
+      link: null
+    };
   }
 
   async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
     const id = this.nextId++;
-    return { ...transaction, id };
+    return { 
+      ...transaction, 
+      id,
+      createdAt: null,
+      updatedAt: null,
+      details: null
+    };
   }
 
   async getTransactions(limit: number, offset: number): Promise<Transaction[]> { return []; }
