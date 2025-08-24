@@ -106,6 +106,12 @@ export interface IStorage {
   }): Promise<any>;
   getWeparlayCashTransactions(userId: string): Promise<any[]>;
   
+  // Enhanced betting operations
+  validateUserBalance(userId: string, currency: string, amount: number): Promise<boolean>;
+  getUserBalance(userId: string, currency: string): Promise<number>;
+  placeBet(bet: any): Promise<Bet>;
+  updateUserCurrencyBalance(userId: string, currency: string, amount: number): Promise<User>;
+  
   // Social operations
   sendFriendRequest(userId: string, friendId: string): Promise<any>;
   acceptFriendRequest(userId: string, friendId: string): Promise<any>;
@@ -159,9 +165,6 @@ export class SimpleStorage implements IStorage {
       weplayTokenBalance: 0,
       tier: 'bronze',
       winsCount: 0,
-      consentGiven: false,
-      consentTimestamp: null,
-      privacySettings: null,
       twoFactorEnabled: false,
       emailVerified: false,
       createdAt: null,
@@ -272,7 +275,13 @@ export class SimpleStorage implements IStorage {
 
   async createSport(insertSport: InsertSport): Promise<Sport> {
     const id = this.nextId++;
-    const sport: Sport = { ...insertSport, id };
+    const sport: Sport = { 
+      ...insertSport, 
+      id,
+      createdAt: null,
+      updatedAt: null,
+      eventCount: null
+    };
     this.sports.set(id, sport);
     return sport;
   }
@@ -296,7 +305,12 @@ export class SimpleStorage implements IStorage {
       id,
       status: insertEvent.status || 'upcoming',
       homeScore: insertEvent.homeScore || 0,
-      awayScore: insertEvent.awayScore || 0
+      awayScore: insertEvent.awayScore || 0,
+      createdAt: null,
+      updatedAt: null,
+      odds: null,
+      period: null,
+      timeRemaining: null
     };
     this.events.set(id, event);
     return event;
@@ -458,6 +472,70 @@ export class SimpleStorage implements IStorage {
         (user.username?.toLowerCase().includes(query.toLowerCase()) || 
          user.email?.toLowerCase().includes(query.toLowerCase()))
       );
+  }
+  
+  // Enhanced betting operations implementation
+  async validateUserBalance(userId: string, currency: string, amount: number): Promise<boolean> {
+    const user = await this.getUser(userId);
+    if (!user) return false;
+    
+    const balance = currency === 'weparlay_cash' ? 
+      (user.weparlayCashBalance || 0) : 
+      (user.balance || 0);
+    
+    return balance >= amount;
+  }
+  
+  async getUserBalance(userId: string, currency: string): Promise<number> {
+    const user = await this.getUser(userId);
+    if (!user) return 0;
+    
+    return currency === 'weparlay_cash' ? 
+      (user.weparlayCashBalance || 0) : 
+      (user.balance || 0);
+  }
+  
+  async placeBet(bet: any): Promise<Bet> {
+    const id = this.nextId++;
+    const placedBet: Bet = {
+      id,
+      userId: bet.userId,
+      eventId: bet.eventId,
+      amount: bet.amount,
+      odds: bet.odds,
+      potentialPayout: bet.potentialPayout,
+      status: 'pending',
+      betType: bet.betType,
+      selection: bet.selection
+    };
+    
+    // Deduct balance from user
+    const user = await this.getUser(bet.userId);
+    if (user) {
+      const currency = bet.currency || 'weparlay_cash';
+      if (currency === 'weparlay_cash') {
+        user.weparlayCashBalance = (user.weparlayCashBalance || 0) - bet.amount;
+      } else {
+        user.balance = (user.balance || 0) - bet.amount;
+      }
+      this.users.set(bet.userId, user);
+    }
+    
+    return placedBet;
+  }
+  
+  async updateUserCurrencyBalance(userId: string, currency: string, amount: number): Promise<User> {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error('User not found');
+    
+    if (currency === 'weparlay_cash') {
+      user.weparlayCashBalance = (user.weparlayCashBalance || 0) + amount;
+    } else {
+      user.balance = (user.balance || 0) + amount;
+    }
+    
+    this.users.set(userId, user);
+    return user;
   }
 }
 

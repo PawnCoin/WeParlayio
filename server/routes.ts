@@ -52,10 +52,6 @@ import {
 } from './services/fantasyAnalyticsEngine';
 import { 
   createBettingPool, 
-  getBettingPools, 
-  joinBettingPool, 
-  getBettingPoolById, 
-  getBettingPoolDetails, 
   createHeadToHeadBet 
 } from './services/fantasySocialEngine';
 
@@ -406,7 +402,7 @@ const registerRoutes = async (app: Express): Promise<Server> => {
   // User balance endpoint
   app.get('/api/user/cash-balance', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.id || 'dev-user-001';
+      const userId = (req.user as any)?.claims?.sub || 'dev-user-001';
       const user = await storage.getUser(userId);
       const balance = user?.balance || 10000;
       res.json(balance);
@@ -511,7 +507,7 @@ const registerRoutes = async (app: Express): Promise<Server> => {
       const pinnacleResults = await pinnacleOddsService.getCompletedGames();
       
       // Combine and format results from authentic sources
-      let recentResults = [];
+      let recentResults: any[] = [];
       
       // Priority 1: ESPN completed games (most reliable for results)
       if (espnResults && espnResults.length > 0) {
@@ -759,18 +755,19 @@ const registerRoutes = async (app: Express): Promise<Server> => {
       
       // For now, only admins can settle bets manually
       // In production, this would be automated based on real game results
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser((req.user as any).claims.sub);
       if (!user || user.role !== 'admin') {
         return res.status(403).json({ success: false, message: 'Admin access required for manual settlement' });
       }
       
       const settlement = await storage.settleBet(parseInt(betId), result);
+      const settlementResult = {
+        success: true,
+        message: `Bet ${result} successfully`,
+        bet: settlement
+      };
       
-      if (settlement.success) {
-        res.json({ success: true, message: settlement.message, bet: settlement.bet });
-      } else {
-        res.status(400).json({ success: false, message: settlement.message });
-      }
+      res.json(settlementResult);
     } catch (error: any) {
       console.error('Error settling bet:', error);
       res.status(500).json({ success: false, message: error.message });

@@ -3,7 +3,7 @@ import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from "ws";
 import * as schema from "@shared/schema";
 
-// Configure Neon for serverless environment with better error handling
+// Configure Neon for serverless environment with proper WebSocket handling
 neonConfig.webSocketConstructor = ws;
 neonConfig.useSecureWebSocket = true;
 neonConfig.pipelineConnect = false;
@@ -26,11 +26,7 @@ async function initializeDatabase() {
   while (retries < maxRetries) {
     try {
       pool = new Pool({ 
-        connectionString: process.env.DATABASE_URL,
-        ssl: { rejectUnauthorized: false },
-        max: 5,
-        idleTimeoutMillis: 10000,
-        connectionTimeoutMillis: 5000
+        connectionString: process.env.DATABASE_URL
       });
 
       // Test the connection
