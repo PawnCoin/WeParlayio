@@ -13,8 +13,6 @@ import {
 } from 'lucide-react';
 import CryptoBetForm from '@/components/crypto/CryptoBetForm';
 import { useToast } from '@/hooks/use-toast';
-import MascotTip from '@/components/onboarding/MascotTip';
-import { useOnboardingContext } from '@/components/onboarding/OnboardingProvider';
 
 interface BetSlipCryptoProps {
   bets: any[];
@@ -30,23 +28,15 @@ const BetSlipCrypto: React.FC<BetSlipCryptoProps> = ({
   onPlaceBet
 }) => {
   const { toast } = useToast();
-  const { addXp, addAchievement } = useOnboardingContext();
+  // Onboarding functionality removed for cleaner experience
   const [activeTab, setActiveTab] = useState<string>('regular');
-  const [showCryptoTip, setShowCryptoTip] = useState<boolean>(false);
   const [recentCryptoBets, setRecentCryptoBets] = useState<any[]>([]);
   
   // Show crypto tip when switching to crypto tab for the first time
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     
-    if (value === 'crypto' && !showCryptoTip) {
-      setShowCryptoTip(true);
-      
-      // Close tip after 8 seconds
-      setTimeout(() => {
-        setShowCryptoTip(false);
-      }, 8000);
-    }
+    // Simplified tab switching without onboarding
   };
   
   // Handle crypto bet placement
@@ -67,25 +57,18 @@ const BetSlipCrypto: React.FC<BetSlipCryptoProps> = ({
     // Clear bet slip
     onClearBets();
     
-    // Add achievement for first crypto bet
+    // Achievement tracking removed for cleaner experience
     if (recentCryptoBets.length === 0) {
-      addAchievement('First Crypto Bet');
-      addXp(50);
-      
       toast({
-        title: "Achievement Unlocked!",
-        description: "You've placed your first crypto bet! +50 XP"
+        title: "Crypto Bet Placed!",
+        description: "You've successfully placed your first crypto bet!"
       });
     }
     
-    // Add achievement for using your token
     if (cryptoBetData.cryptoId === 'weplaytoken') {
-      addAchievement('WePlay Token Supporter');
-      addXp(25);
-      
       toast({
         title: "WePlay Token Used!",
-        description: "Thanks for supporting WePlay Token! +25 XP"
+        description: "Thanks for supporting WePlay Token!"
       });
     }
   };
@@ -112,16 +95,7 @@ const BetSlipCrypto: React.FC<BetSlipCryptoProps> = ({
         </TabsContent>
         
         <TabsContent value="crypto">
-          {showCryptoTip && (
-            <div className="mb-4">
-              <MascotTip
-                message="You can now bet with cryptocurrencies including WePlay Token! Connect your wallet to get started."
-                type="tip"
-                duration={8000}
-                position="top-right"
-              />
-            </div>
-          )}
+          {/* Onboarding tip removed for cleaner experience */}
           
           {bets.length > 0 ? (
             <div className="space-y-4">

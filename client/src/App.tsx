@@ -45,7 +45,6 @@ import TermsOfService from "@/pages/TermsOfService";
 import SecurityInfo from "@/pages/SecurityInfo";
 
 // Wallet & Social Features
-import WalletTutorial from "@/pages/WalletTutorial";
 import SocialSharing from "@/pages/SocialSharing";
 
 // Enhanced Features
@@ -66,7 +65,6 @@ import MobileVoiceBetting from "@/components/mobile/MobileVoiceBetting";
 import { CurrencyModeProvider } from "./contexts/CurrencyModeContext";
 import { TeamThemeProvider } from "./contexts/TeamThemeContext";
 import { BetSlipProvider } from "./contexts/BetSlipContext";
-import { OnboardingProvider } from "./contexts/OnboardingContext";
 import { BettingProvider } from "./contexts/BettingContext";
 import ErrorBoundary from "./components/ErrorBoundary";
 
@@ -190,7 +188,6 @@ function Router() {
       <SuspenseRoute path="/tier-upgrade-success" component={TierUpgradeSuccess} />
 
       {/* Wallet & Social Routes */}
-      <SuspenseRoute path="/wallet-tutorial" component={WalletTutorial} />
       <SuspenseRoute path="/social-sharing" component={SocialSharing} />
 
       {/* Support & Legal */}

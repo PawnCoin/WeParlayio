@@ -10,7 +10,6 @@ import BracketView from "@/components/tournaments/BracketView";
 import PlayerPropsTable from "@/components/betting/PlayerPropsTable";
 import { StatsCarousel } from "@/components/StatsCarousel";
 import WelcomeDashboard from "@/components/dashboard/WelcomeDashboard";
-import OnboardingExperience from "@/components/onboarding/OnboardingExperience";
 import BusinessProposalModal from "@/components/business/BusinessProposalModal";
 import CompleteBettingSystem from "@/pages/CompleteBettingSystem";
 import { Button } from "@/components/ui/button";
@@ -90,8 +89,7 @@ const Home: React.FC = () => {
 
   return (
     <div data-bind="dashboard">
-      {/* Interactive Onboarding Experience */}
-      <OnboardingExperience />
+      {/* Onboarding handled by SimpleOnboarding component in layout */}
 
       {/* Personalized Welcome Dashboard */}
       <div className="mb-8">

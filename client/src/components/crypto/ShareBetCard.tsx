@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useOnboardingContext } from '@/components/onboarding/OnboardingProvider';
 
 interface ShareBetCardProps {
   betData: {
@@ -31,7 +30,7 @@ interface ShareBetCardProps {
 
 const ShareBetCard: React.FC<ShareBetCardProps> = ({ betData }) => {
   const { toast } = useToast();
-  const { addXp, addAchievement } = useOnboardingContext();
+  // Onboarding functionality removed for cleaner experience
   const [copied, setCopied] = useState(false);
   const [showShareOptions, setShowShareOptions] = useState(false);
   const [hasShared, setHasShared] = useState(false);
