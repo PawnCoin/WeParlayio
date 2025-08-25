@@ -13,7 +13,7 @@ import {
   Clock, ChevronRight, CircleDot, Flame, Zap, Crown,
   DollarSign, HelpCircle, HeadphonesIcon, Wallet, CreditCard,
   ChevronDown, TrendingUp, Target, Award, Activity,
-  BarChart3, Brain, Share2
+  BarChart3, Brain, Share2, Swords
 } from "lucide-react";
 
 
@@ -594,10 +594,38 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                 </div>
               </details>
 
+              {/* College Sports Category */}
+              <details className="group">
+                <summary className="flex items-center py-2 px-3 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 list-none">
+                  <span className="text-orange-500 text-sm mr-2">🎓</span>
+                  <span className="flex-1 text-sm font-medium ml-1">College Sports</span>
+                  <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
+                </summary>
+                <div className="ml-6 mt-1 space-y-1">
+                  <Link href="/sports/basketball_ncaab">
+                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
+                      <span>NCAA Basketball</span>
+                      <span className="ml-auto text-blue-600 font-bold">MARCH MADNESS</span>
+                    </div>
+                  </Link>
+                  <Link href="/sports/americanfootball_ncaaf">
+                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
+                      <span>College Football</span>
+                      <span className="ml-auto text-green-600 font-bold">SEASON</span>
+                    </div>
+                  </Link>
+                  <Link href="/sports/baseball_ncaa">
+                    <div className="flex items-center py-1 px-3 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 rounded">
+                      <span>College Baseball</span>
+                    </div>
+                  </Link>
+                </div>
+              </details>
+
               {/* Combat Sports Category */}
               <details className="group">
                 <summary className="flex items-center py-2 px-3 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 list-none">
-                  <GiBoxingGlove size={16} className="text-red-600" />
+                  <Swords className="h-4 w-4 text-red-500" />
                   <span className="flex-1 text-sm font-medium ml-3">Combat Sports</span>
                   <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" />
                 </summary>

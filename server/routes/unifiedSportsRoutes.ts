@@ -176,6 +176,23 @@ router.get('/sports/american', async (req, res) => {
   }
 });
 
+router.get('/sports/college', async (req, res) => {
+  try {
+    const collegeSports = ['basketball_ncaab', 'americanfootball_ncaaf', 'baseball_college', 'basketball_ncaaw'];
+    const allOdds = [];
+
+    for (const sport of collegeSports) {
+      const odds = await unifiedSportsAPI.getSportOdds(sport);
+      allOdds.push({ sport, games: odds });
+    }
+
+    res.json(allOdds);
+  } catch (error) {
+    console.error('Error fetching college sports:', error);
+    res.status(500).json({ message: 'Failed to fetch college sports' });
+  }
+});
+
 router.get('/sports/international', async (req, res) => {
   try {
     const internationalSports = ['soccer_epl', 'tennis_wta', 'tennis_atp'];

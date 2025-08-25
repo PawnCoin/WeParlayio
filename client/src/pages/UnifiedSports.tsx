@@ -60,6 +60,12 @@ export default function UnifiedSports() {
     refetchInterval: 300000
   });
 
+  // Fetch college sports
+  const { data: collegeSports } = useQuery({
+    queryKey: ['/api/unified-sports/sports/college'],
+    refetchInterval: 300000
+  });
+
   const getSportIcon = (sport: string) => {
     const sportLower = sport.toLowerCase();
     if (sportLower.includes('football') || sportLower.includes('nfl')) return <Activity className="h-5 w-5" />;
@@ -120,7 +126,7 @@ export default function UnifiedSports() {
         </div>
 
         <Tabs defaultValue="live" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="live" className="flex items-center gap-2">
               <Flame className="h-4 w-4" />
               Live Betting
@@ -132,6 +138,10 @@ export default function UnifiedSports() {
             <TabsTrigger value="american" className="flex items-center gap-2">
               <Activity className="h-4 w-4" />
               American Sports
+            </TabsTrigger>
+            <TabsTrigger value="college" className="flex items-center gap-2">
+              <span className="h-4 w-4">🎓</span>
+              College Sports
             </TabsTrigger>
             <TabsTrigger value="international" className="flex items-center gap-2">
               <Globe className="h-4 w-4" />
@@ -398,6 +408,48 @@ export default function UnifiedSports() {
                             <Button size="sm" className="w-full">
                               <Globe className="h-3 w-3 mr-1" />
                               View International Odds
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-center text-muted-foreground py-4">
+                        Loading {sportData.sport} games...
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          {/* College Sports Tab */}
+          <TabsContent value="college" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {collegeSports && collegeSports.map((sportData: any, index: number) => (
+                <Card key={index}>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <span className="text-orange-500 text-lg">🎓</span>
+                      {sportData.sport.replace('_', ' ').toUpperCase()}
+                    </CardTitle>
+                    <CardDescription>{sportData.games?.length || 0} games available</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {sportData.games && sportData.games.length > 0 ? (
+                      <div className="space-y-3">
+                        {sportData.games.slice(0, 3).map((game: any, gameIndex: number) => (
+                          <div key={gameIndex} className="p-3 border rounded-lg bg-gradient-to-r from-orange-50 to-amber-50">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-medium">{game.event}</span>
+                              {game.live && <Badge variant="destructive">LIVE</Badge>}
+                            </div>
+                            <div className="text-sm text-muted-foreground mb-2">
+                              {new Date(game.startTime).toLocaleDateString()}
+                            </div>
+                            <Button size="sm" className="w-full bg-orange-600 hover:bg-orange-700">
+                              <Trophy className="h-3 w-3 mr-1" />
+                              College Odds
                             </Button>
                           </div>
                         ))}

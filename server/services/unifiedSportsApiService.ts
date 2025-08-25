@@ -68,6 +68,21 @@ export class UnifiedSportsApiService {
   }
 
   /**
+   * Get college sports odds
+   */
+  async getCollegeSportsOdds(): Promise<any[]> {
+    const collegeSports = ['basketball_ncaab', 'americanfootball_ncaaf', 'baseball_college'];
+    const allOdds = [];
+
+    for (const sport of collegeSports) {
+      const result = await priorityApiService.getOddsWithFallback(sport);
+      allOdds.push({ sport, games: result.data });
+    }
+
+    return allOdds;
+  }
+
+  /**
    * Get API service status
    */
   async getAPIStatus(): Promise<any> {
