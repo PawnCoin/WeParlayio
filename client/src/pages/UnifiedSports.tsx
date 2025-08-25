@@ -242,7 +242,7 @@ export default function UnifiedSports() {
                   <CardDescription>Trending bets right now</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {popularMarkets && popularMarkets.length > 0 ? (
+                  {popularMarkets && Array.isArray(popularMarkets) && popularMarkets.length > 0 ? (
                     <div className="space-y-3">
                       {popularMarkets.slice(0, 5).map((market: any, index: number) => (
                         <div key={index} className="p-3 border rounded-lg hover:bg-muted/30 transition-colors">
@@ -287,7 +287,7 @@ export default function UnifiedSports() {
                 <CardDescription>Place your bets before the action starts</CardDescription>
               </CardHeader>
               <CardContent>
-                {upcomingGames && upcomingGames.length > 0 ? (
+                {upcomingGames && Array.isArray(upcomingGames) && upcomingGames.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {upcomingGames.slice(0, 9).map((game: any, index: number) => (
                       <div key={index} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
@@ -342,7 +342,7 @@ export default function UnifiedSports() {
           {/* American Sports Tab */}
           <TabsContent value="american" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {americanSports && americanSports.map((sportData: any, index: number) => (
+              {americanSports && Array.isArray(americanSports) && americanSports.map((sportData: any, index: number) => (
                 <Card key={index}>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -384,7 +384,7 @@ export default function UnifiedSports() {
           {/* International Sports Tab */}
           <TabsContent value="international" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {internationalSports && internationalSports.map((sportData: any, index: number) => (
+              {internationalSports && Array.isArray(internationalSports) && internationalSports.map((sportData: any, index: number) => (
                 <Card key={index}>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -426,7 +426,7 @@ export default function UnifiedSports() {
           {/* College Sports Tab */}
           <TabsContent value="college" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {collegeSports && collegeSports.map((sportData: any, index: number) => (
+              {collegeSports && Array.isArray(collegeSports) && collegeSports.map((sportData: any, index: number) => (
                 <Card key={index}>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -468,7 +468,7 @@ export default function UnifiedSports() {
           {/* Combat Sports Tab */}
           <TabsContent value="combat" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {combatSports && combatSports.map((sportData: any, index: number) => (
+              {combatSports && Array.isArray(combatSports) && combatSports.map((sportData: any, index: number) => (
                 <Card key={index}>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">

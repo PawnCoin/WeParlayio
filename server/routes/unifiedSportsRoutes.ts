@@ -42,7 +42,7 @@ router.get('/live', async (req, res) => {
 router.get('/upcoming/:hours?', async (req, res) => {
   try {
     const hours = parseInt(req.params.hours || '24');
-    const upcomingGames = await unifiedSportsAPI.getUpcomingGames(hours);
+    const upcomingGames = await unifiedSportsAPI.getUpcomingGames();
     res.json(upcomingGames);
   } catch (error) {
     console.error('Error fetching upcoming games:', error);
@@ -257,7 +257,7 @@ router.get('/search/:query', async (req, res) => {
 
     const results = allOdds.filter(game => 
       game.event.toLowerCase().includes(query.toLowerCase()) ||
-      game.teams.some(team => team.toLowerCase().includes(query.toLowerCase())) ||
+      game.teams.some((team: string) => team.toLowerCase().includes(query.toLowerCase())) ||
       game.sport.toLowerCase().includes(query.toLowerCase())
     );
 
