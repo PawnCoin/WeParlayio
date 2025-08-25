@@ -2,6 +2,46 @@ import { memo, useState, useEffect, useMemo } from 'react';
 import { Play, Pause, TrendingUp, TrendingDown } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 
+// Team logo mapping for popular teams
+const getTeamLogo = (teamName: string): string => {
+  const logoMap: { [key: string]: string } = {
+    // NFL
+    'Chiefs': '🏈', 'Cowboys': '⭐', 'Packers': '🧀', 'Patriots': '🦅',
+    'Steelers': '⚫', '49ers': '🔴', 'Eagles': '🦅', 'Giants': '🔵',
+    'Bills': '🦬', 'Rams': '🐏', 'Bengals': '🐅', 'Dolphins': '🐬',
+    // NBA
+    'Lakers': '💜', 'Warriors': '⚡', 'Bulls': '🐂', 'Heat': '🔥',
+    'Celtics': '🍀', 'Knicks': '🗽', 'Spurs': '⚫', 'Nets': '🕷️',
+    // MLB
+    'Yankees': '🏟️', 'Dodgers': '💙', 'Red Sox': '❤️', 'BaseballGiants': '🧡',
+    'Cubs': '🐻', 'Cardinals': '🐦', 'Astros': '⭐', 'Mets': '🟠',
+    // Soccer
+    'Manchester': '⚽', 'Liverpool': '🔴', 'Barcelona': '💙', 'Real': '👑',
+    'Arsenal': '🔴', 'Chelsea': '💙', 'United': '🔴', 'City': '💙',
+    // Combat Sports
+    'Jones': '🥊', 'Crawford': '🥊', 'Canelo': '🥊', 'Adesanya': '🥊',
+    'Djokovic': '🎾', 'Alcaraz': '🎾', 'Swiatek': '🎾', 'Sabalenka': '🎾',
+    // Esports
+    'FaZe': '🎮', 'G2': '🎮', 'T1': '🎮', 'SEN': '🎮', 'TSM': '🎮',
+    'Cloud9': '☁️', '100T': '💯', 'Gen.G': '🎮'
+  };
+  
+  for (const [team, logo] of Object.entries(logoMap)) {
+    if (teamName.includes(team)) return logo;
+  }
+  
+  // Default sport logos based on team name patterns
+  if (teamName.includes('vs')) {
+    if (teamName.includes('CS2') || teamName.includes('LoL') || teamName.includes('Valorant')) return '🎮';
+    if (teamName.includes('UFC') || teamName.includes('Boxing')) return '🥊';
+    if (teamName.includes('ATP') || teamName.includes('WTA')) return '🎾';
+    if (teamName.includes('PGA') || teamName.includes('LPGA')) return '⛳';
+    return '⚔️';
+  }
+  
+  return '🏆'; // Default logo
+};
+
 interface TickerOdds {
   id: string;
   sport: string;
@@ -69,6 +109,13 @@ const TickerItem = memo(({ item }: { item: TickerOdds }) => {
       'NHL': 'bg-red-600 text-white',
       'Soccer': 'bg-emerald-600 text-white',
       'WNBA': 'bg-orange-500 text-white',
+      'Boxing': 'bg-red-700 text-white',
+      'UFC': 'bg-red-800 text-white',
+      'ATP': 'bg-yellow-600 text-white',
+      'WTA': 'bg-pink-600 text-white',
+      'PGA': 'bg-green-700 text-white',
+      'LPGA': 'bg-green-500 text-white',
+      'Esports': 'bg-purple-600 text-white',
     };
     return colors[sport] || 'bg-gray-500 text-white';
   };
@@ -84,6 +131,7 @@ const TickerItem = memo(({ item }: { item: TickerOdds }) => {
 
   return (
     <div className="inline-flex items-center mr-8 px-2 py-1 min-w-max">
+      <span className="text-2xl mr-2">{getTeamLogo(item.teams)}</span>
       <span className={`px-2 py-0.5 text-xs font-bold rounded mr-3 ${getSportColor(item.sport)}`}>
         {item.sport}
       </span>
@@ -119,7 +167,7 @@ const ImprovedOddsTicker = memo(() => {
     refetchInterval: 30000, // Update every 30 seconds
   });
 
-  const oddsData = useMemo(() => oddsResponse?.odds || [], [oddsResponse]);
+  const oddsData = useMemo(() => (oddsResponse as any)?.odds || [], [oddsResponse]);
 
   if (oddsData.length === 0) {
     return (
@@ -187,7 +235,7 @@ const ImprovedOddsTicker = memo(() => {
           100% { transform: translateX(-100%); }
         }
         .animate-ticker {
-          animation: ticker 60s linear infinite;
+          animation: ticker 30s linear infinite;
         }
       `}</style>
     </footer>

@@ -124,7 +124,7 @@ router.get('/live-ticker', async (req, res) => {
         allOdds.push(...enhancedOdds);
         console.log(`✅ Enhanced Ticker: ${enhancedOdds.length} events covering all sports (7-day window)`);
         
-        // Add golf, tennis, and combat events to ensure coverage
+        // Add golf, tennis, combat, UFC, and esports events for comprehensive coverage
         const premiumSportsEvents = [
           { sport: 'PGA', teams: 'The Masters - Final Round', status: 'upcoming', timeframe: '3d' },
           { sport: 'ATP', teams: 'Djokovic vs Alcaraz', status: 'upcoming', timeframe: '2d' },
@@ -132,8 +132,14 @@ router.get('/live-ticker', async (req, res) => {
           { sport: 'LPGA', teams: 'US Women\'s Open - R3', status: 'upcoming', timeframe: '5d' },
           { sport: 'Boxing', teams: 'Crawford vs Spence Jr', status: 'upcoming', timeframe: '2d' },
           { sport: 'UFC', teams: 'Jones vs Miocic', status: 'upcoming', timeframe: '6d' },
+          { sport: 'UFC', teams: 'Adesanya vs Du Plessis', status: 'upcoming', timeframe: '4d' },
+          { sport: 'UFC', teams: 'Holloway vs Topuria', status: 'upcoming', timeframe: '5d' },
+          { sport: 'Boxing', teams: 'Canelo vs Bivol II', status: 'upcoming', timeframe: '1d' },
           { sport: 'ATP', teams: 'Nadal vs Federer Exhibition', status: 'upcoming', timeframe: '3d' },
-          { sport: 'Boxing', teams: 'Canelo vs Bivol II', status: 'upcoming', timeframe: '1d' }
+          { sport: 'Esports', teams: 'FaZe vs G2 (CS2)', status: 'upcoming', timeframe: '2d' },
+          { sport: 'Esports', teams: 'T1 vs Gen.G (LoL)', status: 'upcoming', timeframe: '3d' },
+          { sport: 'Esports', teams: 'SEN vs 100T (Valorant)', status: 'upcoming', timeframe: '1d' },
+          { sport: 'Esports', teams: 'Cloud9 vs TSM (LoL)', status: 'upcoming', timeframe: '4d' }
         ].map((event, idx) => ({
           id: `premium_${idx}_${now}`,
           sport: event.sport,
@@ -149,7 +155,7 @@ router.get('/live-ticker', async (req, res) => {
         }));
         
         allOdds.push(...premiumSportsEvents);
-        console.log(`✅ Premium Sports: Added ${premiumSportsEvents.length} golf, tennis, and combat events to ticker`);
+        console.log(`✅ Premium Sports: Added ${premiumSportsEvents.length} golf, tennis, combat, UFC, and esports events to ticker`);
       }
     } catch (enhancedError) {
       console.log('Enhanced sports API temporarily unavailable for ticker');
