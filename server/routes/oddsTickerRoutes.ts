@@ -108,6 +108,14 @@ router.get('/live-ticker', async (req, res) => {
             id: `enhanced_${event.id}_${now}`,
             sport: displaySport,
             teams: `${event.homeTeam?.name || 'Home'} vs ${event.awayTeam?.name || 'Away'}`,
+            homeTeam: {
+              name: event.homeTeam?.name || 'Home',
+              logo: event.homeTeam?.logo || `https://a.espncdn.com/i/teamlogos/${displaySport.toLowerCase()}500/${event.homeTeam?.name?.replace(/\s+/g, '_').toLowerCase()}.png`
+            },
+            awayTeam: {
+              name: event.awayTeam?.name || 'Away', 
+              logo: event.awayTeam?.logo || `https://a.espncdn.com/i/teamlogos/${displaySport.toLowerCase()}500/${event.awayTeam?.name?.replace(/\s+/g, '_').toLowerCase()}.png`
+            },
             currentOdds: Math.round(-110 + (Math.random() * 40 - 20)),
             previousOdds: Math.round(-105 + (Math.random() * 30 - 15)),
             timestamp: new Date().toISOString(),

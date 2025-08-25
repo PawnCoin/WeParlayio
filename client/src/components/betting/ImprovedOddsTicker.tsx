@@ -2,50 +2,83 @@ import { memo, useState, useEffect, useMemo } from 'react';
 import { Play, Pause, TrendingUp, TrendingDown } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 
-// Team logo mapping for popular teams
-const getTeamLogo = (teamName: string): string => {
-  const logoMap: { [key: string]: string } = {
-    // NFL
-    'Chiefs': '🏈', 'Cowboys': '⭐', 'Packers': '🧀', 'Patriots': '🦅',
-    'Steelers': '⚫', '49ers': '🔴', 'Eagles': '🦅', 'Giants': '🔵',
-    'Bills': '🦬', 'Rams': '🐏', 'Bengals': '🐅', 'Dolphins': '🐬',
-    // NBA
-    'Lakers': '💜', 'Warriors': '⚡', 'Bulls': '🐂', 'Heat': '🔥',
-    'Celtics': '🍀', 'Knicks': '🗽', 'Spurs': '⚫', 'Nets': '🕷️',
-    // MLB
-    'Yankees': '🏟️', 'Dodgers': '💙', 'Red Sox': '❤️', 'BaseballGiants': '🧡',
-    'Cubs': '🐻', 'Cardinals': '🐦', 'Astros': '⭐', 'Mets': '🟠',
-    // Soccer
-    'Manchester': '⚽', 'Liverpool': '🔴', 'Barcelona': '💙', 'Real': '👑',
-    'Arsenal': '🔴', 'Chelsea': '💙', 'United': '🔴', 'City': '💙',
-    // Combat Sports
-    'Jones': '🥊', 'Crawford': '🥊', 'Canelo': '🥊', 'Adesanya': '🥊',
-    'Djokovic': '🎾', 'Alcaraz': '🎾', 'Swiatek': '🎾', 'Sabalenka': '🎾',
-    // Esports
-    'FaZe': '🎮', 'G2': '🎮', 'T1': '🎮', 'SEN': '🎮', 'TSM': '🎮',
-    'Cloud9': '☁️', '100T': '💯', 'Gen.G': '🎮'
+// Real team logo URLs using reliable sports logo services
+const getTeamLogoUrl = (teamName: string, sport: string): string => {
+  // ESPN Logo CDN - reliable source for team logos
+  const cleanTeamName = teamName.trim();
+  
+  // NFL team logo mappings
+  const nflLogos: { [key: string]: string } = {
+    'Chiefs': 'https://a.espncdn.com/i/teamlogos/nfl/500/kc.png',
+    'Cowboys': 'https://a.espncdn.com/i/teamlogos/nfl/500/dal.png',
+    'Packers': 'https://a.espncdn.com/i/teamlogos/nfl/500/gb.png',
+    'Patriots': 'https://a.espncdn.com/i/teamlogos/nfl/500/ne.png',
+    'Steelers': 'https://a.espncdn.com/i/teamlogos/nfl/500/pit.png',
+    '49ers': 'https://a.espncdn.com/i/teamlogos/nfl/500/sf.png',
+    'Eagles': 'https://a.espncdn.com/i/teamlogos/nfl/500/phi.png',
+    'Giants': 'https://a.espncdn.com/i/teamlogos/nfl/500/nyg.png',
+    'Bills': 'https://a.espncdn.com/i/teamlogos/nfl/500/buf.png',
+    'Rams': 'https://a.espncdn.com/i/teamlogos/nfl/500/lar.png',
+    'Bengals': 'https://a.espncdn.com/i/teamlogos/nfl/500/cin.png',
+    'Dolphins': 'https://a.espncdn.com/i/teamlogos/nfl/500/mia.png'
   };
   
-  for (const [team, logo] of Object.entries(logoMap)) {
-    if (teamName.includes(team)) return logo;
+  // NBA team logo mappings
+  const nbaLogos: { [key: string]: string } = {
+    'Lakers': 'https://a.espncdn.com/i/teamlogos/nba/500/lal.png',
+    'Warriors': 'https://a.espncdn.com/i/teamlogos/nba/500/gsw.png',
+    'Bulls': 'https://a.espncdn.com/i/teamlogos/nba/500/chi.png',
+    'Heat': 'https://a.espncdn.com/i/teamlogos/nba/500/mia.png',
+    'Celtics': 'https://a.espncdn.com/i/teamlogos/nba/500/bos.png',
+    'Knicks': 'https://a.espncdn.com/i/teamlogos/nba/500/nyk.png',
+    'Spurs': 'https://a.espncdn.com/i/teamlogos/nba/500/sa.png',
+    'Nets': 'https://a.espncdn.com/i/teamlogos/nba/500/bkn.png'
+  };
+  
+  // MLB team logo mappings
+  const mlbLogos: { [key: string]: string } = {
+    'Yankees': 'https://a.espncdn.com/i/teamlogos/mlb/500/nyy.png',
+    'Dodgers': 'https://a.espncdn.com/i/teamlogos/mlb/500/lad.png',
+    'Red Sox': 'https://a.espncdn.com/i/teamlogos/mlb/500/bos.png',
+    'Cubs': 'https://a.espncdn.com/i/teamlogos/mlb/500/chc.png',
+    'Cardinals': 'https://a.espncdn.com/i/teamlogos/mlb/500/stl.png',
+    'Astros': 'https://a.espncdn.com/i/teamlogos/mlb/500/hou.png',
+    'Mets': 'https://a.espncdn.com/i/teamlogos/mlb/500/nym.png'
+  };
+  
+  // Check sport-specific logos
+  if (sport === 'NFL') {
+    for (const [team, url] of Object.entries(nflLogos)) {
+      if (cleanTeamName.includes(team)) return url;
+    }
+  } else if (sport === 'NBA') {
+    for (const [team, url] of Object.entries(nbaLogos)) {
+      if (cleanTeamName.includes(team)) return url;
+    }
+  } else if (sport === 'MLB') {
+    for (const [team, url] of Object.entries(mlbLogos)) {
+      if (cleanTeamName.includes(team)) return url;
+    }
   }
   
-  // Default sport logos based on team name patterns
-  if (teamName.includes('vs')) {
-    if (teamName.includes('CS2') || teamName.includes('LoL') || teamName.includes('Valorant')) return '🎮';
-    if (teamName.includes('UFC') || teamName.includes('Boxing')) return '🥊';
-    if (teamName.includes('ATP') || teamName.includes('WTA')) return '🎾';
-    if (teamName.includes('PGA') || teamName.includes('LPGA')) return '⛳';
-    return '⚔️';
-  }
+  // Fallback to generic sport logo
+  const sportLogos: { [key: string]: string } = {
+    'NFL': 'https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png',
+    'NBA': 'https://a.espncdn.com/i/teamlogos/leagues/500/nba.png', 
+    'MLB': 'https://a.espncdn.com/i/teamlogos/leagues/500/mlb.png',
+    'NHL': 'https://a.espncdn.com/i/teamlogos/leagues/500/nhl.png',
+    'Soccer': 'https://a.espncdn.com/i/teamlogos/soccer/500/generic.png'
+  };
   
-  return '🏆'; // Default logo
+  return sportLogos[sport] || 'https://a.espncdn.com/i/teamlogos/default/500/default.png';
 };
 
 interface TickerOdds {
   id: string;
   sport: string;
   teams: string;
+  homeTeam?: { name: string; logo?: string };
+  awayTeam?: { name: string; logo?: string };
   currentOdds: number;
   previousOdds: number | null;
   timestamp: string;
@@ -129,9 +162,32 @@ const TickerItem = memo(({ item }: { item: TickerOdds }) => {
       <TrendingDown className="h-3 w-3 text-red-400 ml-1" />;
   }, [item.currentOdds, item.previousOdds]);
 
+  // Get team logos from API data or fallback to service
+  const homeTeamLogo = item.homeTeam?.logo || getTeamLogoUrl(gameData.favorite, item.sport);
+  const awayTeamLogo = item.awayTeam?.logo || getTeamLogoUrl(gameData.underdog, item.sport);
+  
   return (
     <div className="inline-flex items-center mr-8 px-2 py-1 min-w-max">
-      <span className="text-2xl mr-2">{getTeamLogo(item.teams)}</span>
+      <div className="flex items-center space-x-1 mr-2">
+        <img 
+          src={homeTeamLogo} 
+          alt={gameData.favorite} 
+          className="w-6 h-6 rounded-sm object-contain"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = getTeamLogoUrl(gameData.favorite, item.sport);
+          }}
+        />
+        <span className="text-gray-400 text-xs">vs</span>
+        <img 
+          src={awayTeamLogo} 
+          alt={gameData.underdog} 
+          className="w-6 h-6 rounded-sm object-contain"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = getTeamLogoUrl(gameData.underdog, item.sport);
+          }}
+        />
+      </div>
+      
       <span className={`px-2 py-0.5 text-xs font-bold rounded mr-3 ${getSportColor(item.sport)}`}>
         {item.sport}
       </span>
