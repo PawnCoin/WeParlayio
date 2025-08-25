@@ -29,13 +29,13 @@ const BettingDashboard: React.FC = () => {
   const { user } = useAuth();
   const { betSlip, addBet, updateBet, removeFromBetSlip, clearBetSlip } = useBetSlip();
 
-  // Get upcoming events
+  // Get comprehensive upcoming events (same as enhanced ticker)
   const { data: upcomingEvents, isLoading } = useQuery({
-    queryKey: ['/api/unified-sports/upcoming-events'],
+    queryKey: ['/api/odds-ticker/live-ticker'],
     refetchInterval: 30000,
   });
 
-  const rawEvents = (upcomingEvents as any)?.data || [];
+  const rawEvents = (upcomingEvents as any)?.odds || [];
   
   // Sort events to show variety across sports instead of all NFL first
   const events = React.useMemo(() => {

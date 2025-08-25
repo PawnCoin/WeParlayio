@@ -30,11 +30,14 @@ export default function UnifiedSports() {
     refetchInterval: 15000
   });
 
-  // Fetch upcoming games
-  const { data: upcomingGames } = useQuery({
-    queryKey: ['/api/unified-sports/upcoming/24'],
-    refetchInterval: 60000
+  // Fetch comprehensive upcoming games (same as enhanced ticker)
+  const { data: upcomingGamesResponse } = useQuery({
+    queryKey: ['/api/odds-ticker/live-ticker'],
+    refetchInterval: 30000
   });
+
+  // Extract games from comprehensive response
+  const upcomingGames = upcomingGamesResponse?.odds || [];
 
   // Fetch popular betting markets
   const { data: popularMarkets } = useQuery({

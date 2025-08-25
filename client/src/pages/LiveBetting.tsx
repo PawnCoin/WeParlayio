@@ -39,14 +39,19 @@ export default function LiveBetting() {
   const { betSlip, addToBetSlip, updateBet, removeFromBetSlip, clearBetSlip } = useBetSlip();
 
   const { data: liveOddsResponse, isLoading } = useQuery({
-    queryKey: ['/api/odds/americanfootball_nfl'],
-    refetchInterval: isAutoRefresh ? 60000 : false, // Auto-refresh every 60 seconds
+    queryKey: ['/api/odds-ticker/live-ticker'],
+    refetchInterval: isAutoRefresh ? 30000 : false, // Use comprehensive ticker data
   });
 
   const liveOdds = liveOddsResponse?.odds || [];
+  
+  // Filter for live events from comprehensive sports data
+  const actualLiveOdds = liveOdds.filter((event: any) => 
+    event.status === 'live' || event.displayText?.includes('🔴') || event.status === 'in'
+  );
 
   // Handle empty or invalid data gracefully
-  if (!isLoading && (!liveOdds || liveOdds.length === 0)) {
+  if (!isLoading && (!actualLiveOdds || actualLiveOdds.length === 0)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-4">
         <div className="max-w-7xl mx-auto">

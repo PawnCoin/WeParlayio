@@ -25,19 +25,19 @@ export default function Odds() {
   const [refreshing, setRefreshing] = useState(false);
   const { toast } = useToast();
 
-  // Fetch real odds data from the unified sports API 
+  // Fetch comprehensive odds data with all sports (like the enhanced ticker)
   const { data: realOddsResponse, refetch: refetchRealOdds, isLoading } = useQuery({
-    queryKey: ["/api/unified-sports/upcoming-events"],
-    refetchInterval: 60000, // Update every 60 seconds (1 minute)
-    staleTime: 30000, // Use cached data for 30 seconds
-    gcTime: 300000, // Keep cache for 5 minutes
+    queryKey: ["/api/odds-ticker/live-ticker"],
+    refetchInterval: 30000, // Update every 30 seconds for fresh data
+    staleTime: 15000, // Use cached data for 15 seconds
+    gcTime: 60000, // Keep cache for 1 minute
     refetchOnMount: true,
     refetchOnWindowFocus: true,
     retry: 1,
   });
 
-  // Extract data from unified sports API response 
-  const realOddsData: any[] = realOddsResponse?.success ? realOddsResponse.data : (realOddsResponse?.data || realOddsResponse || []);
+  // Extract comprehensive odds data (same as enhanced ticker)
+  const realOddsData: any[] = realOddsResponse?.success ? realOddsResponse.odds : (realOddsResponse?.odds || []);
   
   console.log('📊 Live Odds Data:', {
     dataCount: realOddsData?.length,
