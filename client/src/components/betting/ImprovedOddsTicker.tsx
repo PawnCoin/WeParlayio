@@ -16,7 +16,27 @@ interface TickerOdds {
 
 // Helper function to format game as favorite vs underdog with +/- odds
 const formatGameDisplay = (teams: string, currentOdds: number) => {
-  const [team1, team2] = teams.split(' vs ');
+  // Add safety check for undefined/null teams
+  if (!teams || typeof teams !== 'string') {
+    return {
+      favorite: 'Team A',
+      underdog: 'Team B', 
+      favOdds: currentOdds || -110,
+      underdogOdds: '+110'
+    };
+  }
+
+  const teamsParts = teams.split(' vs ');
+  if (teamsParts.length < 2) {
+    return {
+      favorite: teams,
+      underdog: 'TBD',
+      favOdds: currentOdds || -110,
+      underdogOdds: '+110'
+    };
+  }
+
+  const [team1, team2] = teamsParts;
   
   // In American odds: negative = favorite (better chance), positive = underdog
   const isFavorite = currentOdds < 0;
@@ -28,14 +48,17 @@ const formatGameDisplay = (teams: string, currentOdds: number) => {
   const underdogOdds = isFavorite ? (Math.abs(currentOdds) + 15) : Math.abs(currentOdds);
   
   return {
-    favorite: favorite.split(' ').slice(-1)[0], // Last word (team name)
-    underdog: underdog.split(' ').slice(-1)[0], // Last word (team name)
+    favorite: favorite?.split(' ').slice(-1)[0] || 'Team',
+    underdog: underdog?.split(' ').slice(-1)[0] || 'Team',
     favOdds,
     underdogOdds: `+${underdogOdds}`
   };
 };
 
 const TickerItem = memo(({ item }: { item: TickerOdds }) => {
+  // Add safety check for item data
+  if (!item) return null;
+  
   const gameData = formatGameDisplay(item.teams, item.currentOdds);
   
   const getSportColor = (sport: string) => {
