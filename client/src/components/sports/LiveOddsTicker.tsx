@@ -22,7 +22,7 @@ const LiveOddsTicker: React.FC<LiveOddsTickerProps> = ({ oddsData }) => {
 
   useEffect(() => {
     if (oddsData.length === 0) return;
-    
+
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % oddsData.length);
     }, 3000);
@@ -72,50 +72,51 @@ const LiveOddsTicker: React.FC<LiveOddsTickerProps> = ({ oddsData }) => {
 
   return (
     <Card className="bg-gradient-to-r from-slate-900 to-gray-900 text-white overflow-hidden">
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Badge variant="outline" className="border-yellow-400 text-yellow-400">
-              LIVE ODDS
-            </Badge>
-            
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-              <span className="text-sm text-gray-300">{currentOdds.sport}</span>
+      <CardContent className="p-0">
+        <div className="flex items-center h-16 relative">
+          <div className="absolute left-0 top-0 h-full flex items-center bg-gradient-to-r from-slate-900 to-transparent z-10 px-4">
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-sm font-semibold whitespace-nowrap">LIVE ODDS</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-6">
-            <div className="text-center">
-              <div className="text-sm text-gray-400">{currentOdds.awayTeam}</div>
-              <div className={`text-lg font-bold ${getMovementColor(currentOdds.movement)}`}>
-                {formatOdds(currentOdds.awayOdds)}
-                {getMovementIcon(currentOdds.movement)}
+          <div className="flex whitespace-nowrap animate-ticker-infinite pl-32">
+            {/* Duplicate the data for seamless infinite scroll */}
+            {[...oddsData, ...oddsData].map((odds, index) => (
+              <div key={`${odds.gameId}-${index}`} className="inline-flex items-center mx-8 space-x-4">
+                <div className="flex items-center space-x-2">
+                  <span className="text-lg font-bold">{odds.homeTeam} vs {odds.awayTeam}</span>
+                  <span className="text-sm text-gray-300 bg-gray-700 px-2 py-1 rounded">
+                    {odds.sport}
+                  </span>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-1">
+                    {getMovementIcon(odds.movement)}
+                    <span className={`text-sm font-mono ${getMovementColor(odds.movement)}`}>
+                      {formatOdds(odds.homeOdds)}
+                    </span>
+                  </div>
+                  <span className="text-xs text-gray-400">
+                    Away: {formatOdds(odds.awayOdds)}
+                  </span>
+                </div>
               </div>
-            </div>
-
-            <div className="text-gray-500 text-lg">vs</div>
-
-            <div className="text-center">
-              <div className="text-sm text-gray-400">{currentOdds.homeTeam}</div>
-              <div className={`text-lg font-bold ${getMovementColor(currentOdds.movement)}`}>
-                {formatOdds(currentOdds.homeOdds)}
-                {getMovementIcon(currentOdds.movement)}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex gap-1">
-            {oddsData.map((_, index) => (
-              <div
-                key={index}
-                className={`w-2 h-2 rounded-full transition-colors ${
-                  index === currentIndex ? 'bg-yellow-400' : 'bg-gray-600'
-                }`}
-              />
             ))}
           </div>
         </div>
+
+        <style>{`
+          @keyframes ticker-infinite {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          .animate-ticker-infinite {
+            animation: ticker-infinite 60s linear infinite;
+          }
+        `}</style>
       </CardContent>
     </Card>
   );
