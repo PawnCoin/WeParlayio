@@ -562,10 +562,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       {/* Bottom Right Corner - Professionally Organized */}
       <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-3 items-end">
 
-        {/* Quick Navigation - Middle */}
-        <div className="bg-black/20 backdrop-blur-sm rounded-lg p-2 shadow-xl border border-white/10">
-          <QuickNavButton />
-        </div>
 
         {/* Feedback Button - Bottom */}
         <div className="transform transition-transform hover:scale-105">
