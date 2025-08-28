@@ -1,5 +1,4 @@
 import express from 'express';
-import { espnApiService } from '../services/espnApiService';
 
 const router = express.Router();
 
