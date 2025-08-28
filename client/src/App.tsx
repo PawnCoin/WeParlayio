@@ -73,6 +73,7 @@ const FantasyFootball = React.lazy(() => import("@/pages/FantasyFootball"));
 const VipLiveStreaming = React.lazy(() => import("@/pages/VipLiveStreaming"));
 const Trivia = React.lazy(() => import("@/pages/Trivia"));
 const TierComparison = React.lazy(() => import("@/pages/TierComparison"));
+const P2pBetting = React.lazy(() => import("@/pages/P2pBetting"));
 const WeParlayCash = React.lazy(() => import("@/pages/WeParlayCash"));
 const StreamingRecommendations = React.lazy(() => import("@/pages/StreamingRecommendations"));
 const CryptoInformation = React.lazy(() => import("@/pages/CryptoInformation"));
@@ -176,6 +177,7 @@ function Router() {
       <SuspenseRoute path="/iptv-player" component={React.lazy(() => import('./components/streaming/IPTVPlayerOriginal'))} />
       <SuspenseRoute path="/tier-comparison" component={TierComparison} />
       <SuspenseRoute path="/weparlay-cash" component={WeParlayCash} />
+      <SuspenseRoute path="/p2p-betting" component={P2pBetting} />
       <SuspenseRoute path="/crypto-info" component={CryptoInformation} />
       <SuspenseRoute path="/analytics" component={UserAnalytics} />
       <SuspenseRoute path="/theme-settings" component={ThemeSettingsPage} />

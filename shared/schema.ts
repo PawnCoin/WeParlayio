@@ -12,6 +12,7 @@ import {
   index,
   uuid
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -549,6 +550,18 @@ export type InsertPlayer = z.infer<typeof insertPlayerSchema>;
 export type FantasyTeamPlayer = typeof fantasyTeamPlayers.$inferSelect;
 export type InsertFantasyTeamPlayer = z.infer<typeof insertFantasyTeamPlayerSchema>;
 
+export type P2pChallenge = typeof p2pChallenges.$inferSelect;
+export type InsertP2pChallenge = z.infer<typeof insertP2pChallengeSchema>;
+
+export type P2pTransaction = typeof p2pTransactions.$inferSelect;
+export type InsertP2pTransaction = z.infer<typeof insertP2pTransactionSchema>;
+
+export type P2pActivity = typeof p2pActivity.$inferSelect;
+export type InsertP2pActivity = z.infer<typeof insertP2pActivitySchema>;
+
+export type Friendship = typeof friendships.$inferSelect;
+export type InsertFriendship = z.infer<typeof insertFriendshipSchema>;
+
 // Support ticket system for automated issue resolution
 export const supportTickets = pgTable("support_tickets", {
   id: serial("id").primaryKey(),
@@ -635,10 +648,96 @@ export const friendships = pgTable("friendships", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Peer-to-peer betting challenges
+export const p2pChallenges = pgTable("p2p_challenges", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  challengerId: varchar("challenger_id").notNull().references(() => users.id),
+  challengeeId: varchar("challengee_id").references(() => users.id), // null for open challenges
+  eventId: varchar("event_id").notNull(),
+  gameDetails: jsonb("game_details").notNull(), // store team names, start time, etc.
+  challengerPick: text("challenger_pick").notNull(), // team or outcome picked by challenger
+  challengeePick: text("challengee_pick"), // team picked by challengee (opposite side)
+  betAmount: doublePrecision("bet_amount").notNull(),
+  currency: text("currency").notNull().default("weparlay_cash"),
+  totalPot: doublePrecision("total_pot").notNull(), // bet_amount * 2
+  escrowHeld: doublePrecision("escrow_held").default(0), // amount currently in escrow
+  status: text("status").default("open"), // 'open', 'accepted', 'pending_settlement', 'settled', 'cancelled', 'expired'
+  expiresAt: timestamp("expires_at").notNull(), // challenges auto-expire before game starts
+  winnerUserId: varchar("winner_user_id").references(() => users.id),
+  settlementReason: text("settlement_reason"),
+  isPublic: boolean("is_public").default(true), // public challenges vs friend-only
+  allowedFriends: jsonb("allowed_friends"), // array of friend IDs if not public
+  challengeMessage: text("challenge_message"), // optional message from challenger
+  acceptedAt: timestamp("accepted_at"),
+  settledAt: timestamp("settled_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// P2P Challenge transactions for escrow management
+export const p2pTransactions = pgTable("p2p_transactions", {
+  id: serial("id").primaryKey(),
+  challengeId: varchar("challenge_id").notNull().references(() => p2pChallenges.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  transactionType: text("transaction_type").notNull(), // 'escrow_deposit', 'escrow_release', 'refund'
+  amount: doublePrecision("amount").notNull(),
+  currency: text("currency").default("weparlay_cash"),
+  balanceBefore: doublePrecision("balance_before").notNull(),
+  balanceAfter: doublePrecision("balance_after").notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Challenge notifications and activity feed
+export const p2pActivity = pgTable("p2p_activity", {
+  id: serial("id").primaryKey(),
+  challengeId: varchar("challenge_id").notNull().references(() => p2pChallenges.id),
+  userId: varchar("user_id").notNull().references(() => users.id), // user who performed action
+  activityType: text("activity_type").notNull(), // 'challenge_created', 'challenge_accepted', 'challenge_settled', 'challenge_cancelled'
+  message: text("message").notNull(),
+  metadata: jsonb("metadata"), // additional data for the activity
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertFriendshipSchema = createInsertSchema(friendships).pick({
   userId: true,
   friendId: true,
   status: true,
+});
+
+export const insertP2pChallengeSchema = createInsertSchema(p2pChallenges).pick({
+  challengerId: true,
+  challengeeId: true,
+  eventId: true,
+  gameDetails: true,
+  challengerPick: true,
+  challengeePick: true,
+  betAmount: true,
+  currency: true,
+  totalPot: true,
+  expiresAt: true,
+  isPublic: true,
+  allowedFriends: true,
+  challengeMessage: true,
+});
+
+export const insertP2pTransactionSchema = createInsertSchema(p2pTransactions).pick({
+  challengeId: true,
+  userId: true,
+  transactionType: true,
+  amount: true,
+  currency: true,
+  balanceBefore: true,
+  balanceAfter: true,
+  description: true,
+});
+
+export const insertP2pActivitySchema = createInsertSchema(p2pActivity).pick({
+  challengeId: true,
+  userId: true,
+  activityType: true,
+  message: true,
+  metadata: true,
 });
 
 export const insertKnownIssueSchema = createInsertSchema(knownIssues).pick({

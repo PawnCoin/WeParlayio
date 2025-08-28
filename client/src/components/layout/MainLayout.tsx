@@ -202,6 +202,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/betting-hub", label: "Sports Betting" },
+    { href: "/p2p-betting", label: "P2P Betting" },
     { href: "/fantasy", label: "Fantasy" },
     { href: "/tournaments", label: "Tournaments" },
     { href: "/trivia", label: "Trivia" },
@@ -263,6 +264,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                     <div className="w-6 h-6 mb-1 flex items-center justify-center">
                       {link.label === 'Home' && '🏠'}
                       {link.label === 'Sports Betting' && '⚡'}
+                      {link.label === 'P2P Betting' && '🤝'}
                       {link.label === 'Fantasy' && '🏆'}
                       {link.label === 'Tournaments' && '🥇'}
                     </div>

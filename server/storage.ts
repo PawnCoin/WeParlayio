@@ -15,7 +15,11 @@ import {
   supportTicketLogs, SupportTicketLog,
   knownIssues, KnownIssue, InsertKnownIssue,
   bettingChallenges, BettingChallenge, InsertBettingChallenge,
-  notifications, Notification, InsertNotification
+  notifications, Notification, InsertNotification,
+  p2pChallenges, P2pChallenge, InsertP2pChallenge,
+  p2pTransactions, P2pTransaction, InsertP2pTransaction,
+  p2pActivity, P2pActivity, InsertP2pActivity,
+  friendships, Friendship, InsertFriendship
 } from "@shared/schema";
 
 // Storage interface
@@ -142,6 +146,36 @@ export interface IStorage {
   getOwnerBankAccount(): Promise<any>;
   updateUserStatus(userId: string, status: string): Promise<User | null>;
   getUserGrowthMetrics(range: string): Promise<any[]>;
+  
+  // P2P Betting system methods
+  createP2pChallenge(challenge: InsertP2pChallenge): Promise<P2pChallenge>;
+  getP2pChallenge(challengeId: string): Promise<P2pChallenge | undefined>;
+  getP2pChallengeWithDetails(challengeId: string): Promise<P2pChallenge | undefined>;
+  getAvailableP2pChallenges(userId: string): Promise<P2pChallenge[]>;
+  getUserP2pChallenges(userId: string): Promise<P2pChallenge[]>;
+  acceptP2pChallenge(challengeId: string, challengeeId: string, challengeePick: string): Promise<P2pChallenge>;
+  cancelP2pChallenge(challengeId: string, reason: string): Promise<P2pChallenge>;
+  settleP2pChallenge(challengeId: string, winnerUserId: string, settlementReason: string): Promise<P2pChallenge>;
+  
+  // P2P Escrow system
+  depositToP2pEscrow(params: {
+    challengeId: string;
+    userId: string;
+    amount: number;
+    currency: string;
+  }): Promise<P2pTransaction>;
+  releaseFromP2pEscrow(challengeId: string, winnerUserId: string, amount: number): Promise<P2pTransaction>;
+  refundP2pEscrow(challengeId: string): Promise<P2pTransaction[]>;
+  
+  // P2P Activity and stats
+  createP2pActivity(activity: InsertP2pActivity): Promise<P2pActivity>;
+  getP2pChallengeActivity(challengeId: string): Promise<P2pActivity[]>;
+  getUserP2pStats(userId: string): Promise<{
+    totalChallenges: number;
+    wonChallenges: number;
+    totalWinnings: number;
+    winRate: number;
+  }>;
 }
 
 // Simple memory storage implementation
@@ -830,6 +864,343 @@ export class MemStorage implements IStorage {
     const updatedUser = { ...user, stripeCustomerId: customerId };
     this.users.set(userId, updatedUser);
     return updatedUser;
+  }
+
+  // P2P Betting system implementation
+  private p2pChallenges = new Map<string, P2pChallenge>();
+  private p2pTransactions = new Map<number, P2pTransaction>();
+  private p2pActivity = new Map<number, P2pActivity>();
+
+  async createP2pChallenge(challenge: InsertP2pChallenge): Promise<P2pChallenge> {
+    const id = Math.random().toString(36).substring(2, 15);
+    const newChallenge: P2pChallenge = {
+      ...challenge,
+      id,
+      escrowHeld: 0,
+      status: 'open',
+      winnerUserId: null,
+      settlementReason: null,
+      acceptedAt: null,
+      settledAt: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.p2pChallenges.set(id, newChallenge);
+    return newChallenge;
+  }
+
+  async getP2pChallenge(challengeId: string): Promise<P2pChallenge | undefined> {
+    return this.p2pChallenges.get(challengeId);
+  }
+
+  async getP2pChallengeWithDetails(challengeId: string): Promise<P2pChallenge | undefined> {
+    const challenge = this.p2pChallenges.get(challengeId);
+    if (!challenge) return undefined;
+
+    // Add challenger/challengee usernames
+    const challenger = await this.getUser(challenge.challengerId);
+    const challengee = challenge.challengeeId ? await this.getUser(challenge.challengeeId) : null;
+
+    return {
+      ...challenge,
+      challengerUsername: challenger?.username || challenger?.firstName || 'Unknown',
+      challengeeUsername: challengee?.username || challengee?.firstName || 'Unknown',
+    } as P2pChallenge;
+  }
+
+  async getAvailableP2pChallenges(userId: string): Promise<P2pChallenge[]> {
+    const challenges = Array.from(this.p2pChallenges.values())
+      .filter(challenge => 
+        challenge.status === 'open' && 
+        challenge.challengerId !== userId &&
+        challenge.expiresAt > new Date() &&
+        (challenge.isPublic || 
+         challenge.challengeeId === userId ||
+         (challenge.allowedFriends && challenge.allowedFriends.includes(userId)))
+      )
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+    // Add usernames
+    const challengesWithUsernames = await Promise.all(
+      challenges.map(async (challenge) => {
+        const challenger = await this.getUser(challenge.challengerId);
+        return {
+          ...challenge,
+          challengerUsername: challenger?.username || challenger?.firstName || 'Unknown',
+        };
+      })
+    );
+
+    return challengesWithUsernames;
+  }
+
+  async getUserP2pChallenges(userId: string): Promise<P2pChallenge[]> {
+    const challenges = Array.from(this.p2pChallenges.values())
+      .filter(challenge => 
+        challenge.challengerId === userId || challenge.challengeeId === userId
+      )
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+    // Add usernames
+    const challengesWithUsernames = await Promise.all(
+      challenges.map(async (challenge) => {
+        const challenger = await this.getUser(challenge.challengerId);
+        const challengee = challenge.challengeeId ? await this.getUser(challenge.challengeeId) : null;
+        return {
+          ...challenge,
+          challengerUsername: challenger?.username || challenger?.firstName || 'Unknown',
+          challengeeUsername: challengee?.username || challengee?.firstName || 'Unknown',
+        };
+      })
+    );
+
+    return challengesWithUsernames;
+  }
+
+  async acceptP2pChallenge(challengeId: string, challengeeId: string, challengeePick: string): Promise<P2pChallenge> {
+    const challenge = this.p2pChallenges.get(challengeId);
+    if (!challenge) throw new Error('Challenge not found');
+
+    const updatedChallenge: P2pChallenge = {
+      ...challenge,
+      challengeeId,
+      challengeePick,
+      status: 'accepted',
+      acceptedAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    this.p2pChallenges.set(challengeId, updatedChallenge);
+    return updatedChallenge;
+  }
+
+  async cancelP2pChallenge(challengeId: string, reason: string): Promise<P2pChallenge> {
+    const challenge = this.p2pChallenges.get(challengeId);
+    if (!challenge) throw new Error('Challenge not found');
+
+    const updatedChallenge: P2pChallenge = {
+      ...challenge,
+      status: 'cancelled',
+      settlementReason: reason,
+      settledAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    this.p2pChallenges.set(challengeId, updatedChallenge);
+
+    // Refund the challenger's escrow
+    await this.refundP2pEscrow(challengeId);
+
+    return updatedChallenge;
+  }
+
+  async settleP2pChallenge(challengeId: string, winnerUserId: string, settlementReason: string): Promise<P2pChallenge> {
+    const challenge = this.p2pChallenges.get(challengeId);
+    if (!challenge) throw new Error('Challenge not found');
+
+    const updatedChallenge: P2pChallenge = {
+      ...challenge,
+      status: 'settled',
+      winnerUserId,
+      settlementReason,
+      settledAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    this.p2pChallenges.set(challengeId, updatedChallenge);
+
+    // Release funds to winner
+    await this.releaseFromP2pEscrow(challengeId, winnerUserId, challenge.totalPot);
+
+    return updatedChallenge;
+  }
+
+  async depositToP2pEscrow(params: {
+    challengeId: string;
+    userId: string;
+    amount: number;
+    currency: string;
+  }): Promise<P2pTransaction> {
+    const { challengeId, userId, amount, currency } = params;
+    
+    // Deduct from user balance
+    const user = await this.getUser(userId);
+    if (!user) throw new Error('User not found');
+
+    const balanceBefore = user.weparlayCashBalance || 0;
+    if (balanceBefore < amount) {
+      throw new Error('Insufficient balance');
+    }
+
+    await this.deductUserBalance(userId, currency, amount);
+    const balanceAfter = balanceBefore - amount;
+
+    // Update challenge escrow
+    const challenge = this.p2pChallenges.get(challengeId);
+    if (challenge) {
+      challenge.escrowHeld = (challenge.escrowHeld || 0) + amount;
+      this.p2pChallenges.set(challengeId, challenge);
+    }
+
+    // Create transaction record
+    const transactionId = this.nextId++;
+    const transaction: P2pTransaction = {
+      id: transactionId,
+      challengeId,
+      userId,
+      transactionType: 'escrow_deposit',
+      amount: -amount,
+      currency,
+      balanceBefore,
+      balanceAfter,
+      description: `Deposited $${amount} to escrow for P2P challenge`,
+      createdAt: new Date(),
+    };
+
+    this.p2pTransactions.set(transactionId, transaction);
+    return transaction;
+  }
+
+  async releaseFromP2pEscrow(challengeId: string, winnerUserId: string, amount: number): Promise<P2pTransaction> {
+    // Credit winner's balance
+    const user = await this.getUser(winnerUserId);
+    if (!user) throw new Error('Winner user not found');
+
+    const balanceBefore = user.weparlayCashBalance || 0;
+    await this.creditUserBalance(winnerUserId, 'weparlay_cash', amount);
+    const balanceAfter = balanceBefore + amount;
+
+    // Update challenge escrow
+    const challenge = this.p2pChallenges.get(challengeId);
+    if (challenge) {
+      challenge.escrowHeld = 0;
+      this.p2pChallenges.set(challengeId, challenge);
+    }
+
+    // Create transaction record
+    const transactionId = this.nextId++;
+    const transaction: P2pTransaction = {
+      id: transactionId,
+      challengeId,
+      userId: winnerUserId,
+      transactionType: 'escrow_release',
+      amount,
+      currency: 'weparlay_cash',
+      balanceBefore,
+      balanceAfter,
+      description: `Won $${amount} from P2P challenge`,
+      createdAt: new Date(),
+    };
+
+    this.p2pTransactions.set(transactionId, transaction);
+    return transaction;
+  }
+
+  async refundP2pEscrow(challengeId: string): Promise<P2pTransaction[]> {
+    const challenge = this.p2pChallenges.get(challengeId);
+    if (!challenge) throw new Error('Challenge not found');
+
+    const refunds: P2pTransaction[] = [];
+
+    // Refund challenger
+    if (challenge.challengerId && challenge.betAmount > 0) {
+      const challengerUser = await this.getUser(challenge.challengerId);
+      if (challengerUser) {
+        const balanceBefore = challengerUser.weparlayCashBalance || 0;
+        await this.creditUserBalance(challenge.challengerId, 'weparlay_cash', challenge.betAmount);
+        
+        const transactionId = this.nextId++;
+        const refund: P2pTransaction = {
+          id: transactionId,
+          challengeId,
+          userId: challenge.challengerId,
+          transactionType: 'refund',
+          amount: challenge.betAmount,
+          currency: 'weparlay_cash',
+          balanceBefore,
+          balanceAfter: balanceBefore + challenge.betAmount,
+          description: `Refunded $${challenge.betAmount} from cancelled P2P challenge`,
+          createdAt: new Date(),
+        };
+        
+        this.p2pTransactions.set(transactionId, refund);
+        refunds.push(refund);
+      }
+    }
+
+    // Refund challengee if accepted
+    if (challenge.challengeeId && challenge.status === 'accepted') {
+      const challengeeUser = await this.getUser(challenge.challengeeId);
+      if (challengeeUser) {
+        const balanceBefore = challengeeUser.weparlayCashBalance || 0;
+        await this.creditUserBalance(challenge.challengeeId, 'weparlay_cash', challenge.betAmount);
+        
+        const transactionId = this.nextId++;
+        const refund: P2pTransaction = {
+          id: transactionId,
+          challengeId,
+          userId: challenge.challengeeId,
+          transactionType: 'refund',
+          amount: challenge.betAmount,
+          currency: 'weparlay_cash',
+          balanceBefore,
+          balanceAfter: balanceBefore + challenge.betAmount,
+          description: `Refunded $${challenge.betAmount} from cancelled P2P challenge`,
+          createdAt: new Date(),
+        };
+        
+        this.p2pTransactions.set(transactionId, refund);
+        refunds.push(refund);
+      }
+    }
+
+    // Clear escrow
+    challenge.escrowHeld = 0;
+    this.p2pChallenges.set(challengeId, challenge);
+
+    return refunds;
+  }
+
+  async createP2pActivity(activity: InsertP2pActivity): Promise<P2pActivity> {
+    const id = this.nextId++;
+    const newActivity: P2pActivity = {
+      ...activity,
+      id,
+      createdAt: new Date(),
+    };
+    this.p2pActivity.set(id, newActivity);
+    return newActivity;
+  }
+
+  async getP2pChallengeActivity(challengeId: string): Promise<P2pActivity[]> {
+    return Array.from(this.p2pActivity.values())
+      .filter(activity => activity.challengeId === challengeId)
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+  }
+
+  async getUserP2pStats(userId: string): Promise<{
+    totalChallenges: number;
+    wonChallenges: number;
+    totalWinnings: number;
+    winRate: number;
+  }> {
+    const userChallenges = Array.from(this.p2pChallenges.values())
+      .filter(challenge => 
+        challenge.challengerId === userId || challenge.challengeeId === userId
+      );
+
+    const settledChallenges = userChallenges.filter(c => c.status === 'settled');
+    const wonChallenges = settledChallenges.filter(c => c.winnerUserId === userId);
+    
+    const totalWinnings = wonChallenges.reduce((sum, challenge) => sum + challenge.totalPot, 0);
+    const winRate = settledChallenges.length > 0 ? wonChallenges.length / settledChallenges.length : 0;
+
+    return {
+      totalChallenges: userChallenges.length,
+      wonChallenges: wonChallenges.length,
+      totalWinnings,
+      winRate,
+    };
   }
 }
 

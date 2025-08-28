@@ -33,6 +33,7 @@ import sportsCategories from "./routes/sportsCategories";
 import tierRoutes from "./routes/tierRoutes";
 import paymentRoutesNoStripe from "./routes/paymentRoutesNoStripe";
 import settingsRouter from "./routes/settingsRoutes";
+import p2pBettingRoutes from "./routes/p2pBettingRoutes";
 
 import iptvRoutes from "./routes/iptv";
 import iptvProxyRoutes from "./routes/iptv-proxy";
@@ -89,6 +90,7 @@ const registerRoutes = async (app: Express): Promise<Server> => {
   app.use('/api/api-test', apiTestRouter);
   app.use('/api/rapid-api', rapidApiRoutes);
   app.use('/api/espn-fantasy', espnFantasyRoutes);
+  app.use('/api/p2p-betting', p2pBettingRoutes);
   app.use('/api/yahoo-fantasy', yahooFantasyRoutes);
   app.use('/api/social-media', socialMediaRoutes);
   app.use('/api/feedback', feedbackRoutes);
