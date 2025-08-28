@@ -1,5 +1,5 @@
 import { memo, useState, useEffect, useMemo } from 'react';
-import { Play, Pause, TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 
 // Real team logo URLs using reliable sports logo services
@@ -7,20 +7,72 @@ const getTeamLogoUrl = (teamName: string, sport: string): string => {
   // ESPN Logo CDN - reliable source for team logos
   const cleanTeamName = teamName.trim();
   
-  // NFL team logo mappings
+  // NFL team logo mappings - comprehensive list
   const nflLogos: { [key: string]: string } = {
     'Chiefs': 'https://a.espncdn.com/i/teamlogos/nfl/500/kc.png',
+    'Kansas City': 'https://a.espncdn.com/i/teamlogos/nfl/500/kc.png',
     'Cowboys': 'https://a.espncdn.com/i/teamlogos/nfl/500/dal.png',
+    'Dallas': 'https://a.espncdn.com/i/teamlogos/nfl/500/dal.png',
     'Packers': 'https://a.espncdn.com/i/teamlogos/nfl/500/gb.png',
+    'Green Bay': 'https://a.espncdn.com/i/teamlogos/nfl/500/gb.png',
     'Patriots': 'https://a.espncdn.com/i/teamlogos/nfl/500/ne.png',
+    'New England': 'https://a.espncdn.com/i/teamlogos/nfl/500/ne.png',
     'Steelers': 'https://a.espncdn.com/i/teamlogos/nfl/500/pit.png',
+    'Pittsburgh': 'https://a.espncdn.com/i/teamlogos/nfl/500/pit.png',
     '49ers': 'https://a.espncdn.com/i/teamlogos/nfl/500/sf.png',
+    'San Francisco': 'https://a.espncdn.com/i/teamlogos/nfl/500/sf.png',
     'Eagles': 'https://a.espncdn.com/i/teamlogos/nfl/500/phi.png',
+    'Philadelphia': 'https://a.espncdn.com/i/teamlogos/nfl/500/phi.png',
     'Giants': 'https://a.espncdn.com/i/teamlogos/nfl/500/nyg.png',
+    'New York Giants': 'https://a.espncdn.com/i/teamlogos/nfl/500/nyg.png',
     'Bills': 'https://a.espncdn.com/i/teamlogos/nfl/500/buf.png',
+    'Buffalo': 'https://a.espncdn.com/i/teamlogos/nfl/500/buf.png',
     'Rams': 'https://a.espncdn.com/i/teamlogos/nfl/500/lar.png',
+    'Los Angeles Rams': 'https://a.espncdn.com/i/teamlogos/nfl/500/lar.png',
     'Bengals': 'https://a.espncdn.com/i/teamlogos/nfl/500/cin.png',
-    'Dolphins': 'https://a.espncdn.com/i/teamlogos/nfl/500/mia.png'
+    'Cincinnati': 'https://a.espncdn.com/i/teamlogos/nfl/500/cin.png',
+    'Dolphins': 'https://a.espncdn.com/i/teamlogos/nfl/500/mia.png',
+    'Miami': 'https://a.espncdn.com/i/teamlogos/nfl/500/mia.png',
+    'Ravens': 'https://a.espncdn.com/i/teamlogos/nfl/500/bal.png',
+    'Baltimore': 'https://a.espncdn.com/i/teamlogos/nfl/500/bal.png',
+    'Browns': 'https://a.espncdn.com/i/teamlogos/nfl/500/cle.png',
+    'Cleveland': 'https://a.espncdn.com/i/teamlogos/nfl/500/cle.png',
+    'Broncos': 'https://a.espncdn.com/i/teamlogos/nfl/500/den.png',
+    'Denver': 'https://a.espncdn.com/i/teamlogos/nfl/500/den.png',
+    'Lions': 'https://a.espncdn.com/i/teamlogos/nfl/500/det.png',
+    'Detroit': 'https://a.espncdn.com/i/teamlogos/nfl/500/det.png',
+    'Texans': 'https://a.espncdn.com/i/teamlogos/nfl/500/hou.png',
+    'Houston': 'https://a.espncdn.com/i/teamlogos/nfl/500/hou.png',
+    'Colts': 'https://a.espncdn.com/i/teamlogos/nfl/500/ind.png',
+    'Indianapolis': 'https://a.espncdn.com/i/teamlogos/nfl/500/ind.png',
+    'Jaguars': 'https://a.espncdn.com/i/teamlogos/nfl/500/jax.png',
+    'Jacksonville': 'https://a.espncdn.com/i/teamlogos/nfl/500/jax.png',
+    'Raiders': 'https://a.espncdn.com/i/teamlogos/nfl/500/lv.png',
+    'Las Vegas': 'https://a.espncdn.com/i/teamlogos/nfl/500/lv.png',
+    'Chargers': 'https://a.espncdn.com/i/teamlogos/nfl/500/lac.png',
+    'Los Angeles Chargers': 'https://a.espncdn.com/i/teamlogos/nfl/500/lac.png',
+    'Vikings': 'https://a.espncdn.com/i/teamlogos/nfl/500/min.png',
+    'Minnesota': 'https://a.espncdn.com/i/teamlogos/nfl/500/min.png',
+    'Saints': 'https://a.espncdn.com/i/teamlogos/nfl/500/no.png',
+    'New Orleans': 'https://a.espncdn.com/i/teamlogos/nfl/500/no.png',
+    'Jets': 'https://a.espncdn.com/i/teamlogos/nfl/500/nyj.png',
+    'New York Jets': 'https://a.espncdn.com/i/teamlogos/nfl/500/nyj.png',
+    'Panthers': 'https://a.espncdn.com/i/teamlogos/nfl/500/car.png',
+    'Carolina': 'https://a.espncdn.com/i/teamlogos/nfl/500/car.png',
+    'Bears': 'https://a.espncdn.com/i/teamlogos/nfl/500/chi.png',
+    'Chicago': 'https://a.espncdn.com/i/teamlogos/nfl/500/chi.png',
+    'Seahawks': 'https://a.espncdn.com/i/teamlogos/nfl/500/sea.png',
+    'Seattle': 'https://a.espncdn.com/i/teamlogos/nfl/500/sea.png',
+    'Buccaneers': 'https://a.espncdn.com/i/teamlogos/nfl/500/tb.png',
+    'Tampa Bay': 'https://a.espncdn.com/i/teamlogos/nfl/500/tb.png',
+    'Titans': 'https://a.espncdn.com/i/teamlogos/nfl/500/ten.png',
+    'Tennessee': 'https://a.espncdn.com/i/teamlogos/nfl/500/ten.png',
+    'Commanders': 'https://a.espncdn.com/i/teamlogos/nfl/500/was.png',
+    'Washington': 'https://a.espncdn.com/i/teamlogos/nfl/500/was.png',
+    'Cardinals': 'https://a.espncdn.com/i/teamlogos/nfl/500/ari.png',
+    'Arizona': 'https://a.espncdn.com/i/teamlogos/nfl/500/ari.png',
+    'Falcons': 'https://a.espncdn.com/i/teamlogos/nfl/500/atl.png',
+    'Atlanta': 'https://a.espncdn.com/i/teamlogos/nfl/500/atl.png'
   };
   
   // NBA team logo mappings
@@ -87,15 +139,15 @@ interface TickerOdds {
   status?: string;
 }
 
-// Helper function to format game as favorite vs underdog with +/- odds
+// Helper function to format game as favorite vs underdog with spreads
 const formatGameDisplay = (teams: string, currentOdds: number) => {
   // Add safety check for undefined/null teams
   if (!teams || typeof teams !== 'string') {
     return {
       favorite: 'Team A',
       underdog: 'Team B', 
-      favOdds: currentOdds || -110,
-      underdogOdds: '+110'
+      favSpread: '-3.5',
+      underdogSpread: '+3.5'
     };
   }
 
@@ -104,27 +156,22 @@ const formatGameDisplay = (teams: string, currentOdds: number) => {
     return {
       favorite: teams,
       underdog: 'TBD',
-      favOdds: currentOdds || -110,
-      underdogOdds: '+110'
+      favSpread: '-3.5',
+      underdogSpread: '+3.5'
     };
   }
 
   const [team1, team2] = teamsParts;
   
-  // In American odds: negative = favorite (better chance), positive = underdog
-  const isFavorite = currentOdds < 0;
-  const favorite = isFavorite ? team1 : team2;
-  const underdog = isFavorite ? team2 : team1;
-  
-  // Create realistic odds pair
-  const favOdds = isFavorite ? currentOdds : -(Math.abs(currentOdds) + 20);
-  const underdogOdds = isFavorite ? (Math.abs(currentOdds) + 15) : Math.abs(currentOdds);
+  // Generate realistic spreads based on odds
+  const spreadValue = (Math.abs(currentOdds) / 30 + Math.random() * 2).toFixed(1);
+  const isFavorite = currentOdds < -105;
   
   return {
-    favorite: favorite?.split(' ').slice(-1)[0] || 'Team',
-    underdog: underdog?.split(' ').slice(-1)[0] || 'Team',
-    favOdds,
-    underdogOdds: `+${underdogOdds}`
+    favorite: team1?.split(' ').slice(-1)[0] || 'Team',
+    underdog: team2?.split(' ').slice(-1)[0] || 'Team',
+    favSpread: isFavorite ? `-${spreadValue}` : `+${spreadValue}`,
+    underdogSpread: isFavorite ? `+${spreadValue}` : `-${spreadValue}`
   };
 };
 
@@ -197,14 +244,14 @@ const TickerItem = memo(({ item }: { item: TickerOdds }) => {
           {gameData.favorite}
         </span>
         <span className="text-green-400 font-mono font-bold">
-          {gameData.favOdds}
+          {gameData.favSpread}
         </span>
         <span className="text-gray-400">vs</span>
         <span className="text-white font-semibold text-sm">
           {gameData.underdog}
         </span>
         <span className="text-yellow-400 font-mono font-bold">
-          {gameData.underdogOdds}
+          {gameData.underdogSpread}
         </span>
         {trendIcon}
       </div>
@@ -215,7 +262,6 @@ const TickerItem = memo(({ item }: { item: TickerOdds }) => {
 TickerItem.displayName = 'TickerItem';
 
 const ImprovedOddsTicker = memo(() => {
-  const [isPaused, setIsPaused] = useState(false);
 
   // Fetch live ticker data
   const { data: oddsResponse } = useQuery({
@@ -228,16 +274,8 @@ const ImprovedOddsTicker = memo(() => {
   if (oddsData.length === 0) {
     return (
       <footer className="bg-black py-2 overflow-hidden relative border-t border-gray-800">
-        <div className="absolute top-0 right-0 z-10 px-2 h-full flex items-center">
-          <button 
-            onClick={() => setIsPaused(!isPaused)}
-            className="text-white p-1 hover:bg-gray-700 rounded"
-          >
-            {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
-          </button>
-        </div>
 
-        <div className={`flex whitespace-nowrap ${!isPaused ? 'animate-ticker' : ''}`}>
+        <div className="flex whitespace-nowrap animate-ticker-continuous">
           {Array(3).fill(null).map((_, index) => (
             <div key={index} className="inline-flex items-center mr-12">
               <span className="px-2 py-0.5 text-xs font-bold rounded bg-blue-600 text-white">
@@ -251,12 +289,12 @@ const ImprovedOddsTicker = memo(() => {
         </div>
 
         <style>{`
-          @keyframes ticker {
+          @keyframes ticker-continuous {
             0% { transform: translateX(100%); }
             100% { transform: translateX(-100%); }
           }
-          .animate-ticker {
-            animation: ticker 20s linear infinite;
+          .animate-ticker-continuous {
+            animation: ticker-continuous 20s linear infinite;
           }
         `}</style>
       </footer>
@@ -265,19 +303,9 @@ const ImprovedOddsTicker = memo(() => {
 
   return (
     <footer className="bg-black py-2 overflow-hidden relative border-t border-gray-800">
-      <div className="absolute top-0 right-0 z-10 px-2 h-full flex items-center">
-        <button 
-          onClick={() => setIsPaused(!isPaused)}
-          className="text-white p-1 hover:bg-gray-700 rounded"
-        >
-          {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
-        </button>
-      </div>
 
       <div 
-        className={`flex whitespace-nowrap ${!isPaused ? 'animate-ticker' : ''}`}
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
+        className="flex whitespace-nowrap animate-ticker-continuous"
       >
         {/* Duplicate the data for continuous scrolling */}
         {[...oddsData, ...oddsData].map((item, index) => (
@@ -286,12 +314,12 @@ const ImprovedOddsTicker = memo(() => {
       </div>
 
       <style>{`
-        @keyframes ticker {
+        @keyframes ticker-continuous {
           0% { transform: translateX(100%); }
           100% { transform: translateX(-100%); }
         }
-        .animate-ticker {
-          animation: ticker 30s linear infinite;
+        .animate-ticker-continuous {
+          animation: ticker-continuous 45s linear infinite;
         }
       `}</style>
     </footer>
