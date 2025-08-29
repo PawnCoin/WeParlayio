@@ -80,4 +80,4 @@ localPort = 24678
 externalPort = 3000
 
 [agent]
-integrations = ["javascript_websocket==1.0.0", "javascript_gemini==1.0.0"]
+integrations = ["javascript_websocket==1.0.0"]
