@@ -81,7 +81,7 @@ const LiveOddsTicker: React.FC<LiveOddsTickerProps> = ({ oddsData }) => {
             </div>
           </div>
 
-          <div className="flex whitespace-nowrap animate-ticker-infinite pl-32">
+          <div className="flex whitespace-wrap animate-ticker-infinite pl-32">
             {/* Duplicate the data for seamless infinite scroll */}
             {[...oddsData, ...oddsData].map((odds, index) => (
               <div key={`${odds.gameId}-${index}`} className="inline-flex items-center mx-8 space-x-4">
