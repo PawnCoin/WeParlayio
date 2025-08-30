@@ -21,19 +21,19 @@ export default function UnifiedSports() {
   // Fetch unified sports API status
   const { data: apiStatus } = useQuery({
     queryKey: ['/api/unified-sports/status'],
-    refetchInterval: 30000
+    refetchInterval: 180000 // Update every 3 minutes
   });
 
   // Fetch live games across all sports
   const { data: liveGames } = useQuery({
     queryKey: ['/api/unified-sports/live'],
-    refetchInterval: 15000
+    refetchInterval: 180000 // Update every 3 minutes
   });
 
   // Fetch comprehensive upcoming games (same as enhanced ticker)
   const { data: upcomingGamesResponse } = useQuery({
     queryKey: ['/api/odds-ticker/live-ticker'],
-    refetchInterval: 30000
+    refetchInterval: 180000 // Update every 3 minutes
   });
 
   // Extract games from comprehensive response
@@ -42,7 +42,7 @@ export default function UnifiedSports() {
   // Fetch popular betting markets
   const { data: popularMarkets } = useQuery({
     queryKey: ['/api/unified-sports/markets/popular'],
-    refetchInterval: 30000
+    refetchInterval: 180000 // Update every 3 minutes
   });
 
   // Fetch American sports

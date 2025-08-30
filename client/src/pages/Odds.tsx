@@ -28,7 +28,7 @@ export default function Odds() {
   // Fetch comprehensive odds data with all sports (like the enhanced ticker)
   const { data: realOddsResponse, refetch: refetchRealOdds, isLoading } = useQuery({
     queryKey: ["/api/odds-ticker/live-ticker"],
-    refetchInterval: 30000, // Update every 30 seconds for fresh data
+    refetchInterval: 180000, // Update every 3 minutes for fresh data
     staleTime: 15000, // Use cached data for 15 seconds
     gcTime: 60000, // Keep cache for 1 minute
     refetchOnMount: true,
@@ -61,7 +61,7 @@ export default function Odds() {
   // Fetch live markets count across all sports
   const { data: liveMarketsData } = useQuery({
     queryKey: ["/api/sports/baseball_mlb/live"],
-    refetchInterval: 60000, // Update every minute
+    refetchInterval: 180000, // Update every 3 minutes
   });
 
   // Fetch NFL live data

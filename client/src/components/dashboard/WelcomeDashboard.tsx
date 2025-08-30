@@ -33,7 +33,7 @@ const WelcomeDashboard: React.FC = () => {
   // Fetch real upcoming events from unified sports endpoint
   const { data: upcomingEventsData, isLoading: isLoadingUpcomingEvents } = useQuery({
     queryKey: ['/api/unified-sports/upcoming-events'],
-    refetchInterval: 30000 // Refresh every 30 seconds
+    refetchInterval: 180000 // Refresh every 3 minutes
   });
   
   // Get time of day for personalized greeting

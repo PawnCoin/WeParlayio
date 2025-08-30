@@ -51,7 +51,7 @@ const Home: React.FC = () => {
   const { data: liveEvents, isLoading: isLoadingLiveEvents } = useQuery({
     queryKey: ["/api/events/live"],
     queryFn: () => sportsBetAPI.getLiveEvents(),
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: 180000, // Refresh every 3 minutes
   });
 
   // Get upcoming events from ESPN API (same endpoint as live events)
@@ -77,7 +77,7 @@ const Home: React.FC = () => {
         return [];
       }
     },
-    refetchInterval: 60000, // Refresh every minute
+    refetchInterval: 180000, // Refresh every 3 minutes
   });
 
   // Get active tournament

@@ -32,7 +32,7 @@ const BettingDashboard: React.FC = () => {
   // Get comprehensive upcoming events (same as enhanced ticker)
   const { data: upcomingEvents, isLoading } = useQuery({
     queryKey: ['/api/odds-ticker/live-ticker'],
-    refetchInterval: 30000,
+    refetchInterval: 180000, // Update every 3 minutes
   });
 
   const rawEvents = (upcomingEvents as any)?.odds || [];

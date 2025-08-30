@@ -513,7 +513,7 @@ const ImprovedOddsTicker = memo(() => {
   // Fetch live ticker data
   const { data: oddsResponse } = useQuery({
     queryKey: ['/api/odds-ticker/live-ticker'],
-    refetchInterval: 30000, // Update every 30 seconds
+    refetchInterval: 180000, // Update every 3 minutes (180 seconds)
   });
 
   const oddsData = useMemo(() => (oddsResponse as any)?.odds || [], [oddsResponse]);

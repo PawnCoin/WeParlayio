@@ -58,7 +58,7 @@ const P2pBetting = () => {
   // Fetch available games for betting
   const { data: gamesData } = useQuery({
     queryKey: ['/api/unified-sports/upcoming-events'],
-    refetchInterval: 30000,
+    refetchInterval: 180000, // Update every 3 minutes
   });
 
   // Fetch available challenges
