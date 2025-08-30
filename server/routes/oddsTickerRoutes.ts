@@ -66,6 +66,13 @@ router.get('/live-ticker', async (req, res) => {
         console.log(`✅ Enhanced Ticker: Converting ${allEvents.length} events across all requested sports`);
         console.log(`🏆 Sports coverage: NFL, NBA, MLB, NHL, NCAA Men/Women, Soccer, Boxing, Golf, Tennis`);
         
+        // Debug: Show what sports we actually have
+        const sportsBreakdown = allEvents.reduce((acc: any, event: any) => {
+          acc[event.sport] = (acc[event.sport] || 0) + 1;
+          return acc;
+        }, {});
+        console.log('📊 Sports breakdown:', sportsBreakdown);
+        
         // Filter for next 7 days instead of just today
         const oneWeekFromNow = new Date();
         oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
