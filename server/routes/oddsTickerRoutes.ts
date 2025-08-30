@@ -60,7 +60,20 @@ router.get('/live-ticker', async (req, res) => {
             ['basketball_ncaab', 'basketball_ncaaw', 'americanfootball_ncaaf'].includes(sport.sport)
           );
           console.log(`🎓 Filtered college events: ${collegeEvents.length} sports found`);
-          const collegeOddsEvents = collegeEvents.flatMap((sport: any) => sport.odds || []);
+          
+          // College sports data structure is different - extract games directly
+          const collegeOddsEvents = collegeEvents.flatMap((sport: any) => {
+            if (sport.odds && Array.isArray(sport.odds)) {
+              return sport.odds;
+            } else if (sport.games && Array.isArray(sport.games)) {
+              return sport.games;
+            } else if (Array.isArray(sport)) {
+              return sport;
+            } else {
+              // If sport itself is the event data
+              return [sport];
+            }
+          });
           console.log(`🎓 College odds events: ${collegeOddsEvents.length} events extracted`);
           allEvents.push(...collegeOddsEvents);
         }

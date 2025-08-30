@@ -579,7 +579,10 @@ const ImprovedOddsTicker = memo(() => {
   const liveScoreMap = useMemo(() => {
     const map = new Map();
     liveScores.forEach((score: any) => {
+      // Map by teams string for easy lookup
       map.set(score.teams, score);
+      // Also map by individual team names for flexible matching
+      map.set(score.eventId, score);
     });
     return map;
   }, [liveScores]);
@@ -622,7 +625,7 @@ const ImprovedOddsTicker = memo(() => {
       >
         {/* Duplicate the data for continuous scrolling */}
         {[...oddsData, ...oddsData].map((item, index) => {
-          const liveScore = liveScoreMap.get(item.teams);
+          const liveScore = liveScoreMap.get(item.teams) || liveScoreMap.get(item.eventId);
           return (
             <TickerItem 
               key={`${item.id}-${index}`} 
