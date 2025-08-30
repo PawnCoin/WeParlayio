@@ -562,8 +562,20 @@ const ImprovedOddsTicker = memo(() => {
     refetchInterval: 30000, // Update every 30 seconds for live scores
   });
 
-  const oddsData = useMemo(() => (oddsResponse as any)?.odds || [], [oddsResponse]);
-  const liveScores = useMemo(() => (liveScoresResponse as any) || [], [liveScoresResponse]);
+  const oddsData = useMemo(() => {
+    const data = (oddsResponse as any)?.odds || [];
+    console.log('🎯 Ticker odds data:', data.length, 'events');
+    return data;
+  }, [oddsResponse]);
+  
+  const liveScores = useMemo(() => {
+    const scores = (liveScoresResponse as any) || [];
+    console.log('🔴 Live scores data:', scores.length, 'live games');
+    if (scores.length > 0) {
+      console.log('🔴 Sample live score:', scores[0]);
+    }
+    return scores;
+  }, [liveScoresResponse]);
 
   const handleEventClick = (event: TickerOdds) => {
     setSelectedEvent(event);
@@ -583,7 +595,9 @@ const ImprovedOddsTicker = memo(() => {
       map.set(score.teams, score);
       // Also map by individual team names for flexible matching
       map.set(score.eventId, score);
+      console.log('🗺️ Adding live score to map:', score.teams, score.eventId);
     });
+    console.log('🗺️ Live score map keys:', Array.from(map.keys()));
     return map;
   }, [liveScores]);
 
@@ -626,6 +640,15 @@ const ImprovedOddsTicker = memo(() => {
         {/* Duplicate the data for continuous scrolling */}
         {[...oddsData, ...oddsData].map((item, index) => {
           const liveScore = liveScoreMap.get(item.teams) || liveScoreMap.get(item.eventId);
+          if (index < 3) { // Debug first few items
+            console.log(`🔍 Ticker item ${index}:`, {
+              teams: item.teams,
+              eventId: item.eventId,
+              sport: item.sport,
+              hasLiveScore: !!liveScore,
+              liveScore: liveScore
+            });
+          }
           return (
             <TickerItem 
               key={`${item.id}-${index}`} 
