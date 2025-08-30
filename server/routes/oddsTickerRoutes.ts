@@ -76,7 +76,7 @@ router.get('/live-ticker', async (req, res) => {
           return eventDate <= oneWeekFromNow;
         });
         
-        const enhancedOdds = weeklyEvents.slice(0, 20).map((event: any, index: number) => {
+        const enhancedOdds = weeklyEvents.map((event: any, index: number) => {
           // Add live scores for games that are currently live
           const isLive = event.status === 'in' || event.status === 'live';
           const liveScore = isLive ? {
@@ -215,7 +215,7 @@ router.get('/live-ticker', async (req, res) => {
     // Return enhanced response with comprehensive sports coverage
     res.json({
       success: true,
-      odds: allOdds.slice(0, 30), // Limit to 30 for performance
+      odds: allOdds, // Show all available events
       cached: false,
       lastUpdate: new Date(lastUpdate || now).toISOString(),
       sportsIncluded: ['NFL', 'NBA', 'MLB', 'NHL', 'NCAA-M', 'NCAA-W', 'Soccer', 'Boxing', 'PGA', 'LPGA', 'ATP', 'WTA', 'UFC'],
