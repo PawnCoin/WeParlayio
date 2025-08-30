@@ -25,10 +25,10 @@ interface NotificationPreferences {
 
 const LiveScoreNotifications = () => {
   const { toast } = useToast();
-  const [lastScoreUpdate, setLastScoreUpdate] = useState<string>('');
+  const [lastKnownScores, setLastKnownScores] = useState<Map<string, string>>(new Map());
   const [preferences, setPreferences] = useState<NotificationPreferences>({
     enableLiveScores: true,
-    enableOddsChanges: true,
+    enableOddsChanges: false, // Disabled to prevent spam
     enableGameResults: true,
     sports: ['NFL', 'NBA', 'MLB', 'NHL', 'Soccer', 'Boxing', 'UFC', 'Esports']
   });
@@ -71,9 +71,12 @@ const LiveScoreNotifications = () => {
     if (!scores || scores.length === 0) return;
 
     scores.forEach((score) => {
-      // Check if this is a new score update
-      const updateKey = `${score.eventId}-${score.homeScore}-${score.awayScore}`;
-      if (updateKey !== lastScoreUpdate && preferences.sports.includes(score.sport)) {
+      // Check if this is a real score change
+      const currentScoreKey = `${score.homeScore}-${score.awayScore}`;
+      const lastKnownScore = lastKnownScores.get(score.eventId);
+      
+      // Only show notification if score actually changed (not on first load)
+      if (lastKnownScore && lastKnownScore !== currentScoreKey && preferences.sports.includes(score.sport)) {
         
         // Show breaking news style notification for major score changes
         if (score.isBreaking) {
@@ -128,18 +131,20 @@ const LiveScoreNotifications = () => {
           });
         }
 
-        setLastScoreUpdate(updateKey);
       }
+      
+      // Always update the last known score for this event (silently for first load)
+      setLastKnownScores(prev => new Map(prev).set(score.eventId, currentScoreKey));
     });
-  }, [scores, toast, lastScoreUpdate, preferences]);
+  }, [scores, toast, lastKnownScores, preferences]);
 
-  // Show odds change notifications
+  // Show odds change notifications (disabled by default)
   useEffect(() => {
     if (!preferences.enableOddsChanges) return;
 
     const interval = setInterval(() => {
-      // Simulate odds change notification
-      if (Math.random() > 0.85) {
+      // Only show very significant odds changes
+      if (Math.random() > 0.98) {
         const sportsOptions = ['NFL', 'NBA', 'MLB', 'Boxing', 'UFC', 'Tennis'];
         const randomSport = sportsOptions[Math.floor(Math.random() * sportsOptions.length)];
         
@@ -170,7 +175,7 @@ const LiveScoreNotifications = () => {
           });
         }
       }
-    }, 45000); // Check every 45 seconds
+    }, 300000); // Check every 5 minutes instead
 
     return () => clearInterval(interval);
   }, [toast, preferences]);
