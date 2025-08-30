@@ -151,6 +151,7 @@ function Router() {
       
       {/* Social Features */}
       <Route path="/social" component={SocialBetting} />
+      <Route path="/social-betting" component={SocialBetting} />
       <Route path="/head-to-head" component={HeadToHeadBetting} />
       
       {/* Social Media Bots with Suspense */}
