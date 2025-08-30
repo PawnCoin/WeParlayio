@@ -111,10 +111,10 @@ const LiveOddsTicker: React.FC<LiveOddsTickerProps> = ({ oddsData }) => {
         <style>{`
           @keyframes ticker-infinite {
             0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+            100% { transform: translateX(-100%); }
           }
           .animate-ticker-infinite {
-            animation: ticker-infinite 60s linear infinite;
+            animation: ticker-infinite 120s linear infinite;
           }
         `}</style>
       </CardContent>
