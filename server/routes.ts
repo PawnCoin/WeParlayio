@@ -330,38 +330,38 @@ const registerRoutes = async (app: Express): Promise<Server> => {
   // Live scores endpoint for real-time notifications
   app.get('/api/events/live-scores', async (req, res) => {
     try {
-      // Fetch current live games and their scores
+      // Fetch current live games and their scores - matching actual ticker games
       const liveScores = [
         {
-          eventId: 'nfl_chiefs_bills',
-          sport: 'NFL',
-          teams: 'Chiefs vs Bills',
-          homeScore: 21 + Math.floor(Math.random() * 7),
-          awayScore: 17 + Math.floor(Math.random() * 7),
-          period: 'Q3',
-          timeRemaining: `${Math.floor(Math.random() * 15)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`,
+          eventId: 'mlb_sox_pirates',
+          sport: 'MLB',
+          teams: 'White Sox vs Pirates',
+          homeScore: 4 + Math.floor(Math.random() * 3),
+          awayScore: 2 + Math.floor(Math.random() * 4),
+          period: '7th',
+          timeRemaining: `${Math.floor(Math.random() * 2) + 1} out`,
           lastUpdate: new Date().toISOString(),
           isBreaking: Math.random() > 0.7
         },
         {
-          eventId: 'nba_lakers_warriors',
-          sport: 'NBA',
-          teams: 'Lakers vs Warriors',
-          homeScore: 89 + Math.floor(Math.random() * 10),
-          awayScore: 92 + Math.floor(Math.random() * 8),
-          period: '4th',
-          timeRemaining: `${Math.floor(Math.random() * 12)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`,
+          eventId: 'mlb_bluejays_brewers',
+          sport: 'MLB',
+          teams: 'Toronto Blue Jays vs Milwaukee Brewers',
+          homeScore: 3 + Math.floor(Math.random() * 4),
+          awayScore: 5 + Math.floor(Math.random() * 3),
+          period: '8th',
+          timeRemaining: `${Math.floor(Math.random() * 2) + 1} out`,
           lastUpdate: new Date().toISOString(),
           isBreaking: Math.random() > 0.8
         },
         {
-          eventId: 'ufc_jones_miocic',
-          sport: 'UFC',
-          teams: 'Jones vs Miocic',
-          homeScore: 2, // Rounds won
-          awayScore: 1,
-          period: 'Round 3',
-          timeRemaining: `${Math.floor(Math.random() * 5)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`,
+          eventId: 'wnba_liberty_aces',
+          sport: 'WNBA',
+          teams: 'New York Liberty vs Las Vegas Aces',
+          homeScore: 67 + Math.floor(Math.random() * 8),
+          awayScore: 72 + Math.floor(Math.random() * 6),
+          period: '3rd',
+          timeRemaining: `${Math.floor(Math.random() * 10)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`,
           lastUpdate: new Date().toISOString(),
           isBreaking: Math.random() > 0.6
         }
