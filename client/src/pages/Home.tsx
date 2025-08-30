@@ -12,6 +12,7 @@ import { StatsCarousel } from "@/components/StatsCarousel";
 import WelcomeDashboard from "@/components/dashboard/WelcomeDashboard";
 import BusinessProposalModal from "@/components/business/BusinessProposalModal";
 import CompleteBettingSystem from "@/pages/CompleteBettingSystem";
+import LiveScoresDisplay from "@/components/LiveScoresDisplay";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -259,6 +260,11 @@ const Home: React.FC = () => {
             ]}
           />
         </div>
+      </div>
+
+      {/* Live Scores Display - NEW FEATURE */}
+      <div className="mb-6">
+        <LiveScoresDisplay />
       </div>
 
       {/* Live Odds Ticker */}

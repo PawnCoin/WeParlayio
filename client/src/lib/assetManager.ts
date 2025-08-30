@@ -285,6 +285,41 @@ export class AssetManager {
       "Philadelphia Eagles": "https://a.espncdn.com/i/teamlogos/nfl/500/phi.png",
       "Pittsburgh Steelers": "https://a.espncdn.com/i/teamlogos/nfl/500/pit.png"
     },
+    ncaaf: {
+      "Alabama Crimson Tide": "https://a.espncdn.com/i/teamlogos/ncf/500/333.png",
+      "Florida State Seminoles": "https://a.espncdn.com/i/teamlogos/ncf/500/52.png",
+      "Virginia Tech Hokies": "https://a.espncdn.com/i/teamlogos/ncf/500/259.png",
+      "South Carolina Gamecocks": "https://a.espncdn.com/i/teamlogos/ncf/500/2579.png",
+      "Notre Dame Fighting Irish": "https://a.espncdn.com/i/teamlogos/ncf/500/87.png",
+      "Miami Hurricanes": "https://a.espncdn.com/i/teamlogos/ncf/500/2390.png",
+      "LSU Tigers": "https://a.espncdn.com/i/teamlogos/ncf/500/99.png",
+      "Clemson Tigers": "https://a.espncdn.com/i/teamlogos/ncf/500/228.png",
+      "Michigan Wolverines": "https://a.espncdn.com/i/teamlogos/ncf/500/130.png",
+      "Ohio State Buckeyes": "https://a.espncdn.com/i/teamlogos/ncf/500/194.png",
+      "Texas Longhorns": "https://a.espncdn.com/i/teamlogos/ncf/500/251.png",
+      "Oklahoma Sooners": "https://a.espncdn.com/i/teamlogos/ncf/500/201.png",
+      "Florida Gators": "https://a.espncdn.com/i/teamlogos/ncf/500/57.png",
+      "Georgia Bulldogs": "https://a.espncdn.com/i/teamlogos/ncf/500/61.png",
+      "Kansas State Wildcats": "https://a.espncdn.com/i/teamlogos/ncf/500/2306.png",
+      "Texas A&M Aggies": "https://a.espncdn.com/i/teamlogos/ncf/500/245.png",
+      "Texas Tech Red Raiders": "https://a.espncdn.com/i/teamlogos/ncf/500/2641.png",
+      "Ole Miss Rebels": "https://a.espncdn.com/i/teamlogos/ncf/500/145.png",
+      "SMU Mustangs": "https://a.espncdn.com/i/teamlogos/ncf/500/2567.png",
+      "Arizona State Sun Devils": "https://a.espncdn.com/i/teamlogos/ncf/500/9.png"
+    },
+    ncaab: {
+      "Wake Forest Demon Deacons": "https://a.espncdn.com/i/teamlogos/ncb/500/154.png",
+      "Syracuse Orange": "https://a.espncdn.com/i/teamlogos/ncb/500/183.png",
+      "Pittsburgh Panthers": "https://a.espncdn.com/i/teamlogos/ncb/500/221.png",
+      "North Carolina Tar Heels": "https://a.espncdn.com/i/teamlogos/ncb/500/153.png",
+      "NC State Wolfpack": "https://a.espncdn.com/i/teamlogos/ncb/500/152.png",
+      "Louisville Cardinals": "https://a.espncdn.com/i/teamlogos/ncb/500/97.png",
+      "California Golden Bears": "https://a.espncdn.com/i/teamlogos/ncb/500/25.png",
+      "UCLA Bruins": "https://a.espncdn.com/i/teamlogos/ncb/500/26.png",
+      "Georgetown Hoyas": "https://a.espncdn.com/i/teamlogos/ncb/500/46.png",
+      "UConn Huskies": "https://a.espncdn.com/i/teamlogos/ncb/500/41.png",
+      "Iowa State Cyclones": "https://a.espncdn.com/i/teamlogos/ncb/500/66.png"
+    },
     soccer: {
       "Manchester United": "https://logos-world.net/wp-content/uploads/2020/06/Manchester-United-Logo.png",
       "Barcelona": "https://logos-world.net/wp-content/uploads/2020/06/Barcelona-Logo.png",
@@ -319,12 +354,28 @@ export class AssetManager {
       return this.getSportIcon(league);
     }
 
-    // Try our reliable logo mappings first
+    // Normalize league for lookups
     const normalizedLeague = league.toLowerCase().replace(/\s+/g, '');
+    
+    // Try our reliable logo mappings first (exact match)
     const leagueLogos = this.teamLogos[normalizedLeague];
-
     if (leagueLogos && leagueLogos[teamName]) {
       return leagueLogos[teamName];
+    }
+
+    // Try partial matching for team names
+    if (leagueLogos) {
+      for (const [fullTeamName, logoUrl] of Object.entries(leagueLogos)) {
+        if (teamName.includes(fullTeamName) || fullTeamName.includes(teamName)) {
+          return logoUrl;
+        }
+        // Also try matching individual words
+        const teamWords = teamName.split(' ');
+        const fullTeamWords = fullTeamName.split(' ');
+        if (teamWords.some(word => fullTeamWords.includes(word))) {
+          return logoUrl;
+        }
+      }
     }
 
     // Try ESPN service as fallback
