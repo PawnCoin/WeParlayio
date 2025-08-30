@@ -340,18 +340,8 @@ const registerRoutes = async (app: Express): Promise<Server> => {
         const espnLiveGames = await espnApiService.getLiveGames();
         
         if (espnLiveGames && espnLiveGames.length > 0) {
-          liveScores = espnLiveGames.map((game: any) => ({
-            eventId: `espn_live_${game.id}`,
-            sport: game.sport || 'Unknown',
-            teams: `${game.awayTeam?.name || 'Away'} vs ${game.homeTeam?.name || 'Home'}`,
-            homeScore: game.homeScore || game.score?.home || null,
-            awayScore: game.awayScore || game.score?.away || null,
-            period: game.period || game.status?.period || 'Live',
-            timeRemaining: game.timeRemaining || game.status?.displayClock || 'Live',
-            lastUpdate: new Date().toISOString(),
-            isBreaking: game.isBreaking || false,
-            source: 'ESPN API'
-          })).filter((game: any) => game.homeScore !== null && game.awayScore !== null);
+          // Use the properly formatted games directly from getLiveGames()
+          liveScores = espnLiveGames.filter((game: any) => game.homeScore !== null && game.awayScore !== null);
           
           console.log(`✅ Live Scores: Found ${liveScores.length} authentic live games from ESPN`);
         }

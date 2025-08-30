@@ -350,28 +350,25 @@ export class ESPNApiService {
               const homeTeam = competitors.find((c: any) => c.homeAway === 'home');
               const awayTeam = competitors.find((c: any) => c.homeAway === 'away');
               
-              // Debug logging for team name extraction
-              console.log(`🔍 Live Game Debug for ${sport}:`, {
-                eventId: event.id,
-                homeTeam: homeTeam?.team,
-                awayTeam: awayTeam?.team,
-                status: event.status
-              });
-              
-              // Extract team names more robustly - try multiple fields
+              // Extract team names and data from the available team information
               const awayName = awayTeam?.team?.displayName || 
+                             awayTeam?.team?.shortDisplayName ||
                              awayTeam?.team?.name || 
-                             awayTeam?.team?.shortDisplayName || 
                              awayTeam?.team?.abbreviation ||
                              'Away';
               const homeName = homeTeam?.team?.displayName || 
+                             homeTeam?.team?.shortDisplayName ||
                              homeTeam?.team?.name || 
-                             homeTeam?.team?.shortDisplayName || 
                              homeTeam?.team?.abbreviation ||
                              'Home';
               
+              // Use a more robust event ID generation
+              const eventId = event.id || `${sport}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+              
+              console.log(`✅ Live ${sport} Game: ${awayName} vs ${homeName}`);
+              
               return {
-                eventId: `espn_live_${event.id}`,
+                eventId: `espn_live_${eventId}`,
                 sport: sport.toUpperCase(),
                 teams: `${awayName} vs ${homeName}`,
                 homeScore: parseInt(homeTeam?.score || '0'),
