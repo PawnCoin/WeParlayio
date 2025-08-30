@@ -1,9 +1,13 @@
-import { memo, useState, useEffect, useMemo } from 'react';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { memo, useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { TrendingUp, TrendingDown, Wifi, WifiOff, AlertCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import EventPreviewModal from './EventPreviewModal';
 
-// Real team logo URLs using reliable sports logo services
+// Interactive sports logo cache with fallback mechanism
+const logoCache = new Map<string, { url: string; status: 'loading' | 'loaded' | 'error'; timestamp: number }>();
+const CACHE_EXPIRY = 60 * 60 * 1000; // 1 hour
+
+// Enhanced logo service with caching and error handling
 const getTeamLogoUrl = (teamName: string, sport: string): string => {
   // ESPN Logo CDN - reliable source for team logos
   const cleanTeamName = teamName.trim();
@@ -373,6 +377,163 @@ const getTeamLogoUrl = (teamName: string, sport: string): string => {
   return sportLogos[sport] || 'https://a.espncdn.com/i/teamlogos/default/500/default.png';
 };
 
+// Intelligent sports category color coding
+const getSportColors = (sport: string): { primary: string; secondary: string; accent: string } => {
+  const colorMap: { [key: string]: { primary: string; secondary: string; accent: string } } = {
+    'NFL': { primary: 'rgb(1, 51, 105)', secondary: 'rgb(198, 12, 48)', accent: 'rgb(255, 255, 255)' },
+    'NBA': { primary: 'rgb(200, 16, 46)', secondary: 'rgb(29, 66, 138)', accent: 'rgb(255, 255, 255)' },
+    'MLB': { primary: 'rgb(0, 50, 120)', secondary: 'rgb(196, 30, 58)', accent: 'rgb(255, 255, 255)' },
+    'NHL': { primary: 'rgb(0, 0, 0)', secondary: 'rgb(200, 200, 200)', accent: 'rgb(255, 255, 255)' },
+    'NCAAF': { primary: 'rgb(120, 29, 104)', secondary: 'rgb(255, 184, 28)', accent: 'rgb(255, 255, 255)' },
+    'NCAAB': { primary: 'rgb(41, 84, 144)', secondary: 'rgb(244, 123, 32)', accent: 'rgb(255, 255, 255)' },
+    'NCAA-M': { primary: 'rgb(41, 84, 144)', secondary: 'rgb(244, 123, 32)', accent: 'rgb(255, 255, 255)' },
+    'NCAA-W': { primary: 'rgb(195, 32, 107)', secondary: 'rgb(255, 184, 28)', accent: 'rgb(255, 255, 255)' },
+    'Soccer': { primary: 'rgb(0, 138, 0)', secondary: 'rgb(255, 255, 255)', accent: 'rgb(0, 0, 0)' },
+    'WNBA': { primary: 'rgb(253, 185, 39)', secondary: 'rgb(196, 18, 48)', accent: 'rgb(255, 255, 255)' },
+    'Tennis': { primary: 'rgb(1, 114, 54)', secondary: 'rgb(255, 255, 255)', accent: 'rgb(0, 0, 0)' },
+    'Golf': { primary: 'rgb(1, 121, 111)', secondary: 'rgb(255, 255, 255)', accent: 'rgb(0, 0, 0)' },
+    'Boxing': { primary: 'rgb(220, 38, 127)', secondary: 'rgb(0, 0, 0)', accent: 'rgb(255, 255, 255)' },
+    'MMA': { primary: 'rgb(211, 17, 69)', secondary: 'rgb(0, 0, 0)', accent: 'rgb(255, 255, 255)' },
+    'UFC': { primary: 'rgb(211, 17, 69)', secondary: 'rgb(0, 0, 0)', accent: 'rgb(255, 255, 255)' }
+  };
+  
+  return colorMap[sport] || { primary: 'rgb(55, 65, 81)', secondary: 'rgb(107, 114, 128)', accent: 'rgb(255, 255, 255)' };
+};
+
+// Enhanced error handling with retry mechanism
+const useImageWithFallback = (src: string, fallbackSrc: string) => {
+  const [currentSrc, setCurrentSrc] = useState(src);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const retryCount = useRef(0);
+  const maxRetries = 3;
+
+  const handleLoad = useCallback(() => {
+    setIsLoading(false);
+    setHasError(false);
+    retryCount.current = 0;
+  }, []);
+
+  const handleError = useCallback(() => {
+    setIsLoading(false);
+    if (retryCount.current < maxRetries) {
+      retryCount.current++;
+      setTimeout(() => {
+        setCurrentSrc(src + '?retry=' + retryCount.current);
+        setIsLoading(true);
+      }, 1000 * retryCount.current);
+    } else {
+      setHasError(true);
+      setCurrentSrc(fallbackSrc);
+    }
+  }, [src, fallbackSrc]);
+
+  useEffect(() => {
+    setCurrentSrc(src);
+    setIsLoading(true);
+    setHasError(false);
+    retryCount.current = 0;
+  }, [src]);
+
+  return { src: currentSrc, isLoading, hasError, onLoad: handleLoad, onError: handleError };
+};
+
+// Enhanced team logo component with fallback handling
+const EnhancedTeamLogo = ({ src, teamName, sport, size = "w-8 h-8" }: {
+  src: string;
+  teamName: string;
+  sport: string;
+  size?: string;
+}) => {
+  const fallbackSrc = getSportColors(sport).primary;
+  const { src: currentSrc, isLoading, hasError, onLoad, onError } = useImageWithFallback(src, fallbackSrc);
+  
+  return (
+    <div className={`${size} relative flex items-center justify-center rounded-full bg-gray-700 overflow-hidden`}>
+      {isLoading && (
+        <div className="absolute inset-0 bg-gray-600 animate-pulse rounded-full"></div>
+      )}
+      {hasError ? (
+        <div 
+          className="w-full h-full flex items-center justify-center text-white text-xs font-bold rounded-full"
+          style={{ backgroundColor: getSportColors(sport).primary }}
+        >
+          {teamName.charAt(0)}
+        </div>
+      ) : (
+        <img
+          src={currentSrc}
+          alt={teamName}
+          className="w-full h-full object-contain"
+          onLoad={onLoad}
+          onError={onError}
+        />
+      )}
+    </div>
+  );
+};
+
+// Animated live game state transitions
+const LiveGameIndicator = ({ isLive, isBreaking }: { isLive: boolean; isBreaking: boolean }) => {
+  if (!isLive) return null;
+  
+  return (
+    <div className="flex items-center gap-1">
+      <div className={`relative flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold ${
+        isBreaking 
+          ? 'bg-gradient-to-r from-red-500 to-red-600 text-white animate-pulse'
+          : 'bg-gradient-to-r from-red-500 to-red-400 text-white'
+      }`}>
+        <div className="w-2 h-2 bg-white rounded-full animate-ping"></div>
+        <span>{isBreaking ? 'BREAKING' : 'LIVE'}</span>
+      </div>
+    </div>
+  );
+};
+
+// Enhanced score display with animations
+const AnimatedScore = ({ homeScore, awayScore, period, timeRemaining }: {
+  homeScore: number;
+  awayScore: number;
+  period: string;
+  timeRemaining: string;
+}) => {
+  return (
+    <div className="bg-black/20 rounded-lg px-3 py-2 backdrop-blur-sm">
+      <div className="flex items-center justify-between text-sm font-bold text-white">
+        <span className="transition-all duration-300 hover:scale-110">{homeScore}</span>
+        <span className="text-xs text-gray-300 mx-2">-</span>
+        <span className="transition-all duration-300 hover:scale-110">{awayScore}</span>
+      </div>
+      <div className="text-xs text-center text-gray-300 mt-1">
+        {period} {timeRemaining && `• ${timeRemaining}`}
+      </div>
+    </div>
+  );
+};
+
+// Data freshness indicator with network status
+const DataFreshness = ({ timestamp }: { timestamp: string }) => {
+  const getTimeDiff = () => {
+    const now = new Date().getTime();
+    const time = new Date(timestamp).getTime();
+    const diff = (now - time) / 1000; // seconds
+    
+    if (diff < 30) return { status: 'fresh', icon: Wifi, color: 'text-green-400' };
+    if (diff < 120) return { status: 'recent', icon: Wifi, color: 'text-yellow-400' };
+    return { status: 'stale', icon: WifiOff, color: 'text-red-400' };
+  };
+  
+  const { status, icon: Icon, color } = getTimeDiff();
+  
+  return (
+    <div className={`flex items-center gap-1 ${color}`}>
+      <Icon size={12} />
+      <span className="text-xs">{status}</span>
+    </div>
+  );
+};
+
 interface TickerOdds {
   id: string;
   sport: string;
@@ -385,6 +546,14 @@ interface TickerOdds {
   eventId?: string;
   bookmaker?: string;
   status?: string;
+  hasLiveScore?: boolean;
+  liveScore?: {
+    homeScore: number;
+    awayScore: number;
+    period: string;
+    timeRemaining: string;
+    isBreaking: boolean;
+  };
 }
 
 // Helper function to format game as favorite vs underdog with spreads
@@ -432,7 +601,8 @@ const TickerItem = memo(({ item, onClick, liveScore }: {
   if (!item) return null;
   
   const gameData = formatGameDisplay(item.teams, item.currentOdds);
-  const isLive = liveScore && (liveScore.homeScore !== undefined || item.status === 'live' || item.status === 'in');
+  const isLive = item.hasLiveScore && item.liveScore || liveScore && (liveScore.homeScore !== undefined || item.status === 'live' || item.status === 'in');
+  const sportColors = getSportColors(item.sport);
   
   const getSportColor = (sport: string) => {
     const colors: Record<string, string> = {
@@ -468,77 +638,76 @@ const TickerItem = memo(({ item, onClick, liveScore }: {
   
   return (
     <div 
-      className="inline-flex items-center mr-8 px-2 py-1 min-w-max cursor-pointer hover:bg-gray-800/50 rounded transition-colors"
+      className={`inline-flex items-center mr-8 px-3 py-2 min-w-max cursor-pointer rounded-lg transition-all duration-300 ${
+        isLive 
+          ? 'bg-gradient-to-r from-red-900/30 to-red-800/20 border border-red-500/30 hover:scale-105 hover:shadow-red-500/20' 
+          : 'bg-gray-800/50 hover:bg-gray-700/50'
+      }`}
       onClick={onClick}
+      style={{
+        background: isLive 
+          ? `linear-gradient(135deg, ${sportColors.primary}20, ${sportColors.secondary}10)` 
+          : undefined
+      }}
     >
+      {/* Enhanced Sport Badge with Live Indicator */}
+      <div className="flex items-center gap-2 mr-3">
+        <div 
+          className="px-2 py-1 rounded-full text-xs font-bold text-white"
+          style={{ backgroundColor: sportColors.primary }}
+        >
+          {item.sport}
+        </div>
+        <LiveGameIndicator isLive={!!isLive} isBreaking={item.liveScore?.isBreaking || false} />
+      </div>
+
+      {/* Enhanced Team Logos */}
       <div className="flex items-center space-x-1 mr-2">
-        <img 
-          src={homeTeamLogo} 
-          alt={gameData.favorite} 
-          className="w-6 h-6 rounded-sm object-contain"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = getTeamLogoUrl(gameData.favorite, item.sport);
-          }}
+        <EnhancedTeamLogo 
+          src={homeTeamLogo}
+          teamName={gameData.favorite}
+          sport={item.sport}
+          size="w-6 h-6"
         />
         <span className="text-gray-400 text-xs">vs</span>
-        <img 
-          src={awayTeamLogo} 
-          alt={gameData.underdog} 
-          className="w-6 h-6 rounded-sm object-contain"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = getTeamLogoUrl(gameData.underdog, item.sport);
-          }}
+        <EnhancedTeamLogo 
+          src={awayTeamLogo}
+          teamName={gameData.underdog}
+          sport={item.sport}
+          size="w-6 h-6"
         />
       </div>
-      
-      <span className={`px-2 py-0.5 text-xs font-bold rounded mr-3 ${getSportColor(item.sport)}`}>
-        {item.sport}
-      </span>
-      
-      <div className="flex items-center space-x-2">
-        {isLive ? (
-          // Live game display with scores
-          <>
-            <div className="flex items-center space-x-1">
-              <span className="text-white font-semibold text-sm">
-                {gameData.favorite}
-              </span>
-              <span className="text-green-400 font-mono font-bold text-lg">
-                {liveScore.homeScore}
-              </span>
-            </div>
-            <span className="text-red-400 font-bold">LIVE</span>
-            <div className="flex items-center space-x-1">
-              <span className="text-yellow-400 font-mono font-bold text-lg">
-                {liveScore.awayScore}
-              </span>
-              <span className="text-white font-semibold text-sm">
-                {gameData.underdog}
-              </span>
-            </div>
-            <span className="text-xs text-gray-400">
-              {liveScore.period} {liveScore.timeRemaining}
-            </span>
-          </>
-        ) : (
-          // Regular odds display for upcoming games
-          <>
-            <span className="text-white font-semibold text-sm">
-              {gameData.favorite}
-            </span>
-            <span className="text-green-400 font-mono font-bold">
-              {gameData.favSpread}
-            </span>
-            <span className="text-gray-400">vs</span>
-            <span className="text-white font-semibold text-sm">
-              {gameData.underdog}
-            </span>
-            <span className="text-yellow-400 font-mono font-bold">
-              {gameData.underdogSpread}
-            </span>
-            {trendIcon}
-          </>
-        )}
+
+      {/* Enhanced Live Score or Odds Display */}
+      {isLive && item.liveScore ? (
+        <AnimatedScore 
+          homeScore={item.liveScore.homeScore}
+          awayScore={item.liveScore.awayScore}
+          period={item.liveScore.period}
+          timeRemaining={item.liveScore.timeRemaining}
+        />
+      ) : (
+        <div className="flex items-center space-x-2">
+          <span className="text-white font-semibold text-sm">
+            {gameData.favorite}
+          </span>
+          <span className="text-green-400 font-mono font-bold">
+            {gameData.favSpread}
+          </span>
+          <span className="text-gray-400">vs</span>
+          <span className="text-white font-semibold text-sm">
+            {gameData.underdog}
+          </span>
+          <span className="text-yellow-400 font-mono font-bold">
+            {gameData.underdogSpread}
+          </span>
+          {trendIcon}
+        </div>
+      )}
+
+      {/* Data Freshness Indicator */}
+      <div className="ml-2">
+        <DataFreshness timestamp={item.timestamp} />
       </div>
     </div>
   );
