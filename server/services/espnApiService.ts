@@ -309,6 +309,67 @@ export class ESPNApiService {
   }
 
   /**
+   * Get live games with scores - REAL-TIME DATA ONLY
+   */
+  async getLiveGames(): Promise<any[]> {
+    try {
+      const sports = ['nfl', 'nba', 'mlb', 'nhl', 'wnba'];
+      const allLiveGames = [];
+
+      for (const sport of sports) {
+        try {
+          const sportPath = this.sportMappings[sport];
+          if (!sportPath) continue;
+
+          const response = await fetch(`${this.baseUrl}/sports/${sportPath}/scoreboard`);
+          const data = await response.json();
+          
+          if (data.events && data.events.length > 0) {
+            // Filter for only LIVE games (in progress)
+            const liveGames = data.events.filter((event: any) => {
+              const status = event.status?.type?.name?.toLowerCase();
+              return status === 'in' || status === 'live' || event.status?.type?.state === 'in';
+            });
+
+            const formattedGames = liveGames.map((event: any) => {
+              const competitors = event.competitions?.[0]?.competitors || [];
+              const homeTeam = competitors.find((c: any) => c.homeAway === 'home');
+              const awayTeam = competitors.find((c: any) => c.homeAway === 'away');
+              
+              // Extract team names more robustly
+              const awayName = awayTeam?.team?.displayName || awayTeam?.team?.name || awayTeam?.team?.shortDisplayName || 'Away';
+              const homeName = homeTeam?.team?.displayName || homeTeam?.team?.name || homeTeam?.team?.shortDisplayName || 'Home';
+              
+              return {
+                eventId: `espn_live_${event.id}`,
+                sport: sport.toUpperCase(),
+                teams: `${awayName} vs ${homeName}`,
+                homeScore: parseInt(homeTeam?.score || '0'),
+                awayScore: parseInt(awayTeam?.score || '0'),
+                period: event.status?.period || event.status?.type?.shortDetail || 'Live',
+                timeRemaining: event.status?.displayClock || event.status?.type?.detail || 'Live',
+                lastUpdate: new Date().toISOString(),
+                isBreaking: Math.abs(parseInt(homeTeam?.score || '0') - parseInt(awayTeam?.score || '0')) >= 14,
+                source: 'ESPN API'
+              };
+            });
+            
+            allLiveGames.push(...formattedGames);
+          }
+        } catch (sportError) {
+          console.error(`Error fetching ${sport} live games:`, sportError);
+        }
+      }
+
+      console.log(`✅ ESPN Live Games: Found ${allLiveGames.length} authentic live games`);
+      return allLiveGames;
+    } catch (error) {
+      console.error('ESPN Live Games API error:', error);
+      return [];
+    }
+  }
+
+  /**
    * Get all teams across all sports
    */
   async getAllTeams(): Promise<{ [sport: string]: any[] }> {

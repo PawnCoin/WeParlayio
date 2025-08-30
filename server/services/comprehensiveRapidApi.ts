@@ -525,6 +525,88 @@ export class PinnacleOddsService {
       return [];
     }
   }
+
+  /**
+   * Get live games from RapidAPI - REAL-TIME DATA ONLY
+   */
+  async getLiveGames(): Promise<any[]> {
+    if (!this.apiKey) {
+      console.log('🔑 RapidAPI key missing - no live games available');
+      return [];
+    }
+
+    try {
+      const allLiveGames = [];
+      
+      // Try football/soccer live fixtures
+      try {
+        const response = await fetch('https://api-football-v1.p.rapidapi.com/v3/fixtures?live=all', {
+          headers: {
+            'X-RapidAPI-Key': this.apiKey,
+            'X-RapidAPI-Host': this.endpoints.football
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const liveMatches = data.response?.slice(0, 5) || [];
+          
+          const formattedMatches = liveMatches.map((match: any) => ({
+            eventId: `rapid_${match.fixture.id}`,
+            sport: 'Soccer',
+            teams: `${match.teams.away.name} vs ${match.teams.home.name}`,
+            homeScore: match.goals.home || 0,
+            awayScore: match.goals.away || 0,
+            period: `${match.fixture.status.elapsed || 0}'`,
+            timeRemaining: 'Live',
+            lastUpdate: new Date().toISOString(),
+            isBreaking: Math.abs((match.goals.home || 0) - (match.goals.away || 0)) >= 2
+          }));
+          
+          allLiveGames.push(...formattedMatches);
+        }
+      } catch (footballError) {
+        console.error('RapidAPI Football live games error:', footballError);
+      }
+
+      // Try basketball live games
+      try {
+        const basketballResponse = await fetch('https://api-basketball.p.rapidapi.com/games?live=all', {
+          headers: {
+            'X-RapidAPI-Key': this.apiKey,
+            'X-RapidAPI-Host': this.endpoints.basketball
+          }
+        });
+
+        if (basketballResponse.ok) {
+          const basketballData = await basketballResponse.json();
+          const liveBasketball = basketballData.response?.slice(0, 3) || [];
+          
+          const formattedBasketball = liveBasketball.map((game: any) => ({
+            eventId: `rapid_bball_${game.id}`,
+            sport: 'Basketball',
+            teams: `${game.teams.away.name} vs ${game.teams.home.name}`,
+            homeScore: game.scores.home.total || 0,
+            awayScore: game.scores.away.total || 0,
+            period: game.status.long || 'Live',
+            timeRemaining: 'Live',
+            lastUpdate: new Date().toISOString(),
+            isBreaking: Math.abs((game.scores.home.total || 0) - (game.scores.away.total || 0)) >= 15
+          }));
+          
+          allLiveGames.push(...formattedBasketball);
+        }
+      } catch (basketballError) {
+        console.error('RapidAPI Basketball live games error:', basketballError);
+      }
+
+      console.log(`✅ RapidAPI Live Games: Found ${allLiveGames.length} authentic live games`);
+      return allLiveGames;
+    } catch (error) {
+      console.error('RapidAPI Live Games error:', error);
+      return [];
+    }
+  }
 }
 
 export const pinnacleOddsService = new PinnacleOddsService();
