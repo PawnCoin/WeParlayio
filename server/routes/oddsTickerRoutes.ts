@@ -54,11 +54,15 @@ router.get('/live-ticker', async (req, res) => {
       // College sports (NCAA Men's/Women's Basketball, Football)
       if (collegeResponse.status === 'fulfilled' && collegeResponse.value.ok) {
         const collegeData = await collegeResponse.value.json();
+        console.log('🎓 College sports data structure:', collegeData.length > 0 ? collegeData[0] : 'No college data');
         if (Array.isArray(collegeData)) {
           const collegeEvents = collegeData.filter((sport: any) => 
             ['basketball_ncaab', 'basketball_ncaaw', 'americanfootball_ncaaf'].includes(sport.sport)
           );
-          allEvents.push(...collegeEvents.flatMap((sport: any) => sport.odds || []));
+          console.log(`🎓 Filtered college events: ${collegeEvents.length} sports found`);
+          const collegeOddsEvents = collegeEvents.flatMap((sport: any) => sport.odds || []);
+          console.log(`🎓 College odds events: ${collegeOddsEvents.length} events extracted`);
+          allEvents.push(...collegeOddsEvents);
         }
       }
       

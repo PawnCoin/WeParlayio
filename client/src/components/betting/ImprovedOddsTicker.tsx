@@ -147,7 +147,7 @@ const getTeamLogoUrl = (teamName: string, sport: string): string => {
     'Dodgers': 'https://a.espncdn.com/i/teamlogos/mlb/500/lad.png',
     'Los Angeles Dodgers': 'https://a.espncdn.com/i/teamlogos/mlb/500/lad.png',
     'Red Sox': 'https://a.espncdn.com/i/teamlogos/mlb/500/bos.png',
-    'Boston Red Sox': 'https://a.espncdn.com/i/teamlogos/mlb/500/bos.png',
+    'Sox': 'https://a.espncdn.com/i/teamlogos/mlb/500/bos.png',
     'Cubs': 'https://a.espncdn.com/i/teamlogos/mlb/500/chc.png',
     'Chicago Cubs': 'https://a.espncdn.com/i/teamlogos/mlb/500/chc.png',
     'Cardinals': 'https://a.espncdn.com/i/teamlogos/mlb/500/stl.png',
@@ -156,7 +156,7 @@ const getTeamLogoUrl = (teamName: string, sport: string): string => {
     'Houston Astros': 'https://a.espncdn.com/i/teamlogos/mlb/500/hou.png',
     'Mets': 'https://a.espncdn.com/i/teamlogos/mlb/500/nym.png',
     'New York Mets': 'https://a.espncdn.com/i/teamlogos/mlb/500/nym.png',
-    'Blue Jays': 'https://a.espncdn.com/i/teamlogos/mlb/500/tor.png',
+    'Jays': 'https://a.espncdn.com/i/teamlogos/mlb/500/tor.png',
     'Toronto Blue Jays': 'https://a.espncdn.com/i/teamlogos/mlb/500/tor.png',
     'Rockies': 'https://a.espncdn.com/i/teamlogos/mlb/500/col.png',
     'Colorado Rockies': 'https://a.espncdn.com/i/teamlogos/mlb/500/col.png',
@@ -432,7 +432,7 @@ const TickerItem = memo(({ item, onClick, liveScore }: {
   if (!item) return null;
   
   const gameData = formatGameDisplay(item.teams, item.currentOdds);
-  const isLive = liveScore && liveScore.sport === item.sport;
+  const isLive = liveScore && (liveScore.homeScore !== undefined || item.status === 'live' || item.status === 'in');
   
   const getSportColor = (sport: string) => {
     const colors: Record<string, string> = {

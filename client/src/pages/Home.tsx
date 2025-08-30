@@ -20,7 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Filter, BarChart2, Handshake, Users, Crown, Sparkles } from "lucide-react";
 import LiveStatsBar from "@/components/sports/LiveStatsBar";
 import SportBreakdown from "@/components/sports/SportBreakdown";
-import LiveOddsTicker from "@/components/sports/LiveOddsTicker";
+import ImprovedOddsTicker from "@/components/betting/ImprovedOddsTicker";
 
 // Featured game will be pulled from real API data
 
@@ -263,15 +263,7 @@ const Home: React.FC = () => {
 
       {/* Live Odds Ticker */}
       <div className="mb-6">
-        <LiveOddsTicker 
-          oddsData={[
-            { gameId: '1', homeTeam: 'Chiefs', awayTeam: 'Bills', homeOdds: -110, awayOdds: +105, movement: 'up', sport: 'NFL' },
-            { gameId: '2', homeTeam: 'Lakers', awayTeam: 'Warriors', homeOdds: +120, awayOdds: -115, movement: 'down', sport: 'NBA' },
-            { gameId: '3', homeTeam: 'Yankees', awayTeam: 'Red Sox', homeOdds: -105, awayOdds: +110, movement: 'none', sport: 'MLB' },
-            { gameId: '4', homeTeam: 'Rangers', awayTeam: 'Bruins', homeOdds: +115, awayOdds: -120, movement: 'up', sport: 'NHL' },
-            { gameId: '5', homeTeam: 'Man City', awayTeam: 'Liverpool', homeOdds: +140, awayOdds: -125, movement: 'down', sport: 'Soccer' }
-          ]}
-        />
+        <ImprovedOddsTicker />
       </div>
 
       {/* Live Sports Statistics Bar */}
