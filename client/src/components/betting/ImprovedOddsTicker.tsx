@@ -537,8 +537,8 @@ const ImprovedOddsTicker = memo(() => {
 
         <style>{`
           @keyframes ticker-continuous {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
           }
           .animate-ticker-continuous {
             animation: ticker-continuous 20s linear infinite;
@@ -562,8 +562,8 @@ const ImprovedOddsTicker = memo(() => {
 
       <style>{`
         @keyframes ticker-continuous {
-          0% { transform: translateX(100%); }
-          100% { transform: translateX(-100%); }
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
         }
         .animate-ticker-continuous {
           animation: ticker-continuous 65s linear infinite;
