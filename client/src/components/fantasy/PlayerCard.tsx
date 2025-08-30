@@ -1,7 +1,8 @@
 
+<line_number>1</line_number>
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { getTeamLogo } from '@/lib/teamLogos';
+import { AssetManager } from '@/lib/assetManager';
 
 interface PlayerCardProps {
   playerId: string;
@@ -32,8 +33,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
   useEffect(() => {
     const loadPlayerImage = async () => {
       try {
-        // Use fallback player image since we unified the logo system
-        const imageUrl = `https://a.espncdn.com/i/headshots/nba/players/full/${playerId}.png`;
+        const imageUrl = await AssetManager.getESPNPlayerImage(playerId, sport);
         setPlayerImage(imageUrl);
       } catch (error) {
         console.warn('Failed to load player image:', error);

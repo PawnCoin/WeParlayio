@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { getTeamLogo } from '@/lib/teamLogos';
+import { ESPNAssetService } from '@/lib/espnAssetService';
 
 interface TeamLogoProps {
   src?: string | null;
@@ -33,7 +33,7 @@ export function TeamLogo({
   // Determine the best logo source - prioritize ESPN, then provided src
   const logoSrc = React.useMemo(() => {
     if (src && !imageError) return src;
-    return getTeamLogo(teamName, league);
+    return ESPNAssetService.getTeamLogo(teamName, league);
   }, [src, teamName, league, imageError]);
   
   if (imageError) {

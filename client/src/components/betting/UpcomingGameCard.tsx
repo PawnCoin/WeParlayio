@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Clock, Wifi, WifiOff } from "lucide-react";
-import { getTeamLogo } from '@/lib/teamLogos';
+import { ESPNAssetService } from "@/lib/espnAssetService";
 
 interface UpcomingGameCardProps {
   game: {
@@ -199,7 +199,7 @@ const UpcomingGameCard: React.FC<UpcomingGameCardProps> = ({ game }) => {
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
           <div className="col-span-2 flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <img className="w-10 h-10 object-contain" src={getTeamLogo(game.homeTeam.name)} alt={`${game.homeTeam.name} logo`} />
+              <img className="w-10 h-10 object-contain" src={ESPNAssetService.getTeamLogo(game.homeTeam.name)} alt={`${game.homeTeam.name} logo`} />
               <span className="font-medium">{game.homeTeam.name}</span>
             </div>
             <div className="text-xl font-semibold md:hidden">@</div>
@@ -214,7 +214,7 @@ const UpcomingGameCard: React.FC<UpcomingGameCardProps> = ({ game }) => {
             <div className="text-xl font-semibold md:hidden">@</div>
             <div className="flex items-center space-x-3">
               <span className="font-medium">{game.awayTeam.name}</span>
-              <img className="w-10 h-10 object-contain" src={getTeamLogo(game.awayTeam.name)} alt={`${game.awayTeam.name} logo`} />
+              <img className="w-10 h-10 object-contain" src={ESPNAssetService.getTeamLogo(game.awayTeam.name)} alt={`${game.awayTeam.name} logo`} />
             </div>
           </div>
         </div>

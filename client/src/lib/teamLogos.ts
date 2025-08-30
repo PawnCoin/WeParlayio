@@ -298,41 +298,10 @@ export const tennisPlayerLogos: Record<string, string> = {
   "Ons Jabeur": "https://photoresources.wtatennis.com/photo-resources/2022/07/07/75bdacc2-97eb-4c47-aa5d-14a633e5cccc/Ons_Jabeur_-_2022_Wimbledon_-_Day_11-1042.jpg?width=700&height=394",
 };
 
-// Consolidated team logos mapping
-const teamLogos: Record<string, string> = {
-  ...nbaTeamLogos,
-  ...nflTeamLogos,
-  ...mlbTeamLogos,
-  ...nhlTeamLogos,
-  ...wnbaTeamLogos,
-  ...ncaafTeamLogos,
-  ...ncaabTeamLogos,
-  ...ncaawTeamLogos,
-  ...ufcFighterLogos,
-  ...boxingFighterLogos,
-  ...nascarDriverLogos,
-  ...tennisPlayerLogos
-};
-
 // Get team logo for a sport
 export const getTeamLogo = (teamName: string, league: string = 'NBA'): string => {
-  // First try direct team name match
-  if (teamLogos[teamName]) {
-    return teamLogos[teamName];
-  }
-  
-  // Try normalized name matching
   const normalizedName = teamName.toLowerCase().replace(/\s+/g, '');
-  const foundLogo = Object.entries(teamLogos).find(([key]) => 
-    key.toLowerCase().replace(/\s+/g, '') === normalizedName
-  );
-  
-  if (foundLogo) {
-    return foundLogo[1];
-  }
-  
-  // Fallback to generated SVG
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/><text x="20" y="26" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#6b7280">${teamName.charAt(0).toUpperCase()}</text></svg>`)}`;
+  return teamLogos[normalizedName] || `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/><text x="20" y="26" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#6b7280">${teamName.charAt(0).toUpperCase()}</text></svg>`)}`;
 };
 
 // Sport logo mappings (for general sport icons)
