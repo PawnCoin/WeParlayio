@@ -17,8 +17,8 @@ import { useBetting } from "@/contexts/BettingContext";
 import WatchLive from "@/components/events/WatchLive";
 
 // Import team logos and utils
+import { getTeamLogo } from '@/lib/teamLogos';
 import { 
-  getTeamLogoUrl, 
   formatOdds, 
   formatGameTime,
   formatGameDate,
@@ -301,7 +301,7 @@ const LiveBettingContent: React.FC = () => {
                           <div className="flex flex-col space-y-1">
                             <div className="flex items-center">
                               <img 
-                                src={getTeamLogoUrl(homeTeam)} 
+                                src={getTeamLogo(homeTeam)} 
                                 alt={homeTeam}
                                 className="w-5 h-5 mr-2"
                               />
@@ -309,7 +309,7 @@ const LiveBettingContent: React.FC = () => {
                             </div>
                             <div className="flex items-center">
                               <img 
-                                src={getTeamLogoUrl(awayTeam)} 
+                                src={getTeamLogo(awayTeam)} 
                                 alt={awayTeam}
                                 className="w-5 h-5 mr-2"
                               />

@@ -26,7 +26,7 @@ const TeamLogo: React.FC<TeamLogoProps> = ({
     lg: 'h-16 w-16'
   };
 
-  const logoUrl = AssetManager.getTeamLogo(teamName, league);
+  const logoUrl = getTeamLogo(teamName, league);
 
   const getTeamInitials = (name: string) => {
     return name

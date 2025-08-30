@@ -334,7 +334,7 @@ export class UniversalTeamService {
     
     if (teamMappings && teamMappings[teamName as keyof typeof teamMappings]) {
       const teamId = teamMappings[teamName as keyof typeof teamMappings];
-      return ESPNAssetService.getTeamLogo(teamName, normalizedLeague, teamId);
+      return ESPNAssetService.getTeamLogo(teamName, normalizedLeague);
     }
 
     // Fallback to ESPN service without team ID
@@ -356,7 +356,7 @@ export class UniversalTeamService {
 
   // Get player photo
   static getPlayerPhoto(playerId: string, sport: string): string {
-    return ESPNAssetService.getPlayerPhoto(playerId, sport);
+    return ESPNAssetService.getPlayerImage(playerId, sport);
   }
 
   // Search teams by name

@@ -23,7 +23,7 @@ export default function TeamLogo({
     enabled: !!sport
   });
 
-  const team = teams.find((t: any) => 
+  const team = (teams as any[]).find((t: any) => 
     t.abbreviation?.toLowerCase() === teamAbbreviation?.toLowerCase()
   );
 

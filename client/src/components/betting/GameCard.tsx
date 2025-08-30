@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Users, TrendingUp } from 'lucide-react';
-import { AssetManager } from '@/lib/assetManager';
+import { getTeamLogo } from '@/lib/teamLogos';
 import { useBetting } from '@/contexts/BettingContext';
 
 interface GameCardProps {
@@ -69,7 +69,7 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <img
-              src={AssetManager.getSportIcon(game.sportName || 'default')}
+              src={getTeamLogo('Sport', game.sportName || 'default')}
               alt={game.sportName}
               className="w-5 h-5 object-contain"
               onError={(e) => {
@@ -100,11 +100,11 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <img
-                src={AssetManager.getTeamLogo(game.awayTeam.name, game.sportName)}
+                src={getTeamLogo(game.awayTeam.name, game.sportName)}
                 alt={game.awayTeam.name}
                 className="w-8 h-8 object-contain"
                 onError={(e) => {
-                  e.currentTarget.src = AssetManager.getSportIcon(game.sportName || 'default');
+                  e.currentTarget.src = getTeamLogo('Unknown', game.sportName || 'default');
                 }}
               />
               <div className="flex flex-col">
@@ -132,11 +132,11 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <img
-                src={AssetManager.getTeamLogo(game.homeTeam.name, game.sportName)}
+                src={getTeamLogo(game.homeTeam.name, game.sportName)}
                 alt={game.homeTeam.name}
                 className="w-8 h-8 object-contain"
                 onError={(e) => {
-                  e.currentTarget.src = AssetManager.getSportIcon(game.sportName || 'default');
+                  e.currentTarget.src = getTeamLogo('Unknown', game.sportName || 'default');
                 }}
               />
               <div className="flex flex-col">

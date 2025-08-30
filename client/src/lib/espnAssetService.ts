@@ -199,6 +199,45 @@ export class ESPNAssetService {
     return mlbTeams[teamName] || teamName.toLowerCase().slice(0, 3);
   }
 
+  private static getNHLTeamAbbreviation(teamName: string): string {
+    const nhlTeams: Record<string, string> = {
+      'Anaheim Ducks': 'ana',
+      'Arizona Coyotes': 'ari',
+      'Boston Bruins': 'bos',
+      'Buffalo Sabres': 'buf',
+      'Calgary Flames': 'cgy',
+      'Carolina Hurricanes': 'car',
+      'Chicago Blackhawks': 'chi',
+      'Colorado Avalanche': 'col',
+      'Columbus Blue Jackets': 'cbj',
+      'Dallas Stars': 'dal',
+      'Detroit Red Wings': 'det',
+      'Edmonton Oilers': 'edm',
+      'Florida Panthers': 'fla',
+      'Los Angeles Kings': 'la',
+      'Minnesota Wild': 'min',
+      'Montreal Canadiens': 'mtl',
+      'Nashville Predators': 'nsh',
+      'New Jersey Devils': 'nj',
+      'New York Islanders': 'nyi',
+      'New York Rangers': 'nyr',
+      'Ottawa Senators': 'ott',
+      'Philadelphia Flyers': 'phi',
+      'Pittsburgh Penguins': 'pit',
+      'San Jose Sharks': 'sj',
+      'Seattle Kraken': 'sea',
+      'St. Louis Blues': 'stl',
+      'Tampa Bay Lightning': 'tb',
+      'Toronto Maple Leafs': 'tor',
+      'Vancouver Canucks': 'van',
+      'Vegas Golden Knights': 'vgs',
+      'Washington Capitals': 'wsh',
+      'Winnipeg Jets': 'wpg'
+    };
+
+    return nhlTeams[teamName] || teamName.toLowerCase().slice(0, 3);
+  }
+
   private static getPlayerESPNId(playerName: string, sport: string): string | null {
     // This would typically require a database lookup or API call
     // For now, return null to use default fallback
