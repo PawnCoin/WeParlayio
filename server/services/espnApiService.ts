@@ -313,7 +313,8 @@ export class ESPNApiService {
    */
   async getLiveGames(): Promise<any[]> {
     try {
-      const sports = ['nfl', 'nba', 'mlb', 'nhl', 'wnba'];
+      // Include college football and more sports for comprehensive live coverage
+      const sports = ['nfl', 'nba', 'mlb', 'nhl', 'wnba', 'ncaaf', 'ncaab'];
       const allLiveGames = [];
 
       for (const sport of sports) {
@@ -325,10 +326,23 @@ export class ESPNApiService {
           const data = await response.json();
           
           if (data.events && data.events.length > 0) {
-            // Filter for only LIVE games (in progress)
+            // Enhanced live game detection - check multiple status indicators
             const liveGames = data.events.filter((event: any) => {
               const status = event.status?.type?.name?.toLowerCase();
-              return status === 'in' || status === 'live' || event.status?.type?.state === 'in';
+              const state = event.status?.type?.state?.toLowerCase();
+              const completed = event.status?.type?.completed;
+              
+              // More comprehensive live status detection
+              return (
+                status === 'in' || 
+                status === 'live' || 
+                state === 'in' || 
+                state === 'live' ||
+                (status && status.includes('quarter')) ||
+                (status && status.includes('half')) ||
+                (status && status.includes('period')) ||
+                (!completed && event.status?.type?.detail && !event.status.type.detail.includes('Final'))
+              );
             });
 
             const formattedGames = liveGames.map((event: any) => {
@@ -336,9 +350,25 @@ export class ESPNApiService {
               const homeTeam = competitors.find((c: any) => c.homeAway === 'home');
               const awayTeam = competitors.find((c: any) => c.homeAway === 'away');
               
-              // Extract team names more robustly
-              const awayName = awayTeam?.team?.displayName || awayTeam?.team?.name || awayTeam?.team?.shortDisplayName || 'Away';
-              const homeName = homeTeam?.team?.displayName || homeTeam?.team?.name || homeTeam?.team?.shortDisplayName || 'Home';
+              // Debug logging for team name extraction
+              console.log(`🔍 Live Game Debug for ${sport}:`, {
+                eventId: event.id,
+                homeTeam: homeTeam?.team,
+                awayTeam: awayTeam?.team,
+                status: event.status
+              });
+              
+              // Extract team names more robustly - try multiple fields
+              const awayName = awayTeam?.team?.displayName || 
+                             awayTeam?.team?.name || 
+                             awayTeam?.team?.shortDisplayName || 
+                             awayTeam?.team?.abbreviation ||
+                             'Away';
+              const homeName = homeTeam?.team?.displayName || 
+                             homeTeam?.team?.name || 
+                             homeTeam?.team?.shortDisplayName || 
+                             homeTeam?.team?.abbreviation ||
+                             'Home';
               
               return {
                 eventId: `espn_live_${event.id}`,
