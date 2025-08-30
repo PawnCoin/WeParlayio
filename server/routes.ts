@@ -327,104 +327,76 @@ const registerRoutes = async (app: Express): Promise<Server> => {
     }
   });
 
-  // Live scores endpoint for real-time notifications
+  // Live scores endpoint for real-time notifications - ONLY REAL API DATA
   app.get('/api/events/live-scores', async (req, res) => {
     try {
-      // Fetch current live games and their scores - matching actual ticker games
-      const liveScores = [
-        {
-          eventId: 'mlb_sox_pirates',
-          sport: 'MLB',
-          teams: 'White Sox vs Pirates',
-          homeScore: 4 + Math.floor(Math.random() * 3),
-          awayScore: 2 + Math.floor(Math.random() * 4),
-          period: '7th',
-          timeRemaining: `${Math.floor(Math.random() * 2) + 1} out`,
-          lastUpdate: new Date().toISOString(),
-          isBreaking: Math.random() > 0.7
-        },
-        {
-          eventId: 'mlb_bluejays_brewers',
-          sport: 'MLB',
-          teams: 'Toronto Blue Jays vs Milwaukee Brewers',
-          homeScore: 3 + Math.floor(Math.random() * 4),
-          awayScore: 5 + Math.floor(Math.random() * 3),
-          period: '8th',
-          timeRemaining: `${Math.floor(Math.random() * 2) + 1} out`,
-          lastUpdate: new Date().toISOString(),
-          isBreaking: Math.random() > 0.8
-        },
-        {
-          eventId: 'wnba_liberty_aces',
-          sport: 'WNBA',
-          teams: 'New York Liberty vs Las Vegas Aces',
-          homeScore: 67 + Math.floor(Math.random() * 8),
-          awayScore: 72 + Math.floor(Math.random() * 6),
-          period: '3rd',
-          timeRemaining: `${Math.floor(Math.random() * 10)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`,
-          lastUpdate: new Date().toISOString(),
-          isBreaking: Math.random() > 0.6
-        },
-        {
-          eventId: 'nfl_cowboys_giants',
-          sport: 'NFL',
-          teams: 'Dallas Cowboys vs New York Giants',
-          homeScore: 14 + Math.floor(Math.random() * 10),
-          awayScore: 10 + Math.floor(Math.random() * 14),
-          period: 'Q2',
-          timeRemaining: `${Math.floor(Math.random() * 15)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`,
-          lastUpdate: new Date().toISOString(),
-          isBreaking: Math.random() > 0.5
-        },
-        {
-          eventId: 'nba_celtics_heat',
-          sport: 'NBA',
-          teams: 'Boston Celtics vs Miami Heat',
-          homeScore: 78 + Math.floor(Math.random() * 12),
-          awayScore: 82 + Math.floor(Math.random() * 8),
-          period: '3rd',
-          timeRemaining: `${Math.floor(Math.random() * 12)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`,
-          lastUpdate: new Date().toISOString(),
-          isBreaking: Math.random() > 0.7
-        },
-        {
-          eventId: 'ncaab_duke_unc',
-          sport: 'NCAA-M',
-          teams: 'Duke vs North Carolina',
-          homeScore: 45 + Math.floor(Math.random() * 8),
-          awayScore: 48 + Math.floor(Math.random() * 6),
-          period: '2nd',
-          timeRemaining: `${Math.floor(Math.random() * 20)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`,
-          lastUpdate: new Date().toISOString(),
-          isBreaking: Math.random() > 0.6
-        },
-        {
-          eventId: 'soccer_arsenal_chelsea',
-          sport: 'Soccer',
-          teams: 'Arsenal vs Chelsea',
-          homeScore: 1 + Math.floor(Math.random() * 2),
-          awayScore: Math.floor(Math.random() * 3),
-          period: '78\'',
-          timeRemaining: 'Live',
-          lastUpdate: new Date().toISOString(),
-          isBreaking: Math.random() > 0.8
-        },
-        {
-          eventId: 'nhl_rangers_bruins',
-          sport: 'NHL',
-          teams: 'Rangers vs Bruins',
-          homeScore: 2 + Math.floor(Math.random() * 2),
-          awayScore: 1 + Math.floor(Math.random() * 3),
-          period: '2nd',
-          timeRemaining: `${Math.floor(Math.random() * 20)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`,
-          lastUpdate: new Date().toISOString(),
-          isBreaking: Math.random() > 0.4
+      // Fetch ONLY real live games from authentic APIs
+      let liveScores: any[] = [];
+      
+      try {
+        // Try ESPN Live Scores API first (most reliable)
+        const espnModule = await import('./services/espnApiService.js');
+        const espnApiService = espnModule.espnApiService;
+        const espnLiveGames = await espnApiService.getLiveGames();
+        
+        if (espnLiveGames && espnLiveGames.length > 0) {
+          liveScores = espnLiveGames.map((game: any) => ({
+            eventId: `espn_live_${game.id}`,
+            sport: game.sport || 'Unknown',
+            teams: `${game.awayTeam?.name || 'Away'} vs ${game.homeTeam?.name || 'Home'}`,
+            homeScore: game.homeScore || game.score?.home || null,
+            awayScore: game.awayScore || game.score?.away || null,
+            period: game.period || game.status?.period || 'Live',
+            timeRemaining: game.timeRemaining || game.status?.displayClock || 'Live',
+            lastUpdate: new Date().toISOString(),
+            isBreaking: game.isBreaking || false,
+            source: 'ESPN API'
+          })).filter((game: any) => game.homeScore !== null && game.awayScore !== null);
+          
+          console.log(`✅ Live Scores: Found ${liveScores.length} authentic live games from ESPN`);
         }
-      ];
+      } catch (error) {
+        console.log('⚠️ ESPN live scores unavailable:', error);
+      }
+      
+      // If no ESPN data, try other authentic sources
+      if (liveScores.length === 0) {
+        try {
+          const comprehensiveRapidApi = await import('./services/comprehensiveRapidApi.js');
+          const rapidLiveGames = await comprehensiveRapidApi.ComprehensiveRapidApiService.getLiveGames();
+          
+          if (rapidLiveGames && rapidLiveGames.length > 0) {
+            liveScores = rapidLiveGames.map((game: any) => ({
+              eventId: `rapid_live_${game.id}`,
+              sport: game.sport || 'Unknown',
+              teams: `${game.awayTeam || 'Away'} vs ${game.homeTeam || 'Home'}`,
+              homeScore: game.homeScore || null,
+              awayScore: game.awayScore || null,
+              period: game.period || 'Live',
+              timeRemaining: game.timeRemaining || 'Live',
+              lastUpdate: new Date().toISOString(),
+              isBreaking: false,
+              source: 'RapidAPI'
+            })).filter((game: any) => game.homeScore !== null && game.awayScore !== null);
+            
+            console.log(`✅ Live Scores: Found ${liveScores.length} authentic live games from RapidAPI`);
+          }
+        } catch (error) {
+          console.log('⚠️ RapidAPI live scores unavailable:', error);
+        }
+      }
 
+      // Return only authentic live scores - NO MOCK DATA
+      console.log(`🔴 Live scores data: ${liveScores.length} live games`);
+      if (liveScores.length > 0) {
+        console.log('🔴 Sample live score:', liveScores[0]);
+      } else {
+        console.log('⚠️ No authentic live games available from any API source');
+      }
+      
       res.json(liveScores);
     } catch (error) {
-      console.error('Error fetching live scores:', error);
+      console.error('Error fetching authentic live scores:', error);
       res.status(500).json({ success: false, message: 'Failed to fetch live scores' });
     }
   });
@@ -788,12 +760,12 @@ const registerRoutes = async (app: Express): Promise<Server> => {
           sport: game.sport || 'NFL',
           homeTeam: game.homeTeam?.name || game.homeTeam || 'Home Team',
           awayTeam: game.awayTeam?.name || game.awayTeam || 'Away Team',
-          homeScore: game.homeScore || game.score?.home || Math.floor(Math.random() * 35),
-          awayScore: game.awayScore || game.score?.away || Math.floor(Math.random() * 35),
+          homeScore: game.homeScore || game.score?.home || null,
+          awayScore: game.awayScore || game.score?.away || null,
           status: 'completed',
           finalTime: game.completedAt || game.endTime || new Date(Date.now() - Math.random() * 86400000).toISOString(),
           league: game.league || game.sport,
-          week: game.week || Math.ceil(Math.random() * 17),
+          week: game.week || null,
           season: '2024-25',
           source: 'ESPN API'
         }));
@@ -808,12 +780,12 @@ const registerRoutes = async (app: Express): Promise<Server> => {
           sport: game.sport || 'NFL',
           homeTeam: game.homeTeam || 'Home Team',
           awayTeam: game.awayTeam || 'Away Team', 
-          homeScore: game.homeScore || Math.floor(Math.random() * 35),
-          awayScore: game.awayScore || Math.floor(Math.random() * 35),
+          homeScore: game.homeScore || null,
+          awayScore: game.awayScore || null,
           status: 'completed',
-          finalTime: game.completedAt || new Date(Date.now() - Math.random() * 86400000).toISOString(),
+          finalTime: game.completedAt || new Date().toISOString(),
           league: game.league || game.sport,
-          week: Math.ceil(Math.random() * 17),
+          week: null,
           season: '2024-25',
           source: 'Pinnacle API'
         }));
@@ -832,12 +804,12 @@ const registerRoutes = async (app: Express): Promise<Server> => {
               sport: game.sport || 'Football',
               homeTeam: game.homeTeam || 'Home Team',
               awayTeam: game.awayTeam || 'Away Team',
-              homeScore: game.homeScore || Math.floor(Math.random() * 35),
-              awayScore: game.awayScore || Math.floor(Math.random() * 35),
+              homeScore: game.homeScore || null,
+              awayScore: game.awayScore || null,
               status: 'completed',
-              finalTime: game.completedAt || new Date(Date.now() - Math.random() * 86400000).toISOString(),
+              finalTime: game.completedAt || new Date().toISOString(),
               league: game.league || game.sport,
-              week: Math.ceil(Math.random() * 17),
+              week: null,
               season: '2024-25',
               source: 'RapidAPI'
             }));
