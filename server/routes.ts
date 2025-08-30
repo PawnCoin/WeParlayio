@@ -364,6 +364,61 @@ const registerRoutes = async (app: Express): Promise<Server> => {
           timeRemaining: `${Math.floor(Math.random() * 10)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`,
           lastUpdate: new Date().toISOString(),
           isBreaking: Math.random() > 0.6
+        },
+        {
+          eventId: 'nfl_cowboys_giants',
+          sport: 'NFL',
+          teams: 'Dallas Cowboys vs New York Giants',
+          homeScore: 14 + Math.floor(Math.random() * 10),
+          awayScore: 10 + Math.floor(Math.random() * 14),
+          period: 'Q2',
+          timeRemaining: `${Math.floor(Math.random() * 15)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`,
+          lastUpdate: new Date().toISOString(),
+          isBreaking: Math.random() > 0.5
+        },
+        {
+          eventId: 'nba_celtics_heat',
+          sport: 'NBA',
+          teams: 'Boston Celtics vs Miami Heat',
+          homeScore: 78 + Math.floor(Math.random() * 12),
+          awayScore: 82 + Math.floor(Math.random() * 8),
+          period: '3rd',
+          timeRemaining: `${Math.floor(Math.random() * 12)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`,
+          lastUpdate: new Date().toISOString(),
+          isBreaking: Math.random() > 0.7
+        },
+        {
+          eventId: 'ncaab_duke_unc',
+          sport: 'NCAA-M',
+          teams: 'Duke vs North Carolina',
+          homeScore: 45 + Math.floor(Math.random() * 8),
+          awayScore: 48 + Math.floor(Math.random() * 6),
+          period: '2nd',
+          timeRemaining: `${Math.floor(Math.random() * 20)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`,
+          lastUpdate: new Date().toISOString(),
+          isBreaking: Math.random() > 0.6
+        },
+        {
+          eventId: 'soccer_arsenal_chelsea',
+          sport: 'Soccer',
+          teams: 'Arsenal vs Chelsea',
+          homeScore: 1 + Math.floor(Math.random() * 2),
+          awayScore: Math.floor(Math.random() * 3),
+          period: '78\'',
+          timeRemaining: 'Live',
+          lastUpdate: new Date().toISOString(),
+          isBreaking: Math.random() > 0.8
+        },
+        {
+          eventId: 'nhl_rangers_bruins',
+          sport: 'NHL',
+          teams: 'Rangers vs Bruins',
+          homeScore: 2 + Math.floor(Math.random() * 2),
+          awayScore: 1 + Math.floor(Math.random() * 3),
+          period: '2nd',
+          timeRemaining: `${Math.floor(Math.random() * 20)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`,
+          lastUpdate: new Date().toISOString(),
+          isBreaking: Math.random() > 0.4
         }
       ];
 
