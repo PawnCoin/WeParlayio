@@ -10,7 +10,8 @@ import {
   varchar,
   jsonb,
   index,
-  uuid
+  uuid,
+  unique
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
@@ -866,3 +867,89 @@ export const insertErrorReportSchema = createInsertSchema(errorReports)
 
 export type ErrorReport = typeof errorReports.$inferSelect;
 export type InsertErrorReport = z.infer<typeof insertErrorReportSchema>;
+
+// Social Betting System
+export const socialPosts = pgTable("social_posts", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  sport: varchar("sport"), // NBA, NFL, Soccer, etc.
+  betAmount: doublePrecision("bet_amount"),
+  potentialPayout: doublePrecision("potential_payout"),
+  odds: varchar("odds"), // +150, -110, etc.
+  likes: integer("likes").default(0),
+  comments: integer("comments").default(0),
+  shares: integer("shares").default(0),
+  isPublic: boolean("is_public").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const socialLikes = pgTable("social_likes", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  postId: integer("post_id").notNull().references(() => socialPosts.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  unique("unique_user_post_like").on(table.userId, table.postId)
+]);
+
+export const socialComments = pgTable("social_comments", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  postId: integer("post_id").notNull().references(() => socialPosts.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const socialFollows = pgTable("social_follows", {
+  id: serial("id").primaryKey(),
+  followerId: varchar("follower_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  followingId: varchar("following_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  unique("unique_follow_relationship").on(table.followerId, table.followingId)
+]);
+
+// User leaderboard stats (computed periodically)
+export const socialLeaderboard = pgTable("social_leaderboard", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  totalProfit: doublePrecision("total_profit").default(0),
+  winRate: doublePrecision("win_rate").default(0),
+  currentStreak: integer("current_streak").default(0),
+  totalPosts: integer("total_posts").default(0),
+  totalFollowers: integer("total_followers").default(0),
+  period: varchar("period").default("monthly"), // daily, weekly, monthly, all-time
+  lastUpdated: timestamp("last_updated").defaultNow(),
+}, (table) => [
+  unique("unique_user_period").on(table.userId, table.period)
+]);
+
+// Insert schemas for social betting
+export const insertSocialPostSchema = createInsertSchema(socialPosts)
+  .omit({ id: true, createdAt: true, updatedAt: true, likes: true, comments: true, shares: true });
+
+export const insertSocialLikeSchema = createInsertSchema(socialLikes)
+  .omit({ id: true, createdAt: true });
+
+export const insertSocialCommentSchema = createInsertSchema(socialComments)
+  .omit({ id: true, createdAt: true });
+
+export const insertSocialFollowSchema = createInsertSchema(socialFollows)
+  .omit({ id: true, createdAt: true });
+
+export const insertSocialLeaderboardSchema = createInsertSchema(socialLeaderboard)
+  .omit({ id: true, lastUpdated: true });
+
+// Types for social betting
+export type SocialPost = typeof socialPosts.$inferSelect;
+export type InsertSocialPost = z.infer<typeof insertSocialPostSchema>;
+export type SocialLike = typeof socialLikes.$inferSelect;
+export type InsertSocialLike = z.infer<typeof insertSocialLikeSchema>;
+export type SocialComment = typeof socialComments.$inferSelect;
+export type InsertSocialComment = z.infer<typeof insertSocialCommentSchema>;
+export type SocialFollow = typeof socialFollows.$inferSelect;
+export type InsertSocialFollow = z.infer<typeof insertSocialFollowSchema>;
+export type SocialLeaderboard = typeof socialLeaderboard.$inferSelect;
+export type InsertSocialLeaderboard = z.infer<typeof insertSocialLeaderboardSchema>;

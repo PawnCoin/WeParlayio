@@ -93,6 +93,110 @@ const registerRoutes = async (app: Express): Promise<Server> => {
   app.use('/api/p2p-betting', p2pBettingRoutes);
   app.use('/api/yahoo-fantasy', yahooFantasyRoutes);
   app.use('/api/social-media', socialMediaRoutes);
+  
+  // Social Betting Routes
+  app.get('/api/social/feed', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      
+      // Get social posts with user details and bet information
+      const posts = await storage.getSocialFeed(userId);
+      
+      res.json({
+        success: true,
+        data: posts
+      });
+    } catch (error) {
+      console.error('Error fetching social feed:', error);
+      res.status(500).json({ success: false, message: 'Failed to fetch social feed' });
+    }
+  });
+
+  app.get('/api/social/leaderboard', isAuthenticated, async (req: any, res) => {
+    try {
+      const period = req.query.period || 'monthly';
+      
+      // Get leaderboard data
+      const leaderboard = await storage.getSocialLeaderboard(period as string);
+      
+      res.json({
+        success: true,
+        data: leaderboard
+      });
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error);
+      res.status(500).json({ success: false, message: 'Failed to fetch leaderboard' });
+    }
+  });
+
+  app.post('/api/social/posts', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const { content, sport, betAmount, potentialPayout, odds } = req.body;
+      
+      if (!content || !content.trim()) {
+        return res.status(400).json({ success: false, message: 'Content is required' });
+      }
+      
+      const post = await storage.createSocialPost({
+        userId,
+        content: content.trim(),
+        sport,
+        betAmount: betAmount ? parseFloat(betAmount) : null,
+        potentialPayout: potentialPayout ? parseFloat(potentialPayout) : null,
+        odds
+      });
+      
+      res.json({
+        success: true,
+        data: post,
+        message: 'Post created successfully'
+      });
+    } catch (error) {
+      console.error('Error creating social post:', error);
+      res.status(500).json({ success: false, message: 'Failed to create post' });
+    }
+  });
+
+  app.post('/api/social/posts/:postId/like', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const { postId } = req.params;
+      
+      const result = await storage.toggleSocialLike(userId, parseInt(postId));
+      
+      res.json({
+        success: true,
+        data: result,
+        message: result.liked ? 'Post liked' : 'Post unliked'
+      });
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      res.status(500).json({ success: false, message: 'Failed to toggle like' });
+    }
+  });
+
+  app.post('/api/social/follow', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any)?.claims?.sub;
+      const { followingId } = req.body;
+      
+      if (userId === followingId) {
+        return res.status(400).json({ success: false, message: 'Cannot follow yourself' });
+      }
+      
+      const result = await storage.toggleSocialFollow(userId, followingId);
+      
+      res.json({
+        success: true,
+        data: result,
+        message: result.following ? 'User followed' : 'User unfollowed'
+      });
+    } catch (error) {
+      console.error('Error toggling follow:', error);
+      res.status(500).json({ success: false, message: 'Failed to toggle follow' });
+    }
+  });
   app.use('/api/feedback', feedbackRoutes);
   app.use('/api/iptv', iptvRoutes);
   app.use('/api/iptv-proxy', iptvProxyRoutes);

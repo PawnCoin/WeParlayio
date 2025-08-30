@@ -15,7 +15,11 @@ import {
   supportTicketLogs, SupportTicketLog,
   knownIssues, KnownIssue, InsertKnownIssue,
   bettingChallenges, BettingChallenge, InsertBettingChallenge,
-  notifications, Notification, InsertNotification
+  notifications, Notification, InsertNotification,
+  socialPosts, SocialPost, InsertSocialPost,
+  socialLikes, SocialLike, InsertSocialLike,
+  socialFollows, SocialFollow, InsertSocialFollow,
+  socialLeaderboard, SocialLeaderboard, InsertSocialLeaderboard
 } from "@shared/schema";
 
 export interface IStorage {
@@ -73,6 +77,13 @@ export interface IStorage {
   // Notification operations
   createNotification(notification: InsertNotification): Promise<Notification>;
   getUserNotifications(userId: string, unreadOnly?: boolean): Promise<Notification[]>;
+  
+  // Social Betting operations
+  getSocialFeed(userId?: string): Promise<any[]>;
+  getSocialLeaderboard(period: string): Promise<any[]>;
+  createSocialPost(post: InsertSocialPost): Promise<SocialPost>;
+  toggleSocialLike(userId: string, postId: number): Promise<{ liked: boolean; likeCount: number }>;
+  toggleSocialFollow(followerId: string, followingId: string): Promise<{ following: boolean; followerCount: number }>;
   markNotificationAsRead(id: number, userId: string): Promise<Notification>;
   
   // Transaction operations

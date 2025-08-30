@@ -20,17 +20,20 @@ export default function SocialBetting() {
   const [newPostContent, setNewPostContent] = useState('');
 
   // Fetch social betting data
-  const { data: socialFeed } = useQuery({
+  const { data: socialFeedResponse, isLoading: feedLoading } = useQuery({
     queryKey: ['/api/social/feed'],
     refetchInterval: 30000,
-    initialData: []
+    initialData: { success: false, data: [] }
   });
 
-  const { data: leaderboard } = useQuery({
+  const { data: leaderboardResponse, isLoading: leaderboardLoading } = useQuery({
     queryKey: ['/api/social/leaderboard'],
     refetchInterval: 60000,
-    initialData: []
+    initialData: { success: false, data: [] }
   });
+
+  const socialFeed = socialFeedResponse?.data || [];
+  const leaderboard = leaderboardResponse?.data || [];
 
   // Mock social data
   const mockPosts = [
@@ -193,8 +196,124 @@ export default function SocialBetting() {
 
           {/* Community Feed */}
           <TabsContent value="community" className="space-y-6">
-            <div className="space-y-4">
-              {mockPosts.map((post) => (
+            {feedLoading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <Card key={i} className="bg-slate-800/50 border-slate-700 animate-pulse">
+                    <CardContent className="p-6">
+                      <div className="space-y-3">
+                        <div className="h-4 bg-slate-700 rounded w-3/4"></div>
+                        <div className="h-3 bg-slate-700 rounded w-1/2"></div>
+                        <div className="h-20 bg-slate-700 rounded"></div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {socialFeed.length > 0 ? socialFeed.map((post) => (
+                  <Card key={post.id} className="bg-slate-800/50 border-slate-700 hover:border-blue-500 transition-colors">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-12 w-12">
+                            <AvatarFallback className="bg-slate-700 text-2xl">
+                              {post.user?.username?.charAt(0) || "U"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-white font-semibold">{post.user?.username || "Anonymous"}</h3>
+                              <Badge className={`${getTierBadge(post.user?.subscriptionTier || 'basic')} text-white text-xs`}>
+                                {post.user?.subscriptionTier || 'Basic'}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-gray-400">
+                              {post.sport && (
+                                <Badge variant="outline" className="text-gray-400 border-gray-600">
+                                  {post.sport}
+                                </Badge>
+                              )}
+                              <Clock className="h-3 w-3" />
+                              <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <Button size="sm" variant="outline" onClick={() => handleFollow(post.user?.username || "")}>
+                          Follow
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-gray-300 leading-relaxed">{post.content}</p>
+                      
+                      {/* Bet Details */}
+                      {(post.betAmount || post.potentialPayout || post.odds) && (
+                        <Card className="bg-slate-700/50 border-slate-600">
+                          <CardContent className="p-4">
+                            <div className="grid grid-cols-3 gap-4 text-center">
+                              {post.betAmount && (
+                                <div>
+                                  <div className="text-sm text-gray-400">Bet Amount</div>
+                                  <div className="text-white font-semibold">${post.betAmount}</div>
+                                </div>
+                              )}
+                              {post.potentialPayout && (
+                                <div>
+                                  <div className="text-sm text-gray-400">Potential Payout</div>
+                                  <div className="text-green-400 font-semibold">${post.potentialPayout}</div>
+                                </div>
+                              )}
+                              {post.odds && (
+                                <div>
+                                  <div className="text-sm text-gray-400">Odds</div>
+                                  <div className="text-blue-400 font-semibold">{post.odds}</div>
+                                </div>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {/* Post Actions */}
+                      <div className="flex items-center justify-between pt-4 border-t border-slate-700">
+                        <div className="flex items-center gap-4">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleLike(post.id)}
+                            className="text-gray-400 hover:text-red-400"
+                          >
+                            <Heart className="h-4 w-4 mr-1" />
+                            {post.likes || 0}
+                          </Button>
+                          <Button variant="ghost" size="sm" className="text-gray-400 hover:text-blue-400">
+                            <MessageCircle className="h-4 w-4 mr-1" />
+                            {post.comments || 0}
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleShare(post.id)}
+                            className="text-gray-400 hover:text-green-400"
+                          >
+                            <Share2 className="h-4 w-4 mr-1" />
+                            Share
+                          </Button>
+                        </div>
+                        {(post.betAmount || post.odds) && (
+                          <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                            <Target className="h-4 w-4 mr-1" />
+                            Copy Bet
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )) : (
+                  // Fallback to mock data if no real data available
+                  mockPosts.map((post) => (
                 <Card key={post.id} className="bg-slate-800/50 border-slate-700 hover:border-blue-500 transition-colors">
                   <CardHeader>
                     <div className="flex items-start justify-between">
@@ -281,8 +400,10 @@ export default function SocialBetting() {
                     </div>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
+                  ))
+                )}
+              </div>
+            )}
           </TabsContent>
 
           {/* Leaderboard */}
@@ -298,8 +419,65 @@ export default function SocialBetting() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {mockLeaderboard.map((user) => (
+                {leaderboardLoading ? (
+                  <div className="space-y-4">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <div key={i} className="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg animate-pulse">
+                        <div className="flex items-center gap-4">
+                          <div className="w-8 h-8 rounded-full bg-slate-600"></div>
+                          <div className="space-y-2">
+                            <div className="h-4 bg-slate-600 rounded w-24"></div>
+                            <div className="h-3 bg-slate-600 rounded w-16"></div>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="h-4 bg-slate-600 rounded w-20"></div>
+                          <div className="h-3 bg-slate-600 rounded w-16"></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {leaderboard.length > 0 ? leaderboard.map((user) => (
+                      <div key={user.rank || user.userId} className="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg hover:bg-slate-700/70 transition-colors">
+                        <div className="flex items-center gap-4">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
+                            user.rank === 1 ? 'bg-yellow-600 text-yellow-100' :
+                            user.rank === 2 ? 'bg-gray-400 text-gray-900' :
+                            user.rank === 3 ? 'bg-amber-600 text-amber-100' :
+                            'bg-slate-600 text-slate-200'
+                          }`}>
+                            {user.rank}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-white font-semibold">{user.username}</span>
+                              <Badge className={`${getTierBadge(user.subscriptionTier || 'basic')} text-white text-xs`}>
+                                {user.subscriptionTier || 'Basic'}
+                              </Badge>
+                              {user.currentStreak >= 5 && (
+                                <Badge className="bg-orange-600 text-white text-xs">
+                                  <Flame className="h-3 w-3 mr-1" />
+                                  {user.currentStreak}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="text-sm text-gray-400">Win Rate: {user.winRate}%</div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-green-400 font-semibold text-lg">
+                            +${user.totalProfit?.toLocaleString()}
+                          </div>
+                          <div className="text-sm text-gray-400">
+                            {user.currentStreak} streak
+                          </div>
+                        </div>
+                      </div>
+                    )) : (
+                      // Fallback to mock data
+                      mockLeaderboard.map((user) => (
                     <div key={user.rank} className="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg hover:bg-slate-700/70 transition-colors">
                       <div className="flex items-center gap-4">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
@@ -335,8 +513,10 @@ export default function SocialBetting() {
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                      ))
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

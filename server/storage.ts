@@ -19,7 +19,11 @@ import {
   p2pChallenges, P2pChallenge, InsertP2pChallenge,
   p2pTransactions, P2pTransaction, InsertP2pTransaction,
   p2pActivity, P2pActivity, InsertP2pActivity,
-  friendships, Friendship, InsertFriendship
+  friendships, Friendship, InsertFriendship,
+  socialPosts, SocialPost, InsertSocialPost,
+  socialLikes, SocialLike, InsertSocialLike,
+  socialFollows, SocialFollow, InsertSocialFollow,
+  socialLeaderboard, SocialLeaderboard, InsertSocialLeaderboard
 } from "@shared/schema";
 
 // Storage interface
@@ -176,6 +180,13 @@ export interface IStorage {
     totalWinnings: number;
     winRate: number;
   }>;
+  
+  // Social Betting operations
+  getSocialFeed(userId?: string): Promise<any[]>;
+  getSocialLeaderboard(period: string): Promise<any[]>;
+  createSocialPost(post: InsertSocialPost): Promise<SocialPost>;
+  toggleSocialLike(userId: string, postId: number): Promise<{ liked: boolean; likeCount: number }>;
+  toggleSocialFollow(followerId: string, followingId: string): Promise<{ following: boolean; followerCount: number }>;
 }
 
 // Simple memory storage implementation
@@ -1201,6 +1212,173 @@ export class MemStorage implements IStorage {
       totalWinnings,
       winRate,
     };
+  }
+
+  // Social Betting Operations
+  async getSocialFeed(userId?: string): Promise<any[]> {
+    // For now, return mock data but formatted like real data would be
+    const mockFeed = [
+      {
+        id: 1,
+        userId: "admin-support-1756067018661",
+        content: "Just hit a 5-leg parlay on tonight's NBA games! Lakers, Warriors, and Celtics all covered. My analysis paid off! 🏀💰",
+        sport: "NBA",
+        betAmount: 250,
+        potentialPayout: 1875,
+        odds: "+650",
+        likes: 42,
+        comments: 8,
+        shares: 3,
+        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+        user: {
+          id: "admin-support-1756067018661",
+          username: "BettingPro",
+          firstName: "WeParlay",
+          lastName: "Admin",
+          subscriptionTier: "platinum"
+        }
+      },
+      {
+        id: 2,
+        userId: "user-2",
+        content: "Sharing my NFL Week 15 picks. Chiefs -7.5 is a lock, and I'm taking the under on Bills vs Dolphins. Weather gonna be a factor! ❄️",
+        sport: "NFL",
+        betAmount: 500,
+        potentialPayout: 950,
+        odds: "+90",
+        likes: 28,
+        comments: 15,
+        shares: 7,
+        createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
+        user: {
+          id: "user-2",
+          username: "SportsWizard",
+          firstName: "Sports",
+          lastName: "Wizard",
+          subscriptionTier: "gold"
+        }
+      },
+      {
+        id: 3,
+        userId: "user-3",
+        content: "T1 vs DRX in LCK finals tomorrow. T1 at +120 is incredible value. Faker's playoff form is unmatched! #LoL #LCK",
+        sport: "Esports",
+        betAmount: 100,
+        potentialPayout: 220,
+        odds: "+120",
+        likes: 67,
+        comments: 23,
+        shares: 12,
+        createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
+        user: {
+          id: "user-3",
+          username: "EsportsExpert",
+          firstName: "Esports",
+          lastName: "Expert",
+          subscriptionTier: "silver"
+        }
+      }
+    ];
+
+    return mockFeed;
+  }
+
+  async getSocialLeaderboard(period: string = 'monthly'): Promise<any[]> {
+    const mockLeaderboard = [
+      { 
+        rank: 1, 
+        userId: "leader-1",
+        username: "BettingKing", 
+        totalProfit: 15420, 
+        winRate: 68, 
+        currentStreak: 7, 
+        subscriptionTier: "platinum",
+        totalPosts: 45,
+        totalFollowers: 234
+      },
+      { 
+        rank: 2, 
+        userId: "leader-2",
+        username: "OddsShark", 
+        totalProfit: 12890, 
+        winRate: 65, 
+        currentStreak: 4, 
+        subscriptionTier: "gold",
+        totalPosts: 38,
+        totalFollowers: 189
+      },
+      { 
+        rank: 3, 
+        userId: "leader-3",
+        username: "PickMaster", 
+        totalProfit: 11240, 
+        winRate: 63, 
+        currentStreak: 9, 
+        subscriptionTier: "gold",
+        totalPosts: 52,
+        totalFollowers: 167
+      },
+      { 
+        rank: 4, 
+        userId: "leader-4",
+        username: "SportsGuru", 
+        totalProfit: 9870, 
+        winRate: 61, 
+        currentStreak: 2, 
+        subscriptionTier: "silver",
+        totalPosts: 31,
+        totalFollowers: 145
+      },
+      { 
+        rank: 5, 
+        userId: "admin-support-1756067018661",
+        username: "WeParlay", 
+        totalProfit: 8560, 
+        winRate: 59, 
+        currentStreak: 5, 
+        subscriptionTier: "platinum",
+        totalPosts: 28,
+        totalFollowers: 198
+      }
+    ];
+
+    return mockLeaderboard;
+  }
+
+  async createSocialPost(post: InsertSocialPost): Promise<SocialPost> {
+    const newPost: SocialPost = {
+      id: Math.floor(Math.random() * 10000),
+      userId: post.userId,
+      content: post.content,
+      sport: post.sport || null,
+      betAmount: post.betAmount || null,
+      potentialPayout: post.potentialPayout || null,
+      odds: post.odds || null,
+      likes: 0,
+      comments: 0,
+      shares: 0,
+      isPublic: post.isPublic ?? true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    return newPost;
+  }
+
+  async toggleSocialLike(userId: string, postId: number): Promise<{ liked: boolean; likeCount: number }> {
+    // Simulate like/unlike logic
+    const liked = Math.random() > 0.5; // Random for demo
+    const likeCount = Math.floor(Math.random() * 100) + 1;
+
+    return { liked, likeCount };
+  }
+
+  async toggleSocialFollow(followerId: string, followingId: string): Promise<{ following: boolean; followerCount: number }> {
+    // Simulate follow/unfollow logic
+    const following = Math.random() > 0.5; // Random for demo
+    const followerCount = Math.floor(Math.random() * 500) + 50;
+
+    return { following, followerCount };
   }
 }
 
