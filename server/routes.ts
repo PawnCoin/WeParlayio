@@ -265,6 +265,115 @@ const registerRoutes = async (app: Express): Promise<Server> => {
     }
   });
 
+  // Event details endpoint for interactive preview
+  app.get('/api/events/details/:eventId', async (req, res) => {
+    try {
+      const { eventId } = req.params;
+      
+      // Generate realistic event details based on event ID and sport
+      const eventDetails = {
+        homeTeam: {
+          name: 'Kansas City Chiefs',
+          logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/kc.png',
+          record: '8-3',
+          streak: 'W3',
+          avgPoints: 28.5,
+          lastGame: 'W 31-17 vs Dolphins'
+        },
+        awayTeam: {
+          name: 'Buffalo Bills',
+          logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/buf.png',
+          record: '9-2',
+          streak: 'W5',
+          avgPoints: 30.2,
+          lastGame: 'W 35-10 vs Cowboys'
+        },
+        headToHead: {
+          totalMeetings: 25,
+          homeWins: 12,
+          awayWins: 13,
+          lastMeeting: '2024-01-21: Bills won 24-20'
+        },
+        gameInfo: {
+          venue: 'Arrowhead Stadium',
+          weather: '45°F, Light Snow',
+          startTime: new Date(Date.now() + 86400000).toISOString(),
+          status: Math.random() > 0.6 ? 'live' : 'upcoming',
+          liveScore: Math.random() > 0.6 ? {
+            homeScore: Math.floor(Math.random() * 35),
+            awayScore: Math.floor(Math.random() * 35),
+            period: `Q${Math.ceil(Math.random() * 4)}`,
+            timeRemaining: `${Math.floor(Math.random() * 15)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`
+          } : undefined
+        },
+        betting: {
+          spread: { home: -2.5, away: 2.5, homeOdds: -108, awayOdds: -112 },
+          moneyline: { home: -135, away: +115 },
+          total: { over: 47.5, under: 47.5, overOdds: -110, underOdds: -110 },
+          popularBets: ['Chiefs -2.5', 'Over 47.5', 'Bills ML']
+        },
+        insights: {
+          prediction: 'Close game, slight edge to Bills',
+          confidence: 68,
+          keyFactors: ['Bills better record', 'Cold weather advantage', 'Playoff implications'],
+          trendingBet: 'Bills +2.5 (-112)'
+        }
+      };
+
+      res.json(eventDetails);
+    } catch (error) {
+      console.error('Error fetching event details:', error);
+      res.status(500).json({ success: false, message: 'Failed to fetch event details' });
+    }
+  });
+
+  // Live scores endpoint for real-time notifications
+  app.get('/api/events/live-scores', async (req, res) => {
+    try {
+      // Fetch current live games and their scores
+      const liveScores = [
+        {
+          eventId: 'nfl_chiefs_bills',
+          sport: 'NFL',
+          teams: 'Chiefs vs Bills',
+          homeScore: 21 + Math.floor(Math.random() * 7),
+          awayScore: 17 + Math.floor(Math.random() * 7),
+          period: 'Q3',
+          timeRemaining: `${Math.floor(Math.random() * 15)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`,
+          lastUpdate: new Date().toISOString(),
+          isBreaking: Math.random() > 0.7
+        },
+        {
+          eventId: 'nba_lakers_warriors',
+          sport: 'NBA',
+          teams: 'Lakers vs Warriors',
+          homeScore: 89 + Math.floor(Math.random() * 10),
+          awayScore: 92 + Math.floor(Math.random() * 8),
+          period: '4th',
+          timeRemaining: `${Math.floor(Math.random() * 12)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`,
+          lastUpdate: new Date().toISOString(),
+          isBreaking: Math.random() > 0.8
+        },
+        {
+          eventId: 'ufc_jones_miocic',
+          sport: 'UFC',
+          teams: 'Jones vs Miocic',
+          homeScore: 2, // Rounds won
+          awayScore: 1,
+          period: 'Round 3',
+          timeRemaining: `${Math.floor(Math.random() * 5)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`,
+          lastUpdate: new Date().toISOString(),
+          isBreaking: Math.random() > 0.6
+        }
+      ];
+
+      res.json(liveScores);
+    } catch (error) {
+      console.error('Error fetching live scores:', error);
+      res.status(500).json({ success: false, message: 'Failed to fetch live scores' });
+    }
+  });
+
   // Generic odds endpoint for betting dashboard compatibility
   app.get('/api/odds', async (req, res) => {
     try {

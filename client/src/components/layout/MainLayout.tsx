@@ -6,6 +6,7 @@ import Footer from "./Footer";
 import SystemStatusIndicator from '../SystemStatusIndicator';
 import UnifiedBetSlip from "../betting/UnifiedBetSlip";
 import BetNotifications from "../notifications/BetNotifications";
+import LiveScoreNotifications from "../notifications/LiveScoreNotifications";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -560,6 +561,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <ImprovedOddsTicker />
       {/* Footer */}
       <Footer />
+
+      {/* Real-time Notifications */}
+      <LiveScoreNotifications />
 
       {/* Bottom Right Corner - Professionally Organized */}
       <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-3 items-end">

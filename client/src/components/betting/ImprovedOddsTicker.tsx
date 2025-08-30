@@ -1,6 +1,7 @@
 import { memo, useState, useEffect, useMemo } from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import EventPreviewModal from './EventPreviewModal';
 
 // Real team logo URLs using reliable sports logo services
 const getTeamLogoUrl = (teamName: string, sport: string): string => {
@@ -422,7 +423,7 @@ const formatGameDisplay = (teams: string, currentOdds: number) => {
   };
 };
 
-const TickerItem = memo(({ item }: { item: TickerOdds }) => {
+const TickerItem = memo(({ item, onClick }: { item: TickerOdds; onClick: () => void }) => {
   // Add safety check for item data
   if (!item) return null;
   
@@ -461,7 +462,10 @@ const TickerItem = memo(({ item }: { item: TickerOdds }) => {
   const awayTeamLogo = item.awayTeam?.logo || getTeamLogoUrl(gameData.underdog, item.sport);
   
   return (
-    <div className="inline-flex items-center mr-8 px-2 py-1 min-w-max">
+    <div 
+      className="inline-flex items-center mr-8 px-2 py-1 min-w-max cursor-pointer hover:bg-gray-800/50 rounded transition-colors"
+      onClick={onClick}
+    >
       <div className="flex items-center space-x-1 mr-2">
         <img 
           src={homeTeamLogo} 
@@ -509,6 +513,8 @@ const TickerItem = memo(({ item }: { item: TickerOdds }) => {
 TickerItem.displayName = 'TickerItem';
 
 const ImprovedOddsTicker = memo(() => {
+  const [selectedEvent, setSelectedEvent] = useState<TickerOdds | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Fetch live ticker data
   const { data: oddsResponse } = useQuery({
@@ -517,6 +523,16 @@ const ImprovedOddsTicker = memo(() => {
   });
 
   const oddsData = useMemo(() => (oddsResponse as any)?.odds || [], [oddsResponse]);
+
+  const handleEventClick = (event: TickerOdds) => {
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedEvent(null);
+  };
 
   if (oddsData.length === 0) {
     return (
@@ -556,7 +572,11 @@ const ImprovedOddsTicker = memo(() => {
       >
         {/* Duplicate the data for continuous scrolling */}
         {[...oddsData, ...oddsData].map((item, index) => (
-          <TickerItem key={`${item.id}-${index}`} item={item} />
+          <TickerItem 
+            key={`${item.id}-${index}`} 
+            item={item} 
+            onClick={() => handleEventClick(item)}
+          />
         ))}
       </div>
 
@@ -569,6 +589,18 @@ const ImprovedOddsTicker = memo(() => {
           animation: ticker-continuous 65s linear infinite;
         }
       `}</style>
+
+      {/* Event Preview Modal */}
+      {selectedEvent && (
+        <EventPreviewModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          eventId={selectedEvent.eventId || selectedEvent.id}
+          sport={selectedEvent.sport}
+          teams={selectedEvent.teams}
+          currentOdds={selectedEvent.currentOdds}
+        />
+      )}
     </footer>
   );
 });
