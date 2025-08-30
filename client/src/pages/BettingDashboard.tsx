@@ -310,10 +310,11 @@ const BettingDashboard: React.FC = () => {
               betSlip={betSlip.map(bet => ({
                 ...bet,
                 eventId: bet.eventId || 'unknown',
+                selection: bet.selection || 'Home Win',
                 gameInfo: {
                   homeTeam: bet.homeTeam || 'Home',
                   awayTeam: bet.awayTeam || 'Away',
-                  startTime: bet.date
+                  startTime: bet.date || new Date().toISOString()
                 }
               }))}
               balances={balances}

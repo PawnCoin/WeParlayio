@@ -37,7 +37,7 @@ export default function Odds() {
   });
 
   // Extract comprehensive odds data (same as enhanced ticker)
-  const realOddsData: any[] = realOddsResponse?.success ? realOddsResponse.odds : (realOddsResponse?.odds || []);
+  const realOddsData: any[] = (realOddsResponse as any)?.success ? (realOddsResponse as any).odds : ((realOddsResponse as any)?.odds || []);
   
   console.log('📊 Live Odds Data:', {
     dataCount: realOddsData?.length,

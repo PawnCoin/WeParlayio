@@ -81,7 +81,8 @@ const P2pBetting = () => {
     mutationFn: async (challengeData: any) => {
       return apiRequest('/api/p2p-betting/challenges/create', {
         method: 'POST',
-        body: challengeData,
+        body: JSON.stringify(challengeData),
+        headers: { 'Content-Type': 'application/json' },
       });
     },
     onSuccess: () => {
@@ -108,7 +109,8 @@ const P2pBetting = () => {
     mutationFn: async ({ challengeId, challengeePick }: { challengeId: string; challengeePick: string }) => {
       return apiRequest(`/api/p2p-betting/challenges/${challengeId}/accept`, {
         method: 'POST',
-        body: { challengeePick },
+        body: JSON.stringify({ challengeePick }),
+        headers: { 'Content-Type': 'application/json' },
       });
     },
     onSuccess: () => {
@@ -129,9 +131,9 @@ const P2pBetting = () => {
   });
 
   const games = gamesData?.data || [];
-  const challenges = availableChallenges?.challenges || [];
-  const userChallenges = myChallenges?.challenges || [];
-  const stats = p2pStats?.stats || {
+  const challenges = (availableChallenges as any)?.challenges || [];
+  const userChallenges = (myChallenges as any)?.challenges || [];
+  const stats = (p2pStats as any)?.stats || {
     totalChallenges: 0,
     wonChallenges: 0,
     totalWinnings: 0,
@@ -483,7 +485,7 @@ const ChallengeCard = ({ challenge, isOwn, onAccept, acceptLoading }: ChallengeC
           )}
 
           <div className="flex justify-between items-center text-sm text-muted-foreground">
-            <span>Expires: {formatTimeRemaining(challenge.expiresAt)}</span>
+            <span>Expires: {challenge.expiresAt ? formatTimeRemaining(challenge.expiresAt) : 'No expiration'}</span>
             <span>{challenge.isPublic ? 'Public' : 'Private'}</span>
           </div>
 

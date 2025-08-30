@@ -37,7 +37,7 @@ export default function UnifiedSports() {
   });
 
   // Extract games from comprehensive response
-  const upcomingGames = upcomingGamesResponse?.odds || [];
+  const upcomingGames = (upcomingGamesResponse as any)?.odds || [];
 
   // Fetch popular betting markets
   const { data: popularMarkets } = useQuery({
@@ -345,7 +345,7 @@ export default function UnifiedSports() {
           {/* American Sports Tab */}
           <TabsContent value="american" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {americanSports && Array.isArray(americanSports) && americanSports.map((sportData: any, index: number) => (
+              {(americanSports as any) && Array.isArray((americanSports as any)) && (americanSports as any).map((sportData: any, index: number) => (
                 <Card key={index}>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -387,7 +387,7 @@ export default function UnifiedSports() {
           {/* International Sports Tab */}
           <TabsContent value="international" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {internationalSports && Array.isArray(internationalSports) && internationalSports.map((sportData: any, index: number) => (
+              {(internationalSports as any) && Array.isArray((internationalSports as any)) && (internationalSports as any).map((sportData: any, index: number) => (
                 <Card key={index}>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -429,7 +429,7 @@ export default function UnifiedSports() {
           {/* College Sports Tab */}
           <TabsContent value="college" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {collegeSports && Array.isArray(collegeSports) && collegeSports.map((sportData: any, index: number) => (
+              {(collegeSports as any) && Array.isArray((collegeSports as any)) && (collegeSports as any).map((sportData: any, index: number) => (
                 <Card key={index}>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -471,7 +471,7 @@ export default function UnifiedSports() {
           {/* Combat Sports Tab */}
           <TabsContent value="combat" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {combatSports && Array.isArray(combatSports) && combatSports.map((sportData: any, index: number) => (
+              {(combatSports as any) && Array.isArray((combatSports as any)) && (combatSports as any).map((sportData: any, index: number) => (
                 <Card key={index}>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -528,7 +528,7 @@ export default function UnifiedSports() {
                     <div>
                       <h4 className="font-medium mb-3">Connected Data Sources</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {apiStatus.sources?.map((source: any, index: number) => (
+                        {(apiStatus as any)?.sources?.map((source: any, index: number) => (
                           <div key={index} className="p-3 border rounded-lg">
                             <div className="flex items-center justify-between mb-2">
                               <span className="font-medium">{source.name}</span>
@@ -548,15 +548,15 @@ export default function UnifiedSports() {
                     {/* System Stats */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="p-4 border rounded-lg text-center">
-                        <div className="text-2xl font-bold text-blue-600">{apiStatus.total_sports_covered}</div>
+                        <div className="text-2xl font-bold text-blue-600">{(apiStatus as any)?.total_sports_covered}</div>
                         <div className="text-sm text-muted-foreground">Sports Covered</div>
                       </div>
                       <div className="p-4 border rounded-lg text-center">
-                        <div className="text-2xl font-bold text-green-600">{apiStatus.cache_size}</div>
+                        <div className="text-2xl font-bold text-green-600">{(apiStatus as any)?.cache_size}</div>
                         <div className="text-sm text-muted-foreground">Cached Requests</div>
                       </div>
                       <div className="p-4 border rounded-lg text-center">
-                        <div className="text-2xl font-bold text-purple-600">{apiStatus.sources?.length}</div>
+                        <div className="text-2xl font-bold text-purple-600">{(apiStatus as any)?.sources?.length}</div>
                         <div className="text-sm text-muted-foreground">Data Sources</div>
                       </div>
                     </div>

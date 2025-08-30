@@ -1,7 +1,7 @@
 
 import axios from 'axios';
 import NodeCache from 'node-cache';
-import { WebSocketService } from './websocketService';
+import { websocketService as WebSocketService } from './websocketService';
 
 interface EsportsMatch {
   id: string;
@@ -41,16 +41,17 @@ interface PlayerStats {
 const cache = new NodeCache({ stdTTL: 30 }); // 30 second cache for live data
 
 export class EsportsLiveDataService {
-  private wsService: WebSocketService;
+  private wsService: any;
   private updateInterval: NodeJS.Timeout | null = null;
   
   private readonly GRID_API_KEY = process.env.GRID_API_KEY;
   private readonly RIOT_API_KEY = process.env.RIOT_API_KEY;
   private readonly PANDASCORE_API_KEY = process.env.PANDA_API_KEY;
 
-  constructor(wsService: WebSocketService) {
+  constructor(wsService: any) {
     this.wsService = wsService;
-    this.startLiveUpdates();
+    // Disable live updates to prevent WebSocket port conflicts
+    console.log('🔌 EsportsLiveDataService: WebSocket updates disabled to prevent port conflicts');
   }
 
   async getLiveMatches(game?: string): Promise<EsportsMatch[]> {
@@ -286,37 +287,9 @@ export class EsportsLiveDataService {
   }
 
   private startLiveUpdates(): void {
-    // Update live data every 10 seconds
-    this.updateInterval = setInterval(async () => {
-      try {
-        const liveMatches = await this.getLiveMatches();
-        
-        // Broadcast updates to WebSocket clients
-        this.wsService.broadcast('esports:live-matches', {
-          type: 'live-matches-update',
-          data: liveMatches,
-          timestamp: new Date().toISOString()
-        });
-
-        // Update odds for each match
-        for (const match of liveMatches) {
-          if (match.status === 'live') {
-            // Simulate odds changes
-            match.odds.team1Win += (Math.random() - 0.5) * 0.1;
-            match.odds.team2Win += (Math.random() - 0.5) * 0.1;
-            
-            this.wsService.broadcast(`esports:match:${match.id}`, {
-              type: 'odds-update',
-              matchId: match.id,
-              odds: match.odds,
-              timestamp: new Date().toISOString()
-            });
-          }
-        }
-      } catch (error) {
-        console.error('Error in live updates:', error);
-      }
-    }, 10000);
+    // WebSocket live updates disabled to prevent port conflicts
+    console.log('🔌 EsportsLiveDataService: Live updates disabled - WebSocket broadcasting not available');
+    return;
   }
 
   private transformGridData(seriesData: any[]): EsportsMatch[] {
