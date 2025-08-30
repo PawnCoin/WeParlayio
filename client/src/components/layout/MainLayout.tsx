@@ -562,8 +562,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       {/* Footer */}
       <Footer />
 
-      {/* Real-time Notifications */}
-      <LiveScoreNotifications />
+      {/* Real-time Notifications - Temporarily disabled to fix infinite loop */}
+      {/* <LiveScoreNotifications /> */}
 
       {/* Bottom Right Corner - Professionally Organized */}
       <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-3 items-end">

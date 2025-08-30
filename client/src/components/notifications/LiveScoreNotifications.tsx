@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Bell, Trophy, Zap, TrendingUp } from 'lucide-react';
@@ -25,8 +25,8 @@ interface NotificationPreferences {
 
 const LiveScoreNotifications = () => {
   const { toast } = useToast();
-  const [lastKnownScores, setLastKnownScores] = useState<Map<string, string>>(new Map());
-  const [preferences, setPreferences] = useState<NotificationPreferences>({
+  const lastKnownScoresRef = useRef<Map<string, string>>(new Map());
+  const [preferences] = useState<NotificationPreferences>({
     enableLiveScores: true,
     enableOddsChanges: false, // Disabled to prevent spam
     enableGameResults: true,
@@ -67,13 +67,13 @@ const LiveScoreNotifications = () => {
 
   const scores = (liveScores as LiveScoreUpdate[]) || mockLiveUpdates;
 
-  useEffect(() => {
+  const handleScoreUpdate = useCallback((scores: LiveScoreUpdate[]) => {
     if (!scores || scores.length === 0) return;
 
     scores.forEach((score) => {
       // Check if this is a real score change
       const currentScoreKey = `${score.homeScore}-${score.awayScore}`;
-      const lastKnownScore = lastKnownScores.get(score.eventId);
+      const lastKnownScore = lastKnownScoresRef.current.get(score.eventId);
       
       // Only show notification if score actually changed (not on first load)
       if (lastKnownScore && lastKnownScore !== currentScoreKey && preferences.sports.includes(score.sport)) {
@@ -134,9 +134,13 @@ const LiveScoreNotifications = () => {
       }
       
       // Always update the last known score for this event (silently for first load)
-      setLastKnownScores(prev => new Map(prev).set(score.eventId, currentScoreKey));
+      lastKnownScoresRef.current.set(score.eventId, currentScoreKey);
     });
-  }, [scores, toast, lastKnownScores, preferences]);
+  }, [toast, preferences]);
+
+  useEffect(() => {
+    handleScoreUpdate(scores);
+  }, [scores, handleScoreUpdate]);
 
   // Show odds change notifications (disabled by default)
   useEffect(() => {

@@ -423,11 +423,16 @@ const formatGameDisplay = (teams: string, currentOdds: number) => {
   };
 };
 
-const TickerItem = memo(({ item, onClick }: { item: TickerOdds; onClick: () => void }) => {
+const TickerItem = memo(({ item, onClick, liveScore }: { 
+  item: TickerOdds; 
+  onClick: () => void; 
+  liveScore?: any;
+}) => {
   // Add safety check for item data
   if (!item) return null;
   
   const gameData = formatGameDisplay(item.teams, item.currentOdds);
+  const isLive = liveScore && liveScore.sport === item.sport;
   
   const getSportColor = (sport: string) => {
     const colors: Record<string, string> = {
@@ -491,20 +496,49 @@ const TickerItem = memo(({ item, onClick }: { item: TickerOdds; onClick: () => v
       </span>
       
       <div className="flex items-center space-x-2">
-        <span className="text-white font-semibold text-sm">
-          {gameData.favorite}
-        </span>
-        <span className="text-green-400 font-mono font-bold">
-          {gameData.favSpread}
-        </span>
-        <span className="text-gray-400">vs</span>
-        <span className="text-white font-semibold text-sm">
-          {gameData.underdog}
-        </span>
-        <span className="text-yellow-400 font-mono font-bold">
-          {gameData.underdogSpread}
-        </span>
-        {trendIcon}
+        {isLive ? (
+          // Live game display with scores
+          <>
+            <div className="flex items-center space-x-1">
+              <span className="text-white font-semibold text-sm">
+                {gameData.favorite}
+              </span>
+              <span className="text-green-400 font-mono font-bold text-lg">
+                {liveScore.homeScore}
+              </span>
+            </div>
+            <span className="text-red-400 font-bold">LIVE</span>
+            <div className="flex items-center space-x-1">
+              <span className="text-yellow-400 font-mono font-bold text-lg">
+                {liveScore.awayScore}
+              </span>
+              <span className="text-white font-semibold text-sm">
+                {gameData.underdog}
+              </span>
+            </div>
+            <span className="text-xs text-gray-400">
+              {liveScore.period} {liveScore.timeRemaining}
+            </span>
+          </>
+        ) : (
+          // Regular odds display for upcoming games
+          <>
+            <span className="text-white font-semibold text-sm">
+              {gameData.favorite}
+            </span>
+            <span className="text-green-400 font-mono font-bold">
+              {gameData.favSpread}
+            </span>
+            <span className="text-gray-400">vs</span>
+            <span className="text-white font-semibold text-sm">
+              {gameData.underdog}
+            </span>
+            <span className="text-yellow-400 font-mono font-bold">
+              {gameData.underdogSpread}
+            </span>
+            {trendIcon}
+          </>
+        )}
       </div>
     </div>
   );
@@ -522,7 +556,14 @@ const ImprovedOddsTicker = memo(() => {
     refetchInterval: 180000, // Update every 3 minutes (180 seconds)
   });
 
+  // Fetch live scores for current games
+  const { data: liveScoresResponse } = useQuery({
+    queryKey: ['/api/events/live-scores'],
+    refetchInterval: 30000, // Update every 30 seconds for live scores
+  });
+
   const oddsData = useMemo(() => (oddsResponse as any)?.odds || [], [oddsResponse]);
+  const liveScores = useMemo(() => (liveScoresResponse as any) || [], [liveScoresResponse]);
 
   const handleEventClick = (event: TickerOdds) => {
     setSelectedEvent(event);
@@ -533,6 +574,15 @@ const ImprovedOddsTicker = memo(() => {
     setIsModalOpen(false);
     setSelectedEvent(null);
   };
+
+  // Create a map of live scores by event/teams for quick lookup
+  const liveScoreMap = useMemo(() => {
+    const map = new Map();
+    liveScores.forEach((score: any) => {
+      map.set(score.teams, score);
+    });
+    return map;
+  }, [liveScores]);
 
   if (oddsData.length === 0) {
     return (
@@ -571,13 +621,17 @@ const ImprovedOddsTicker = memo(() => {
         className="flex whitespace-nowrap animate-ticker-continuous"
       >
         {/* Duplicate the data for continuous scrolling */}
-        {[...oddsData, ...oddsData].map((item, index) => (
-          <TickerItem 
-            key={`${item.id}-${index}`} 
-            item={item} 
-            onClick={() => handleEventClick(item)}
-          />
-        ))}
+        {[...oddsData, ...oddsData].map((item, index) => {
+          const liveScore = liveScoreMap.get(item.teams);
+          return (
+            <TickerItem 
+              key={`${item.id}-${index}`} 
+              item={item} 
+              liveScore={liveScore}
+              onClick={() => handleEventClick(item)}
+            />
+          );
+        })}
       </div>
 
       <style>{`
