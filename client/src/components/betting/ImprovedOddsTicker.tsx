@@ -1,7 +1,11 @@
-import { memo, useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { TrendingUp, TrendingDown, Wifi, WifiOff, AlertCircle } from 'lucide-react';
+import React, { memo, useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { TrendingUp, TrendingDown, Wifi, WifiOff, AlertCircle, Loader, Clock } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import EventPreviewModal from './EventPreviewModal';
+import { TickerOdds, Team } from '../types';
+import { getTeamLogoUrl, getSportColors, getLeagueLogoUrl } from '../lib/utils';
+import EnhancedTeamLogo from './ui/EnhancedTeamLogo';
+import TickerItemSkeleton from './ui/TickerItemSkeleton';
 
 // Interactive sports logo cache with fallback mechanism
 const logoCache = new Map<string, { url: string; status: 'loading' | 'loaded' | 'error'; timestamp: number }>();
@@ -831,7 +835,7 @@ const ImprovedOddsTicker = memo(() => {
 
       <style>{`
         @keyframes ticker-continuous {
-          0% { transform: translateX(-100%); }
+          0% { transform: translateX(-1000%); }
           100% { transform: translateX(100%); }
         }
         .animate-ticker-continuous {
