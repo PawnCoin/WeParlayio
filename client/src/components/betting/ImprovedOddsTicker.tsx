@@ -1,6 +1,8 @@
 import React, { memo, useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { TrendingUp, TrendingDown, Wifi, WifiOff, AlertCircle, Loader, Clock } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import EventPreviewModal from './EventPreviewModal';
+import { getTeamLogoUrl } from '../../lib/sportsDataUtils';
 
 // Type definitions for this component
 interface Team {
@@ -34,25 +36,18 @@ interface TickerOdds {
   displayText?: string;
 }
 
-// Simple team logo component
-const EnhancedTeamLogo: React.FC<{ team: Team; size?: number }> = ({ team, size = 24 }) => {
-  const getTeamLogoUrl = (teamName: string) => {
-    // Simple fallback logo without external dependencies
-    return team.logo || `https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-football.png`;
-  };
-
-  return (
-    <img 
-      src={getTeamLogoUrl(team.name)} 
-      alt={team.name}
-      className="rounded"
-      style={{ width: size, height: size }}
-      onError={(e) => {
-        (e.target as HTMLImageElement).src = `https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-basketball.png`;
-      }}
-    />
-  );
-};
+// Simple team logo component to replace missing EnhancedTeamLogo
+const EnhancedTeamLogo: React.FC<{ team: Team; size?: number }> = ({ team, size = 24 }) => (
+  <img 
+    src={team.logo || getTeamLogoUrl(team.name)} 
+    alt={team.name}
+    className="rounded"
+    style={{ width: size, height: size }}
+    onError={(e) => {
+      (e.target as HTMLImageElement).src = `https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-basketball.png`;
+    }}
+  />
+);
 
 // Simple skeleton component to replace missing TickerItemSkeleton
 const TickerItemSkeleton: React.FC = () => (
@@ -226,9 +221,9 @@ const TickerItem = memo(({ item, onClick }: {
   const { sport, homeTeam, awayTeam, gameState, liveScore, odds, timestamp, status } = item;
   const sportColors = { primary: '#1f2937', secondary: '#374151' }; // Default colors
 
-  const homeTeamLogo = homeTeam.logo || `https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-football.png`;
-  const awayTeamLogo = awayTeam.logo || `https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-football.png`;
-  const leagueLogo = `https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-${sport.toLowerCase()}.png`;
+  const homeTeamLogo = homeTeam.logo || getTeamLogoUrl(homeTeam.name, sport);
+  const awayTeamLogo = awayTeam.logo || getTeamLogoUrl(awayTeam.name, sport);
+  const leagueLogo = getTeamLogoUrl(sport);
 
   const gameTime = useMemo(() => {
     try {
@@ -348,50 +343,28 @@ const fetchAllScores = async (): Promise<TickerOdds[]> => {
 };
 
 const ImprovedOddsTicker = memo(() => {
-  // Modal state removed to prevent CommonJS conflicts
+  const [selectedEvent, setSelectedEvent] = useState<TickerOdds | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { data: backendTickerData, isLoading, isError, isFetching } = useQuery({
-    queryKey: ['/api/odds-ticker/live-ticker'],
-    refetchInterval: 60000, // Update every minute for real-time data
+  const { data: oddsData, isLoading, isError, isFetching } = useQuery<TickerOdds[]>({
+    queryKey: ['espn-live-scores'],
+    queryFn: fetchAllScores,
+    refetchInterval: 60000,
   });
 
-  // Convert backend ticker data to component format
-  const oddsData = useMemo(() => {
-    const rawOdds = (backendTickerData as any)?.odds || [];
-    return rawOdds.map((item: any): TickerOdds => ({
-      id: item.id,
-      sport: item.sport,
-      teams: item.teams,
-      homeTeam: item.homeTeam || { name: item.teams?.split(' vs ')[1] || 'Home' },
-      awayTeam: item.awayTeam || { name: item.teams?.split(' vs ')[0] || 'Away' },
-      gameState: item.status === 'live' ? 'live' : 'upcoming',
-      odds: item.odds,
-      timestamp: item.timestamp,
-      eventId: item.eventId,
-      status: item.status,
-      hasLiveScore: item.status === 'live',
-      liveScore: item.status === 'live' ? {
-        homeScore: Math.floor(Math.random() * 35),
-        awayScore: Math.floor(Math.random() * 35),
-        period: 'Q2',
-        timeRemaining: '8:45'
-      } : undefined,
-      currentOdds: item.currentOdds,
-      previousOdds: item.previousOdds,
-      bookmaker: item.bookmaker,
-      timeframe: item.timeframe,
-      displayText: item.displayText
-    }));
-  }, [backendTickerData]);
-
   const handleEventClick = (event: TickerOdds) => {
-    // Click functionality simplified - modal removed
-    console.log('Event clicked:', event);
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedEvent(null);
   };
 
   if (isLoading && !oddsData) {
     return (
-      <footer className="fixed bottom-16 lg:bottom-0 left-0 right-0 w-full bg-black/80 backdrop-blur-sm py-4 px-4 overflow-hidden border-t border-gray-800 z-60">
+      <footer className="fixed bottom-0 left-0 right-0 w-full bg-black/50 backdrop-blur-sm py-4 px-4 overflow-hidden border-t border-gray-800">
         <div className="flex whitespace-nowrap">
             {Array.from({ length: 10 }).map((_, i) => <TickerItemSkeleton key={i} />)}
         </div>
@@ -425,7 +398,7 @@ const ImprovedOddsTicker = memo(() => {
 
 
   return (
-    <footer className="fixed bottom-16 lg:bottom-0 left-0 right-0 w-full bg-black/80 backdrop-blur-sm py-4 overflow-hidden border-t border-gray-800 z-60">
+    <footer className="fixed bottom-0 left-0 right-0 w-full bg-black/50 backdrop-blur-sm py-4 overflow-hidden border-t border-gray-800 z-40">
       <style>{`
         @keyframes ticker-continuous {
           0% { transform: translateX(0); }
@@ -436,11 +409,6 @@ const ImprovedOddsTicker = memo(() => {
           will-change: transform;
         }
       `}</style>
-      {/* Debug indicator to ensure ticker is rendered */}
-      <div className="absolute top-1 left-4 text-xs text-green-400 bg-gray-900/80 px-2 py-1 rounded z-20">
-        Live Ticker: {tickerItems.length} events
-      </div>
-      
       {isFetching && !isLoading && (
           <div className="absolute top-1/2 -translate-y-1/2 right-4 flex items-center gap-1 text-xs text-blue-400 bg-gray-900/50 px-2 py-1 rounded-full z-20">
               <Loader size={12} className="animate-spin" />
@@ -469,7 +437,16 @@ const ImprovedOddsTicker = memo(() => {
         })}
       </div>
 
-      {/* Modal functionality removed to prevent CommonJS conflicts */}
+      {selectedEvent && (
+        <EventPreviewModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          eventId={selectedEvent.eventId || ''}
+          sport={selectedEvent.sport}
+          teams={selectedEvent.teams}
+          currentOdds={selectedEvent.currentOdds || 0}
+        />
+      )}
     </footer>
   );
 });
