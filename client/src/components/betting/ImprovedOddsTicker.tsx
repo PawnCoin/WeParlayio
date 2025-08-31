@@ -1,8 +1,6 @@
 import React, { memo, useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { TrendingUp, TrendingDown, Wifi, WifiOff, AlertCircle, Loader, Clock } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import EventPreviewModal from './EventPreviewModal';
-import { getTeamLogoUrl } from '../../lib/sportsDataUtils';
 
 // Type definitions for this component
 interface Team {
@@ -36,18 +34,25 @@ interface TickerOdds {
   displayText?: string;
 }
 
-// Simple team logo component to replace missing EnhancedTeamLogo
-const EnhancedTeamLogo: React.FC<{ team: Team; size?: number }> = ({ team, size = 24 }) => (
-  <img 
-    src={team.logo || getTeamLogoUrl(team.name)} 
-    alt={team.name}
-    className="rounded"
-    style={{ width: size, height: size }}
-    onError={(e) => {
-      (e.target as HTMLImageElement).src = `https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-basketball.png`;
-    }}
-  />
-);
+// Simple team logo component
+const EnhancedTeamLogo: React.FC<{ team: Team; size?: number }> = ({ team, size = 24 }) => {
+  const getTeamLogoUrl = (teamName: string) => {
+    // Simple fallback logo without external dependencies
+    return team.logo || `https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-football.png`;
+  };
+
+  return (
+    <img 
+      src={getTeamLogoUrl(team.name)} 
+      alt={team.name}
+      className="rounded"
+      style={{ width: size, height: size }}
+      onError={(e) => {
+        (e.target as HTMLImageElement).src = `https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-basketball.png`;
+      }}
+    />
+  );
+};
 
 // Simple skeleton component to replace missing TickerItemSkeleton
 const TickerItemSkeleton: React.FC = () => (
@@ -221,9 +226,9 @@ const TickerItem = memo(({ item, onClick }: {
   const { sport, homeTeam, awayTeam, gameState, liveScore, odds, timestamp, status } = item;
   const sportColors = { primary: '#1f2937', secondary: '#374151' }; // Default colors
 
-  const homeTeamLogo = homeTeam.logo || getTeamLogoUrl(homeTeam.name, sport);
-  const awayTeamLogo = awayTeam.logo || getTeamLogoUrl(awayTeam.name, sport);
-  const leagueLogo = getTeamLogoUrl(sport);
+  const homeTeamLogo = homeTeam.logo || `https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-football.png`;
+  const awayTeamLogo = awayTeam.logo || `https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-football.png`;
+  const leagueLogo = `https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-${sport.toLowerCase()}.png`;
 
   const gameTime = useMemo(() => {
     try {
@@ -343,8 +348,7 @@ const fetchAllScores = async (): Promise<TickerOdds[]> => {
 };
 
 const ImprovedOddsTicker = memo(() => {
-  const [selectedEvent, setSelectedEvent] = useState<TickerOdds | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // Modal state removed to prevent CommonJS conflicts
 
   const { data: backendTickerData, isLoading, isError, isFetching } = useQuery({
     queryKey: ['/api/odds-ticker/live-ticker'],
@@ -381,13 +385,8 @@ const ImprovedOddsTicker = memo(() => {
   }, [backendTickerData]);
 
   const handleEventClick = (event: TickerOdds) => {
-    setSelectedEvent(event);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedEvent(null);
+    // Click functionality simplified - modal removed
+    console.log('Event clicked:', event);
   };
 
   if (isLoading && !oddsData) {
@@ -465,16 +464,7 @@ const ImprovedOddsTicker = memo(() => {
         })}
       </div>
 
-      {selectedEvent && (
-        <EventPreviewModal
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          eventId={selectedEvent.eventId || ''}
-          sport={selectedEvent.sport}
-          teams={selectedEvent.teams}
-          currentOdds={selectedEvent.currentOdds || 0}
-        />
-      )}
+      {/* Modal functionality removed to prevent CommonJS conflicts */}
     </footer>
   );
 });
