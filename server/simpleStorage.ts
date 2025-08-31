@@ -604,6 +604,44 @@ export class SimpleStorage implements IStorage {
     this.users.set(userId, user);
     return user;
   }
+  
+  // Social Betting operations implementation
+  async getSocialFeed(userId?: string): Promise<any[]> {
+    // Return empty array for now - this would be populated with actual social posts
+    return [];
+  }
+  
+  async getSocialLeaderboard(period: string): Promise<any[]> {
+    // Return empty array for now - this would be populated with leaderboard data
+    return [];
+  }
+  
+  async createSocialPost(post: InsertSocialPost): Promise<SocialPost> {
+    const id = this.nextId++;
+    const socialPost: SocialPost = {
+      id,
+      userId: post.userId,
+      content: post.content,
+      sport: post.sport,
+      betAmount: post.betAmount,
+      potentialPayout: post.potentialPayout,
+      odds: post.odds,
+      likeCount: 0,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    return socialPost;
+  }
+  
+  async toggleSocialLike(userId: string, postId: number): Promise<{ liked: boolean; likeCount: number }> {
+    // For now, return mock data - this would interact with actual social likes storage
+    return { liked: true, likeCount: Math.floor(Math.random() * 10) + 1 };
+  }
+  
+  async toggleSocialFollow(followerId: string, followingId: string): Promise<{ following: boolean; followerCount: number }> {
+    // For now, return mock data - this would interact with actual follows storage
+    return { following: true, followerCount: Math.floor(Math.random() * 100) + 1 };
+  }
 }
 
 export const storage = new SimpleStorage();
