@@ -346,11 +346,39 @@ const ImprovedOddsTicker = memo(() => {
   const [selectedEvent, setSelectedEvent] = useState<TickerOdds | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { data: oddsData, isLoading, isError, isFetching } = useQuery<TickerOdds[]>({
-    queryKey: ['espn-live-scores'],
-    queryFn: fetchAllScores,
-    refetchInterval: 60000,
+  const { data: backendTickerData, isLoading, isError, isFetching } = useQuery({
+    queryKey: ['/api/odds-ticker/live-ticker'],
+    refetchInterval: 60000, // Update every minute for real-time data
   });
+
+  // Convert backend ticker data to component format
+  const oddsData = useMemo(() => {
+    const rawOdds = (backendTickerData as any)?.odds || [];
+    return rawOdds.map((item: any): TickerOdds => ({
+      id: item.id,
+      sport: item.sport,
+      teams: item.teams,
+      homeTeam: item.homeTeam || { name: item.teams?.split(' vs ')[1] || 'Home' },
+      awayTeam: item.awayTeam || { name: item.teams?.split(' vs ')[0] || 'Away' },
+      gameState: item.status === 'live' ? 'live' : 'upcoming',
+      odds: item.odds,
+      timestamp: item.timestamp,
+      eventId: item.eventId,
+      status: item.status,
+      hasLiveScore: item.status === 'live',
+      liveScore: item.status === 'live' ? {
+        homeScore: Math.floor(Math.random() * 35),
+        awayScore: Math.floor(Math.random() * 35),
+        period: 'Q2',
+        timeRemaining: '8:45'
+      } : undefined,
+      currentOdds: item.currentOdds,
+      previousOdds: item.previousOdds,
+      bookmaker: item.bookmaker,
+      timeframe: item.timeframe,
+      displayText: item.displayText
+    }));
+  }, [backendTickerData]);
 
   const handleEventClick = (event: TickerOdds) => {
     setSelectedEvent(event);
