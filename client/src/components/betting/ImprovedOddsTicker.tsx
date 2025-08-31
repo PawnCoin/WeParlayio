@@ -391,7 +391,7 @@ const ImprovedOddsTicker = memo(() => {
 
   if (isLoading && !oddsData) {
     return (
-      <footer className="fixed bottom-0 left-0 right-0 w-full bg-black/50 backdrop-blur-sm py-4 px-4 overflow-hidden border-t border-gray-800">
+      <footer className="fixed bottom-16 lg:bottom-0 left-0 right-0 w-full bg-black/80 backdrop-blur-sm py-4 px-4 overflow-hidden border-t border-gray-800 z-60">
         <div className="flex whitespace-nowrap">
             {Array.from({ length: 10 }).map((_, i) => <TickerItemSkeleton key={i} />)}
         </div>
@@ -425,7 +425,7 @@ const ImprovedOddsTicker = memo(() => {
 
 
   return (
-    <footer className="fixed bottom-0 left-0 right-0 w-full bg-black/50 backdrop-blur-sm py-4 overflow-hidden border-t border-gray-800 z-40">
+    <footer className="fixed bottom-16 lg:bottom-0 left-0 right-0 w-full bg-black/80 backdrop-blur-sm py-4 overflow-hidden border-t border-gray-800 z-60">
       <style>{`
         @keyframes ticker-continuous {
           0% { transform: translateX(0); }
@@ -436,6 +436,11 @@ const ImprovedOddsTicker = memo(() => {
           will-change: transform;
         }
       `}</style>
+      {/* Debug indicator to ensure ticker is rendered */}
+      <div className="absolute top-1 left-4 text-xs text-green-400 bg-gray-900/80 px-2 py-1 rounded z-20">
+        Live Ticker: {tickerItems.length} events
+      </div>
+      
       {isFetching && !isLoading && (
           <div className="absolute top-1/2 -translate-y-1/2 right-4 flex items-center gap-1 text-xs text-blue-400 bg-gray-900/50 px-2 py-1 rounded-full z-20">
               <Loader size={12} className="animate-spin" />
