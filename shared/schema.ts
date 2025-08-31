@@ -560,6 +560,9 @@ export type InsertP2pTransaction = z.infer<typeof insertP2pTransactionSchema>;
 export type P2pActivity = typeof p2pActivity.$inferSelect;
 export type InsertP2pActivity = z.infer<typeof insertP2pActivitySchema>;
 
+export type Friendship = typeof friendships.$inferSelect;
+export type InsertFriendship = z.infer<typeof insertFriendshipSchema>;
+
 // Support ticket system for automated issue resolution
 export const supportTickets = pgTable("support_tickets", {
   id: serial("id").primaryKey(),

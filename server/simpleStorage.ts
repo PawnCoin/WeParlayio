@@ -172,73 +172,12 @@ export class SimpleStorage implements IStorage {
     const user: User = { 
       ...insertUser, 
       id,
-      email: insertUser.email || null,
-      username: insertUser.username || null,
-      gamertag: null,
-      firstName: insertUser.firstName || null,
-      lastName: insertUser.lastName || null,
-      profileImageUrl: null,
-      role: 'user',
-      status: 'active',
-      balance: insertUser.balance || 1000,
       weparlayCashBalance: 10000,
-      cashBalance: 0,
-      subscriptionTier: 'wood',
-      tier: 'bronze',
-      betsCount: 0,
-      wins: 0,
-      winsCount: 0,
-      smsConsent: false,
-      marketingConsent: false,
-      emailConsent: false,
-      lastConsentUpdate: null,
-      lastLogin: null,
-      createdAt: null,
-      updatedAt: null,
-      yahooToken: null,
-      yahooRefreshToken: null,
-      yahooTokenExpiry: null,
-      yahooIntegrationToken: null,
-      yahooIntegrationRefreshToken: null,
-      yahooIntegrationExpiry: null,
       weplayTokenBalance: 0,
-      vipUntil: null,
-      vipExpiryDate: null,
-      analyticsExpiryDate: null,
-      supportExpiryDate: null,
-      stripeCustomerId: null,
-      stripeSubscriptionId: null,
-      referralCode: null,
-      analyticsPackageUntil: null,
-      prioritySupportUntil: null,
-      freeWithdrawalsThisMonth: 0,
-      totalEarnings: 0,
-      lastWithdrawal: null,
-      passwordHash: null,
-      isEmailVerified: false,
-      emailVerificationToken: null,
-      passwordResetToken: null,
-      passwordResetExpiry: null,
-      twoFactorSecret: null,
-      twoFactorEnabled: false,
-      socialProviders: null,
-      lastPasswordChange: null,
-      accountLockedUntil: null,
-      failedLoginAttempts: 0,
-      totalDeposits: 0,
-      totalWithdrawals: 0,
-      accountBalance: 0,
-      currency: 'USD',
-      timezone: null,
-      languagePreference: 'en',
-      theme: 'light',
-      notificationPreferences: null,
-      kycStatus: null,
-      kycDocuments: null,
-      ipAddress: null,
-      userAgent: null,
-      yahooAccessToken: null,
-      emailVerified: false
+      tier: 'bronze',
+      winsCount: 0,
+      createdAt: null,
+      updatedAt: null
     };
     this.users.set(id, user);
     return user;
@@ -664,44 +603,6 @@ export class SimpleStorage implements IStorage {
     
     this.users.set(userId, user);
     return user;
-  }
-  
-  // Social Betting operations implementation
-  async getSocialFeed(userId?: string): Promise<any[]> {
-    // Return empty array for now - this would be populated with actual social posts
-    return [];
-  }
-  
-  async getSocialLeaderboard(period: string): Promise<any[]> {
-    // Return empty array for now - this would be populated with leaderboard data
-    return [];
-  }
-  
-  async createSocialPost(post: InsertSocialPost): Promise<SocialPost> {
-    const id = this.nextId++;
-    const socialPost: SocialPost = {
-      id,
-      userId: post.userId,
-      content: post.content,
-      sport: post.sport,
-      betAmount: post.betAmount,
-      potentialPayout: post.potentialPayout,
-      odds: post.odds,
-      likeCount: 0,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    return socialPost;
-  }
-  
-  async toggleSocialLike(userId: string, postId: number): Promise<{ liked: boolean; likeCount: number }> {
-    // For now, return mock data - this would interact with actual social likes storage
-    return { liked: true, likeCount: Math.floor(Math.random() * 10) + 1 };
-  }
-  
-  async toggleSocialFollow(followerId: string, followingId: string): Promise<{ following: boolean; followerCount: number }> {
-    // For now, return mock data - this would interact with actual follows storage
-    return { following: true, followerCount: Math.floor(Math.random() * 100) + 1 };
   }
 }
 

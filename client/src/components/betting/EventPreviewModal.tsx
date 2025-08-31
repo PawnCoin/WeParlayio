@@ -132,7 +132,7 @@ const EventPreviewModal = ({ isOpen, onClose, eventId, sport, teams, currentOdds
     }
   };
 
-  const stats: MatchStatistics = (eventDetails && Object.keys(eventDetails).length > 0) ? eventDetails as MatchStatistics : mockDetailedStats;
+  const stats: MatchStatistics = eventDetails || mockDetailedStats;
   const isLive = stats.gameInfo.status === 'live';
 
   useEffect(() => {

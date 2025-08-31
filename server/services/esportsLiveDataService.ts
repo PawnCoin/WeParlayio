@@ -271,12 +271,6 @@ export class EsportsLiveDataService {
     return null; // Placeholder
   }
 
-  private async getValorantPlayerStats(username: string, tag: string): Promise<PlayerStats | null> {
-    // Implementation for Valorant player stats
-    // This would use the Riot API for Valorant data
-    return null; // Placeholder
-  }
-
   private getMockPlayerStats(playerName: string, game: string): PlayerStats {
     return {
       playerId: `${playerName}-${game}`,
