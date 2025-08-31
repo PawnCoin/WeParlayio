@@ -311,10 +311,13 @@ const BettingDashboard: React.FC = () => {
                 ...bet,
                 eventId: bet.eventId || 'unknown',
                 selection: bet.selection || 'Home Win',
+                amount: bet.amount || 0,
+                potential: bet.potential || 0,
+                sport: bet.sport || 'unknown',
                 gameInfo: {
                   homeTeam: bet.homeTeam || 'Home',
                   awayTeam: bet.awayTeam || 'Away',
-                  startTime: bet.date || new Date().toISOString()
+                  startTime: new Date().toISOString()
                 }
               }))}
               balances={balances}

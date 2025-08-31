@@ -2,10 +2,61 @@ import React, { memo, useState, useEffect, useMemo, useRef, useCallback } from '
 import { TrendingUp, TrendingDown, Wifi, WifiOff, AlertCircle, Loader, Clock } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import EventPreviewModal from './EventPreviewModal';
-import { TickerOdds, Team } from '../types';
-import { getTeamLogoUrl, getSportColors, getLeagueLogoUrl } from '../lib/utils';
-import EnhancedTeamLogo from './ui/EnhancedTeamLogo';
-import TickerItemSkeleton from './ui/TickerItemSkeleton';
+import { getTeamLogoUrl } from '../../lib/sportsDataUtils';
+
+// Type definitions for this component
+interface Team {
+  name: string;
+  logo?: string;
+  abbreviation?: string;
+}
+
+interface TickerOdds {
+  id: string;
+  sport: string;
+  teams: string;
+  homeTeam: Team;
+  awayTeam: Team;
+  gameState: 'live' | 'upcoming' | 'final';
+  odds?: any;
+  timestamp: string;
+  eventId?: string;
+  status?: string;
+  hasLiveScore?: boolean;
+  liveScore?: {
+    homeScore: number;
+    awayScore: number;
+    period: string;
+    timeRemaining: string;
+  };
+  currentOdds?: number;
+  previousOdds?: number | null;
+  bookmaker?: string;
+  timeframe?: string;
+  displayText?: string;
+}
+
+// Simple team logo component to replace missing EnhancedTeamLogo
+const EnhancedTeamLogo: React.FC<{ team: Team; size?: number }> = ({ team, size = 24 }) => (
+  <img 
+    src={team.logo || getTeamLogoUrl(team.name)} 
+    alt={team.name}
+    className="rounded"
+    style={{ width: size, height: size }}
+    onError={(e) => {
+      (e.target as HTMLImageElement).src = `https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-basketball.png`;
+    }}
+  />
+);
+
+// Simple skeleton component to replace missing TickerItemSkeleton
+const TickerItemSkeleton: React.FC = () => (
+  <div className="flex items-center space-x-2 animate-pulse">
+    <div className="w-6 h-6 bg-gray-300 rounded"></div>
+    <div className="w-32 h-4 bg-gray-300 rounded"></div>
+    <div className="w-16 h-4 bg-gray-300 rounded"></div>
+  </div>
+);
 
 const SPORT_ENDPOINTS = {
     'NFL': 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard',
@@ -73,7 +124,6 @@ const parseEspnData = (rawData: any, sport: string): TickerOdds[] => {
                     awayScore: parseInt(away.score, 10) || 0,
                     period: status.period.toString(),
                     timeRemaining: status.displayClock,
-                    isBreaking: false,
                 } : undefined
             };
         } catch (error) {
@@ -169,11 +219,11 @@ const TickerItem = memo(({ item, onClick }: {
   if (!item) return null;
 
   const { sport, homeTeam, awayTeam, gameState, liveScore, odds, timestamp, status } = item;
-  const sportColors = getSportColors(sport);
+  const sportColors = { primary: '#1f2937', secondary: '#374151' }; // Default colors
 
   const homeTeamLogo = homeTeam.logo || getTeamLogoUrl(homeTeam.name, sport);
   const awayTeamLogo = awayTeam.logo || getTeamLogoUrl(awayTeam.name, sport);
-  const leagueLogo = getLeagueLogoUrl(sport);
+  const leagueLogo = getTeamLogoUrl(sport);
 
   const gameTime = useMemo(() => {
     try {
@@ -201,9 +251,9 @@ const TickerItem = memo(({ item, onClick }: {
       </div>
 
       <div className="flex items-center space-x-1 mr-2">
-        <EnhancedTeamLogo src={homeTeamLogo} teamName={homeTeam.name} sport={sport} size="w-6 h-6" />
+        <EnhancedTeamLogo team={homeTeam} size={24} />
         <span className="text-gray-400 text-xs">vs</span>
-        <EnhancedTeamLogo src={awayTeamLogo} teamName={awayTeam.name} sport={sport} size="w-6 h-6" />
+        <EnhancedTeamLogo team={awayTeam} size={24} />
       </div>
 
       {gameState === 'live' && liveScore ? (
@@ -391,7 +441,10 @@ const ImprovedOddsTicker = memo(() => {
         <EventPreviewModal
           isOpen={isModalOpen}
           onClose={handleCloseModal}
-          event={selectedEvent}
+          eventId={selectedEvent.eventId || ''}
+          sport={selectedEvent.sport}
+          teams={selectedEvent.teams}
+          currentOdds={selectedEvent.currentOdds || 0}
         />
       )}
     </footer>
