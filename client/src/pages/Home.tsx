@@ -22,7 +22,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Filter, BarChart2, Handshake, Users, Crown, Sparkles } from "lucide-react";
 import LiveStatsBar from "@/components/sports/LiveStatsBar";
 import SportBreakdown from "@/components/sports/SportBreakdown";
-import ImprovedOddsTicker from "@/components/betting/ImprovedOddsTicker";
 
 // Featured game will be pulled from real API data
 
@@ -263,19 +262,14 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      {/* Live Scores Ticker - Horizontal Scrolling */}
-      <div className="mb-6">
-        <LiveScoresTicker />
-      </div>
-
-      {/* Live Scores Display - Grid View */}
+      {/* Live Scores Display */}
       <div className="mb-6">
         <LiveScoresDisplay />
       </div>
 
-      {/* Live Odds Ticker */}
+      {/* Live Scores Ticker */}
       <div className="mb-6">
-        <ImprovedOddsTicker />
+        <LiveScoresTicker />
       </div>
 
       {/* Live Sports Statistics Bar */}
