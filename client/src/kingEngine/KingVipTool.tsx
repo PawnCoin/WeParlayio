@@ -78,7 +78,7 @@ function isLateGameFromTime(startTimeIso: string, thresholdHourLocal = 17): bool
 
 function makeSide(game: Game, sideType: "favorite" | "dog"): Side {
   const isFav = sideType === "favorite";
-  const favoriteTeam = game.market?.spreadFavorite;
+  const favoriteTeam = game.market?.spreadFavorite || game.homeTeam;
   const spreadLine = game.market?.spreadLine ?? -3.5;
   const odds = game.market?.spreadOdds ?? -110;
 
@@ -91,33 +91,33 @@ function makeSide(game: Game, sideType: "favorite" | "dog"): Side {
 
   const opponent = team === game.homeTeam ? game.awayTeam : game.homeTeam;
   const spread = isFav ? spreadLine : -spreadLine;
-  const edgeScore = isFav ? game.edgeScoreFavorite : game.edgeScoreDog;
+  const edgeScore = isFav ? (game.edgeScoreFavorite ?? 5) : (game.edgeScoreDog ?? 5);
 
   return {
-    gameId: game.id,
-    sport: game.sport,
-    league: game.league,
+    gameId: game.id || `game-${Date.now()}`,
+    sport: game.sport || "Unknown",
+    league: game.league || game.sport || "Unknown",
     sideType,
-    team,
-    opponent,
+    team: team || "Team",
+    opponent: opponent || "Opponent",
     spread,
     odds,
     edgeScore,
     isLateGame:
       typeof game.isLateGame === "boolean"
         ? game.isLateGame
-        : isLateGameFromTime(game.startTime),
+        : isLateGameFromTime(game.startTime || ""),
   };
 }
 
 function buildCandidateSides(games: Game[]): Side[] {
   const sides: Side[] = [];
   for (const g of games) {
-    if (!g.market || !g.market.spreadFavorite) continue;
+    if (!g || !g.homeTeam || !g.awayTeam) continue;
     sides.push(makeSide(g, "favorite"));
     sides.push(makeSide(g, "dog"));
   }
-  return sides.sort((a, b) => b.edgeScore - a.edgeScore);
+  return sides.sort((a, b) => (b.edgeScore ?? 0) - (a.edgeScore ?? 0));
 }
 
 function buildKingCard(games: Game[], options: {
