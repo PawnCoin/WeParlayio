@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'wouter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,14 +9,16 @@ import {
   Swords, 
   Zap, 
   Gamepad2, 
-  Coins, 
   TrendingUp,
   Shield,
   Star,
   ArrowRight,
   Users,
   Target,
-  Tv
+  Tv,
+  Brain,
+  Sparkles,
+  ChartBar
 } from 'lucide-react';
 
 export default function VIPDashboard() {
@@ -107,6 +108,93 @@ export default function VIPDashboard() {
             <Star className="w-4 h-4 mr-2" />
             VIP Member
           </Badge>
+        </div>
+
+        {/* FLAGSHIP FEATURE: King VIP Engine */}
+        <div className="mb-12">
+          <Card className="relative overflow-hidden bg-gradient-to-br from-amber-900/40 via-yellow-900/30 to-orange-900/40 border-2 border-amber-500/50 shadow-2xl shadow-amber-500/20">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-yellow-400/10 via-transparent to-transparent" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-amber-400/20 to-transparent blur-3xl" />
+            
+            <CardHeader className="relative z-10 pb-2">
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-yellow-500 blur-lg opacity-60 animate-pulse" />
+                    <div className="relative bg-gradient-to-br from-amber-400 via-yellow-500 to-orange-500 p-4 rounded-xl shadow-lg">
+                      <Crown className="w-10 h-10 text-black" />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-3 mb-1">
+                      <CardTitle className="text-3xl font-bold bg-gradient-to-r from-amber-200 via-yellow-300 to-amber-200 bg-clip-text text-transparent">
+                        King VIP Engine
+                      </CardTitle>
+                      <Badge className="bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-bold px-3 py-1 animate-pulse">
+                        <Sparkles className="w-3 h-3 mr-1" />
+                        FLAGSHIP
+                      </Badge>
+                    </div>
+                    <p className="text-amber-200/80 text-lg">Advanced AI-Powered Betting Intelligence</p>
+                  </div>
+                </div>
+                <Badge variant="outline" className="border-amber-400/50 text-amber-300 px-4 py-2 text-sm">
+                  <Brain className="w-4 h-4 mr-2" />
+                  26-Point Analysis System
+                </Badge>
+              </div>
+            </CardHeader>
+            
+            <CardContent className="relative z-10 pt-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div className="bg-black/30 rounded-xl p-4 border border-amber-500/20">
+                  <div className="flex items-center gap-3 mb-2">
+                    <ChartBar className="w-5 h-5 text-amber-400" />
+                    <span className="text-amber-200 font-semibold">Edge Scoring</span>
+                  </div>
+                  <p className="text-gray-400 text-sm">Proprietary algorithm analyzes line movements, public vs sharp action, and situational factors</p>
+                </div>
+                <div className="bg-black/30 rounded-xl p-4 border border-amber-500/20">
+                  <div className="flex items-center gap-3 mb-2">
+                    <TrendingUp className="w-5 h-5 text-green-400" />
+                    <span className="text-amber-200 font-semibold">Smart Bankroll</span>
+                  </div>
+                  <p className="text-gray-400 text-sm">Risk-adjusted bet sizing with Safe (10%) and Standard (20%) modes</p>
+                </div>
+                <div className="bg-black/30 rounded-xl p-4 border border-amber-500/20">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Target className="w-5 h-5 text-purple-400" />
+                    <span className="text-amber-200 font-semibold">Parlay Builder</span>
+                  </div>
+                  <p className="text-gray-400 text-sm">Auto-generates optimal 2, 3, 4-team parlays plus the legendary "King Cosmic Ticket"</p>
+                </div>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                <div className="flex items-center gap-6 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                    <span className="text-gray-400">Live Data</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-amber-400" />
+                    <span className="text-gray-400">VIP Exclusive</span>
+                  </div>
+                </div>
+                <Link href="/vip/king-engine">
+                  <Button 
+                    size="lg" 
+                    className="bg-gradient-to-r from-amber-400 via-yellow-500 to-orange-500 hover:from-amber-500 hover:via-yellow-600 hover:to-orange-600 text-black font-bold px-8 py-3 text-lg shadow-lg shadow-amber-500/30 transition-all hover:scale-105"
+                    data-testid="button-launch-king-engine"
+                  >
+                    <Crown className="w-5 h-5 mr-2" />
+                    Launch King Engine
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* VIP Features Grid */}
