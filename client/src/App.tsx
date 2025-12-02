@@ -175,6 +175,8 @@ function Router() {
       <SuspenseRoute path="/espn-fantasy" component={React.lazy(() => import("@/pages/ESPNFantasyPage"))} />
 
       <SuspenseRoute path="/vip/live-streaming" component={VipLiveStreaming} />
+      <SuspenseRoute path="/vip/king-mock" component={React.lazy(() => import("@/pages/KingMockPage"))} />
+      <SuspenseRoute path="/vip/king-live" component={React.lazy(() => import("@/pages/VipKingPage"))} />
       <SuspenseRoute path="/iptv-player" component={React.lazy(() => import('./components/streaming/IPTVPlayerOriginal'))} />
       <SuspenseRoute path="/tier-comparison" component={TierComparison} />
       <SuspenseRoute path="/weparlay-cash" component={WeParlayCash} />

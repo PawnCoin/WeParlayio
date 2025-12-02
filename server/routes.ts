@@ -85,6 +85,7 @@ const registerRoutes = async (app: Express): Promise<Server> => {
   app.use('/api/unified-sports', unifiedSportsRoutes);
   app.use('/api/websocket-polling', websocketPollingRoutes);
   app.use('/api/odds-ticker', oddsTickerRoutes);
+  app.use('/api', (await import('./routes/kingGamesRoute.js')).default);
   app.use('/api/enhanced-ticker', (await import('./routes/enhancedOddsTickerRoutes.js')).default);
   app.use('/api/enhanced-sports', (await import('./routes/enhancedSportsRoutes.js')).default);
   app.use('/api/api-test', apiTestRouter);
