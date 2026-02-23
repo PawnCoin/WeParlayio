@@ -2,8 +2,6 @@ import express, { type Request, Response, NextFunction } from "express";
 import registerRoutes from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { createSSLServer, getSSLConfig } from "./ssl";
-import notificationRoutes from './routes/notificationRoutes';
-import websocketPollingRoutes from './routes/websocketPollingRoutes';
 import apiMonitoringRoutes from './routes/apiMonitoringRoutes';
 import apiHealthRoutes from './routes/apiHealthRoutes';
 import systemHealthRoutes from './routes/systemHealthRoutes';
@@ -170,8 +168,6 @@ app.use((req, res, next) => {
 
   const appServer = await registerRoutes(app);
 
-  app.use('/api/notifications', notificationRoutes);
-  app.use('/api/websocket', websocketPollingRoutes);
   app.use('/api/monitoring', apiMonitoringRoutes);
   app.use('/api/health', apiHealthRoutes);
   app.use('/api/system', systemHealthRoutes);
