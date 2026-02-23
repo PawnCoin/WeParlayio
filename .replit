@@ -45,32 +45,6 @@ args = "npm install"
 task = "shell.exec"
 args = "npm run dev"
 
-[[workflows.workflow]]
-name = "WeParlay Dev Server"
-author = 42612790
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm install"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run dev"
-
-[[workflows.workflow]]
-name = "WeParlay Stable Server"
-author = 42612790
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm install --no-audit"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run dev"
-
 [[ports]]
 localPort = 5000
 externalPort = 80
