@@ -194,11 +194,12 @@ function Router() {
       {/* Wallet & Social Routes */}
       <SuspenseRoute path="/social-sharing" component={SocialSharing} />
 
-      {/* Support & Legal */}
+      {/* Support & Legal (Public Pages) */}
       <Route path="/support" component={Support} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms-of-service" component={TermsOfService} />
       <Route path="/security-info" component={SecurityInfo} />
+      <SuspenseRoute path="/sms-opt-in" component={React.lazy(() => import("@/pages/SMSOptIn"))} />
 
       {/* Admin Routes (Protected) */}
       <AdminRoutes />
