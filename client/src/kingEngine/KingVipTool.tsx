@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Crown, TrendingUp, DollarSign, Target, Zap } from "lucide-react";
+import { Crown, TrendingUp, DollarSign, Target, Zap, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -287,11 +287,12 @@ function allocateBankroll(bankroll: number, card: KingCard, riskMode = "safe"): 
   };
 }
 
-function ParlaySection({ title, parlays, perBet, icon }: { 
+function ParlaySection({ title, parlays, perBet, icon, onAddToParlay }: { 
   title: string; 
   parlays: Side[][]; 
   perBet: number;
   icon?: React.ReactNode;
+  onAddToParlay?: (leg: any) => void;
 }) {
   if (!parlays || parlays.length === 0) {
     return (
@@ -339,6 +340,11 @@ function ParlaySection({ title, parlays, perBet, icon }: {
                     <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/50">
                       {s.edgeScore.toFixed(1)}
                     </Badge>
+                    {onAddToParlay && (
+                      <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-amber-400 hover:text-amber-300 hover:bg-amber-500/20" onClick={() => onAddToParlay({ id: `${s.gameId}-${s.team}`, sport: s.sport, team: s.team, opponent: s.opponent, spread: s.spread, odds: s.odds, edgeScore: s.edgeScore, type: s.sideType })}>
+                        <Plus className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -350,7 +356,7 @@ function ParlaySection({ title, parlays, perBet, icon }: {
   );
 }
 
-export function KingVipTool({ games }: { games: Game[] }) {
+export function KingVipTool({ games, onAddToParlay }: { games: Game[]; onAddToParlay?: (leg: any) => void }) {
   const [bankroll, setBankroll] = useState(100);
   const [riskMode, setRiskMode] = useState("safe");
 
@@ -455,6 +461,11 @@ export function KingVipTool({ games }: { games: Game[] }) {
                     <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/50">
                       Edge: {s.edgeScore.toFixed(1)}
                     </Badge>
+                    {onAddToParlay && (
+                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-amber-400 hover:text-amber-300 hover:bg-amber-500/20" onClick={() => onAddToParlay({ id: `${s.gameId}-${s.team}`, sport: s.sport, team: s.team, opponent: s.opponent, spread: s.spread, odds: s.odds, edgeScore: s.edgeScore, type: s.sideType })}>
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -469,12 +480,14 @@ export function KingVipTool({ games }: { games: Game[] }) {
           parlays={card.twoTeamers} 
           perBet={bankrollPlan.per2T}
           icon={<Zap className="w-5 h-5 text-yellow-400" />}
+          onAddToParlay={onAddToParlay}
         />
         <ParlaySection 
           title="3-Team Parlays" 
           parlays={card.threeTeamers} 
           perBet={bankrollPlan.per3T}
           icon={<Zap className="w-5 h-5 text-orange-400" />}
+          onAddToParlay={onAddToParlay}
         />
       </div>
 
@@ -483,6 +496,7 @@ export function KingVipTool({ games }: { games: Game[] }) {
         parlays={card.fourTeamers} 
         perBet={bankrollPlan.per4T}
         icon={<Zap className="w-5 h-5 text-red-400" />}
+        onAddToParlay={onAddToParlay}
       />
 
       <div className="grid md:grid-cols-2 gap-4">
@@ -508,7 +522,14 @@ export function KingVipTool({ games }: { games: Game[] }) {
                       <span className="text-white">{s.team}</span>
                       <span className="text-gray-400 text-xs">vs {s.opponent}</span>
                     </div>
-                    <Badge className="bg-purple-500/20 text-purple-400">{s.edgeScore.toFixed(1)}</Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-purple-500/20 text-purple-400">{s.edgeScore.toFixed(1)}</Badge>
+                      {onAddToParlay && (
+                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-amber-400 hover:text-amber-300 hover:bg-amber-500/20" onClick={() => onAddToParlay({ id: `${s.gameId}-${s.team}`, sport: s.sport, team: s.team, opponent: s.opponent, spread: s.spread, odds: s.odds, edgeScore: s.edgeScore, type: s.sideType })}>
+                          <Plus className="w-3.5 h-3.5" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -538,7 +559,14 @@ export function KingVipTool({ games }: { games: Game[] }) {
                       <span className="text-white">{s.team}</span>
                       <span className="text-gray-400 text-xs">vs {s.opponent}</span>
                     </div>
-                    <Badge className="bg-purple-500/20 text-purple-400">{s.edgeScore.toFixed(1)}</Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-purple-500/20 text-purple-400">{s.edgeScore.toFixed(1)}</Badge>
+                      {onAddToParlay && (
+                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-amber-400 hover:text-amber-300 hover:bg-amber-500/20" onClick={() => onAddToParlay({ id: `${s.gameId}-${s.team}`, sport: s.sport, team: s.team, opponent: s.opponent, spread: s.spread, odds: s.odds, edgeScore: s.edgeScore, type: s.sideType })}>
+                          <Plus className="w-3.5 h-3.5" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -549,5 +577,3 @@ export function KingVipTool({ games }: { games: Game[] }) {
     </div>
   );
 }
-
-export default KingVipTool;

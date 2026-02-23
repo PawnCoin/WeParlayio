@@ -57,7 +57,7 @@ const PageStatusChecker: React.FC = () => {
     { name: "Betting Dashboard", path: "/betting-dashboard" },
     { name: "Comprehensive Betting", path: "/comprehensive-betting" },
     { name: "Betting Manager", path: "/betting-manager" },
-    { name: "Parlays", path: "/parlays" },
+    { name: "King Engine", path: "/vip/king-engine" },
     { name: "Odds", path: "/odds" },
     { name: "Live Heatmap", path: "/live-heatmap" },
     

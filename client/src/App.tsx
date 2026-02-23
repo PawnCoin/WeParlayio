@@ -30,7 +30,7 @@ import BettingDashboard from "@/pages/BettingDashboard";
 import UnifiedBettingHub from "@/pages/UnifiedBettingHub";
 import UnifiedSports from "@/pages/UnifiedSports";
 import Odds from "@/pages/Odds";
-import Parlays from "@/pages/Parlays";
+
 import LiveHeatmap from "@/pages/LiveHeatmap";
 import MyBets from "@/pages/MyBets";
 import VIPDashboard from "@/pages/VIPDashboard";
@@ -114,7 +114,7 @@ function Router() {
       <Route path="/betting-dashboard" component={BettingDashboard} />
       <Route path="/live-betting" component={LiveBetting} />
       <Route path="/odds" component={Odds} />
-      <Route path="/parlays" component={Parlays} />
+
       <Route path="/live-heatmap" component={LiveHeatmap} />
       <Route path="/results" component={Results} />
       <Route path="/my-bets" component={MyBets} />

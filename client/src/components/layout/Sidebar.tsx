@@ -188,7 +188,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
           <li>
             <details className="group">
               <summary className={`flex items-center py-2 px-4 rounded-md cursor-pointer list-none ${
-                ['/betting-dashboard', '/odds', '/parlays', '/results'].includes(location) 
+                ['/betting-dashboard', '/odds', '/vip/king-engine', '/results'].includes(location) 
                   ? "bg-primary text-white" 
                   : "hover:bg-gray-100 dark:hover:bg-gray-800"
               }`}>
@@ -211,14 +211,14 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                 </li>
 
                 <li>
-                  <Link href="/parlays">
+                  <Link href="/vip/king-engine">
                     <div className={`flex items-center py-2 px-3 rounded-md cursor-pointer text-sm ${
-                      location === '/parlays' 
+                      location === '/vip/king-engine' 
                         ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300" 
                         : "hover:bg-gray-100 dark:hover:bg-gray-800"
                     }`}>
                       <Target className="h-4 w-4 mr-2" />
-                      Parlay Builder
+                      King Engine
                     </div>
                   </Link>
                 </li>

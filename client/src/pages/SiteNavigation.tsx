@@ -70,7 +70,7 @@ const SiteNavigation: React.FC = () => {
         { name: "Betting Dashboard", path: "/betting-dashboard", description: "Advanced betting analytics", status: "live" },
         { name: "Comprehensive Betting", path: "/comprehensive-betting", description: "All betting options", status: "live" },
         { name: "Betting Manager", path: "/betting-manager", description: "Manage betting strategies", status: "live" },
-        { name: "Parlays", path: "/parlays", description: "Multi-bet parlays", status: "live" },
+        { name: "King Engine", path: "/vip/king-engine", description: "AI-powered parlay builder", status: "live" },
         { name: "Odds", path: "/odds", description: "Live odds comparison", status: "live" },
         { name: "Live Heatmap", path: "/live-heatmap", description: "Betting activity heatmap", status: "live" }
       ]

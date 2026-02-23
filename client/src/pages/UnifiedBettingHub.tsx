@@ -140,8 +140,8 @@ export default function UnifiedBettingHub() {
                     <Target className="h-4 w-4 mr-2" />
                     Browse All Sports
                   </Button>
-                  <Button variant="outline" className="w-full" onClick={() => window.location.href = '/parlays'}>
-                    Multi-Game Parlays
+                  <Button variant="outline" className="w-full" onClick={() => window.location.href = '/vip/king-engine'}>
+                    King Engine Parlays
                   </Button>
                   <Button variant="outline" className="w-full" onClick={() => window.location.href = '/my-bets'}>
                     My Betting History

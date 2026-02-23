@@ -19,7 +19,7 @@ import {
 const navigationItems = [
   { path: '/', label: 'Home', icon: Home },
   { path: '/odds', label: 'Live Odds', icon: BarChart2, badge: 'FREE' },
-  { path: '/parlays', label: 'Parlay Builder', icon: Target },
+  { path: '/vip/king-engine', label: 'King Engine', icon: Target },
   { path: '/tournaments', label: 'Tournaments', icon: Trophy },
   { path: '/fantasy', label: 'Fantasy', icon: Medal },
   { path: '/gaming', label: 'Gaming', icon: Gamepad2 },
