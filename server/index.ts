@@ -218,7 +218,21 @@ app.use((req, res, next) => {
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
   if (app.get("env") === "development") {
-    await setupVite(app, appServer);
+    const origExit = process.exit;
+    let exitIntercepted = false;
+    (process as any).exit = (code?: number) => {
+      exitIntercepted = true;
+      console.warn(`⚠️ Vite attempted process.exit(${code}) - intercepted to keep server running`);
+    };
+    try {
+      await setupVite(app, appServer);
+    } catch (e) {
+      console.warn('⚠️ Vite setup error (non-fatal):', e);
+    }
+    process.exit = origExit;
+    if (exitIntercepted) {
+      console.log('🔄 Server continuing despite Vite port conflict');
+    }
   } else {
     serveStatic(app);
   }
@@ -247,6 +261,15 @@ app.use((req, res, next) => {
 
   const httpServer = server.listen(port, "0.0.0.0", () => {
     log(`🚀 WeParlay server running on HTTP at 0.0.0.0:${port}`);
+  });
+
+  httpServer.on('error', (err: any) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`❌ Port ${port} is already in use. Another instance may be running.`);
+      process.exit(1);
+    } else {
+      throw err;
+    }
   });
 
   // WebSocket service disabled to prevent port conflicts in Replit environment

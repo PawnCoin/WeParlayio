@@ -354,7 +354,8 @@ const registerRoutes = async (app: Express): Promise<Server> => {
       if (liveScores.length === 0) {
         try {
           const comprehensiveRapidApi = await import('./services/comprehensiveRapidApi.js');
-          const rapidLiveGames = await comprehensiveRapidApi.ComprehensiveRapidApiService.getLiveGames();
+          const rapidService = new comprehensiveRapidApi.ComprehensiveRapidApiService();
+          const rapidLiveGames = await rapidService.getLiveGames();
           
           if (rapidLiveGames && rapidLiveGames.length > 0) {
             liveScores = rapidLiveGames.map((game: any) => ({

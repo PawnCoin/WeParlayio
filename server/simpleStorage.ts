@@ -137,6 +137,10 @@ export class SimpleStorage implements IStorage {
   private sports = new Map<number, Sport>();
   private events = new Map<number, Event>();
   private challenges = new Map<string, BettingChallenge>();
+  private socialPostIdCounter = 1;
+  private socialPosts = new Map<number, any>();
+  private socialLikes = new Map<string, Set<number>>();
+  private socialFollowsMap = new Map<string, Set<string>>();
   private nextId = 1;
 
   constructor() {
@@ -591,6 +595,61 @@ export class SimpleStorage implements IStorage {
     return placedBet;
   }
   
+  async getSocialFeed(userId?: string): Promise<any[]> {
+    const posts = Array.from(this.socialPosts.values());
+    posts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return posts.slice(0, 50);
+  }
+
+  async getSocialLeaderboard(period: string): Promise<any[]> {
+    const allUsers = await this.getAllUsers();
+    return allUsers
+      .map(u => ({ userId: u.id, username: u.username || u.gamertag || 'Anonymous', wins: u.winsCount || 0, tier: u.tier || 'Bronze' }))
+      .sort((a, b) => b.wins - a.wins)
+      .slice(0, 20);
+  }
+
+  async createSocialPost(post: InsertSocialPost): Promise<SocialPost> {
+    const id = this.socialPostIdCounter++;
+    const newPost = {
+      id,
+      userId: post.userId,
+      content: post.content,
+      sport: post.sport || null,
+      betAmount: post.betAmount || null,
+      potentialPayout: post.potentialPayout || null,
+      odds: post.odds || null,
+      likes: 0,
+      comments: 0,
+      isPublic: true,
+      createdAt: new Date(),
+    } as SocialPost;
+    this.socialPosts.set(id, newPost);
+    return newPost;
+  }
+
+  async toggleSocialLike(userId: string, postId: number): Promise<{ liked: boolean; likeCount: number }> {
+    if (!this.socialLikes.has(userId)) this.socialLikes.set(userId, new Set());
+    const userLikes = this.socialLikes.get(userId)!;
+    const liked = !userLikes.has(postId);
+    if (liked) { userLikes.add(postId); } else { userLikes.delete(postId); }
+    let likeCount = 0;
+    this.socialLikes.forEach(likes => { if (likes.has(postId)) likeCount++; });
+    const post = this.socialPosts.get(postId);
+    if (post) { post.likes = likeCount; this.socialPosts.set(postId, post); }
+    return { liked, likeCount };
+  }
+
+  async toggleSocialFollow(followerId: string, followingId: string): Promise<{ following: boolean; followerCount: number }> {
+    if (!this.socialFollowsMap.has(followerId)) this.socialFollowsMap.set(followerId, new Set());
+    const userFollows = this.socialFollowsMap.get(followerId)!;
+    const following = !userFollows.has(followingId);
+    if (following) { userFollows.add(followingId); } else { userFollows.delete(followingId); }
+    let followerCount = 0;
+    this.socialFollowsMap.forEach(follows => { if (follows.has(followingId)) followerCount++; });
+    return { following, followerCount };
+  }
+
   async updateUserCurrencyBalance(userId: string, currency: string, amount: number): Promise<User> {
     const user = await this.getUser(userId);
     if (!user) throw new Error('User not found');
