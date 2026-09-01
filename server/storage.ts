@@ -345,11 +345,6 @@ export class MemStorage implements IStorage {
     return newBet;
   }
 
-  async settleBet(betId: number, status: string): Promise<Bet> {
-    const bet: Bet = { id: betId, userId: 'system', eventId: 1, amount: 0, odds: 0, potentialPayout: 0, status };
-    return bet;
-  }
-
   async updateUserWeplayTokenBalance(userId: string, amount: number): Promise<User> {
     const user = await this.getUser(userId);
     if (user) {
@@ -362,15 +357,13 @@ export class MemStorage implements IStorage {
 
   async createNotification(notification: InsertNotification): Promise<Notification> {
     const id = this.nextId++;
-    const newNotification: Notification = { ...notification, id, read: false, updatedAt: new Date(), resolvedAt: null, updatedAt: new Date() };
+    const newNotification: Notification = { ...notification, id, read: false, updatedAt: new Date(), resolvedAt: null };
     return notification;
   }
 
   async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
     const id = this.nextId++;
-    const newTransaction: Transaction = { ...transaction, id, createdAt: new Date(), updatedAt: new Date(),
-      updatedAt: new Date()
-    };
+    const newTransaction: Transaction = { ...transaction, id, createdAt: new Date(), updatedAt: new Date() };
     this.challenges.set(uuid, newChallenge);
     return newChallenge;
   }
@@ -553,8 +546,7 @@ export class MemStorage implements IStorage {
       friendId,
       status: 'pending',
       requestedAt: new Date(),
-      createdAt: new Date(), updatedAt: new Date(),
-      updatedAt: new Date()
+      createdAt: new Date(), updatedAt: new Date()
     };
     return friendship;
   }
@@ -692,58 +684,14 @@ export class MemStorage implements IStorage {
     return updatedBet;
   }
 
-  // Credit user balance (for winnings and refunds)
-  async creditUserBalance(userId: string, currency: string, amount: number): Promise<void> {
-    const user = this.users.get(userId);
-    if (!user) {
-      console.error(`User ${userId} not found for balance credit`);
-      return;
-    }
-    
-    console.log(`💰 Crediting $${amount} to user ${userId} (${currency})`);
-    
-    switch (currency) {
-      case 'weparlay_cash':
-        user.weparlayCashBalance = (user.weparlayCashBalance || 0) + amount;
-        break;
-      case 'real_money':
-        user.balance = (user.balance || 0) + amount;
-        break;
-      case 'crypto':
-        user.cryptoBalance = (user.cryptoBalance || 0) + amount;
-        break;
-      default:
-        user.balance = (user.balance || 0) + amount;
-        break;
-    }
-    
-    // Update user statistics for winnings (not refunds)
-    if (amount > 0) {
-      user.totalWinnings = (user.totalWinnings || 0) + amount;
-      user.biggestWin = Math.max(user.biggestWin || 0, amount);
-      user.winsCount = (user.winsCount || 0) + 1;
-      
-      // Recalculate win rate
-      const totalBets = user.betsCount || 0;
-      user.winRate = totalBets > 0 ? (user.winsCount / totalBets * 100) : 0;
-    }
-    
-    console.log(`✅ Balance updated: User ${userId} now has $${this.getUserBalance(userId, currency)} in ${currency}`);
-  }
-
   // Settle bets automatically (for admin or automatic settlement)
-  async settleBet(betId: number, result: 'won' | 'lost' | 'push' | 'cancelled'): Promise<{ success: boolean; message: string; bet?: Bet }> {
-    try {
-      const bet = await this.updateBetStatus(betId, result, result);
-      return { 
-        success: true, 
-        message: `Bet settled as ${result}${result === 'won' ? ` - $${bet.potentialPayout} credited` : result === 'push' || result === 'cancelled' ? ` - $${bet.amount} refunded` : ''}`, 
-        bet 
-      };
-    } catch (error) {
-      console.error('Error settling bet:', error);
-      return { success: false, message: 'Settlement failed' };
+  async settleBet(betId: number, result: 'won' | 'lost' | 'push' | 'cancelled' | 'void'): Promise<Bet> {
+    if (!['won', 'lost', 'push', 'cancelled', 'void'].includes(result)) {
+      throw new Error(`Invalid bet settlement result: ${result}`);
     }
+
+    const normalizedResult = result === 'void' ? 'cancelled' : result;
+    return this.updateBetStatus(betId, normalizedResult, normalizedResult);
   }
 
   async processBetPayout(betId: number, payout: number): Promise<Bet> {
