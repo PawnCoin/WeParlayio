@@ -2,13 +2,15 @@ import { Router } from "express";
 import { createHash, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { isAuthenticated } from "../replitAuth";
-import { storage } from "../simpleStorage";
 import { dailyTournamentRepository as tournamentStore } from "../services/dailyTournamentRepository";
+import { recordWeparlayCashLedgerEntry } from "../services/weparlayCashLedger";
 
 const router = Router();
 const excludedFieldSports = /golf|nascar|formula|racing|cycling/i;
 const sameDay = (value: string, day: string) => new Date(value).toISOString().slice(0, 10) === day;
 const isBeforeLock = (tournament: any) => Date.now() < new Date(tournament.lockAt).getTime();
+const tournamentLedgerReference = (tournamentId: string, userId: string, type: "entry_fee" | "refund" | "payout") =>
+  `tournament:${tournamentId}:${type}:${userId}`;
 const eventSchema = z.object({
   id: z.string(), sport: z.string(), startTime: z.string(),
   homeTeam: z.string(), awayTeam: z.string(), status: z.string().optional(),
@@ -65,9 +67,6 @@ router.post("/", isAuthenticated, async (req: any, res) => {
     if (body.events.some(event => !sameDay(event.startTime, day))) return res.status(400).json({ message: "Every event must be scheduled for today" });
     if (body.events.some(event => new Date(event.startTime).getTime() <= Date.now())) return res.status(400).json({ message: "Only events that have not started can be selected" });
     if (body.events.some(event => excludedFieldSports.test(event.sport) || !event.homeTeam || !event.awayTeam)) return res.status(400).json({ message: "Only head-to-head or team-versus-team events can be used" });
-    const user = await storage.getUser(userId);
-    if (!user || (user.weparlayCashBalance || 0) < body.entryFee) return res.status(400).json({ message: "Insufficient WeParlay Cash" });
-    await storage.updateUserBalance(userId, -body.entryFee);
     const id = "daily-" + day + "-" + Date.now().toString(36);
     const lockAt = body.events.reduce((earliest, event) => new Date(event.startTime).getTime() < new Date(earliest).getTime() ? event.startTime : earliest, body.events[0].startTime);
     const tournament = {
@@ -77,7 +76,27 @@ router.post("/", isAuthenticated, async (req: any, res) => {
       entries: [{ userId, funded: true, picks: {}, wins: 0, status: "picks_required" }],
       chat: [], verified: false, createdAt: new Date().toISOString(),
     };
-    await tournamentStore.save(tournament);
+    await recordWeparlayCashLedgerEntry({
+      userId,
+      referenceId: tournamentLedgerReference(id, userId, "entry_fee"),
+      type: "entry_fee",
+      amount: -body.entryFee,
+      description: `Tournament entry fee for ${id}`,
+      metadata: { tournamentId: id, currency: "weparlay_cash" },
+    });
+    try {
+      await tournamentStore.save(tournament);
+    } catch (saveError) {
+      await recordWeparlayCashLedgerEntry({
+        userId,
+        referenceId: tournamentLedgerReference(id, userId, "refund"),
+        type: "refund",
+        amount: body.entryFee,
+        description: `Refund for failed tournament creation ${id}`,
+        metadata: { tournamentId: id, currency: "weparlay_cash" },
+      });
+      throw saveError;
+    }
     res.json({ tournament });
   } catch (error: any) {
     res.status(400).json({ message: error?.issues?.[0]?.message || error.message });
@@ -93,9 +112,14 @@ router.post("/:id/fund", isAuthenticated, async (req: any, res) => {
     const { currency } = entrySchema.parse(req.body);
     if (currency !== "weparlay_cash") return res.status(503).json({ message: "This funding method is not active yet" });
     if (tournament.entries.some((entry: any) => entry.userId === userId)) return res.status(400).json({ message: "Entry already funded" });
-    const user = await storage.getUser(userId);
-    if (!user || (user.weparlayCashBalance || 0) < tournament.entryFee) return res.status(400).json({ message: "Insufficient WeParlay Cash" });
-    await storage.updateUserBalance(userId, -tournament.entryFee);
+    await recordWeparlayCashLedgerEntry({
+      userId,
+      referenceId: tournamentLedgerReference(tournament.id, userId, "entry_fee"),
+      type: "entry_fee",
+      amount: -tournament.entryFee,
+      description: `Tournament entry fee for ${tournament.id}`,
+      metadata: { tournamentId: tournament.id, currency: "weparlay_cash" },
+    });
     tournament.entries.push({ userId, funded: true, picks: {}, wins: 0, status: "picks_required" });
     tournament.pot += tournament.entryFee;
     await tournamentStore.save(tournament);
@@ -127,7 +151,6 @@ router.post("/:id/verify-results", async (req, res) => {
     const tournament = await tournamentStore.get(req.params.id);
     if (!tournament) return res.status(404).json({ message: "Tournament not found" });
     if (tournament.status === "paid" || tournament.status === "refunded") return res.json({ tournament, alreadySettled: true });
-    if (tournament.status === "settling") return res.status(409).json({ message: "Tournament settlement is already in progress" });
     if (Date.now() < new Date(tournament.settleAfter).getTime()) return res.status(409).json({ message: "Results cannot be settled before the end-of-day hold" });
 
     const body = resultSchema.parse(req.body);
@@ -151,7 +174,16 @@ router.post("/:id/verify-results", async (req, res) => {
     if (!eligibleEntries.length) {
       tournament.status = "settling";
       await tournamentStore.save(tournament);
-      for (const entry of tournament.entries) await storage.updateUserBalance(entry.userId, tournament.entryFee);
+      for (const entry of tournament.entries) {
+        await recordWeparlayCashLedgerEntry({
+          userId: entry.userId,
+          referenceId: tournamentLedgerReference(tournament.id, entry.userId, "refund"),
+          type: "refund",
+          amount: tournament.entryFee,
+          description: `Tournament refund for ${tournament.id}`,
+          metadata: { tournamentId: tournament.id, currency: "weparlay_cash" },
+        });
+      }
       tournament.status = "refunded";
       tournament.verified = true;
       tournament.settledAt = now.toISOString();
@@ -169,7 +201,14 @@ router.post("/:id/verify-results", async (req, res) => {
     tournament.status = "settling";
     await tournamentStore.save(tournament);
     for (const winner of winners) {
-      await storage.updateUserBalance(winner.userId, payout);
+      await recordWeparlayCashLedgerEntry({
+        userId: winner.userId,
+        referenceId: tournamentLedgerReference(tournament.id, winner.userId, "payout"),
+        type: "payout",
+        amount: payout,
+        description: `Tournament payout for ${tournament.id}`,
+        metadata: { tournamentId: tournament.id, currency: "weparlay_cash" },
+      });
       winner.status = "winner";
       winner.payout = payout;
     }

@@ -101,6 +101,23 @@ export const users = pgTable("users", {
   emailVerified: boolean("email_verified").default(false),
 });
 
+export const weparlayCashLedger = pgTable("weparlay_cash_ledger", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  referenceId: varchar("reference_id", { length: 255 }).notNull().unique(),
+  type: varchar("type", { length: 32 }).notNull(),
+  amount: doublePrecision("amount").notNull(),
+  balanceBefore: doublePrecision("balance_before").notNull(),
+  balanceAfter: doublePrecision("balance_after").notNull(),
+  description: text("description").notNull(),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+  index("weparlay_cash_ledger_user_created_idx").on(table.userId, table.createdAt),
+]);
+
+export type WeparlayCashLedger = typeof weparlayCashLedger.$inferSelect;
+
 export const insertUserSchema = createInsertSchema(users).pick({
   id: true,
   email: true,
