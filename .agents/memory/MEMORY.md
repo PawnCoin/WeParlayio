@@ -1,0 +1,1 @@
+- [Production environment omits dev dependencies](npm-production-dev-dependencies.md) — verify CLI executables after installs because workspace-level production mode can omit dev-only tools.
