@@ -55,6 +55,8 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
   yahooToken: text("yahoo_token"),
+  // Preserve the legacy production column while Yahoo integrations migrate.
+  yahooAccessToken: text("yahoo_access_token"),
   yahooRefreshToken: text("yahoo_refresh_token"),
   yahooTokenExpiry: timestamp("yahoo_token_expiry"),
   yahooIntegrationToken: text("yahoo_integration_token"),
