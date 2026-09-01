@@ -15,12 +15,16 @@ import rateLimit from 'express-rate-limit';
 
 // Export app for production use
 export const app = express();
+app.set('trust proxy', 1); // Trust Replit's first proxy for protocol and secure cookies
 
 // Security middleware for production
 if (process.env.NODE_ENV === 'production') {
-  // HTTPS enforcement
+  // Replit terminates TLS before forwarding requests to this HTTP server.
+  // Only redirect when the proxy explicitly reports an external HTTP request;
+  // direct internal health checks do not include this header.
   app.use((req, res, next) => {
-    if (req.header('x-forwarded-proto') !== 'https') {
+    const forwardedProto = req.header('x-forwarded-proto');
+    if (forwardedProto && forwardedProto !== 'https') {
       res.redirect(`https://${req.header('host')}${req.url}`);
     } else {
       next();
@@ -85,7 +89,6 @@ app.get('/api/error-reports', (req, res) => {
     message: 'Error reports endpoint ready'
   });
 });
-app.set('trust proxy', 1); // Trust first proxy - important for secure cookies with custom domain
 
 // Apply security middleware FIRST with relaxed CSP for development and streaming
 app.use(helmet({
@@ -236,8 +239,8 @@ app.use((req, res, next) => {
   // Get SSL configuration
   const sslConfig = getSSLConfig();
 
-  // Use port 5000 for production, 5173 for development
-  const port = app.get("env") === "development" ? 5000 : 5000;
+  // Replit Autoscale provides the production port through PORT.
+  const port = Number.parseInt(process.env.PORT || "5000", 10);
 
   // Create appropriate server based on configuration
   let server;
