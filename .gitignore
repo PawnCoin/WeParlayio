@@ -4,6 +4,13 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+
+# Local and production secrets. Keep documented placeholders in .env.example.
+.env
+.env.local
+.env.*.local
+.env.production
+!.env.example
 node_modules
 dist
 .DS_Store

@@ -1,7 +1,7 @@
-import React, { memo, useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { TrendingUp, TrendingDown, Wifi, WifiOff, AlertCircle, Loader, Clock } from 'lucide-react';
+import React, { memo, useState, useEffect, useMemo, useRef } from 'react';
+import { Wifi, AlertCircle, Loader, Clock } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { TickerOdds, Team } from '../types/ticker';
+import { TickerOdds } from '../types/ticker';
 // Create a simple sport logo mapping
 const SPORT_LOGOS: Record<string, string> = {
   'NFL': '🏈', 'NCAAF': '🏈', 'NBA': '🏀', 'NCAAB': '🏀',
@@ -23,8 +23,8 @@ const transformApiDataToTicker = (apiData: any[]): TickerOdds[] => {
       teams: game.teams,
       homeTeam: { name: homeTeamName, abbreviation: homeTeamName.split(' ').pop() },
       awayTeam: { name: awayTeamName, abbreviation: awayTeamName.split(' ').pop() },
-      gameState: game.period && game.period !== 'Pre-Game' ? 'live' : 'upcoming',
-      timestamp: game.lastUpdate,
+      gameState: /final|complete/i.test(game.status || game.period || '') ? 'final' : /live|progress|quarter|period|half|inning/i.test(game.status || game.period || '') && !/pre|scheduled/i.test(game.status || game.period || '') ? 'live' : 'upcoming',
+      timestamp: game.startTime || game.date || game.commenceTime || game.lastUpdate,
       eventId: game.eventId,
       status: game.period || 'Scheduled',
       hasLiveScore: game.homeScore !== undefined && game.awayScore !== undefined,
@@ -105,8 +105,9 @@ const EnhancedTeamLogo = ({ src, teamName, sport, size = "w-6 h-6" }: {
   );
 };
 
-const TickerItem = memo(({ item, onClick }: { 
+const TickerItem = memo(({ item, timeZone, onClick }: {
   item: TickerOdds; 
+  timeZone: string;
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void; 
 }) => {
   if (!item) return null;
@@ -118,12 +119,12 @@ const TickerItem = memo(({ item, onClick }: {
     try {
       const date = new Date(timestamp);
       return new Intl.DateTimeFormat('en-US', {
-        weekday: 'short', hour: 'numeric', minute: 'numeric', hour12: true,
+        hour: 'numeric', minute: 'numeric', hour12: true, timeZone,
       }).format(date);
     } catch { 
       return status; 
     }
-  }, [timestamp, status]);
+  }, [timestamp, status, timeZone]);
   
   const isLive = gameState === 'live';
   const isFinal = gameState === 'final';
@@ -138,7 +139,7 @@ const TickerItem = memo(({ item, onClick }: {
       aria-label={`View details for ${item.teams}`}
     >
       <div className="flex items-center gap-2 mr-3">
-        <img src={sportLogo} alt={`${sport} logo`} className="h-6 w-auto object-contain"/>
+        <span aria-label={`${sport} icon`} className="text-xl">{sportLogo}</span>
         <LiveGameIndicator isLive={isLive} />
       </div>
 
@@ -172,7 +173,11 @@ const TickerItem = memo(({ item, onClick }: {
 });
 TickerItem.displayName = 'TickerItem';
 
-const LiveScoresTicker = () => {
+const dateKey = (date: Date, timeZone: string) => new Intl.DateTimeFormat('en-CA', {
+  year: 'numeric', month: '2-digit', day: '2-digit', timeZone,
+}).format(date);
+
+const LiveScoresTicker = ({ timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone }: { timeZone?: string }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
 
@@ -189,8 +194,15 @@ const LiveScoresTicker = () => {
   // Transform data to ticker format
   const tickerData = useMemo(() => {
     if (!scoresArray?.length) return [];
-    return transformApiDataToTicker(scoresArray);
-  }, [scoresArray]);
+    const today = dateKey(new Date(), timeZone);
+    const todaysGames = scoresArray.filter((game: any) => {
+      const rawTime = game.startTime || game.date || game.commenceTime || game.lastUpdate;
+      if (!rawTime) return false;
+      const eventTime = new Date(rawTime);
+      return !Number.isNaN(eventTime.getTime()) && dateKey(eventTime, timeZone) === today;
+    });
+    return transformApiDataToTicker(todaysGames);
+  }, [scoresArray, timeZone]);
 
   // Auto-scroll animation
   useEffect(() => {
@@ -246,7 +258,7 @@ const LiveScoresTicker = () => {
       <div className="flex items-center justify-between px-4 py-2 border-b border-gray-700/50">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-          <span className="text-sm font-bold text-white">LIVE SCORES</span>
+          <span className="text-sm font-bold text-white">TODAY'S GAMES</span>
           <span className="text-xs text-gray-400">({tickerData.length} games)</span>
           {liveGamesCount > 0 && (
             <span className="text-xs text-red-400 font-semibold">
@@ -256,7 +268,7 @@ const LiveScoresTicker = () => {
         </div>
         <div className="flex items-center gap-1 text-xs text-gray-400">
           <Wifi size={12} />
-          <span>ESPN API</span>
+          <span>{timeZone.replaceAll('_', ' ')}</span>
         </div>
       </div>
 
@@ -279,6 +291,7 @@ const LiveScoresTicker = () => {
             <TickerItem 
               key={`${item.id}-${index}`} 
               item={item}
+              timeZone={timeZone}
               onClick={() => console.log('Game clicked:', item.teams)}
             />
           ))}

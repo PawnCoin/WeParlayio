@@ -42,7 +42,7 @@ interface MainLayoutProps {
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const { user, isAuthenticated, refetch: refetchAuth } = useAuth();
   const queryClient = useQueryClient();
 
@@ -78,49 +78,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const userBalance = currentUser.balance || 0;
   const userProfileImage = currentUser.profileImageUrl;
 
-  // Quick admin login function with better state management
-  const quickAdminLogin = async () => {
-    try {
-      console.log('🔐 Starting admin login...');
-
-      const response = await fetch('/api/auth/admin-login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: 'support@weparlay.io',
-          password: 'Baysides3!'
-        })
-      });
-
-      const data = await response.json();
-      console.log('Admin login response:', data);
-
-      if (data.success && data.token) {
-        // Store the admin token
-        localStorage.setItem('auth-token', data.token);
-        localStorage.setItem('weparlay-admin-token', data.token);
-        localStorage.setItem('weparlay-is-admin', 'true');
-
-        // Set additional admin session data
-        localStorage.setItem('admin-email', 'support@weparlay.io');
-        localStorage.setItem('admin-login-time', Date.now().toString());
-
-        console.log('✅ Admin login successful, refreshing auth state...');
-
-        // Force immediate UI update with page reload for reliable state refresh
-        console.log('🔄 Forcing page reload for complete state refresh...');
-        window.location.reload();
-      } else {
-        console.error('❌ Admin login failed:', data.message);
-        alert('Login failed. Please try again.');
-      }
-    } catch (error) {
-      console.error('❌ Admin login error:', error);
-      alert('Login error. Please check your connection.');
-    }
-  };
+  // Never expose privileged credentials in the client. Authentication goes through the normal flow.
+  const quickAdminLogin = () => setLocation('/auth');
 
   // Enhanced logout function with proper cache clearing
   const logout = async () => {
@@ -200,14 +159,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   };
 
   const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/betting-hub", label: "Sports Betting" },
-    { href: "/p2p-betting", label: "P2P Betting" },
-    { href: "/fantasy", label: "Fantasy" },
-    { href: "/tournaments", label: "Tournaments" },
-    { href: "/trivia", label: "Trivia" },
-    { href: "/results", label: "Results" },
-    { href: "/social-betting", label: "Social" }
+    { href: "/", label: "Today's Games" },
+    { href: "/custom-bets", label: "Custom Bets" },
+    { href: "/tournaments", label: "Daily Tournament" },
+    { href: "/live-tv", label: "Live TV" },
+    { href: "/my-bets", label: "My Bets" },
+    { href: "/profile", label: "Profile" }
   ];
 
   return (
@@ -219,7 +176,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <FaviconOptimization />
       <SocialMediaOptimization 
         title="WeParlay - Premier Sports Betting Platform"
-        description="Experience the future of sports betting with WeParlay. Live odds, fantasy sports, esports, and more."
+        description="Live sports, custom peer-to-peer bets, daily tournaments, and one universal bet slip."
         image="/weparlaylogo.png"
       />
       {/* Header */}
@@ -262,11 +219,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                     onClick={() => window.location.href = link.href}
                   >
                     <div className="w-6 h-6 mb-1 flex items-center justify-center">
-                      {link.label === 'Home' && '🏠'}
-                      {link.label === 'Sports Betting' && '⚡'}
-                      {link.label === 'P2P Betting' && '🤝'}
-                      {link.label === 'Fantasy' && '🏆'}
-                      {link.label === 'Tournaments' && '🥇'}
+                      {link.label === "Today's Games" && '🏠'}
+                      {link.label === 'Custom Bets' && '🤝'}
+                      {link.label === 'Daily Tournament' && '🥇'}
+                      {link.label === 'Live TV' && '📺'}
                     </div>
                     <span className="truncate">{link.label.split(' ')[0]}</span>
                   </div>
@@ -534,7 +490,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               onRemoveBet={removeFromBetSlip}
               onClearAll={clearBetSlip}
               balances={{
-                weparlay_cash: currentUser.weplayTokenBalance || currentUser.weparlayCashBalance || currentUser.balance || 1000000,
+                weparlay_cash: currentUser.weplayTokenBalance || currentUser.weparlayCashBalance || currentUser.balance || 10000,
                 real_money: currentUser.cashBalance || 0,
                 crypto: 0
               }}
@@ -549,7 +505,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               onRemoveBet={removeFromBetSlip}
               onClearAll={clearBetSlip}
               balances={{
-                weparlay_cash: currentUser.weplayTokenBalance || currentUser.weparlayCashBalance || currentUser.balance || 1000000,
+                weparlay_cash: currentUser.weplayTokenBalance || currentUser.weparlayCashBalance || currentUser.balance || 10000,
                 real_money: currentUser.cashBalance || 0,
                 crypto: 0
               }}

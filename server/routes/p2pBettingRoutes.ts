@@ -25,7 +25,7 @@ router.post('/challenges/create', isAuthenticated, restrictedAuthMiddleware, asy
       currency: z.enum(['weparlay_cash']).default('weparlay_cash'),
       isPublic: z.boolean().default(true),
       allowedFriends: z.array(z.string()).optional(),
-      challengeMessage: z.string().optional(),
+      challengeMessage: z.string().trim().max(200).optional(),
       challengeeId: z.string().optional(), // for direct challenges
     });
 
@@ -33,7 +33,7 @@ router.post('/challenges/create', isAuthenticated, restrictedAuthMiddleware, asy
 
     // Check user balance
     const user = await storage.getUser(userId);
-    if (!user || user.weparlayCashBalance < validatedData.betAmount) {
+    if (!user || (user.weparlayCashBalance || 0) < validatedData.betAmount) {
       return res.status(400).json({
         success: false,
         message: 'Insufficient WeParlay Cash balance',
@@ -158,7 +158,7 @@ router.post('/challenges/:challengeId/accept', isAuthenticated, restrictedAuthMi
         });
       }
       
-      if (challenge.allowedFriends && !challenge.allowedFriends.includes(userId)) {
+      if (Array.isArray(challenge.allowedFriends) && !challenge.allowedFriends.includes(userId)) {
         return res.status(403).json({
           success: false,
           message: 'You are not allowed to accept this private challenge'
@@ -168,7 +168,7 @@ router.post('/challenges/:challengeId/accept', isAuthenticated, restrictedAuthMi
 
     // Check user balance
     const user = await storage.getUser(userId);
-    if (!user || user.weparlayCashBalance < challenge.betAmount) {
+    if (!user || (user.weparlayCashBalance || 0) < challenge.betAmount) {
       return res.status(400).json({
         success: false,
         message: 'Insufficient WeParlay Cash balance',
@@ -330,7 +330,7 @@ router.get('/challenges/:challengeId', isAuthenticated, restrictedAuthMiddleware
       challenge.isPublic || 
       challenge.challengerId === userId ||
       challenge.challengeeId === userId ||
-      (challenge.allowedFriends && challenge.allowedFriends.includes(userId));
+      (Array.isArray(challenge.allowedFriends) && challenge.allowedFriends.includes(userId));
 
     if (!hasAccess) {
       return res.status(403).json({
@@ -353,6 +353,38 @@ router.get('/challenges/:challengeId', isAuthenticated, restrictedAuthMiddleware
       success: false,
       message: 'Failed to fetch challenge details'
     });
+  }
+});
+
+// Pre-bet room chat. Messages are limited to open challenges and 200 characters.
+router.post('/challenges/:challengeId/chat', isAuthenticated, restrictedAuthMiddleware, async (req: Request, res: Response) => {
+  try {
+    const currentUser = req.user as any;
+    const userId = currentUser.claims?.sub;
+    const { challengeId } = req.params;
+    const { message } = z.object({ message: z.string().trim().min(1).max(200) }).parse(req.body);
+    const challenge = await storage.getP2pChallenge(challengeId);
+
+    if (!challenge || challenge.status !== 'open' || challenge.expiresAt <= new Date()) {
+      return res.status(400).json({ success: false, message: 'This pre-bet chat is closed' });
+    }
+    const canChat = challenge.isPublic || challenge.challengerId === userId ||
+      challenge.challengeeId === userId ||
+      (Array.isArray(challenge.allowedFriends) && challenge.allowedFriends.includes(userId));
+    if (!canChat) return res.status(403).json({ success: false, message: 'You cannot access this bet room' });
+
+    const user = await storage.getUser(userId);
+    const activity = await storage.createP2pActivity({
+      challengeId,
+      userId,
+      activityType: 'pre_bet_chat',
+      message,
+      metadata: { username: user?.username || user?.firstName || 'User' },
+    });
+    res.json({ success: true, activity });
+  } catch (error: any) {
+    const validationMessage = error?.issues?.[0]?.message;
+    res.status(400).json({ success: false, message: validationMessage || 'Unable to send message' });
   }
 });
 

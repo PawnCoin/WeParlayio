@@ -59,7 +59,10 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const id = Math.random().toString(36).substring(2, 9);
     const newBet = { ...bet, id };
     
-    setBetSlip(prev => [...prev, newBet]);
+    setBetSlip(prev => {
+      const withoutSameMarket = prev.filter(item => !(item.eventId === newBet.eventId && item.betType === newBet.betType));
+      return [...withoutSameMarket, newBet];
+    });
     
     toast({
       title: "Added to Bet Slip",
@@ -89,7 +92,13 @@ export const BetSlipProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setBetSlip(prev => 
       prev.map(bet => 
         bet.id === id 
-          ? { ...bet, ...updates }
+          ? {
+              ...bet,
+              ...updates,
+              potential: updates.amount !== undefined
+                ? updates.amount * (bet.odds > 0 ? 1 + bet.odds / 100 : 1 + 100 / Math.abs(bet.odds))
+                : bet.potential,
+            }
           : bet
       )
     );

@@ -407,6 +407,26 @@ export const insertTournamentSchema = createInsertSchema(tournaments).pick({
   status: true,
 });
 
+// Daily pick tournaments are intentionally separate from the legacy sports
+// tournament model above. The complete state is retained for settlement audits.
+export const dailyTournamentStates = pgTable(
+  "daily_tournament_states",
+  {
+    id: varchar("id").primaryKey().notNull(),
+    day: varchar("day", { length: 10 }).notNull(),
+    status: varchar("status", { length: 24 }).notNull().default("open"),
+    state: jsonb("state").notNull(),
+    lockAt: timestamp("lock_at", { withTimezone: true }).notNull(),
+    settleAfter: timestamp("settle_after", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  table => [
+    index("daily_tournament_day_idx").on(table.day),
+    index("daily_tournament_status_idx").on(table.status),
+  ],
+);
+
 // Fantasy Teams model
 export const fantasyTeams = pgTable("fantasy_teams", {
   id: serial("id").primaryKey(),

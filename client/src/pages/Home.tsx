@@ -1,581 +1,98 @@
-import React, { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useLocation } from "wouter";
-import { useToast } from "@/hooks/use-toast";
-import sportsBetAPI from "@/lib/sportsBetAPI";
-import GameCard from "@/components/betting/GameCard";
-import UpcomingGameCard from "@/components/betting/UpcomingGameCard";
-import BracketView from "@/components/tournaments/BracketView";
-
-import PlayerPropsTable from "@/components/betting/PlayerPropsTable";
-import { StatsCarousel } from "@/components/StatsCarousel";
-import WelcomeDashboard from "@/components/dashboard/WelcomeDashboard";
-import BusinessProposalModal from "@/components/business/BusinessProposalModal";
-import CompleteBettingSystem from "@/pages/CompleteBettingSystem";
-import LiveScoresDisplay from "@/components/LiveScoresDisplay";
-import LiveScoresTicker from "@/components/LiveScoresTicker";
+import { Link } from "wouter";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Filter, BarChart2, Handshake, Users, Crown, Sparkles } from "lucide-react";
-import LiveStatsBar from "@/components/sports/LiveStatsBar";
-import SportBreakdown from "@/components/sports/SportBreakdown";
+import LiveScoresTicker from "@/components/LiveScoresTicker";
+import { useBetSlip } from "@/contexts/BetSlipContext";
+import { CalendarDays, Clock3, Radio, ShieldCheck, Trophy, UsersRound, WalletCards } from "lucide-react";
 
-// Featured game will be pulled from real API data
+const sports = ["All", "NFL", "NBA", "MLB", "NHL", "Soccer", "Tennis", "Golf", "Combat"];
 
+function isToday(value: string | undefined, timeZone: string) {
+  if (!value) return true;
+  const date = new Date(value);
+  const now = new Date();
+  const formatter = new Intl.DateTimeFormat("en-CA", { year: "numeric", month: "2-digit", day: "2-digit", timeZone });
+  return formatter.format(date) === formatter.format(now);
+}
 
+export default function Home() {
+  const [sport, setSport] = useState("All");
+  const [timeZone, setTimeZone] = useState(() => localStorage.getItem("weparlay-time-zone") || Intl.DateTimeFormat().resolvedOptions().timeZone);
+  const { addToBetSlip } = useBetSlip();
+  const { data: rawGames = [], isLoading } = useQuery<any[]>({
+    queryKey: ["/api/events/live"],
+    refetchInterval: 30_000,
+  });
+  const games = useMemo(() => (Array.isArray(rawGames) ? rawGames : []).filter((game: any) => {
+    const matchesDate = isToday(game.startTime || game.date, timeZone);
+    const matchesSport = sport === "All" || String(game.sport || game.league || "").toLowerCase().includes(sport.toLowerCase());
+    return matchesDate && matchesSport;
+  }), [rawGames, sport, timeZone]);
 
-const Home: React.FC = () => {
-  const [sportFilter, setSportFilter] = useState("All Sports");
-  const [selectedTab, setSelectedTab] = useState("game-lines");
-  const [showPartnersModal, setShowPartnersModal] = useState(false);
-  const [, setLocation] = useLocation();
-  const { toast } = useToast();
-
-  const handlePlatinumUpgrade = () => {
-    toast({
-      title: "Platinum Upgrade",
-      description: "Redirecting to tier selection...",
-    });
-    setLocation("/tier-comparison");
+  const addMarket = (game: any, selection: string, betType: string, odds: number, point?: number) => {
+    const home = game.homeTeam?.name || game.competitors?.find((x: any) => x.homeAway === "home")?.name || game.homeTeam || "Home";
+    const away = game.awayTeam?.name || game.competitors?.find((x: any) => x.homeAway === "away")?.name || game.awayTeam || "Away";
+    addToBetSlip({ eventId: String(game.id), homeTeam: home, awayTeam: away, gameTitle: `${away} at ${home}`, selection, pick: selection, betType, odds, point, sport: game.sport || game.league || "Sports", amount: 0, potential: 0 });
   };
 
-  // Get all available sports
-  const { data: sports, isLoading: isLoadingSports } = useQuery({
-    queryKey: ["/api/sports"],
-    queryFn: () => sportsBetAPI.getSports(),
-  });
-
-  // Get live events from all sports
-  const { data: liveEvents, isLoading: isLoadingLiveEvents } = useQuery({
-    queryKey: ["/api/events/live"],
-    queryFn: () => sportsBetAPI.getLiveEvents(),
-    refetchInterval: 180000, // Refresh every 3 minutes
-  });
-
-  // Get upcoming events from ESPN API (same endpoint as live events)
-  const { data: upcomingEvents, isLoading: isLoadingUpcomingEvents } = useQuery({
-    queryKey: ["/api/events/upcoming"],
-    queryFn: async () => {
-      try {
-        // Use the same ESPN endpoint but filter for upcoming games
-        const response = await fetch('/api/events/live');
-        if (response.ok) {
-          const events = await response.json();
-          console.log('📊 Home: ESPN events loaded:', events.length);
-          // Filter for scheduled/upcoming events
-          return events.filter((event: any) => 
-            event.status === 'scheduled' || 
-            event.status === 'STATUS_SCHEDULED' ||
-            event.status === 'pre'
-          );
-        }
-        return [];
-      } catch (error) {
-        // Silently handle errors without console spam
-        return [];
-      }
-    },
-    refetchInterval: 180000, // Refresh every 3 minutes
-  });
-
-  // Get active tournament
-  const { data: activeTournament, isLoading: isLoadingTournament } = useQuery({
-    queryKey: ["/api/tournaments/1"],
-    queryFn: () => sportsBetAPI.getTournament(1),
-    retry: false,
-  });
-
   return (
-    <div data-bind="dashboard">
-      {/* Onboarding handled by SimpleOnboarding component in layout */}
-
-      {/* Personalized Welcome Dashboard */}
-      <div className="mb-8">
-        <WelcomeDashboard />
-      </div>
-
-      {/* Partnership Opportunities Banner */}
-      <div className="mb-6">
-        <Card className="bg-gradient-to-r from-gray-900 via-slate-900 to-black border-0 text-white overflow-hidden relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-gray-900/95 via-slate-900/95 to-black/95"></div>
-          <CardContent className="relative z-10 p-4">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="text-center md:text-left">
-                <div className="flex items-center justify-center md:justify-start mb-2">
-                  <Crown className="h-5 w-5 text-yellow-400 mr-2" />
-                  <h2 className="text-lg font-bold">Partner with WeParlay</h2>
-                  <Sparkles className="h-4 w-4 text-yellow-400 ml-2" />
-                </div>
-                <p className="text-sm text-gray-300">
-                  🎯 Up to $60,000/month • 🔥 Premium API showcase • 💎 VIP tier access
-                </p>
-              </div>
-
-              <div className="flex gap-3">
-                <Button
-                  size="sm"
-                  onClick={() => setShowPartnersModal(true)}
-                  className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-4 py-2 rounded-lg transition-all duration-200"
-                >
-                  <Handshake className="h-4 w-4 mr-1" />
-                  Explore
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setShowPartnersModal(true)}
-                  className="border border-gray-400 text-gray-300 hover:bg-gray-800 hover:text-white font-bold px-4 py-2 rounded-lg transition-all duration-200"
-                >
-                  <Users className="h-4 w-4 mr-1" />
-                  View
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Dashboard Header With Tabs */}
-      <div className="mb-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <h1 className="text-2xl font-bold">Sports Betting</h1>
-          <div className="flex space-x-2">
-            <Select value={sportFilter} onValueChange={setSportFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="All Sports" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem key="all-sports" value="All Sports">All Sports</SelectItem>
-                {sports && sports.map((sport: any, index: number) => (
-                  <SelectItem key={sport.key || `sport-${index}`} value={sport.key}>
-                    {sport.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button variant="outline" className="flex items-center gap-2">
-              <Filter className="h-4 w-4" /> Filter
-            </Button>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <section className="overflow-hidden rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-slate-950 via-emerald-950 to-slate-950 p-6 text-white">
+        <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
+          <div>
+            <Badge className="mb-3 bg-emerald-400 text-black">TODAY ONLY</Badge>
+            <h1 className="text-3xl font-black md:text-4xl">Today’s games. One slip. Live results.</h1>
+            <p className="mt-2 max-w-2xl text-slate-300">Bet spreads, moneylines, totals, or create a challenge for one or many opponents. Stakes are reserved before a bet can go live.</p>
+          </div>
+          <div className="flex gap-2">
+            <Link href="/custom-bets"><Button className="bg-emerald-400 text-black hover:bg-emerald-300"><UsersRound className="mr-2 h-4 w-4" />Create custom bet</Button></Link>
+            <Link href="/live-tv"><Button variant="outline" className="border-white/30 bg-white/5 text-white"><Radio className="mr-2 h-4 w-4" />Live TV</Button></Link>
           </div>
         </div>
+      </section>
 
-        <div className="mt-4 border-b border-gray-200 dark:border-gray-700">
-          <Tabs defaultValue="game-lines" value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-            <TabsList className="flex-wrap">
-              <TabsTrigger value="game-lines">Game Lines</TabsTrigger>
-              <TabsTrigger value="player-props">Player Props</TabsTrigger>
-              <TabsTrigger value="team-props">Team Props</TabsTrigger>
-              <TabsTrigger value="parlays">Parlays</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="game-lines" className="mt-6">
-              {/* Game Lines content will be shown when this tab is active */}
-            </TabsContent>
-            
-            <TabsContent value="player-props" className="mt-6">
-              <div className="text-center p-8">
-                <h3 className="text-lg font-semibold mb-2">Player Props</h3>
-                <p className="text-muted-foreground">Player props betting coming soon!</p>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="team-props" className="mt-6">
-              <div className="text-center p-8">
-                <h3 className="text-lg font-semibold mb-2">Team Props</h3>
-                <p className="text-muted-foreground">Team props betting coming soon!</p>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="parlays" className="mt-6">
-              <div className="text-center p-8">
-                <h3 className="text-lg font-semibold mb-2">Parlays</h3>
-                <p className="text-muted-foreground">Parlay betting coming soon!</p>
-              </div>
-            </TabsContent>
-          </Tabs>
+      <a href="https://kingengine.online" target="_blank" rel="noreferrer" className="block rounded-xl border border-amber-400/30 bg-gradient-to-r from-black via-amber-950 to-black px-5 py-3 text-center font-bold text-amber-300">Powered by instinct. Sharpened by KingEngine.online →</a>
+
+      <div className="flex items-center justify-end gap-2">
+        <Clock3 className="h-4 w-4 text-muted-foreground" />
+        <label htmlFor="profile-time-zone" className="text-xs text-muted-foreground">Profile time zone</label>
+        <select id="profile-time-zone" value={timeZone} onChange={(event) => {
+          setTimeZone(event.target.value);
+          localStorage.setItem("weparlay-time-zone", event.target.value);
+        }} className="rounded-md border bg-background px-2 py-1 text-sm">
+          {["America/Los_Angeles", "America/Denver", "America/Chicago", "America/New_York", "Europe/London", "Europe/Paris", "Asia/Tokyo", "Australia/Sydney"].map(zone => <option key={zone} value={zone}>{zone.replaceAll("_", " ")}</option>)}
+        </select>
+      </div>
+      <LiveScoresTicker timeZone={timeZone} />
+
+      <section className="grid gap-3 md:grid-cols-3">
+        <Link href="/tournaments"><Card className="h-full border-amber-500/30 bg-amber-500/5 transition hover:-translate-y-0.5"><CardContent className="p-5"><Trophy className="mb-3 text-amber-500" /><h2 className="font-bold">Daily bookie tournament</h2><p className="mt-1 text-sm text-muted-foreground">The only mode where players bet against the house. One customizable tournament per day.</p></CardContent></Card></Link>
+        <Link href="/custom-bets"><Card className="h-full border-blue-500/30 bg-blue-500/5 transition hover:-translate-y-0.5"><CardContent className="p-5"><UsersRound className="mb-3 text-blue-500" /><h2 className="font-bold">Open custom bets</h2><p className="mt-1 text-sm text-muted-foreground">Browse rooms by category, see the join deadline, chat up to 200 characters, then challenge.</p></CardContent></Card></Link>
+        <Link href="/security-settings"><Card className="h-full border-emerald-500/30 bg-emerald-500/5 transition hover:-translate-y-0.5"><CardContent className="p-5"><ShieldCheck className="mb-3 text-emerald-500" /><h2 className="font-bold">Verified play</h2><p className="mt-1 text-sm text-muted-foreground">Identity, age, location, sanctions, and payment checks are required before real-money or crypto play.</p></CardContent></Card></Link>
+      </section>
+
+      <section>
+        <div className="mb-4 flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div><h2 className="text-2xl font-black">Games on {new Intl.DateTimeFormat(undefined, { month: "long", day: "numeric" }).format(new Date())}</h2><p className="text-sm text-muted-foreground">Times display in your profile time zone.</p></div>
+          <div className="flex flex-wrap gap-2">{sports.map(name => <Button key={name} size="sm" variant={sport === name ? "default" : "outline"} onClick={() => setSport(name)}>{name}</Button>)}</div>
         </div>
-      </div>
+        {isLoading ? <div className="space-y-3"><Skeleton className="h-40" /><Skeleton className="h-40" /></div> : games.length ? (
+          <div className="grid gap-4 xl:grid-cols-2">{games.map((game: any) => {
+            const home = game.homeTeam?.name || game.competitors?.find((x: any) => x.homeAway === "home")?.name || game.homeTeam || "Home";
+            const away = game.awayTeam?.name || game.competitors?.find((x: any) => x.homeAway === "away")?.name || game.awayTeam || "Away";
+            const live = ["in", "live", "STATUS_IN_PROGRESS"].includes(game.status);
+            return <Card key={game.id} className="overflow-hidden"><CardContent className="p-0"><div className="flex items-center justify-between border-b p-4"><div><div className="flex items-center gap-2"><Badge variant={live ? "destructive" : "secondary"}>{live ? "LIVE" : "UPCOMING"}</Badge><span className="text-xs text-muted-foreground">{game.sport || game.league}</span></div><h3 className="mt-2 text-lg font-bold">{away} <span className="text-muted-foreground">@</span> {home}</h3></div><Link href="/live-tv"><Button size="sm" variant="outline"><Radio className="mr-2 h-4 w-4" />Watch</Button></Link></div><div className="grid grid-cols-3 gap-2 p-4">{[
+              [`${home} spread`, "spread", -110, -3.5], [`${home} moneyline`, "moneyline", 125], ["Over total", "total", -110, 44.5]
+            ].map(([label, type, odds, point]) => <button key={String(label)} onClick={() => addMarket(game, String(label), String(type), Number(odds), point ? Number(point) : undefined)} className="rounded-lg border bg-muted/30 p-3 text-left transition hover:border-emerald-500 hover:bg-emerald-500/10"><div className="text-xs text-muted-foreground">{String(type)}</div><div className="mt-1 text-sm font-bold">{String(label)}</div><div className="mt-1 text-emerald-500">{Number(odds) > 0 ? "+" : ""}{Number(odds)}</div></button>)}</div></CardContent></Card>;
+          })}</div>
+        ) : <Card><CardContent className="flex flex-col items-center py-12 text-center"><CalendarDays className="mb-3 h-8 w-8 text-muted-foreground" /><h3 className="font-bold">No games returned for this filter</h3><p className="text-sm text-muted-foreground">The live sports provider will populate today’s schedule here.</p></CardContent></Card>}
+      </section>
 
-      {/* Live Streaming Promotion - Simple but Effective */}
-      <div className="mb-8">
-        <Card className="bg-gradient-to-r from-red-600 via-red-700 to-red-800 border-0 text-white overflow-hidden relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-red-600/90 via-red-700/90 to-red-800/90"></div>
-          <div className="absolute top-2 right-2">
-            <div className="flex items-center bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold animate-pulse">
-              <div className="w-2 h-2 bg-white rounded-full mr-1"></div>
-              LIVE
-            </div>
-          </div>
-          <CardContent className="relative z-10 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-2xl font-bold mb-2 flex items-center">
-                  <Crown className="h-6 w-6 text-yellow-400 mr-2" />
-                  Watch Games Live While You Bet
-                </h3>
-                <p className="text-red-100 mb-3">
-                  🔥 Stream live sports directly on WeParlay • Real-time betting • No switching apps
-                </p>
-                <p className="text-sm text-red-200">
-                  Exclusive to Platinum members only
-                </p>
-              </div>
-              <div className="text-right">
-                <Button 
-                  size="lg"
-                  className="bg-red-500 hover:bg-red-600 text-white font-bold"
-                  onClick={() => window.location.href = '/live-sports-streaming'}
-                >
-                  Watch Live Now
-                </Button>
-                <p className="text-xs text-red-200 mt-1">Join the elite</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Sports Analytics Dashboard */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div>
-          <h2 className="text-xl font-bold mb-4 flex items-center">
-            <BarChart2 className="h-5 w-5 mr-2 text-primary" />
-            Sports Stats Leaders
-          </h2>
-          <StatsCarousel />
-        </div>
-        
-        <div>
-          <SportBreakdown 
-            sportsData={[
-              { name: 'NFL', count: 16, percentage: 42 },
-              { name: 'Soccer', count: 10, percentage: 26 },
-              { name: 'MLB', count: 9, percentage: 24 },
-              { name: 'NBA', count: 1, percentage: 3 },
-              { name: 'NHL', count: 1, percentage: 3 },
-              { name: 'WNBA', count: 1, percentage: 3 }
-            ]}
-          />
-        </div>
-      </div>
-
-      {/* Live Scores Display */}
-      <div className="mb-6">
-        <LiveScoresDisplay />
-      </div>
-
-      {/* Live Scores Ticker */}
-      <div className="mb-6">
-        <LiveScoresTicker />
-      </div>
-
-      {/* Live Sports Statistics Bar */}
-      <div className="mb-6">
-        <LiveStatsBar 
-          totalEvents={liveEvents?.length || 0}
-          activeSports={['NFL', 'NBA', 'MLB', 'NHL', 'Soccer', 'WNBA']}
-          lastUpdate={new Date().toLocaleTimeString()}
-        />
-      </div>
-
-      {/* Live Events Section */}
-      <div className="mb-8">
-        <h2 className="text-xl font-bold mb-4 flex items-center">
-          <span className="h-3 w-3 rounded-full bg-green-500 mr-2 animate-pulse"></span>
-          Live Events
-          <span className="ml-2 text-sm font-normal text-green-600 bg-green-100 px-2 py-1 rounded-full">
-            {liveEvents?.length || 0} Live
-          </span>
-        </h2>
-
-        {isLoadingLiveEvents ? (
-          <div className="space-y-4">
-            <Skeleton className="h-48 w-full" />
-            <Skeleton className="h-48 w-full" />
-          </div>
-        ) : liveEvents && liveEvents.length > 0 ? (
-          <div className="space-y-4">
-            {liveEvents
-              .filter((event: any) => sportFilter === "All Sports" || event.sport === sportFilter)
-              .map((event: any, index: number) => {
-                const homeTeam = event.competitors?.find((comp: any) => comp.homeAway === 'home') || {};
-                const awayTeam = event.competitors?.find((comp: any) => comp.homeAway === 'away') || {};
-                
-                return (
-                  <GameCard key={`live-${event.id}-${index}`} game={{
-                    id: event.id,
-                    homeTeam: {
-                      id: homeTeam.id || event.id + "_home",
-                      name: homeTeam.name || "Home Team",
-                      logo: homeTeam.logo || "",
-                      record: "",
-                      location: "Home"
-                    },
-                    awayTeam: {
-                      id: awayTeam.id || event.id + "_away",
-                      name: awayTeam.name || "Away Team", 
-                      logo: awayTeam.logo || "",
-                      record: "",
-                      location: "Away"
-                    },
-                    startTime: event.startTime,
-                    status: event.status === 'in' ? "live" : event.status,
-                    homeScore: parseInt(homeTeam.score) || 0,
-                    awayScore: parseInt(awayTeam.score) || 0,
-                    period: "Live",
-                    timeRemaining: "",
-                    sportName: event.sport?.toUpperCase() || "SPORTS",
-                    odds: {
-                      homeSpread: { line: -3.5, odds: -110 },
-                      awaySpread: { line: 3.5, odds: -110 },
-                      total: { line: 220.5, odds: -110 }
-                    }
-                  }} />
-                );
-              })}
-          </div>
-        ) : (
-          <div className="bg-muted/30 p-8 text-center rounded-lg">
-            <p className="text-muted-foreground">No live events at the moment. Check back later!</p>
-          </div>
-        )}
-      </div>
-
-      {/* Upcoming Events Section */}
-      <div className="mb-8">
-        <h2 className="text-xl font-bold mb-4">Upcoming Events</h2>
-
-        {isLoadingUpcomingEvents ? (
-          <div className="space-y-4">
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-24 w-full" />
-          </div>
-        ) : upcomingEvents && Array.isArray(upcomingEvents) && upcomingEvents.length > 0 ? (
-          <div className="space-y-4">
-            {upcomingEvents
-              .filter((event: any) => sportFilter === "All Sports" || event.sport?.includes(sportFilter) || event.league?.includes(sportFilter))
-              .slice(0, 6)
-              .map((event: any, index: number) => (
-                <UpcomingGameCard key={`upcoming-${event.id}-${index}`} game={{
-                  id: event.id,
-                  homeTeam: {
-                    id: 1,
-                    name: event.homeTeam?.name || event.homeTeam || "Home Team",
-                    logo: ""
-                  },
-                  awayTeam: {
-                    id: 2,
-                    name: event.awayTeam?.name || event.awayTeam || "Away Team",
-                    logo: ""
-                  },
-                  startTime: event.date || event.startTime || new Date().toISOString(),
-                  bookmakers: [],
-                  odds: {
-                    homeSpread: { line: -3.5, odds: -110 },
-                    awaySpread: { line: 3.5, odds: -110 },
-                    total: { line: 220.5, odds: -110 }
-                  }
-                }} />
-              ))}
-          </div>
-        ) : (
-          <div className="bg-muted/30 p-8 text-center rounded-lg">
-            <p className="text-muted-foreground">No upcoming events found. Check back later!</p>
-          </div>
-        )}
-      </div>
-
-      {/* Tournament Bracket Section */}
-      <div className="mb-8">
-        <h2 className="text-xl font-bold mb-4">Tournament Bracket</h2>
-        <BracketView tournamentId={1} />
-      </div>
-
-      {/* Fantasy Tools Section */}
-      <div className="mb-8">
-        <h2 className="text-xl font-bold mb-4">Fantasy Tools</h2>
-
-        <div className="grid grid-cols-1 gap-6">
-          {/* Player Props Tool */}
-          <Card>
-            <CardContent className="p-0">
-              <div className="bg-accent/10 p-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="font-bold text-accent">Player Props Tool</h3>
-                  <span className="text-xs bg-accent text-white px-2 py-1 rounded">Odds Comparison</span>
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Compare player props across multiple sportsbooks</p>
-              </div>
-
-              <div className="p-4">
-                <PlayerPropsTable />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* User Success Stories & Testimonials */}
-      <div className="mb-8">
-        <h2 className="text-xl font-bold mb-6 text-center">What Our Users Are Saying</h2>
-        
-        {/* Success Stats Banner */}
-        <div className="mb-6">
-          <Card className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border-green-200 dark:border-green-800">
-            <CardContent className="p-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <div>
-                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">50,000+</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Active Users</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">$2.5M+</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Payouts Processed</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-teal-600 dark:text-teal-400">4.9/5</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">User Rating</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">24/7</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Support Available</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Testimonials Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Testimonial 1 - Big Winner */}
-          <Card className="border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-900/20">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <img 
-                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face" 
-                  alt="Mike Profile" 
-                  className="w-12 h-12 rounded-full object-cover border-2 border-green-200 dark:border-green-600"
-                />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">Mike_SportsFan</h4>
-                    <div className="flex text-yellow-400">
-                      ⭐⭐⭐⭐⭐
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-                    "Just hit my biggest win ever - $8.5K on an NBA parlay!! Been using WeParlay for 6 months and their odds beat DraftKings every time. Crypto withdrawals are instant too which is clutch"
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-300 px-2 py-1 rounded">Platinum Member</span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">2 weeks ago</span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Testimonial 2 - Security Focus */}
-          <Card className="border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/20">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <img 
-                  src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face" 
-                  alt="Sarah Profile" 
-                  className="w-12 h-12 rounded-full object-cover border-2 border-blue-200 dark:border-blue-600"
-                />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">Sarah.crypto</h4>
-                    <div className="flex text-yellow-400">
-                      ⭐⭐⭐⭐⭐
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-                    "Switched from Bovada last month. The wallet connection was super easy and I love seeing all my transaction history in one place. Support actually responds within minutes!"
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">Gold Member</span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">1 week ago</span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Testimonial 3 - Feature Love */}
-          <Card className="border-teal-200 dark:border-teal-800 bg-teal-50/50 dark:bg-teal-900/20">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <img 
-                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face" 
-                  alt="Alex Profile" 
-                  className="w-12 h-12 rounded-full object-cover border-2 border-teal-200 dark:border-teal-600"
-                />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">AnalyticsAlex</h4>
-                    <div className="flex text-yellow-400">
-                      ⭐⭐⭐⭐⭐
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-                    "The group challenges with my buddies are addictive lol. Tournament brackets during March Madness were perfect. WeParlay Cash is great for testing strategies without risking real money"
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs bg-teal-100 dark:bg-teal-800 text-teal-700 dark:text-teal-300 px-2 py-1 rounded">Silver Member</span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">3 days ago</span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Trust Indicators */}
-        <div className="mt-6">
-          <Card className="bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-800/30 dark:to-slate-800/30 border-gray-200 dark:border-gray-700">
-            <CardContent className="p-4">
-              <div className="text-center">
-                <h3 className="font-bold text-gray-800 dark:text-gray-200 mb-3">Trusted by Champions</h3>
-                <div className="flex flex-wrap justify-center items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span>FDIC-Insured Banking</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span>256-bit SSL Encryption</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
-                    <span>99.9% Uptime Guarantee</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                    <span>Licensed & Regulated</span>
-                  </div>
-                </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  Over 50,000 users trust WeParlay for secure, reliable sports betting
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Partnership Modal */}
-      <BusinessProposalModal 
-        isOpen={showPartnersModal}
-        onClose={() => setShowPartnersModal(false)}
-      />
+      <section className="rounded-xl border bg-card p-5"><div className="flex gap-3"><WalletCards className="text-emerald-500" /><div><h3 className="font-bold">Accepted value</h3><p className="text-sm text-muted-foreground">$PC on supported EVM, Solana and other configured chains; $DIG and %RU on Polygon. Final token logos, contract addresses, confirmations, and risk information must be supplied before activation.</p></div></div></section>
     </div>
   );
-};
-
-export default Home;
+}

@@ -920,6 +920,14 @@ export class MemStorage implements IStorage {
   }
 
   async getAvailableP2pChallenges(userId: string): Promise<P2pChallenge[]> {
+    const now = new Date();
+    for (const challenge of Array.from(this.p2pChallenges.values())) {
+      if (challenge.status === 'open' && challenge.expiresAt <= now) {
+        const expired = await this.cancelP2pChallenge(challenge.id, 'Join deadline expired without an opponent');
+        expired.status = 'expired';
+        this.p2pChallenges.set(challenge.id, expired);
+      }
+    }
     const challenges = Array.from(this.p2pChallenges.values())
       .filter(challenge => 
         challenge.status === 'open' && 
@@ -927,9 +935,9 @@ export class MemStorage implements IStorage {
         challenge.expiresAt > new Date() &&
         (challenge.isPublic || 
          challenge.challengeeId === userId ||
-         (challenge.allowedFriends && challenge.allowedFriends.includes(userId)))
+         (Array.isArray(challenge.allowedFriends) && challenge.allowedFriends.includes(userId)))
       )
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
 
     // Add usernames
     const challengesWithUsernames = await Promise.all(
@@ -946,11 +954,19 @@ export class MemStorage implements IStorage {
   }
 
   async getUserP2pChallenges(userId: string): Promise<P2pChallenge[]> {
+    const now = new Date();
+    for (const challenge of Array.from(this.p2pChallenges.values())) {
+      if (challenge.status === 'open' && challenge.expiresAt <= now) {
+        const expired = await this.cancelP2pChallenge(challenge.id, 'Join deadline expired without an opponent');
+        expired.status = 'expired';
+        this.p2pChallenges.set(challenge.id, expired);
+      }
+    }
     const challenges = Array.from(this.p2pChallenges.values())
       .filter(challenge => 
         challenge.challengerId === userId || challenge.challengeeId === userId
       )
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
 
     // Add usernames
     const challengesWithUsernames = await Promise.all(

@@ -141,6 +141,8 @@ export class SimpleStorage implements IStorage {
   private socialPosts = new Map<number, any>();
   private socialLikes = new Map<string, Set<number>>();
   private socialFollowsMap = new Map<string, Set<string>>();
+  private friends = new Map<string, Set<string>>();
+  private pendingFriends = new Map<string, Set<string>>();
   private nextId = 1;
 
   constructor() {
@@ -528,14 +530,33 @@ export class SimpleStorage implements IStorage {
   async getWeparlayCashTransactions(userId: string): Promise<any[]> { return []; }
 
   async sendFriendRequest(userId: string, friendId: string): Promise<any> { 
-    return { success: true, userId, friendId }; 
+    if (userId === friendId || !this.users.has(friendId)) throw new Error('User not found');
+    if (!this.pendingFriends.has(friendId)) this.pendingFriends.set(friendId, new Set());
+    this.pendingFriends.get(friendId)!.add(userId);
+    return { success: true, userId, friendId, status: 'pending' };
   }
   async acceptFriendRequest(userId: string, friendId: string): Promise<any> { 
-    return { success: true, userId, friendId }; 
+    if (!this.pendingFriends.get(userId)?.has(friendId)) throw new Error('Friend request not found');
+    this.pendingFriends.get(userId)!.delete(friendId);
+    if (!this.friends.has(userId)) this.friends.set(userId, new Set());
+    if (!this.friends.has(friendId)) this.friends.set(friendId, new Set());
+    this.friends.get(userId)!.add(friendId);
+    this.friends.get(friendId)!.add(userId);
+    return { success: true, userId, friendId, status: 'accepted' };
   }
-  async removeFriend(userId: string, friendId: string): Promise<boolean> { return true; }
-  async getUserFriends(userId: string): Promise<any[]> { return []; }
-  async getPendingFriendRequests(userId: string): Promise<any[]> { return []; }
+  async removeFriend(userId: string, friendId: string): Promise<boolean> {
+    this.friends.get(userId)?.delete(friendId);
+    this.friends.get(friendId)?.delete(userId);
+    this.pendingFriends.get(userId)?.delete(friendId);
+    this.pendingFriends.get(friendId)?.delete(userId);
+    return true;
+  }
+  async getUserFriends(userId: string): Promise<any[]> {
+    return Array.from(this.friends.get(userId) || []).map(id => this.users.get(id)).filter(Boolean);
+  }
+  async getPendingFriendRequests(userId: string): Promise<any[]> {
+    return Array.from(this.pendingFriends.get(userId) || []).map(id => this.users.get(id)).filter(Boolean);
+  }
   async searchUsers(query: string, currentUserId: string): Promise<any[]> {
     return Array.from(this.users.values())
       .filter(user => 

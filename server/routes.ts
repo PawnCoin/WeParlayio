@@ -34,6 +34,7 @@ import tierRoutes from "./routes/tierRoutes";
 import paymentRoutesNoStripe from "./routes/paymentRoutesNoStripe";
 import settingsRouter from "./routes/settingsRoutes";
 import p2pBettingRoutes from "./routes/p2pBettingRoutes";
+import tournamentModeRoutes from "./routes/tournamentModeRoutes";
 
 import iptvRoutes from "./routes/iptv";
 import iptvProxyRoutes from "./routes/iptv-proxy";
@@ -92,6 +93,34 @@ const registerRoutes = async (app: Express): Promise<Server> => {
   app.use('/api/rapid-api', rapidApiRoutes);
   app.use('/api/espn-fantasy', espnFantasyRoutes);
   app.use('/api/p2p-betting', p2pBettingRoutes);
+  app.use('/api/tournaments', tournamentModeRoutes);
+  app.get('/api/profile/friends', isAuthenticated, async (req: any, res) => {
+    const userId = req.user?.claims?.sub;
+    res.json({ friends: await storage.getUserFriends(userId), pending: await storage.getPendingFriendRequests(userId) });
+  });
+  app.get('/api/profile/friends/search', isAuthenticated, async (req: any, res) => {
+    const userId = req.user?.claims?.sub;
+    const query = String(req.query.q || '').trim().slice(0, 50);
+    res.json({ users: query.length >= 2 ? await storage.searchUsers(query, userId) : [] });
+  });
+  app.post('/api/profile/friends/:friendId/request', isAuthenticated, async (req: any, res) => {
+    try {
+      res.json(await storage.sendFriendRequest(req.user?.claims?.sub, req.params.friendId));
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+  app.post('/api/profile/friends/:friendId/accept', isAuthenticated, async (req: any, res) => {
+    try {
+      res.json(await storage.acceptFriendRequest(req.user?.claims?.sub, req.params.friendId));
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+  app.delete('/api/profile/friends/:friendId', isAuthenticated, async (req: any, res) => {
+    await storage.removeFriend(req.user?.claims?.sub, req.params.friendId);
+    res.json({ success: true });
+  });
   app.use('/api/yahoo-fantasy', yahooFantasyRoutes);
   app.use('/api/social-media', socialMediaRoutes);
   

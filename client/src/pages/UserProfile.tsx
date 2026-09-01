@@ -1,421 +1,99 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link } from "wouter";
+import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { User, Mail, Phone, Calendar, Shield, Crown, Star, Settings, Bell, Lock, CreditCard } from "lucide-react";
-import PermissionBadge from "@/components/auth/PermissionBadge";
-import NotificationCenter from "@/components/notifications/NotificationCenter";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfilePictureUpload from "@/components/user/ProfilePictureUpload";
+import { AlertTriangle, Check, Copy, Gift, History, MessageCircle, Search, ShieldCheck, Trophy, UserMinus, UserPlus, Users, X } from "lucide-react";
 
-const UserProfile: React.FC = () => {
-  const { user, logout } = useAuth();
+const zones = ["America/Los_Angeles", "America/Denver", "America/Chicago", "America/New_York", "Europe/London", "Europe/Paris", "Asia/Tokyo", "Australia/Sydney"];
+
+export default function UserProfile() {
+  const { user } = useAuth();
+  const currentUser = (user || {}) as any;
   const { toast } = useToast();
-  
-  // Type assertion for user object
-  const currentUser = user as any || {};
-
-  const [profileData, setProfileData] = useState({
-    firstName: currentUser.firstName || '',
-    lastName: currentUser.lastName || '',
-    email: currentUser.email || '',
-    phone: currentUser.phone || '',
-    dateOfBirth: currentUser.dateOfBirth || '',
-    bio: currentUser.bio || ''
+  const queryClient = useQueryClient();
+  const [profileImage, setProfileImage] = useState(currentUser.profileImageUrl || "");
+  const [search, setSearch] = useState("");
+  const [timeZone, setTimeZone] = useState(() => localStorage.getItem("weparlay-time-zone") || Intl.DateTimeFormat().resolvedOptions().timeZone);
+  const [chatFriend, setChatFriend] = useState<any>(null);
+  const [temporaryMessages, setTemporaryMessages] = useState<string[]>([]);
+  const [draft, setDraft] = useState("");
+  const [social, setSocial] = useState(() => JSON.parse(localStorage.getItem("weparlay-social-links") || '{"instagram":"","x":"","tiktok":""}'));
+  const { data: friendData = { friends: [], pending: [] } } = useQuery<any>({ queryKey: ["/api/profile/friends"], enabled: Boolean(user) });
+  const { data: searchData = { users: [] } } = useQuery<any>({
+    queryKey: ["/api/profile/friends/search", search],
+    queryFn: async () => {
+      if (search.trim().length < 2) return { users: [] };
+      const response = await apiRequest("GET", "/api/profile/friends/search?q=" + encodeURIComponent(search.trim()));
+      return response.json();
+    },
+    enabled: Boolean(user) && search.trim().length >= 2,
   });
-  
-  const [profileImageUrl, setProfileImageUrl] = useState(currentUser.profileImageUrl || '');
+  const { data: betData = { challenges: [] } } = useQuery<any>({ queryKey: ["/api/p2p-betting/challenges/mine"], enabled: Boolean(user) });
+  const friendAction = useMutation({
+    mutationFn: ({ method, id, action = "" }: { method: "POST" | "DELETE"; id: string; action?: string }) => apiRequest(method, "/api/profile/friends/" + id + action),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/profile/friends"] }),
+    onError: (error: Error) => toast({ title: "Friend action failed", description: error.message, variant: "destructive" }),
+  });
+  if (!user) return <Card className="m-6"><CardContent className="p-10 text-center"><h1 className="text-xl font-bold">Sign in to open your profile</h1><Link href="/auth"><Button className="mt-4">Sign in</Button></Link></CardContent></Card>;
 
-  const [showNotifications, setShowNotifications] = useState(false);
-
-  const handleProfileUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      // In a real app, this would make an API call
-      toast({
-        title: "Profile Updated",
-        description: "Your profile information has been successfully updated",
-      });
-    } catch (error) {
-      toast({
-        title: "Update Failed",
-        description: "Unable to update profile. Please try again.",
-        variant: "destructive",
-      });
-    }
+  const wins = Number(currentUser.wins ?? currentUser.winsCount ?? 0);
+  const totalBets = Number(currentUser.totalBets ?? currentUser.betsCount ?? 0);
+  const losses = Math.max(0, totalBets - wins);
+  const won = Number(currentUser.totalWinnings || 0);
+  const wagered = Number(currentUser.totalWagered || (currentUser.averageBet || 0) * totalBets);
+  const referralCode = currentUser.inviteCode || currentUser.referralCode || currentUser.id || "";
+  const referralLink = window.location.origin + "/signup?ref=" + encodeURIComponent(referralCode);
+  const receivedBets = (betData.challenges || []).filter((item: any) => item.challengeeId === currentUser.id || (item.status === "open" && !item.isPublic));
+  const stats = [
+    ["Record", wins + "–" + losses], ["Wagered", "USD " + wagered.toLocaleString()],
+    ["Won / lost", "USD " + won.toLocaleString() + " / " + Math.max(0, wagered - won).toLocaleString()],
+    ["WeParlay Cash", Number(currentUser.weparlayCashBalance || currentUser.balance || 10000).toLocaleString()],
+    ["Cash", "USD " + Number(currentUser.cashBalance || 0).toLocaleString()], ["Friends", String(friendData.friends?.length || 0)]
+  ];
+  const savePreferences = () => {
+    localStorage.setItem("weparlay-time-zone", timeZone);
+    localStorage.setItem("weparlay-social-links", JSON.stringify(social));
+    toast({ title: "Profile preferences saved" });
   };
+  const closeConversation = () => { setChatFriend(null); setTemporaryMessages([]); setDraft(""); };
 
-  const handlePasswordChange = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    toast({
-      title: "Password Changed",
-      description: "Your password has been updated successfully",
-    });
-  };
+  return <div className="mx-auto max-w-7xl space-y-6 p-4 md:p-6">
+    <Card><CardContent className="flex flex-col gap-5 p-6 md:flex-row md:items-center">
+      <ProfilePictureUpload currentImageUrl={profileImage} onImageUpdate={setProfileImage} />
+      <div className="flex-1"><div className="flex flex-wrap items-center gap-2"><h1 className="text-3xl font-black">@{currentUser.username || currentUser.firstName || "player"}</h1><Badge>{currentUser.tier || "Bronze"} tier</Badge>{currentUser.emailVerified && <Badge variant="outline"><ShieldCheck className="mr-1 h-3 w-3" />Verified</Badge>}</div><p className="mt-1 text-muted-foreground">{currentUser.firstName} {currentUser.lastName} · {timeZone.replaceAll("_", " ")}</p></div>
+      <Link href="/support"><Button variant="outline"><AlertTriangle className="mr-2 h-4 w-4" />Report a problem</Button></Link>
+    </CardContent></Card>
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">{stats.map(([label, value]) => <Card key={label}><CardContent className="p-4"><div className="text-xs uppercase text-muted-foreground">{label}</div><div className="mt-1 text-lg font-black">{value}</div></CardContent></Card>)}</div>
+    <Tabs defaultValue="overview">
+      <TabsList className="grid h-auto grid-cols-2 md:grid-cols-5"><TabsTrigger value="overview">Overview</TabsTrigger><TabsTrigger value="bets">Bet inbox</TabsTrigger><TabsTrigger value="friends">Friends</TabsTrigger><TabsTrigger value="rewards">Rewards</TabsTrigger><TabsTrigger value="settings">Settings</TabsTrigger></TabsList>
+      <TabsContent value="overview" className="grid gap-4 md:grid-cols-2">
+        <Card><CardHeader><CardTitle>Balances and verification</CardTitle></CardHeader><CardContent className="space-y-3"><div className="flex justify-between"><span>WeParlay Cash</span><strong>{Number(currentUser.weparlayCashBalance || currentUser.balance || 10000).toLocaleString()}</strong></div><div className="flex justify-between"><span>Real cash</span><strong>USD {Number(currentUser.cashBalance || 0).toLocaleString()}</strong></div><p className="text-xs text-muted-foreground">Real-money use remains disabled until identity, location, jurisdiction, and payment checks are complete.</p><Link href="/security-settings" className="text-emerald-500">Manage identity and verification →</Link></CardContent></Card>
+        <Card><CardHeader><CardTitle>Contact and social</CardTitle></CardHeader><CardContent className="space-y-2 text-sm"><p>{currentUser.email || "No email added"}</p><p>{currentUser.phone || currentUser.phoneNumber || "No phone added"}</p><p>Instagram: {social.instagram || "Not added"}</p><p>X: {social.x || "Not added"}</p><p>TikTok: {social.tiktok || "Not added"}</p></CardContent></Card>
+      </TabsContent>
+      <TabsContent value="bets"><Card><CardHeader><CardTitle>Received and recent bets</CardTitle></CardHeader><CardContent className="space-y-3">{receivedBets.length ? receivedBets.map((bet: any) => <div key={bet.id} className="flex justify-between rounded-lg border p-3"><div><strong>{bet.gameDetails?.awayTeam} at {bet.gameDetails?.homeTeam}</strong><p className="text-sm text-muted-foreground">{bet.betAmount} WeParlay Cash</p></div><Badge>{bet.status}</Badge></div>) : <p className="py-8 text-center text-muted-foreground">No received bets yet.</p>}<Link href="/my-bets" className="inline-flex items-center text-sm text-emerald-500"><History className="mr-2 h-4 w-4" />Complete bet history</Link></CardContent></Card></TabsContent>
+      <TabsContent value="friends" className="grid gap-4 lg:grid-cols-2">
+        <Card><CardHeader><CardTitle><Search className="mr-2 inline h-5 w-5" />Find players</CardTitle></CardHeader><CardContent><Input value={search} onChange={event => setSearch(event.target.value)} placeholder="Search username or email" /><div className="mt-3 space-y-2">{searchData.users?.map((person: any) => <div key={person.id} className="flex items-center justify-between rounded-lg border p-3"><span>@{person.username || person.email}</span><Button size="sm" onClick={() => friendAction.mutate({ method: "POST", id: person.id, action: "/request" })}><UserPlus className="mr-1 h-4 w-4" />Add</Button></div>)}</div></CardContent></Card>
+        <Card><CardHeader><CardTitle><Users className="mr-2 inline h-5 w-5" />Friends and requests</CardTitle></CardHeader><CardContent className="space-y-2">{friendData.pending?.map((person: any) => <div key={person.id} className="flex items-center justify-between rounded-lg border p-3"><span>@{person.username || person.email}</span><Button size="sm" onClick={() => friendAction.mutate({ method: "POST", id: person.id, action: "/accept" })}><Check className="mr-1 h-4 w-4" />Accept</Button></div>)}{friendData.friends?.map((person: any) => <div key={person.id} className="flex items-center justify-between rounded-lg border p-3"><div className="flex items-center gap-2"><Avatar className="h-8 w-8"><AvatarImage src={person.profileImageUrl} /><AvatarFallback>{(person.username || "U")[0]}</AvatarFallback></Avatar><span>@{person.username || person.email}</span></div><div><Button size="icon" variant="ghost" onClick={() => setChatFriend(person)}><MessageCircle className="h-4 w-4" /></Button><Button size="icon" variant="ghost" onClick={() => friendAction.mutate({ method: "DELETE", id: person.id })}><UserMinus className="h-4 w-4" /></Button></div></div>)}{!friendData.pending?.length && !friendData.friends?.length && <p className="py-8 text-center text-muted-foreground">Add your first friend.</p>}</CardContent></Card>
+      </TabsContent>
+      <TabsContent value="rewards" className="grid gap-4 lg:grid-cols-2">
+        <Card><CardHeader><CardTitle><Gift className="mr-2 inline h-5 w-5" />Referral link</CardTitle></CardHeader><CardContent><div className="flex gap-2"><Input readOnly value={referralLink} /><Button size="icon" onClick={() => { navigator.clipboard.writeText(referralLink); toast({ title: "Referral link copied" }); }}><Copy className="h-4 w-4" /></Button></div><p className="mt-3 text-sm text-muted-foreground">Tier-purchase reward: 10,000 WeParlay Cash, USD 5 locked cash, and one tier increase.</p></CardContent></Card>
+        <Card><CardHeader><CardTitle><Trophy className="mr-2 inline h-5 w-5" />Rewards</CardTitle></CardHeader><CardContent className="space-y-2"><Reward label="Welcome reward" value="10,000 WeParlay Cash" earned /><Reward label="Successful referral" value="10,000 WeParlay Cash" earned={Number(currentUser.inviteCount || 0) > 0} /><Reward label="Tier purchase referral" value="USD 5 + tier increase" /></CardContent></Card>
+      </TabsContent>
+      <TabsContent value="settings"><Card><CardHeader><CardTitle>Social links and time zone</CardTitle></CardHeader><CardContent className="grid gap-4 md:grid-cols-2"><select value={timeZone} onChange={event => setTimeZone(event.target.value)} className="rounded-md border bg-background p-2">{zones.map(zone => <option key={zone}>{zone}</option>)}</select>{["instagram", "x", "tiktok"].map(network => <Input key={network} value={social[network]} onChange={event => setSocial((value: any) => ({ ...value, [network]: event.target.value }))} placeholder={"Your " + network + " profile"} />)}<Button onClick={savePreferences}>Save preferences</Button></CardContent></Card></TabsContent>
+    </Tabs>
+    {chatFriend && <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4"><Card className="w-full max-w-md"><CardHeader className="flex-row items-center justify-between"><CardTitle>Temporary chat with @{chatFriend.username}</CardTitle><Button size="icon" variant="ghost" onClick={closeConversation}><X /></Button></CardHeader><CardContent><p className="mb-3 text-xs text-muted-foreground">Messages are deleted from this device when this conversation closes.</p><div className="mb-3 space-y-2">{temporaryMessages.map((message, index) => <div key={index} className="rounded-lg bg-muted p-2 text-sm">{message}</div>)}</div><div className="flex gap-2"><Input value={draft} maxLength={200} onChange={event => setDraft(event.target.value)} /><Button onClick={() => { if (draft.trim()) setTemporaryMessages(items => [...items, draft.trim()]); setDraft(""); }}>Send</Button></div></CardContent></Card></div>}
+  </div>;
+}
 
-  if (!user) {
-    return (
-      <div className="container mx-auto p-6">
-        <Card>
-          <CardContent className="p-8 text-center">
-            <h2 className="text-xl font-semibold mb-4">Please log in to view your profile</h2>
-            <Button onClick={() => window.location.href = '/auth'}>
-              Sign In
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Profile Header */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center gap-6">
-            <ProfilePictureUpload 
-              currentImageUrl={profileImageUrl}
-              onImageUpdate={setProfileImageUrl}
-              className="flex-shrink-0"
-            />
-            
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold">
-                  {currentUser.firstName} {currentUser.lastName}
-                </h1>
-                <PermissionBadge />
-              </div>
-              
-              <p className="text-muted-foreground mb-3">@{currentUser.username}</p>
-              
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <CreditCard className="h-4 w-4 text-green-600" />
-                  <span className="font-semibold">${currentUser.balance?.toLocaleString() || '0'}</span>
-                </div>
-                
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  <Star className="h-3 w-3" />
-                  {currentUser.tier?.charAt(0).toUpperCase() + currentUser.tier?.slice(1) || 'Bronze'} Tier
-                </Badge>
-                
-                {currentUser.isAdmin && (
-                  <Badge variant="destructive" className="flex items-center gap-1">
-                    <Shield className="h-3 w-3" />
-                    Administrator
-                  </Badge>
-                )}
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setShowNotifications(!showNotifications)}
-                className="flex items-center gap-2"
-              >
-                <Bell className="h-4 w-4" />
-                Notifications
-              </Button>
-              
-              <Button
-                variant="outline"
-                onClick={logout}
-                className="text-red-600 hover:text-red-700"
-              >
-                Logout
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Main Profile Settings */}
-        <div className="md:col-span-2">
-          <Tabs defaultValue="profile" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="profile">Profile</TabsTrigger>
-              <TabsTrigger value="security">Security</TabsTrigger>
-              <TabsTrigger value="preferences">Preferences</TabsTrigger>
-              <TabsTrigger value="betting">Betting</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="profile">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <User className="h-5 w-5" />
-                    Personal Information
-                  </CardTitle>
-                  <CardDescription>
-                    Update your personal details and contact information
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleProfileUpdate} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="firstName">First Name</Label>
-                        <Input
-                          id="firstName"
-                          value={profileData.firstName}
-                          onChange={(e) => setProfileData(prev => ({ ...prev, firstName: e.target.value }))}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="lastName">Last Name</Label>
-                        <Input
-                          id="lastName"
-                          value={profileData.lastName}
-                          onChange={(e) => setProfileData(prev => ({ ...prev, lastName: e.target.value }))}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email Address</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="email"
-                          type="email"
-                          value={profileData.email}
-                          onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
-                          className="pl-10"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone Number</Label>
-                      <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="phone"
-                          type="tel"
-                          value={profileData.phone}
-                          onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
-                          className="pl-10"
-                          placeholder="+1 (555) 123-4567"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                      <div className="relative">
-                        <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="dateOfBirth"
-                          type="date"
-                          value={profileData.dateOfBirth}
-                          onChange={(e) => setProfileData(prev => ({ ...prev, dateOfBirth: e.target.value }))}
-                          className="pl-10"
-                        />
-                      </div>
-                    </div>
-
-                    <Button type="submit" className="w-full">
-                      Update Profile
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="security">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Lock className="h-5 w-5" />
-                    Security Settings
-                  </CardTitle>
-                  <CardDescription>
-                    Manage your password and security preferences
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handlePasswordChange} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="currentPassword">Current Password</Label>
-                      <Input
-                        id="currentPassword"
-                        type="password"
-                        placeholder="Enter current password"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="newPassword">New Password</Label>
-                      <Input
-                        id="newPassword"
-                        type="password"
-                        placeholder="Enter new password"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                      <Input
-                        id="confirmPassword"
-                        type="password"
-                        placeholder="Confirm new password"
-                      />
-                    </div>
-
-                    <Button type="submit" className="w-full">
-                      Change Password
-                    </Button>
-                  </form>
-
-                  <div className="mt-6 p-4 bg-muted rounded-lg">
-                    <h4 className="font-semibold mb-2">Security Features</h4>
-                    <ul className="text-sm text-muted-foreground space-y-1">
-                      <li>• Two-factor authentication enabled</li>
-                      <li>• Login notifications active</li>
-                      <li>• Account monitoring enabled</li>
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="preferences">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Settings className="h-5 w-5" />
-                    Preferences
-                  </CardTitle>
-                  <CardDescription>
-                    Customize your WeParlay experience
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium">Email Notifications</h4>
-                        <p className="text-sm text-muted-foreground">Receive betting updates via email</p>
-                      </div>
-                      <Button variant="outline" size="sm">Enable</Button>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium">Push Notifications</h4>
-                        <p className="text-sm text-muted-foreground">Get instant bet settlement alerts</p>
-                      </div>
-                      <Button variant="outline" size="sm">Enable</Button>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium">SMS Alerts</h4>
-                        <p className="text-sm text-muted-foreground">Receive important updates via SMS</p>
-                      </div>
-                      <Button variant="outline" size="sm">Configure</Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="betting">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Betting Statistics</CardTitle>
-                  <CardDescription>
-                    Your betting history and performance
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center p-4 bg-muted rounded-lg">
-                      <div className="text-2xl font-bold text-green-600">67%</div>
-                      <div className="text-sm text-muted-foreground">Win Rate</div>
-                    </div>
-                    <div className="text-center p-4 bg-muted rounded-lg">
-                      <div className="text-2xl font-bold">$2,450</div>
-                      <div className="text-sm text-muted-foreground">Total Winnings</div>
-                    </div>
-                    <div className="text-center p-4 bg-muted rounded-lg">
-                      <div className="text-2xl font-bold">142</div>
-                      <div className="text-sm text-muted-foreground">Bets Placed</div>
-                    </div>
-                    <div className="text-center p-4 bg-muted rounded-lg">
-                      <div className="text-2xl font-bold">28</div>
-                      <div className="text-sm text-muted-foreground">Days Active</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-4">
-          {showNotifications && (
-            <NotificationCenter 
-              isOpen={showNotifications}
-              onClose={() => setShowNotifications(false)}
-            />
-          )}
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Account Status</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Verification</span>
-                <Badge variant="default">Verified</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Account Type</span>
-                <Badge variant="secondary">{user.tier?.charAt(0).toUpperCase() + user.tier?.slice(1)}</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Member Since</span>
-                <span className="text-sm text-muted-foreground">Jan 2024</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button variant="outline" className="w-full justify-start">
-                <CreditCard className="h-4 w-4 mr-2" />
-                Add Funds
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
-                <Crown className="h-4 w-4 mr-2" />
-                Upgrade Tier
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default UserProfile;
+function Reward({ label, value, earned = false }: { label: string; value: string; earned?: boolean }) {
+  return <div className="flex items-center justify-between rounded-lg border p-3"><div><strong>{label}</strong><p className="text-xs text-muted-foreground">{value}</p></div><Badge variant={earned ? "default" : "outline"}>{earned ? "Earned" : "Available"}</Badge></div>;
+}

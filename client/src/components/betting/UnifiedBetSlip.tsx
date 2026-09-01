@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { Trash2, Wallet, CreditCard, Bitcoin, DollarSign, Target } from 'lucide-react';
+import { Trash2, Wallet, CreditCard, Bitcoin, DollarSign, Target, Mail, MessageSquareText, Share2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -56,6 +56,7 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
   const queryClient = useQueryClient();
   const [selectedCurrency, setSelectedCurrency] = useState<'weparlay_cash' | 'real_money' | 'crypto'>('weparlay_cash');
   const [slipType, setSlipType] = useState<'traditional' | 'crypto'>('traditional');
+  const [wagerMode, setWagerMode] = useState<'straight' | 'parlay'>('straight');
   const [localBetSlip, setLocalBetSlip] = useState<BetSlipItem[]>([]);
 
   // Listen for custom bet slip events from addToBothSlips
@@ -143,6 +144,8 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
   const totalAmount = displayBetSlip.reduce((sum, bet) => sum + (bet.amount || 0), 0);
   const totalPotential = displayBetSlip.reduce((sum, bet) => sum + (bet.potential || 0), 0);
   const currentBalance = balances?.[selectedCurrency] || 0;
+  const parlayEligible = displayBetSlip.length >= 2 && displayBetSlip.length <= 9;
+  const shareText = encodeURIComponent(`WeParlay challenge: ${displayBetSlip.map(bet => bet.selection).join(', ')}. Open the invitation to sign in and accept or decline.`);
 
   const handlePlaceBets = () => {
     if (displayBetSlip.length === 0) {
@@ -311,6 +314,12 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
             </div>
           </div>
 
+          <div className="grid grid-cols-2 gap-2">
+            <Button variant={wagerMode === 'straight' ? 'default' : 'outline'} onClick={() => setWagerMode('straight')}>Straight</Button>
+            <Button variant={wagerMode === 'parlay' ? 'default' : 'outline'} disabled={!parlayEligible} onClick={() => setWagerMode('parlay')}>Parlay (2–9)</Button>
+          </div>
+          {!parlayEligible && displayBetSlip.length > 0 && <p className="text-xs text-slate-400">Parlay unlocks with 2–9 teams. Provider odds and parlay rules apply.</p>}
+
           {displayBetSlip.length === 0 ? (
             <div className="text-center py-8">
               <Target className="h-12 w-12 text-slate-500 mx-auto mb-4" />
@@ -384,6 +393,11 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
               </div>
 
               {/* Action Buttons */}
+              <div className="grid grid-cols-3 gap-2">
+                <a href={`mailto:?subject=WeParlay%20bet%20challenge&body=${shareText}`}><Button variant="outline" size="sm" className="w-full"><Mail className="h-4 w-4" /></Button></a>
+                <a href={`sms:?&body=${shareText}`}><Button variant="outline" size="sm" className="w-full"><MessageSquareText className="h-4 w-4" /></Button></a>
+                <Button variant="outline" size="sm" onClick={() => navigator.share?.({ title: 'WeParlay challenge', text: decodeURIComponent(shareText), url: window.location.origin })}><Share2 className="h-4 w-4" /></Button>
+              </div>
               <div className="flex space-x-2 pt-2">
                 <Button
                   onClick={handlePlaceBets}

@@ -28,7 +28,7 @@ const SimpleOnboarding: React.FC = () => {
     },
     {
       title: "Place Your Bets",
-      description: "Click on any odds to add them to your bet slip. Build parlays, set your amount, and place bets with your $1,000,000 WeParlay Cash balance!",
+      description: "Click any spread, moneyline, or total to add it to the one universal slip. Verified new accounts receive 10,000 WeParlay Cash.",
       icon: <Trophy className="h-8 w-8 text-purple-500" />
     },
     {

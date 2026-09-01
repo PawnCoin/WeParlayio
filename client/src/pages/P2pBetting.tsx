@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Users, Trophy, Clock, DollarSign, Plus, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Users, Trophy, Clock, DollarSign, Plus, CheckCircle, XCircle, AlertCircle, LockKeyhole, MessageCircle, RotateCcw } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 
 interface GameEvent {
@@ -48,9 +48,30 @@ interface P2pChallenge {
   challengeeUsername?: string;
 }
 
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'open': return 'bg-blue-500';
+    case 'accepted': return 'bg-green-500';
+    case 'pending_settlement': return 'bg-yellow-500';
+    case 'settled': return 'bg-purple-500';
+    case 'cancelled': return 'bg-gray-500';
+    case 'expired': return 'bg-red-500';
+    default: return 'bg-gray-500';
+  }
+};
+
+const formatTimeRemaining = (expiresAt: string) => {
+  const timeLeft = new Date(expiresAt).getTime() - Date.now();
+  if (timeLeft <= 0) return 'Expired';
+  const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+  const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+  return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+};
+
 const P2pBetting = () => {
   const [selectedTab, setSelectedTab] = useState('available');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [category, setCategory] = useState('All');
   const [selectedGame, setSelectedGame] = useState<GameEvent | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -79,11 +100,7 @@ const P2pBetting = () => {
   // Create challenge mutation
   const createChallengeMutation = useMutation({
     mutationFn: async (challengeData: any) => {
-      return apiRequest('/api/p2p-betting/challenges/create', {
-        method: 'POST',
-        body: JSON.stringify(challengeData),
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return apiRequest('POST', '/api/p2p-betting/challenges/create', challengeData);
     },
     onSuccess: () => {
       toast({
@@ -107,11 +124,7 @@ const P2pBetting = () => {
   // Accept challenge mutation
   const acceptChallengeMutation = useMutation({
     mutationFn: async ({ challengeId, challengeePick }: { challengeId: string; challengeePick: string }) => {
-      return apiRequest(`/api/p2p-betting/challenges/${challengeId}/accept`, {
-        method: 'POST',
-        body: JSON.stringify({ challengeePick }),
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return apiRequest('POST', `/api/p2p-betting/challenges/${challengeId}/accept`, { challengeePick });
     },
     onSuccess: () => {
       toast({
@@ -130,8 +143,10 @@ const P2pBetting = () => {
     },
   });
 
-  const games = gamesData?.data || [];
+  const games = (gamesData as any)?.data || [];
   const challenges = (availableChallenges as any)?.challenges || [];
+  const categories = ['All', ...Array.from(new Set(challenges.map((item: P2pChallenge) => item.gameDetails?.sport).filter(Boolean))) as string[]];
+  const visibleChallenges = category === 'All' ? challenges : challenges.filter((item: P2pChallenge) => item.gameDetails?.sport === category);
   const userChallenges = (myChallenges as any)?.challenges || [];
   const stats = (p2pStats as any)?.stats || {
     totalChallenges: 0,
@@ -140,34 +155,17 @@ const P2pBetting = () => {
     winRate: 0,
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'open': return 'bg-blue-500';
-      case 'accepted': return 'bg-green-500';
-      case 'pending_settlement': return 'bg-yellow-500';
-      case 'settled': return 'bg-purple-500';
-      case 'cancelled': return 'bg-gray-500';
-      case 'expired': return 'bg-red-500';
-      default: return 'bg-gray-500';
-    }
-  };
-
-  const formatTimeRemaining = (expiresAt: string) => {
-    const timeLeft = new Date(expiresAt).getTime() - Date.now();
-    if (timeLeft <= 0) return 'Expired';
-    
-    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-    
-    if (hours > 0) return `${hours}h ${minutes}m`;
-    return `${minutes}m`;
-  };
-
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Peer-to-Peer Betting</h1>
-        <p className="text-muted-foreground">Challenge other users to head-to-head bets on real games using WeParlay Cash</p>
+        <h1 className="text-3xl font-bold mb-2">Custom Bet Rooms</h1>
+        <p className="text-muted-foreground">User-to-user and user-to-group challenges using WeParlay Cash. No house betting outside the daily tournament.</p>
+      </div>
+
+      <div className="mb-6 grid gap-3 md:grid-cols-3">
+        <div className="rounded-xl border bg-card p-4"><LockKeyhole className="mb-2 h-5 w-5 text-emerald-500" /><div className="font-bold">Stake first</div><p className="text-xs text-muted-foreground">Funds are reserved before a room is published or joined.</p></div>
+        <div className="rounded-xl border bg-card p-4"><RotateCcw className="mb-2 h-5 w-5 text-blue-500" /><div className="font-bold">Automatic refund</div><p className="text-xs text-muted-foreground">An open bet that reaches its join deadline is closed and refunded.</p></div>
+        <div className="rounded-xl border bg-card p-4"><MessageCircle className="mb-2 h-5 w-5 text-amber-500" /><div className="font-bold">Pre-bet chat</div><p className="text-xs text-muted-foreground">Room messages are capped at 200 characters and close when the bet starts.</p></div>
       </div>
 
       {/* Stats Cards */}
@@ -238,6 +236,9 @@ const P2pBetting = () => {
         </div>
 
         <TabsContent value="available">
+          <div className="mb-4 flex flex-wrap gap-2">
+            {categories.map(room => <Button key={room} size="sm" variant={category === room ? 'default' : 'outline'} onClick={() => setCategory(room)}>{room}</Button>)}
+          </div>
           <div className="space-y-4">
             {loadingAvailable ? (
               <div className="text-center py-8">Loading available challenges...</div>
@@ -254,7 +255,7 @@ const P2pBetting = () => {
                 </CardContent>
               </Card>
             ) : (
-              challenges.map((challenge: P2pChallenge) => (
+              visibleChallenges.map((challenge: P2pChallenge) => (
                 <ChallengeCard 
                   key={challenge.id}
                   challenge={challenge}
@@ -398,10 +399,16 @@ const CreateChallengeForm = ({ games, onSubmit, isLoading }: CreateChallengeForm
         <Textarea
           id="message"
           value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          onChange={(e) => setMessage(e.target.value.slice(0, 200))}
           placeholder="Add a message to your challenge..."
           rows={3}
+          maxLength={200}
         />
+        <div className="mt-1 text-right text-xs text-muted-foreground">{message.length}/200</div>
+      </div>
+
+      <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm">
+        <strong>{amount ? `${amount} WeParlay Cash` : 'Your stake'} will be reserved immediately.</strong> It returns automatically if nobody accepts before the join deadline.
       </div>
 
       <Button type="submit" disabled={!selectedGame || !pick || !amount || isLoading} className="w-full">
@@ -485,9 +492,11 @@ const ChallengeCard = ({ challenge, isOwn, onAccept, acceptLoading }: ChallengeC
           )}
 
           <div className="flex justify-between items-center text-sm text-muted-foreground">
-            <span>Expires: {challenge.expiresAt ? formatTimeRemaining(challenge.expiresAt) : 'No expiration'}</span>
-            <span>{challenge.isPublic ? 'Public' : 'Private'}</span>
+            <span>Join deadline: {challenge.expiresAt ? formatTimeRemaining(challenge.expiresAt) : 'No expiration'}</span>
+            <span>{challenge.isPublic ? `Open ${challenge.gameDetails.sport} room` : 'Private room'}</span>
           </div>
+
+          {challenge.status === 'open' && <PreBetChat challengeId={challenge.id} />}
 
           {canAccept && (
             <Dialog open={showAcceptDialog} onOpenChange={setShowAcceptDialog}>
@@ -551,6 +560,43 @@ const ChallengeCard = ({ challenge, isOwn, onAccept, acceptLoading }: ChallengeC
       </CardContent>
     </Card>
   );
+};
+
+const PreBetChat = ({ challengeId }: { challengeId: string }) => {
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState('');
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const detailsKey = ['/api/p2p-betting/challenges', challengeId];
+  const { data } = useQuery<any>({
+    queryKey: detailsKey,
+    queryFn: async () => {
+      const response = await apiRequest('GET', `/api/p2p-betting/challenges/${challengeId}`);
+      return response.json();
+    },
+    enabled: open,
+    refetchInterval: open ? 10_000 : false,
+  });
+  const send = useMutation({
+    mutationFn: () => apiRequest('POST', `/api/p2p-betting/challenges/${challengeId}/chat`, { message }),
+    onSuccess: () => {
+      setMessage('');
+      queryClient.invalidateQueries({ queryKey: detailsKey });
+    },
+    onError: (error: Error) => toast({ title: 'Message not sent', description: error.message, variant: 'destructive' }),
+  });
+  const messages = (data?.activity || []).filter((item: any) => item.activityType === 'pre_bet_chat');
+
+  return <Dialog open={open} onOpenChange={setOpen}>
+    <DialogTrigger asChild><Button variant="outline" size="sm" className="w-full"><MessageCircle className="mr-2 h-4 w-4" />Pre-bet chat</Button></DialogTrigger>
+    <DialogContent><DialogHeader><DialogTitle>Bet room chat</DialogTitle></DialogHeader>
+      <div className="max-h-64 space-y-2 overflow-y-auto rounded-lg border p-3">
+        {messages.length ? messages.map((item: any) => <div key={item.id} className="rounded-lg bg-muted p-2 text-sm"><strong>{item.metadata?.username || 'User'}:</strong> {item.message}</div>) : <p className="text-sm text-muted-foreground">No messages yet. Keep it friendly and focused on the bet.</p>}
+      </div>
+      <Textarea value={message} maxLength={200} rows={3} onChange={(event) => setMessage(event.target.value.slice(0, 200))} placeholder="Message this bet room…" />
+      <div className="flex items-center justify-between"><span className="text-xs text-muted-foreground">{message.length}/200</span><Button onClick={() => send.mutate()} disabled={!message.trim() || send.isPending}>Send</Button></div>
+    </DialogContent>
+  </Dialog>;
 };
 
 export default P2pBetting;
