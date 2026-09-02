@@ -726,7 +726,13 @@ export const p2pTransactions = pgTable("p2p_transactions", {
   balanceAfter: doublePrecision("balance_after").notNull(),
   description: text("description"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  unique("p2p_transaction_once").on(
+    table.challengeId,
+    table.userId,
+    table.transactionType,
+  ),
+]);
 
 // Challenge notifications and activity feed
 export const p2pActivity = pgTable("p2p_activity", {

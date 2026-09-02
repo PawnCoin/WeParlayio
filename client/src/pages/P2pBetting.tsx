@@ -309,6 +309,7 @@ interface CreateChallengeFormProps {
 }
 
 const CreateChallengeForm = ({ games, onSubmit, isLoading }: CreateChallengeFormProps) => {
+  const [idempotencyKey] = useState(() => crypto.randomUUID());
   const [selectedGame, setSelectedGame] = useState<GameEvent | null>(null);
   const [pick, setPick] = useState('');
   const [amount, setAmount] = useState('');
@@ -320,6 +321,7 @@ const CreateChallengeForm = ({ games, onSubmit, isLoading }: CreateChallengeForm
     if (!selectedGame || !pick || !amount) return;
 
     onSubmit({
+      idempotencyKey,
       eventId: selectedGame.id,
       gameDetails: {
         homeTeam: selectedGame.homeTeam.name,

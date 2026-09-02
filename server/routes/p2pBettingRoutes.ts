@@ -1,10 +1,27 @@
 import { Router, Request, Response } from 'express';
-import { storage } from '../storage';
 import { isAuthenticated } from '../replitAuth';
 import { restrictedAuthMiddleware } from '../middleware/restrictedAuth';
 import { z } from 'zod';
+import { db } from '../db';
+import { eq } from 'drizzle-orm';
+import { users } from '@shared/schema';
+import {
+  acceptFundedP2pChallenge,
+  cancelAndRefundP2pChallenge,
+  createFundedP2pChallenge,
+  createP2pActivity,
+  getAvailableP2pChallenges,
+  getP2pActivity,
+  getP2pChallenge,
+  getP2pChallengeWithNames,
+  getP2pStats,
+  getUserP2pChallenges,
+  settleP2pChallenge,
+} from '../services/p2pEscrow';
 
 const router = Router();
+
+const clientError = (error: any) => /insufficient|expired|no longer|own challenge|opposing outcome|not for you|not allowed|positive|two decimal|only open|only the challenger|already in use/i.test(error?.message || '');
 
 // Create a new P2P betting challenge
 router.post('/challenges/create', isAuthenticated, restrictedAuthMiddleware, async (req: Request, res: Response) => {
@@ -13,6 +30,7 @@ router.post('/challenges/create', isAuthenticated, restrictedAuthMiddleware, asy
     const userId = currentUser.claims?.sub;
 
     const createChallengeSchema = z.object({
+      idempotencyKey: z.string().uuid(),
       eventId: z.string(),
       gameDetails: z.object({
         homeTeam: z.string(),
@@ -31,17 +49,6 @@ router.post('/challenges/create', isAuthenticated, restrictedAuthMiddleware, asy
 
     const validatedData = createChallengeSchema.parse(req.body);
 
-    // Check user balance
-    const user = await storage.getUser(userId);
-    if (!user || (user.weparlayCashBalance || 0) < validatedData.betAmount) {
-      return res.status(400).json({
-        success: false,
-        message: 'Insufficient WeParlay Cash balance',
-        currentBalance: user?.weparlayCashBalance || 0,
-        required: validatedData.betAmount
-      });
-    }
-
     // Calculate expiry time (30 minutes before game starts or 24 hours max)
     const gameStartTime = new Date(validatedData.gameDetails.startTime);
     const expiryTime = new Date(Math.min(
@@ -57,7 +64,7 @@ router.post('/challenges/create', isAuthenticated, restrictedAuthMiddleware, asy
     }
 
     // Create the challenge
-    const challenge = await storage.createP2pChallenge({
+    const challenge = await createFundedP2pChallenge({
       challengerId: userId,
       challengeeId: validatedData.challengeeId || null,
       eventId: validatedData.eventId,
@@ -65,23 +72,15 @@ router.post('/challenges/create', isAuthenticated, restrictedAuthMiddleware, asy
       challengerPick: validatedData.challengerPick,
       betAmount: validatedData.betAmount,
       currency: validatedData.currency,
-      totalPot: validatedData.betAmount * 2,
       expiresAt: expiryTime,
-      isPublic: validatedData.isPublic,
+      isPublic: validatedData.challengeeId ? false : validatedData.isPublic,
       allowedFriends: validatedData.allowedFriends || null,
       challengeMessage: validatedData.challengeMessage || null,
     });
 
-    // Deposit challenger's money into escrow
-    await storage.depositToP2pEscrow({
-      challengeId: challenge.id,
-      userId: userId,
-      amount: validatedData.betAmount,
-      currency: validatedData.currency,
-    });
-
     // Log activity
-    await storage.createP2pActivity({
+    const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    await createP2pActivity({
       challengeId: challenge.id,
       userId: userId,
       activityType: 'challenge_created',
@@ -96,7 +95,7 @@ router.post('/challenges/create', isAuthenticated, restrictedAuthMiddleware, asy
     });
   } catch (error: any) {
     console.error('Error creating P2P challenge:', error);
-    res.status(500).json({
+    res.status(clientError(error) ? 400 : 500).json({
       success: false,
       message: error.message || 'Failed to create challenge'
     });
@@ -119,7 +118,7 @@ router.post('/challenges/:challengeId/accept', isAuthenticated, restrictedAuthMi
     }
 
     // Get the challenge
-    const challenge = await storage.getP2pChallenge(challengeId);
+    const challenge = await getP2pChallenge(challengeId);
     if (!challenge) {
       return res.status(404).json({
         success: false,
@@ -166,30 +165,12 @@ router.post('/challenges/:challengeId/accept', isAuthenticated, restrictedAuthMi
       }
     }
 
-    // Check user balance
-    const user = await storage.getUser(userId);
-    if (!user || (user.weparlayCashBalance || 0) < challenge.betAmount) {
-      return res.status(400).json({
-        success: false,
-        message: 'Insufficient WeParlay Cash balance',
-        currentBalance: user?.weparlayCashBalance || 0,
-        required: challenge.betAmount
-      });
-    }
-
-    // Accept the challenge
-    const updatedChallenge = await storage.acceptP2pChallenge(challengeId, userId, challengeePick);
-
-    // Deposit challengee's money into escrow
-    await storage.depositToP2pEscrow({
-      challengeId: challengeId,
-      userId: userId,
-      amount: challenge.betAmount,
-      currency: challenge.currency,
-    });
+    // Fund escrow and accept in one locked database transaction.
+    const updatedChallenge = await acceptFundedP2pChallenge(challengeId, userId, challengeePick);
 
     // Log activity
-    await storage.createP2pActivity({
+    const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    await createP2pActivity({
       challengeId: challengeId,
       userId: userId,
       activityType: 'challenge_accepted',
@@ -204,7 +185,7 @@ router.post('/challenges/:challengeId/accept', isAuthenticated, restrictedAuthMi
     });
   } catch (error: any) {
     console.error('Error accepting P2P challenge:', error);
-    res.status(500).json({
+    res.status(clientError(error) ? 400 : 500).json({
       success: false,
       message: error.message || 'Failed to accept challenge'
     });
@@ -217,7 +198,7 @@ router.get('/challenges/available', isAuthenticated, restrictedAuthMiddleware, a
     const currentUser = req.user as any;
     const userId = currentUser.claims?.sub;
 
-    const challenges = await storage.getAvailableP2pChallenges(userId);
+    const challenges = await getAvailableP2pChallenges(userId);
 
     res.json({
       success: true,
@@ -239,7 +220,7 @@ router.get('/challenges/mine', isAuthenticated, restrictedAuthMiddleware, async 
     const currentUser = req.user as any;
     const userId = currentUser.claims?.sub;
 
-    const challenges = await storage.getUserP2pChallenges(userId);
+    const challenges = await getUserP2pChallenges(userId);
 
     res.json({
       success: true,
@@ -262,7 +243,7 @@ router.post('/challenges/:challengeId/cancel', isAuthenticated, restrictedAuthMi
     const userId = currentUser.claims?.sub;
     const { challengeId } = req.params;
 
-    const challenge = await storage.getP2pChallenge(challengeId);
+    const challenge = await getP2pChallenge(challengeId);
     if (!challenge) {
       return res.status(404).json({
         success: false,
@@ -285,11 +266,11 @@ router.post('/challenges/:challengeId/cancel', isAuthenticated, restrictedAuthMi
     }
 
     // Cancel and refund
-    await storage.cancelP2pChallenge(challengeId, 'Cancelled by challenger');
+    await cancelAndRefundP2pChallenge(challengeId, userId);
 
     // Log activity
-    const user = await storage.getUser(userId);
-    await storage.createP2pActivity({
+    const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    await createP2pActivity({
       challengeId: challengeId,
       userId: userId,
       activityType: 'challenge_cancelled',
@@ -303,9 +284,9 @@ router.post('/challenges/:challengeId/cancel', isAuthenticated, restrictedAuthMi
     });
   } catch (error: any) {
     console.error('Error cancelling challenge:', error);
-    res.status(500).json({
+    res.status(clientError(error) ? 400 : 500).json({
       success: false,
-      message: 'Failed to cancel challenge'
+      message: error.message || 'Failed to cancel challenge'
     });
   }
 });
@@ -317,7 +298,7 @@ router.get('/challenges/:challengeId', isAuthenticated, restrictedAuthMiddleware
     const userId = currentUser.claims?.sub;
     const { challengeId } = req.params;
 
-    const challenge = await storage.getP2pChallengeWithDetails(challengeId);
+    const challenge = await getP2pChallengeWithNames(challengeId);
     if (!challenge) {
       return res.status(404).json({
         success: false,
@@ -340,7 +321,7 @@ router.get('/challenges/:challengeId', isAuthenticated, restrictedAuthMiddleware
     }
 
     // Get activity feed
-    const activity = await storage.getP2pChallengeActivity(challengeId);
+    const activity = await getP2pActivity(challengeId);
 
     res.json({
       success: true,
@@ -363,7 +344,7 @@ router.post('/challenges/:challengeId/chat', isAuthenticated, restrictedAuthMidd
     const userId = currentUser.claims?.sub;
     const { challengeId } = req.params;
     const { message } = z.object({ message: z.string().trim().min(1).max(200) }).parse(req.body);
-    const challenge = await storage.getP2pChallenge(challengeId);
+    const challenge = await getP2pChallenge(challengeId);
 
     if (!challenge || challenge.status !== 'open' || challenge.expiresAt <= new Date()) {
       return res.status(400).json({ success: false, message: 'This pre-bet chat is closed' });
@@ -373,8 +354,8 @@ router.post('/challenges/:challengeId/chat', isAuthenticated, restrictedAuthMidd
       (Array.isArray(challenge.allowedFriends) && challenge.allowedFriends.includes(userId));
     if (!canChat) return res.status(403).json({ success: false, message: 'You cannot access this bet room' });
 
-    const user = await storage.getUser(userId);
-    const activity = await storage.createP2pActivity({
+    const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    const activity = await createP2pActivity({
       challengeId,
       userId,
       activityType: 'pre_bet_chat',
@@ -395,15 +376,16 @@ router.post('/admin/challenges/:challengeId/settle', isAuthenticated, restricted
     const { challengeId } = req.params;
     const { winnerUserId, settlementReason } = req.body;
 
-    // TODO: Add admin role check here
-    if (!currentUser.isAdmin) {
+    const adminId = currentUser.claims?.sub || currentUser.id;
+    const [admin] = await db.select({ isAdmin: users.isAdmin }).from(users).where(eq(users.id, adminId)).limit(1);
+    if (!admin?.isAdmin) {
       return res.status(403).json({
         success: false,
         message: 'Admin access required'
       });
     }
 
-    const challenge = await storage.getP2pChallenge(challengeId);
+    const challenge = await getP2pChallenge(challengeId);
     if (!challenge) {
       return res.status(404).json({
         success: false,
@@ -419,10 +401,10 @@ router.post('/admin/challenges/:challengeId/settle', isAuthenticated, restricted
     }
 
     // Settle the challenge
-    await storage.settleP2pChallenge(challengeId, winnerUserId, settlementReason || 'Manual admin settlement');
+    await settleP2pChallenge(challengeId, winnerUserId, settlementReason || 'Manual admin settlement');
 
     // Log activity
-    await storage.createP2pActivity({
+    await createP2pActivity({
       challengeId: challengeId,
       userId: currentUser.claims?.sub,
       activityType: 'challenge_settled',
@@ -449,7 +431,7 @@ router.get('/stats', isAuthenticated, restrictedAuthMiddleware, async (req: Requ
     const currentUser = req.user as any;
     const userId = currentUser.claims?.sub;
 
-    const stats = await storage.getUserP2pStats(userId);
+    const stats = await getP2pStats(userId);
 
     res.json({
       success: true,
