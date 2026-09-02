@@ -854,10 +854,15 @@ const registerRoutes = async (app: Express): Promise<Server> => {
   // ==========================================
 
   // Place bet(s) with currency selection
-  app.post('/api/bets/place', async (req: any, res) => {
+  app.post('/api/bets/place', isAuthenticated, async (req: any, res) => {
     try {
       const { bets, currency, cryptocurrencyType, walletAddress } = req.body;
-      const userId = req.user?.claims?.sub || 'admin-support-1754266931489';
+      const userId = req.user?.claims?.sub;
+
+      if (!userId) return res.status(401).json({ success: false, message: 'User not authenticated' });
+      if (currency !== 'weparlay_cash') {
+        return res.status(400).json({ success: false, message: 'Real-money and crypto wagering remain disabled pending compliance approval' });
+      }
 
       if (!bets || !Array.isArray(bets) || bets.length === 0) {
         return res.status(400).json({ success: false, message: 'No bets provided' });

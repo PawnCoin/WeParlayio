@@ -9,6 +9,7 @@ import { Trash2, Wallet, CreditCard, Bitcoin, DollarSign, Target, Mail, MessageS
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
+import { calculateParlay } from '@/lib/betMath';
 
 // Helper function to format odds to 2 decimal places
 const formatOdds = (odds: number) => {
@@ -57,6 +58,7 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
   const [selectedCurrency, setSelectedCurrency] = useState<'weparlay_cash' | 'real_money' | 'crypto'>('weparlay_cash');
   const [slipType, setSlipType] = useState<'traditional' | 'crypto'>('traditional');
   const [wagerMode, setWagerMode] = useState<'straight' | 'parlay'>('straight');
+  const [parlayStake, setParlayStake] = useState('');
   const [localBetSlip, setLocalBetSlip] = useState<BetSlipItem[]>([]);
 
   // Listen for custom bet slip events from addToBothSlips
@@ -141,11 +143,19 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
     )
   ];
 
-  const totalAmount = displayBetSlip.reduce((sum, bet) => sum + (bet.amount || 0), 0);
-  const totalPotential = displayBetSlip.reduce((sum, bet) => sum + (bet.potential || 0), 0);
   const currentBalance = balances?.[selectedCurrency] || 0;
   const parlayEligible = displayBetSlip.length >= 2 && displayBetSlip.length <= 9;
+  const parsedParlayStake = Number.parseFloat(parlayStake) || 0;
+  const parlayQuote = parlayEligible && parsedParlayStake > 0
+    ? calculateParlay(displayBetSlip.map((bet) => bet.odds), parsedParlayStake)
+    : null;
+  const totalAmount = wagerMode === 'parlay' ? parsedParlayStake : displayBetSlip.reduce((sum, bet) => sum + (bet.amount || 0), 0);
+  const totalPotential = wagerMode === 'parlay' ? (parlayQuote?.payout || 0) : displayBetSlip.reduce((sum, bet) => sum + (bet.potential || 0), 0);
   const shareText = encodeURIComponent(`WeParlay challenge: ${displayBetSlip.map(bet => bet.selection).join(', ')}. Open the invitation to sign in and accept or decline.`);
+
+  useEffect(() => {
+    if (wagerMode === 'parlay' && !parlayEligible) setWagerMode('straight');
+  }, [wagerMode, parlayEligible]);
 
   const handlePlaceBets = () => {
     if (displayBetSlip.length === 0) {
@@ -154,6 +164,11 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
         description: 'Add some bets to your slip first',
         variant: 'destructive'
       });
+      return;
+    }
+
+    if (wagerMode === 'parlay' && !parlayQuote) {
+      toast({ title: 'Parlay stake required', description: 'Enter one stake for all 2–9 selections.', variant: 'destructive' });
       return;
     }
 
@@ -166,8 +181,7 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
       return;
     }
 
-    const betsData = {
-      bets: displayBetSlip.map(bet => ({
+    const straightBets = displayBetSlip.map(bet => ({
         eventId: bet.eventId,
         betType: bet.betType,
         selection: bet.selection,
@@ -176,7 +190,18 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
         potential: bet.potential,
         point: bet.point,
         gameInfo: bet.gameInfo
-      })),
+      }));
+    const betsData = {
+      bets: wagerMode === 'parlay' ? [{
+        eventId: displayBetSlip.map((bet) => bet.eventId).join(','),
+        betType: 'parlay',
+        selection: displayBetSlip.map((bet) => bet.selection).join(' + '),
+        odds: parlayQuote?.americanOdds,
+        amount: parsedParlayStake,
+        potential: parlayQuote?.payout,
+        gameInfo: { legs: straightBets },
+      }] : straightBets,
+      wagerMode,
       currency: selectedCurrency,
       ...(selectedCurrency === 'crypto' && { cryptocurrencyType: 'BTC' })
     };
@@ -277,20 +302,20 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
                     <span className="text-green-400">${(balances?.weparlay_cash || 0).toFixed(2)}</span>
                   </div>
                 </SelectItem>
-                <SelectItem value="real_money" className="text-white hover:bg-slate-700">
+                <SelectItem value="real_money" disabled className="text-white hover:bg-slate-700">
                   <div className="flex items-center justify-between w-full">
                     <div className="flex items-center">
                       <DollarSign className="h-4 w-4 mr-2 text-green-400" />
-                      Real Money (USD)
+                      Real Money (Compliance pending)
                     </div>
                     <span className="text-green-400">${(balances?.real_money || 0).toFixed(2)}</span>
                   </div>
                 </SelectItem>
-                <SelectItem value="crypto" className="text-white hover:bg-slate-700">
+                <SelectItem value="crypto" disabled className="text-white hover:bg-slate-700">
                   <div className="flex items-center justify-between w-full">
                     <div className="flex items-center">
                       <Bitcoin className="h-4 w-4 mr-2 text-orange-400" />
-                      Cryptocurrency (BTC)
+                      Cryptocurrency (Compliance pending)
                     </div>
                     <span className="text-green-400">${(balances?.crypto || 0).toFixed(2)}</span>
                   </div>
@@ -319,6 +344,13 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
             <Button variant={wagerMode === 'parlay' ? 'default' : 'outline'} disabled={!parlayEligible} onClick={() => setWagerMode('parlay')}>Parlay (2–9)</Button>
           </div>
           {!parlayEligible && displayBetSlip.length > 0 && <p className="text-xs text-slate-400">Parlay unlocks with 2–9 teams. Provider odds and parlay rules apply.</p>}
+          {wagerMode === 'parlay' && parlayEligible && (
+            <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-3">
+              <label className="mb-2 block text-sm font-medium text-white">One parlay stake</label>
+              <Input type="number" min="1" step="0.01" value={parlayStake} onChange={(event) => setParlayStake(event.target.value)} placeholder="Parlay stake" className="bg-slate-800 border-slate-600 text-white" />
+              <div className="mt-2 flex justify-between text-xs text-slate-300"><span>Combined odds</span><strong>{parlayQuote ? `${parlayQuote.americanOdds > 0 ? '+' : ''}${parlayQuote.americanOdds}` : 'Enter stake'}</strong></div>
+            </div>
+          )}
 
           {displayBetSlip.length === 0 ? (
             <div className="text-center py-8">
@@ -359,7 +391,8 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
                         placeholder="Bet amount"
                         value={bet.amount || ''}
                         onChange={(e) => onUpdateBet(bet.id, parseFloat(e.target.value) || 0)}
-                        className="bg-slate-700 border-slate-600 text-white text-sm"
+                        disabled={wagerMode === 'parlay'}
+                        className="bg-slate-700 border-slate-600 text-white text-sm disabled:opacity-40"
                         min="1"
                         max={currentBalance}
                       />
