@@ -8,7 +8,6 @@ import authRouter from "./auth";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { additionalSportsData } from "./services/mockSportsData";
 import { OddsApiService } from "./services/oddsApiService";
-import { AdvancedOddsService } from "./services/advancedOddsService";
 import { unifiedSportsApiService } from "./services/unifiedSportsApiService";
 import { RapidApiService } from "./services/rapidApiService";
 import { SportsGameOddsService } from "./services/sportsGameOddsService";
@@ -25,9 +24,7 @@ import oddsTickerRoutes from "./routes/oddsTickerRoutes";
 import { apiTestRouter } from "./routes/apiTestRoutes";
 import { comprehensiveRapidApi, pinnacleOddsService } from "./services/comprehensiveRapidApi";
 import rapidApiRoutes from "./routes/rapidApiRoutes";
-import espnFantasyRoutes from "./routes/espnFantasyRoutes";
 import feedbackRoutes from "./routes/feedbackRoutes";
-import yahooFantasyRoutes from "./routes/yahooFantasyRoutes";
 import socialMediaRoutes from "./routes/socialMediaRoutes";
 import sportsCategories from "./routes/sportsCategories";
 import tierRoutes from "./routes/tierRoutes";
@@ -44,18 +41,6 @@ import primaryDataRoutes from "./routes/primaryDataRoutes";
 import { smsService } from "./services/smsService";
 import betSettlementRoutes from "./routes/betSettlementRoutes";
 import { betSettlementService } from "./services/betSettlementService";
-import { 
-  getPlayerAnalytics, 
-  getWeeklyMatchups, 
-  getInjuryAnalysis, 
-  optimizeLineup, 
-  getSleeperPicks, 
-  getWaiverRecommendations 
-} from './services/fantasyAnalyticsEngine';
-import { 
-  createBettingPool, 
-  createHeadToHeadBet 
-} from './services/fantasySocialEngine';
 
 import { esportsApiService } from "./services/esportsApiService";
 import { allSportsApiService } from "./services/allSportsApiService";
@@ -91,7 +76,6 @@ const registerRoutes = async (app: Express): Promise<Server> => {
   app.use('/api/enhanced-sports', (await import('./routes/enhancedSportsRoutes.js')).default);
   app.use('/api/api-test', apiTestRouter);
   app.use('/api/rapid-api', rapidApiRoutes);
-  app.use('/api/espn-fantasy', espnFantasyRoutes);
   app.use('/api/p2p-betting', p2pBettingRoutes);
   app.use('/api/tournaments', tournamentModeRoutes);
   app.get('/api/profile/friends', isAuthenticated, async (req: any, res) => {
@@ -121,7 +105,6 @@ const registerRoutes = async (app: Express): Promise<Server> => {
     await storage.removeFriend(req.user?.claims?.sub, req.params.friendId);
     res.json({ success: true });
   });
-  app.use('/api/yahoo-fantasy', yahooFantasyRoutes);
   app.use('/api/social-media', socialMediaRoutes);
   
   // Social Betting Routes

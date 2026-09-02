@@ -302,10 +302,6 @@ export class SocialMediaService {
     return templates[Math.floor(Math.random() * templates.length)];
   }
 
-  generateFantasyPromotionPost(platform: 'ESPN' | 'Yahoo'): string {
-    return `🏆 Connect your ${platform} Fantasy team to WeParlay! Get personalized betting insights based on your roster! 📊 #Fantasy${platform} #SmartBetting`;
-  }
-
   // Scheduled posting
   async schedulePost(
     content: string,

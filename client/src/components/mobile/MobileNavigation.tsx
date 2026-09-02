@@ -33,19 +33,19 @@ export function MobileNavigation({ className = '' }: MobileNavProps) {
 
   const navItems = [
     { path: '/', icon: Home, label: 'Home', color: 'text-blue-400' },
-    { path: '/betting-dashboard', icon: TrendingUp, label: 'Betting', color: 'text-green-400' },
+    { path: '/custom-bets', icon: TrendingUp, label: 'Custom', color: 'text-green-400' },
     { path: '/live-betting', icon: Target, label: 'Live', color: 'text-red-400' },
-    { path: '/fantasy-sports-hub', icon: Trophy, label: 'Fantasy', color: 'text-purple-400' },
+    { path: '/tournaments', icon: Trophy, label: 'Tourney', color: 'text-purple-400' },
     ...(user?.tier && ['silver', 'gold', 'platinum', 'diamond'].includes(user.tier) ? 
-      [{ path: '/vip/live-streaming', icon: Tv, label: 'VIP TV', color: 'text-yellow-400' }] : []),
+      [{ path: '/live-tv', icon: Tv, label: 'Live TV', color: 'text-yellow-400' }] : []),
   ];
 
   const menuItems = [
     { path: '/my-bets', icon: BarChart3, label: 'My Bets', badge: null },
-    { path: '/wallet-management', icon: Wallet, label: 'Wallet', badge: null },
+    { path: '/banking', icon: Wallet, label: 'Wallet', badge: null },
     { path: '/upgrade-tier', icon: Crown, label: 'Upgrade', badge: user?.tier === 'bronze' ? 'VIP' : null },
-    { path: '/unified-gaming', icon: GamepadIcon, label: 'Gaming', badge: null },
-    { path: '/user-profile', icon: User, label: 'Profile', badge: null },
+    { path: '/live-tv', icon: GamepadIcon, label: 'Watch Live', badge: null },
+    { path: '/profile', icon: User, label: 'Profile', badge: null },
   ];
 
   const isActive = (path: string) => {

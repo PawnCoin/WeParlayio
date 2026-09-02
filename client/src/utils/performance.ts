@@ -6,7 +6,6 @@ export const LazyLiveBetting = lazy(() => import('../pages/LiveBetting'));
 export const LazyComprehensiveBetting = lazy(() => import('../pages/ComprehensiveBetting'));
 export const LazyUnifiedSports = lazy(() => import('../pages/UnifiedSports'));
 export const LazyTournaments = lazy(() => import('../pages/Tournaments'));
-export const LazyFantasy = lazy(() => import('../pages/Fantasy'));
 
 // 🎯 Image Optimization
 export const optimizeImage = (src: string, width?: number): string => {

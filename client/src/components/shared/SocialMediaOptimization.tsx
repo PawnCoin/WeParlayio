@@ -10,7 +10,7 @@ interface SocialMediaOptimizationProps {
 
 const SocialMediaOptimization: React.FC<SocialMediaOptimizationProps> = ({
   title = 'WeParlay - Premier Sports Betting Platform',
-  description = 'Experience the future of sports betting with WeParlay. Live odds, fantasy sports, esports, and more.',
+  description = 'Live sports, custom peer-to-peer bets, daily tournaments, and one universal bet slip.',
   image = '/weparlaylogo.png',
   url
 }) => {
@@ -58,7 +58,7 @@ const SocialMediaOptimization: React.FC<SocialMediaOptimizationProps> = ({
 
     // Standard meta tags
     updateMetaTag('description', description, true);
-    updateMetaTag('keywords', 'sports betting, fantasy sports, esports, live odds, betting platform, WeParlay', true);
+    updateMetaTag('keywords', 'sports betting, peer-to-peer betting, custom bets, daily tournaments, live games, WeParlay', true);
 
   }, [title, description, image, url, location]);
 

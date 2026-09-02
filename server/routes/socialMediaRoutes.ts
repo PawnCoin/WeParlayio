@@ -232,29 +232,6 @@ router.post('/marketing/vip-promotion', isAuthenticated, async (req, res) => {
   }
 });
 
-router.post('/marketing/fantasy-promotion', isAuthenticated, async (req, res) => {
-  try {
-    const { platform: fantasyPlatform = 'ESPN', platforms = ['twitter', 'facebook'] } = req.body;
-    
-    const content = socialMediaService.generateFantasyPromotionPost(fantasyPlatform);
-    const posts = await socialMediaService.postToMultiplePlatforms(content, platforms, req.body.options);
-    
-    res.json({
-      success: true,
-      posts,
-      content,
-      message: 'Fantasy promotion posted successfully'
-    });
-  } catch (error) {
-    console.error('Error posting fantasy promotion:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to post fantasy promotion',
-      error: error.message 
-    });
-  }
-});
-
 // Scheduled posting
 router.post('/schedule', isAuthenticated, async (req, res) => {
   try {

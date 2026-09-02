@@ -274,5 +274,4 @@ app.use((req, res, next) => {
   // WebSocket service disabled to prevent port conflicts in Replit environment
   console.log('🔌 WebSocket service disabled - Live streaming will work without real-time features');
 
-  log('✅ WeParlay Fantasy Analytics Dashboard ready');
 })();
