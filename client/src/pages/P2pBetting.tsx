@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Users, Trophy, Clock, DollarSign, Plus, CheckCircle, XCircle, AlertCircle, LockKeyhole, MessageCircle, RotateCcw } from 'lucide-react';
+import { Users, Trophy, Clock, DollarSign, Plus, CheckCircle, XCircle, AlertCircle, LockKeyhole, MessageCircle, RotateCcw, Copy, Mail, Send, Share2 } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 
 interface GameEvent {
@@ -73,8 +73,19 @@ const P2pBetting = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [category, setCategory] = useState('All');
   const [selectedGame, setSelectedGame] = useState<GameEvent | null>(null);
+  const [invitationId, setInvitationId] = useState(() => new URLSearchParams(window.location.search).get('challenge'));
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const { data: invitationData, isLoading: invitationLoading } = useQuery<any>({
+    queryKey: ['/api/p2p-betting/invitations', invitationId],
+    queryFn: async () => {
+      const response = await fetch(`/api/p2p-betting/invitations/${invitationId}`);
+      if (!response.ok) throw new Error('This invitation is unavailable or expired');
+      return response.json();
+    },
+    enabled: Boolean(invitationId),
+  });
 
   // Fetch available games for betting
   const { data: gamesData } = useQuery({
@@ -102,7 +113,8 @@ const P2pBetting = () => {
     mutationFn: async (challengeData: any) => {
       return apiRequest('POST', '/api/p2p-betting/challenges/create', challengeData);
     },
-    onSuccess: () => {
+    onSuccess: async (response) => {
+      const data = await response.json();
       toast({
         title: 'Challenge Created!',
         description: 'Your challenge has been posted and funds deposited to escrow.',
@@ -111,6 +123,9 @@ const P2pBetting = () => {
       queryClient.invalidateQueries({ queryKey: ['/api/p2p-betting/challenges/mine'] });
       setShowCreateDialog(false);
       setSelectedGame(null);
+      setSelectedTab('mine');
+      setInvitationId(data.challenge.id);
+      window.history.replaceState({}, '', `/custom-bets?challenge=${data.challenge.id}`);
     },
     onError: (error: any) => {
       toast({
@@ -143,6 +158,22 @@ const P2pBetting = () => {
     },
   });
 
+  const dismissInvitation = () => {
+    setInvitationId(null);
+    window.history.replaceState({}, '', '/custom-bets');
+  };
+
+  const declineChallengeMutation = useMutation({
+    mutationFn: (challengeId: string) => apiRequest('POST', `/api/p2p-betting/challenges/${challengeId}/decline`, {}),
+    onSuccess: () => {
+      toast({ title: 'Invitation declined', description: 'The invitation was closed on this device.' });
+      dismissInvitation();
+      queryClient.invalidateQueries({ queryKey: ['/api/p2p-betting/challenges/available'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/p2p-betting/challenges/mine'] });
+    },
+    onError: (error: Error) => toast({ title: 'Could not decline invitation', description: error.message, variant: 'destructive' }),
+  });
+
   const games = (gamesData as any)?.data || [];
   const challenges = (availableChallenges as any)?.challenges || [];
   const categories = ['All', ...Array.from(new Set(challenges.map((item: P2pChallenge) => item.gameDetails?.sport).filter(Boolean))) as string[]];
@@ -167,6 +198,25 @@ const P2pBetting = () => {
         <div className="rounded-xl border bg-card p-4"><RotateCcw className="mb-2 h-5 w-5 text-blue-500" /><div className="font-bold">Automatic refund</div><p className="text-xs text-muted-foreground">An open bet that reaches its join deadline is closed and refunded.</p></div>
         <div className="rounded-xl border bg-card p-4"><MessageCircle className="mb-2 h-5 w-5 text-amber-500" /><div className="font-bold">Pre-bet chat</div><p className="text-xs text-muted-foreground">Room messages are capped at 200 characters and close when the bet starts.</p></div>
       </div>
+
+      {invitationId && (
+        <div className="mb-6 rounded-xl border-2 border-blue-500/50 bg-blue-500/5 p-4">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div><Badge>Shared invitation</Badge><h2 className="mt-2 text-xl font-bold">Review and accept this funded bet</h2></div>
+            <Button variant="ghost" size="sm" onClick={dismissInvitation}>Close</Button>
+          </div>
+          {invitationLoading ? <p>Loading invitation…</p> : invitationData?.challenge ? (
+            <ChallengeCard
+              challenge={invitationData.challenge}
+              isOwn={false}
+              onAccept={(challengeId, pick) => acceptChallengeMutation.mutate({ challengeId, challengeePick: pick })}
+              acceptLoading={acceptChallengeMutation.isPending}
+              onDecline={(challengeId) => invitationData.challenge.isPublic ? dismissInvitation() : declineChallengeMutation.mutate(challengeId)}
+              declineLoading={declineChallengeMutation.isPending}
+            />
+          ) : <p className="text-sm text-muted-foreground">This invitation is unavailable or has expired.</p>}
+        </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -425,14 +475,37 @@ interface ChallengeCardProps {
   isOwn: boolean;
   onAccept: (challengeId: string, pick: string) => void;
   acceptLoading: boolean;
+  onDecline?: (challengeId: string) => void;
+  declineLoading?: boolean;
 }
 
-const ChallengeCard = ({ challenge, isOwn, onAccept, acceptLoading }: ChallengeCardProps) => {
+const ChallengeCard = ({ challenge, isOwn, onAccept, acceptLoading, onDecline, declineLoading }: ChallengeCardProps) => {
   const [selectedPick, setSelectedPick] = useState('');
   const [showAcceptDialog, setShowAcceptDialog] = useState(false);
+  const { toast } = useToast();
 
   const isExpired = new Date(challenge.expiresAt) <= new Date();
   const canAccept = challenge.status === 'open' && !isExpired && !isOwn;
+  const shareUrl = `${window.location.origin}/custom-bets?challenge=${challenge.id}`;
+  const shareMessage = `Join my WeParlay bet: ${challenge.gameDetails.homeTeam} vs ${challenge.gameDetails.awayTeam}, ${challenge.betAmount} WeParlay Cash. Accept or decline: ${shareUrl}`;
+
+  const copyInvitation = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast({ title: 'Invitation link copied', description: 'Send it anywhere. The recipient can sign in and accept or decline.' });
+    } catch {
+      toast({ title: 'Could not copy link', description: 'Use the email, text, or share button instead.', variant: 'destructive' });
+    }
+  };
+
+  const shareInvitation = async () => {
+    try {
+      if (navigator.share) await navigator.share({ title: 'WeParlay bet invitation', text: shareMessage, url: shareUrl });
+      else await copyInvitation();
+    } catch (error: any) {
+      if (error?.name !== 'AbortError') toast({ title: 'Sharing unavailable', description: 'Copy the invitation link instead.', variant: 'destructive' });
+    }
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -500,6 +573,15 @@ const ChallengeCard = ({ challenge, isOwn, onAccept, acceptLoading }: ChallengeC
 
           {challenge.status === 'open' && <PreBetChat challengeId={challenge.id} />}
 
+          {challenge.status === 'open' && (
+            <div className="grid grid-cols-4 gap-2" aria-label="Share bet invitation">
+              <Button variant="outline" size="sm" title="Copy invitation link" onClick={copyInvitation}><Copy className="h-4 w-4" /></Button>
+              <a href={`mailto:?subject=${encodeURIComponent('WeParlay bet invitation')}&body=${encodeURIComponent(shareMessage)}`}><Button variant="outline" size="sm" className="w-full" title="Email invitation"><Mail className="h-4 w-4" /></Button></a>
+              <a href={`sms:?&body=${encodeURIComponent(shareMessage)}`}><Button variant="outline" size="sm" className="w-full" title="Text invitation"><Send className="h-4 w-4" /></Button></a>
+              <Button variant="outline" size="sm" title="Share invitation" onClick={shareInvitation}><Share2 className="h-4 w-4" /></Button>
+            </div>
+          )}
+
           {canAccept && (
             <Dialog open={showAcceptDialog} onOpenChange={setShowAcceptDialog}>
               <DialogTrigger asChild>
@@ -552,6 +634,8 @@ const ChallengeCard = ({ challenge, isOwn, onAccept, acceptLoading }: ChallengeC
               </DialogContent>
             </Dialog>
           )}
+
+          {canAccept && onDecline && <Button variant="ghost" className="w-full" disabled={declineLoading} onClick={() => onDecline(challenge.id)}>{declineLoading ? 'Declining…' : 'Decline invitation'}</Button>}
 
           {isExpired && challenge.status === 'open' && (
             <div className="text-center py-2 text-red-500 text-sm">

@@ -23,6 +23,20 @@ const router = Router();
 
 const clientError = (error: any) => /insufficient|expired|no longer|own challenge|opposing outcome|not for you|not allowed|positive|two decimal|only open|only the challenger|already in use/i.test(error?.message || '');
 
+// Public, read-only invitation preview. The UUID in the shared link identifies
+// the room; no contact details, balances, or private activity are returned.
+router.get('/invitations/:challengeId', async (req: Request, res: Response) => {
+  try {
+    const challenge = await getP2pChallengeWithNames(req.params.challengeId);
+    if (!challenge) return res.status(404).json({ success: false, message: 'Invitation not found' });
+    const { challengerId: _challengerId, challengeeId: _challengeeId, allowedFriends: _allowedFriends, ...preview } = challenge as any;
+    res.json({ success: true, challenge: preview });
+  } catch (error) {
+    console.error('Error fetching P2P invitation:', error);
+    res.status(500).json({ success: false, message: 'Failed to load invitation' });
+  }
+});
+
 // Create a new P2P betting challenge
 router.post('/challenges/create', isAuthenticated, restrictedAuthMiddleware, async (req: Request, res: Response) => {
   try {
@@ -288,6 +302,33 @@ router.post('/challenges/:challengeId/cancel', isAuthenticated, restrictedAuthMi
       success: false,
       message: error.message || 'Failed to cancel challenge'
     });
+  }
+});
+
+// A specifically invited opponent may decline. Public-room visitors can dismiss
+// the link locally without closing a room that remains available to everyone.
+router.post('/challenges/:challengeId/decline', isAuthenticated, restrictedAuthMiddleware, async (req: Request, res: Response) => {
+  try {
+    const currentUser = req.user as any;
+    const userId = currentUser.claims?.sub;
+    const challenge = await getP2pChallenge(req.params.challengeId);
+    if (!challenge) return res.status(404).json({ success: false, message: 'Challenge not found' });
+    if (challenge.status !== 'open') return res.status(400).json({ success: false, message: 'Challenge is no longer available' });
+    if (challenge.isPublic || !challenge.challengeeId) return res.json({ success: true, dismissed: true, message: 'Invitation dismissed' });
+    if (challenge.challengeeId !== userId) return res.status(403).json({ success: false, message: 'This invitation is not for you' });
+
+    await cancelAndRefundP2pChallenge(challenge.id, undefined);
+    await createP2pActivity({
+      challengeId: challenge.id,
+      userId,
+      activityType: 'challenge_declined',
+      message: 'The invited opponent declined. The challenger was refunded.',
+      metadata: { reason: 'declined_by_invited_opponent' },
+    });
+    res.json({ success: true, dismissed: true, message: 'Challenge declined and challenger refunded' });
+  } catch (error: any) {
+    console.error('Error declining challenge:', error);
+    res.status(clientError(error) ? 400 : 500).json({ success: false, message: error.message || 'Failed to decline challenge' });
   }
 });
 
