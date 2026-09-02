@@ -4,6 +4,7 @@ import { z } from "zod";
 import { isAuthenticated } from "../replitAuth";
 import { dailyTournamentRepository as tournamentStore } from "../services/dailyTournamentRepository";
 import { recordWeparlayCashLedgerEntry } from "../services/weparlayCashLedger";
+import { hasIndependentConfirmation, scoreTournament, splitPot, validateTournamentResults } from "../services/tournamentSettlement";
 
 const router = Router();
 const excludedFieldSports = /golf|nascar|formula|racing|cycling/i;
@@ -19,12 +20,10 @@ const eventSchema = z.object({
 const entrySchema = z.object({ currency: z.enum(["weparlay_cash", "real_money", "crypto"]), picks: z.record(z.string()).optional() });
 const resultSchema = z.object({
   provider: z.string().trim().min(2).max(40),
-  results: z.array(z.object({
-    eventId: z.string(),
-    status: z.enum(["closed", "completed"]),
-    homeScore: z.number(),
-    awayScore: z.number(),
-  })).min(1),
+  results: z.array(z.discriminatedUnion("status", [
+    z.object({ eventId: z.string(), status: z.enum(["closed", "completed"]), homeScore: z.number(), awayScore: z.number() }),
+    z.object({ eventId: z.string(), status: z.literal("cancelled") }),
+  ])).min(1),
 });
 const settlementAuthorized = (provided: unknown) => {
   const expected = process.env.TOURNAMENT_SETTLEMENT_KEY;
@@ -154,24 +153,21 @@ router.post("/:id/verify-results", async (req, res) => {
     if (Date.now() < new Date(tournament.settleAfter).getTime()) return res.status(409).json({ message: "Results cannot be settled before the end-of-day hold" });
 
     const body = resultSchema.parse(req.body);
-    const eventIds = new Set(tournament.events.map((event: any) => event.id));
-    if (body.results.length !== eventIds.size || body.results.some(result => !eventIds.has(result.eventId))) {
-      return res.status(400).json({ message: "A final result is required for every tournament event" });
-    }
+    validateTournamentResults(tournament.events, body.results);
     const hash = digestResults(body.results);
     const now = new Date();
     const previous = tournament.verificationChecks?.at(-1);
-    tournament.verificationChecks = [...(tournament.verificationChecks || []), { provider: body.provider, hash, checkedAt: now.toISOString() }].slice(-10);
+    const currentCheck = { provider: body.provider, hash, checkedAt: now.toISOString() };
+    tournament.verificationChecks = [...(tournament.verificationChecks || []), currentCheck].slice(-10);
     tournament.status = "verifying";
     await tournamentStore.save(tournament);
 
-    if (!previous || previous.hash !== hash || now.getTime() - new Date(previous.checkedAt).getTime() < 30_000) {
-      return res.status(202).json({ tournament, message: "First result check recorded; a matching check is still required" });
+    if (!hasIndependentConfirmation(previous, currentCheck)) {
+      return res.status(202).json({ tournament, message: "A matching result check from a second provider after 30 seconds is still required" });
     }
 
-    const winnersByEvent = new Map(body.results.map(result => [result.eventId, result.homeScore === result.awayScore ? null : result.homeScore > result.awayScore ? tournament.events.find((event: any) => event.id === result.eventId)?.homeTeam : tournament.events.find((event: any) => event.id === result.eventId)?.awayTeam]));
-    const eligibleEntries = tournament.entries.filter((entry: any) => entry.funded && entry.status === "submitted");
-    if (!eligibleEntries.length) {
+    const { winnersByEvent, eligibleEntries, winners, highScore, scoredEventCount } = scoreTournament(tournament.events, body.results, tournament.entries);
+    if (!eligibleEntries.length || scoredEventCount === 0) {
       tournament.status = "settling";
       await tournamentStore.save(tournament);
       for (const entry of tournament.entries) {
@@ -187,17 +183,24 @@ router.post("/:id/verify-results", async (req, res) => {
       tournament.status = "refunded";
       tournament.verified = true;
       tournament.settledAt = now.toISOString();
-      tournament.settlementReason = "No funded entry submitted a complete prediction card";
+      tournament.settlementReason = !eligibleEntries.length
+        ? "No funded entry submitted a complete prediction card"
+        : "Every tournament event was cancelled, tied, or voided";
+      tournament.resultHash = hash;
+      tournament.resultProviders = [previous.provider, body.provider];
+      tournament.settlementAudit = [...(tournament.settlementAudit || []), {
+        action: "refunded",
+        at: now.toISOString(),
+        resultHash: hash,
+        providers: tournament.resultProviders,
+        reason: tournament.settlementReason,
+        refundedUserIds: tournament.entries.map((entry: any) => entry.userId).sort(),
+      }].slice(-20);
       await tournamentStore.save(tournament);
       return res.json({ tournament });
     }
 
-    for (const entry of tournament.entries) {
-      entry.wins = tournament.events.reduce((wins: number, event: any) => wins + (winnersByEvent.get(event.id) && entry.picks?.[event.id] === winnersByEvent.get(event.id) ? 1 : 0), 0);
-    }
-    const highScore = Math.max(...eligibleEntries.map((entry: any) => entry.wins));
-    const winners = eligibleEntries.filter((entry: any) => entry.wins === highScore).sort((a: any, b: any) => a.userId.localeCompare(b.userId));
-    const payout = tournament.pot / winners.length;
+    const payoutBreakdown = splitPot(tournament.pot, winners.map((winner: any) => winner.userId));
     tournament.status = "settling";
     await tournamentStore.save(tournament);
     for (const winner of winners) {
@@ -205,21 +208,33 @@ router.post("/:id/verify-results", async (req, res) => {
         userId: winner.userId,
         referenceId: tournamentLedgerReference(tournament.id, winner.userId, "payout"),
         type: "payout",
-        amount: payout,
+        amount: payoutBreakdown[winner.userId],
         description: `Tournament payout for ${tournament.id}`,
         metadata: { tournamentId: tournament.id, currency: "weparlay_cash" },
       });
       winner.status = "winner";
-      winner.payout = payout;
+      winner.payout = payoutBreakdown[winner.userId];
     }
     tournament.events = tournament.events.map((event: any) => ({ ...event, result: body.results.find(result => result.eventId === event.id), winner: winnersByEvent.get(event.id) || "void" }));
     tournament.status = "paid";
     tournament.verified = true;
     tournament.winnerIds = winners.map((winner: any) => winner.userId);
-    tournament.payoutPerWinner = payout;
+    tournament.highScore = highScore;
+    tournament.payoutBreakdown = payoutBreakdown;
+    tournament.payoutPerWinner = winners.length === 1 ? payoutBreakdown[winners[0].userId] : undefined;
     tournament.resultProvider = body.provider;
+    tournament.resultProviders = [previous.provider, body.provider];
     tournament.resultHash = hash;
     tournament.settledAt = now.toISOString();
+    tournament.settlementAudit = [...(tournament.settlementAudit || []), {
+      action: "paid",
+      at: now.toISOString(),
+      resultHash: hash,
+      providers: tournament.resultProviders,
+      highScore,
+      winnerIds: tournament.winnerIds,
+      payoutBreakdown,
+    }].slice(-20);
     await tournamentStore.save(tournament);
     res.json({ tournament });
   } catch (error: any) {
