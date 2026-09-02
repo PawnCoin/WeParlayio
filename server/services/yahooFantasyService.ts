@@ -304,7 +304,7 @@ export class YahooFantasyService {
       const data = await response.json();
       return data.access_token;
     } catch (error) {
-      console.error('Error exchanging Yahoo code for token:', error);
+      console.error('Error exchanging Yahoo authorization code:', error instanceof Error ? error.message : 'Unknown error');
       throw error;
     }
   }

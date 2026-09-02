@@ -6,6 +6,7 @@
 import winston from 'winston';
 import path from 'path';
 import { Request } from 'express';
+import { sanitizeForLog } from '../utils/logSanitizer';
 
 export interface LogContext {
   userId?: string;
@@ -312,7 +313,7 @@ class EnhancedLoggingService {
         path: req.path,
         method: req.method,
         suspiciousInput: suspiciousInput.substring(0, 500), // Limit size
-        body: JSON.stringify(req.body).substring(0, 1000),
+        body: sanitizeForLog(req.body),
       },
     });
   }

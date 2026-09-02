@@ -5,11 +5,6 @@ export function useAuth() {
     queryKey: ["/api/auth/user"],
     queryFn: async () => {
       const token = localStorage.getItem('auth-token') || localStorage.getItem('weparlay-admin-token');
-      // Only log in development mode
-      if (import.meta.env.DEV) {
-        console.log('Client: Using token for auth:', token?.substring(0, 50) + '...');
-      }
-      
       if (!token) {
         throw new Error('No token found');
       }

@@ -4,6 +4,7 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
+import { sanitizeForLog } from '../utils/logSanitizer';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 
@@ -398,8 +399,7 @@ export class WeParLaySecurity {
           ip: req.ip,
           userAgent: req.get('User-Agent'),
           timestamp: new Date().toISOString(),
-          requestBody: req.method !== 'GET' ? 
-            JSON.stringify(req.body).substring(0, 1000) : undefined,
+          requestBody: req.method !== 'GET' ? sanitizeForLog(req.body) : undefined,
         };
 
         // In production, send to audit logging service

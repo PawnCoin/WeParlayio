@@ -506,8 +506,6 @@ router.get('/user', async (req, res) => {
     const authHeader = req.headers.authorization;
     const token = authHeader?.replace('Bearer ', '');
     
-    console.log('Received token for verification:', token?.substring(0, 20) + '...');
-    
     if (!token) {
       return res.status(401).json({ message: 'No token provided' });
     }

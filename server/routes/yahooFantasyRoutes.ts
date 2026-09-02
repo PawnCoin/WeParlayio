@@ -133,13 +133,12 @@ router.get('/auth/callback', async (req, res) => {
     }
 
     const redirectUri = `${req.protocol}://${req.get('host')}/api/yahoo-fantasy/auth/callback`;
-    const accessToken = await yahooFantasyService.exchangeCodeForToken(code as string, redirectUri);
+    await yahooFantasyService.exchangeCodeForToken(code as string, redirectUri);
     
     // In a real implementation, you'd store this token associated with the user
     res.json({
       success: true,
       message: 'Yahoo Fantasy successfully connected',
-      accessToken: accessToken.substring(0, 10) + '...', // Don't expose full token
       platform: 'yahoo'
     });
   } catch (error) {
