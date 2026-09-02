@@ -38,7 +38,7 @@ const TierComparisonDashboard: React.FC = () => {
       borderColor: 'border-amber-700',
       hoverColor: 'hover:bg-amber-700/10',
       icon: <Award className="h-5 w-5" />,
-      description: 'Get started with enhanced betting features, basic odds boost, and limited voice betting commands (5/day). Includes basic social sharing for Twitter and Facebook.'
+       description: 'Get started with enhanced betting features, a basic odds boost, and social sharing for Twitter and Facebook.'
     },
     {
       id: 'silver',
@@ -50,7 +50,7 @@ const TierComparisonDashboard: React.FC = () => {
       borderColor: 'border-slate-400',
       hoverColor: 'hover:bg-slate-400/10',
       icon: <Award className="h-5 w-5" />,
-      description: 'Unlock premium features with enhanced odds boost, more voice betting commands (20/day), and basic fantasy team sync across platforms.'
+       description: 'Unlock premium features with an enhanced odds boost and basic fantasy team sync across platforms.'
     },
     {
       id: 'gold',
@@ -62,7 +62,7 @@ const TierComparisonDashboard: React.FC = () => {
       borderColor: 'border-yellow-500',
       hoverColor: 'hover:bg-yellow-500/10',
       icon: <Award className="h-5 w-5" />,
-      description: 'Full access to premium features, VIP support, maximum odds boost, unlimited voice betting, full fantasy sync, and Yahoo Fantasy integration.'
+       description: 'Full access to premium features, VIP support, maximum odds boost, full fantasy sync, and Yahoo Fantasy integration.'
     },
     {
       id: 'platinum',
@@ -74,7 +74,7 @@ const TierComparisonDashboard: React.FC = () => {
       borderColor: 'border-green-600',
       hoverColor: 'hover:bg-green-600/10',
       icon: <Award className="h-5 w-5" />,
-      description: 'For serious bettors with exclusive features, dedicated agent support, maximum odds boost (7.5%), auto-betting via Yahoo Fantasy, and exclusive Facebook app integration.'
+       description: 'For serious bettors with exclusive features, dedicated account support, maximum odds boost (7.5%), full fantasy sync, and exclusive Facebook app integration.'
     }
   ];
 
@@ -89,22 +89,13 @@ const TierComparisonDashboard: React.FC = () => {
       icon: <Star className="h-4 w-4" />
     },
     {
-      name: 'Premium Suggestions',
-      description: 'AI-powered betting recommendations',
-      bronzeValue: '10/month',
-      silverValue: '30/month',
-      goldValue: 'Unlimited',
-      platinumValue: 'Unlimited + Exclusive',
+      name: 'Expanded Live Access',
+      description: 'Expanded live-game access with higher betting limits',
+      bronzeValue: 'Standard Access',
+      silverValue: 'More Live Games',
+      goldValue: 'Expanded Access',
+      platinumValue: 'Expanded Access + Highest Limits',
       icon: <CheckCircle className="h-4 w-4" />
-    },
-    {
-      name: 'Voice Betting',
-      description: 'Place bets using voice commands',
-      bronzeValue: '5/day',
-      silverValue: '20/day',
-      goldValue: 'Unlimited',
-      platinumValue: 'Priority Processing',
-      icon: <HelpCircle className="h-4 w-4" />
     },
     {
       name: 'Fantasy Team Sync',
@@ -121,7 +112,7 @@ const TierComparisonDashboard: React.FC = () => {
       bronzeValue: false,
       silverValue: false,
       goldValue: 'Full Integration',
-      platinumValue: 'Auto-Bet',
+      platinumValue: 'Full Integration',
       icon: <Star className="h-4 w-4" />
     },
     {
@@ -175,7 +166,7 @@ const TierComparisonDashboard: React.FC = () => {
       bronzeValue: false,
       silverValue: 'Email',
       goldValue: 'Chat',
-      platinumValue: 'Phone + Dedicated Agent',
+      platinumValue: 'Phone + Dedicated Support',
       icon: <HelpCircle className="h-4 w-4" />
     }
   ];

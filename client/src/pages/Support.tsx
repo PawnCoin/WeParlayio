@@ -219,7 +219,7 @@ export default function Support() {
               <CardTitle>Submit a Support Request</CardTitle>
               <CardDescription>
                 Describe your issue in detail to help us resolve it quickly.
-                Our AI-powered system can automatically resolve common technical issues.
+                Our support team will review your request and follow up with next steps.
               </CardDescription>
             </CardHeader>
             <CardContent>

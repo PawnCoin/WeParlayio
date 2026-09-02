@@ -5,7 +5,7 @@ import { useBetSlip } from "@/contexts/BetSlipContext";
 import { Button } from "@/components/ui/button";
 import BetConfetti from "@/components/betting/BetConfetti";
 import {
-  Mic, MicOff, RefreshCw, Volume2, VolumeX
+  Mic, MicOff, Volume2, VolumeX
 } from "lucide-react";
 
 interface MobileVoiceBettingProps {
@@ -21,45 +21,41 @@ const MobileVoiceBetting: React.FC<MobileVoiceBettingProps> = ({ onBetPlaced }) 
   const [isExpanded, setIsExpanded] = useState(false);
   const [isTextToSpeechEnabled, setIsTextToSpeechEnabled] = useState(true);
   const { toast } = useToast();
-  
-  // We'll access the betSlip context to add bets
   const { addBet } = useBetSlip();
-  
+
   const recognitionRef = useRef<any>(null);
   const animationFrameRef = useRef<number | null>(null);
-  
+
   useEffect(() => {
-    // Initialize Web Speech API
     if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
       const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
       recognitionRef.current = new SpeechRecognition();
       recognitionRef.current.continuous = false;
       recognitionRef.current.interimResults = true;
       recognitionRef.current.lang = 'en-US';
-      
+
       recognitionRef.current.onresult = (event: any) => {
         const result = event.results[0];
         const transcriptText = result[0].transcript;
         setTranscript(transcriptText);
-        
-        // Process the voice command
+
         if (!result.isFinal) return;
         processVoiceCommand(transcriptText);
       };
-      
+
       recognitionRef.current.onerror = (event: any) => {
         console.error("Speech recognition error", event.error);
         setFeedbackMessage(`Error: ${event.error}. Please try again.`);
         stopListening();
       };
-      
+
       recognitionRef.current.onend = () => {
         setIsListening(false);
       };
     } else {
       setFeedbackMessage("Your browser doesn't support voice recognition. Please try another browser.");
     }
-    
+
     return () => {
       if (recognitionRef.current) {
         recognitionRef.current.abort();
@@ -69,10 +65,10 @@ const MobileVoiceBetting: React.FC<MobileVoiceBettingProps> = ({ onBetPlaced }) 
       }
     };
   }, []);
-  
+
   const speakFeedback = (text: string) => {
     if (!isTextToSpeechEnabled) return;
-    
+
     if ('speechSynthesis' in window) {
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.volume = 1;
@@ -81,12 +77,12 @@ const MobileVoiceBetting: React.FC<MobileVoiceBettingProps> = ({ onBetPlaced }) 
       window.speechSynthesis.speak(utterance);
     }
   };
-  
+
   const startListening = () => {
     setTranscript("");
     setFeedbackMessage("Listening... Say your bet.");
     setIsListening(true);
-    
+
     if (recognitionRef.current) {
       try {
         recognitionRef.current.start();
@@ -98,7 +94,7 @@ const MobileVoiceBetting: React.FC<MobileVoiceBettingProps> = ({ onBetPlaced }) 
       }
     }
   };
-  
+
   const stopListening = () => {
     if (recognitionRef.current) {
       recognitionRef.current.abort();
@@ -106,28 +102,28 @@ const MobileVoiceBetting: React.FC<MobileVoiceBettingProps> = ({ onBetPlaced }) 
     setIsListening(false);
     stopAnimation();
   };
-  
+
   const startAnimation = () => {
     let startTime: number | null = null;
-    const duration = 10000; // 10 seconds max listening time
-    
+    const duration = 10000;
+
     const animate = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
       const elapsed = timestamp - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      
+
       setAnimationProgress(progress);
-      
+
       if (progress < 1 && isListening) {
         animationFrameRef.current = requestAnimationFrame(animate);
       } else {
         stopListening();
       }
     };
-    
+
     animationFrameRef.current = requestAnimationFrame(animate);
   };
-  
+
   const stopAnimation = () => {
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
@@ -135,19 +131,17 @@ const MobileVoiceBetting: React.FC<MobileVoiceBettingProps> = ({ onBetPlaced }) 
     }
     setAnimationProgress(0);
   };
-  
+
   const processVoiceCommand = (command: string) => {
-    // Convert to lowercase for easier matching
     const lowercaseCommand = command.toLowerCase();
     console.log("Processing voice command:", lowercaseCommand);
-    
-    // Extract team name
+
     const teams = [
-      "lakers", "celtics", "warriors", "bulls", "heat", 
+      "lakers", "celtics", "warriors", "bulls", "heat",
       "chiefs", "eagles", "49ers", "cowboys", "packers",
       "yankees", "dodgers", "red sox", "cubs", "mets"
     ];
-    
+
     let detectedTeam = "";
     for (const team of teams) {
       if (lowercaseCommand.includes(team)) {
@@ -155,34 +149,29 @@ const MobileVoiceBetting: React.FC<MobileVoiceBettingProps> = ({ onBetPlaced }) 
         break;
       }
     }
-    
-    // Extract bet amount
+
     const amountMatch = lowercaseCommand.match(/\$?([0-9]+)/);
-    const betAmount = amountMatch ? parseInt(amountMatch[1]) : 20; // Default to $20 if not specified
-    
-    // Detect bet type
-    let betType = "moneyline"; // Default
+    const betAmount = amountMatch ? parseInt(amountMatch[1]) : 20;
+
+    let betType = "moneyline";
     if (lowercaseCommand.includes("spread") || lowercaseCommand.includes("point")) {
       betType = "spread";
     } else if (lowercaseCommand.includes("over") || lowercaseCommand.includes("under") || lowercaseCommand.includes("total")) {
       betType = "total";
     }
-    
+
     if (detectedTeam) {
-      // Process the bet
       const betInfo = {
         team: detectedTeam,
         amount: betAmount,
         type: betType,
-        odds: -110, // Default odds
+        odds: -110,
       };
-      
-      // Feedback to user
+
       const feedbackText = `Adding $${betInfo.amount} ${betInfo.type} bet on ${betInfo.team}.`;
       setFeedbackMessage(feedbackText);
       speakFeedback(feedbackText);
-      
-      // Add bet to slip
+
       if (typeof addBet === 'function') {
         addBet({
           id: Date.now().toString(),
@@ -193,27 +182,23 @@ const MobileVoiceBetting: React.FC<MobileVoiceBettingProps> = ({ onBetPlaced }) 
           potentialWin: (betInfo.amount * (betInfo.odds > 0 ? betInfo.odds / 100 : 100 / Math.abs(betInfo.odds))),
         });
       }
-      
-      // Trigger confetti effect
+
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 3000);
-      
-      // Show success toast
+
       toast({
         title: "Bet Added Successfully! 🎉",
         description: `$${betInfo.amount} on ${betInfo.team} (${betInfo.type}) has been added to your bet slip.`,
       });
-      
-      // Invoke callback if provided
+
       if (onBetPlaced) {
         onBetPlaced();
       }
     } else {
-      // No team detected
       const errorMessage = "I didn't catch a team name. Please try again.";
       setFeedbackMessage(errorMessage);
       speakFeedback(errorMessage);
-      
+
       toast({
         title: "Couldn't Process Bet",
         description: "Please specify a team name clearly in your command.",
@@ -221,10 +206,9 @@ const MobileVoiceBetting: React.FC<MobileVoiceBettingProps> = ({ onBetPlaced }) 
       });
     }
   };
-  
+
   return (
     <div className="fixed bottom-4 left-4 z-50 flex flex-col items-start">
-      {/* Main floating button */}
       <motion.div
         className="relative"
         initial={{ scale: 0.8, opacity: 0 }}
@@ -237,17 +221,15 @@ const MobileVoiceBetting: React.FC<MobileVoiceBettingProps> = ({ onBetPlaced }) 
         >
           <Mic className="h-6 w-6" />
         </Button>
-        
-        {/* Pulse animation when in listening mode */}
+
         {isListening && (
           <span className="absolute inset-0 rounded-full animate-ping bg-blue-400 opacity-75"></span>
         )}
       </motion.div>
-      
-      {/* Expanded panel */}
+
       <AnimatePresence>
         {isExpanded && (
-          <motion.div 
+          <motion.div
             className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-4 mb-4 w-full max-w-sm"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -255,22 +237,22 @@ const MobileVoiceBetting: React.FC<MobileVoiceBettingProps> = ({ onBetPlaced }) 
             transition={{ type: 'spring', stiffness: 500, damping: 30 }}
           >
             {showConfetti && <BetConfetti />}
-            
+
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="font-medium">Voice Betting</h3>
                 <div className="flex space-x-2">
-                  <Button 
-                    size="icon" 
-                    variant="ghost" 
+                  <Button
+                    size="icon"
+                    variant="ghost"
                     className="h-8 w-8"
                     onClick={() => setIsTextToSpeechEnabled(!isTextToSpeechEnabled)}
                   >
                     {isTextToSpeechEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
                   </Button>
-                  <Button 
-                    size="icon" 
-                    variant="ghost" 
+                  <Button
+                    size="icon"
+                    variant="ghost"
                     className="h-8 w-8"
                     onClick={() => setIsExpanded(false)}
                   >
@@ -280,29 +262,28 @@ const MobileVoiceBetting: React.FC<MobileVoiceBettingProps> = ({ onBetPlaced }) 
                   </Button>
                 </div>
               </div>
-              
-              {/* Voice command input area */}
+
               <div className="flex flex-col items-center">
                 <button
                   className={`w-16 h-16 rounded-full flex items-center justify-center transition-colors ${
-                    isListening 
-                      ? 'bg-red-500 animate-pulse' 
+                    isListening
+                      ? 'bg-red-500 animate-pulse'
                       : 'bg-blue-500 hover:bg-blue-600'
                   }`}
                   onClick={isListening ? stopListening : startListening}
                 >
                   {isListening ? <MicOff className="h-8 w-8 text-white" /> : <Mic className="h-8 w-8 text-white" />}
                 </button>
-                
+
                 {isListening && (
                   <div className="mt-3 w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
-                    <div 
+                    <div
                       className="h-full bg-blue-500 rounded-full"
                       style={{ width: `${animationProgress * 100}%` }}
                     />
                   </div>
                 )}
-                
+
                 <div className="mt-3 text-center">
                   {transcript ? (
                     <p className="font-medium">{transcript}</p>
@@ -313,8 +294,7 @@ const MobileVoiceBetting: React.FC<MobileVoiceBettingProps> = ({ onBetPlaced }) 
                   )}
                 </div>
               </div>
-              
-              {/* Example commands */}
+
               <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Example commands:</p>
                 <div className="space-y-1 text-xs">

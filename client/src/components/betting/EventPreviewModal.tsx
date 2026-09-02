@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { 
-  TrendingUp, TrendingDown, Trophy, Users, Clock, 
-  Star, Target, Zap, BarChart3, Activity, Timer
+  Trophy, Users, Clock, Target, Zap, BarChart3, Activity, Timer
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 
@@ -58,19 +56,13 @@ interface MatchStatistics {
     total: { over: number; under: number; overOdds: number; underOdds: number };
     popularBets: string[];
   };
-  insights: {
-    prediction: string;
-    confidence: number;
-    keyFactors: string[];
-    trendingBet: string;
-  };
 }
 
 const EventPreviewModal = ({ isOpen, onClose, eventId, sport, teams, currentOdds }: EventPreviewModalProps) => {
   const [liveUpdates, setLiveUpdates] = useState(false);
 
   // Fetch detailed event data
-  const { data: eventDetails, isLoading } = useQuery({
+  const { data: eventDetails, isLoading } = useQuery<MatchStatistics>({
     queryKey: ['/api/events/details', eventId],
     enabled: isOpen && !!eventId,
     refetchInterval: liveUpdates ? 30000 : 300000, // 30s if live, 5m otherwise
@@ -123,12 +115,6 @@ const EventPreviewModal = ({ isOpen, onClose, eventId, sport, teams, currentOdds
         overOdds: -108, underOdds: -112 
       },
       popularBets: ['Home -3.5', 'Over 215.5', 'Home ML']
-    },
-    insights: {
-      prediction: 'Home team favored',
-      confidence: 72,
-      keyFactors: ['Home field advantage', 'Better recent form', 'Head-to-head record'],
-      trendingBet: 'Home -3.5 (-110)'
     }
   };
 
@@ -339,34 +325,6 @@ const EventPreviewModal = ({ isOpen, onClose, eventId, sport, teams, currentOdds
                     </div>
                     <div className="text-gray-300 text-xs">{stats.betting.total.underOdds}</div>
                   </div>
-                </div>
-              </div>
-            </div>
-
-            {/* AI Insights */}
-            <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 p-4 rounded-lg border border-blue-600">
-              <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
-                <Star className="h-4 w-4 text-yellow-500" />
-                AI Prediction
-              </h4>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-300">{stats.insights.prediction}</span>
-                  <Badge className="bg-green-600 text-white">{stats.insights.confidence}% confident</Badge>
-                </div>
-                <div>
-                  <div className="text-gray-400 text-xs mb-2">Key Factors:</div>
-                  <div className="flex flex-wrap gap-1">
-                    {stats.insights.keyFactors.map((factor, idx) => (
-                      <Badge key={idx} variant="outline" className="text-xs border-gray-600 text-gray-300">
-                        {factor}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-green-400" />
-                  <span className="text-green-400 text-sm font-semibold">Trending: {stats.insights.trendingBet}</span>
                 </div>
               </div>
             </div>

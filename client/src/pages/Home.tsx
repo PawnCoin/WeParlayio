@@ -55,8 +55,6 @@ export default function Home() {
         </div>
       </section>
 
-      <a href="https://kingengine.online" target="_blank" rel="noreferrer" className="block rounded-xl border border-amber-400/30 bg-gradient-to-r from-black via-amber-950 to-black px-5 py-3 text-center font-bold text-amber-300">Powered by instinct. Sharpened by KingEngine.online →</a>
-
       <div className="flex items-center justify-end gap-2">
         <Clock3 className="h-4 w-4 text-muted-foreground" />
         <label htmlFor="profile-time-zone" className="text-xs text-muted-foreground">Profile time zone</label>

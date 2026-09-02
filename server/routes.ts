@@ -3,7 +3,7 @@ import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./simpleStorage";
 import authRoutes from "./routes/authRoutes";
-import aiSupportRoutes from "./routes/aiSupport";
+import supportRoutes from "./routes/supportRoutes";
 import authRouter from "./auth";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { additionalSportsData } from "./services/mockSportsData";
@@ -74,7 +74,7 @@ const registerRoutes = async (app: Express): Promise<Server> => {
   // Register core routes
   app.use('/api/fees', feeRouter);
   app.use('/api/admin', adminRouter);
-  app.use('/api/support', aiSupportRoutes);
+  app.use('/api/support', supportRoutes);
   app.use('/api/notifications', notificationRoutes);
   app.use('/api/sports-categories', sportsCategories);
   app.use('/api/bet-settlement', betSettlementRoutes);
