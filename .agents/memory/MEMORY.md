@@ -1,2 +1,3 @@
 - [Production environment omits dev dependencies](npm-production-dev-dependencies.md) — verify CLI executables after installs because workspace-level production mode can omit dev-only tools.
 - [Autoscale health checks and HTTPS redirects](autoscale-health-check-https.md) — allow direct HTTP probes; redirect only explicitly forwarded external HTTP traffic.
+- [GitHub connector commit writes](github-connector-commit-writes.md) — prefer createCommitOnBranch when REST Git-data responses fail durable replay on nullable metadata.
