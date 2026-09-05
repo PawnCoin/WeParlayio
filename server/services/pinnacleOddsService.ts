@@ -65,15 +65,14 @@ export class PinnacleOddsService {
       
       // Transform Pinnacle data to WeParlay format
       if (data?.events && Array.isArray(data.events)) {
-        return data.events.slice(0, 10).map((event: any, index: number) => {
-          const homeTeam = event.home_team || event.participants?.[0]?.name || `Team A`;
-          const awayTeam = event.away_team || event.participants?.[1]?.name || `Team B`;
-          
-          // Generate realistic odds based on Pinnacle data
-          const baseSpread = event.spread || (Math.random() - 0.5) * 14;
-          const baseTotal = event.total || Math.round(45 + (Math.random() * 30));
-          const homeML = event.home_ml || (baseSpread > 0 ? Math.round(-150 + baseSpread * 15) : Math.round(120 + Math.abs(baseSpread) * 10));
-          const awayML = event.away_ml || (-homeML + Math.round((Math.random() - 0.5) * 30));
+        return data.events.filter((event: any) =>
+          event.start_time &&
+          (event.home_team || event.participants?.[0]?.name) &&
+          (event.away_team || event.participants?.[1]?.name) &&
+          (event.home_ml != null || event.away_ml != null || event.spread != null || event.total != null)
+        ).slice(0, 10).map((event: any, index: number) => {
+          const homeTeam = event.home_team || event.participants[0].name;
+          const awayTeam = event.away_team || event.participants[1].name;
 
           return {
             eventId: `pinnacle_${event.id || index}_${Date.now()}`,
@@ -81,30 +80,30 @@ export class PinnacleOddsService {
             homeTeam,
             awayTeam,
             status: event.status === 'live' ? 'live' : 'upcoming',
-            startTime: event.start_time || new Date(Date.now() + Math.random() * 7200000).toISOString(),
+            startTime: event.start_time,
             lastUpdate: new Date().toISOString(),
-            period: event.status === 'live' ? event.period || `Q${Math.ceil(Math.random() * 4)}` : undefined,
-            timeRemaining: event.status === 'live' ? event.time_remaining || `${Math.floor(Math.random() * 15)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}` : undefined,
+            period: event.status === 'live' ? event.period : undefined,
+            timeRemaining: event.status === 'live' ? event.time_remaining : undefined,
             score: event.status === 'live' && event.score ? {
-              home: event.score.home || Math.floor(Math.random() * 35),
-              away: event.score.away || Math.floor(Math.random() * 35)
+              home: event.score.home,
+              away: event.score.away
             } : undefined,
             odds: {
               spread: {
-                home: parseFloat(baseSpread.toFixed(1)),
-                away: parseFloat((-baseSpread).toFixed(1)),
-                homeOdds: event.home_spread_odds || (-110 + Math.round((Math.random() - 0.5) * 20)),
-                awayOdds: event.away_spread_odds || (-110 + Math.round((Math.random() - 0.5) * 20))
+                home: event.spread,
+                away: event.spread != null ? -event.spread : null,
+                homeOdds: event.home_spread_odds ?? null,
+                awayOdds: event.away_spread_odds ?? null
               },
               moneyline: {
-                home: homeML,
-                away: awayML
+                home: event.home_ml ?? null,
+                away: event.away_ml ?? null
               },
               total: {
-                over: baseTotal,
-                under: baseTotal,
-                overOdds: event.over_odds || (-110 + Math.round((Math.random() - 0.5) * 20)),
-                underOdds: event.under_odds || (-110 + Math.round((Math.random() - 0.5) * 20))
+                over: event.total ?? null,
+                under: event.total ?? null,
+                overOdds: event.over_odds ?? null,
+                underOdds: event.under_odds ?? null
               }
             },
             bookmaker: 'Pinnacle',
@@ -159,49 +158,8 @@ export class PinnacleOddsService {
 
   // Method for getting completed games (results)
   async getCompletedGames(): Promise<any[]> {
-    try {
-      console.log('🏆 Pinnacle: Fetching completed games for results');
-      
-      const completedGames = [];
-      const sports = [1, 4]; // American Football, Basketball
-      
-      for (const sportId of sports) {
-        try {
-          const response = await fetch(`https://pinnacle-odds.p.rapidapi.com/kit/v1/markets?sport_id=${sportId}&is_have_odds=true`, {
-            headers: {
-              'X-RapidAPI-Key': this.apiKey,
-              'X-RapidAPI-Host': this.host
-            }
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            const settled = data.slice(0, 5).map((event: any, index: number) => ({
-              id: `pinnacle_settled_${sportId}_${index}`,
-              sport: sportId === 1 ? 'NFL' : 'NBA',
-              homeTeam: `Team ${String.fromCharCode(65 + index * 2)}`,
-              awayTeam: `Team ${String.fromCharCode(66 + index * 2)}`,
-              homeScore: Math.floor(Math.random() * 35) + 14,
-              awayScore: Math.floor(Math.random() * 35) + 14,
-              status: 'completed',
-              completedAt: new Date(Date.now() - Math.random() * 604800000).toISOString(),
-              league: sportId === 1 ? 'NFL' : 'NBA'
-            }));
-            
-            completedGames.push(...settled);
-          }
-        } catch (error) {
-          console.log(`⚠️ Pinnacle Sport ${sportId} completed games unavailable`);
-        }
-      }
-      
-      console.log(`✅ Pinnacle: Retrieved ${completedGames.length} completed games`);
-      return completedGames;
-      
-    } catch (error) {
-      console.error('Pinnacle completed games error:', error);
-      return [];
-    }
+    // The markets endpoint is not an authoritative result source.
+    return [];
   }
 }
 

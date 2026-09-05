@@ -281,62 +281,15 @@ const registerRoutes = async (app: Express): Promise<Server> => {
   // Event details endpoint for interactive preview
   app.get('/api/events/details/:eventId', async (req, res) => {
     try {
-      const { eventId } = req.params;
-      
-      // Generate realistic event details based on event ID and sport
-      const eventDetails = {
-        homeTeam: {
-          name: 'Kansas City Chiefs',
-          logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/kc.png',
-          record: '8-3',
-          streak: 'W3',
-          avgPoints: 28.5,
-          lastGame: 'W 31-17 vs Dolphins'
-        },
-        awayTeam: {
-          name: 'Buffalo Bills',
-          logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/buf.png',
-          record: '9-2',
-          streak: 'W5',
-          avgPoints: 30.2,
-          lastGame: 'W 35-10 vs Cowboys'
-        },
-        headToHead: {
-          totalMeetings: 25,
-          homeWins: 12,
-          awayWins: 13,
-          lastMeeting: '2024-01-21: Bills won 24-20'
-        },
-        gameInfo: {
-          venue: 'Arrowhead Stadium',
-          weather: '45°F, Light Snow',
-          startTime: new Date(Date.now() + 86400000).toISOString(),
-          status: Math.random() > 0.6 ? 'live' : 'upcoming',
-          liveScore: Math.random() > 0.6 ? {
-            homeScore: Math.floor(Math.random() * 35),
-            awayScore: Math.floor(Math.random() * 35),
-            period: `Q${Math.ceil(Math.random() * 4)}`,
-            timeRemaining: `${Math.floor(Math.random() * 15)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`
-          } : undefined
-        },
-        betting: {
-          spread: { home: -2.5, away: 2.5, homeOdds: -108, awayOdds: -112 },
-          moneyline: { home: -135, away: +115 },
-          total: { over: 47.5, under: 47.5, overOdds: -110, underOdds: -110 },
-          popularBets: ['Chiefs -2.5', 'Over 47.5', 'Bills ML']
-        },
-        insights: {
-          prediction: 'Close game, slight edge to Bills',
-          confidence: 68,
-          keyFactors: ['Bills better record', 'Cold weather advantage', 'Playoff implications'],
-          trendingBet: 'Bills +2.5 (-112)'
-        }
-      };
-
-      res.json(eventDetails);
+      const events = await unifiedSportsApiService.getUnifiedUpcomingEvents();
+      const event = events.find((item: any) =>
+        String(item.id || item.eventId) === req.params.eventId
+      );
+      if (!event) return res.status(404).json({ success: false, message: 'Verified event not found' });
+      res.json({ success: true, event, source: event.source || 'verified provider' });
     } catch (error) {
-      console.error('Error fetching event details:', error);
-      res.status(500).json({ success: false, message: 'Failed to fetch event details' });
+      console.error('Error fetching verified event details:', error);
+      res.status(503).json({ success: false, message: 'Verified event details are temporarily unavailable' });
     }
   });
 
@@ -405,245 +358,29 @@ const registerRoutes = async (app: Express): Promise<Server> => {
     }
   });
 
-  // Generic odds endpoint for betting dashboard compatibility
-  app.get('/api/odds', async (req, res) => {
+  // Generic odds endpoint: provider-supplied lines only.
+  app.get('/api/odds', async (_req, res) => {
     try {
-      // Import Pinnacle service for primary data
-      const pinnacleModule = await import('./services/pinnacleOddsService.js');
-      const pinnacleOddsService = pinnacleModule.pinnacleOddsService;
-      
-      // Try Pinnacle first (primary), then ESPN for fallback with team names
-      const [pinnacleFootball, pinnacleBasketball, unifiedResponse] = await Promise.allSettled([
-        pinnacleOddsService.getPinnacleOdds('americanfootball_nfl'),
-        pinnacleOddsService.getPinnacleOdds('basketball'),
-        fetch('http://localhost:5000/api/unified-sports/upcoming-events').then(res => res.json())
-      ]);
-
-      let combinedOdds = [];
-
-      // Priority 1: Use Pinnacle data if available
-      const pinnacleData = [];
-      if (pinnacleFootball.status === 'fulfilled' && pinnacleFootball.value?.length > 0) {
-        pinnacleData.push(...pinnacleFootball.value.slice(0, 8));
-      }
-      if (pinnacleBasketball.status === 'fulfilled' && pinnacleBasketball.value?.length > 0) {
-        pinnacleData.push(...pinnacleBasketball.value.slice(0, 7));
-      }
-
-      if (pinnacleData.length > 0) {
-        combinedOdds = pinnacleData.map((event: any, index: number) => {
-          const homeSpread = (Math.random() - 0.5) * 14;
-          const totalPoints = Math.round(40 + (Math.random() * 20));
-          const homeML = homeSpread > 0 ? Math.round(-200 + homeSpread * 20) : Math.round(100 + Math.abs(homeSpread) * 20);
-          const awayML = -homeML + Math.round((Math.random() - 0.5) * 40);
-          
-          return {
-            eventId: `pinnacle_${event.eventId || event.id || index}`,
-            sport: event.sport || 'NFL',
-            homeTeam: event.homeTeam || 'Home Team',
-            awayTeam: event.awayTeam || 'Away Team', 
-            status: event.status || 'upcoming',
-            startTime: event.startTime || new Date(Date.now() + Math.random() * 7200000).toISOString(),
-            lastUpdate: new Date().toISOString(),
-            odds: {
-              spread: {
-                home: homeSpread,
-                away: -homeSpread,
-                homeOdds: -110 + Math.round((Math.random() - 0.5) * 20),
-                awayOdds: -110 + Math.round((Math.random() - 0.5) * 20)
-              },
-              moneyline: { home: homeML, away: awayML },
-              total: {
-                over: totalPoints, under: totalPoints,
-                overOdds: -110 + Math.round((Math.random() - 0.5) * 20),
-                underOdds: -110 + Math.round((Math.random() - 0.5) * 20)
-              }
-            }
-          };
-        });
-        
-        console.log(`✅ Generic Odds: Using ${combinedOdds.length} Pinnacle events (PRIMARY SOURCE)`);
-        res.json({ success: true, odds: combinedOdds, count: combinedOdds.length });
-      }
-      // Priority 2: Fallback to ESPN data if Pinnacle unavailable  
-      else {
-        const unifiedData = unifiedResponse.status === 'fulfilled' ? unifiedResponse.value : null;
-      
-      if (unifiedData?.success && unifiedData?.data?.length > 0) {
-        // Convert ESPN data to betting odds format
-        const combinedOdds = unifiedData.data.slice(0, 15).map((game: any, index: number) => {
-          const homeSpread = (Math.random() - 0.5) * 14;
-          const totalPoints = Math.round(40 + (Math.random() * 20));
-          const homeML = homeSpread > 0 ? Math.round(-200 + homeSpread * 20) : Math.round(100 + Math.abs(homeSpread) * 20);
-          const awayML = -homeML + Math.round((Math.random() - 0.5) * 40);
-          
-          return {
-            eventId: `unified_${game.id}`,
-            sport: game.sport || 'NFL',
-            homeTeam: game.homeTeam?.name || game.homeTeam || 'Home Team',
-            awayTeam: game.awayTeam?.name || game.awayTeam || 'Away Team',
-            status: game.status === 'in' ? 'live' : 'upcoming',
-            startTime: game.startTime || new Date(Date.now() + Math.random() * 7200000).toISOString(),
-            lastUpdate: new Date().toISOString(),
-            odds: {
-              spread: {
-                home: homeSpread,
-                away: -homeSpread,
-                homeOdds: -110 + Math.round((Math.random() - 0.5) * 20),
-                awayOdds: -110 + Math.round((Math.random() - 0.5) * 20)
-              },
-              moneyline: { home: homeML, away: awayML },
-              total: {
-                over: totalPoints, under: totalPoints,
-                overOdds: -110 + Math.round((Math.random() - 0.5) * 20),
-                underOdds: -110 + Math.round((Math.random() - 0.5) * 20)
-              }
-            }
-          };
-        });
-        
-        console.log(`✅ Generic Odds: Converted ${combinedOdds.length} ESPN events to betting format`);
-        res.json({ success: true, odds: combinedOdds, count: combinedOdds.length });
-      } else {
-        res.json({ success: true, odds: [], count: 0 });
-      }
-      }
+      const service = new OddsApiService();
+      const sports = ['americanfootball_nfl', 'basketball_nba', 'baseball_mlb', 'icehockey_nhl', 'soccer_epl'];
+      const settled = await Promise.allSettled(sports.map((sport) => service.getOdds(sport)));
+      const odds = settled.flatMap((result) => result.status === 'fulfilled' ? result.value : []);
+      res.json({ success: true, odds, count: odds.length, source: 'licensed odds providers' });
     } catch (error) {
-      console.error('Error fetching generic odds:', error);
-      res.status(500).json({ success: false, message: 'Failed to fetch odds', odds: [] });
+      console.error('Error fetching verified odds:', error);
+      res.status(503).json({ success: false, message: 'Verified odds are temporarily unavailable', odds: [] });
     }
   });
 
-  // Live odds endpoints with Pinnacle Odds as primary source
+  // Sport odds endpoint: never derives or fabricates a betting line.
   app.get('/api/odds/:sport', async (req, res) => {
     try {
-      const { sport } = req.params;
-      
-      // Import Pinnacle service directly
-      const pinnacleModule = await import('./services/pinnacleOddsService.js');
-      const pinnacleOddsService = pinnacleModule.pinnacleOddsService;
-      
-      // NEW HIERARCHY: RapidAPI FIRST (since Pinnacle is sub-API of RapidAPI), then ESPN, then Pinnacle fallback
-      const [rapidApiData, unifiedData, pinnacleOdds] = await Promise.allSettled([
-        comprehensiveRapidApi.getFootballFixtures(),
-        fetch('http://localhost:5000/api/unified-sports/upcoming-events').then(res => res.json()),
-        pinnacleOddsService.getPinnacleOdds(sport)
-      ]);
-
-      let combinedOdds = [];
-
-      // Priority 1: Use RapidAPI data (primary source since Pinnacle is sub-API) if available
-      if (rapidApiData.status === 'fulfilled' && rapidApiData.value?.length > 0) {
-        combinedOdds = rapidApiData.value.slice(0, 15).map((event: any) => ({
-          eventId: `rapidapi_${event.eventId || event.id || Date.now()}`,
-          sport: sport.toUpperCase(),
-          homeTeam: event.homeTeam || 'Home Team',
-          awayTeam: event.awayTeam || 'Away Team',
-          status: event.status || 'upcoming',
-          startTime: event.startTime || new Date(Date.now() + Math.random() * 7200000).toISOString(),
-          lastUpdate: new Date().toISOString(),
-          period: event.status === 'in' ? `Q${Math.ceil(Math.random() * 4)}` : undefined,
-          timeRemaining: event.status === 'in' ? `${Math.floor(Math.random() * 15)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}` : undefined,
-          score: event.status === 'in' ? { 
-            home: Math.floor(Math.random() * 28), 
-            away: Math.floor(Math.random() * 28) 
-          } : undefined,
-          odds: event.odds || {
-            spread: { home: Math.random() * 7, away: -Math.random() * 7, homeOdds: -110, awayOdds: -110 },
-            moneyline: { home: -150, away: 130 },
-            total: { over: 45, under: 45, overOdds: -110, underOdds: -110 }
-          }
-        }));
-        
-        console.log(`✅ Live Betting Odds: Using ${combinedOdds.length} RapidAPI events (PRIMARY SOURCE)`);
-      }
-      // Priority 2: Fallback to ESPN data if RapidAPI unavailable
-      else if (unifiedData.status === 'fulfilled' && unifiedData.value?.success && unifiedData.value?.data?.length > 0) {
-        // Filter for the specific sport if possible
-        const sportFilter = sport.toLowerCase().includes('football') ? 'NFL' : 
-                           sport.toLowerCase().includes('basketball') ? 'NBA' :
-                           sport.toLowerCase().includes('baseball') ? 'MLB' :
-                           sport.toLowerCase().includes('hockey') ? 'NHL' :
-                           sport.toLowerCase().includes('soccer') ? 'Soccer' : null;
-        
-        const filteredGames = sportFilter ? 
-          unifiedData.value.data.filter((game: any) => game.sport === sportFilter) : 
-          unifiedData.value.data;
-          
-        combinedOdds = (filteredGames.length > 0 ? filteredGames : unifiedData.value.data).slice(0, 10).map((game: any, index: number) => {
-          // Generate realistic betting odds
-          const homeSpread = (Math.random() - 0.5) * 14; // -7 to +7 point spread
-          const totalPoints = Math.round(40 + (Math.random() * 20)); // 40-60 total points
-          const homeML = homeSpread > 0 ? Math.round(-200 + homeSpread * 20) : Math.round(100 + Math.abs(homeSpread) * 20);
-          const awayML = -homeML + Math.round((Math.random() - 0.5) * 40);
-          
-          return {
-            eventId: `espn_${game.id}`,
-            sport: sport.toUpperCase(),
-            homeTeam: game.homeTeam?.name || game.homeTeam || 'Home Team',
-            awayTeam: game.awayTeam?.name || game.awayTeam || 'Away Team',
-            status: game.status === 'in' ? 'live' : 'upcoming',
-            startTime: game.startTime || new Date(Date.now() + Math.random() * 7200000).toISOString(),
-            lastUpdate: new Date().toISOString(),
-            period: game.status === 'in' ? `Q${Math.ceil(Math.random() * 4)}` : undefined,
-            timeRemaining: game.status === 'in' ? `${Math.floor(Math.random() * 15)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}` : undefined,
-            score: game.status === 'in' ? { 
-              home: Math.floor(Math.random() * 28), 
-              away: Math.floor(Math.random() * 28) 
-            } : undefined,
-            odds: {
-              spread: {
-                home: homeSpread > 0 ? homeSpread : homeSpread,
-                away: -homeSpread,
-                homeOdds: -110 + Math.round((Math.random() - 0.5) * 20),
-                awayOdds: -110 + Math.round((Math.random() - 0.5) * 20)
-              },
-              moneyline: {
-                home: homeML,
-                away: awayML
-              },
-              total: {
-                over: totalPoints,
-                under: totalPoints,
-                overOdds: -110 + Math.round((Math.random() - 0.5) * 20),
-                underOdds: -110 + Math.round((Math.random() - 0.5) * 20)
-              }
-            }
-          };
-        });
-        console.log(`✅ Live Betting Odds: Created ${combinedOdds.length} comprehensive odds from ESPN events`);
-      }
-      // Priority 2: Use Pinnacle Odds only if ESPN data is not available
-      else if (pinnacleOdds.status === 'fulfilled' && pinnacleOdds.value?.length > 0) {
-        combinedOdds = pinnacleOdds.value;
-        console.log(`✅ Pinnacle Fallback: Using ${combinedOdds.length} Pinnacle odds for ${sport} (no ESPN data)`);
-      }
-
-      // Add RapidAPI odds if available
-      if (rapidApiData.status === 'fulfilled' && rapidApiData.value?.length > 0) {
-        const rapidOdds = rapidApiData.value.slice(0, 5).map((game: any) => ({
-          id: `rapid_${game.id}_${Date.now()}`,
-          sport: game.sport,
-          teams: game.teams || `${game.homeTeam} vs ${game.awayTeam}`,
-          currentOdds: Math.round(game.odds?.home * 100) || -110,
-          previousOdds: Math.round((game.odds?.home * 100) - 5) || -115,
-          timestamp: new Date().toISOString(),
-          eventId: game.id,
-          bookmaker: 'RapidAPI Sports'
-        }));
-        combinedOdds = [...combinedOdds, ...rapidOdds];
-      }
-
-      res.json({
-        success: true,
-        odds: combinedOdds,
-        source: 'Multi-API Aggregated Data',
-        count: combinedOdds.length
-      });
-
+      const service = new OddsApiService();
+      const odds = await service.getOdds(req.params.sport);
+      res.json({ success: true, odds, count: odds.length, source: 'licensed odds providers' });
     } catch (error) {
-      console.error('Error fetching comprehensive odds:', error);
-      res.status(500).json({ success: false, message: 'Failed to fetch odds', odds: [] });
+      console.error('Error fetching verified sport odds:', error);
+      res.status(503).json({ success: false, message: 'Verified odds are temporarily unavailable', odds: [] });
     }
   });
 
