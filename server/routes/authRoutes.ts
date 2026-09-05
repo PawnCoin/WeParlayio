@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import rateLimit from 'express-rate-limit';
 import { storage } from '../storage';
 
 const router = Router();
@@ -9,10 +10,27 @@ const getJwtSecret = () => {
   return process.env.JWT_SECRET;
 };
 
+const credentialRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many sign-in attempts. Please try again later.' },
+});
+
 // User Registration
-router.post('/register', async (req, res) => {
+router.post('/register', credentialRateLimit, async (req, res) => {
   try {
     const { username, email, password, firstName, lastName, phone, dateOfBirth, allowMarketing } = req.body;
+
+    if (
+      typeof username !== 'string' || username.trim().length < 3 || username.length > 40 ||
+      typeof email !== 'string' || !/^\S+@\S+\.\S+$/.test(email) || email.length > 254 ||
+      typeof password !== 'string' || password.length < 12 || password.length > 128 ||
+      Number.isNaN(new Date(dateOfBirth).getTime())
+    ) {
+      return res.status(400).json({ message: 'Invalid registration details' });
+    }
 
     // Check if user already exists
     const existingUser = await storage.getUserByUsername(username);
@@ -69,12 +87,12 @@ router.post('/register', async (req, res) => {
 
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ message: 'Registration failed', error: error.message });
+    res.status(500).json({ message: 'Registration failed' });
   }
 });
 
 // User Login
-router.post('/login', async (req, res) => {
+router.post('/login', credentialRateLimit, async (req, res) => {
   try {
     const { email, username, password } = req.body;
     const loginId = String(email || username || '').trim();
@@ -86,7 +104,7 @@ router.post('/login', async (req, res) => {
     if (!user?.password || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
-    if (user.isActive === false || user.status === 'suspended') {
+    if (user.status === 'suspended') {
       return res.status(403).json({ success: false, message: 'Account access is disabled' });
     }
     const isAdmin = user.isAdmin === true || user.role === 'admin';
@@ -134,37 +152,19 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ 
       success: false,
       message: 'Login failed', 
-      error: error.message 
+      error: 'Authentication service unavailable'
     });
   }
 });
 
 // Admin Password Reset
-router.post('/admin-reset-password', async (req, res) => {
-  try {
-    const { email } = req.body;
-
-    if (email === 'support@weparlay.io') {
-      // In a real system, you'd send an actual email here
-      console.log(`Admin password reset requested for: ${email}`);
-
-      return res.json({
-        success: true,
-        message: 'Password reset instructions sent to your email'
-      });
-    }
-
-    return res.status(404).json({
-      success: false,
-      message: 'Admin email address not found'
-    });
-  } catch (error) {
-    console.error('Admin password reset error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Password reset failed'
-    });
-  }
+router.post('/admin-reset-password', credentialRateLimit, (_req, res) => {
+  // Password reset stays unavailable until a transactional email provider and
+  // secure, expiring reset-token flow are configured.
+  res.status(503).json({
+    success: false,
+    message: 'Password reset is not available yet. Contact support for account help.',
+  });
 });
 
 // Get current user info endpoint - returns actual user data
@@ -181,11 +181,7 @@ router.get('/user', async (req, res) => {
     try {
       const decoded = jwt.verify(token, getJwtSecret()) as any;
       
-      // Get user from database - try both getUser and getUserById
-      let user = await storage.getUser?.(decoded.userId);
-      if (!user && storage.getUserById) {
-        user = await storage.getUserById(decoded.userId);
-      }
+      const user = await storage.getUser(decoded.userId);
       
       if (!user) {
         console.log('User lookup failed for userId:', decoded.userId);
