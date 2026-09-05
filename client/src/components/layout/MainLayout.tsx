@@ -396,12 +396,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                                   Facebook Bots
                                 </Link>
                               </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <Link href="/admin-login-test" className="flex items-center">
-                                  <Shield className="h-4 w-4 mr-2 text-yellow-600" />
-                                  Admin Test
-                                </Link>
-                              </DropdownMenuItem>
                             </>
                           )}
                           <DropdownMenuSeparator />
