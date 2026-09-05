@@ -220,6 +220,7 @@ router.post("/:id/verify-results", async (req, res) => {
         });
       }
       tournament.status = "refunded";
+      tournament.chat = [];
       tournament.verified = true;
       tournament.settledAt = now.toISOString();
       tournament.settlementReason = !eligibleEntries.length
@@ -256,6 +257,7 @@ router.post("/:id/verify-results", async (req, res) => {
     }
     tournament.events = tournament.events.map((event: any) => ({ ...event, result: body.results.find(result => result.eventId === event.id), winner: winnersByEvent.get(event.id) || "void" }));
     tournament.status = "paid";
+    tournament.chat = [];
     tournament.verified = true;
     tournament.winnerIds = winners.map((winner: any) => winner.userId);
     tournament.highScore = highScore;
@@ -285,6 +287,7 @@ router.post("/:id/chat", isAuthenticated, async (req: any, res) => {
   try {
     const tournament = await tournamentStore.get(req.params.id);
     if (!tournament) return res.status(404).json({ message: "Tournament not found" });
+    if (["paid", "refunded"].includes(tournament.status)) return res.status(410).json({ message: "This tournament chat has closed" });
     const message = z.string().trim().min(1).max(200).parse(req.body.message);
     tournament.chat.push({ id: Date.now(), userId: req.user?.claims?.sub, message, createdAt: new Date().toISOString() });
     tournament.chat = tournament.chat.slice(-200);
