@@ -29,6 +29,15 @@ interface StreamingStatus {
   serverStatus: string;
 }
 
+interface StreamPlayResponse {
+  success: boolean;
+  message?: string;
+}
+
+interface StreamingProfile {
+  tier?: string;
+}
+
 const LiveSportsStreaming: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -43,26 +52,27 @@ const LiveSportsStreaming: React.FC = () => {
   const [userTier, setUserTier] = useState('bronze'); // bronze, silver, gold, diamond
   
   // Fetch streaming status
-  const { data: streamingStatus, isLoading: statusLoading } = useQuery({
+  const { data: streamingStatus } = useQuery<StreamingStatus>({
     queryKey: ['/api/streaming/status'],
     refetchInterval: 30000,
   });
 
   // Fetch available channels
-  const { data: channels = [], isLoading: channelsLoading } = useQuery({
+  const { data: channels = [], isLoading: channelsLoading } = useQuery<StreamChannel[]>({
     queryKey: ['/api/streaming/channels'],
     refetchInterval: 60000,
   });
 
   // Fetch user's subscription tier
-  const { data: userProfile } = useQuery({
+  const { data: userProfile } = useQuery<StreamingProfile>({
     queryKey: ['/api/user/profile'],
   });
 
   // Stream playback mutation
   const playStreamMutation = useMutation({
     mutationFn: async (streamData: { channelId: string; tier: string }) => {
-      return apiRequest('POST', '/api/streaming/play', streamData);
+      const response = await apiRequest('POST', '/api/streaming/play', streamData);
+      return response.json() as Promise<StreamPlayResponse>;
     },
     onSuccess: (data) => {
       if (data.success) {
