@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { Users, Trophy, Clock, DollarSign, Plus, CheckCircle, XCircle, AlertCircle, LockKeyhole, MessageCircle, RotateCcw, Copy, Mail, Send, Share2 } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { TeamLogo } from '@/components/betting/TeamLogo';
@@ -78,6 +79,7 @@ const P2pBetting = () => {
   const [selectedGame, setSelectedGame] = useState<GameEvent | null>(null);
   const [invitationId, setInvitationId] = useState(() => new URLSearchParams(window.location.search).get('challenge'));
   const { toast } = useToast();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const { data: invitationData, isLoading: invitationLoading } = useQuery<any>({
@@ -333,6 +335,7 @@ const P2pBetting = () => {
                   cancelLoading={cancelChallengeMutation.isPending}
                   onDispute={(challengeId, reason) => disputeChallengeMutation.mutate({ challengeId, reason })}
                   disputeLoading={disputeChallengeMutation.isPending}
+                  canSendInvitation={challenge.challengerId === (user as any)?.id}
                 />
               ))
             )}
@@ -474,14 +477,30 @@ interface ChallengeCardProps {
   cancelLoading?: boolean;
   onDispute?: (challengeId: string, reason: string) => void;
   disputeLoading?: boolean;
+  canSendInvitation?: boolean;
 }
 
-const ChallengeCard = ({ challenge, isOwn, onAccept, acceptLoading, onDecline, declineLoading, onCancel, cancelLoading, onDispute, disputeLoading }: ChallengeCardProps) => {
+const ChallengeCard = ({ challenge, isOwn, onAccept, acceptLoading, onDecline, declineLoading, onCancel, cancelLoading, onDispute, disputeLoading, canSendInvitation = false }: ChallengeCardProps) => {
   const [selectedPick, setSelectedPick] = useState('');
   const [showAcceptDialog, setShowAcceptDialog] = useState(false);
   const [showDisputeDialog, setShowDisputeDialog] = useState(false);
   const [disputeReason, setDisputeReason] = useState('');
+  const [showDeliveryDialog, setShowDeliveryDialog] = useState(false);
+  const [deliveryChannel, setDeliveryChannel] = useState<'email' | 'sms'>('email');
+  const [recipient, setRecipient] = useState('');
   const { toast } = useToast();
+  const sendInvitation = useMutation({
+    mutationFn: () => apiRequest('POST', `/api/p2p-betting/challenges/${challenge.id}/invitations/send`, {
+      channel: deliveryChannel,
+      recipient: recipient.trim(),
+    }),
+    onSuccess: () => {
+      toast({ title: 'Invitation sent', description: `Your ${deliveryChannel} invitation was delivered.` });
+      setRecipient('');
+      setShowDeliveryDialog(false);
+    },
+    onError: (error: Error) => toast({ title: 'Invitation not sent', description: error.message, variant: 'destructive' }),
+  });
 
   const isExpired = new Date(challenge.expiresAt) <= new Date();
   const canAccept = challenge.status === 'open' && !isExpired && !isOwn;
@@ -582,6 +601,34 @@ const ChallengeCard = ({ challenge, isOwn, onAccept, acceptLoading, onDecline, d
               <a href={`sms:?&body=${encodeURIComponent(shareMessage)}`}><Button variant="outline" size="sm" className="w-full" title="Text invitation"><Send className="h-4 w-4" /></Button></a>
               <Button variant="outline" size="sm" title="Share invitation" onClick={shareInvitation}><Share2 className="h-4 w-4" /></Button>
             </div>
+          )}
+
+          {challenge.status === 'open' && canSendInvitation && (
+            <Dialog open={showDeliveryDialog} onOpenChange={setShowDeliveryDialog}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="w-full">
+                  <Send className="mr-2 h-4 w-4" />
+                  Send tracked email or SMS invitation
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader><DialogTitle>Send bet invitation</DialogTitle></DialogHeader>
+                <p className="text-sm text-muted-foreground">This uses WeParlay’s configured transactional delivery provider. The recipient can sign in, accept, or decline.</p>
+                <Select value={deliveryChannel} onValueChange={(value: 'email' | 'sms') => setDeliveryChannel(value)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="email">Email</SelectItem><SelectItem value="sms">SMS text message</SelectItem></SelectContent>
+                </Select>
+                <Input
+                  type={deliveryChannel === 'email' ? 'email' : 'tel'}
+                  value={recipient}
+                  onChange={(event) => setRecipient(event.target.value)}
+                  placeholder={deliveryChannel === 'email' ? 'friend@example.com' : '+15551234567'}
+                />
+                <Button className="w-full" disabled={!recipient.trim() || sendInvitation.isPending} onClick={() => sendInvitation.mutate()}>
+                  {sendInvitation.isPending ? 'Sending…' : 'Send invitation'}
+                </Button>
+              </DialogContent>
+            </Dialog>
           )}
 
           {canAccept && (
