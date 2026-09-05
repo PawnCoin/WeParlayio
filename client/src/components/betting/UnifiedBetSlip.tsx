@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { Trash2, Wallet, CreditCard, Ticket, Mail, MessageSquareText, Share2 } from 'lucide-react';
+import { Trash2, Wallet, Ticket, Mail, MessageSquareText, Share2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -41,8 +41,6 @@ interface UnifiedBetSlipProps {
   onClearAll: () => void;
   balances: {
     weparlay_cash?: number;
-    real_money?: number;
-    crypto?: number;
   };
 }
 
@@ -60,7 +58,7 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
 }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [selectedCurrency, setSelectedCurrency] = useState<'weparlay_cash' | 'real_money'>('weparlay_cash');
+  const selectedCurrency = 'weparlay_cash' as const;
   const [wagerMode, setWagerMode] = useState<'straight' | 'parlay'>('straight');
   const [parlayStake, setParlayStake] = useState('');
   const [localBetSlip, setLocalBetSlip] = useState<BetSlipItem[]>([]);
@@ -217,10 +215,8 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
     switch (currency) {
       case 'weparlay_cash':
         return <Wallet className="h-4 w-4" />;
-      case 'real_money':
-        return <CreditCard className="h-4 w-4 text-emerald-500" />;
       default:
-        return <CreditCard className="h-4 w-4" />;
+        return <Wallet className="h-4 w-4" />;
     }
   };
 
@@ -228,10 +224,8 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
     switch (currency) {
       case 'weparlay_cash':
         return 'WeParlay Cash';
-      case 'real_money':
-        return 'Debit Card';
       default:
-        return 'USD';
+        return 'WeParlay Cash';
     }
   };
 
@@ -254,7 +248,7 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
             <label className="block text-white text-sm font-medium mb-2">
               Choose Your Currency
             </label>
-            <Select value={selectedCurrency} onValueChange={(value: 'weparlay_cash' | 'real_money') => setSelectedCurrency(value)}>
+            <Select value={selectedCurrency} disabled>
               <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                 <SelectValue placeholder="Select currency..." />
               </SelectTrigger>
@@ -268,19 +262,10 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
                     <span className="text-green-400">${(balances?.weparlay_cash || 0).toFixed(2)}</span>
                   </div>
                 </SelectItem>
-                <SelectItem value="real_money" disabled className="text-white hover:bg-slate-700">
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center">
-                      <CreditCard className="h-4 w-4 mr-2 text-emerald-500" />
-                      Debit Card (Verification required)
-                    </div>
-                    <span className="text-green-400">${(balances?.real_money || 0).toFixed(2)}</span>
-                  </div>
-                </SelectItem>
               </SelectContent>
             </Select>
           </div>
-          <p className="text-xs text-slate-400">Debit-card wagering requires real identity, age, location, and jurisdiction verification. It remains unavailable until compliance and payment-provider approval are complete.</p>
+          <p className="text-xs text-slate-400">Play-cash launch: wagers use WeParlay Cash only. Debit card and crypto are coming soon after compliance and provider approval.</p>
 
           {/* Current Balance Display */}
           <div className="bg-slate-800 p-3 rounded-lg">

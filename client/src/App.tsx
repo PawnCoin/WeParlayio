@@ -13,8 +13,7 @@ import P2pBetting from "@/pages/P2pBetting";
 import MyBets from "@/pages/MyBets";
 import UserProfile from "@/pages/UserProfile";
 import AuthenticationHub from "@/pages/AuthenticationHub";
-import BankingSystem from "@/pages/BankingSystem";
-import CryptoWallet from "@/pages/CryptoWallet";
+import ComingSoonFinancialServices from "@/pages/ComingSoonFinancialServices";
 import Settings from "@/pages/Settings";
 import SecuritySettings from "@/pages/SecuritySettings";
 import Support from "@/pages/Support";
@@ -47,8 +46,8 @@ function Router() {
       <Route path="/auth" component={AuthenticationHub} />
       <Route path="/login" component={AuthenticationHub} />
       <Route path="/signup" component={AuthenticationHub} />
-      <Route path="/banking" component={BankingSystem} />
-      <Route path="/crypto-wallet" component={CryptoWallet} />
+      <Route path="/banking"><ComingSoonFinancialServices service="banking" /></Route>
+      <Route path="/crypto-wallet"><ComingSoonFinancialServices service="crypto" /></Route>
       <Route path="/settings" component={Settings} />
       <Route path="/security-settings" component={SecuritySettings} />
       <Route path="/support" component={Support} />
