@@ -173,6 +173,23 @@ const P2pBetting = () => {
     onError: (error: Error) => toast({ title: 'Could not decline invitation', description: error.message, variant: 'destructive' }),
   });
 
+  const cancelChallengeMutation = useMutation({
+    mutationFn: (challengeId: string) => apiRequest('POST', `/api/p2p-betting/challenges/${challengeId}/cancel`, {}),
+    onSuccess: () => {
+      toast({
+        title: 'Challenge cancelled',
+        description: 'Your reserved WeParlay Cash has been returned.',
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/p2p-betting/challenges/available'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/p2p-betting/challenges/mine'] });
+    },
+    onError: (error: Error) => toast({
+      title: 'Could not cancel challenge',
+      description: error.message,
+      variant: 'destructive',
+    }),
+  });
+
   const games = (gamesData as any)?.data || [];
   const challenges = (availableChallenges as any)?.challenges || [];
   const categories = ['All', ...Array.from(new Set(challenges.map((item: P2pChallenge) => item.gameDetails?.sport).filter(Boolean))) as string[]];
@@ -295,6 +312,8 @@ const P2pBetting = () => {
                   isOwn={true}
                   onAccept={() => {}}
                   acceptLoading={false}
+                  onCancel={(challengeId) => cancelChallengeMutation.mutate(challengeId)}
+                  cancelLoading={cancelChallengeMutation.isPending}
                 />
               ))
             )}
@@ -432,9 +451,11 @@ interface ChallengeCardProps {
   acceptLoading: boolean;
   onDecline?: (challengeId: string) => void;
   declineLoading?: boolean;
+  onCancel?: (challengeId: string) => void;
+  cancelLoading?: boolean;
 }
 
-const ChallengeCard = ({ challenge, isOwn, onAccept, acceptLoading, onDecline, declineLoading }: ChallengeCardProps) => {
+const ChallengeCard = ({ challenge, isOwn, onAccept, acceptLoading, onDecline, declineLoading, onCancel, cancelLoading }: ChallengeCardProps) => {
   const [selectedPick, setSelectedPick] = useState('');
   const [showAcceptDialog, setShowAcceptDialog] = useState(false);
   const { toast } = useToast();
@@ -594,6 +615,18 @@ const ChallengeCard = ({ challenge, isOwn, onAccept, acceptLoading, onDecline, d
           )}
 
           {canAccept && onDecline && <Button variant="ghost" className="w-full" disabled={declineLoading} onClick={() => onDecline(challenge.id)}>{declineLoading ? 'Declining…' : 'Decline invitation'}</Button>}
+
+          {isOwn && challenge.status === 'open' && !isExpired && onCancel && (
+            <Button
+              variant="outline"
+              className="w-full"
+              disabled={cancelLoading}
+              onClick={() => onCancel(challenge.id)}
+            >
+              <RotateCcw className="mr-2 h-4 w-4" />
+              {cancelLoading ? 'Cancelling…' : 'Cancel challenge and refund stake'}
+            </Button>
+          )}
 
           {isExpired && challenge.status === 'open' && (
             <div className="text-center py-2 text-red-500 text-sm">
