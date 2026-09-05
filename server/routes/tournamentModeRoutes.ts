@@ -5,6 +5,7 @@ import { isAuthenticated } from "../replitAuth";
 import { dailyTournamentRepository as tournamentStore } from "../services/dailyTournamentRepository";
 import { recordWeparlayCashLedgerEntry } from "../services/weparlayCashLedger";
 import { hasIndependentConfirmation, scoreTournament, splitPot, validateTournamentResults } from "../services/tournamentSettlement";
+import { espnApiService } from "../services/espnApiService";
 
 const router = Router();
 const excludedFieldSports = /golf|nascar|formula|racing|cycling/i;
@@ -153,6 +154,32 @@ router.put("/:id/picks", isAuthenticated, async (req: any, res) => {
     await tournamentStore.save(tournament);
     res.json({ tournament });
   } catch (error: any) { res.status(400).json({ message: error.message }); }
+});
+
+// Protected result intake for the scheduled tournament verification job. It
+// returns a scorecard only when every tournament event has an ESPN final; the
+// existing verify-results endpoint still requires a second provider and the
+// end-of-day hold before any escrow can be released.
+router.get("/:id/results/espn", async (req, res) => {
+  try {
+    if (!settlementAuthorized(req.header("x-tournament-settlement-key"))) return res.status(403).json({ message: "Settlement access denied" });
+    const tournament = await tournamentStore.get(req.params.id);
+    if (!tournament) return res.status(404).json({ message: "Tournament not found" });
+
+    const resolved = await Promise.all(tournament.events.map(async (event: any) => ({ event, final: await espnApiService.getFinalEventById(event.id) })));
+    const unresolved = resolved.filter(({ final }) => !final).map(({ event }) => event.id);
+    if (unresolved.length) return res.status(409).json({ message: "Not every tournament event has a verified ESPN final", unresolvedEventIds: unresolved });
+
+    const results = resolved.map(({ event, final }) => ({
+      eventId: event.id,
+      status: "completed" as const,
+      homeScore: final.homeTeam.score,
+      awayScore: final.awayTeam.score,
+    }));
+    res.json({ provider: "ESPN", results, tournamentId: tournament.id, generatedAt: new Date().toISOString() });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message || "Unable to load ESPN tournament results" });
+  }
 });
 
 router.post("/:id/verify-results", async (req, res) => {
