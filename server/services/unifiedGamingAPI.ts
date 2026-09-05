@@ -22,50 +22,8 @@ const fetchWithCache = async (key: string, url: string, config: any = {}, apiNam
       ...config
     });
   } catch (error: any) {
-    console.warn(`🛡️ All API methods failed for ${key}, using absolute fallback`);
-    
-    // Absolute last resort - static fallback data
-    const staticFallbacks = {
-      'fortnite': {
-        status: 200,
-        data: {
-          account: { name: 'Demo Player' },
-          stats: { solo: { wins: 10, kills: 150 } },
-          message: 'Fortnite API temporarily unavailable'
-        }
-      },
-      'riot': {
-        name: 'Demo Summoner',
-        summonerLevel: 50,
-        rankedData: [{ tier: 'GOLD', rank: 'II', leaguePoints: 75 }],
-        message: 'Riot API temporarily unavailable'
-      },
-      'valorant': {
-        account: { gameName: 'Demo Player', tagLine: '1234' },
-        competitive: { currentRank: 'Gold 2' },
-        message: 'Valorant API temporarily unavailable'
-      },
-      'csgo': {
-        stats: { kills: 2500, deaths: 2000, kd: 1.25 },
-        rank: 'Gold Nova III',
-        message: 'CS:GO API temporarily unavailable'
-      }
-    };
-
-    // Return relevant static fallback
-    for (const [game, data] of Object.entries(staticFallbacks)) {
-      if (key.toLowerCase().includes(game) || apiName.toLowerCase().includes(game)) {
-        return data;
-      }
-    }
-
-    // Ultimate fallback
-    return {
-      error: false,
-      message: 'Service temporarily unavailable - using cached data',
-      data: null,
-      fallback: true
-    };
+    console.warn(`Gaming provider unavailable for ${key}:`, error?.message || error);
+    return { error: true, message: 'Service temporarily unavailable', data: null };
   }
 };
 

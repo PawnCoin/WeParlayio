@@ -51,9 +51,9 @@ export class OddsApiService {
 
     const sportKey = sport ? (sportMapping[sport.toLowerCase()] || sport) : 'upcoming';
 
-    // For esports, return mock data since The Odds API doesn't support esports
+    // This provider does not cover esports; never synthesize a market.
     if (sport && ['esports', 'lol', 'cs2', 'valorant', 'dota2'].includes(sport.toLowerCase())) {
-      return this.getEsportsOdds();
+      return [];
     }
 
     const url = `${this.baseUrl}/sports/${sportKey}/odds?apiKey=${this.apiKey}&regions=${region}&markets=${markets}`;
@@ -76,34 +76,6 @@ export class OddsApiService {
       console.error("Error fetching odds:", error);
       throw error;
     }
-  }
-
-  private getEsportsOdds(): any {
-    return [
-      {
-        id: 'esports_lol_worlds_2025',
-        sport_key: 'esports_lol',
-        sport_title: 'League of Legends - Worlds 2025',
-        commence_time: new Date(Date.now() + 3600000).toISOString(),
-        home_team: 'T1',
-        away_team: 'Gen.G',
-        bookmakers: [
-          {
-            key: 'weparlay',
-            title: 'WeParlay Esports',
-            markets: [
-              {
-                key: 'h2h',
-                outcomes: [
-                  { name: 'T1', price: 1.85 + (Math.random() - 0.5) * 0.2 },
-                  { name: 'Gen.G', price: 2.15 + (Math.random() - 0.5) * 0.2 }
-                ]
-              }
-            ]
-          }
-        ]
-      }
-    ];
   }
 
   private getMockOddsData(sport?: string): any {
