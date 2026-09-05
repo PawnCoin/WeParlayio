@@ -61,11 +61,6 @@ initializeTokenCleanup();
 // Theme initialization
 console.log('🎨 WeParlay theme system initialized');
 
-import UserDirectory from './pages/UserDirectory';
-import UserProfileBanking from './pages/UserProfileBanking';
-import UserProfilePage from './pages/UserProfilePage';
-import WalletTest from './pages/WalletTest';
-
 createRoot(document.getElementById("root")!).render(
   <ThemeProvider>
     <App />
