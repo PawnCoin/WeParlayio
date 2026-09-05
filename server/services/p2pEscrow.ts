@@ -265,6 +265,11 @@ export async function queueP2pFinalResult(challengeId: string, result: {
   });
 }
 
+export const getAcceptedP2pChallenges = () => db.select()
+  .from(p2pChallenges)
+  .where(eq(p2pChallenges.status, "accepted"))
+  .orderBy(p2pChallenges.acceptedAt);
+
 export async function getAvailableP2pChallenges(userId: string) {
   await expireOpenP2pChallenges();
   return db.select().from(p2pChallenges).where(and(eq(p2pChallenges.status, "open"), gt(p2pChallenges.expiresAt, new Date()), ne(p2pChallenges.challengerId, userId), or(eq(p2pChallenges.isPublic, true), eq(p2pChallenges.challengeeId, userId)))).orderBy(desc(p2pChallenges.createdAt));
