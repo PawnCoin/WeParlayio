@@ -8,6 +8,7 @@ import { users } from '@shared/schema';
 import { sendEmail } from '../services/emailService';
 import { smsService } from '../services/smsService';
 import { espnApiService } from '../services/espnApiService';
+import { theSportsDbService } from '../services/theSportsDbService';
 import {
   acceptFundedP2pChallenge,
   cancelAndRefundP2pChallenge,
@@ -623,6 +624,51 @@ router.post('/admin/challenges/:challengeId/results/espn', isAuthenticated, rest
     res.json({ success: true, challenge: updated, result: event, message: 'Final score recorded; payout remains pending verification' });
   } catch (error: any) {
     res.status(400).json({ success: false, message: error.message || 'Unable to record ESPN result' });
+  }
+});
+
+// A second source must report the same final score before an operator treats
+// the result as corroborated. This endpoint still does not settle escrow.
+router.post('/admin/challenges/:challengeId/results/verify', isAuthenticated, restrictedAuthMiddleware, async (req: Request, res: Response) => {
+  try {
+    const adminId = (req.user as any).claims?.sub;
+    const [admin] = await db.select({ isAdmin: users.isAdmin }).from(users).where(eq(users.id, adminId)).limit(1);
+    if (!admin?.isAdmin) return res.status(403).json({ success: false, message: 'Admin access required' });
+
+    const challenge = await getP2pChallenge(req.params.challengeId);
+    if (!challenge) return res.status(404).json({ success: false, message: 'Challenge not found' });
+    if (challenge.status !== 'accepted') return res.status(400).json({ success: false, message: 'Challenge is not awaiting a final result' });
+
+    const espn = await espnApiService.getFinalEventById(challenge.eventId);
+    if (!espn) return res.status(409).json({ success: false, message: 'ESPN does not yet report a completed score for this event' });
+    const sportsDb = await theSportsDbService.findFinalByTeams({
+      homeTeam: espn.homeTeam.name,
+      awayTeam: espn.awayTeam.name,
+      startTime: challenge.gameDetails.startTime,
+    });
+    if (!sportsDb) return res.status(409).json({ success: false, message: 'A corroborating final score is not available yet; payout remains frozen' });
+    if (sportsDb.homeScore !== espn.homeTeam.score || sportsDb.awayScore !== espn.awayTeam.score) {
+      return res.status(409).json({ success: false, message: 'Result sources disagree; payout remains frozen for review' });
+    }
+
+    const updated = await queueP2pFinalResult(challenge.id, {
+      source: 'ESPN + TheSportsDB',
+      homeTeam: espn.homeTeam.name,
+      awayTeam: espn.awayTeam.name,
+      homeScore: espn.homeTeam.score,
+      awayScore: espn.awayTeam.score,
+      statusDetail: espn.statusDetail,
+    });
+    await createP2pActivity({
+      challengeId: challenge.id,
+      userId: adminId,
+      activityType: 'official_result_verified',
+      message: `Final score corroborated by ESPN and TheSportsDB: ${espn.awayTeam.name} ${espn.awayTeam.score} – ${espn.homeTeam.name} ${espn.homeTeam.score}.`,
+      metadata: { sources: ['ESPN', 'TheSportsDB'], eventId: espn.id, homeScore: espn.homeTeam.score, awayScore: espn.awayTeam.score },
+    });
+    res.json({ success: true, challenge: updated, result: { espn, sportsDb }, message: 'Final score corroborated; payout remains pending the authorized settlement decision' });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message || 'Unable to verify result' });
   }
 });
 
