@@ -81,16 +81,29 @@ const supportTicketSchema = z.object({
 
 type SupportTicketFormValues = z.infer<typeof supportTicketSchema>;
 
-// Ticket interface
-interface Ticket {
+type TicketStatus = 'open' | 'processing' | 'resolved' | 'escalated';
+
+interface TicketSummary {
   id: string;
   subject: string;
   category: string;
-  status: 'open' | 'processing' | 'resolved' | 'escalated';
+  status: TicketStatus;
   createTime: string;
   updateTime: string;
   isResolved: boolean;
   resolution?: string;
+}
+
+interface TicketDetails extends Omit<TicketSummary, 'resolution'> {
+  description: string;
+  resolution?: {
+    message: string;
+    steps: string[];
+  };
+}
+
+interface TicketListResponse {
+  tickets: TicketSummary[];
 }
 
 // Status badge color mapper
@@ -144,7 +157,7 @@ export default function Support() {
   });
 
   // Fetch tickets
-  const { data: tickets, isLoading: ticketsLoading } = useQuery({
+  const { data: tickets, isLoading: ticketsLoading } = useQuery<TicketListResponse>({
     queryKey: ['/api/support/tickets'],
     enabled: isAuthenticated,
   });
@@ -172,14 +185,20 @@ export default function Support() {
   });
 
   // Get ticket details
-  const { data: activeTicketData, isLoading: ticketDetailsLoading } = useQuery({
+  const { data: activeTicketData, isLoading: ticketDetailsLoading } = useQuery<TicketDetails>({
     queryKey: ['/api/support/tickets', activeTicket],
     enabled: !!activeTicket,
+    queryFn: async () => {
+      const response = await apiRequest('GET', `/api/support/tickets/${activeTicket}`);
+      return response.json();
+    },
   });
 
   const onSubmit = (values: SupportTicketFormValues) => {
     createTicketMutation.mutate(values);
   };
+
+  const supportTickets = tickets?.tickets ?? [];
 
   if (authLoading) {
     return (
@@ -210,7 +229,7 @@ export default function Support() {
       <Tabs defaultValue="new-ticket">
         <TabsList className="mb-4 grid w-full grid-cols-2">
           <TabsTrigger value="new-ticket">New Support Request</TabsTrigger>
-          <TabsTrigger value="my-tickets">My Tickets {tickets?.tickets?.length > 0 && `(${tickets.tickets.length})`}</TabsTrigger>
+          <TabsTrigger value="my-tickets">My Tickets {supportTickets.length > 0 && `(${supportTickets.length})`}</TabsTrigger>
         </TabsList>
         
         <TabsContent value="new-ticket">
@@ -313,7 +332,7 @@ export default function Support() {
                 <div className="flex justify-center py-8">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
-              ) : tickets?.tickets?.length > 0 ? (
+              ) : supportTickets.length > 0 ? (
                 <Table>
                   <TableCaption>Your support ticket history</TableCaption>
                   <TableHeader>
@@ -326,7 +345,7 @@ export default function Support() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {tickets.tickets.map((ticket: Ticket) => (
+                    {supportTickets.map((ticket) => (
                       <TableRow 
                         key={ticket.id}
                         className="cursor-pointer hover:bg-muted/50"
