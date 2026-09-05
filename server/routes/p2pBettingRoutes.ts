@@ -4,7 +4,7 @@ import { restrictedAuthMiddleware } from '../middleware/restrictedAuth';
 import { z } from 'zod';
 import { db } from '../db';
 import { eq } from 'drizzle-orm';
-import { users } from '@shared/schema';
+import { p2pChallenges, p2pDisputes, users } from '@shared/schema';
 import {
   acceptFundedP2pChallenge,
   cancelAndRefundP2pChallenge,
@@ -14,8 +14,10 @@ import {
   getP2pActivity,
   getP2pChallenge,
   getP2pChallengeWithNames,
+  getP2pDisputes,
   getP2pStats,
   getUserP2pChallenges,
+  refundAcceptedP2pChallenge,
   settleP2pChallenge,
 } from '../services/p2pEscrow';
 
@@ -362,12 +364,16 @@ router.get('/challenges/:challengeId', isAuthenticated, restrictedAuthMiddleware
     }
 
     // Get activity feed
-    const activity = await getP2pActivity(challengeId);
+    const [activity, disputes] = await Promise.all([
+      getP2pActivity(challengeId),
+      getP2pDisputes(challengeId),
+    ]);
 
     res.json({
       success: true,
       challenge,
-      activity
+      activity,
+      disputes,
     });
   } catch (error: any) {
     console.error('Error fetching challenge details:', error);
@@ -375,6 +381,91 @@ router.get('/challenges/:challengeId', isAuthenticated, restrictedAuthMiddleware
       success: false,
       message: 'Failed to fetch challenge details'
     });
+  }
+});
+
+// A participant can dispute an accepted result. Opening a dispute freezes the
+// challenge in pending settlement until an authorized decision is recorded.
+router.post('/challenges/:challengeId/disputes', isAuthenticated, restrictedAuthMiddleware, async (req: Request, res: Response) => {
+  try {
+    const userId = (req.user as any).claims?.sub;
+    const { reason, evidence } = z.object({
+      reason: z.string().trim().min(10).max(1_000),
+      evidence: z.string().trim().max(2_000).optional(),
+    }).parse(req.body);
+    const challenge = await getP2pChallenge(req.params.challengeId);
+    if (!challenge) return res.status(404).json({ success: false, message: 'Challenge not found' });
+    if (![challenge.challengerId, challenge.challengeeId].includes(userId)) {
+      return res.status(403).json({ success: false, message: 'Only a challenge participant can open a dispute' });
+    }
+    if (!['accepted', 'pending_settlement'].includes(challenge.status || '')) {
+      return res.status(400).json({ success: false, message: 'This challenge is not eligible for a result dispute' });
+    }
+
+    const [dispute] = await db.insert(p2pDisputes).values({
+      challengeId: challenge.id,
+      openedBy: userId,
+      reason,
+      evidence: evidence || null,
+      status: 'open',
+      updatedAt: new Date(),
+    }).returning();
+    await db.update(p2pChallenges).set({
+      status: 'pending_settlement',
+      settlementReason: 'Result disputed — payout frozen pending review',
+      updatedAt: new Date(),
+    }).where(eq(p2pChallenges.id, challenge.id));
+    await createP2pActivity({
+      challengeId: challenge.id,
+      userId,
+      activityType: 'result_disputed',
+      message: 'A result dispute was opened. Payout is frozen pending review.',
+      metadata: { disputeId: dispute.id },
+    });
+    res.status(201).json({ success: true, dispute });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error?.issues?.[0]?.message || error.message || 'Unable to open dispute' });
+  }
+});
+
+// Authorized reviewers resolve a frozen dispute by either paying the verified
+// winner or refunding both participants when the event is void/drawn.
+router.post('/admin/challenges/:challengeId/disputes/:disputeId/resolve', isAuthenticated, restrictedAuthMiddleware, async (req: Request, res: Response) => {
+  try {
+    const adminId = (req.user as any).claims?.sub;
+    const [admin] = await db.select({ isAdmin: users.isAdmin }).from(users).where(eq(users.id, adminId)).limit(1);
+    if (!admin?.isAdmin) return res.status(403).json({ success: false, message: 'Admin access required' });
+    const { outcome, winnerUserId, resolution } = z.object({
+      outcome: z.enum(['payout', 'refund']),
+      winnerUserId: z.string().optional(),
+      resolution: z.string().trim().min(10).max(2_000),
+    }).parse(req.body);
+    if (outcome === 'payout' && !winnerUserId) return res.status(400).json({ success: false, message: 'A verified winner is required for payout' });
+
+    const [dispute] = await db.select().from(p2pDisputes).where(eq(p2pDisputes.id, req.params.disputeId)).limit(1);
+    if (!dispute || dispute.challengeId !== req.params.challengeId) return res.status(404).json({ success: false, message: 'Dispute not found' });
+    if (dispute.status !== 'open') return res.status(400).json({ success: false, message: 'Dispute has already been resolved' });
+
+    const challenge = outcome === 'payout'
+      ? await settleP2pChallenge(req.params.challengeId, winnerUserId!, `Verified dispute resolution: ${resolution}`, true)
+      : await refundAcceptedP2pChallenge(req.params.challengeId, `Verified dispute refund: ${resolution}`);
+    await db.update(p2pDisputes).set({
+      status: 'resolved',
+      resolution,
+      resolvedBy: adminId,
+      resolvedAt: new Date(),
+      updatedAt: new Date(),
+    }).where(eq(p2pDisputes.id, dispute.id));
+    await createP2pActivity({
+      challengeId: challenge.id,
+      userId: adminId,
+      activityType: 'dispute_resolved',
+      message: outcome === 'payout' ? 'Dispute resolved with verified payout.' : 'Dispute resolved with a full refund.',
+      metadata: { disputeId: dispute.id, outcome, winnerUserId: winnerUserId || null },
+    });
+    res.json({ success: true, challenge, disputeId: dispute.id, outcome });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error?.issues?.[0]?.message || error.message || 'Unable to resolve dispute' });
   }
 });
 

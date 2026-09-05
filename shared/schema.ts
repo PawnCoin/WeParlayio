@@ -745,6 +745,25 @@ export const p2pActivity = pgTable("p2p_activity", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Formal result disputes freeze payout until an authorized resolution is
+// recorded. Evidence stays as text/links so it can be retained in the audit
+// trail without storing payment credentials or identity documents here.
+export const p2pDisputes = pgTable("p2p_disputes", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  challengeId: varchar("challenge_id").notNull().references(() => p2pChallenges.id),
+  openedBy: varchar("opened_by").notNull().references(() => users.id),
+  reason: text("reason").notNull(),
+  evidence: text("evidence"),
+  status: varchar("status", { length: 32 }).notNull().default("open"),
+  resolution: text("resolution"),
+  resolvedBy: varchar("resolved_by").references(() => users.id),
+  resolvedAt: timestamp("resolved_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => [
+  index("p2p_disputes_challenge_created_idx").on(table.challengeId, table.createdAt),
+]);
+
 export const insertFriendshipSchema = createInsertSchema(friendships).pick({
   userId: true,
   friendId: true,

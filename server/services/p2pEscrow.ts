@@ -1,6 +1,6 @@
 import { and, desc, eq, gt, inArray, lt, ne, or, sql } from "drizzle-orm";
 import { db } from "../db";
-import { p2pActivity, p2pChallenges, p2pTransactions, users } from "@shared/schema";
+import { p2pActivity, p2pChallenges, p2pDisputes, p2pTransactions, users } from "@shared/schema";
 import { assertP2pAmount, p2pMoney as money, validateP2pAcceptance, validateP2pSettlement } from "./p2pRules";
 
 async function lockUser(tx: any, userId: string) {
@@ -97,15 +97,46 @@ export async function cancelAndRefundP2pChallenge(challengeId: string, requester
   });
 }
 
-export async function settleP2pChallenge(challengeId: string, winnerId: string, reason: string) {
+export async function settleP2pChallenge(challengeId: string, winnerId: string, reason: string, allowOpenDispute = false) {
   return db.transaction(async (tx) => {
     const [challenge] = await tx.select().from(p2pChallenges).where(eq(p2pChallenges.id, challengeId)).for("update");
     if (!challenge) throw new Error("Challenge not found");
     if (challenge.status === "settled" && challenge.winnerUserId === winnerId) return challenge;
+    const [openDispute] = await tx.select({ id: p2pDisputes.id })
+      .from(p2pDisputes)
+      .where(and(eq(p2pDisputes.challengeId, challengeId), eq(p2pDisputes.status, "open")))
+      .limit(1);
+    if (openDispute && !allowOpenDispute) throw new Error("An open result dispute must be resolved before payout");
     validateP2pSettlement(challenge, winnerId);
 
     await changeBalance(tx, winnerId, challenge.totalPot, `p2p:${challenge.id}:release:${winnerId}`, "escrow_release", `P2P challenge ${challenge.id} winnings`, { challengeId });
     const [updated] = await tx.update(p2pChallenges).set({ status: "settled", winnerUserId: winnerId, settlementReason: reason, escrowHeld: 0, settledAt: new Date(), updatedAt: new Date() }).where(eq(p2pChallenges.id, challengeId)).returning();
+    return updated;
+  });
+}
+
+export async function refundAcceptedP2pChallenge(challengeId: string, reason: string) {
+  return db.transaction(async (tx) => {
+    const [challenge] = await tx.select().from(p2pChallenges).where(eq(p2pChallenges.id, challengeId)).for("update");
+    if (!challenge) throw new Error("Challenge not found");
+    if (challenge.status === "settled" && !challenge.winnerUserId) return challenge;
+    if (!["accepted", "pending_settlement"].includes(challenge.status ?? "") || !challenge.challengeeId) {
+      throw new Error("Only a fully funded accepted challenge can be refunded");
+    }
+    if (money(challenge.escrowHeld ?? 0) !== money(challenge.totalPot)) {
+      throw new Error("Escrow is not fully funded");
+    }
+
+    await changeBalance(tx, challenge.challengerId, challenge.betAmount, `p2p:${challenge.id}:refund:${challenge.challengerId}`, "refund", `P2P challenge ${challenge.id} refund`, { challengeId });
+    await changeBalance(tx, challenge.challengeeId, challenge.betAmount, `p2p:${challenge.id}:refund:${challenge.challengeeId}`, "refund", `P2P challenge ${challenge.id} refund`, { challengeId });
+    const [updated] = await tx.update(p2pChallenges).set({
+      status: "settled",
+      winnerUserId: null,
+      settlementReason: reason,
+      escrowHeld: 0,
+      settledAt: new Date(),
+      updatedAt: new Date(),
+    }).where(eq(p2pChallenges.id, challengeId)).returning();
     return updated;
   });
 }
@@ -118,6 +149,7 @@ export async function expireOpenP2pChallenges() {
 export const getP2pChallenge = async (id: string) => (await db.select().from(p2pChallenges).where(eq(p2pChallenges.id, id)).limit(1))[0];
 export const getP2pActivity = (id: string) => db.select().from(p2pActivity).where(eq(p2pActivity.challengeId, id)).orderBy(p2pActivity.createdAt);
 export const createP2pActivity = async (value: any) => (await db.insert(p2pActivity).values(value).returning())[0];
+export const getP2pDisputes = (challengeId: string) => db.select().from(p2pDisputes).where(eq(p2pDisputes.challengeId, challengeId)).orderBy(desc(p2pDisputes.createdAt));
 
 export async function getAvailableP2pChallenges(userId: string) {
   await expireOpenP2pChallenges();
