@@ -57,6 +57,13 @@ interface CustomToken {
   usdValue: number;
 }
 
+interface WalletAnalytics {
+  totalValue: number;
+  change24h: number;
+  totalTransactions: number;
+  successRate: number;
+}
+
 // Your verified ERC-20 token contract - Pawn Coin ($PC)
 const CUSTOM_TOKEN_ADDRESS = "0x2Fe269292f74F0a98C5786088317B4f86313C211";
 
@@ -207,7 +214,7 @@ const CryptoWallet: React.FC = () => {
   });
 
   // Fetch wallet analytics
-  const { data: analytics } = useQuery({
+  const { data: analytics } = useQuery<WalletAnalytics>({
     queryKey: ['/api/wallet/analytics'],
     enabled: isAuthenticated
   });
