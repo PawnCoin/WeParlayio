@@ -1,35 +1,17 @@
-import twilio from 'twilio';
-
-interface SMSServiceConfig {
-  accountSid: string;
-  authToken: string;
-  phoneNumber: string;
-}
-
+/**
+ * SMS is deliberately disabled until WeParlay has a messaging provider that has
+ * approved this exact, licensed and age-gated gambling use case in writing.
+ *
+ * Do not replace this with a generic SMS vendor integration: carrier rules are
+ * jurisdiction-specific and a provider account can be suspended if its approval
+ * and opt-in requirements are not in place.
+ */
 export class SMSService {
-  private client: twilio.Twilio | null = null;
-  private fromNumber: string;
-  private isConfigured: boolean = false;
+  private readonly unavailableMessage =
+    'SMS delivery is unavailable until an approved, gambling-compliant provider is configured.';
 
-  constructor() {
-    this.fromNumber = process.env.TWILIO_PHONE_NUMBER || '';
-    this.initialize();
-  }
-
-  private initialize(): void {
-    const accountSid = process.env.TWILIO_ACCOUNT_SID;
-    const authToken = process.env.TWILIO_AUTH_TOKEN;
-    const phoneNumber = process.env.TWILIO_PHONE_NUMBER;
-
-    if (accountSid && authToken && phoneNumber) {
-      this.client = twilio(accountSid, authToken);
-      this.fromNumber = phoneNumber;
-      this.isConfigured = true;
-      console.log('✅ SMS Service initialized with Twilio');
-    } else {
-      console.log('⚠️ SMS Service not configured - Twilio credentials missing');
-      this.isConfigured = false;
-    }
+  private unavailable(): { success: false; error: string } {
+    return { success: false, error: this.unavailableMessage };
   }
 
   async sendBettingChallenge(toNumber: string, challengeDetails: {
@@ -38,39 +20,9 @@ export class SMSService {
     event: string;
     odds: string;
   }): Promise<{ success: boolean; messageId?: string; error?: string }> {
-    if (!this.isConfigured || !this.client) {
-      return {
-        success: false,
-        error: 'SMS service not configured'
-      };
-    }
-
-    const message = `🎯 WeParlay Betting Challenge!
-${challengeDetails.challengerName} challenges you:
-Event: ${challengeDetails.event}
-Odds: ${challengeDetails.odds}
-Amount: $${challengeDetails.amount}
-
-Accept at weparlay.io`;
-
-    try {
-      const result = await this.client.messages.create({
-        body: message,
-        from: this.fromNumber,
-        to: toNumber
-      });
-
-      return {
-        success: true,
-        messageId: result.sid
-      };
-    } catch (error: any) {
-      console.error('SMS sending failed:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to send SMS'
-      };
-    }
+    void toNumber;
+    void challengeDetails;
+    return this.unavailable();
   }
 
   async sendBetAlert(toNumber: string, alertDetails: {
@@ -79,97 +31,25 @@ Accept at weparlay.io`;
     amount: number;
     won: boolean;
   }): Promise<{ success: boolean; messageId?: string; error?: string }> {
-    if (!this.isConfigured || !this.client) {
-      return {
-        success: false,
-        error: 'SMS service not configured'
-      };
-    }
-
-    const message = alertDetails.won 
-      ? `🎉 WeParlay Win! You won $${alertDetails.amount} on ${alertDetails.event}. Outcome: ${alertDetails.outcome}`
-      : `😔 WeParlay Update: Your $${alertDetails.amount} bet on ${alertDetails.event} didn't win. Outcome: ${alertDetails.outcome}`;
-
-    try {
-      const result = await this.client.messages.create({
-        body: message,
-        from: this.fromNumber,
-        to: toNumber
-      });
-
-      return {
-        success: true,
-        messageId: result.sid
-      };
-    } catch (error: any) {
-      console.error('SMS alert failed:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to send SMS alert'
-      };
-    }
+    void toNumber;
+    void alertDetails;
+    return this.unavailable();
   }
 
   async sendVerificationCode(toNumber: string, code: string): Promise<{ success: boolean; messageId?: string; error?: string }> {
-    if (!this.isConfigured || !this.client) {
-      return {
-        success: false,
-        error: 'SMS service not configured'
-      };
-    }
-
-    const message = `Your WeParlay verification code is: ${code}. Valid for 10 minutes.`;
-
-    try {
-      const result = await this.client.messages.create({
-        body: message,
-        from: this.fromNumber,
-        to: toNumber
-      });
-
-      return {
-        success: true,
-        messageId: result.sid
-      };
-    } catch (error: any) {
-      console.error('Verification SMS failed:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to send verification SMS'
-      };
-    }
+    void toNumber;
+    void code;
+    return this.unavailable();
   }
 
   async sendSMS(toNumber: string, message: string): Promise<{ success: boolean; messageId?: string; error?: string }> {
-    if (!this.isConfigured || !this.client) {
-      return {
-        success: false,
-        error: 'SMS service not configured'
-      };
-    }
-
-    try {
-      const result = await this.client.messages.create({
-        body: message,
-        from: this.fromNumber,
-        to: toNumber
-      });
-
-      return {
-        success: true,
-        messageId: result.sid
-      };
-    } catch (error: any) {
-      console.error('SMS send failed:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to send SMS'
-      };
-    }
+    void toNumber;
+    void message;
+    return this.unavailable();
   }
 
   isServiceConfigured(): boolean {
-    return this.isConfigured;
+    return false;
   }
 }
 
