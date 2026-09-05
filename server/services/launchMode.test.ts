@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { acceptsBetCurrency, blocksFinancialMutation, getLaunchMode, isCashOnlyLaunch } from './launchMode';
+import { acceptsBetCurrency, blocksFinancialMutation, getLaunchMode, isCashOnlyLaunch, isRestrictedFinancialPath } from './launchMode';
 
 test('defaults to play-cash mode unless full mode is explicitly enabled', () => {
   assert.equal(getLaunchMode(undefined), 'play_cash');
@@ -16,6 +16,13 @@ test('cash-only mode blocks financial mutations but allows read-only requests', 
   assert.equal(blocksFinancialMutation('play_cash', 'POST'), true);
   assert.equal(blocksFinancialMutation('play_cash', 'PATCH'), true);
   assert.equal(blocksFinancialMutation('full', 'POST'), false);
+});
+
+test('all live banking, crypto, and payment prefixes are restricted', () => {
+  assert.equal(isRestrictedFinancialPath('/api/banking/secure-deposit'), true);
+  assert.equal(isRestrictedFinancialPath('/api/crypto/place-bet'), true);
+  assert.equal(isRestrictedFinancialPath('/api/payments/create-intent'), true);
+  assert.equal(isRestrictedFinancialPath('/api/bets/place'), false);
 });
 
 test('cash-only mode accepts only WeParlay Cash bets', () => {
