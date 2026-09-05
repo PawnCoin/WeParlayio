@@ -293,6 +293,18 @@ const registerRoutes = async (app: Express): Promise<Server> => {
     }
   });
 
+  // Today's verified schedule and scores. This powers the public ticker and
+  // schedule; it never derives odds or fills missing provider data.
+  app.get('/api/events/today', async (_req, res) => {
+    try {
+      const events = await espnApiService.getTodayEvents();
+      res.json({ success: true, events, source: 'ESPN', updatedAt: new Date().toISOString() });
+    } catch (error) {
+      console.error('Error fetching verified events for today:', error);
+      res.status(503).json({ success: false, events: [], message: 'Verified live schedule is temporarily unavailable' });
+    }
+  });
+
   // Live scores endpoint for real-time notifications - ONLY REAL API DATA
   app.get('/api/events/live-scores', async (req, res) => {
     try {

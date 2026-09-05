@@ -12,28 +12,26 @@ const SPORT_LOGOS: Record<string, string> = {
 // Transform our API data to ticker format
 const transformApiDataToTicker = (apiData: any[]): TickerOdds[] => {
   return apiData.map((game): TickerOdds => {
-    // Parse team names from "Team A vs Team B" format
-    const teamNames = game.teams.split(' vs ');
-    const homeTeamName = teamNames[1] || 'Home Team';
-    const awayTeamName = teamNames[0] || 'Away Team';
+    const homeTeamName = game.homeTeam?.name || 'Home Team';
+    const awayTeamName = game.awayTeam?.name || 'Away Team';
     
     return {
       id: game.eventId,
-      sport: game.sport.toUpperCase(),
-      teams: game.teams,
-      homeTeam: { name: homeTeamName, abbreviation: homeTeamName.split(' ').pop() },
-      awayTeam: { name: awayTeamName, abbreviation: awayTeamName.split(' ').pop() },
-      gameState: /final|complete/i.test(game.status || game.period || '') ? 'final' : /live|progress|quarter|period|half|inning/i.test(game.status || game.period || '') && !/pre|scheduled/i.test(game.status || game.period || '') ? 'live' : 'upcoming',
-      timestamp: game.startTime || game.date || game.commenceTime || game.lastUpdate,
-      eventId: game.eventId,
-      status: game.period || 'Scheduled',
-      hasLiveScore: game.homeScore !== undefined && game.awayScore !== undefined,
-      liveScore: game.homeScore !== undefined ? {
-        homeScore: game.homeScore,
-        awayScore: game.awayScore,
-        period: game.period || '1st',
-        timeRemaining: game.timeRemaining || '0:00',
-        isBreaking: game.isBreaking || false
+      sport: String(game.sport || 'Sports').toUpperCase(),
+      teams: `${awayTeamName} vs ${homeTeamName}`,
+      homeTeam: { name: homeTeamName, abbreviation: homeTeamName.split(' ').pop(), logo: game.homeTeam?.logo },
+      awayTeam: { name: awayTeamName, abbreviation: awayTeamName.split(' ').pop(), logo: game.awayTeam?.logo },
+      gameState: game.status === 'final' ? 'final' : game.status === 'live' ? 'live' : 'upcoming',
+      timestamp: game.startTime,
+      eventId: String(game.id),
+      status: game.statusDetail || 'Scheduled',
+      hasLiveScore: game.homeTeam?.score !== null && game.awayTeam?.score !== null,
+      liveScore: game.homeTeam?.score !== null && game.awayTeam?.score !== null ? {
+        homeScore: game.homeTeam.score,
+        awayScore: game.awayTeam.score,
+        period: game.statusDetail || 'Live',
+        timeRemaining: game.clock || '',
+        isBreaking: false
       } : undefined
     };
   });
@@ -144,9 +142,9 @@ const TickerItem = memo(({ item, timeZone, onClick }: {
       </div>
 
       <div className="flex items-center space-x-1 mr-2">
-        <EnhancedTeamLogo teamName={homeTeam.name} sport={sport} size="w-6 h-6" />
+        <EnhancedTeamLogo src={homeTeam.logo} teamName={homeTeam.name} sport={sport} size="w-6 h-6" />
         <span className="text-gray-400 text-xs">vs</span>
-        <EnhancedTeamLogo teamName={awayTeam.name} sport={sport} size="w-6 h-6" />
+        <EnhancedTeamLogo src={awayTeam.logo} teamName={awayTeam.name} sport={sport} size="w-6 h-6" />
       </div>
 
       {isLive && liveScore ? (
@@ -182,21 +180,21 @@ const LiveScoresTicker = ({ timeZone = Intl.DateTimeFormat().resolvedOptions().t
   const [isPaused, setIsPaused] = useState(false);
 
   // Fetch live scores using our existing API
-  const { data: liveScores = [], isLoading, isError } = useQuery({
-    queryKey: ['/api/events/live-scores'],
+  const { data: scheduleResponse, isLoading, isError } = useQuery<any>({
+    queryKey: ['/api/events/today'],
     refetchInterval: 30000, // Refetch every 30 seconds
     refetchOnWindowFocus: true,
   });
 
   // Ensure liveScores is an array
-  const scoresArray = Array.isArray(liveScores) ? liveScores : [];
+  const scoresArray = Array.isArray(scheduleResponse?.events) ? scheduleResponse.events : [];
 
   // Transform data to ticker format
   const tickerData = useMemo(() => {
     if (!scoresArray?.length) return [];
     const today = dateKey(new Date(), timeZone);
     const todaysGames = scoresArray.filter((game: any) => {
-      const rawTime = game.startTime || game.date || game.commenceTime || game.lastUpdate;
+      const rawTime = game.startTime;
       if (!rawTime) return false;
       const eventTime = new Date(rawTime);
       return !Number.isNaN(eventTime.getTime()) && dateKey(eventTime, timeZone) === today;

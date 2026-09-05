@@ -57,6 +57,62 @@ export class ESPNApiService {
   };
 
   /**
+   * Return today's verified ESPN events in one stable shape for the active
+   * schedule, ticker, and result-verification flows. This intentionally
+   * returns no betting prices: scoreboards are results data, not an odds feed.
+   */
+  async getTodayEvents(): Promise<any[]> {
+    const supportedSports = ['nfl', 'nba', 'mlb', 'nhl', 'wnba', 'ncaaf', 'ncaab', 'ncaaw', 'mls', 'premier-league'];
+    const responses = await Promise.allSettled(supportedSports.map(async (sport) => {
+      const sportPath = this.sportMappings[sport];
+      if (!sportPath) return [];
+
+      const response = await fetch(`${this.baseUrl}/sports/${sportPath}/scoreboard`);
+      if (!response.ok) throw new Error(`ESPN ${sport} scoreboard returned ${response.status}`);
+      const data = await response.json();
+
+      return (data.events || []).map((event: any) => {
+        const competition = event.competitions?.[0];
+        const competitors = competition?.competitors || [];
+        const home = competitors.find((item: any) => item.homeAway === 'home');
+        const away = competitors.find((item: any) => item.homeAway === 'away');
+        const type = event.status?.type || {};
+        const state = String(type.state || '').toLowerCase();
+        const completed = Boolean(type.completed);
+        const status = completed ? 'final' : state === 'in' ? 'live' : 'upcoming';
+
+        return {
+          id: String(event.id),
+          sport: sport.toUpperCase(),
+          homeTeam: {
+            name: home?.team?.displayName || home?.team?.shortDisplayName || 'Home',
+            logo: home?.team?.logo || home?.team?.logos?.[0]?.href,
+            score: home?.score === undefined ? null : Number(home.score),
+          },
+          awayTeam: {
+            name: away?.team?.displayName || away?.team?.shortDisplayName || 'Away',
+            logo: away?.team?.logo || away?.team?.logos?.[0]?.href,
+            score: away?.score === undefined ? null : Number(away.score),
+          },
+          startTime: event.date,
+          status,
+          statusDetail: type.shortDetail || type.detail || type.description || status,
+          period: event.status?.period ?? null,
+          clock: event.status?.displayClock || null,
+          completed,
+          source: 'ESPN',
+        };
+      });
+    }));
+
+    return responses
+      .filter((result): result is PromiseFulfilledResult<any[]> => result.status === 'fulfilled')
+      .flatMap((result) => result.value)
+      .filter((event) => event.homeTeam.name !== 'Home' && event.awayTeam.name !== 'Away')
+      .sort((left, right) => new Date(left.startTime).getTime() - new Date(right.startTime).getTime());
+  }
+
+  /**
    * Get teams for ANY sport supported by ESPN
    */
   async getTeamsForSport(sportKey: string): Promise<any[]> {

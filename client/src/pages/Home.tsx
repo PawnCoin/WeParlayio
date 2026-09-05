@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import LiveScoresTicker from "@/components/LiveScoresTicker";
-import { useBetSlip } from "@/contexts/BetSlipContext";
 import { CalendarDays, Clock3, Radio, ShieldCheck, Trophy, UsersRound, WalletCards } from "lucide-react";
 
 const sports = ["All", "NFL", "NBA", "MLB", "NHL", "Soccer", "Tennis", "Golf", "Combat"];
@@ -22,22 +21,16 @@ function isToday(value: string | undefined, timeZone: string) {
 export default function Home() {
   const [sport, setSport] = useState("All");
   const [timeZone, setTimeZone] = useState(() => localStorage.getItem("weparlay-time-zone") || Intl.DateTimeFormat().resolvedOptions().timeZone);
-  const { addToBetSlip } = useBetSlip();
-  const { data: rawGames = [], isLoading } = useQuery<any[]>({
-    queryKey: ["/api/events/live"],
+  const { data: scheduleResponse, isLoading } = useQuery<any>({
+    queryKey: ["/api/events/today"],
     refetchInterval: 30_000,
   });
+  const rawGames = scheduleResponse?.events || [];
   const games = useMemo(() => (Array.isArray(rawGames) ? rawGames : []).filter((game: any) => {
     const matchesDate = isToday(game.startTime || game.date, timeZone);
     const matchesSport = sport === "All" || String(game.sport || game.league || "").toLowerCase().includes(sport.toLowerCase());
     return matchesDate && matchesSport;
   }), [rawGames, sport, timeZone]);
-
-  const addMarket = (game: any, selection: string, betType: string, odds: number, point?: number) => {
-    const home = game.homeTeam?.name || game.competitors?.find((x: any) => x.homeAway === "home")?.name || game.homeTeam || "Home";
-    const away = game.awayTeam?.name || game.competitors?.find((x: any) => x.homeAway === "away")?.name || game.awayTeam || "Away";
-    addToBetSlip({ eventId: String(game.id), homeTeam: home, awayTeam: away, gameTitle: `${away} at ${home}`, selection, pick: selection, betType, odds, point, sport: game.sport || game.league || "Sports", amount: 0, potential: 0 });
-  };
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -80,12 +73,11 @@ export default function Home() {
         </div>
         {isLoading ? <div className="space-y-3"><Skeleton className="h-40" /><Skeleton className="h-40" /></div> : games.length ? (
           <div className="grid gap-4 xl:grid-cols-2">{games.map((game: any) => {
-            const home = game.homeTeam?.name || game.competitors?.find((x: any) => x.homeAway === "home")?.name || game.homeTeam || "Home";
-            const away = game.awayTeam?.name || game.competitors?.find((x: any) => x.homeAway === "away")?.name || game.awayTeam || "Away";
-            const live = ["in", "live", "STATUS_IN_PROGRESS"].includes(game.status);
-            return <Card key={game.id} className="overflow-hidden"><CardContent className="p-0"><div className="flex items-center justify-between border-b p-4"><div><div className="flex items-center gap-2"><Badge variant={live ? "destructive" : "secondary"}>{live ? "LIVE" : "UPCOMING"}</Badge><span className="text-xs text-muted-foreground">{game.sport || game.league}</span></div><h3 className="mt-2 text-lg font-bold">{away} <span className="text-muted-foreground">@</span> {home}</h3></div><Link href="/live-tv"><Button size="sm" variant="outline"><Radio className="mr-2 h-4 w-4" />Watch</Button></Link></div><div className="grid grid-cols-3 gap-2 p-4">{[
-              [`${home} spread`, "spread", -110, -3.5], [`${home} moneyline`, "moneyline", 125], ["Over total", "total", -110, 44.5]
-            ].map(([label, type, odds, point]) => <button key={String(label)} onClick={() => addMarket(game, String(label), String(type), Number(odds), point ? Number(point) : undefined)} className="rounded-lg border bg-muted/30 p-3 text-left transition hover:border-emerald-500 hover:bg-emerald-500/10"><div className="text-xs text-muted-foreground">{String(type)}</div><div className="mt-1 text-sm font-bold">{String(label)}</div><div className="mt-1 text-emerald-500">{Number(odds) > 0 ? "+" : ""}{Number(odds)}</div></button>)}</div></CardContent></Card>;
+            const home = game.homeTeam?.name || "Home";
+            const away = game.awayTeam?.name || "Away";
+            const live = game.status === "live";
+            const final = game.status === "final";
+            return <Card key={game.id} className="overflow-hidden"><CardContent className="p-0"><div className="flex items-center justify-between border-b p-4"><div><div className="flex items-center gap-2"><Badge variant={live ? "destructive" : "secondary"}>{live ? "LIVE" : final ? "FINAL" : "UPCOMING"}</Badge><span className="text-xs text-muted-foreground">{game.sport}</span></div><h3 className="mt-2 text-lg font-bold">{away} <span className="text-muted-foreground">@</span> {home}</h3>{(live || final) && game.homeTeam?.score !== null && game.awayTeam?.score !== null && <p className="mt-1 text-sm font-semibold">{away} {game.awayTeam.score} – {home} {game.homeTeam.score} <span className="text-muted-foreground">· {game.statusDetail}</span></p>}</div><Link href="/live-tv"><Button size="sm" variant="outline"><Radio className="mr-2 h-4 w-4" />Watch</Button></Link></div><div className="p-4 text-sm text-muted-foreground">Verified game data from {game.source}. Betting lines appear only when a licensed odds provider is connected.</div></CardContent></Card>;
           })}</div>
         ) : <Card><CardContent className="flex flex-col items-center py-12 text-center"><CalendarDays className="mb-3 h-8 w-8 text-muted-foreground" /><h3 className="font-bold">No games returned for this filter</h3><p className="text-sm text-muted-foreground">The live sports provider will populate today’s schedule here.</p></CardContent></Card>}
       </section>
