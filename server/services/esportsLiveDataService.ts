@@ -82,16 +82,11 @@ export class EsportsLiveDataService {
         }
       }
 
-      // If no real data, provide realistic mock data
-      if (matches.length === 0) {
-        matches = this.getRealisticMockMatches(game);
-      }
-
       cache.set(cacheKey, matches);
       return matches;
     } catch (error) {
       console.error('Error fetching live matches:', error);
-      return this.getRealisticMockMatches(game);
+      return [];
     }
   }
 
@@ -163,66 +158,6 @@ export class EsportsLiveDataService {
     });
 
     return this.transformPandaScoreData(response.data);
-  }
-
-  private getRealisticMockMatches(game?: string): EsportsMatch[] {
-    const now = new Date();
-    const mockMatches: EsportsMatch[] = [
-      {
-        id: 'lol-worlds-2025-t1-vs-gen',
-        game: 'League of Legends',
-        tournament: 'Worlds 2025 Finals',
-        teams: {
-          team1: { name: 'T1', score: 2, logo: '🏆' },
-          team2: { name: 'Gen.G', score: 1, logo: '⚡' }
-        },
-        status: 'live',
-        startTime: new Date(now.getTime() - 45 * 60000).toISOString(),
-        currentMap: 'Summoner\'s Rift',
-        round: 4,
-        odds: {
-          team1Win: 1.65 + (Math.random() - 0.5) * 0.2,
-          team2Win: 2.35 + (Math.random() - 0.5) * 0.3,
-          nextKill: {
-            team1: 1.85 + (Math.random() - 0.5) * 0.2,
-            team2: 2.15 + (Math.random() - 0.5) * 0.2
-          }
-        },
-        viewers: 245000 + Math.floor(Math.random() * 50000),
-        stream: 'https://twitch.tv/riotgames'
-      },
-      {
-        id: 'cs2-major-navi-vs-faze',
-        game: 'CS2',
-        tournament: 'BLAST Major 2025',
-        teams: {
-          team1: { name: 'NAVI', score: 14, logo: '🌟' },
-          team2: { name: 'FaZe', score: 11, logo: '🔥' }
-        },
-        status: 'live',
-        startTime: new Date(now.getTime() - 25 * 60000).toISOString(),
-        currentMap: 'Mirage',
-        round: 26,
-        odds: {
-          team1Win: 1.95 + (Math.random() - 0.5) * 0.15,
-          team2Win: 1.90 + (Math.random() - 0.5) * 0.15,
-          nextRound: {
-            team1: 1.88 + (Math.random() - 0.5) * 0.12,
-            team2: 1.97 + (Math.random() - 0.5) * 0.12
-          }
-        },
-        viewers: 189000 + Math.floor(Math.random() * 30000),
-        stream: 'https://twitch.tv/blastpremier'
-      }
-    ];
-
-    if (game) {
-      return mockMatches.filter(match => 
-        match.game.toLowerCase().includes(game.toLowerCase())
-      );
-    }
-
-    return mockMatches;
   }
 
   async getPlayerStats(playerName: string, game: string): Promise<PlayerStats | null> {
@@ -311,10 +246,7 @@ export class EsportsLiveDataService {
       },
       status: 'live' as const,
       startTime: series.begin_at,
-      odds: {
-        team1Win: 1.85 + (Math.random() - 0.5) * 0.3,
-        team2Win: 2.15 + (Math.random() - 0.5) * 0.3
-      },
+      odds: undefined,
       viewers: series.live?.viewers_count,
       stream: series.live?.twitch_stream_url
     }));
@@ -337,10 +269,7 @@ export class EsportsLiveDataService {
       },
       status: 'live' as const,
       startTime: match.begin_at,
-      odds: {
-        team1Win: 1.85 + (Math.random() - 0.5) * 0.3,
-        team2Win: 2.15 + (Math.random() - 0.5) * 0.3
-      }
+      odds: undefined
     }));
   }
 
