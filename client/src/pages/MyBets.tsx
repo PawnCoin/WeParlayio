@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -30,7 +30,7 @@ const MyBets: React.FC = () => {
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'pending' | 'won' | 'lost'>('all');
 
   // Fetch authentic betting data from database
-  const { data: bets = [], isLoading: betsLoading, error: betsError } = useQuery({
+  const { data: bets = [] } = useQuery<Bet[]>({
     queryKey: ['user-bets', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -38,7 +38,7 @@ const MyBets: React.FC = () => {
       if (!response.ok) {
         throw new Error('Failed to fetch betting history');
       }
-      return response.json();
+      return response.json() as Promise<Bet[]>;
     },
     enabled: isAuthenticated && !!user?.id,
   });
@@ -71,13 +71,15 @@ const MyBets: React.FC = () => {
     );
   };
 
-  const calculateStats = () => {
+  const calculateStats = (): { totalBets: number; wonBets: number; totalWagered: number; totalWinnings: number; pendingBets: number; winRate: number; profit: number; } => {
     const stats = {
       totalBets: bets.length,
       wonBets: bets.filter(b => b.status === 'won').length,
       totalWagered: bets.reduce((sum, bet) => sum + bet.amount, 0),
       totalWinnings: bets.filter(b => b.status === 'won').reduce((sum, bet) => sum + (bet.payout || 0), 0),
-      pendingBets: bets.filter(b => b.status === 'pending').length
+      pendingBets: bets.filter(b => b.status === 'pending').length,
+      winRate: 0,
+      profit: 0,
     };
     
     stats.winRate = stats.totalBets > 0 ? (stats.wonBets / stats.totalBets) * 100 : 0;
