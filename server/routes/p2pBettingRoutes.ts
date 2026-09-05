@@ -7,6 +7,7 @@ import { eq } from 'drizzle-orm';
 import { users } from '@shared/schema';
 import { sendEmail } from '../services/emailService';
 import { smsService } from '../services/smsService';
+import { espnApiService } from '../services/espnApiService';
 import {
   acceptFundedP2pChallenge,
   cancelAndRefundP2pChallenge,
@@ -20,6 +21,7 @@ import {
   getP2pStats,
   getUserP2pChallenges,
   openP2pDispute,
+  queueP2pFinalResult,
   resolveP2pDispute,
   settleP2pChallenge,
 } from '../services/p2pEscrow';
@@ -585,6 +587,42 @@ router.post('/admin/challenges/:challengeId/settle', isAuthenticated, restricted
       success: false,
       message: 'Failed to settle challenge'
     });
+  }
+});
+
+// Admin-only result intake from ESPN. It never pays automatically: a final is
+// recorded as pending settlement so a second source or a dispute review can
+// verify the outcome before escrow is released.
+router.post('/admin/challenges/:challengeId/results/espn', isAuthenticated, restrictedAuthMiddleware, async (req: Request, res: Response) => {
+  try {
+    const adminId = (req.user as any).claims?.sub;
+    const [admin] = await db.select({ isAdmin: users.isAdmin }).from(users).where(eq(users.id, adminId)).limit(1);
+    if (!admin?.isAdmin) return res.status(403).json({ success: false, message: 'Admin access required' });
+
+    const challenge = await getP2pChallenge(req.params.challengeId);
+    if (!challenge) return res.status(404).json({ success: false, message: 'Challenge not found' });
+    if (challenge.status !== 'accepted') return res.status(400).json({ success: false, message: 'Challenge is not awaiting a final result' });
+
+    const event = await espnApiService.getFinalEventById(challenge.eventId);
+    if (!event) return res.status(409).json({ success: false, message: 'ESPN does not yet report a completed score for this event' });
+    const updated = await queueP2pFinalResult(challenge.id, {
+      source: 'ESPN',
+      homeTeam: event.homeTeam.name,
+      awayTeam: event.awayTeam.name,
+      homeScore: event.homeTeam.score,
+      awayScore: event.awayTeam.score,
+      statusDetail: event.statusDetail,
+    });
+    await createP2pActivity({
+      challengeId: challenge.id,
+      userId: adminId,
+      activityType: 'official_result_received',
+      message: `ESPN reported final: ${event.awayTeam.name} ${event.awayTeam.score} – ${event.homeTeam.name} ${event.homeTeam.score}. Payout remains pending verification.`,
+      metadata: { source: 'ESPN', eventId: event.id, homeScore: event.homeTeam.score, awayScore: event.awayTeam.score },
+    });
+    res.json({ success: true, challenge: updated, result: event, message: 'Final score recorded; payout remains pending verification' });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message || 'Unable to record ESPN result' });
   }
 });
 
