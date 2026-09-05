@@ -4,7 +4,7 @@ import { restrictedAuthMiddleware } from '../middleware/restrictedAuth';
 import { z } from 'zod';
 import { db } from '../db';
 import { eq } from 'drizzle-orm';
-import { p2pChallenges, p2pDisputes, users } from '@shared/schema';
+import { users } from '@shared/schema';
 import { sendEmail } from '../services/emailService';
 import { smsService } from '../services/smsService';
 import {
@@ -19,7 +19,8 @@ import {
   getP2pDisputes,
   getP2pStats,
   getUserP2pChallenges,
-  refundAcceptedP2pChallenge,
+  openP2pDispute,
+  resolveP2pDispute,
   settleP2pChallenge,
 } from '../services/p2pEscrow';
 
@@ -450,28 +451,7 @@ router.post('/challenges/:challengeId/disputes', isAuthenticated, restrictedAuth
       reason: z.string().trim().min(10).max(1_000),
       evidence: z.string().trim().max(2_000).optional(),
     }).parse(req.body);
-    const challenge = await getP2pChallenge(req.params.challengeId);
-    if (!challenge) return res.status(404).json({ success: false, message: 'Challenge not found' });
-    if (![challenge.challengerId, challenge.challengeeId].includes(userId)) {
-      return res.status(403).json({ success: false, message: 'Only a challenge participant can open a dispute' });
-    }
-    if (!['accepted', 'pending_settlement'].includes(challenge.status || '')) {
-      return res.status(400).json({ success: false, message: 'This challenge is not eligible for a result dispute' });
-    }
-
-    const [dispute] = await db.insert(p2pDisputes).values({
-      challengeId: challenge.id,
-      openedBy: userId,
-      reason,
-      evidence: evidence || null,
-      status: 'open',
-      updatedAt: new Date(),
-    }).returning();
-    await db.update(p2pChallenges).set({
-      status: 'pending_settlement',
-      settlementReason: 'Result disputed — payout frozen pending review',
-      updatedAt: new Date(),
-    }).where(eq(p2pChallenges.id, challenge.id));
+    const { challenge, dispute } = await openP2pDispute(req.params.challengeId, userId, reason, evidence);
     await createP2pActivity({
       challengeId: challenge.id,
       userId,
@@ -499,20 +479,14 @@ router.post('/admin/challenges/:challengeId/disputes/:disputeId/resolve', isAuth
     }).parse(req.body);
     if (outcome === 'payout' && !winnerUserId) return res.status(400).json({ success: false, message: 'A verified winner is required for payout' });
 
-    const [dispute] = await db.select().from(p2pDisputes).where(eq(p2pDisputes.id, req.params.disputeId)).limit(1);
-    if (!dispute || dispute.challengeId !== req.params.challengeId) return res.status(404).json({ success: false, message: 'Dispute not found' });
-    if (dispute.status !== 'open') return res.status(400).json({ success: false, message: 'Dispute has already been resolved' });
-
-    const challenge = outcome === 'payout'
-      ? await settleP2pChallenge(req.params.challengeId, winnerUserId!, `Verified dispute resolution: ${resolution}`, true)
-      : await refundAcceptedP2pChallenge(req.params.challengeId, `Verified dispute refund: ${resolution}`);
-    await db.update(p2pDisputes).set({
-      status: 'resolved',
+    const { challenge, dispute } = await resolveP2pDispute({
+      challengeId: req.params.challengeId,
+      disputeId: req.params.disputeId,
+      adminId,
+      outcome,
+      winnerUserId,
       resolution,
-      resolvedBy: adminId,
-      resolvedAt: new Date(),
-      updatedAt: new Date(),
-    }).where(eq(p2pDisputes.id, dispute.id));
+    });
     await createP2pActivity({
       challengeId: challenge.id,
       userId: adminId,

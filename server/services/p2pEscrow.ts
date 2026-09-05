@@ -141,6 +141,96 @@ export async function refundAcceptedP2pChallenge(challengeId: string, reason: st
   });
 }
 
+export async function openP2pDispute(challengeId: string, openedBy: string, reason: string, evidence?: string) {
+  return db.transaction(async (tx) => {
+    const [challenge] = await tx.select().from(p2pChallenges).where(eq(p2pChallenges.id, challengeId)).for("update");
+    if (!challenge) throw new Error("Challenge not found");
+    if (![challenge.challengerId, challenge.challengeeId].includes(openedBy)) {
+      throw new Error("Only a challenge participant can open a dispute");
+    }
+    if (!["accepted", "pending_settlement"].includes(challenge.status ?? "")) {
+      throw new Error("This challenge is not eligible for a result dispute");
+    }
+    const [existing] = await tx.select({ id: p2pDisputes.id })
+      .from(p2pDisputes)
+      .where(and(eq(p2pDisputes.challengeId, challengeId), eq(p2pDisputes.status, "open")))
+      .limit(1)
+      .for("update");
+    if (existing) throw new Error("A result dispute is already open for this challenge");
+
+    const [dispute] = await tx.insert(p2pDisputes).values({
+      challengeId,
+      openedBy,
+      reason,
+      evidence: evidence || null,
+      status: "open",
+      updatedAt: new Date(),
+    }).returning();
+    await tx.update(p2pChallenges).set({
+      status: "pending_settlement",
+      settlementReason: "Result disputed — payout frozen pending review",
+      updatedAt: new Date(),
+    }).where(eq(p2pChallenges.id, challengeId));
+    return { challenge, dispute };
+  });
+}
+
+export async function resolveP2pDispute(input: {
+  challengeId: string;
+  disputeId: string;
+  adminId: string;
+  outcome: "payout" | "refund";
+  winnerUserId?: string;
+  resolution: string;
+}) {
+  return db.transaction(async (tx) => {
+    const [challenge] = await tx.select().from(p2pChallenges).where(eq(p2pChallenges.id, input.challengeId)).for("update");
+    if (!challenge) throw new Error("Challenge not found");
+    const [dispute] = await tx.select().from(p2pDisputes).where(eq(p2pDisputes.id, input.disputeId)).limit(1).for("update");
+    if (!dispute || dispute.challengeId !== input.challengeId) throw new Error("Dispute not found");
+    if (dispute.status !== "open") throw new Error("Dispute has already been resolved");
+    if (input.outcome === "payout" && !input.winnerUserId) throw new Error("A verified winner is required for payout");
+
+    let updated;
+    if (input.outcome === "payout") {
+      validateP2pSettlement(challenge, input.winnerUserId!);
+      await changeBalance(tx, input.winnerUserId!, challenge.totalPot, `p2p:${challenge.id}:release:${input.winnerUserId}`, "escrow_release", `P2P challenge ${challenge.id} winnings`, { challengeId: challenge.id });
+      [updated] = await tx.update(p2pChallenges).set({
+        status: "settled",
+        winnerUserId: input.winnerUserId,
+        settlementReason: `Verified dispute resolution: ${input.resolution}`,
+        escrowHeld: 0,
+        settledAt: new Date(),
+        updatedAt: new Date(),
+      }).where(eq(p2pChallenges.id, challenge.id)).returning();
+    } else {
+      if (!challenge.challengeeId || !["accepted", "pending_settlement"].includes(challenge.status ?? "")) {
+        throw new Error("Only a fully funded accepted challenge can be refunded");
+      }
+      if (money(challenge.escrowHeld ?? 0) !== money(challenge.totalPot)) throw new Error("Escrow is not fully funded");
+      await changeBalance(tx, challenge.challengerId, challenge.betAmount, `p2p:${challenge.id}:refund:${challenge.challengerId}`, "refund", `P2P challenge ${challenge.id} refund`, { challengeId: challenge.id });
+      await changeBalance(tx, challenge.challengeeId, challenge.betAmount, `p2p:${challenge.id}:refund:${challenge.challengeeId}`, "refund", `P2P challenge ${challenge.id} refund`, { challengeId: challenge.id });
+      [updated] = await tx.update(p2pChallenges).set({
+        status: "settled",
+        winnerUserId: null,
+        settlementReason: `Verified dispute refund: ${input.resolution}`,
+        escrowHeld: 0,
+        settledAt: new Date(),
+        updatedAt: new Date(),
+      }).where(eq(p2pChallenges.id, challenge.id)).returning();
+    }
+
+    await tx.update(p2pDisputes).set({
+      status: "resolved",
+      resolution: input.resolution,
+      resolvedBy: input.adminId,
+      resolvedAt: new Date(),
+      updatedAt: new Date(),
+    }).where(eq(p2pDisputes.id, dispute.id));
+    return { challenge: updated, dispute };
+  });
+}
+
 export async function expireOpenP2pChallenges() {
   const expired = await db.select({ id: p2pChallenges.id }).from(p2pChallenges).where(and(eq(p2pChallenges.status, "open"), lt(p2pChallenges.expiresAt, new Date())));
   for (const item of expired) await cancelAndRefundP2pChallenge(item.id, undefined, true);
