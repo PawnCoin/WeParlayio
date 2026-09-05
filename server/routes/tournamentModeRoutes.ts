@@ -121,7 +121,19 @@ router.post("/:id/fund", isAuthenticated, async (req: any, res) => {
     });
     tournament.entries.push({ userId, funded: true, picks: {}, wins: 0, status: "picks_required" });
     tournament.pot += tournament.entryFee;
-    await tournamentStore.save(tournament);
+    try {
+      await tournamentStore.save(tournament);
+    } catch (saveError) {
+      await recordWeparlayCashLedgerEntry({
+        userId,
+        referenceId: tournamentLedgerReference(tournament.id, userId, "refund"),
+        type: "refund",
+        amount: tournament.entryFee,
+        description: `Refund for failed tournament entry ${tournament.id}`,
+        metadata: { tournamentId: tournament.id, currency: "weparlay_cash" },
+      });
+      throw saveError;
+    }
     res.json({ tournament });
   } catch (error: any) { res.status(400).json({ message: error.message }); }
 });
