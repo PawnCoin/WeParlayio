@@ -440,12 +440,11 @@ const registerRoutes = async (app: Express): Promise<Server> => {
       const challenge = Math.floor(100000 + Math.random() * 900000).toString();
       const smsResult = await smsService.sendSMS(phone, `WeParlay verification code: ${challenge}`);
 
-      res.json({
-        success: true,
-        challenge,
-        messageId: smsResult.messageId,
-        message: 'SMS challenge sent successfully'
-      });
+      if (!smsResult.success) {
+        return res.status(503).json({ success: false, message: smsResult.error });
+      }
+
+      res.json({ success: true, challenge, messageId: smsResult.messageId, message: 'SMS challenge sent successfully' });
     } catch (error) {
       console.error('SMS challenge error:', error);
       res.status(500).json({ 
