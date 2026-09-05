@@ -1,4 +1,4 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { Route, Switch } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
@@ -7,27 +7,28 @@ import { Toaster } from "@/components/ui/toaster";
 import MainLayout from "@/components/layout/MainLayout";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Home from "@/pages/Home";
-import LiveSportsStreaming from "@/pages/LiveSportsStreaming";
-import Tournaments from "@/pages/Tournaments";
-import P2pBetting from "@/pages/P2pBetting";
-import MyBets from "@/pages/MyBets";
-import UserProfile from "@/pages/UserProfile";
-import AuthenticationHub from "@/pages/AuthenticationHub";
-import ComingSoonFinancialServices from "@/pages/ComingSoonFinancialServices";
-import Settings from "@/pages/Settings";
-import SecuritySettings from "@/pages/SecuritySettings";
-import Support from "@/pages/Support";
-import PrivacyPolicy from "@/pages/PrivacyPolicy";
-import TermsOfService from "@/pages/TermsOfService";
-import SecurityInfo from "@/pages/SecurityInfo";
-import TierPricing from "@/pages/TierPricing";
-import About from "@/pages/About";
-import Contact from "@/pages/Contact";
-import NotFound from "@/pages/not-found";
 import { CurrencyModeProvider } from "@/contexts/CurrencyModeContext";
 import { TeamThemeProvider } from "@/contexts/TeamThemeContext";
 import { BetSlipProvider } from "@/contexts/BetSlipContext";
 import { BettingProvider } from "@/contexts/BettingContext";
+
+const LiveSportsStreaming = lazy(() => import("@/pages/LiveSportsStreaming"));
+const Tournaments = lazy(() => import("@/pages/Tournaments"));
+const P2pBetting = lazy(() => import("@/pages/P2pBetting"));
+const MyBets = lazy(() => import("@/pages/MyBets"));
+const UserProfile = lazy(() => import("@/pages/UserProfile"));
+const AuthenticationHub = lazy(() => import("@/pages/AuthenticationHub"));
+const ComingSoonFinancialServices = lazy(() => import("@/pages/ComingSoonFinancialServices"));
+const Settings = lazy(() => import("@/pages/Settings"));
+const SecuritySettings = lazy(() => import("@/pages/SecuritySettings"));
+const Support = lazy(() => import("@/pages/Support"));
+const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("@/pages/TermsOfService"));
+const SecurityInfo = lazy(() => import("@/pages/SecurityInfo"));
+const TierPricing = lazy(() => import("@/pages/TierPricing"));
+const About = lazy(() => import("@/pages/About"));
+const Contact = lazy(() => import("@/pages/Contact"));
+const NotFound = lazy(() => import("@/pages/not-found"));
 
 function Router() {
   return (
@@ -71,7 +72,13 @@ export default function App() {
             <BetSlipProvider>
               <BettingProvider>
                 <Toaster />
-                <MainLayout><ErrorBoundary><Router /></ErrorBoundary></MainLayout>
+                <MainLayout>
+                  <ErrorBoundary>
+                    <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading…</div>}>
+                      <Router />
+                    </Suspense>
+                  </ErrorBoundary>
+                </MainLayout>
               </BettingProvider>
             </BetSlipProvider>
           </TeamThemeProvider>
