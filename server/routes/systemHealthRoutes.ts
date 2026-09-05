@@ -12,10 +12,12 @@ router.get('/system-health', async (req, res) => {
     const rateLimitStatus = await apiRateLimitManager.getAPIStatus();
     const warnings = await apiRateLimitManager.checkAPIHealth();
     const memUsage = process.memoryUsage();
+    const allConfiguredEndpointsUnhealthy =
+      resilienceStatus.totalEndpoints > 0 && resilienceStatus.healthyEndpoints === 0;
 
     const systemHealth = {
       timestamp: new Date().toISOString(),
-      overall_status: resilienceStatus.emergencyMode ? 'emergency_mode' : 'operational',
+      overall_status: allConfiguredEndpointsUnhealthy ? 'emergency_mode' : 'operational',
       resilience: resilienceStatus,
       rate_limits: rateLimitStatus,
       warnings,
@@ -234,28 +236,6 @@ router.get('/api-status', async (req, res) => {
         priority: 2
       },
       
-      // === FANTASY SPORTS APIS ===
-      {
-        name: 'ESPN Fantasy API',
-        status: (process.env.ESPN_CLIENT_ID && process.env.ESPN_CLIENT_SECRET) ? 'operational' : 'offline',
-        responseTime: 180,
-        type: 'fantasy',
-        description: 'ESPN Fantasy Football, Basketball leagues',
-        configured: !!(process.env.ESPN_CLIENT_ID && process.env.ESPN_CLIENT_SECRET),
-        issue: (process.env.ESPN_CLIENT_ID && process.env.ESPN_CLIENT_SECRET) ? null : 'OAuth credentials required',
-        priority: 1
-      },
-      {
-        name: 'Yahoo Fantasy API',
-        status: (process.env.YAHOO_CLIENT_ID && process.env.YAHOO_CLIENT_SECRET) ? 'operational' : 'offline',
-        responseTime: 200,
-        type: 'fantasy',
-        description: 'Yahoo Fantasy Sports integration',
-        configured: !!(process.env.YAHOO_CLIENT_ID && process.env.YAHOO_CLIENT_SECRET),
-        issue: (process.env.YAHOO_CLIENT_ID && process.env.YAHOO_CLIENT_SECRET) ? null : 'OAuth credentials required',
-        priority: 1
-      },
-      
       // === COMMUNICATION APIS ===
       {
         name: 'SMS delivery',
@@ -327,7 +307,6 @@ router.get('/api-status', async (req, res) => {
         gaming: services.filter(s => s.type === 'gaming').length,
         social: services.filter(s => s.type === 'social').length,
         streaming: services.filter(s => s.type === 'streaming').length,
-        fantasy: services.filter(s => s.type === 'fantasy').length,
         communication: services.filter(s => s.type === 'communication').length,
         infrastructure: services.filter(s => ['database', 'internal'].includes(s.type)).length
       }
