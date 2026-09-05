@@ -29,7 +29,6 @@ import { CurrencyModeProvider } from "@/contexts/CurrencyModeContext";
 import { TeamThemeProvider } from "@/contexts/TeamThemeContext";
 import { BetSlipProvider } from "@/contexts/BetSlipContext";
 import { BettingProvider } from "@/contexts/BettingContext";
-import MobileVoiceBetting from "@/components/mobile/MobileVoiceBetting";
 
 function Router() {
   return (
@@ -74,7 +73,6 @@ export default function App() {
               <BettingProvider>
                 <Toaster />
                 <MainLayout><ErrorBoundary><Router /></ErrorBoundary></MainLayout>
-                <MobileVoiceBetting />
               </BettingProvider>
             </BetSlipProvider>
           </TeamThemeProvider>
