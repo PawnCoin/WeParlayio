@@ -113,6 +113,19 @@ export class ESPNApiService {
   }
 
   /**
+   * Resolve a completed team-v-team event from the same verified scoreboard
+   * feed used by the schedule and ticker. This is deliberately read-only:
+   * payout services must still apply their own escrow/dispute controls.
+   */
+  async getFinalEventById(eventId: string): Promise<any | null> {
+    const events = await this.getTodayEvents();
+    const event = events.find((item) => item.id === String(eventId));
+    if (!event?.completed) return null;
+    if (!Number.isFinite(event.homeTeam.score) || !Number.isFinite(event.awayTeam.score)) return null;
+    return event;
+  }
+
+  /**
    * Get teams for ANY sport supported by ESPN
    */
   async getTeamsForSport(sportKey: string): Promise<any[]> {

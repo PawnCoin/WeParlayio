@@ -236,6 +236,30 @@ export async function expireOpenP2pChallenges() {
   for (const item of expired) await cancelAndRefundP2pChallenge(item.id, undefined, true);
 }
 
+export async function queueP2pFinalResult(challengeId: string, result: {
+  source: string;
+  homeTeam: string;
+  awayTeam: string;
+  homeScore: number;
+  awayScore: number;
+  statusDetail?: string;
+}) {
+  return db.transaction(async (tx) => {
+    const [challenge] = await tx.select().from(p2pChallenges).where(eq(p2pChallenges.id, challengeId)).for("update");
+    if (!challenge) throw new Error("Challenge not found");
+    if (challenge.status === "settled") return challenge;
+    if (challenge.status !== "accepted") throw new Error("Challenge is not awaiting a final result");
+
+    const resultSummary = `${result.source} reports final: ${result.awayTeam} ${result.awayScore} – ${result.homeTeam} ${result.homeScore}`;
+    const [updated] = await tx.update(p2pChallenges).set({
+      status: "pending_settlement",
+      settlementReason: `${resultSummary}. Awaiting result verification.`,
+      updatedAt: new Date(),
+    }).where(eq(p2pChallenges.id, challengeId)).returning();
+    return updated;
+  });
+}
+
 export const getP2pChallenge = async (id: string) => (await db.select().from(p2pChallenges).where(eq(p2pChallenges.id, id)).limit(1))[0];
 export const getP2pActivity = (id: string) => db.select().from(p2pActivity).where(eq(p2pActivity.challengeId, id)).orderBy(p2pActivity.createdAt);
 export const createP2pActivity = async (value: any) => (await db.insert(p2pActivity).values(value).returning())[0];
