@@ -8,6 +8,7 @@ import systemHealthRoutes from './routes/systemHealthRoutes';
 import securityRoutes from './routes/securityRoutes';
 import { logger } from './services/enhancedLoggingService';
 import { performanceMonitor } from './services/performanceMonitoringService';
+import { blocksFinancialMutation, isCashOnlyLaunch } from './services/launchMode';
 
 // Security middleware
 import helmet from 'helmet';
@@ -137,9 +138,9 @@ app.use(express.urlencoded({ extended: false }));
 // The current public release is play-cash only. Banking and crypto code remains
 // in the repository for a future licensed launch, but mutation endpoints are
 // unavailable unless an operator explicitly enables the later launch mode.
-const isPlayCashLaunch = process.env.WEPARLAY_LAUNCH_MODE !== 'full';
+const isPlayCashLaunch = isCashOnlyLaunch(process.env.WEPARLAY_LAUNCH_MODE);
 app.use(['/api/banking', '/api/crypto'], (req, res, next) => {
-  if (isPlayCashLaunch && req.method !== 'GET') {
+  if (isPlayCashLaunch && blocksFinancialMutation(process.env.WEPARLAY_LAUNCH_MODE, req.method)) {
     return res.status(503).json({
       success: false,
       message: 'Debit-card and crypto services are coming soon. WeParlay currently supports WeParlay Cash only.',
