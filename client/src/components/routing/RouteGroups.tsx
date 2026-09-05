@@ -14,7 +14,6 @@ const AdminVerificationDashboard = lazy(() => import("@/components/AdminVerifica
 const SecurityDashboard = lazy(() => import("@/pages/admin/SecurityDashboard"));
 
 // Development/Testing components (only load in dev)
-const AdminLoginTest = lazy(() => import("@/pages/AdminLoginTest"));
 const ApiTestPage = lazy(() => import("@/pages/ApiTestPage"));
 
 export function AdminRoutes() {
@@ -42,7 +41,6 @@ export function DevRoutes() {
 
   return (
     <Suspense fallback={<LoadingFallback />}>
-      <Route path="/admin-login-test" component={AdminLoginTest} />
       <Route path="/api-test" component={ApiTestPage} />
     </Suspense>
   );

@@ -49,13 +49,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   // Handle missing user properties with proper defaults and admin status
   const currentUser = user as any || {};
 
-  // Check admin status from multiple sources (memoized to prevent infinite loops)
-  const isAdmin = React.useMemo(() => {
-    return currentUser.isAdmin || 
-           currentUser.role === 'admin' ||
-           localStorage.getItem("weparlay-is-admin") === "true" || 
-           ['support@weparlay.io', 'admin@weparlay.io', 'weparlay@admin.com'].includes(currentUser.email || '');
-  }, [currentUser.isAdmin, currentUser.role, currentUser.email]);
+  // Roles are established by the authenticated server response only.
+  const isAdmin = currentUser.isAdmin === true || currentUser.role === 'admin';
 
   // Enhance user object with admin status
   currentUser.isAdmin = isAdmin;
@@ -67,7 +62,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       isAuthenticated,
       userEmail: currentUser.email,
       isAdmin,
-      hasToken: !!localStorage.getItem('auth-token') || !!localStorage.getItem('weparlay-admin-token'),
+      hasToken: !!localStorage.getItem('auth-token'),
       user: currentUser
     });
   }, [isAuthenticated, currentUser.email, isAdmin]);
@@ -434,7 +429,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                             Login
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
-                            <Link href="/auth" className="flex items-center">
+                            <Link href="/signup" className="flex items-center">
                               <User className="h-4 w-4 mr-2" />
                               Sign Up
                             </Link>

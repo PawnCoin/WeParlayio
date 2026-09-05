@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { Trash2, Wallet, CreditCard, Bitcoin, DollarSign, Target, Mail, MessageSquareText, Share2 } from 'lucide-react';
+import { Trash2, Wallet, CreditCard, Ticket, Mail, MessageSquareText, Share2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -55,8 +55,7 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
 }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [selectedCurrency, setSelectedCurrency] = useState<'weparlay_cash' | 'real_money' | 'crypto'>('weparlay_cash');
-  const [slipType, setSlipType] = useState<'traditional' | 'crypto'>('traditional');
+  const [selectedCurrency, setSelectedCurrency] = useState<'weparlay_cash' | 'real_money'>('weparlay_cash');
   const [wagerMode, setWagerMode] = useState<'straight' | 'parlay'>('straight');
   const [parlayStake, setParlayStake] = useState('');
   const [localBetSlip, setLocalBetSlip] = useState<BetSlipItem[]>([]);
@@ -203,7 +202,6 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
       }] : straightBets,
       wagerMode,
       currency: selectedCurrency,
-      ...(selectedCurrency === 'crypto' && { cryptocurrencyType: 'BTC' })
     };
 
     placeBetsMutation.mutate(betsData);
@@ -214,9 +212,7 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
       case 'weparlay_cash':
         return <Wallet className="h-4 w-4" />;
       case 'real_money':
-        return <DollarSign className="h-4 w-4" />;
-      case 'crypto':
-        return <Bitcoin className="h-4 w-4" />;
+        return <CreditCard className="h-4 w-4 text-emerald-500" />;
       default:
         return <CreditCard className="h-4 w-4" />;
     }
@@ -227,18 +223,10 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
       case 'weparlay_cash':
         return 'WeParlay Cash';
       case 'real_money':
-        return 'Real Money';
-      case 'crypto':
-        return 'Cryptocurrency';
+        return 'Debit Card';
       default:
         return 'USD';
     }
-  };
-
-  // Sync slip type with currency selection
-  const handleCurrencyChange = (currency: 'weparlay_cash' | 'real_money' | 'crypto') => {
-    setSelectedCurrency(currency);
-    setSlipType(currency === 'crypto' ? 'crypto' : 'traditional');
   };
 
   return (
@@ -248,37 +236,9 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-white flex items-center">
-              <Target className="h-5 w-5 mr-2 text-blue-400" />
+              <Ticket className="h-5 w-5 mr-2 text-emerald-500" />
               Bet Slip ({displayBetSlip.length || 0})
             </CardTitle>
-            <div className="flex space-x-2">
-              <Button
-                variant={slipType === 'traditional' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => {
-                  setSlipType('traditional');
-                  if (selectedCurrency === 'crypto') {
-                    setSelectedCurrency('weparlay_cash');
-                  }
-                }}
-                className="text-xs"
-              >
-                <CreditCard className="h-3 w-3 mr-1" />
-                Traditional
-              </Button>
-              <Button
-                variant={slipType === 'crypto' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => {
-                  setSlipType('crypto');
-                  setSelectedCurrency('crypto');
-                }}
-                className="text-xs"
-              >
-                <Bitcoin className="h-3 w-3 mr-1" />
-                Crypto
-              </Button>
-            </div>
           </div>
         </CardHeader>
         
@@ -288,7 +248,7 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
             <label className="block text-white text-sm font-medium mb-2">
               Choose Your Currency
             </label>
-            <Select value={selectedCurrency} onValueChange={handleCurrencyChange}>
+            <Select value={selectedCurrency} onValueChange={(value: 'weparlay_cash' | 'real_money') => setSelectedCurrency(value)}>
               <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                 <SelectValue placeholder="Select currency..." />
               </SelectTrigger>
@@ -296,7 +256,7 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
                 <SelectItem value="weparlay_cash" className="text-white hover:bg-slate-700">
                   <div className="flex items-center justify-between w-full">
                     <div className="flex items-center">
-                      <Wallet className="h-4 w-4 mr-2 text-blue-400" />
+                      <Wallet className="h-4 w-4 mr-2 text-emerald-500" />
                       WeParlay Cash
                     </div>
                     <span className="text-green-400">${(balances?.weparlay_cash || 0).toFixed(2)}</span>
@@ -305,24 +265,16 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
                 <SelectItem value="real_money" disabled className="text-white hover:bg-slate-700">
                   <div className="flex items-center justify-between w-full">
                     <div className="flex items-center">
-                      <DollarSign className="h-4 w-4 mr-2 text-green-400" />
-                      Real Money (Compliance pending)
+                      <CreditCard className="h-4 w-4 mr-2 text-emerald-500" />
+                      Debit Card (Verification required)
                     </div>
                     <span className="text-green-400">${(balances?.real_money || 0).toFixed(2)}</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="crypto" disabled className="text-white hover:bg-slate-700">
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center">
-                      <Bitcoin className="h-4 w-4 mr-2 text-orange-400" />
-                      Cryptocurrency (Compliance pending)
-                    </div>
-                    <span className="text-green-400">${(balances?.crypto || 0).toFixed(2)}</span>
                   </div>
                 </SelectItem>
               </SelectContent>
             </Select>
           </div>
+          <p className="text-xs text-slate-400">Debit-card wagering requires real identity, age, location, and jurisdiction verification. It remains unavailable until compliance and payment-provider approval are complete.</p>
 
           {/* Current Balance Display */}
           <div className="bg-slate-800 p-3 rounded-lg">
@@ -354,7 +306,7 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
 
           {displayBetSlip.length === 0 ? (
             <div className="text-center py-8">
-              <Target className="h-12 w-12 text-slate-500 mx-auto mb-4" />
+              <Ticket className="h-12 w-12 text-emerald-500 mx-auto mb-4" />
               <p className="text-slate-400">Add bets to your slip to get started</p>
             </div>
           ) : (
@@ -380,7 +332,7 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
                       onClick={() => onRemoveBet(bet.id)}
                       className="text-red-400 hover:text-red-300 p-1"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4 text-emerald-500" />
                     </Button>
                   </div>
                   
@@ -427,9 +379,9 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
 
               {/* Action Buttons */}
               <div className="grid grid-cols-3 gap-2">
-                <a href={`mailto:?subject=WeParlay%20bet%20challenge&body=${shareText}`}><Button variant="outline" size="sm" className="w-full"><Mail className="h-4 w-4" /></Button></a>
-                <a href={`sms:?&body=${shareText}`}><Button variant="outline" size="sm" className="w-full"><MessageSquareText className="h-4 w-4" /></Button></a>
-                <Button variant="outline" size="sm" onClick={() => navigator.share?.({ title: 'WeParlay challenge', text: decodeURIComponent(shareText), url: window.location.origin })}><Share2 className="h-4 w-4" /></Button>
+                <a href={`mailto:?subject=WeParlay%20bet%20challenge&body=${shareText}`}><Button variant="outline" size="sm" className="w-full"><Mail className="h-4 w-4 text-emerald-500" /></Button></a>
+                <a href={`sms:?&body=${shareText}`}><Button variant="outline" size="sm" className="w-full"><MessageSquareText className="h-4 w-4 text-emerald-500" /></Button></a>
+                <Button variant="outline" size="sm" onClick={() => navigator.share?.({ title: 'WeParlay challenge', text: decodeURIComponent(shareText), url: window.location.origin })}><Share2 className="h-4 w-4 text-emerald-500" /></Button>
               </div>
               <div className="flex space-x-2 pt-2">
                 <Button

@@ -24,6 +24,9 @@ const Footer: React.FC = () => {
             <Link href="/support">
               <span className="text-gray-300 hover:text-green-500 transition-colors text-sm">Support</span>
             </Link>
+            <Link href="/tiers">
+              <span className="text-gray-300 hover:text-green-500 transition-colors text-sm">Tiers</span>
+            </Link>
             <Link href="/contact">
               <span className="text-gray-300 hover:text-green-500 transition-colors text-sm">Contact</span>
             </Link>

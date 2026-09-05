@@ -493,8 +493,8 @@ export class PriorityApiService {
       startTime: event.starts || new Date().toISOString(),
       status: 'scheduled',
       odds: {
-        homeWin: event.home_odds || 2.0,
-        awayWin: event.away_odds || 2.0,
+        homeWin: event.home_odds ?? null,
+        awayWin: event.away_odds ?? null,
         draw: event.draw_odds || null
       },
       source: 'Pinnacle (Premium)',
@@ -535,18 +535,20 @@ export class PriorityApiService {
     const service = new FreeSportsApiService();
     
     // Fetch ALL sports data - critical for user engagement since football is out of season
-    const [nflData, nbaData, mlbData, nhlData, soccerData, wnbaData] = await Promise.all([
+    const [nflData, nbaData, mlbData, nhlData, soccerData, wnbaData, ncaabData, ncaafData] = await Promise.all([
       service.getNFLOdds(),
       service.getNBAOdds(), 
       service.getMLBOdds(),
       service.getNHLOdds(),
       service.getSoccerOdds(),
-      service.getWNBAOdds()
+      service.getWNBAOdds(),
+      service.getNCAABOdds(),
+      service.getNCAAFOdds()
     ]);
     
     // Combine all sports data for comprehensive coverage
-    const allSportsData = [...nflData, ...nbaData, ...mlbData, ...nhlData, ...soccerData, ...wnbaData];
-    console.log(`✅ ESPN API returned ${allSportsData.length} events across all sports (NFL: ${nflData.length}, NBA: ${nbaData.length}, MLB: ${mlbData.length}, NHL: ${nhlData.length}, Soccer: ${soccerData.length}, WNBA: ${wnbaData.length})`);
+    const allSportsData = [...nflData, ...nbaData, ...mlbData, ...nhlData, ...soccerData, ...wnbaData, ...ncaabData, ...ncaafData];
+    console.log(`✅ ESPN API returned ${allSportsData.length} events across eight feeds, including NCAA basketball and football`);
     
     return allSportsData;
   }
