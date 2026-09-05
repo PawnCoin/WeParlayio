@@ -121,6 +121,28 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const { betSlip, updateBet, removeFromBetSlip, clearBetSlip } = useBetSlip();
   const { toast } = useToast();
 
+  // The shared slip stores optional display fields, while the unified slip needs
+  // a complete display model. Normalize it once at the layout boundary.
+  const normalizedBetSlip = betSlip.map((bet) => ({
+    id: bet.id,
+    eventId: bet.eventId,
+    betType: bet.betType,
+    selection: bet.selection || bet.pick || '',
+    odds: bet.odds,
+    amount: bet.amount || 0,
+    potential: bet.potential || 0,
+    point: bet.point,
+    sport: bet.sport || '',
+    gameInfo: {
+      homeTeam: bet.homeTeam || '',
+      awayTeam: bet.awayTeam || '',
+    },
+  }));
+
+  const updateUnifiedBetAmount = (id: string, amount: number) => {
+    updateBet(id, { amount });
+  };
+
   // Initialize WebSocket connection for real-time updates
   const {
     isConnected = false
@@ -474,8 +496,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           {/* Betting Slip Column - Mobile Bottom Sheet */}
           <div className="hidden md:block w-80 bg-card shadow-md flex-shrink-0 overflow-y-auto custom-scrollbar betting-slip-shadow border-l border-border">
             <UnifiedBetSlip 
-              betSlip={betSlip || []}
-              onUpdateBet={updateBet}
+              betSlip={normalizedBetSlip}
+              onUpdateBet={updateUnifiedBetAmount}
               onRemoveBet={removeFromBetSlip}
               onClearAll={clearBetSlip}
               balances={{
@@ -489,8 +511,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           {/* Mobile Betting Slip - Fixed Bottom */}
           <div className="md:hidden fixed bottom-16 left-0 right-0 bg-card border-t border-border shadow-lg z-40 max-h-60 overflow-y-auto">
             <UnifiedBetSlip 
-              betSlip={betSlip || []}
-              onUpdateBet={updateBet}
+              betSlip={normalizedBetSlip}
+              onUpdateBet={updateUnifiedBetAmount}
               onRemoveBet={removeFromBetSlip}
               onClearAll={clearBetSlip}
               balances={{

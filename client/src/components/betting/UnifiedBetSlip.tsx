@@ -46,6 +46,11 @@ interface UnifiedBetSlipProps {
   };
 }
 
+interface PlaceBetsResponse {
+  success: boolean;
+  message: string;
+}
+
 const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
   betSlip,
   onUpdateBet,
@@ -111,7 +116,8 @@ const UnifiedBetSlip: React.FC<UnifiedBetSlipProps> = ({
   // Place bets mutation
   const placeBetsMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest('POST', '/api/bets/place', data);
+      const response = await apiRequest('POST', '/api/bets/place', data);
+      return response.json() as Promise<PlaceBetsResponse>;
     },
     onSuccess: (data) => {
       toast({
