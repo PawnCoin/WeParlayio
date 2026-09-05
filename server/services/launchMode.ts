@@ -12,6 +12,12 @@ export function blocksFinancialMutation(mode: string | undefined, method: string
   return isCashOnlyLaunch(mode) && method.toUpperCase() !== 'GET';
 }
 
+const financialRoutePrefixes = ['/api/banking', '/api/crypto', '/api/payments'];
+
+export function isRestrictedFinancialPath(path: string): boolean {
+  return financialRoutePrefixes.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+}
+
 export function acceptsBetCurrency(mode: string | undefined, currency: string): boolean {
   return !isCashOnlyLaunch(mode) || currency === 'weparlay_cash';
 }
