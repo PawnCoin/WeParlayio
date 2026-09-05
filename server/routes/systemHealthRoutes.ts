@@ -258,13 +258,13 @@ router.get('/api-status', async (req, res) => {
       
       // === COMMUNICATION APIS ===
       {
-        name: 'Twilio SMS API',
-        status: (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) ? 'operational' : 'offline',
+        name: 'SMS delivery',
+        status: 'offline',
         responseTime: 120,
         type: 'communication',
-        description: 'SMS notifications and alerts',
-        configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN),
-        issue: (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) ? null : 'Account credentials required',
+        description: 'SMS invitations and alerts',
+        configured: false,
+        issue: 'Paused pending an approved gambling-compliant provider',
         priority: 1
       },
       {
