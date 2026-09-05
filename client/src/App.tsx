@@ -20,6 +20,10 @@ import SecuritySettings from "@/pages/SecuritySettings";
 import Support from "@/pages/Support";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
+import SecurityInfo from "@/pages/SecurityInfo";
+import TierPricing from "@/pages/TierPricing";
+import About from "@/pages/About";
+import Contact from "@/pages/Contact";
 import NotFound from "@/pages/not-found";
 import { CurrencyModeProvider } from "@/contexts/CurrencyModeContext";
 import { TeamThemeProvider } from "@/contexts/TeamThemeContext";
@@ -49,8 +53,12 @@ function Router() {
       <Route path="/settings" component={Settings} />
       <Route path="/security-settings" component={SecuritySettings} />
       <Route path="/support" component={Support} />
+      <Route path="/contact" component={Contact} />
+      <Route path="/about" component={About} />
+      <Route path="/tiers" component={TierPricing} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms-of-service" component={TermsOfService} />
+      <Route path="/security-info" component={SecurityInfo} />
       <Route path="*" component={NotFound} />
     </Switch>
   );

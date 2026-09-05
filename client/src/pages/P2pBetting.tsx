@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { Users, Trophy, Clock, DollarSign, Plus, CheckCircle, XCircle, AlertCircle, LockKeyhole, MessageCircle, RotateCcw, Copy, Mail, Send, Share2 } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
+import { TeamLogo } from '@/components/betting/TeamLogo';
 
 interface GameEvent {
   id: string;
@@ -33,6 +34,8 @@ interface P2pChallenge {
     awayTeam: string;
     startTime: string;
     sport: string;
+    homeLogo?: string;
+    awayLogo?: string;
   };
   challengerPick: string;
   challengeePick?: string;
@@ -103,10 +106,6 @@ const P2pBetting = () => {
     queryKey: ['/api/p2p-betting/challenges/mine'],
   });
 
-  // Fetch user's P2P stats
-  const { data: p2pStats } = useQuery({
-    queryKey: ['/api/p2p-betting/stats'],
-  });
 
   // Create challenge mutation
   const createChallengeMutation = useMutation({
@@ -179,12 +178,6 @@ const P2pBetting = () => {
   const categories = ['All', ...Array.from(new Set(challenges.map((item: P2pChallenge) => item.gameDetails?.sport).filter(Boolean))) as string[]];
   const visibleChallenges = category === 'All' ? challenges : challenges.filter((item: P2pChallenge) => item.gameDetails?.sport === category);
   const userChallenges = (myChallenges as any)?.challenges || [];
-  const stats = (p2pStats as any)?.stats || {
-    totalChallenges: 0,
-    wonChallenges: 0,
-    totalWinnings: 0,
-    winRate: 0,
-  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -217,46 +210,6 @@ const P2pBetting = () => {
           ) : <p className="text-sm text-muted-foreground">This invitation is unavailable or has expired.</p>}
         </div>
       )}
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <Card>
-          <CardContent className="flex items-center p-4">
-            <Trophy className="h-8 w-8 text-yellow-500 mr-3" />
-            <div>
-              <p className="text-sm font-medium">Total Challenges</p>
-              <p className="text-2xl font-bold">{stats.totalChallenges}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center p-4">
-            <CheckCircle className="h-8 w-8 text-green-500 mr-3" />
-            <div>
-              <p className="text-sm font-medium">Won</p>
-              <p className="text-2xl font-bold">{stats.wonChallenges}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center p-4">
-            <DollarSign className="h-8 w-8 text-blue-500 mr-3" />
-            <div>
-              <p className="text-sm font-medium">Total Winnings</p>
-              <p className="text-2xl font-bold">${stats.totalWinnings}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center p-4">
-            <Users className="h-8 w-8 text-purple-500 mr-3" />
-            <div>
-              <p className="text-sm font-medium">Win Rate</p>
-              <p className="text-2xl font-bold">{(stats.winRate * 100).toFixed(1)}%</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
         <div className="flex justify-between items-center mb-4">
@@ -378,6 +331,8 @@ const CreateChallengeForm = ({ games, onSubmit, isLoading }: CreateChallengeForm
         awayTeam: selectedGame.awayTeam.name,
         startTime: selectedGame.startTime,
         sport: selectedGame.sport,
+        homeLogo: selectedGame.homeTeam.logo,
+        awayLogo: selectedGame.awayTeam.logo,
       },
       challengerPick: pick,
       betAmount: parseFloat(amount),
@@ -530,9 +485,12 @@ const ChallengeCard = ({ challenge, isOwn, onAccept, acceptLoading, onDecline, d
       <CardHeader>
         <div className="flex justify-between items-start">
           <div>
-            <CardTitle className="text-lg">
-              {challenge.gameDetails.homeTeam} vs {challenge.gameDetails.awayTeam}
-            </CardTitle>
+            <div className="mb-2 flex items-center gap-3">
+              <TeamLogo src={challenge.gameDetails.homeLogo} teamName={challenge.gameDetails.homeTeam} league={challenge.gameDetails.sport} size="lg" />
+              <span className="text-muted-foreground">vs</span>
+              <TeamLogo src={challenge.gameDetails.awayLogo} teamName={challenge.gameDetails.awayTeam} league={challenge.gameDetails.sport} size="lg" />
+            </div>
+            <CardTitle className="text-lg">{challenge.gameDetails.homeTeam} vs {challenge.gameDetails.awayTeam}</CardTitle>
             <p className="text-sm text-muted-foreground">
               {challenge.gameDetails.sport} • {new Date(challenge.gameDetails.startTime).toLocaleDateString()}
             </p>

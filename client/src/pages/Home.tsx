@@ -90,7 +90,7 @@ export default function Home() {
         ) : <Card><CardContent className="flex flex-col items-center py-12 text-center"><CalendarDays className="mb-3 h-8 w-8 text-muted-foreground" /><h3 className="font-bold">No games returned for this filter</h3><p className="text-sm text-muted-foreground">The live sports provider will populate today’s schedule here.</p></CardContent></Card>}
       </section>
 
-      <section className="rounded-xl border bg-card p-5"><div className="flex gap-3"><WalletCards className="text-emerald-500" /><div><h3 className="font-bold">Accepted value</h3><p className="text-sm text-muted-foreground">$PC on supported EVM, Solana and other configured chains; $DIG and %RU on Polygon. Final token logos, contract addresses, confirmations, and risk information must be supplied before activation.</p></div></div></section>
+      <section className="rounded-xl border bg-card p-5"><div className="flex gap-3"><WalletCards className="text-emerald-500" /><div><h3 className="font-bold">Accepted value</h3><p className="text-sm text-muted-foreground">$PC on supported EVM, Solana and other configured chains; $DIG and $Ru on Polygon. Final token logos, contract addresses, confirmations, and risk information must be supplied before activation.</p></div></div></section>
     </div>
   );
 }

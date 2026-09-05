@@ -56,52 +56,15 @@ router.get('/upcoming-events', async (req, res) => {
     const { sport } = req.query;
     const upcomingEvents = await unifiedSportsAPI.getUnifiedUpcomingEvents();
 
-    // If no real data available, provide realistic fallback data
+    // Never display invented games when providers are unavailable.
     if (upcomingEvents.length === 0) {
-      console.log('📭 No unified sports data available - providing fallback events');
-      const fallbackEvents = [
-        {
-          id: 'fallback_nfl_1',
-          sport: 'American Football',
-          sport_key: 'americanfootball_nfl',
-          sport_title: 'NFL',
-          commence_time: new Date(Date.now() + 3600000).toISOString(),
-          home_team: 'Kansas City Chiefs',
-          away_team: 'Buffalo Bills',
-          status: 'upcoming',
-          odds: { home: 1.95, away: 1.85 }
-        },
-        {
-          id: 'fallback_nba_1',
-          sport: 'Basketball',
-          sport_key: 'basketball_nba',
-          sport_title: 'NBA',
-          commence_time: new Date(Date.now() + 7200000).toISOString(),
-          home_team: 'Los Angeles Lakers',
-          away_team: 'Boston Celtics',
-          status: 'upcoming',
-          odds: { home: 2.10, away: 1.75 }
-        },
-        {
-          id: 'fallback_mlb_1',
-          sport: 'Baseball',
-          sport_key: 'baseball_mlb',
-          sport_title: 'MLB',
-          commence_time: new Date(Date.now() + 5400000).toISOString(),
-          home_team: 'New York Yankees',
-          away_team: 'Los Angeles Dodgers',
-          status: 'upcoming',
-          odds: { home: 1.90, away: 1.90 }
-        }
-      ];
-
       return res.json({
         success: true,
-        data: fallbackEvents,
-        sources: ['Fallback Data'],
-        total: fallbackEvents.length,
+        data: [],
+        sources: [],
+        total: 0,
         timestamp: new Date().toISOString(),
-        note: 'Showing fallback events - real data temporarily unavailable'
+        note: 'Verified sports feeds are temporarily unavailable'
       });
     }
 

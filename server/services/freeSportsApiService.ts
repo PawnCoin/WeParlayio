@@ -104,6 +104,26 @@ export class FreeSportsApiService {
     }
   }
 
+  async getNCAABOdds(): Promise<any[]> {
+    return this.getEspnScoreboard('basketball', 'mens-college-basketball', 'NCAAB');
+  }
+
+  async getNCAAFOdds(): Promise<any[]> {
+    return this.getEspnScoreboard('football', 'college-football', 'NCAAF');
+  }
+
+  private async getEspnScoreboard(sportPath: string, leaguePath: string, label: string): Promise<any[]> {
+    await this.rateLimit();
+    try {
+      const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sportPath}/${leaguePath}/scoreboard`);
+      if (!response.ok) throw new Error(`ESPN ${label} API error: ${response.status}`);
+      return this.formatESPNData(await response.json(), label);
+    } catch (error) {
+      console.warn(`ESPN ${label} API failed:`, error);
+      return [];
+    }
+  }
+
   async getTennisOdds(): Promise<any[]> {
     await this.rateLimit();
 
@@ -152,11 +172,7 @@ export class FreeSportsApiService {
       },
       startTime: event.date,
       status: event.status?.type?.description || 'Scheduled',
-      odds: {
-        homeWin: 1.95,
-        awayWin: 1.95,
-        draw: sport === 'Soccer' ? 3.25 : undefined
-      }
+      odds: undefined
     }));
   }
 
@@ -232,10 +248,10 @@ export class FreeSportsApiService {
       tournament: match.tournament || 'Unknown Tournament',
       startTime: match.startTime || new Date().toISOString(),
       status: match.status || 'Scheduled',
-      odds: {
-        player1Win: match.odds?.player1 || 2.0,
-        player2Win: match.odds?.player2 || 2.0
-      }
+      odds: match.odds?.player1 && match.odds?.player2 ? {
+        player1Win: match.odds.player1,
+        player2Win: match.odds.player2
+      } : undefined
     }));
   }
 

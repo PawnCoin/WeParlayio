@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { LogIn, UserPlus, Eye, EyeOff, Shield, Mail, Lock, User, Phone, Calendar } from "lucide-react";
 
 const AuthenticationHub: React.FC = () => {
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
   const auth = useAuth();
   const login = auth.login || (() => Promise.resolve());
   const isLoggingIn = auth.isLoggingIn || false;
@@ -116,12 +116,13 @@ const AuthenticationHub: React.FC = () => {
         
         // Store user data
         localStorage.setItem('user', JSON.stringify(data.user));
+        if (data.token) localStorage.setItem('auth-token', data.token);
         localStorage.setItem('weparlay-logged-in', 'true');
         localStorage.setItem('weparlay-user-email', data.user.email);
 
         toast({
           title: "Welcome to WeParlay!",
-          description: "Your account has been created successfully. You received $25 welcome bonus!",
+          description: "Your account has been created with 10,000 WeParlay Cash.",
         });
 
         navigate('/');
@@ -137,31 +138,6 @@ const AuthenticationHub: React.FC = () => {
     }
   };
 
-  // Quick demo login
-  const handleDemoLogin = () => {
-    const demoUser = {
-      id: 'demo-user',
-      username: 'DemoUser',
-      email: 'demo@weparlay.io',
-      firstName: 'Demo',
-      lastName: 'User',
-      balance: 1000,
-      tier: 'bronze',
-      isAdmin: false
-    };
-
-    localStorage.setItem('user', JSON.stringify(demoUser));
-    localStorage.setItem('weparlay-logged-in', 'true');
-    localStorage.setItem('weparlay-user-email', demoUser.email);
-
-    toast({
-      title: "Demo Account Active",
-      description: "Welcome to WeParlay! Explore with $1000 demo balance",
-    });
-
-    navigate('/');
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -170,7 +146,7 @@ const AuthenticationHub: React.FC = () => {
           <p className="text-slate-300">Your Premier Sports Betting Platform</p>
         </div>
 
-        <Tabs defaultValue="login" className="space-y-4">
+        <Tabs defaultValue={location.startsWith('/signup') ? 'signup' : 'login'} className="space-y-4">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="login" className="flex items-center gap-2">
               <LogIn className="h-4 w-4" />
@@ -256,14 +232,6 @@ const AuthenticationHub: React.FC = () => {
                 </form>
 
                 <div className="mt-4 space-y-2">
-                  <Button 
-                    variant="outline" 
-                    className="w-full" 
-                    onClick={handleDemoLogin}
-                  >
-                    Try Demo Account
-                  </Button>
-                  
                   <div className="text-center">
                     <Button variant="link" className="text-sm text-muted-foreground">
                       Forgot Password?
@@ -283,7 +251,7 @@ const AuthenticationHub: React.FC = () => {
                   Create Account
                 </CardTitle>
                 <CardDescription>
-                  Join WeParlay and get $25 welcome bonus!
+                  Join WeParlay and receive 10,000 WeParlay Cash.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -480,7 +448,7 @@ const AuthenticationHub: React.FC = () => {
 
                       <div className="space-y-2">
                         <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
-                          Create Account & Get $25 Bonus
+                          Create Account & Get 10,000 WeParlay Cash
                         </Button>
                         <Button 
                           type="button"

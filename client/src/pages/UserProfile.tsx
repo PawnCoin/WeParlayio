@@ -38,6 +38,7 @@ export default function UserProfile() {
     enabled: Boolean(user) && search.trim().length >= 2,
   });
   const { data: betData = { challenges: [] } } = useQuery<any>({ queryKey: ["/api/p2p-betting/challenges/mine"], enabled: Boolean(user) });
+  const { data: p2pData = { stats: {} } } = useQuery<any>({ queryKey: ["/api/p2p-betting/stats"], enabled: Boolean(user) });
   const friendAction = useMutation({
     mutationFn: ({ method, id, action = "" }: { method: "POST" | "DELETE"; id: string; action?: string }) => apiRequest(method, "/api/profile/friends/" + id + action),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/profile/friends"] }),
@@ -53,9 +54,11 @@ export default function UserProfile() {
   const referralCode = currentUser.inviteCode || currentUser.referralCode || currentUser.id || "";
   const referralLink = window.location.origin + "/signup?ref=" + encodeURIComponent(referralCode);
   const receivedBets = (betData.challenges || []).filter((item: any) => item.challengeeId === currentUser.id || (item.status === "open" && !item.isPublic));
+  const privateStats = p2pData.stats || {};
   const stats = [
-    ["Record", wins + "–" + losses], ["Wagered", "USD " + wagered.toLocaleString()],
-    ["Won / lost", "USD " + won.toLocaleString() + " / " + Math.max(0, wagered - won).toLocaleString()],
+    ["Record", wins + "–" + losses], ["Challenges", String(privateStats.totalChallenges || 0)],
+    ["Challenge wins", String(privateStats.wonChallenges || 0)], ["Win rate", ((Number(privateStats.winRate) || 0) * 100).toFixed(1) + "%"],
+    ["Total winnings", "USD " + Number(privateStats.totalWinnings || won).toLocaleString()], ["Wagered", "USD " + wagered.toLocaleString()],
     ["WeParlay Cash", Number(currentUser.weparlayCashBalance || currentUser.balance || 10000).toLocaleString()],
     ["Cash", "USD " + Number(currentUser.cashBalance || 0).toLocaleString()], ["Friends", String(friendData.friends?.length || 0)]
   ];
@@ -72,11 +75,11 @@ export default function UserProfile() {
       <div className="flex-1"><div className="flex flex-wrap items-center gap-2"><h1 className="text-3xl font-black">@{currentUser.username || currentUser.firstName || "player"}</h1><Badge>{currentUser.tier || "Bronze"} tier</Badge>{currentUser.emailVerified && <Badge variant="outline"><ShieldCheck className="mr-1 h-3 w-3" />Verified</Badge>}</div><p className="mt-1 text-muted-foreground">{currentUser.firstName} {currentUser.lastName} · {timeZone.replaceAll("_", " ")}</p></div>
       <Link href="/support"><Button variant="outline"><AlertTriangle className="mr-2 h-4 w-4" />Report a problem</Button></Link>
     </CardContent></Card>
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">{stats.map(([label, value]) => <Card key={label}><CardContent className="p-4"><div className="text-xs uppercase text-muted-foreground">{label}</div><div className="mt-1 text-lg font-black">{value}</div></CardContent></Card>)}</div>
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">{stats.map(([label, value]) => <Card key={label}><CardContent className="p-4"><div className="text-xs uppercase text-muted-foreground">{label}</div><div className="mt-1 text-lg font-black">{value}</div></CardContent></Card>)}</div>
     <Tabs defaultValue="overview">
       <TabsList className="grid h-auto grid-cols-2 md:grid-cols-5"><TabsTrigger value="overview">Overview</TabsTrigger><TabsTrigger value="bets">Bet inbox</TabsTrigger><TabsTrigger value="friends">Friends</TabsTrigger><TabsTrigger value="rewards">Rewards</TabsTrigger><TabsTrigger value="settings">Settings</TabsTrigger></TabsList>
       <TabsContent value="overview" className="grid gap-4 md:grid-cols-2">
-        <Card><CardHeader><CardTitle>Balances and verification</CardTitle></CardHeader><CardContent className="space-y-3"><div className="flex justify-between"><span>WeParlay Cash</span><strong>{Number(currentUser.weparlayCashBalance || currentUser.balance || 10000).toLocaleString()}</strong></div><div className="flex justify-between"><span>Real cash</span><strong>USD {Number(currentUser.cashBalance || 0).toLocaleString()}</strong></div><p className="text-xs text-muted-foreground">Real-money use remains disabled until identity, location, jurisdiction, and payment checks are complete.</p><Link href="/security-settings" className="text-emerald-500">Manage identity and verification →</Link></CardContent></Card>
+        <Card><CardHeader><CardTitle>Balances and verification</CardTitle></CardHeader><CardContent className="space-y-3"><div className="flex justify-between"><span>WeParlay Cash</span><strong>{Number(currentUser.weparlayCashBalance || currentUser.balance || 10000).toLocaleString()}</strong></div><div className="flex justify-between"><span>Debit-card balance</span><strong>USD {Number(currentUser.cashBalance || 0).toLocaleString()}</strong></div><p className="text-xs text-muted-foreground">Debit-card wagering requires your real identity, legal age, location, and jurisdiction to be verified. It remains disabled until payment and compliance approval are complete.</p><Link href="/security-settings" className="text-emerald-500">Manage identity and verification →</Link></CardContent></Card>
         <Card><CardHeader><CardTitle>Contact and social</CardTitle></CardHeader><CardContent className="space-y-2 text-sm"><p>{currentUser.email || "No email added"}</p><p>{currentUser.phone || currentUser.phoneNumber || "No phone added"}</p><p>Instagram: {social.instagram || "Not added"}</p><p>X: {social.x || "Not added"}</p><p>TikTok: {social.tiktok || "Not added"}</p></CardContent></Card>
       </TabsContent>
       <TabsContent value="bets"><Card><CardHeader><CardTitle>Received and recent bets</CardTitle></CardHeader><CardContent className="space-y-3">{receivedBets.length ? receivedBets.map((bet: any) => <div key={bet.id} className="flex justify-between rounded-lg border p-3"><div><strong>{bet.gameDetails?.awayTeam} at {bet.gameDetails?.homeTeam}</strong><p className="text-sm text-muted-foreground">{bet.betAmount} WeParlay Cash</p></div><Badge>{bet.status}</Badge></div>) : <p className="py-8 text-center text-muted-foreground">No received bets yet.</p>}<Link href="/my-bets" className="inline-flex items-center text-sm text-emerald-500"><History className="mr-2 h-4 w-4" />Complete bet history</Link></CardContent></Card></TabsContent>
