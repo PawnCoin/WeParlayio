@@ -6,9 +6,7 @@ import LoadingFallback from './LoadingFallback';
 // REMOVED UNUSED: AdminDashboard import - handled in main App.tsx instead
 const ManageUsers = lazy(() => import("@/pages/admin/ManageUsers"));
 const FinancialOverview = lazy(() => import("@/pages/admin/FinancialOverview"));
-const Analytics = lazy(() => import("@/pages/admin/Analytics"));
 const SimplePlatformSettings = lazy(() => import("@/pages/admin/SimplePlatformSettings"));
-const VisualComponentEditorPage = lazy(() => import("@/pages/admin/VisualComponentEditor"));
 // REMOVED UNUSED: SocialMediaBots import - route moved to main App.tsx
 const AdminVerificationDashboard = lazy(() => import("@/components/AdminVerificationDashboard"));
 const SecurityDashboard = lazy(() => import("@/pages/admin/SecurityDashboard"));
@@ -25,7 +23,6 @@ export function AdminRoutes() {
       <Route path="/admin/financial-overview" component={(props) => <AdminRoute component={FinancialOverview} {...props} />} />
       {/* REMOVED CONFLICT: /admin/analytics conflicts with /admin-analytics - use /admin-analytics instead */}
       <Route path="/admin/platform-settings" component={(props) => <AdminRoute component={SimplePlatformSettings} {...props} />} />
-      <Route path="/admin/visual-component-editor" component={(props) => <AdminRoute component={VisualComponentEditorPage} {...props} />} />
       {/* REMOVED DUPLICATE: /admin/social-media-dashboard - use /social-media-bots instead */}
       <Route path="/admin/verification" component={(props) => <AdminRoute component={AdminVerificationDashboard} {...props} />} />
       <Route path="/admin/security" component={(props) => <AdminRoute component={SecurityDashboard} {...props} />} />
