@@ -20,6 +20,7 @@ import {
   getP2pChallengeWithNames,
   getP2pDisputes,
   getP2pStats,
+  getAcceptedP2pChallenges,
   getUserP2pChallenges,
   openP2pDispute,
   queueP2pFinalResult,
@@ -669,6 +670,45 @@ router.post('/admin/challenges/:challengeId/results/verify', isAuthenticated, re
     res.json({ success: true, challenge: updated, result: { espn, sportsDb }, message: 'Final score corroborated; payout remains pending the authorized settlement decision' });
   } catch (error: any) {
     res.status(400).json({ success: false, message: error.message || 'Unable to verify result' });
+  }
+});
+
+// Scheduler entry point. Configure an external job to call this after games;
+// its only authority is to queue matching final scores for human settlement.
+router.post('/settlement/sync', async (req: Request, res: Response) => {
+  const key = process.env.P2P_SETTLEMENT_KEY;
+  if (!key || req.get('x-p2p-settlement-key') !== key) {
+    return res.status(401).json({ success: false, message: 'Unauthorized settlement job' });
+  }
+  try {
+    const challenges = await getAcceptedP2pChallenges();
+    const queued: string[] = [];
+    const skipped: Array<{ challengeId: string; reason: string }> = [];
+    for (const challenge of challenges) {
+      const espn = await espnApiService.getFinalEventById(challenge.eventId);
+      if (!espn) { skipped.push({ challengeId: challenge.id, reason: 'No ESPN final' }); continue; }
+      const sportsDb = await theSportsDbService.findFinalByTeams({
+        homeTeam: espn.homeTeam.name,
+        awayTeam: espn.awayTeam.name,
+        startTime: (challenge.gameDetails as any).startTime,
+      });
+      if (!sportsDb || sportsDb.homeScore !== espn.homeTeam.score || sportsDb.awayScore !== espn.awayTeam.score) {
+        skipped.push({ challengeId: challenge.id, reason: 'Final not corroborated' });
+        continue;
+      }
+      await queueP2pFinalResult(challenge.id, {
+        source: 'ESPN + TheSportsDB',
+        homeTeam: espn.homeTeam.name,
+        awayTeam: espn.awayTeam.name,
+        homeScore: espn.homeTeam.score,
+        awayScore: espn.awayTeam.score,
+        statusDetail: espn.statusDetail,
+      });
+      queued.push(challenge.id);
+    }
+    res.json({ success: true, queued, skipped, message: 'Only corroborated finals were queued; no funds were released' });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message || 'Settlement sync failed' });
   }
 });
 
