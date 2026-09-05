@@ -62,7 +62,14 @@ export class ESPNApiService {
    * returns no betting prices: scoreboards are results data, not an odds feed.
    */
   async getTodayEvents(): Promise<any[]> {
-    const supportedSports = ['nfl', 'nba', 'mlb', 'nhl', 'wnba', 'ncaaf', 'ncaab', 'ncaaw', 'mls', 'premier-league'];
+    // Team-versus-team ESPN competitions. Keeping this list explicit excludes
+    // field/individual sports, where a team crest would be misleading.
+    const supportedSports = [
+      'nfl', 'nba', 'mlb', 'nhl', 'wnba', 'mls',
+      'ncaaf', 'ncaab', 'ncaaw', 'college-baseball', 'college-softball', 'college-hockey',
+      'premier-league', 'champions-league', 'europa-league', 'la-liga',
+      'serie-a', 'bundesliga', 'ligue-1', 'world-cup', 'euros',
+    ];
     const responses = await Promise.allSettled(supportedSports.map(async (sport) => {
       const sportPath = this.sportMappings[sport];
       if (!sportPath) return [];
