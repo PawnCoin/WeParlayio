@@ -190,6 +190,23 @@ const P2pBetting = () => {
     }),
   });
 
+  const disputeChallengeMutation = useMutation({
+    mutationFn: ({ challengeId, reason }: { challengeId: string; reason: string }) =>
+      apiRequest('POST', `/api/p2p-betting/challenges/${challengeId}/disputes`, { reason }),
+    onSuccess: () => {
+      toast({
+        title: 'Result dispute opened',
+        description: 'Payout is frozen while the result is reviewed.',
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/p2p-betting/challenges/mine'] });
+    },
+    onError: (error: Error) => toast({
+      title: 'Could not open dispute',
+      description: error.message,
+      variant: 'destructive',
+    }),
+  });
+
   const games = (gamesData as any)?.data || [];
   const challenges = (availableChallenges as any)?.challenges || [];
   const categories = ['All', ...Array.from(new Set(challenges.map((item: P2pChallenge) => item.gameDetails?.sport).filter(Boolean))) as string[]];
@@ -314,6 +331,8 @@ const P2pBetting = () => {
                   acceptLoading={false}
                   onCancel={(challengeId) => cancelChallengeMutation.mutate(challengeId)}
                   cancelLoading={cancelChallengeMutation.isPending}
+                  onDispute={(challengeId, reason) => disputeChallengeMutation.mutate({ challengeId, reason })}
+                  disputeLoading={disputeChallengeMutation.isPending}
                 />
               ))
             )}
@@ -453,11 +472,15 @@ interface ChallengeCardProps {
   declineLoading?: boolean;
   onCancel?: (challengeId: string) => void;
   cancelLoading?: boolean;
+  onDispute?: (challengeId: string, reason: string) => void;
+  disputeLoading?: boolean;
 }
 
-const ChallengeCard = ({ challenge, isOwn, onAccept, acceptLoading, onDecline, declineLoading, onCancel, cancelLoading }: ChallengeCardProps) => {
+const ChallengeCard = ({ challenge, isOwn, onAccept, acceptLoading, onDecline, declineLoading, onCancel, cancelLoading, onDispute, disputeLoading }: ChallengeCardProps) => {
   const [selectedPick, setSelectedPick] = useState('');
   const [showAcceptDialog, setShowAcceptDialog] = useState(false);
+  const [showDisputeDialog, setShowDisputeDialog] = useState(false);
+  const [disputeReason, setDisputeReason] = useState('');
   const { toast } = useToast();
 
   const isExpired = new Date(challenge.expiresAt) <= new Date();
@@ -626,6 +649,29 @@ const ChallengeCard = ({ challenge, isOwn, onAccept, acceptLoading, onDecline, d
               <RotateCcw className="mr-2 h-4 w-4" />
               {cancelLoading ? 'Cancelling…' : 'Cancel challenge and refund stake'}
             </Button>
+          )}
+
+          {isOwn && ['accepted', 'pending_settlement'].includes(challenge.status) && onDispute && (
+            <Dialog open={showDisputeDialog} onOpenChange={setShowDisputeDialog}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="w-full">
+                  <AlertCircle className="mr-2 h-4 w-4" />
+                  Report a result problem
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader><DialogTitle>Report a result problem</DialogTitle></DialogHeader>
+                <p className="text-sm text-muted-foreground">Opening a dispute freezes the payout until the result is reviewed.</p>
+                <Textarea
+                  value={disputeReason}
+                  maxLength={1000}
+                  rows={5}
+                  onChange={(event) => setDisputeReason(event.target.value.slice(0, 1000))}
+                  placeholder="Explain the result issue (10–1,000 characters)"
+                />
+                <div className="flex items-center justify-between text-xs text-muted-foreground"><span>{disputeReason.length}/1000</span><Button disabled={disputeReason.trim().length < 10 || disputeLoading} onClick={() => { onDispute(challenge.id, disputeReason.trim()); setShowDisputeDialog(false); setDisputeReason(''); }}>{disputeLoading ? 'Sending…' : 'Open dispute'}</Button></div>
+              </DialogContent>
+            </Dialog>
           )}
 
           {isExpired && challenge.status === 'open' && (
