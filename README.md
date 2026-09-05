@@ -1,60 +1,47 @@
-# WeParlay.io - The Future of Sports Betting
+# WeParlay
 
-## 🤝 **PARTNERSHIP OPPORTUNITIES**
-**[👉 EXPLORE OUR INTERACTIVE PARTNERSHIP PORTAL](https://weparlay.io/?partners=true)**
+WeParlay is a social sports-betting application centered on custom challenges,
+daily tournaments, live game tracking, and a unified bet slip. The public app
+does not include fantasy sports, player-prop betting, analytics dashboards, or
+an AI betting helper.
 
-# WeParlay Sports Betting Platform
+## Current product boundaries
 
-A sophisticated sports betting platform with tournament management capabilities, real-time odds integration, and comprehensive betting features.
+- WeParlay Cash is available for the product's play-cash flows.
+- Real-money, card, and crypto wagering are intentionally disabled until the
+  required legal approvals, provider contracts, identity controls, and secure
+  payment integrations are complete.
+- Live TV requires licensed providers and broadcast rights. Do not add
+  unverified or scraped stream lists to the app.
+- Administrative access is granted only through authenticated, server-side role
+  checks. There is no login bypass or hard-coded owner key.
 
-## Features
+## Run locally
 
-- Advanced tournament management system
-- Live betting with real-time odds updates
-- Fantasy sports integration with Yahoo
-- Social betting features and sharing capabilities
-- Video game betting section
-- Comprehensive admin dashboard
-- Dark/light mode and customizable themes
-- Mobile-responsive design
-- Cryptocurrency wallet integration
-
-## Running in Development
-
-```
+```bash
+npm install
 npm run dev
 ```
 
-This will start both the server and client in development mode with hot reloading.
+## Production build
 
-## Deployment
-
-To deploy this application:
-
-1. Build the project:
-```
+```bash
 npm run build
-```
-
-2. Start the production server:
-```
 npm run start
 ```
 
-## Environment Variables
+The production server reads `PORT` from the environment and defaults to port
+3000. See [Hostinger deployment](docs/HOSTINGER_DEPLOYMENT.md) before deploying.
 
-The following environment variables are required:
+## Environment
 
-- `DATABASE_URL`: PostgreSQL database connection string
-- `THE_ODDS_API_KEY`: API key for odds data from The Odds API
-- `YAHOO_CLIENT_ID`: Client ID for Yahoo Fantasy Sports API integration
-- `YAHOO_CLIENT_SECRET`: Client secret for Yahoo Fantasy Sports API integration
+Copy `.env.example` into the secret manager offered by your host. Never commit
+real keys, database URLs, webhook secrets, or payment credentials. The
+database and provider-specific variables are documented in `.env.example`.
 
-## Admin Access
+## Project status
 
-Admin dashboard can be accessed at `/admin-dashboard` after login.
-For direct access (bypassing login), use `/admin-bypass` with key "weparlay-owner-access".
-
-## Support
-
-For assistance or questions, please contact support@weparlay.io
+The delivery checklist is maintained in
+[docs/DELIVERY_STATUS.md](docs/DELIVERY_STATUS.md). It separates completed
+application work from items that cannot be completed without provider,
+licensing, compliance, or account-owner input.
