@@ -5,6 +5,8 @@ import { z } from 'zod';
 import { db } from '../db';
 import { eq } from 'drizzle-orm';
 import { p2pChallenges, p2pDisputes, users } from '@shared/schema';
+import { sendEmail } from '../services/emailService';
+import { smsService } from '../services/smsService';
 import {
   acceptFundedP2pChallenge,
   cancelAndRefundP2pChallenge,
@@ -36,6 +38,61 @@ router.get('/invitations/:challengeId', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error fetching P2P invitation:', error);
     res.status(500).json({ success: false, message: 'Failed to load invitation' });
+  }
+});
+
+// Send an invitation through a configured transactional provider. The browser
+// share actions remain available, but this route records provider delivery
+// attempts without storing a recipient's email address or phone number.
+router.post('/challenges/:challengeId/invitations/send', isAuthenticated, restrictedAuthMiddleware, async (req: Request, res: Response) => {
+  try {
+    const userId = (req.user as any).claims?.sub;
+    const { channel, recipient } = z.object({
+      channel: z.enum(['email', 'sms']),
+      recipient: z.string().trim().min(3).max(320),
+    }).parse(req.body);
+    const challenge = await getP2pChallengeWithNames(req.params.challengeId);
+    if (!challenge) return res.status(404).json({ success: false, message: 'Challenge not found' });
+    if (challenge.challengerId !== userId) return res.status(403).json({ success: false, message: 'Only the challenge creator can send invitations' });
+    if (challenge.status !== 'open' || challenge.expiresAt <= new Date()) {
+      return res.status(400).json({ success: false, message: 'Only an open challenge can be shared' });
+    }
+
+    const publicOrigin = process.env.PUBLIC_APP_URL?.replace(/\/$/, '') || `${req.protocol}://${req.get('host')}`;
+    const invitationUrl = `${publicOrigin}/custom-bets?challenge=${challenge.id}`;
+    const event = `${challenge.gameDetails.awayTeam} vs ${challenge.gameDetails.homeTeam}`;
+    const copy = `${challenge.challengerUsername} invited you to a ${challenge.betAmount} WeParlay Cash challenge for ${event}. Review and accept or decline: ${invitationUrl}`;
+
+    let deliveryId: string | undefined;
+    if (channel === 'email') {
+      if (!z.string().email().safeParse(recipient).success) {
+        return res.status(400).json({ success: false, message: 'Enter a valid email address' });
+      }
+      const sent = await sendEmail({
+        to: recipient,
+        subject: 'WeParlay bet invitation',
+        text: copy,
+      });
+      if (!sent) return res.status(503).json({ success: false, message: 'Email delivery is not configured or is temporarily unavailable' });
+    } else {
+      if (!/^\+[1-9]\d{7,14}$/.test(recipient)) {
+        return res.status(400).json({ success: false, message: 'Use an E.164 phone number, for example +15551234567' });
+      }
+      const sent = await smsService.sendSMS(recipient, copy);
+      if (!sent.success) return res.status(503).json({ success: false, message: sent.error || 'SMS delivery is not configured or is temporarily unavailable' });
+      deliveryId = sent.messageId;
+    }
+
+    await createP2pActivity({
+      challengeId: challenge.id,
+      userId,
+      activityType: 'challenge_invitation_sent',
+      message: `Challenge invitation sent by ${channel}.`,
+      metadata: { channel, deliveryId: deliveryId || null },
+    });
+    res.json({ success: true, channel, message: `Invitation sent by ${channel}` });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error?.issues?.[0]?.message || error.message || 'Unable to send invitation' });
   }
 });
 
