@@ -305,6 +305,21 @@ const registerRoutes = async (app: Express): Promise<Server> => {
     }
   });
 
+  // Official athlete images for individual-sport and player-focused surfaces.
+  // Empty headshot fields are preserved when ESPN has no licensed image.
+  app.get('/api/sports/athletes', async (req, res) => {
+    try {
+      const sport = String(req.query.sport || '').trim().toLowerCase();
+      const requestedLimit = Number(req.query.limit || 12);
+      if (!sport) return res.status(400).json({ success: false, message: 'A sport is required' });
+      const athletes = await espnApiService.getTrendingPlayers(sport, Math.min(Math.max(requestedLimit, 1), 24));
+      res.json({ success: true, athletes, source: 'ESPN', updatedAt: new Date().toISOString() });
+    } catch (error) {
+      console.error('Error fetching verified athlete assets:', error);
+      res.status(503).json({ success: false, athletes: [], message: 'Verified athlete assets are temporarily unavailable' });
+    }
+  });
+
   // Live scores endpoint for real-time notifications - ONLY REAL API DATA
   app.get('/api/events/live-scores', async (req, res) => {
     try {
