@@ -11,7 +11,7 @@ router.get('/sms/status', async (req, res) => {
       configured: smsService.isServiceConfigured(),
       message: smsService.isServiceConfigured() 
         ? 'SMS service is ready' 
-        : 'SMS service requires Twilio configuration'
+        : 'SMS delivery is paused pending an approved gambling-compliant provider'
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to check SMS status' });
