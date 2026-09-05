@@ -15,7 +15,8 @@ import rateLimit from 'express-rate-limit';
 
 // Export app for production use
 export const app = express();
-app.set('trust proxy', 1); // Trust Replit's first proxy for protocol and secure cookies
+// Hostinger and other managed hosts commonly terminate TLS at one reverse proxy.
+app.set('trust proxy', 1);
 
 // Security middleware for production
 if (process.env.NODE_ENV === 'production') {
@@ -41,31 +42,37 @@ const bettingRateLimit = rateLimit({
   legacyHeaders: false,
 });
 
+const errorReportRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { success: false, message: 'Too many reports submitted. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Apply rate limiting to betting endpoints
 app.use('/api/bets', bettingRateLimit);
 app.use('/api/betting', bettingRateLimit);
 
 // Error reporting endpoint
 app.use(express.json());
-app.post('/api/error-reports', (req, res) => {
+app.post('/api/error-reports', errorReportRateLimit, (req, res) => {
   try {
+    const readText = (value: unknown, limit: number) =>
+      typeof value === 'string' ? value.trim().slice(0, limit) : '';
+
     const report = {
-      id: req.body.id || `report_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      type: req.body.type || 'feedback',
-      message: req.body.message || '',
-      details: req.body.details || '',
-      userAgent: req.body.userAgent || req.headers['user-agent'],
-      url: req.body.url || req.headers.referer,
+      id: `report_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+      type: readText(req.body.type, 40) || 'feedback',
+      message: readText(req.body.message, 2000),
+      details: readText(req.body.details, 5000),
+      url: readText(req.body.url, 2048) || req.headers.referer,
       timestamp: new Date().toISOString(),
       status: 'submitted'
     };
-    
-    console.log(`📧 Error Report Received:
-Type: ${report.type}
-Message: ${report.message}
-URL: ${report.url}
-Time: ${report.timestamp}
----`);
+
+    // Do not write user-supplied descriptions or user-agent strings to logs.
+    console.log(`Error report received: ${report.id} (${report.type}) at ${report.timestamp}`);
 
     res.json({
       success: true,
@@ -133,21 +140,10 @@ app.use(express.static('public'));
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
-
   res.on("finish", () => {
     const duration = Date.now() - start;
     if (path.startsWith("/api")) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
 
       if (logLine.length > 80) {
         logLine = logLine.slice(0, 79) + "…";
