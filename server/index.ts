@@ -134,6 +134,20 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// The current public release is play-cash only. Banking and crypto code remains
+// in the repository for a future licensed launch, but mutation endpoints are
+// unavailable unless an operator explicitly enables the later launch mode.
+const isPlayCashLaunch = process.env.WEPARLAY_LAUNCH_MODE !== 'full';
+app.use(['/api/banking', '/api/crypto'], (req, res, next) => {
+  if (isPlayCashLaunch && req.method !== 'GET') {
+    return res.status(503).json({
+      success: false,
+      message: 'Debit-card and crypto services are coming soon. WeParlay currently supports WeParlay Cash only.',
+    });
+  }
+  next();
+});
+
 // Serve static files from public directory
 app.use(express.static('public'));
 
