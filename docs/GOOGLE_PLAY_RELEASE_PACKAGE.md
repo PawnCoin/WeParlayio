@@ -4,6 +4,11 @@ The final delivery ZIP must contain only verified release artifacts and store-re
 
 ## Android build
 
+The repository now includes a Capacitor Android wrapper in `android/` with app
+ID `io.weparlay.app`. Use `npm run android:sync` after each web build. Build a
+release bundle with `npm run android:bundle` on a workstation with Android SDK,
+Gradle, and the release-signing configuration installed.
+
 - Signed Android App Bundle (`.aab`)
 - Application ID and version name/code
 - SHA-256 checksum for the bundle
