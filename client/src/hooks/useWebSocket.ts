@@ -156,10 +156,12 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
           }, delay);
         } else if (reconnectCount >= reconnectAttempts) {
           console.log('❌ Max reconnection attempts reached');
+          // Live screens continue through their polling endpoints when a host
+          // does not offer WebSocket upgrades. Do not present this as a broken
+          // session or tell a user to refresh a working page.
           toast({
-            title: "Connection Lost",
-            description: "Unable to maintain connection to live updates. Please refresh the page.",
-            variant: "destructive"
+            title: "Live updates are reconnecting",
+            description: "Scores and bet data will continue refreshing automatically.",
           });
         }
       };
