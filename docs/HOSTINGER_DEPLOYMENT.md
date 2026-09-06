@@ -31,7 +31,10 @@ legal, licensing, or provider onboarding requirements.
 
 ## Required checks after deployment
 
-- Confirm `GET /api/health` responds through the final HTTPS domain.
+- Confirm `GET /api/health` responds with `status: "ok"` through the final
+  HTTPS domain.
+- Confirm `GET /api/ready` responds with `ready: true` after `DATABASE_URL`
+  has been configured. A `503` before the database is configured is expected.
 - Confirm sign-up, sign-in, sign-out, profile access, the unified bet slip,
   custom-bet flow, and tournament pages load without browser-console errors.
 - Confirm the database is reachable and migrations have been applied.
