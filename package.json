@@ -15,7 +15,10 @@
     "android:open": "cap open android",
     "android:bundle": "cd android && ./gradlew bundleRelease",
     "db:push": "drizzle-kit push",
-    "db:check": "drizzle-kit check"
+    "db:check": "drizzle-kit check",
+    "db:migrate": "npm run db:push",
+    "db:verify": "tsx server/scripts/verifyDatabase.ts",
+    "db:backup": "tsx server/scripts/backupDatabase.ts"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.1",
