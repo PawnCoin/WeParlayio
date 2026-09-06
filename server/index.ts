@@ -135,6 +135,27 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Hostinger and uptime monitors need lightweight endpoints that do not call
+// third-party services or reveal configuration values.
+app.get('/api/health', (_req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    service: 'weparlay',
+    mode: isCashOnlyLaunch(process.env.WEPARLAY_LAUNCH_MODE) ? 'play_cash' : 'full',
+    uptimeSeconds: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString(),
+  });
+});
+
+app.get('/api/ready', (_req, res) => {
+  const databaseConfigured = Boolean(process.env.DATABASE_URL);
+  res.status(databaseConfigured ? 200 : 503).json({
+    ready: databaseConfigured,
+    checks: { databaseConfigured },
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // The current public release is play-cash only. Banking and crypto code remains
 // in the repository for a future licensed launch, but mutation endpoints are
 // unavailable unless an operator explicitly enables the later launch mode.
