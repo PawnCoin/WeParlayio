@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "io.weparlay.app"
+    namespace = "com.weparlay.app"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
         applicationId "com.weparlay.app"
@@ -16,8 +16,25 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    def uploadStorePath = System.getenv("WEPARLAY_UPLOAD_STORE_FILE")
+    def uploadStorePassword = System.getenv("WEPARLAY_UPLOAD_STORE_PASSWORD")
+    def uploadKeyAlias = System.getenv("WEPARLAY_UPLOAD_KEY_ALIAS")
+    def uploadKeyPassword = System.getenv("WEPARLAY_UPLOAD_KEY_PASSWORD")
+    if (uploadStorePath && uploadStorePassword && uploadKeyAlias && uploadKeyPassword) {
+        signingConfigs {
+            release {
+                storeFile file(uploadStorePath)
+                storePassword uploadStorePassword
+                keyAlias uploadKeyAlias
+                keyPassword uploadKeyPassword
+            }
+        }
+    }
     buildTypes {
         release {
+            if (uploadStorePath && uploadStorePassword && uploadKeyAlias && uploadKeyPassword) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
