@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { app, appReady } from '../server/index';
+import { app, appReady } from '../server/index.ts';
 
 // Vercel maps /api/* to this function. The Express app keeps the original
 // request path, so its existing API routes work unchanged.
