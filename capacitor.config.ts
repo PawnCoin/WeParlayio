@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'io.weparlay.app',
+  appId: 'com.weparlay.app',
   appName: 'WeParlay',
   webDir: 'dist/public',
   bundledWebRuntime: false,
