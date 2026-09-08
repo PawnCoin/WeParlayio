@@ -2,6 +2,7 @@ import { Request, Response, Router } from 'express';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { isAuthenticated } from '../replitAuth';
+import { matchLiveBroadcast } from '../services/epgMatcher';
 
 interface IPTVChannel {
   id: string;
@@ -204,6 +205,13 @@ const router = Router();
 
 // Register the routes
 router.get('/channels', getIPTVChannels);
+router.get('/match', async (req, res) => {
+  const homeTeam = String(req.query.homeTeam || '').trim();
+  const awayTeam = String(req.query.awayTeam || '').trim();
+  if (!homeTeam || !awayTeam) return res.status(400).json({ message: 'homeTeam and awayTeam are required' });
+  try { res.json({ broadcast: await matchLiveBroadcast(homeTeam, awayTeam) }); }
+  catch (error: any) { res.status(503).json({ message: error.message || 'EPG is unavailable' }); }
+});
 router.get('/stream', getIPTVStream);
 
 export default router;
