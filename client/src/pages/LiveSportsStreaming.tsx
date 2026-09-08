@@ -59,7 +59,7 @@ const LiveSportsStreaming: React.FC = () => {
 
   // Fetch available channels
   const { data: channels = [], isLoading: channelsLoading } = useQuery<StreamChannel[]>({
-    queryKey: ['/api/streaming/channels'],
+    queryKey: ['/api/iptv/channels'],
     refetchInterval: 60000,
   });
 
@@ -129,19 +129,10 @@ const LiveSportsStreaming: React.FC = () => {
 
     setCurrentStream(channel);
     
-    try {
-      await playStreamMutation.mutateAsync({
-        channelId: channel.id,
-        tier: userTier
-      });
-      
-      if (videoRef.current) {
-        videoRef.current.src = channel.streamUrl;
-        videoRef.current.play();
-        setIsPlaying(true);
-      }
-    } catch (error) {
-      console.error('Stream playback error:', error);
+    if (videoRef.current) {
+      videoRef.current.src = channel.streamUrl;
+      await videoRef.current.play().catch(() => setIsPlaying(false));
+      setIsPlaying(true);
     }
   };
 
