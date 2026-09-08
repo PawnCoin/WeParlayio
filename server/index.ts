@@ -56,7 +56,13 @@ app.use('/api/bets', bettingRateLimit);
 app.use('/api/betting', bettingRateLimit);
 
 // Error reporting endpoint
-app.use(express.json());
+app.use(express.json({
+  verify: (req, _res, buffer) => {
+    if (req.originalUrl === '/api/whop/webhook') {
+      (req as any).rawBody = Buffer.from(buffer);
+    }
+  },
+}));
 app.post('/api/error-reports', errorReportRateLimit, (req, res) => {
   try {
     const readText = (value: unknown, limit: number) =>
