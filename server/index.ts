@@ -1,7 +1,15 @@
 import express, { type Request, Response, NextFunction } from "express";
 import registerRoutes from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
-import { createSSLServer, getSSLConfig } from "./ssl";
+// Vite is loaded only for local development. Keeping it out of the production
+// module graph prevents serverless hosts from loading its native build tools.
+const log = (message: string, source = "express") => {
+  console.log(`${new Date().toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  })} [${source}] ${message}`);
+};
 import apiMonitoringRoutes from './routes/apiMonitoringRoutes';
 import apiHealthRoutes from './routes/apiHealthRoutes';
 import systemHealthRoutes from './routes/systemHealthRoutes';
@@ -266,6 +274,7 @@ export const appReady = (async () => {
       console.warn(`⚠️ Vite attempted process.exit(${code}) - intercepted to keep server running`);
     };
     try {
+      const { setupVite } = await import("./vite");
       await setupVite(app, appServer);
     } catch (e) {
       console.warn('⚠️ Vite setup error (non-fatal):', e);
@@ -274,7 +283,8 @@ export const appReady = (async () => {
     if (exitIntercepted) {
       console.log('🔄 Server continuing despite Vite port conflict');
     }
-  } else {
+  } else if (!process.env.VERCEL) {
+    const { serveStatic } = await import("./vite");
     serveStatic(app);
   }
 
@@ -282,7 +292,8 @@ export const appReady = (async () => {
   // start a separate long-running listener inside the serverless function.
   if (process.env.VERCEL) return;
 
-  // Get SSL configuration
+  // SSL helpers are only needed by long-running local or managed-host servers.
+  const { createSSLServer, getSSLConfig } = await import("./ssl");
   const sslConfig = getSSLConfig();
 
   // Replit Autoscale provides the production port through PORT.
