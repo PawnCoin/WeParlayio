@@ -274,7 +274,8 @@ export const appReady = (async () => {
       console.warn(`⚠️ Vite attempted process.exit(${code}) - intercepted to keep server running`);
     };
     try {
-      const { setupVite } = await import("./vite");
+      const viteModulePath = "./vite";
+      const { setupVite } = await import(viteModulePath);
       await setupVite(app, appServer);
     } catch (e) {
       console.warn('⚠️ Vite setup error (non-fatal):', e);
@@ -284,7 +285,8 @@ export const appReady = (async () => {
       console.log('🔄 Server continuing despite Vite port conflict');
     }
   } else if (!process.env.VERCEL) {
-    const { serveStatic } = await import("./vite");
+    const viteModulePath = "./vite";
+    const { serveStatic } = await import(viteModulePath);
     serveStatic(app);
   }
 
