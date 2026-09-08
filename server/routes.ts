@@ -29,6 +29,7 @@ import socialMediaRoutes from "./routes/socialMediaRoutes";
 import sportsCategories from "./routes/sportsCategories";
 import tierRoutes from "./routes/tierRoutes";
 import paymentRoutesNoStripe from "./routes/paymentRoutesNoStripe";
+import whopRoutes from "./routes/whopRoutes";
 import settingsRouter from "./routes/settingsRoutes";
 import p2pBettingRoutes from "./routes/p2pBettingRoutes";
 import tournamentModeRoutes from "./routes/tournamentModeRoutes";
@@ -66,6 +67,7 @@ const registerRoutes = async (app: Express): Promise<Server> => {
   app.use('/api/auth', authRoutes);
   app.use('/api/tier', tierRoutes);
   app.use('/api/payments', paymentRoutesNoStripe);
+  app.use('/api/whop', whopRoutes);
   app.use('/api/settings', settingsRouter);
   // Gaming routes registered via registerGamingRoutes function below
   app.use('/api/unified-sports', unifiedSportsRoutes);
