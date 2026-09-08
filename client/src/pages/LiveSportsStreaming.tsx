@@ -50,6 +50,8 @@ const LiveSportsStreaming: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [userTier, setUserTier] = useState('bronze'); // bronze, silver, gold, diamond
+  const requestedHomeTeam = new URLSearchParams(window.location.search).get('homeTeam');
+  const requestedAwayTeam = new URLSearchParams(window.location.search).get('awayTeam');
   
   // Fetch streaming status
   const { data: streamingStatus } = useQuery<StreamingStatus>({
@@ -171,6 +173,13 @@ const LiveSportsStreaming: React.FC = () => {
     const matchesSearch = channel.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
+  const { data: matchedBroadcast } = useQuery<{ broadcast: StreamChannel | null }>({
+    queryKey: ['/api/iptv/match', requestedHomeTeam, requestedAwayTeam],
+    enabled: Boolean(requestedHomeTeam && requestedAwayTeam),
+    queryFn: async () => (await fetch(`/api/iptv/match?homeTeam=${encodeURIComponent(requestedHomeTeam!)}&awayTeam=${encodeURIComponent(requestedAwayTeam!)}`)).json(),
+  });
+  useEffect(() => { if (matchedBroadcast?.broadcast && !currentStream) handleStreamPlay(matchedBroadcast.broadcast); }, [matchedBroadcast]);
 
   const categories = ['all', 'sports', 'esports', 'premium', 'international'];
 
