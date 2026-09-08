@@ -202,7 +202,7 @@ app.use((req, res, next) => {
   next();
 });
 
-(async () => {
+export const appReady = (async () => {
   // Initialize database connection first
   try {
     const { initializeDatabase } = await import('./db');
@@ -277,6 +277,10 @@ app.use((req, res, next) => {
   } else {
     serveStatic(app);
   }
+
+  // Vercel invokes the exported request handler for each request. It must not
+  // start a separate long-running listener inside the serverless function.
+  if (process.env.VERCEL) return;
 
   // Get SSL configuration
   const sslConfig = getSSLConfig();
