@@ -61,7 +61,7 @@ export class ESPNApiService {
    * schedule, ticker, and result-verification flows. This intentionally
    * returns no betting prices: scoreboards are results data, not an odds feed.
    */
-  async getTodayEvents(): Promise<any[]> {
+  async getTodayEvents(requestedDate?: string): Promise<any[]> {
     // Team-versus-team ESPN competitions. Keeping this list explicit excludes
     // field/individual sports, where a team crest would be misleading.
     const supportedSports = [
@@ -70,11 +70,22 @@ export class ESPNApiService {
       'premier-league', 'champions-league', 'europa-league', 'la-liga',
       'serie-a', 'bundesliga', 'ligue-1', 'world-cup', 'euros',
     ];
+    const date = /^\d{8}$/.test(requestedDate || '')
+      ? requestedDate
+      : new Intl.DateTimeFormat('en-CA', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        timeZone: 'America/New_York',
+      }).format(new Date()).replaceAll('-', '');
+
     const responses = await Promise.allSettled(supportedSports.map(async (sport) => {
       const sportPath = this.sportMappings[sport];
       if (!sportPath) return [];
 
-      const response = await fetch(`${this.baseUrl}/sports/${sportPath}/scoreboard`);
+      // ESPN otherwise chooses a date based on the server's local clock. Vercel
+      // functions run in UTC, which can put the public "today" board a day off.
+      const response = await fetch(`${this.baseUrl}/sports/${sportPath}/scoreboard?dates=${date}`);
       if (!response.ok) throw new Error(`ESPN ${sport} scoreboard returned ${response.status}`);
       const data = await response.json();
 

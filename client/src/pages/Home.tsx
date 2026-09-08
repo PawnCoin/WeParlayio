@@ -21,8 +21,9 @@ function isToday(value: string | undefined, timeZone: string) {
 export default function Home() {
   const [sport, setSport] = useState("All");
   const [timeZone, setTimeZone] = useState(() => localStorage.getItem("weparlay-time-zone") || Intl.DateTimeFormat().resolvedOptions().timeZone);
+  const scheduleDate = new Intl.DateTimeFormat("en-CA", { year: "numeric", month: "2-digit", day: "2-digit", timeZone }).format(new Date()).replaceAll("-", "");
   const { data: scheduleResponse, isLoading } = useQuery<any>({
-    queryKey: ["/api/events/today"],
+    queryKey: [`/api/events/today?date=${scheduleDate}`],
     refetchInterval: 30_000,
   });
   const rawGames = scheduleResponse?.events || [];

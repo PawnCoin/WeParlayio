@@ -295,9 +295,10 @@ const registerRoutes = async (app: Express): Promise<Server> => {
 
   // Today's verified schedule and scores. This powers the public ticker and
   // schedule; it never derives odds or fills missing provider data.
-  app.get('/api/events/today', async (_req, res) => {
+  app.get('/api/events/today', async (req, res) => {
     try {
-      const events = await espnApiService.getTodayEvents();
+      const date = typeof req.query.date === 'string' ? req.query.date : undefined;
+      const events = await espnApiService.getTodayEvents(date);
       res.json({ success: true, events, source: 'ESPN', updatedAt: new Date().toISOString() });
     } catch (error) {
       console.error('Error fetching verified events for today:', error);
