@@ -1,4 +1,6 @@
 import { Request, Response, Router } from 'express';
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { isAuthenticated } from '../replitAuth';
 
 interface IPTVChannel {
@@ -153,8 +155,21 @@ const WORKING_SPORTS_CHANNELS: IPTVChannel[] = [
 
 export const getIPTVChannels = async (req: Request, res: Response) => {
   try {
-    // Return working sports channels
-    res.json(WORKING_SPORTS_CHANNELS);
+    const playlist = await readFile(resolve(process.cwd(), 'server/data/authorized-sports.m3u'), 'utf8');
+    const lines = playlist.split(/\r?\n/);
+    const channels: IPTVChannel[] = [];
+    for (let index = 0; index < lines.length; index += 1) {
+      const metadata = lines[index];
+      if (!metadata.startsWith('#EXTINF:')) continue;
+      const url = lines[index + 1]?.trim();
+      if (!url || url.startsWith('#')) continue;
+      const name = metadata.slice(metadata.lastIndexOf(',') + 1).trim();
+      const group = /group-title="([^"]+)"/.exec(metadata)?.[1] ?? 'Sports';
+      const logo = /tvg-logo="([^"]+)"/.exec(metadata)?.[1];
+      channels.push({ id: `approved-${channels.length + 1}`, name, url, streamUrl: url, group, logo, category: group, quality: /\(([^)]+)\)/.exec(name)?.[1], language: 'Unknown', isLive: true, isVip: true } as IPTVChannel);
+      index += 1;
+    }
+    res.json(channels);
   } catch (error) {
     console.error('Error fetching IPTV channels:', error);
     res.status(500).json({ error: 'Failed to fetch IPTV channels' });
