@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { gunzipSync } from "node:zlib";
 
 type Channel = { id: string; name: string; url: string; logo?: string; group: string };
 type Programme = { channel: string; start: Date; stop: Date; title: string };
@@ -11,7 +12,8 @@ const xmlTime = (value: string) => new Date(`${value.slice(0, 4)}-${value.slice(
 
 async function channels() {
   if (channelCache) return channelCache;
-  const playlist = await readFile(resolve(process.cwd(), "server/data/authorized-sports.m3u"), "utf8");
+  const playlistFile = resolve(process.cwd(), "server/data/authorized-sports.m3u.gz");
+  const playlist = gunzipSync(await readFile(playlistFile)).toString("utf8");
   const lines = playlist.split(/\r?\n/); const result: Channel[] = [];
   for (let i = 0; i < lines.length; i += 1) {
     if (!lines[i].startsWith("#EXTINF:")) continue;
@@ -24,9 +26,13 @@ async function channels() {
 
 async function guide() {
   if (guideCache) return guideCache;
-  const path = process.env.WEPARLAY_EPG_PATH;
-  if (!path) return [];
-  const xml = await readFile(resolve(path), "utf8"); const result: Programme[] = [];
+  // A deployment may provide a freshly-updated guide path, but the approved
+  // catalog ships with its matching XMLTV guide so the live-TV handoff works
+  // immediately after a normal deploy.
+  const path = process.env.WEPARLAY_EPG_PATH || resolve(process.cwd(), "server/data/authorized-sports-epg.xml.gz");
+  const source = await readFile(resolve(path));
+  const xml = path.endsWith(".gz") ? gunzipSync(source).toString("utf8") : source.toString("utf8");
+  const result: Programme[] = [];
   for (const match of xml.matchAll(/<programme\s+([^>]+)>([\s\S]*?)<\/programme>/g)) {
     const attrs = match[1], channel = /channel="([^"]+)"/.exec(attrs)?.[1], start = /start="(\d{14}\s*[+-]\d{4})"/.exec(attrs)?.[1], stop = /stop="(\d{14}\s*[+-]\d{4})"/.exec(attrs)?.[1], title = /<title[^>]*>([\s\S]*?)<\/title>/.exec(match[2])?.[1];
     if (channel && start && stop && title) result.push({ channel, start: xmlTime(start.replace(/\s/g, "")), stop: xmlTime(stop.replace(/\s/g, "")), title: decode(title.replace(/<[^>]+>/g, "").trim()) });
