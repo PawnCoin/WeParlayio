@@ -355,14 +355,30 @@ interface CreateChallengeFormProps {
 const CreateChallengeForm = ({ games, onSubmit, isLoading }: CreateChallengeFormProps) => {
   const [idempotencyKey] = useState(() => crypto.randomUUID());
   const [selectedGame, setSelectedGame] = useState<GameEvent | null>(null);
+  const [market, setMarket] = useState<'moneyline' | 'spread' | 'total' | 'player_stat' | 'custom'>('moneyline');
   const [pick, setPick] = useState('');
+  const [line, setLine] = useState('');
+  const [playerName, setPlayerName] = useState('');
+  const [stat, setStat] = useState('points');
+  const [customMetric, setCustomMetric] = useState('');
   const [amount, setAmount] = useState('');
   const [isPublic, setIsPublic] = useState(true);
   const [message, setMessage] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedGame || !pick || !amount) return;
+    if (!selectedGame || !pick || !amount || ((market === 'spread' || market === 'total' || market === 'player_stat') && !line) || (market === 'player_stat' && !playerName) || (market === 'custom' && !customMetric)) return;
+
+    const marketTerms = {
+      market,
+      selection: pick,
+      line: line ? Number(line) : null,
+      playerName: market === 'player_stat' ? playerName.trim() : null,
+      stat: market === 'player_stat' ? stat : null,
+      customMetric: market === 'custom' ? customMetric.trim() : null,
+      settlementSource: market === 'player_stat' ? 'verified_player_stats' : 'verified_final_score',
+      version: 1,
+    };
 
     onSubmit({
       idempotencyKey,
@@ -374,8 +390,9 @@ const CreateChallengeForm = ({ games, onSubmit, isLoading }: CreateChallengeForm
         sport: selectedGame.sport,
         homeLogo: selectedGame.homeTeam.logo,
         awayLogo: selectedGame.awayTeam.logo,
+        market: marketTerms,
       },
-      challengerPick: pick,
+      challengerPick: market === 'player_stat' ? `${playerName.trim()} ${stat} ${pick} ${line}` : market === 'custom' ? `${customMetric.trim()}: ${pick}` : market === 'spread' ? `${pick} ${line}` : market === 'total' ? `${pick} ${line}` : pick,
       betAmount: parseFloat(amount),
       currency: 'weparlay_cash',
       isPublic,
@@ -390,7 +407,9 @@ const CreateChallengeForm = ({ games, onSubmit, isLoading }: CreateChallengeForm
         <Select onValueChange={(gameId) => {
           const game = games.find(g => g.id === gameId);
           setSelectedGame(game || null);
-          setPick(''); // Reset pick when game changes
+          setPick('');
+          setLine('');
+          setPlayerName('');
         }}>
           <SelectTrigger>
             <SelectValue placeholder="Choose a game to bet on" />
@@ -406,11 +425,27 @@ const CreateChallengeForm = ({ games, onSubmit, isLoading }: CreateChallengeForm
       </div>
 
       {selectedGame && (
+        <>
         <div>
+          <Label>Bet Type</Label>
+          <Select value={market} onValueChange={(value: typeof market) => { setMarket(value); setPick(''); setLine(''); }}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="moneyline">Moneyline — game winner</SelectItem>
+              <SelectItem value="spread">Spread — team margin</SelectItem>
+              <SelectItem value="total">Over / Under — game total</SelectItem>
+              <SelectItem value="player_stat">Player stat — verified box score</SelectItem>
+              <SelectItem value="custom">Custom measurable outcome</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="mt-1 text-xs text-muted-foreground">Terms are locked before acceptance and saved with an auditable settlement rule.</p>
+        </div>
+
+        {(market === 'moneyline' || market === 'spread') && <div>
           <Label htmlFor="pick">Your Pick</Label>
           <Select onValueChange={setPick}>
             <SelectTrigger>
-              <SelectValue placeholder="Choose your team" />
+              <SelectValue placeholder={market === 'spread' ? 'Choose a team against the spread' : 'Choose game winner'} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={selectedGame.homeTeam.name}>
@@ -421,7 +456,16 @@ const CreateChallengeForm = ({ games, onSubmit, isLoading }: CreateChallengeForm
               </SelectItem>
             </SelectContent>
           </Select>
-        </div>
+        </div>}
+
+        {market === 'spread' && <div><Label htmlFor="line">Your spread line</Label><Input id="line" type="number" step="0.5" value={line} onChange={(event) => setLine(event.target.value)} placeholder="Example: -3.5" /><p className="mt-1 text-xs text-muted-foreground">Provider spread: {(selectedGame as any).odds?.spread ?? 'not available from the current licensed feed'} — shown for reference only.</p></div>}
+
+        {market === 'total' && <div className="grid gap-3 sm:grid-cols-2"><div><Label>Your side</Label><Select onValueChange={setPick}><SelectTrigger><SelectValue placeholder="Over or Under" /></SelectTrigger><SelectContent><SelectItem value="over">Over</SelectItem><SelectItem value="under">Under</SelectItem></SelectContent></Select></div><div><Label htmlFor="line">Total line</Label><Input id="line" type="number" step="0.5" value={line} onChange={(event) => setLine(event.target.value)} placeholder="Example: 47.5" /></div></div>}
+
+        {market === 'player_stat' && <div className="space-y-3 rounded-lg border p-3"><p className="text-sm font-medium">Player stat terms</p><Input value={playerName} onChange={(event) => setPlayerName(event.target.value)} placeholder="Player name exactly as listed by the data provider" /><div className="grid gap-3 sm:grid-cols-3"><Select value={stat} onValueChange={setStat}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="points">Points</SelectItem><SelectItem value="rebounds">Rebounds</SelectItem><SelectItem value="assists">Assists</SelectItem><SelectItem value="passing_yards">Passing yards</SelectItem><SelectItem value="rushing_yards">Rushing yards</SelectItem><SelectItem value="receiving_yards">Receiving yards</SelectItem><SelectItem value="goals">Goals</SelectItem></SelectContent></Select><Select onValueChange={setPick}><SelectTrigger><SelectValue placeholder="Over / Under" /></SelectTrigger><SelectContent><SelectItem value="over">Over</SelectItem><SelectItem value="under">Under</SelectItem></SelectContent></Select><Input type="number" step="0.5" value={line} onChange={(event) => setLine(event.target.value)} placeholder="Line" /></div><p className="text-xs text-muted-foreground">Player bets settle only after the named player and stat are confirmed by a verified box-score provider.</p></div>}
+
+        {market === 'custom' && <div className="space-y-3 rounded-lg border p-3"><Label htmlFor="customMetric">Custom measurable outcome</Label><Input id="customMetric" value={customMetric} onChange={(event) => setCustomMetric(event.target.value.slice(0, 80))} placeholder="Example: Home team first-quarter points" /><Select onValueChange={setPick}><SelectTrigger><SelectValue placeholder="Choose the recorded outcome" /></SelectTrigger><SelectContent><SelectItem value="yes">Yes / happens</SelectItem><SelectItem value="no">No / does not happen</SelectItem></SelectContent></Select><p className="text-xs text-muted-foreground">Only measurable terms with a verified provider result can be auto-settled. Ambiguous custom terms remain frozen for review.</p></div>}
+        </>
       )}
 
       <div>
@@ -459,7 +503,7 @@ const CreateChallengeForm = ({ games, onSubmit, isLoading }: CreateChallengeForm
         <strong>{amount ? `${amount} WeParlay Cash` : 'Your stake'} will be reserved immediately.</strong> It returns automatically if nobody accepts before the join deadline.
       </div>
 
-      <Button type="submit" disabled={!selectedGame || !pick || !amount || isLoading} className="w-full">
+      <Button type="submit" disabled={!selectedGame || !pick || !amount || ((market === 'spread' || market === 'total' || market === 'player_stat') && !line) || (market === 'player_stat' && !playerName) || (market === 'custom' && !customMetric) || isLoading} className="w-full">
         {isLoading ? 'Creating...' : `Create Challenge for $${amount || '0'}`}
       </Button>
     </form>

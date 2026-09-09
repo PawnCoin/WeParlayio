@@ -115,6 +115,16 @@ router.post('/challenges/create', isAuthenticated, restrictedAuthMiddleware, asy
         awayTeam: z.string(),
         startTime: z.string(),
         sport: z.string(),
+        market: z.object({
+          market: z.enum(['moneyline', 'spread', 'total', 'player_stat', 'custom']),
+          selection: z.string().trim().min(1).max(120),
+          line: z.number().finite().nullable(),
+          playerName: z.string().trim().max(120).nullable(),
+          stat: z.string().trim().max(80).nullable(),
+          customMetric: z.string().trim().max(80).nullable(),
+          settlementSource: z.enum(['verified_final_score', 'verified_player_stats']),
+          version: z.literal(1),
+        }).optional(),
       }),
       challengerPick: z.string(),
       betAmount: z.number().positive(),
@@ -126,6 +136,17 @@ router.post('/challenges/create', isAuthenticated, restrictedAuthMiddleware, asy
     });
 
     const validatedData = createChallengeSchema.parse(req.body);
+
+    const terms = validatedData.gameDetails.market;
+    if (terms?.market === 'player_stat' && (!terms.playerName || !terms.stat || terms.line === null)) {
+      return res.status(400).json({ success: false, message: 'Player-stat bets require a player, stat, and line' });
+    }
+    if (['spread', 'total'].includes(terms?.market || '') && terms?.line === null) {
+      return res.status(400).json({ success: false, message: 'Spread and total bets require a line' });
+    }
+    if (terms?.market === 'custom' && !terms.customMetric) {
+      return res.status(400).json({ success: false, message: 'Custom bets require a measurable outcome' });
+    }
 
     // Calculate expiry time (30 minutes before game starts or 24 hours max)
     const gameStartTime = new Date(validatedData.gameDetails.startTime);
@@ -163,7 +184,7 @@ router.post('/challenges/create', isAuthenticated, restrictedAuthMiddleware, asy
       userId: userId,
       activityType: 'challenge_created',
       message: `${user.username || 'User'} created a $${validatedData.betAmount} challenge on ${validatedData.gameDetails.homeTeam} vs ${validatedData.gameDetails.awayTeam}`,
-      metadata: { betAmount: validatedData.betAmount, pick: validatedData.challengerPick }
+      metadata: { betAmount: validatedData.betAmount, pick: validatedData.challengerPick, market: terms || { market: 'moneyline', settlementSource: 'verified_final_score' } }
     });
 
     res.json({
