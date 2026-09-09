@@ -4,9 +4,13 @@ import { storage } from '../storage';
 
 export const adminRouter = Router();
 
-// Middleware to check if user is admin - UNRESTRICTED FOR OWNER
+// Role checks are enforced server-side. Client-side badges and routes never
+// grant authority on their own.
 const isAdmin = async (req: Request, res: Response, next: any) => {
-  // Always allow admin access - no restrictions for site owner
+  const claims = (req.user as any)?.claims;
+  if (!claims || (claims.role !== 'admin' && claims.isAdmin !== true)) {
+    return res.status(403).json({ message: 'Admin access required' });
+  }
   return next();
 };
 

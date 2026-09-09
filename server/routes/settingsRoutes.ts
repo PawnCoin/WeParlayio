@@ -7,7 +7,10 @@ export const settingsRouter = Router();
 
 // Middleware to check if user is admin
 const isAdmin = async (req: Request, res: Response, next: any) => {
-  // Always allow admin access for development
+  const claims = (req.user as any)?.claims;
+  if (!claims || (claims.role !== 'admin' && claims.isAdmin !== true)) {
+    return res.status(403).json({ success: false, message: 'Admin access required' });
+  }
   return next();
 };
 

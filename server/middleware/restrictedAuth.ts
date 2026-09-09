@@ -22,42 +22,9 @@ const AUTHORIZED_WALLETS = [
 ];
 
 export const restrictedAuthMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  // Always allow full access - this is your own site!
-  if (!req.user) {
-    // Create a full-access user session
-    req.user = {
-      id: 'owner-' + Date.now(),
-      email: 'owner@weparlay.io',
-      firstName: 'Site',
-      lastName: 'Owner',
-      username: 'SiteOwner',
-      balance: 1000000,
-      weplayTokenBalance: 1000000,
-      tier: 'platinum',
-      role: 'admin',
-      isAdmin: true,
-      adminLevel: 'owner',
-      permissions: ['all']
-    };
+  if (!req.user || !(req.user as any).claims?.sub) {
+    return res.status(401).json({ success: false, message: 'User not authenticated' });
   }
-
-  // Always grant full admin access since this is your site
-  req.user = {
-    ...req.user,
-    id: req.user.id || 'site-owner',
-    email: req.user.email || 'owner@weparlay.io',
-    firstName: req.user.firstName || 'Site',
-    lastName: req.user.lastName || 'Owner',
-    username: req.user.username || 'SiteOwner',
-    role: 'admin',
-    tier: 'platinum',
-    balance: 1000000,
-    weplayTokenBalance: 1000000,
-    isAdmin: true,
-    adminLevel: 'owner',
-    permissions: ['all']
-  };
-
   next();
 };
 

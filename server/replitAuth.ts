@@ -6,6 +6,7 @@ import session from "express-session";
 import type { Express, RequestHandler } from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
+import jwt from "jsonwebtoken";
 import { storage } from "./simpleStorage";
 import { generateInviteCode } from "./utils/inviteCodeGenerator";
 import { SubscriptionTier } from "../shared/tierSystem";
@@ -189,21 +190,35 @@ export async function setupAuth(app: Express) {
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
   try {
-    // Check for Authorization header (JWT token)
+    // Password login uses a signed JWT. Never accept a token merely because it
+    // looks valid: hydrate the current user from storage so suspension and role
+    // changes take effect immediately.
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.substring(7);
-      // In development, accept any valid-looking JWT token
-      if (token && token.length > 20) {
-        // Set a mock user for the request
-        (req as any).user = {
-          claims: {
-            sub: 'admin-support-1754266931489',
-            email: 'support@weparlay.io'
-          }
-        };
-        return next();
+      if (!process.env.JWT_SECRET) return res.status(503).json({ message: "Authentication is not configured" });
+      const payload = jwt.verify(token, process.env.JWT_SECRET) as { userId?: string };
+      if (!payload.userId) return res.status(401).json({ message: "User not authenticated" });
+      const account = await storage.getUser(payload.userId);
+      if (!account || account.status === 'suspended' || account.status === 'inactive') {
+        return res.status(403).json({ message: "Account access is disabled" });
       }
+      const configuredAdmins = new Set(
+        (process.env.ADMIN_EMAILS || '')
+          .split(',')
+          .map((email) => email.trim().toLowerCase())
+          .filter(Boolean),
+      );
+      const isAdmin = account.isAdmin === true || account.role === 'admin' || configuredAdmins.has(String(account.email || '').toLowerCase());
+      (req as any).user = {
+        claims: {
+          sub: account.id,
+          email: account.email,
+          role: isAdmin ? 'admin' : (account.role || 'user'),
+          isAdmin,
+        },
+      };
+      return next();
     }
 
     // Check for session authentication (Passport.js)
