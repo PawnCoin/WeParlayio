@@ -1,7 +1,15 @@
 import express, { type Request, Response, NextFunction } from "express";
 import registerRoutes from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
-import { createSSLServer, getSSLConfig } from "./ssl";
+// Vite is loaded only for local development. Keeping it out of the production
+// module graph prevents serverless hosts from loading its native build tools.
+const log = (message: string, source = "express") => {
+  console.log(`${new Date().toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  })} [${source}] ${message}`);
+};
 import apiMonitoringRoutes from './routes/apiMonitoringRoutes';
 import apiHealthRoutes from './routes/apiHealthRoutes';
 import systemHealthRoutes from './routes/systemHealthRoutes';
@@ -56,7 +64,13 @@ app.use('/api/bets', bettingRateLimit);
 app.use('/api/betting', bettingRateLimit);
 
 // Error reporting endpoint
-app.use(express.json());
+app.use(express.json({
+  verify: (req, _res, buffer) => {
+    if (req.originalUrl === '/api/whop/webhook') {
+      (req as any).rawBody = Buffer.from(buffer);
+    }
+  },
+}));
 app.post('/api/error-reports', errorReportRateLimit, (req, res) => {
   try {
     const readText = (value: unknown, limit: number) =>
@@ -196,7 +210,7 @@ app.use((req, res, next) => {
   next();
 });
 
-(async () => {
+export const appReady = (async () => {
   // Initialize database connection first
   try {
     const { initializeDatabase } = await import('./db');
@@ -260,6 +274,8 @@ app.use((req, res, next) => {
       console.warn(`⚠️ Vite attempted process.exit(${code}) - intercepted to keep server running`);
     };
     try {
+      const viteModulePath = "./vite";
+      const { setupVite } = await import(viteModulePath);
       await setupVite(app, appServer);
     } catch (e) {
       console.warn('⚠️ Vite setup error (non-fatal):', e);
@@ -268,11 +284,18 @@ app.use((req, res, next) => {
     if (exitIntercepted) {
       console.log('🔄 Server continuing despite Vite port conflict');
     }
-  } else {
+  } else if (!process.env.VERCEL) {
+    const viteModulePath = "./vite";
+    const { serveStatic } = await import(viteModulePath);
     serveStatic(app);
   }
 
-  // Get SSL configuration
+  // Vercel invokes the exported request handler for each request. It must not
+  // start a separate long-running listener inside the serverless function.
+  if (process.env.VERCEL) return;
+
+  // SSL helpers are only needed by long-running local or managed-host servers.
+  const { createSSLServer, getSSLConfig } = await import("./ssl");
   const sslConfig = getSSLConfig();
 
   // Replit Autoscale provides the production port through PORT.

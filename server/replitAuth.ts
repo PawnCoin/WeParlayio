@@ -10,9 +10,10 @@ import { storage } from "./simpleStorage";
 import { generateInviteCode } from "./utils/inviteCodeGenerator";
 import { SubscriptionTier } from "../shared/tierSystem";
 
-if (!process.env.REPLIT_DOMAINS) {
-  throw new Error("Environment variable REPLIT_DOMAINS not provided");
-}
+const replitDomains = (process.env.REPLIT_DOMAINS ?? "")
+  .split(",")
+  .map((domain) => domain.trim())
+  .filter(Boolean);
 
 const getOidcConfig = memoize(
   async () => {
@@ -120,6 +121,13 @@ async function upsertUser(
 }
 
 export async function setupAuth(app: Express) {
+  // Replit OIDC is optional on standalone hosts such as Vercel. The rest of
+  // the application can run with its configured production auth provider.
+  if (replitDomains.length === 0) {
+    console.warn("Replit OIDC is not configured; skipping Replit authentication setup.");
+    return;
+  }
+
   app.set("trust proxy", 1);
   app.use(getSession());
   app.use(passport.initialize());
@@ -137,8 +145,7 @@ export async function setupAuth(app: Express) {
     verified(null, user);
   };
 
-  for (const domain of process.env
-    .REPLIT_DOMAINS!.split(",")) {
+  for (const domain of replitDomains) {
     const strategy = new Strategy(
       {
         name: `replitauth:${domain}`,

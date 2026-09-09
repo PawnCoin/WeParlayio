@@ -236,6 +236,11 @@ export async function expireOpenP2pChallenges() {
   for (const item of expired) await cancelAndRefundP2pChallenge(item.id, undefined, true);
 }
 
+export const getP2pChallenge = async (id: string) => (await db.select().from(p2pChallenges).where(eq(p2pChallenges.id, id)).limit(1))[0];
+export const getP2pActivity = (id: string) => db.select().from(p2pActivity).where(eq(p2pActivity.challengeId, id)).orderBy(p2pActivity.createdAt);
+export const createP2pActivity = async (value: any) => (await db.insert(p2pActivity).values(value).returning())[0];
+export const getP2pDisputes = (challengeId: string) => db.select().from(p2pDisputes).where(eq(p2pDisputes.challengeId, challengeId)).orderBy(desc(p2pDisputes.createdAt));
+
 export async function queueP2pFinalResult(challengeId: string, result: {
   source: string;
   homeTeam: string;
@@ -264,11 +269,6 @@ export const getAcceptedP2pChallenges = () => db.select()
   .from(p2pChallenges)
   .where(eq(p2pChallenges.status, "accepted"))
   .orderBy(p2pChallenges.acceptedAt);
-
-export const getP2pChallenge = async (id: string) => (await db.select().from(p2pChallenges).where(eq(p2pChallenges.id, id)).limit(1))[0];
-export const getP2pActivity = (id: string) => db.select().from(p2pActivity).where(eq(p2pActivity.challengeId, id)).orderBy(p2pActivity.createdAt);
-export const createP2pActivity = async (value: any) => (await db.insert(p2pActivity).values(value).returning())[0];
-export const getP2pDisputes = (challengeId: string) => db.select().from(p2pDisputes).where(eq(p2pDisputes.challengeId, challengeId)).orderBy(desc(p2pDisputes.createdAt));
 
 export async function getAvailableP2pChallenges(userId: string) {
   await expireOpenP2pChallenges();

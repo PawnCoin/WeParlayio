@@ -4,6 +4,15 @@ The final delivery ZIP must contain only verified release artifacts and store-re
 
 ## Android build
 
+The repository now includes a Capacitor Android wrapper in `android/` with app
+ID `com.weparlay.app`. Use `npm run android:sync` after each web build. Build a
+release bundle with `npm run android:bundle` on a workstation with Android SDK,
+Gradle, and the release-signing configuration installed.
+
+The release build reads these local-only environment variables: `WEPARLAY_UPLOAD_STORE_FILE`,
+`WEPARLAY_UPLOAD_STORE_PASSWORD`, `WEPARLAY_UPLOAD_KEY_ALIAS`, and
+`WEPARLAY_UPLOAD_KEY_PASSWORD`. Do not put their values in GitHub, `.env`, or the release ZIP.
+
 - Signed Android App Bundle (`.aab`)
 - Application ID and version name/code
 - SHA-256 checksum for the bundle

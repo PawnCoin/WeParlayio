@@ -45,7 +45,7 @@ router.post("/tickets", isAuthenticated, async (req: any, res: Response) => {
 
 router.get("/tickets", isAuthenticated, async (req: any, res: Response) => {
   try {
-    const tickets = supportService.getUserTickets(req.user?.claims?.sub || "anonymous");
+    const tickets = await supportService.getUserTickets(req.user?.claims?.sub || "anonymous");
     return res.status(200).json({
       tickets: tickets.map((ticket) => ({
         id: ticket.id,
@@ -69,7 +69,7 @@ router.get("/tickets", isAuthenticated, async (req: any, res: Response) => {
 router.get("/tickets/:ticketId", isAuthenticated, async (req: any, res: Response) => {
   try {
     const userId = req.user?.claims?.sub || "anonymous";
-    const ticket = supportService.getTicket(req.params.ticketId);
+    const ticket = await supportService.getTicket(req.params.ticketId);
     if (!ticket) {
       return res.status(404).json({ message: "Ticket not found" });
     }
@@ -105,7 +105,7 @@ router.get("/system-health", isAuthenticated, async (req: any, res: Response) =>
     return res.status(200).json({
       system: await supportService.performSystemHealthCheck(),
       support: {
-        commonIssueCategories: supportService.getCommonIssueCategories(),
+        commonIssueCategories: await supportService.getCommonIssueCategories(),
       },
     });
   } catch (error) {

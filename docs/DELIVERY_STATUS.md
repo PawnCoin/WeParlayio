@@ -16,5 +16,5 @@ exists but requires a provider, credentials, legal approval, or production test.
 | Temporary P2P and watcher chat | Complete | 200-character P2P chat and tournament watcher chat close and clear at settlement. |
 | Professional team/athlete assets | Built | Expanded verified team logos and ESPN athlete-headshot endpoint; coverage depends on provider availability. |
 | Production ticker validation | Built | Today-only verified ticker is implemented; production credential validation remains pending. |
-| Google Play wrapper and final package | Deferred | Listing/release materials drafted; Android wrapper, signing, and Play Console work wait until product/compliance completion. |
+| Google Play wrapper and final package | Built | Capacitor Android wrapper and release commands are in the repository. A signed `.aab`, store-console submission, and release assets still require the Android signing key, SDK workstation, and Play Console account. |
 | Security, end-to-end, accessibility, launch audit | Blocked | Production build passes, but the full TypeScript check currently fails across legacy admin, payment, betting, storage, and schema code. Resolve that backlog before final audit. |

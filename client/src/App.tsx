@@ -23,6 +23,7 @@ const Settings = lazy(() => import("@/pages/Settings"));
 const SecuritySettings = lazy(() => import("@/pages/SecuritySettings"));
 const Support = lazy(() => import("@/pages/Support"));
 const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
+const AccountDeletion = lazy(() => import("@/pages/AccountDeletion"));
 const TermsOfService = lazy(() => import("@/pages/TermsOfService"));
 const SecurityInfo = lazy(() => import("@/pages/SecurityInfo"));
 const TierPricing = lazy(() => import("@/pages/TierPricing"));
@@ -56,6 +57,8 @@ function Router() {
       <Route path="/about" component={About} />
       <Route path="/tiers" component={TierPricing} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
+      <Route path="/privacy" component={PrivacyPolicy} />
+      <Route path="/account-deletion" component={AccountDeletion} />
       <Route path="/terms-of-service" component={TermsOfService} />
       <Route path="/security-info" component={SecurityInfo} />
       <Route path="*" component={NotFound} />

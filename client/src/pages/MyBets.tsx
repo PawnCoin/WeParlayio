@@ -71,15 +71,7 @@ const MyBets: React.FC = () => {
     );
   };
 
-  const calculateStats = (): {
-    totalBets: number;
-    wonBets: number;
-    totalWagered: number;
-    totalWinnings: number;
-    pendingBets: number;
-    winRate: number;
-    profit: number;
-  } => {
+  const calculateStats = (): { totalBets: number; wonBets: number; totalWagered: number; totalWinnings: number; pendingBets: number; winRate: number; profit: number; } => {
     const stats = {
       totalBets: bets.length,
       wonBets: bets.filter(b => b.status === 'won').length,

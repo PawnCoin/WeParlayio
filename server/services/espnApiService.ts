@@ -73,18 +73,13 @@ export class ESPNApiService {
     const date = /^\d{8}$/.test(requestedDate || '')
       ? requestedDate
       : new Intl.DateTimeFormat('en-CA', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        timeZone: 'America/New_York',
+        year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'America/New_York',
       }).format(new Date()).replaceAll('-', '');
 
     const responses = await Promise.allSettled(supportedSports.map(async (sport) => {
       const sportPath = this.sportMappings[sport];
       if (!sportPath) return [];
 
-      // ESPN otherwise chooses a date based on the server's local clock. Vercel
-      // functions run in UTC, which can put the public "today" board a day off.
       const response = await fetch(`${this.baseUrl}/sports/${sportPath}/scoreboard?dates=${date}`);
       if (!response.ok) throw new Error(`ESPN ${sport} scoreboard returned ${response.status}`);
       const data = await response.json();

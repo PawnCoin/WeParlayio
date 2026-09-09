@@ -139,32 +139,10 @@ router.post('/purchase', isAuthenticated, async (req: any, res) => {
       });
     }
 
-    // For paid tiers, simulate payment processing
-    // In production, integrate with Stripe/PayPal here
-    const price = TIER_PRICES[tier];
-    
-    // Simulate successful payment
-    if (price > 0) {
-      // Calculate VIP expiry (30 days from now)
-      const vipExpiry = new Date();
-      vipExpiry.setDate(vipExpiry.getDate() + 30);
-
-      const updatedUser = await storage.updateUserTier(userId, tier);
-      // Note: Additional fields like vipUntil, vipExpiryDate would need additional storage methods
-      // For now, tier upgrade is simulated with basic tier update
-
-      res.json({
-        success: true,
-        message: `Successfully upgraded to ${tier} tier!`,
-        user: updatedUser,
-        expiryDate: vipExpiry
-      });
-    } else {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Invalid tier price' 
-      });
-    }
+    return res.status(410).json({
+      success: false,
+      message: 'Direct tier upgrades are disabled. Start a verified Whop membership checkout instead.',
+    });
 
   } catch (error: any) {
     console.error('Error processing tier purchase:', error);

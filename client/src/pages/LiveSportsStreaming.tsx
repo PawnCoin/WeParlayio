@@ -50,6 +50,8 @@ const LiveSportsStreaming: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [userTier, setUserTier] = useState('bronze'); // bronze, silver, gold, diamond
+  const requestedHomeTeam = new URLSearchParams(window.location.search).get('homeTeam');
+  const requestedAwayTeam = new URLSearchParams(window.location.search).get('awayTeam');
   
   // Fetch streaming status
   const { data: streamingStatus } = useQuery<StreamingStatus>({
@@ -59,7 +61,7 @@ const LiveSportsStreaming: React.FC = () => {
 
   // Fetch available channels
   const { data: channels = [], isLoading: channelsLoading } = useQuery<StreamChannel[]>({
-    queryKey: ['/api/streaming/channels'],
+    queryKey: ['/api/iptv/channels'],
     refetchInterval: 60000,
   });
 
@@ -129,19 +131,10 @@ const LiveSportsStreaming: React.FC = () => {
 
     setCurrentStream(channel);
     
-    try {
-      await playStreamMutation.mutateAsync({
-        channelId: channel.id,
-        tier: userTier
-      });
-      
-      if (videoRef.current) {
-        videoRef.current.src = channel.streamUrl;
-        videoRef.current.play();
-        setIsPlaying(true);
-      }
-    } catch (error) {
-      console.error('Stream playback error:', error);
+    if (videoRef.current) {
+      videoRef.current.src = channel.streamUrl;
+      await videoRef.current.play().catch(() => setIsPlaying(false));
+      setIsPlaying(true);
     }
   };
 
@@ -180,6 +173,13 @@ const LiveSportsStreaming: React.FC = () => {
     const matchesSearch = channel.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
+  const { data: matchedBroadcast } = useQuery<{ broadcast: StreamChannel | null }>({
+    queryKey: ['/api/iptv/match', requestedHomeTeam, requestedAwayTeam],
+    enabled: Boolean(requestedHomeTeam && requestedAwayTeam),
+    queryFn: async () => (await fetch(`/api/iptv/match?homeTeam=${encodeURIComponent(requestedHomeTeam!)}&awayTeam=${encodeURIComponent(requestedAwayTeam!)}`)).json(),
+  });
+  useEffect(() => { if (matchedBroadcast?.broadcast && !currentStream) handleStreamPlay(matchedBroadcast.broadcast); }, [matchedBroadcast]);
 
   const categories = ['all', 'sports', 'esports', 'premium', 'international'];
 
